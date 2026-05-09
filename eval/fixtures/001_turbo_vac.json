@@ -1,0 +1,24 @@
+{
+  "id": "001_turbo_vac",
+  "review_text": "So I bought the 'Turbo-Vac 5000' last week. Honestly? It's a mixed bag. The suction is incredible—it picked up a penny from under the rug! And it's super quiet, which my cat appreciates. But oh man, the battery life is a joke. It died after 15 minutes. Also, the plastic handle feels like it's going to snap any second. For $300, I expected better build quality. I'm keeping it because I hate returning things, but if I had to choose again, I'd definitely go with a Dyson instead.",
+  "ground_truth": {
+    "product": "Turbo-Vac 5000",
+    "stars": null,
+    "stars_inferred": 3,
+    "pros": ["incredible suction", "very quiet operation"],
+    "cons": ["poor battery life (15 minutes)", "fragile plastic handle", "poor build quality for $300 price"],
+    "buy_again": false,
+    "sentiment": "mixed",
+    "topics": ["suction", "noise", "battery", "build_quality", "price"],
+    "competitor_mentions": ["Dyson"],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["product", "stars", "buy_again", "sentiment", "language"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons"],
+    "tolerance_fields": {"stars_inferred": 1}
+  }
+}
