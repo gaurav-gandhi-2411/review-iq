@@ -70,21 +70,22 @@ async def _call_groq(
 
 
 async def _call_gemini(user_prompt: str) -> ReviewExtractionLLMOutput:
-    """Call Gemini 1.5 Flash and parse the response."""
-    import google.generativeai as genai
+    """Call Gemini 2.0 Flash and parse the response."""
+    from google import genai
+    from google.genai import types
 
     settings = get_settings()
-    genai.configure(api_key=settings.gemini_api_key)  # type: ignore[attr-defined]
-    model = genai.GenerativeModel(  # type: ignore[attr-defined]
-        model_name=settings.gemini_model,
-        system_instruction=_SYSTEM_PROMPT,
-        generation_config=genai.GenerationConfig(  # type: ignore[attr-defined]
+    client = genai.Client(api_key=settings.gemini_api_key)
+    response = await client.aio.models.generate_content(
+        model=settings.gemini_model,
+        contents=user_prompt,
+        config=types.GenerateContentConfig(
+            system_instruction=_SYSTEM_PROMPT,
             response_mime_type="application/json",
             temperature=0.0,
         ),
     )
-    response = await model.generate_content_async(user_prompt)
-    return _parse_response(response.text)
+    return _parse_response(response.text or "")
 
 
 async def extract_with_llm(

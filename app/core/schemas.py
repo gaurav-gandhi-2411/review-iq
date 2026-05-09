@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 from datetime import datetime
 from enum import StrEnum
-from typing import Annotated
+from typing import Annotated, Any
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -78,9 +78,27 @@ class ReviewExtraction(BaseModel):
 class ReviewExtractionLLMOutput(BaseModel):
     """Schema returned by the LLM — no extraction_meta (added by pipeline)."""
 
-    product: str
-    stars: Annotated[int | None, Field(ge=1, le=5)] = None
-    stars_inferred: Annotated[int | None, Field(ge=1, le=5)] = None
+    product: str = "unknown product"
+    stars: int | None = None
+    stars_inferred: int | None = None
+
+    @field_validator("product", mode="before")
+    @classmethod
+    def product_defaults_to_unknown(cls, v: Any) -> str:
+        if v is None or not str(v).strip():
+            return "unknown product"
+        return str(v)
+
+    @field_validator("stars", "stars_inferred", mode="before")
+    @classmethod
+    def coerce_stars(cls, v: Any) -> int | None:
+        if v is None:
+            return None
+        try:
+            n = int(v)
+            return n if 1 <= n <= 5 else None
+        except (TypeError, ValueError):
+            return None
     pros: list[str] = Field(default_factory=list)
     cons: list[str] = Field(default_factory=list)
     buy_again: bool | None = None

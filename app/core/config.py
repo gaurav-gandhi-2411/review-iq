@@ -43,7 +43,7 @@ class Settings(BaseSettings):
         alias="GROQ_MODEL",
     )
     gemini_model: str = Field(
-        default="gemini-1.5-flash",
+        default="gemini-2.0-flash",
         alias="GEMINI_MODEL",
     )
 

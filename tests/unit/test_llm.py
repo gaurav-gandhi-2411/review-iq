@@ -58,10 +58,21 @@ class TestParseResponse:
         with pytest.raises(json.JSONDecodeError):
             _parse_response("not json at all")
 
-    def test_missing_required_field_raises(self) -> None:
-        bad = {k: v for k, v in _VALID_EXTRACTION.items() if k != "product"}
-        with pytest.raises(ValidationError):
-            _parse_response(json.dumps(bad))
+    def test_missing_product_defaults_to_unknown(self) -> None:
+        without_product = {k: v for k, v in _VALID_EXTRACTION.items() if k != "product"}
+        result = _parse_response(json.dumps(without_product))
+        assert result.product == "unknown product"
+
+    def test_null_product_defaults_to_unknown(self) -> None:
+        with_null_product = {**_VALID_EXTRACTION, "product": None}
+        result = _parse_response(json.dumps(with_null_product))
+        assert result.product == "unknown product"
+
+    def test_out_of_range_stars_coerced_to_none(self) -> None:
+        for bad_val in [0, 6, 10, -1]:
+            with_bad_stars = {**_VALID_EXTRACTION, "stars": bad_val}
+            result = _parse_response(json.dumps(with_bad_stars))
+            assert result.stars is None, f"stars={bad_val} should coerce to None"
 
 
 class TestExtractWithLLM:
