@@ -8,7 +8,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from app.core.llm import _parse_response, extract_with_llm
 from app.core.schemas import ReviewExtractionLLMOutput
-from pydantic import ValidationError
 
 _VALID_EXTRACTION = {
     "product": "Turbo-Vac 5000",
