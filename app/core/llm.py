@@ -74,11 +74,11 @@ async def _call_gemini(user_prompt: str) -> ReviewExtractionLLMOutput:
     import google.generativeai as genai
 
     settings = get_settings()
-    genai.configure(api_key=settings.gemini_api_key)
-    model = genai.GenerativeModel(
+    genai.configure(api_key=settings.gemini_api_key)  # type: ignore[attr-defined]
+    model = genai.GenerativeModel(  # type: ignore[attr-defined]
         model_name=settings.gemini_model,
         system_instruction=_SYSTEM_PROMPT,
-        generation_config=genai.GenerationConfig(
+        generation_config=genai.GenerationConfig(  # type: ignore[attr-defined]
             response_mime_type="application/json",
             temperature=0.0,
         ),
