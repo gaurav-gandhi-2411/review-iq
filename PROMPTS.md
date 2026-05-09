@@ -62,7 +62,7 @@ embedded them in figurative language.
 | Run | Date | Overall | Fixture 001 | Notes |
 |---|---|---|---|---|
 | v1.0 local | 2026-05-10 | 86.7% ✓ | ~93% | Missed quiet/handle/noise/build_quality |
-| v1.1 local | TBD | TBD | TBD | Run `uv run python -m eval.runner` |
+| v1.1 local (001 only) | 2026-05-10 | pending (TPD exhausted) | 91.6% | Captures quiet/handle/noise/build_quality; full eval at next quota reset |
 
 ---
 
