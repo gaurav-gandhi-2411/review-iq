@@ -127,7 +127,7 @@ Interactive docs at `/docs` (Swagger) and `/redoc`.
 |---|---|
 | API | FastAPI + Pydantic v2 |
 | LLM (primary) | Groq — Llama 3.3 70B |
-| LLM (fallback) | Google Gemini 1.5 Flash |
+| LLM (fallback) | Google Gemini 2.0 Flash |
 | Storage | SQLite + aiosqlite (WAL mode) |
 | Observability | structlog (JSON) + Prometheus metrics |
 | Hosting | Hugging Face Spaces (Docker) |
@@ -167,10 +167,35 @@ uv run python -m eval.report
 
 ---
 
+## CI
+
+| Workflow | Trigger | Fails CI? |
+|---|---|---|
+| `ci.yml` | Every push / PR | Yes — lint, format, mypy, unit tests |
+| `eval.yml` | Push touching `app/core/prompt.py`, `app/core/llm.py`, `app/core/schemas.py`, `eval/fixtures/**`, `eval/runner.py` · Nightly 02:00 UTC · `workflow_dispatch` | Yes — overall accuracy must be ≥ 85% |
+| `deploy.yml` | Push to `main` | No (informational) |
+
+Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refactor) don't burn the free-tier Groq quota.
+
+---
+
 ## Phase 2 / 3 vision
 
-- **Phase 2**: PostgreSQL + Redis cache; streaming batch endpoint; webhook callbacks
-- **Phase 3**: Fine-tuned extraction model; multi-tenant auth; real-time dashboard with WebSocket updates; export to CSV/JSONL
+**Phase 2** (documented, not built yet):
+- Webhook ingestion from Yotpo / Judge.me / Shopify
+- Multi-language: Hindi, Tamil, Hinglish detection + translation
+- Slack alerts on urgent reviews
+- Vector search (sqlite-vss / pgvector) for semantic retrieval
+- Drift monitoring: nightly fixture re-run, alert on field-level drift
+- Cost dashboard: tokens & $ per extraction over time
+- SQLite → Postgres migration
+
+**Phase 3** (vision):
+- Human-in-the-loop feedback → DPO fine-tuning
+- Cross-review insight generation ("top 3 complaints this week")
+- Auto-response drafting for CX
+- Multi-tenancy + Stripe billing
+- Native integrations — Shopify app, WooCommerce plugin
 
 ---
 

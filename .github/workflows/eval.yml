@@ -1,0 +1,53 @@
+name: Eval
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - app/core/prompt.py
+      - app/core/llm.py
+      - app/core/schemas.py
+      - "eval/fixtures/**"
+      - eval/runner.py
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    env:
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      API_KEY: ci-key
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Run eval
+        run: uv run python -m eval.runner
+
+      - name: Generate report
+        if: always()
+        run: uv run python -m eval.report
+
+      - name: Upload eval artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: |
+            eval/results.json
+            eval/report.md

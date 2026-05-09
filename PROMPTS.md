@@ -4,6 +4,68 @@ This file documents every version of the extraction prompt, including eval score
 
 ---
 
+## v1.1 (2026-05-10) — Exhaustive pros/cons extraction
+
+**File:** `app/core/prompt.py`
+**Model target:** Groq Llama 3.3 70B (primary), Gemini 2.0 Flash (fallback)
+
+### What changed vs v1.0
+**`pros` / `cons` field instructions** — replaced "List each separately" with explicit exhaustive-extraction language:
+
+```diff
+-  pros: Specific positive aspects mentioned. List each separately. Empty list if none.
++  pros: ALL distinct positive attributes the reviewer mentions — extract every one.
++       Each compliment, praise, or positive observation is a separate item, even if
++       brief or phrased indirectly (e.g. "my cat appreciates the quiet" →
++       "quiet operation"). Do NOT merge or drop any.
+
+-  cons: Specific negative aspects mentioned. List each separately. Empty list if none.
++  cons: ALL distinct negative attributes, complaints, or disappointments — extract
++       every one. Each issue or criticism is a separate item, even if brief
++       (e.g. "the handle feels flimsy" is separate from "battery dies fast").
++       Do NOT merge or drop any.
+```
+
+**`topics` field instruction** — linked topic coverage explicitly to extracted pros/cons:
+
+```diff
+-  topics: Relevant product topics from the review. Use snake_case. Examples: ...
++  topics: ALL product topics discussed in this review. Include a topic for every
++          pro and con you extracted — if you extracted a pro/con about noise,
++          include "noise"; about build, include "build_quality". Use snake_case.
+```
+
+**Example** — updated to show exhaustive extraction with 2 pros, 3 cons, and 5 topics (including "noise" and "build_quality") from a single review:
+
+```diff
+- Review: "The suction is amazing but battery only lasts 20 minutes. For $250 I expected more. Would buy Dyson next time."
+- Output: {"pros": ["amazing suction"], "cons": ["short battery life", "poor value for price"], "topics": ["suction", "battery", "price"], ...}
++ Review: "The suction is incredible and it runs whisper-quiet — my neighbour didn't
++          even notice I was vacuuming. But the battery gives out after 20 minutes,
++          and the handle creaks worryingly. For $250 I expected better."
++ Output: {"pros": ["incredible suction", "whisper-quiet operation"],
++          "cons": ["short battery life", "creaky handle", "poor value for price"],
++          "topics": ["suction", "noise", "battery", "build_quality", "price"], ...}
+```
+
+### Why this changed
+Fixture 001 (Turbo-Vac) live response missed:
+- **pros**: "very quiet operation" (review: "super quiet, which my cat appreciates")
+- **cons**: "fragile plastic handle" (review: "the plastic handle feels like it's going to snap any second")
+- **topics**: "noise" and "build_quality" (both clearly present)
+
+Root cause: v1.0 said "list each separately" but didn't say "extract ALL" or give a
+multi-pro/multi-con example. The model merged or skipped attributes when the review
+embedded them in figurative language.
+
+### Eval scores (fixture set v1)
+| Run | Date | Overall | Fixture 001 | Notes |
+|---|---|---|---|---|
+| v1.0 local | 2026-05-10 | 86.7% ✓ | ~93% | Missed quiet/handle/noise/build_quality |
+| v1.1 local | TBD | TBD | TBD | Run `uv run python -m eval.runner` |
+
+---
+
 ## v1.0 (2026-05-09) — Initial
 
 **File:** `app/core/prompt.py`
