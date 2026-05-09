@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Review IQ — Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+    header { background: #1e293b; border-bottom: 1px solid #334155; padding: 1rem 2rem; display: flex; align-items: center; gap: 0.75rem; }
+    header h1 { font-size: 1.25rem; font-weight: 700; color: #f8fafc; }
+    header span { font-size: 0.75rem; background: #0ea5e9; color: #fff; padding: 0.25rem 0.6rem; border-radius: 9999px; font-weight: 600; }
+    main { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; }
+    .grid { display: grid; gap: 1.25rem; }
+    .grid-4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 0.75rem; padding: 1.25rem; }
+    .card h2 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; margin-bottom: 0.5rem; }
+    .stat { font-size: 2.25rem; font-weight: 700; color: #f8fafc; }
+    .stat-sub { font-size: 0.8rem; color: #64748b; margin-top: 0.25rem; }
+    .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+    .badge-positive { background: #14532d; color: #4ade80; }
+    .badge-negative { background: #450a0a; color: #f87171; }
+    .badge-mixed    { background: #431407; color: #fb923c; }
+    .badge-neutral  { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+    .badge-high     { background: #450a0a; color: #f87171; }
+    .badge-medium   { background: #431407; color: #fb923c; }
+    .badge-low      { background: #1e3a5f; color: #60a5fa; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th { text-align: left; color: #64748b; font-weight: 600; padding: 0.5rem 0.75rem; border-bottom: 1px solid #334155; font-size: 0.75rem; text-transform: uppercase; }
+    td { padding: 0.625rem 0.75rem; border-bottom: 1px solid #1e293b; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    .pill { display: inline-block; background: #1e3a5f; color: #60a5fa; border-radius: 9999px; padding: 0.15rem 0.5rem; font-size: 0.7rem; margin: 0.1rem; }
+    .section-title { font-size: 1rem; font-weight: 600; color: #f1f5f9; margin-bottom: 0.75rem; }
+    .bar-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; }
+    .bar-label { width: 100px; font-size: 0.8rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bar-track { flex: 1; background: #334155; border-radius: 9999px; height: 8px; }
+    .bar-fill { height: 8px; border-radius: 9999px; background: #0ea5e9; }
+    .bar-count { font-size: 0.75rem; color: #64748b; width: 30px; text-align: right; }
+    .empty { color: #475569; font-size: 0.85rem; padding: 0.5rem 0; }
+    footer { text-align: center; padding: 2rem; color: #475569; font-size: 0.75rem; }
+    .refresh-btn { background: #0ea5e9; color: #fff; border: none; border-radius: 0.375rem; padding: 0.4rem 0.9rem; font-size: 0.8rem; cursor: pointer; font-weight: 600; }
+    .refresh-btn:hover { background: #0284c7; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Review IQ</h1>
+    <span>Dashboard</span>
+    <div style="margin-left:auto">
+      <button class="refresh-btn" onclick="location.reload()">↻ Refresh</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- KPI strip -->
+    <div class="grid grid-4" style="margin-bottom:1.5rem">
+      <div class="card">
+        <h2>Total Extractions</h2>
+        <div class="stat">{{ insights.total_extractions }}</div>
+        <div class="stat-sub">all time</div>
+      </div>
+      <div class="card">
+        <h2>Positive</h2>
+        <div class="stat" style="color:#4ade80">{{ insights.sentiment_breakdown.get('positive', 0) }}</div>
+        <div class="stat-sub">reviews</div>
+      </div>
+      <div class="card">
+        <h2>Negative</h2>
+        <div class="stat" style="color:#f87171">{{ insights.sentiment_breakdown.get('negative', 0) }}</div>
+        <div class="stat-sub">reviews</div>
+      </div>
+      <div class="card">
+        <h2>Urgent</h2>
+        <div class="stat" style="color:#fb923c">{{ insights.urgency_breakdown.get('high', 0) }}</div>
+        <div class="stat-sub">need attention</div>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-bottom:1.5rem">
+      <!-- Top topics -->
+      <div class="card">
+        <div class="section-title">Top Topics</div>
+        {% if insights.top_topics %}
+          {% set max_count = insights.top_topics[0].count if insights.top_topics else 1 %}
+          {% for t in insights.top_topics[:10] %}
+          <div class="bar-row">
+            <div class="bar-label" title="{{ t.topic }}">{{ t.topic }}</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:{{ [(t.count / max_count) * 100, 4] | max }}%"></div>
+            </div>
+            <div class="bar-count">{{ t.count }}</div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty">No data yet — extract some reviews to see trends.</div>
+        {% endif %}
+      </div>
+
+      <!-- Top competitor mentions -->
+      <div class="card">
+        <div class="section-title">Competitor Mentions</div>
+        {% if insights.top_competitor_mentions %}
+          {% set max_comp = insights.top_competitor_mentions[0].count if insights.top_competitor_mentions else 1 %}
+          {% for c in insights.top_competitor_mentions[:10] %}
+          <div class="bar-row">
+            <div class="bar-label" title="{{ c.competitor }}">{{ c.competitor }}</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:{{ [(c.count / max_comp) * 100, 4] | max }}%; background:#a78bfa"></div>
+            </div>
+            <div class="bar-count">{{ c.count }}</div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty">No competitor mentions yet.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Urgent reviews -->
+    {% if urgent_reviews %}
+    <div class="card" style="margin-bottom:1.5rem">
+      <div class="section-title" style="color:#f87171">⚠ Urgent Reviews</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Sentiment</th>
+            <th>Topics</th>
+            <th>Extracted</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in urgent_reviews %}
+          <tr>
+            <td>{{ r.product }}</td>
+            <td><span class="badge badge-{{ r.sentiment or 'neutral' }}">{{ r.sentiment or '—' }}</span></td>
+            <td>
+              {% for t in (r.topics | from_json)[:3] %}<span class="pill">{{ t }}</span>{% endfor %}
+            </td>
+            <td style="color:#64748b;font-size:0.75rem">{{ r.created_at[:10] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    <!-- Recent extractions -->
+    <div class="card">
+      <div class="section-title">Recent Extractions</div>
+      {% if recent_reviews %}
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Stars</th>
+            <th>Sentiment</th>
+            <th>Urgency</th>
+            <th>Competitors</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in recent_reviews %}
+          <tr>
+            <td style="font-weight:600;color:#f1f5f9">{{ r.product }}</td>
+            <td>{{ r.stars if r.stars else ('~' ~ r.stars_inferred if r.stars_inferred else '—') }}</td>
+            <td><span class="badge badge-{{ r.sentiment or 'neutral' }}">{{ r.sentiment or '—' }}</span></td>
+            <td><span class="badge badge-{{ r.urgency or 'low' }}">{{ r.urgency or 'low' }}</span></td>
+            <td style="font-size:0.75rem;color:#94a3b8">{{ (r.competitor_mentions | from_json) | join(', ') or '—' }}</td>
+            <td style="color:#64748b;font-size:0.75rem">{{ r.created_at[:10] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <div class="empty">No extractions yet. Send a POST /extract to get started.</div>
+      {% endif %}
+    </div>
+  </main>
+
+  <footer>Review IQ v0.1.0 · <a href="/docs" style="color:#0ea5e9">API Docs</a> · <a href="/health" style="color:#0ea5e9">Health</a></footer>
+</body>
+</html>

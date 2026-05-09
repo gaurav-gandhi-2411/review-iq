@@ -12,6 +12,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
+from app.api.dashboard import router as dashboard_router
 from app.api.extract import router as extract_router
 from app.api.query import router as query_router
 from app.core.config import get_settings
@@ -49,6 +50,7 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+app.include_router(dashboard_router)
 app.include_router(extract_router)
 app.include_router(query_router)
 
