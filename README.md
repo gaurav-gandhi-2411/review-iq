@@ -22,9 +22,9 @@ pinned: false
 
 ## Live demo
 
-**API**: `https://gaurav-gandhi-2411-review-iq.hf.space` *(coming soon — deploy in progress)*
+**API**: `https://gauravgandhi2411-review-iq.hf.space` *(coming soon — deploy in progress)*
 
-**Dashboard**: `https://gaurav-gandhi-2411-review-iq.hf.space/` *(coming soon)*
+**Dashboard**: `https://gauravgandhi2411-review-iq.hf.space/` *(coming soon)*
 
 ---
 
@@ -32,7 +32,7 @@ pinned: false
 
 ```bash
 # Extract structured insights from a review
-curl -X POST https://gaurav-gandhi-2411-review-iq.hf.space/extract \
+curl -X POST https://gauravgandhi2411-review-iq.hf.space/extract \
   -H "X-API-Key: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"text": "The Turbo-Vac 5000 has incredible suction but the battery dies in 15 minutes. For $300 I expected better. Would buy a Dyson next time."}'
@@ -65,14 +65,14 @@ curl -X POST https://gaurav-gandhi-2411-review-iq.hf.space/extract \
 
 ```bash
 # Submit up to 100 reviews at once
-curl -X POST https://gaurav-gandhi-2411-review-iq.hf.space/extract/batch \
+curl -X POST https://gauravgandhi2411-review-iq.hf.space/extract/batch \
   -H "X-API-Key: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"reviews": [{"text": "Great product!"}, {"text": "Terrible quality, returned."}]}'
 # → {"job_id": "abc-123", "status": "pending", "total": 2, ...}
 
 # Poll for status
-curl https://gaurav-gandhi-2411-review-iq.hf.space/extract/batch/abc-123 \
+curl https://gauravgandhi2411-review-iq.hf.space/extract/batch/abc-123 \
   -H "X-API-Key: $API_KEY"
 ```
 
@@ -80,11 +80,11 @@ curl https://gaurav-gandhi-2411-review-iq.hf.space/extract/batch/abc-123 \
 
 ```bash
 # Filter stored extractions
-curl "https://gaurav-gandhi-2411-review-iq.hf.space/reviews?sentiment=negative&urgency=high" \
+curl "https://gauravgandhi2411-review-iq.hf.space/reviews?sentiment=negative&urgency=high" \
   -H "X-API-Key: $API_KEY"
 
 # Aggregated insights (sentiment breakdown, top topics, trend over time)
-curl https://gaurav-gandhi-2411-review-iq.hf.space/insights \
+curl https://gauravgandhi2411-review-iq.hf.space/insights \
   -H "X-API-Key: $API_KEY"
 ```
 

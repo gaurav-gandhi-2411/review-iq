@@ -25,7 +25,7 @@ COPY app/ ./app/
 
 # Non-root user for security
 RUN adduser --disabled-password --gecos "" appuser && \
-    mkdir -p /data && chown appuser /data
+    mkdir -p /app/data && chown appuser /app/data
 USER appuser
 
 EXPOSE 7860
