@@ -10,6 +10,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 
 from app.core.auth import require_api_key
 from app.core.llm import extract_with_llm
+from app.core.metrics import EXTRACTION_LATENCY, EXTRACTIONS_TOTAL
 from app.core.prompt import PROMPT_VERSION, build_user_prompt
 from app.core.sanitize import sanitize, wrap_for_llm
 from app.core.schemas import (
@@ -39,6 +40,7 @@ async def _run_extraction(request: ReviewRequest) -> ReviewExtraction:
     cached = await get_by_hash(input_hash)
     if cached is not None:
         log.info("extraction.cache_hit", input_hash=input_hash)
+        EXTRACTIONS_TOTAL.labels(model="cached", cached="true").inc()
         return cached
 
     clean_text, is_suspicious = sanitize(request.text)
@@ -66,6 +68,8 @@ async def _run_extraction(request: ReviewRequest) -> ReviewExtraction:
     )
 
     await save_extraction(input_hash, request.text, extraction)
+    EXTRACTIONS_TOTAL.labels(model=model_name, cached="false").inc()
+    EXTRACTION_LATENCY.labels(model=model_name).observe(latency_ms)
     log.info(
         "extraction.completed",
         product=extraction.product,

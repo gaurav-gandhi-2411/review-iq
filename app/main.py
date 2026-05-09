@@ -7,7 +7,8 @@ from contextlib import asynccontextmanager
 
 import structlog
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
+from fastapi.responses import Response
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -16,6 +17,8 @@ from app.api.dashboard import router as dashboard_router
 from app.api.extract import router as extract_router
 from app.api.query import router as query_router
 from app.core.config import get_settings
+from app.core.logging import setup_logging
+from app.core.metrics import PrometheusMiddleware
 from app.core.storage import migrate
 
 log = structlog.get_logger(__name__)
@@ -34,6 +37,7 @@ limiter = _get_limiter()
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    setup_logging()
     log.info("app.startup")
     await migrate()
     yield
@@ -49,6 +53,7 @@ app = FastAPI(
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(PrometheusMiddleware)
 
 app.include_router(dashboard_router)
 app.include_router(extract_router)
@@ -62,6 +67,6 @@ async def health() -> dict[str, str]:
 
 
 @app.get("/metrics", tags=["ops"])
-async def metrics() -> JSONResponse:
-    """Prometheus-compatible metrics (placeholder; expanded in observability step)."""
-    return JSONResponse(content={"status": "metrics_coming_soon"})
+async def metrics() -> Response:
+    """Prometheus metrics in text exposition format."""
+    return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
