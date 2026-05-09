@@ -141,7 +141,9 @@ class TestExtractWithLLM:
         )
         with (
             patch("app.core.llm.AsyncGroq") as MockGroq,
-            patch("app.core.llm._call_gemini", new=AsyncMock(side_effect=RuntimeError("gemini down"))),
+            patch(
+                "app.core.llm._call_gemini", new=AsyncMock(side_effect=RuntimeError("gemini down"))
+            ),
             pytest.raises(RuntimeError, match="Both LLM providers failed"),
         ):
             MockGroq.return_value.chat.completions.create = AsyncMock(side_effect=groq_err)
