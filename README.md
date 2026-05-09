@@ -22,9 +22,9 @@ pinned: false
 
 ## Live demo
 
-**API**: `https://gauravgandhi2411-review-iq.hf.space` *(coming soon — deploy in progress)*
+**API**: `https://gauravgandhi2411-review-iq.hf.space`
 
-**Dashboard**: `https://gauravgandhi2411-review-iq.hf.space/` *(coming soon)*
+**Dashboard**: `https://gauravgandhi2411-review-iq.hf.space/`
 
 ---
 
