@@ -1,0 +1,24 @@
+name: Deploy to Hugging Face Spaces
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Push to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git config user.email "ci@review-iq"
+          git config user.name "Review IQ CI"
+          git remote add hf "https://gaurav-gandhi-2411:${HF_TOKEN}@huggingface.co/spaces/gaurav-gandhi-2411/review-iq"
+          git push hf main --force

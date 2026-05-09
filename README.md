@@ -1,3 +1,13 @@
+---
+title: Review IQ
+emoji: 🔍
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # review-iq
 
 ![Under Construction](https://img.shields.io/badge/status-under%20construction-yellow)
