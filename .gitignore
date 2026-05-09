@@ -63,7 +63,6 @@ outputs/
 .ipynb_checkpoints/
 
 # HF / Docker build artifacts
-.dockerignore
 
 # Claude Code
 .claude/
