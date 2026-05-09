@@ -1,0 +1,25 @@
+{
+  "id": "015_medium_urgency",
+  "review_text": "I'm really frustrated with the ChairMax Pro. The lumbar support broke after 3 months of normal office use. For a $400 chair this is not acceptable. I've emailed support twice with no response. I'm considering disputing the charge with my bank. The seat is comfortable but I need the lumbar support fixed.",
+  "ground_truth": {
+    "product": "ChairMax Pro",
+    "stars": null,
+    "stars_inferred": 2,
+    "pros": ["comfortable seat"],
+    "cons": ["lumbar support broke after 3 months", "poor customer service response", "poor durability for price"],
+    "buy_again": false,
+    "sentiment": "negative",
+    "topics": ["lumbar_support", "durability", "customer_service", "price"],
+    "competitor_mentions": [],
+    "urgency": "medium",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "buy_again", "sentiment", "language"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons"],
+    "tolerance_fields": {"stars_inferred": 1},
+    "notes": "urgency=medium: frustrated, considering bank dispute but not legal action or safety issue"
+  }
+}

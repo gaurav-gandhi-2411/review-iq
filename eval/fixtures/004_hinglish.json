@@ -1,0 +1,25 @@
+{
+  "id": "004_hinglish",
+  "review_text": "Bahut achha product hai yaar! Suction toh ekdum mast hai, ghar saaf ho jata hai minutes mein. Lekin battery life bahut weak hai, sirf 20 minute chalta hai. Aur price thoda zyada hai 5000 rupees ke liye. Phir bhi recommend karunga dosto ko.",
+  "ground_truth": {
+    "product": "vacuum cleaner",
+    "stars": null,
+    "stars_inferred": 3,
+    "pros": ["excellent suction", "cleans quickly"],
+    "cons": ["poor battery life (20 minutes)", "high price"],
+    "buy_again": true,
+    "sentiment": "mixed",
+    "topics": ["suction", "battery", "price"],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "hi"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "buy_again", "sentiment"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons"],
+    "tolerance_fields": {"stars_inferred": 1},
+    "notes": "language may be hi or en; both accepted. Phase 1 should not crash on Hinglish."
+  }
+}

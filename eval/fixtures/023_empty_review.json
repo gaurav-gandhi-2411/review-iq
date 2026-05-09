@@ -1,0 +1,25 @@
+{
+  "id": "023_empty_review",
+  "review_text": "Good.",
+  "ground_truth": {
+    "product": "unknown product",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": [],
+    "cons": [],
+    "buy_again": null,
+    "sentiment": "positive",
+    "topics": [],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "sentiment", "language"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons"],
+    "tolerance_fields": {"stars_inferred": 1},
+    "notes": "Minimal review — should produce graceful nulls, not hallucination. pros/cons can be empty."
+  }
+}

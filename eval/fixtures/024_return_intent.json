@@ -1,0 +1,25 @@
+{
+  "id": "024_return_intent",
+  "review_text": "Sending this AquaFilter back tomorrow. It arrived without the installation manual, the filter housing cracked the first time I turned on the water, and it flooded my sink area. I had to call a plumber. This is an absolute disaster. Never buying anything from this brand again.",
+  "ground_truth": {
+    "product": "AquaFilter",
+    "stars": null,
+    "stars_inferred": 1,
+    "pros": [],
+    "cons": ["missing installation manual", "cracked filter housing", "caused flooding", "required plumber"],
+    "buy_again": false,
+    "sentiment": "negative",
+    "topics": ["packaging", "durability", "installation", "damage"],
+    "competitor_mentions": [],
+    "urgency": "high",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "buy_again", "sentiment", "language", "urgency"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons"],
+    "tolerance_fields": {"stars_inferred": 0},
+    "notes": "urgency=high: flooding, plumber cost, immediate return"
+  }
+}

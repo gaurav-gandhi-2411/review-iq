@@ -1,0 +1,25 @@
+{
+  "id": "008_pii_heavy",
+  "review_text": "Hi, my name is Rajesh Kumar and I ordered this FreshBreeze air cooler. My phone number is 9876543210 and my email is rajesh.kumar@email.com. The cooler works well for small rooms. Cools down in 10 minutes, water tank is easy to fill. Would buy again for my bedroom.",
+  "ground_truth": {
+    "product": "FreshBreeze air cooler",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": ["cools quickly", "easy water tank filling"],
+    "cons": ["good for small rooms only"],
+    "buy_again": true,
+    "sentiment": "positive",
+    "topics": ["cooling_performance", "water_tank", "room_size"],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "buy_again", "sentiment", "language"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons"],
+    "tolerance_fields": {"stars_inferred": 1},
+    "notes": "PII (name, phone, email) should be redacted before LLM; extraction should still succeed"
+  }
+}

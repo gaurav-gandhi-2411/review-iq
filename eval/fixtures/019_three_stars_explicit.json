@@ -1,0 +1,25 @@
+{
+  "id": "019_three_stars_explicit",
+  "review_text": "3 stars for the ZenDesk Pro standing desk. Assembly was a nightmare — took 4 hours with two people and the instructions were terrible. But once assembled, the desk is sturdy and the height adjustment is smooth and quiet. Motor is reliable. If it came pre-assembled I'd give it 5 stars.",
+  "ground_truth": {
+    "product": "ZenDesk Pro standing desk",
+    "stars": 3,
+    "stars_inferred": 3,
+    "pros": ["sturdy build", "smooth height adjustment", "quiet motor", "reliable motor"],
+    "cons": ["difficult assembly (4 hours)", "poor instructions"],
+    "buy_again": null,
+    "sentiment": "mixed",
+    "topics": ["assembly", "build_quality", "height_adjustment", "motor", "instructions"],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": ["pre-assembled option"],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "sentiment", "language"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons", "feature_requests"],
+    "tolerance_fields": {"stars_inferred": 1},
+    "notes": "stars=3 must be exact (explicit). buy_again is ambiguous."
+  }
+}

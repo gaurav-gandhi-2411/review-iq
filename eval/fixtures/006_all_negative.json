@@ -1,0 +1,25 @@
+{
+  "id": "006_all_negative",
+  "review_text": "Worst purchase of my life. The KitchenMaster Pro arrived with a cracked lid. Customer service made me wait 3 weeks for a replacement that never came. It leaks constantly, the motor is loud as a lawnmower, and the blades rusted after 2 washes. Do NOT buy.",
+  "ground_truth": {
+    "product": "KitchenMaster Pro",
+    "stars": null,
+    "stars_inferred": 1,
+    "pros": [],
+    "cons": ["arrived damaged (cracked lid)", "poor customer service", "leaks", "loud motor", "rusted blades"],
+    "buy_again": false,
+    "sentiment": "negative",
+    "topics": ["packaging", "customer_service", "leaking", "noise", "durability"],
+    "competitor_mentions": [],
+    "urgency": "high",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "buy_again", "sentiment", "language"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons"],
+    "tolerance_fields": {"stars_inferred": 0},
+    "notes": "pros MUST be empty; urgency MUST be high (angry, damaged product)"
+  }
+}

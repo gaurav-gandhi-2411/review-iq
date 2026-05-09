@@ -1,0 +1,25 @@
+{
+  "id": "011_very_short",
+  "review_text": "Great headphones. 10/10.",
+  "ground_truth": {
+    "product": "headphones",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": ["overall satisfaction"],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "positive",
+    "topics": [],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "buy_again", "sentiment", "language"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons"],
+    "tolerance_fields": {"stars_inferred": 1},
+    "notes": "stars MUST be null (10/10 is not a 1-5 rating); stars_inferred should be 5"
+  }
+}

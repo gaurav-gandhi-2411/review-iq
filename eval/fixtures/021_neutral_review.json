@@ -1,0 +1,24 @@
+{
+  "id": "021_neutral_review",
+  "review_text": "This FitBand Lite does what it says. Steps are counted, sleep is tracked, heart rate works. No major complaints but nothing wowed me either. Battery lasts about 7 days, which matches the spec sheet. Price is fair for what you get. It's a basic fitness tracker, nothing more.",
+  "ground_truth": {
+    "product": "FitBand Lite",
+    "stars": null,
+    "stars_inferred": 3,
+    "pros": ["accurate step counting", "sleep tracking", "heart rate monitoring", "7-day battery", "fair price"],
+    "cons": [],
+    "buy_again": null,
+    "sentiment": "neutral",
+    "topics": ["step_tracking", "sleep_tracking", "heart_rate", "battery", "price"],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "sentiment", "language"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons"],
+    "tolerance_fields": {"stars_inferred": 1}
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "014_feature_requests",
+  "review_text": "The SmartScale Pro is good for basic use. I wish it had a companion app for tracking trends over time. Also would love Bluetooth sync to my phone, and a rechargeable battery instead of AAA. The weight readings are accurate and display is easy to read. 4 stars.",
+  "ground_truth": {
+    "product": "SmartScale Pro",
+    "stars": 4,
+    "stars_inferred": 4,
+    "pros": ["accurate weight readings", "easy to read display"],
+    "cons": ["no companion app", "no Bluetooth", "non-rechargeable battery (AAA)"],
+    "buy_again": true,
+    "sentiment": "positive",
+    "topics": ["accuracy", "display", "connectivity", "battery"],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": ["companion app for trend tracking", "Bluetooth phone sync", "rechargeable battery"],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "buy_again", "sentiment", "language"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons", "feature_requests"],
+    "tolerance_fields": {"stars_inferred": 0},
+    "notes": "feature_requests must be populated; stars=4 must be captured (explicit)"
+  }
+}

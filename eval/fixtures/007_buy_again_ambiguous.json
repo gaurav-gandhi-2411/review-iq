@@ -1,0 +1,25 @@
+{
+  "id": "007_buy_again_ambiguous",
+  "review_text": "The SleepPro mattress is... okay. It's not bad, not great. I sleep on it every night so I guess it works. Delivery was fast, which I appreciated. The edge support is a bit soft — I roll towards the side sometimes. Not sure I'd recommend it to others, but I'm not replacing it either.",
+  "ground_truth": {
+    "product": "SleepPro mattress",
+    "stars": null,
+    "stars_inferred": 3,
+    "pros": ["fast delivery"],
+    "cons": ["soft edge support"],
+    "buy_again": null,
+    "sentiment": "neutral",
+    "topics": ["delivery", "edge_support", "comfort"],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "sentiment", "language"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons"],
+    "tolerance_fields": {"stars_inferred": 1},
+    "notes": "buy_again MUST be null — reviewer is ambiguous, not explicitly saying no"
+  }
+}

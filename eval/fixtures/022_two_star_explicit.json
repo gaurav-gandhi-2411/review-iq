@@ -1,0 +1,24 @@
+{
+  "id": "022_two_star_explicit",
+  "review_text": "2/5 stars for the LightStep running shoes. They look great in the photos but in reality the sole is paper-thin and offers zero arch support. After a 5km run my feet are in pain. The shoe material is breathable but that doesn't help when your feet hurt. Returning these.",
+  "ground_truth": {
+    "product": "LightStep running shoes",
+    "stars": 2,
+    "stars_inferred": 2,
+    "pros": ["breathable material"],
+    "cons": ["thin sole", "no arch support", "causes foot pain during running"],
+    "buy_again": false,
+    "sentiment": "negative",
+    "topics": ["sole", "arch_support", "comfort", "material"],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "buy_again", "sentiment", "language"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons"],
+    "tolerance_fields": {"stars_inferred": 0}
+  }
+}

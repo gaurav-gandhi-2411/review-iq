@@ -1,0 +1,25 @@
+{
+  "id": "020_urgent_safety",
+  "review_text": "WARNING: The NutriBlast 3000 blade FLEW OFF during use and nearly hit my child. This is a serious safety hazard. I've reported this to the manufacturer and plan to contact the consumer safety commission. The blender should be recalled. Contacted customer service and they offered me a $10 coupon. Completely unacceptable.",
+  "ground_truth": {
+    "product": "NutriBlast 3000",
+    "stars": null,
+    "stars_inferred": 1,
+    "pros": [],
+    "cons": ["blade detaches during use (safety hazard)", "inadequate customer service response", "potential for serious injury"],
+    "buy_again": false,
+    "sentiment": "negative",
+    "topics": ["safety", "durability", "customer_service"],
+    "competitor_mentions": [],
+    "urgency": "high",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "buy_again", "sentiment", "language", "urgency"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons"],
+    "tolerance_fields": {"stars_inferred": 0},
+    "notes": "urgency MUST be high — safety hazard, injury risk, regulatory complaint"
+  }
+}

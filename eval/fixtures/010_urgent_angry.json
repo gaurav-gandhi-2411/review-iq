@@ -1,0 +1,25 @@
+{
+  "id": "010_urgent_angry",
+  "review_text": "I AM FURIOUS. This CoolAir AC unit CAUGHT FIRE after 3 days. My living room has smoke damage. I've filed a safety complaint with consumer court and am taking legal action. This product is DANGEROUS. DO NOT BUY. Refund immediately or I will post this everywhere. 0/5.",
+  "ground_truth": {
+    "product": "CoolAir AC",
+    "stars": null,
+    "stars_inferred": 1,
+    "pros": [],
+    "cons": ["caught fire after 3 days", "caused property damage", "dangerous product"],
+    "buy_again": false,
+    "sentiment": "negative",
+    "topics": ["safety", "durability", "customer_service"],
+    "competitor_mentions": [],
+    "urgency": "high",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "buy_again", "sentiment", "language", "urgency"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons"],
+    "tolerance_fields": {"stars_inferred": 0},
+    "notes": "urgency MUST be high — fire, legal action, safety complaint"
+  }
+}

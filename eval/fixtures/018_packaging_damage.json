@@ -1,0 +1,24 @@
+{
+  "id": "018_packaging_damage",
+  "review_text": "The product itself — a BrewMaster coffee grinder — is fantastic. Grinds consistently, easy to adjust settings. However, it arrived in a completely crushed box. The grinder was fine but this made me anxious. Amazon's packaging is terrible. Would still buy the product again but would expect better packaging.",
+  "ground_truth": {
+    "product": "BrewMaster coffee grinder",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": ["consistent grind", "easy settings adjustment"],
+    "cons": ["arrived in crushed box", "poor packaging"],
+    "buy_again": true,
+    "sentiment": "mixed",
+    "topics": ["grind_quality", "settings", "packaging", "delivery"],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "buy_again", "sentiment", "language"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons"],
+    "tolerance_fields": {"stars_inferred": 1}
+  }
+}

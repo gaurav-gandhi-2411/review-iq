@@ -1,0 +1,25 @@
+{
+  "id": "016_no_product_name",
+  "review_text": "Just bought this thing from Amazon. Works as advertised I guess. Battery is fine, charges overnight. Nothing special but nothing broken either. Might recommend to a friend if they ask.",
+  "ground_truth": {
+    "product": "unknown product",
+    "stars": null,
+    "stars_inferred": 3,
+    "pros": ["works as described", "battery charges overnight"],
+    "cons": [],
+    "buy_again": null,
+    "sentiment": "neutral",
+    "topics": ["battery", "charging"],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "sentiment", "language"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons"],
+    "tolerance_fields": {"stars_inferred": 1},
+    "notes": "product may be any generic name; buy_again should be null (ambiguous recommendation)"
+  }
+}

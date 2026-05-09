@@ -1,0 +1,25 @@
+{
+  "id": "005_all_positive",
+  "review_text": "Absolutely love my new air purifier! The air in my bedroom feels so fresh and clean now. It's incredibly quiet — I can sleep right next to it. Setup was a breeze, took 5 minutes. The HEPA filter is easy to replace. Bought one for my parents too.",
+  "ground_truth": {
+    "product": "air purifier",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": ["fresh clean air", "very quiet", "easy setup", "easy filter replacement"],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "positive",
+    "topics": ["air_quality", "noise", "setup", "filter"],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "buy_again", "sentiment", "language"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons"],
+    "tolerance_fields": {"stars_inferred": 1},
+    "notes": "cons MUST be empty list"
+  }
+}

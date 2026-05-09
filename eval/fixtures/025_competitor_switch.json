@@ -1,0 +1,24 @@
+{
+  "id": "025_competitor_switch",
+  "review_text": "I used to swear by Philips air fryers but I switched to the CrispMaster 4000 six months ago and haven't looked back. The CrispMaster heats up faster, the basket is bigger, and cleanup takes half the time. The only thing Philips had going for it was the app, which CrispMaster lacks. But for pure cooking performance, CrispMaster wins. 5 stars.",
+  "ground_truth": {
+    "product": "CrispMaster 4000",
+    "stars": 5,
+    "stars_inferred": 5,
+    "pros": ["faster heat-up", "larger basket", "easier cleanup", "better cooking performance"],
+    "cons": ["no companion app"],
+    "buy_again": true,
+    "sentiment": "positive",
+    "topics": ["heating_speed", "capacity", "cleaning", "performance", "connectivity"],
+    "competitor_mentions": ["Philips"],
+    "urgency": "low",
+    "feature_requests": ["companion app"],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "buy_again", "sentiment", "language"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons", "feature_requests"],
+    "tolerance_fields": {"stars_inferred": 0}
+  }
+}

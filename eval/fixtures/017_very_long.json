@@ -1,0 +1,24 @@
+{
+  "id": "017_very_long",
+  "review_text": "I have been using the UltraSound Pro speaker for about six months now and I feel I have enough experience to write a comprehensive review. I'll break this down into categories: Sound Quality, Build, Features, and Value. SOUND QUALITY: The bass response is exceptional for a portable speaker of this size. Mid-tones are clear and vocals shine through. The highs are slightly harsh at maximum volume but nothing a little EQ can't fix. Compare to JBL or Bose, the UltraSound Pro holds its own at half the price. BUILD: The aluminum chassis feels premium. The rubber base prevents sliding. One issue: the charging port cover is flimsy and I've already had to tape it in place. It's IPX5 rated but I wouldn't trust it in heavy rain. FEATURES: Bluetooth 5.0 pairs instantly. Battery life is advertised at 20 hours — I consistently get 17-18 which is honest. The built-in mic is passable for calls but I wouldn't use it for anything important. EQ presets are limited; I wish there were more. VALUE: At $89, this is outstanding value. I would happily pay more for a sturdier charging port cover. VERDICT: 4 stars. Would buy again and have already recommended to two friends who both love theirs.",
+  "ground_truth": {
+    "product": "UltraSound Pro speaker",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": ["exceptional bass", "clear mids and vocals", "premium aluminum chassis", "non-slip rubber base", "fast Bluetooth 5.0 pairing", "good battery life (17-18 hours)", "excellent value at $89"],
+    "cons": ["harsh highs at max volume", "flimsy charging port cover", "IPX5 not reliable in heavy rain", "basic mic quality", "limited EQ presets"],
+    "buy_again": true,
+    "sentiment": "positive",
+    "topics": ["sound_quality", "build_quality", "battery", "bluetooth", "microphone", "eq", "price", "waterproofing"],
+    "competitor_mentions": ["JBL", "Bose"],
+    "urgency": "low",
+    "feature_requests": ["more EQ presets", "sturdier charging port cover"],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "buy_again", "sentiment", "language"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons", "feature_requests"],
+    "tolerance_fields": {"stars_inferred": 1}
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "009_competitor_heavy",
+  "review_text": "I've tried Dyson, Shark, iRobot, and Roomba before settling on the CleanBot X9. Honestly? The CleanBot X9 beats Dyson on suction by a mile and costs half the price. The navigation is smarter than iRobot. Only Shark comes close in terms of battery, but CleanBot wins overall. Happy customer.",
+  "ground_truth": {
+    "product": "CleanBot X9",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": ["better suction than Dyson", "half the price of Dyson", "smarter navigation than iRobot", "good overall value"],
+    "cons": ["battery slightly behind Shark"],
+    "buy_again": true,
+    "sentiment": "positive",
+    "topics": ["suction", "price", "navigation", "battery"],
+    "competitor_mentions": ["Dyson", "Shark", "iRobot", "Roomba"],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "buy_again", "sentiment", "language"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons"],
+    "tolerance_fields": {"stars_inferred": 1},
+    "notes": "All 4 competitor mentions must be captured"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "012_sarcasm",
+  "review_text": "Oh wow, absolutely INCREDIBLE battery life on the PowerDrive Pro. Lasts a whopping 45 minutes! Amazing! And the build quality is just chef's kiss — plastic that creaks every time you touch it. Totally worth the $200 price tag. 10/10 would not recommend.",
+  "ground_truth": {
+    "product": "PowerDrive Pro",
+    "stars": null,
+    "stars_inferred": 1,
+    "pros": [],
+    "cons": ["poor battery life (45 minutes)", "poor build quality (creaking plastic)", "poor value for price ($200)"],
+    "buy_again": false,
+    "sentiment": "negative",
+    "topics": ["battery", "build_quality", "price"],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "buy_again", "sentiment", "language"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons"],
+    "tolerance_fields": {"stars_inferred": 1},
+    "notes": "Hard case: sarcasm. stars_inferred may be 1 or 2. Document as known weakness if model scores 3+"
+  }
+}

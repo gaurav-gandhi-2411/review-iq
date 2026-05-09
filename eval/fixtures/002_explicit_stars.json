@@ -1,0 +1,24 @@
+{
+  "id": "002_explicit_stars",
+  "review_text": "I give this blender 5 stars out of 5. It is the best purchase I have ever made. Blends smoothies in seconds, easy to clean, and whisper quiet. Absolutely no complaints. Will definitely buy again if it ever breaks. 5/5!",
+  "ground_truth": {
+    "product": "blender",
+    "stars": 5,
+    "stars_inferred": 5,
+    "pros": ["blends smoothies quickly", "easy to clean", "very quiet"],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "positive",
+    "topics": ["performance", "noise", "cleaning"],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "buy_again", "sentiment", "language"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons"],
+    "tolerance_fields": {"stars_inferred": 0}
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "013_multi_product",
+  "review_text": "Bought the NovaPod X earbuds along with the NovaPod charging case. The earbuds are fantastic — crystal clear sound, good ANC, comfortable for hours. The charging case, however, is a disaster. The lid hinge broke after 2 weeks. For a $150 combo, that's unacceptable. Would buy the earbuds alone next time.",
+  "ground_truth": {
+    "product": "NovaPod X earbuds",
+    "stars": null,
+    "stars_inferred": 3,
+    "pros": ["crystal clear sound", "good ANC", "comfortable for long use"],
+    "cons": ["charging case lid broke after 2 weeks", "poor value for combo price"],
+    "buy_again": true,
+    "sentiment": "mixed",
+    "topics": ["audio_quality", "anc", "comfort", "durability", "price"],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "sentiment", "language"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons"],
+    "tolerance_fields": {"stars_inferred": 1},
+    "notes": "Primary product is the earbuds. buy_again=true (would buy earbuds again, just not the combo)."
+  }
+}
