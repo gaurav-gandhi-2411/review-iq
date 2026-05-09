@@ -99,6 +99,7 @@ class ReviewExtractionLLMOutput(BaseModel):
             return n if 1 <= n <= 5 else None
         except (TypeError, ValueError):
             return None
+
     pros: list[str] = Field(default_factory=list)
     cons: list[str] = Field(default_factory=list)
     buy_again: bool | None = None
