@@ -73,7 +73,11 @@ def redact_pii(text: str) -> tuple[str, int]:
 
     text, n = _replace(_EMAIL_RE, "[EMAIL]", text)
     count += n
-    text, n = _replace(_CREDIT_CARD_RE, "[CARD]", text)
+    text, n = _replace(
+        _CREDIT_CARD_RE, "[CARD]", text
+    )  # before phone — cards are 16-digit sequences
+    count += n
+    text, n = _replace(_PHONE_RE, "[PHONE]", text)
     count += n
 
     # Name intros — replace the whole phrase
@@ -89,6 +93,17 @@ def redact_pii(text: str) -> tuple[str, int]:
         log.info("sanitize.pii_redacted", count=count)
 
     return text, count
+
+
+def redact_injections(text: str) -> str:
+    """Replace matched prompt-injection phrases with a neutralising marker.
+
+    Breaks the command portion of injection attempts while leaving genuine
+    review content intact for extraction.
+    """
+    for pattern in _PI_PATTERNS:
+        text = pattern.sub("[INJECTION_REMOVED]", text)
+    return text
 
 
 def detect_prompt_injection(text: str) -> bool:
@@ -123,6 +138,8 @@ def sanitize(text: str, max_length: int = 5000) -> tuple[str, bool]:
 
     text, _ = redact_pii(text)
     is_suspicious = detect_prompt_injection(text)
+    if is_suspicious:
+        text = redact_injections(text)
     return text, is_suspicious
 
 
