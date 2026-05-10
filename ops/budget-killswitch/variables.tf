@@ -29,13 +29,13 @@ variable "alert_email" {
 }
 
 variable "budget_amount_inr" {
-  description = "Monthly budget cap in INR (billing account currency). ₹800 ≈ $10 USD."
+  description = "Monthly budget cap in INR (billing account currency). ₹100 ≈ $1.20 USD. Kept tight because GCP billing latency is ~24h — a higher cap could allow that amount to accumulate before the kill switch fires."
   type        = number
-  default     = 800
+  default     = 100
 }
 
 variable "dry_run" {
-  description = "If 'true', function logs intent but does NOT disable billing. Set to 'false' for production."
+  description = "If 'true', function logs intent but does NOT disable billing. 'false' = production mode."
   type        = string
-  default     = "true"
+  default     = "false"
 }
