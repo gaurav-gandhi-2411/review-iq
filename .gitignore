@@ -66,3 +66,9 @@ outputs/
 
 # Claude Code
 .claude/
+
+# Terraform — provider cache and state (state must stay local or in GCS backend)
+ops/budget-killswitch/.terraform/
+ops/budget-killswitch/terraform.tfstate
+ops/budget-killswitch/terraform.tfstate.backup
+ops/budget-killswitch/.build/
