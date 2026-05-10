@@ -61,8 +61,8 @@ embedded them in figurative language.
 ### Eval scores (fixture set v1)
 | Run | Date | Overall | Fixture 001 | Notes |
 |---|---|---|---|---|
-| v1.0 local | 2026-05-10 | 86.7% ✓ | ~93% | Missed quiet/handle/noise/build_quality |
-| v1.1 local (001 only) | 2026-05-10 | pending (TPD exhausted) | 91.6% | Captures quiet/handle/noise/build_quality; full eval at next quota reset |
+| v1.0 local | 2026-05-10 | 86.7% ✓ | 93% | Missed quiet/handle/noise/build_quality |
+| v1.1 CI (nightly) | 2026-05-10 | **85.6% ✓** | **92%** | Captures quiet/handle/noise/build_quality; overall −1.1pp vs v1.0 but still above threshold |
 
 ---
 
