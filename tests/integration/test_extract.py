@@ -34,7 +34,7 @@ _TURBO_VAC_TEXT = (
 
 _MOCK_LLM = patch(
     "app.api.extract.extract_with_llm",
-    new=AsyncMock(return_value=(_VALID_LLM_OUTPUT, "llama-3.3-70b-versatile", 250)),
+    new=AsyncMock(return_value=(_VALID_LLM_OUTPUT, "llama-3.3-70b-versatile", 250, 120, 60)),
 )
 
 
@@ -94,7 +94,7 @@ class TestExtractSingle:
         assert data["stars_inferred"] == 3
         assert data["buy_again"] is False
         assert "Dyson" in data["competitor_mentions"]
-        assert data["extraction_meta"]["prompt_version"] == "v1.0"
+        assert data["extraction_meta"]["prompt_version"] == "v1.1"
 
     @pytest.mark.asyncio
     async def test_extract_missing_api_key_returns_401(self, client: AsyncClient) -> None:
@@ -135,7 +135,7 @@ class TestExtractSingle:
         async def _mock_llm(*args, **kwargs):  # type: ignore[no-untyped-def]
             nonlocal call_count
             call_count += 1
-            return _VALID_LLM_OUTPUT, "llama-3.3-70b-versatile", 250
+            return _VALID_LLM_OUTPUT, "llama-3.3-70b-versatile", 250, 120, 60
 
         with patch("app.api.extract.extract_with_llm", new=_mock_llm):
             await client.post(

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from typing import Literal
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -13,6 +14,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        extra="ignore",
     )
 
     # LLM providers
@@ -50,6 +52,25 @@ class Settings(BaseSettings):
     # Extraction limits
     llm_max_retries: int = Field(default=2, alias="LLM_MAX_RETRIES")
     llm_timeout_seconds: int = Field(default=30, alias="LLM_TIMEOUT_SECONDS")
+
+    # Deployment target — controls which routers are mounted
+    deploy_target: Literal["hf-spaces", "cloud-run", "local"] = Field(
+        default="local", alias="DEPLOY_TARGET"
+    )
+
+    # Admin HTTP Basic auth
+    admin_username: str = Field(default="admin", alias="ADMIN_USERNAME")
+    admin_password_hash: str = Field(default="", alias="ADMIN_PASSWORD_HASH")
+
+    # Supabase
+    supabase_url: str = Field(default="", alias="SUPABASE_URL")
+    supabase_anon_key: str = Field(default="", alias="SUPABASE_ANON_KEY")
+    supabase_service_role_key: str = Field(default="", alias="SUPABASE_SERVICE_ROLE_KEY")
+    supabase_db_password: str = Field(default="", alias="SUPABASE_DB_PASSWORD")
+    # Pooler (port 6543, transaction mode) — default for all app traffic
+    supabase_database_url: str = Field(default="", alias="SUPABASE_DATABASE_URL")
+    # Direct (port 5432) — migrations and integration tests only (session-level GUCs)
+    supabase_direct_url: str = Field(default="", alias="SUPABASE_DIRECT_URL")
 
 
 @lru_cache

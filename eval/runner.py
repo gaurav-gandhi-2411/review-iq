@@ -185,7 +185,7 @@ async def run_single(fixture: dict[str, Any]) -> FixtureResult:
         sanitized, _ = sanitize(text)
         wrapped = wrap_for_llm(sanitized)
         user_prompt = build_user_prompt(wrapped)
-        llm_output, _model, latency_ms = await extract_with_llm(user_prompt)
+        llm_output, _model, latency_ms, _, _ = await extract_with_llm(user_prompt)
         result.latency_ms = latency_ms
         extraction_dict = llm_output.model_dump()
 
@@ -206,12 +206,58 @@ async def run_single(fixture: dict[str, Any]) -> FixtureResult:
     return result
 
 
-async def run_all(fixtures_dir: Path = FIXTURES_DIR) -> list[FixtureResult]:
+async def run_single_http(
+    fixture: dict[str, Any],
+    http_client: Any,
+) -> FixtureResult:
+    """Run one fixture against a live /v2/extract endpoint."""
+    import httpx
+    from app.core.sanitize import sanitize
+
+    result = FixtureResult(fixture_id=fixture["id"])
+    t0 = time.monotonic()
+    try:
+        response: httpx.Response = await http_client.post(
+            "/v2/extract",
+            json={"text": fixture["review_text"]},
+        )
+        result.latency_ms = int((time.monotonic() - t0) * 1000)
+        if response.status_code != 200:
+            result.error = f"HTTP {response.status_code}: {response.text[:200]}"
+            result.overall_score = 0.0
+            return result
+
+        extraction_dict = response.json()
+        sanitized, _ = sanitize(fixture["review_text"])
+        security_err = _check_security(fixture["id"], extraction_dict, sanitized)
+        if security_err:
+            result.error = security_err
+            result.overall_score = 0.0
+            return result
+
+        result.field_results = score_fixture(fixture, extraction_dict)
+        scores = [fr.score for fr in result.field_results]
+        result.overall_score = sum(scores) / len(scores) if scores else 0.0
+    except Exception as e:
+        result.error = str(e)
+        result.overall_score = 0.0
+        result.latency_ms = int((time.monotonic() - t0) * 1000)
+
+    return result
+
+
+async def run_all(
+    fixtures_dir: Path = FIXTURES_DIR,
+    http_client: Any = None,
+) -> list[FixtureResult]:
     all_results: list[FixtureResult] = []
     for path in sorted(fixtures_dir.glob("*.json")):
         data: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
         print(f"  {data['id']}...", end=" ", flush=True)
-        result = await run_single(data)
+        if http_client is not None:
+            result = await run_single_http(data, http_client)
+        else:
+            result = await run_single(data)
         suffix = f"ERROR: {result.error}" if result.error else f"{result.overall_score:.0%}"
         print(suffix)
         all_results.append(result)
@@ -247,14 +293,41 @@ def write_results(results: list[FixtureResult], out_path: Path = RESULTS_PATH) -
 
 
 async def main() -> int:
+    import argparse
+    import httpx
+
+    parser = argparse.ArgumentParser(description="Review IQ eval runner")
+    parser.add_argument("--base-url", default=None, help="Cloud Run base URL (enables HTTP mode)")
+    parser.add_argument("--api-key", default=None, help="X-API-Key for /v2/extract (required with --base-url)")
+    args = parser.parse_args()
+
+    if args.base_url and not args.api_key:
+        print("ERROR: --api-key is required when --base-url is set", file=sys.stderr)
+        return 1
+
+    mode = f"HTTP ({args.base_url})" if args.base_url else "direct (local LLM)"
     print("=== Review IQ Eval Runner ===")
-    print(f"Fixtures: {FIXTURES_DIR}  threshold: {PASS_THRESHOLD:.0%}\n")
+    print(f"Fixtures: {FIXTURES_DIR}  threshold: {PASS_THRESHOLD:.0%}  mode: {mode}\n")
 
-    results = await run_all()
+    if args.base_url:
+        async with httpx.AsyncClient(
+            base_url=args.base_url,
+            headers={"X-API-Key": args.api_key},
+            timeout=120.0,
+        ) as client:
+            results = await run_all(http_client=client)
+    else:
+        results = await run_all()
+
     overall = aggregate_score(results)
-
     write_results(results)
-    print(f"\nResults written to {RESULTS_PATH}")
+
+    completed = [r for r in results if not r.error]
+    if completed:
+        avg_latency = sum(r.latency_ms for r in completed) / len(completed)
+        print(f"\nAvg latency (completed fixtures): {avg_latency:.0f}ms")
+
+    print(f"Results written to {RESULTS_PATH}")
     print(f"Overall accuracy: {overall:.1%} — {'PASS' if overall >= PASS_THRESHOLD else 'FAIL'}")
 
     return 0 if overall >= PASS_THRESHOLD else 1

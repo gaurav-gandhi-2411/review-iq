@@ -1,0 +1,18 @@
+# Supabase project config — review-iq
+# Project ref: enqpluazgxewepchdeut  |  Region: ap-south-1 (Mumbai)
+# Plan: Free
+
+[project]
+id = "enqpluazgxewepchdeut"
+
+[db]
+# Use connection pooler (port 6543, PgBouncer transaction mode) for the app.
+# Use direct connection (port 5432) only for migrations and integration tests.
+pooler_host = "aws-0-ap-south-1.pooler.supabase.com"
+pooler_port = 6543
+direct_host = "db.enqpluazgxewepchdeut.supabase.co"
+direct_port = 5432
+name = "postgres"
+
+[studio]
+# Dashboard: https://supabase.com/dashboard/project/enqpluazgxewepchdeut

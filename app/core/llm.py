@@ -53,8 +53,11 @@ async def _call_groq(
     user_prompt: str,
     *,
     retry: bool = False,
-) -> ReviewExtractionLLMOutput:
-    """Call Groq Llama 3.3 70B with JSON mode and parse the response."""
+) -> tuple[ReviewExtractionLLMOutput, int, int]:
+    """Call Groq Llama 3.3 70B with JSON mode and parse the response.
+
+    Returns (extraction, tokens_in, tokens_out).
+    """
     settings = get_settings()
     client = AsyncGroq(api_key=settings.groq_api_key)
     prompt = user_prompt + (_RETRY_SUFFIX if retry else "")
@@ -70,11 +73,21 @@ async def _call_groq(
         timeout=settings.llm_timeout_seconds,
     )
     raw = response.choices[0].message.content or ""
-    return _parse_response(raw)
+    usage = getattr(response, "usage", None)
+    if usage:
+        tokens_in = getattr(usage, "prompt_tokens", 0) or 0
+        tokens_out = getattr(usage, "completion_tokens", 0) or 0
+    else:
+        log.warning("llm.missing_token_counts", provider="groq")
+        tokens_in, tokens_out = 0, 0
+    return _parse_response(raw), tokens_in, tokens_out
 
 
-async def _call_gemini(user_prompt: str) -> ReviewExtractionLLMOutput:
-    """Call Gemini 2.0 Flash and parse the response."""
+async def _call_gemini(user_prompt: str) -> tuple[ReviewExtractionLLMOutput, int, int]:
+    """Call Gemini 2.0 Flash and parse the response.
+
+    Returns (extraction, tokens_in, tokens_out).
+    """
     from google import genai
     from google.genai import types
 
@@ -89,14 +102,21 @@ async def _call_gemini(user_prompt: str) -> ReviewExtractionLLMOutput:
             temperature=0.0,
         ),
     )
-    return _parse_response(response.text or "")
+    meta = getattr(response, "usage_metadata", None)
+    if meta:
+        tokens_in = getattr(meta, "prompt_token_count", 0) or 0
+        tokens_out = getattr(meta, "candidates_token_count", 0) or 0
+    else:
+        log.warning("llm.missing_token_counts", provider="gemini")
+        tokens_in, tokens_out = 0, 0
+    return _parse_response(response.text or ""), tokens_in, tokens_out
 
 
 async def extract_with_llm(
     user_prompt: str,
     *,
     model_hint: str | None = None,
-) -> tuple[ReviewExtractionLLMOutput, str, int]:
+) -> tuple[ReviewExtractionLLMOutput, str, int, int, int]:
     """Extract a review using the LLM pipeline with fallback.
 
     Args:
@@ -104,7 +124,8 @@ async def extract_with_llm(
         model_hint: Override to force "groq" or "gemini" (for testing).
 
     Returns:
-        Tuple of (parsed extraction, model name used, latency_ms).
+        Tuple of (parsed extraction, model name, latency_ms, tokens_in, tokens_out).
+        tokens_in/tokens_out are 0 if the provider did not return counts.
 
     Raises:
         RuntimeError: When both Groq and Gemini fail after retries.
@@ -116,7 +137,7 @@ async def extract_with_llm(
     if model_hint != "gemini" and settings.groq_api_key:
         for attempt in range(settings.llm_max_retries + 1):
             try:
-                result = await _call_groq(user_prompt, retry=(attempt > 0))
+                result, tokens_in, tokens_out = await _call_groq(user_prompt, retry=(attempt > 0))
                 latency_ms = int((time.monotonic() - t0) * 1000)
                 log.info(
                     "llm.extracted",
@@ -124,8 +145,10 @@ async def extract_with_llm(
                     model=settings.groq_model,
                     attempt=attempt,
                     latency_ms=latency_ms,
+                    tokens_in=tokens_in,
+                    tokens_out=tokens_out,
                 )
-                return result, settings.groq_model, latency_ms
+                return result, settings.groq_model, latency_ms, tokens_in, tokens_out
             except (ValidationError, json.JSONDecodeError) as exc:
                 log.warning("llm.parse_error", provider="groq", attempt=attempt, error=str(exc))
                 if attempt >= settings.llm_max_retries:
@@ -140,15 +163,17 @@ async def extract_with_llm(
     # --- Gemini fallback ---
     if model_hint != "groq" and settings.gemini_api_key:
         try:
-            result = await _call_gemini(user_prompt)
+            result, tokens_in, tokens_out = await _call_gemini(user_prompt)
             latency_ms = int((time.monotonic() - t0) * 1000)
             log.info(
                 "llm.extracted",
                 provider="gemini",
                 model=settings.gemini_model,
                 latency_ms=latency_ms,
+                tokens_in=tokens_in,
+                tokens_out=tokens_out,
             )
-            return result, settings.gemini_model, latency_ms
+            return result, settings.gemini_model, latency_ms, tokens_in, tokens_out
         except Exception as exc:  # noqa: BLE001
             log.error("llm.gemini_failed", error=str(exc))
 

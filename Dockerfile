@@ -28,9 +28,11 @@ RUN adduser --disabled-password --gecos "" appuser && \
     mkdir -p /app/data && chown appuser /app/data
 USER appuser
 
-EXPOSE 7860
+# Cloud Run injects PORT=8080; HF Spaces uses 7860. Default covers both.
+EXPOSE 8080
 
+# Cloud Run ignores HEALTHCHECK; kept for local/HF Spaces use.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:7860/health')"
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860", "--workers", "1"]
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-7860} --workers 1"]

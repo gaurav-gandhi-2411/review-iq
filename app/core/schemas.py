@@ -151,6 +151,18 @@ class BatchJob(BaseModel):
     completed_at: datetime | None = None
 
 
+class ExtractionMetaV2(ExtractionMeta):
+    """ExtractionMeta extended with multi-tenant org_id for v2 responses."""
+
+    org_id: str
+
+
+class ReviewExtractionV2(ReviewExtraction):
+    """ReviewExtraction with v2 metadata (includes org_id)."""
+
+    extraction_meta: ExtractionMetaV2 | None = None  # type: ignore[assignment]
+
+
 class StoredReview(BaseModel):
     """A review extraction as stored in the database."""
 

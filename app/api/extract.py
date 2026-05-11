@@ -51,7 +51,7 @@ async def _run_extraction(request: ReviewRequest) -> ReviewExtraction:
     user_prompt = build_user_prompt(wrapped)
 
     t0 = datetime.utcnow()
-    llm_output, model_name, latency_ms = await extract_with_llm(user_prompt)
+    llm_output, model_name, latency_ms, _, _ = await extract_with_llm(user_prompt)
 
     meta = ExtractionMeta(
         model=model_name,

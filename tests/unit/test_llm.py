@@ -28,11 +28,15 @@ _VALID_EXTRACTION = {
 _VALID_JSON = json.dumps(_VALID_EXTRACTION)
 
 
-def _make_groq_response(content: str) -> MagicMock:
+def _make_groq_response(content: str, tokens_in: int = 100, tokens_out: int = 50) -> MagicMock:
     choice = MagicMock()
     choice.message.content = content
+    usage = MagicMock()
+    usage.prompt_tokens = tokens_in
+    usage.completion_tokens = tokens_out
     resp = MagicMock()
     resp.choices = [choice]
+    resp.usage = usage
     return resp
 
 
@@ -90,14 +94,27 @@ class TestExtractWithLLM:
 
     @pytest.mark.asyncio
     async def test_groq_success(self) -> None:
-        mock_resp = _make_groq_response(_VALID_JSON)
+        mock_resp = _make_groq_response(_VALID_JSON, tokens_in=200, tokens_out=80)
         with patch("app.core.llm.AsyncGroq") as MockGroq:
             MockGroq.return_value.chat.completions.create = AsyncMock(return_value=mock_resp)
-            result, model, latency = await extract_with_llm("some prompt")
+            result, model, latency, tokens_in, tokens_out = await extract_with_llm("some prompt")
 
         assert result.product == "Turbo-Vac 5000"
         assert "llama" in model
         assert latency >= 0
+        assert tokens_in == 200
+        assert tokens_out == 80
+
+    @pytest.mark.asyncio
+    async def test_groq_missing_usage_returns_zeros(self) -> None:
+        resp = _make_groq_response(_VALID_JSON)
+        resp.usage = None  # provider didn't return counts
+        with patch("app.core.llm.AsyncGroq") as MockGroq:
+            MockGroq.return_value.chat.completions.create = AsyncMock(return_value=resp)
+            _, _, _, tokens_in, tokens_out = await extract_with_llm("some prompt")
+
+        assert tokens_in == 0
+        assert tokens_out == 0
 
     @pytest.mark.asyncio
     async def test_groq_returns_markdown_fenced_json(self) -> None:
@@ -105,7 +122,7 @@ class TestExtractWithLLM:
         mock_resp = _make_groq_response(fenced)
         with patch("app.core.llm.AsyncGroq") as MockGroq:
             MockGroq.return_value.chat.completions.create = AsyncMock(return_value=mock_resp)
-            result, _, _ = await extract_with_llm("some prompt")
+            result, _, _, _, _ = await extract_with_llm("some prompt")
 
         assert result.product == "Turbo-Vac 5000"
 
@@ -117,7 +134,7 @@ class TestExtractWithLLM:
             MockGroq.return_value.chat.completions.create = AsyncMock(
                 side_effect=[bad_resp, good_resp]
             )
-            result, _, _ = await extract_with_llm("some prompt")
+            result, _, _, _, _ = await extract_with_llm("some prompt")
 
         assert result.product == "Turbo-Vac 5000"
 
@@ -134,11 +151,13 @@ class TestExtractWithLLM:
 
         with patch("app.core.llm.AsyncGroq") as MockGroq:
             MockGroq.return_value.chat.completions.create = AsyncMock(side_effect=groq_err)
-            with patch("app.core.llm._call_gemini", new=AsyncMock(return_value=gemini_result)):
-                result, model, _ = await extract_with_llm("some prompt")
+            with patch("app.core.llm._call_gemini", new=AsyncMock(return_value=(gemini_result, 60, 30))):
+                result, model, _, tokens_in, tokens_out = await extract_with_llm("some prompt")
 
         assert result.product == "Turbo-Vac 5000"
         assert "gemini" in model
+        assert tokens_in == 60
+        assert tokens_out == 30
 
     @pytest.mark.asyncio
     async def test_raises_when_both_fail(self) -> None:
@@ -163,10 +182,10 @@ class TestExtractWithLLM:
     async def test_model_hint_gemini_skips_groq(self) -> None:
         gemini_result = ReviewExtractionLLMOutput(**_VALID_EXTRACTION)
         with (
-            patch("app.core.llm._call_gemini", new=AsyncMock(return_value=gemini_result)),
+            patch("app.core.llm._call_gemini", new=AsyncMock(return_value=(gemini_result, 70, 40))),
             patch("app.core.llm.AsyncGroq") as MockGroq,
         ):
-            result, model, _ = await extract_with_llm("some prompt", model_hint="gemini")
+            result, model, _, _, _ = await extract_with_llm("some prompt", model_hint="gemini")
             MockGroq.assert_not_called()
 
         assert "gemini" in model
@@ -177,7 +196,7 @@ class TestExtractWithLLM:
         with patch("app.core.llm.AsyncGroq") as MockGroq:
             MockGroq.return_value.chat.completions.create = AsyncMock(return_value=mock_resp)
             with patch("app.core.llm._call_gemini", new=AsyncMock()) as mock_gemini:
-                result, model, _ = await extract_with_llm("some prompt", model_hint="groq")
+                result, model, _, _, _ = await extract_with_llm("some prompt", model_hint="groq")
                 mock_gemini.assert_not_called()
 
         assert result.product == "Turbo-Vac 5000"

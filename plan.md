@@ -3,9 +3,10 @@
 > **What changed from v1:** Scope expanded from "production-grade portfolio service" to "open-source product designed to be sellable as hosted SaaS + services." Hosting moves from Hugging Face Spaces to GCP Cloud Run (with hard billing caps). License changes from MIT-with-private-extensions to fully MIT, with monetization via hosted service and implementation work — not via code feature gating.
 
 **Owner:** `gaurav-gandhi-2411`
-**Status:** Phase 1 closed at v0.1.3. Phase 2 starting from v2 of this plan.
-**Last updated:** 2026-05-10
-**Live URL (current, v0.1.3):** https://gauravgandhi2411-review-iq.hf.space — to be migrated
+**Status:** Phase 2.0a complete at v0.2.0. Phase 2.0b (Hinglish) next.
+**Last updated:** 2026-05-12
+**Live URL (v2, production):** https://review-iq-ajjrytb3na-el.a.run.app
+**Live URL (v1, legacy demo):** https://gauravgandhi2411-review-iq.hf.space
 
 ---
 
@@ -126,37 +127,53 @@ Confirmed: Gemini's free-tier terms allow Google to train on inputs. That's a bl
 Current schema (v0.1.3):
 - `extractions(id, input_hash, review_text_redacted, output_json, model, prompt_version, schema_version, extracted_at, latency_ms)`
 
-New schema (v2.0a):
+Implemented schema (v2.0a) — authoritative as of Step 6:
 ```sql
 -- Tenancy
-organizations (id, name, slug, plan, created_at)
-users (id, email, name, created_at, [supabase auth fields])
-organization_members (org_id, user_id, role)  -- owner, admin, member
+organizations (id uuid PK, name text, slug text UNIQUE, plan text, created_at timestamptz)
+organization_members (org_id, user_id, role)  -- stub, Phase 2.0b
 
--- Auth
+-- Auth: argon2id-hashed keys, prefix-indexed for O(1) lookup
 api_keys (
-  id, org_id, key_hash, key_prefix, name,
-  rate_limit_rpm, rate_limit_rpd, monthly_quota,
-  created_at, last_used_at, revoked_at
+  id uuid PK, org_id uuid FK,
+  key_hash text UNIQUE, key_prefix text,  -- key_prefix = first 17 chars of raw key
+  name text, quota integer,               -- quota = monthly call limit
+  created_at timestamptz, last_used_at timestamptz, revoked_at timestamptz
 )
 
--- Data (every row tied to an org)
+-- Data: flat columns for direct querying + RLS on org_id
 extractions (
-  id, org_id, api_key_id, input_hash,
-  review_text_redacted, output_json,
-  model, prompt_version, schema_version,
-  extracted_at, latency_ms, tokens_in, tokens_out
+  id uuid PK, org_id uuid FK, api_key_id uuid FK,
+  input_hash text,                        -- SHA-256 of sanitised text
+  review_text text,
+  -- flat LLM output fields (added migration 20260511000004):
+  product text, stars int, stars_inferred int, buy_again boolean,
+  sentiment text, urgency text, language text,
+  review_length_chars int, confidence real,
+  topics jsonb, competitor_mentions jsonb, pros jsonb, cons jsonb, feature_requests jsonb,
+  -- provenance:
+  model text, prompt_version text, schema_version text,
+  latency_ms int, extracted_at timestamptz, is_suspicious boolean,
+  created_at timestamptz
+  UNIQUE (org_id, input_hash)             -- idempotency: cache per org
 )
-  INDEX (org_id, extracted_at DESC)
-  INDEX (org_id, input_hash)  -- idempotency
+  INDEX (org_id, sentiment), (org_id, urgency), (org_id, product)
+  INDEX (org_id, created_at DESC)
 
--- Metering
+-- Metering: one row per API call; tokens_used updated post-LLM (Phase 2.1)
 usage_records (
-  id, org_id, api_key_id, date,
-  extractions_count, tokens_in_total, tokens_out_total
+  id uuid PK, org_id uuid FK, api_key_id uuid FK,
+  tokens_used integer DEFAULT 0,          -- updated after extraction; 0 on failure
+  created_at timestamptz
 )
-  PRIMARY KEY (org_id, api_key_id, date)
+  INDEX (api_key_id, created_at)          -- monthly COUNT for quota enforcement
 ```
+
+**Schema deviations from original plan:**
+- `extractions.output_json` → flat columns (queryable without JSON extraction operators)
+- `extractions.tokens_in/tokens_out` → deferred to Phase 2.1 (LLM client not yet returning token counts)
+- `usage_records` → row-per-call model (not daily aggregates); monthly quota enforced via COUNT WHERE date_trunc('month')
+- `rate_limit_rpm/rpd` on api_keys → not implemented (quota is monthly only for now)
 
 **Migration from v0.1.3:** Existing SQLite data is dev-only. Drop it. Production starts clean on Postgres. No backfill needed.
 
@@ -381,14 +398,14 @@ This is the immediate next phase. Detail level matches Phase 1's §13.
 12. **v0.2.0 tag**
 
 **Definition of done for 2.0a:**
-- [ ] `review-iq-prod` GCP project created, $0 spend confirmed
-- [ ] Kill switch deployed and tested (manual budget breach simulated)
-- [ ] Supabase project live, schema applied, RLS policies enforced
-- [ ] `https://api.review-iq.gauravgandhi.dev` (or temp Cloud Run URL) responds
-- [ ] `/v2/extract` requires API key, scopes by org_id
-- [ ] Eval ≥ 85% on Cloud Run (no regression from HF)
-- [ ] Cross-tenant isolation tested (org A cannot see org B's reviews)
-- [ ] Quota enforcement tested (key with quota=10 returns 429 on 11th request)
+- [x] `review-iq-prod` GCP project created, $0 spend confirmed
+- [x] Kill switch deployed and tested (manual budget breach simulated) — 2026-05-10
+- [x] Supabase project live, schema applied, RLS policies enforced
+- [x] `https://review-iq-ajjrytb3na-el.a.run.app` responds — revision `review-iq-00002-gxv`, warm latency ~87ms
+- [x] `/v2/extract` requires API key, scopes by org_id
+- [x] Eval ≥ 85% on Cloud Run — **87.9%** (25 fixtures, HTTP mode, 2026-05-11)
+- [x] Cross-tenant isolation tested — Gauntlet 1: Beta org sees 0 reviews after Alpha extraction
+- [ ] Quota enforcement tested on Cloud Run (key with quota=10 returns 429 on 11th request)
 - [ ] Monthly cost runbook executed once successfully ($0 confirmed)
 - [ ] v0.2.0 tagged
 
@@ -421,8 +438,8 @@ Will detail in next plan iteration once 2.0a is green. Headlines:
 
 When all of these are true, Review-IQ is a real product:
 
-- [ ] Cloud Run production deployment, 99%+ uptime
-- [ ] Multi-tenant API with API keys, quotas, isolation
+- [x] Cloud Run production deployment — `review-iq-ajjrytb3na-el.a.run.app`, live since 2026-05-11
+- [x] Multi-tenant API with API keys, quotas, isolation — argon2id keys, RLS, per-org scoping
 - [ ] ≥ 50 eval fixtures across 3+ languages, ≥ 85% accuracy each
 - [ ] Python SDK on PyPI
 - [ ] JS SDK on npmjs

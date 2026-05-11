@@ -25,6 +25,10 @@ dependencies = [
     "aiosqlite>=0.20.0",
     "httpx>=0.28.0",
     "google-genai>=1.0.0",
+    "supabase>=2.10.0",
+    "psycopg2-binary>=2.9.12",
+    "python-dotenv>=1.2.2",
+    "argon2-cffi>=25.1.0",
 ]
 
 [dependency-groups]
@@ -36,6 +40,8 @@ dev = [
     "ruff>=0.9.0",
     "mypy>=1.14.0",
     "types-requests>=2.32.0",
+    "psycopg2-binary>=2.9.0",
+    "python-dotenv>=1.0.0",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -61,7 +67,10 @@ exclude = ["tests/", "eval/"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
-addopts = "--cov=app --cov-report=term-missing -v --cov-fail-under=60"
+addopts = "--cov=app --cov-report=term-missing -v --cov-fail-under=60 -m 'not integration'"
+markers = [
+    "integration: tests requiring a live Supabase/Postgres connection (run with -m integration)",
+]
 
 [tool.coverage.run]
 omit = [

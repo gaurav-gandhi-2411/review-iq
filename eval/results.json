@@ -1,0 +1,2348 @@
+{
+  "overall_score": 0.878680233870017,
+  "threshold": 0.85,
+  "passed": true,
+  "fixtures": [
+    {
+      "id": "001_turbo_vac",
+      "overall_score": 0.9436363636363636,
+      "error": null,
+      "latency_ms": 7609,
+      "fields": [
+        {
+          "field": "product",
+          "score": 1.0,
+          "predicted": "Turbo-Vac 5000",
+          "expected": "Turbo-Vac 5000",
+          "method": "exact"
+        },
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": false,
+          "expected": false,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "mixed",
+          "expected": "mixed",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 1.0,
+          "predicted": [
+            "suction",
+            "noise",
+            "battery",
+            "build_quality",
+            "price"
+          ],
+          "expected": [
+            "suction",
+            "noise",
+            "battery",
+            "build_quality",
+            "price"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [
+            "Dyson"
+          ],
+          "expected": [
+            "Dyson"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.8000000000000002,
+          "predicted": [
+            "incredible suction",
+            "super quiet operation"
+          ],
+          "expected": [
+            "incredible suction",
+            "very quiet operation"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 0.6363636363636364,
+          "predicted": [
+            "short battery life",
+            "poor build quality",
+            "flimsy plastic handle"
+          ],
+          "expected": [
+            "poor battery life (15 minutes)",
+            "fragile plastic handle",
+            "poor build quality for $300 price"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 2,
+          "expected": 3,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "002_explicit_stars",
+      "overall_score": 0.9682539682539684,
+      "error": null,
+      "latency_ms": 7437,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": 5,
+          "expected": 5,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": true,
+          "expected": true,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "positive",
+          "expected": "positive",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 1.0,
+          "predicted": [
+            "performance",
+            "cleaning",
+            "noise"
+          ],
+          "expected": [
+            "performance",
+            "noise",
+            "cleaning"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.7142857142857143,
+          "predicted": [
+            "blends smoothies in seconds",
+            "easy to clean",
+            "whisper quiet"
+          ],
+          "expected": [
+            "blends smoothies quickly",
+            "easy to clean",
+            "very quiet"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 5,
+          "expected": 5,
+          "method": "tolerance\u00b10"
+        }
+      ]
+    },
+    {
+      "id": "003_prompt_injection",
+      "overall_score": 0.9797979797979798,
+      "error": null,
+      "latency_ms": 7875,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": false,
+          "expected": false,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "negative",
+          "expected": "negative",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 1.0,
+          "predicted": [
+            "durability",
+            "battery",
+            "price"
+          ],
+          "expected": [
+            "durability",
+            "battery",
+            "price"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 0.8181818181818182,
+          "predicted": [
+            "breaks after one week",
+            "short battery life",
+            "poor value for price"
+          ],
+          "expected": [
+            "breaks after one week",
+            "poor battery life (2 hours)",
+            "poor value for money"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 1,
+          "expected": 1,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "004_hinglish",
+      "overall_score": 0.8232323232323232,
+      "error": null,
+      "latency_ms": 7531,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": true,
+          "expected": true,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "mixed",
+          "expected": "mixed",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 1.0,
+          "predicted": [
+            "suction",
+            "battery",
+            "price"
+          ],
+          "expected": [
+            "suction",
+            "battery",
+            "price"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.22222222222222224,
+          "predicted": [
+            "good suction",
+            "quick cleaning",
+            "recommended"
+          ],
+          "expected": [
+            "excellent suction",
+            "cleans quickly"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 0.36363636363636365,
+          "predicted": [
+            "weak battery life",
+            "expensive"
+          ],
+          "expected": [
+            "poor battery life (20 minutes)",
+            "high price"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 3,
+          "expected": 3,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "005_all_positive",
+      "overall_score": 0.9351851851851853,
+      "error": null,
+      "latency_ms": 7452,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": true,
+          "expected": true,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "positive",
+          "expected": "positive",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.75,
+          "predicted": [
+            "air_quality",
+            "noise",
+            "setup",
+            "filter_replacement"
+          ],
+          "expected": [
+            "air_quality",
+            "noise",
+            "setup",
+            "filter"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.6666666666666666,
+          "predicted": [
+            "fresh and clean air",
+            "incredibly quiet operation",
+            "easy setup",
+            "easy to replace HEPA filter"
+          ],
+          "expected": [
+            "fresh clean air",
+            "very quiet",
+            "easy setup",
+            "easy filter replacement"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 5,
+          "expected": 5,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "006_all_negative",
+      "overall_score": 0.9092592592592593,
+      "error": null,
+      "latency_ms": 7640,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": false,
+          "expected": false,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "negative",
+          "expected": "negative",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.6,
+          "predicted": [
+            "build_quality",
+            "customer_service",
+            "leakage",
+            "noise",
+            "durability"
+          ],
+          "expected": [
+            "packaging",
+            "customer_service",
+            "leaking",
+            "noise",
+            "durability"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 0.5833333333333334,
+          "predicted": [
+            "cracked lid",
+            "poor customer service",
+            "leaks constantly",
+            "loud motor",
+            "blades rust easily"
+          ],
+          "expected": [
+            "arrived damaged (cracked lid)",
+            "poor customer service",
+            "leaks",
+            "loud motor",
+            "rusted blades"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 1,
+          "expected": 1,
+          "method": "tolerance\u00b10"
+        }
+      ]
+    },
+    {
+      "id": "007_buy_again_ambiguous",
+      "overall_score": 0.85,
+      "error": null,
+      "latency_ms": 7531,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 0.0,
+          "predicted": "mixed",
+          "expected": "neutral",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.8,
+          "predicted": [
+            "edge_support",
+            "delivery"
+          ],
+          "expected": [
+            "delivery",
+            "edge_support",
+            "comfort"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 1.0,
+          "predicted": [
+            "fast delivery"
+          ],
+          "expected": [
+            "fast delivery"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 1.0,
+          "predicted": [
+            "soft edge support"
+          ],
+          "expected": [
+            "soft edge support"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 3,
+          "expected": 3,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "008_pii_heavy",
+      "overall_score": 0.7795414462081128,
+      "error": null,
+      "latency_ms": 7515,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": true,
+          "expected": true,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "positive",
+          "expected": "positive",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.5714285714285715,
+          "predicted": [
+            "performance",
+            "room_size",
+            "cooling_time",
+            "water_tank"
+          ],
+          "expected": [
+            "cooling_performance",
+            "water_tank",
+            "room_size"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.4444444444444444,
+          "predicted": [
+            "works well for small rooms",
+            "cools down in 10 minutes",
+            "water tank is easy to fill"
+          ],
+          "expected": [
+            "cools quickly",
+            "easy water tank filling"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 0.0,
+          "predicted": [],
+          "expected": [
+            "good for small rooms only"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 4,
+          "expected": 4,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "009_competitor_heavy",
+      "overall_score": 0.8333333333333334,
+      "error": null,
+      "latency_ms": 7797,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": true,
+          "expected": true,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "positive",
+          "expected": "positive",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 1.0,
+          "predicted": [
+            "suction",
+            "navigation",
+            "price",
+            "battery"
+          ],
+          "expected": [
+            "suction",
+            "price",
+            "navigation",
+            "battery"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [
+            "Dyson",
+            "Shark",
+            "iRobot",
+            "Roomba"
+          ],
+          "expected": [
+            "Dyson",
+            "Shark",
+            "iRobot",
+            "Roomba"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.4999999999999999,
+          "predicted": [
+            "strong suction",
+            "smarter navigation",
+            "good value for price",
+            "long battery life"
+          ],
+          "expected": [
+            "better suction than Dyson",
+            "half the price of Dyson",
+            "smarter navigation than iRobot",
+            "good overall value"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 0.0,
+          "predicted": [],
+          "expected": [
+            "battery slightly behind Shark"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 5,
+          "expected": 5,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "010_urgent_angry",
+      "overall_score": 0.9238095238095239,
+      "error": null,
+      "latency_ms": 7797,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": false,
+          "expected": false,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "negative",
+          "expected": "negative",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "urgency",
+          "score": 1.0,
+          "predicted": "high",
+          "expected": "high",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.6666666666666666,
+          "predicted": [
+            "safety",
+            "durability",
+            "smoke_damage"
+          ],
+          "expected": [
+            "safety",
+            "durability",
+            "customer_service"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 0.5714285714285714,
+          "predicted": [
+            "caught fire",
+            "caused smoke damage"
+          ],
+          "expected": [
+            "caught fire after 3 days",
+            "caused property damage",
+            "dangerous product"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 1,
+          "expected": 1,
+          "method": "tolerance\u00b10"
+        }
+      ]
+    },
+    {
+      "id": "011_very_short",
+      "overall_score": 1.0,
+      "error": null,
+      "latency_ms": 7327,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": true,
+          "expected": true,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "positive",
+          "expected": "positive",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 1.0,
+          "predicted": [
+            "overall satisfaction"
+          ],
+          "expected": [
+            "overall satisfaction"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 5,
+          "expected": 5,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "012_sarcasm",
+      "overall_score": 0.7070707070707071,
+      "error": null,
+      "latency_ms": 7750,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": false,
+          "expected": false,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 0.0,
+          "predicted": "mixed",
+          "expected": "negative",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 1.0,
+          "predicted": [
+            "battery",
+            "build_quality",
+            "price"
+          ],
+          "expected": [
+            "battery",
+            "build_quality",
+            "price"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.0,
+          "predicted": [
+            "incredible battery life",
+            "long battery life"
+          ],
+          "expected": [],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 0.3636363636363637,
+          "predicted": [
+            "poor build quality",
+            "creaky plastic",
+            "not worth the price"
+          ],
+          "expected": [
+            "poor battery life (45 minutes)",
+            "poor build quality (creaking plastic)",
+            "poor value for price ($200)"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 1,
+          "expected": 1,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "013_multi_product",
+      "overall_score": 0.8655674390968507,
+      "error": null,
+      "latency_ms": 7483,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "mixed",
+          "expected": "mixed",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.5454545454545454,
+          "predicted": [
+            "sound_quality",
+            "noise_cancellation",
+            "comfort",
+            "build_quality",
+            "durability",
+            "price"
+          ],
+          "expected": [
+            "audio_quality",
+            "anc",
+            "comfort",
+            "durability",
+            "price"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.823529411764706,
+          "predicted": [
+            "crystal clear sound",
+            "good ANC",
+            "comfortable for hours"
+          ],
+          "expected": [
+            "crystal clear sound",
+            "good ANC",
+            "comfortable for long use"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 0.5555555555555556,
+          "predicted": [
+            "charging case lid hinge broke",
+            "poor durability of charging case"
+          ],
+          "expected": [
+            "charging case lid broke after 2 weeks",
+            "poor value for combo price"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 4,
+          "expected": 3,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "014_feature_requests",
+      "overall_score": 0.7566666666666666,
+      "error": null,
+      "latency_ms": 7454,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": 4,
+          "expected": 4,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 0.0,
+          "predicted": null,
+          "expected": true,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "positive",
+          "expected": "positive",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.6666666666666665,
+          "predicted": [
+            "accuracy",
+            "display",
+            "companion_app",
+            "bluetooth_sync",
+            "battery"
+          ],
+          "expected": [
+            "accuracy",
+            "display",
+            "connectivity",
+            "battery"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 1.0,
+          "predicted": [
+            "accurate weight readings",
+            "easy to read display"
+          ],
+          "expected": [
+            "accurate weight readings",
+            "easy to read display"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 0.0,
+          "predicted": [],
+          "expected": [
+            "no companion app",
+            "no Bluetooth",
+            "non-rechargeable battery (AAA)"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "feature_requests",
+          "score": 0.9,
+          "predicted": [
+            "companion app for tracking trends",
+            "Bluetooth sync to phone",
+            "rechargeable battery"
+          ],
+          "expected": [
+            "companion app for trend tracking",
+            "Bluetooth phone sync",
+            "rechargeable battery"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 4,
+          "expected": 4,
+          "method": "tolerance\u00b10"
+        }
+      ]
+    },
+    {
+      "id": "015_medium_urgency",
+      "overall_score": 0.9467186484730346,
+      "error": null,
+      "latency_ms": 7530,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": false,
+          "expected": false,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "negative",
+          "expected": "negative",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.888888888888889,
+          "predicted": [
+            "lumbar_support",
+            "comfort",
+            "customer_service",
+            "durability",
+            "price"
+          ],
+          "expected": [
+            "lumbar_support",
+            "durability",
+            "customer_service",
+            "price"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 1.0,
+          "predicted": [
+            "comfortable seat"
+          ],
+          "expected": [
+            "comfortable seat"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 0.631578947368421,
+          "predicted": [
+            "lumbar support broke",
+            "poor customer support",
+            "no response to emails"
+          ],
+          "expected": [
+            "lumbar support broke after 3 months",
+            "poor customer service response",
+            "poor durability for price"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 1,
+          "expected": 2,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "016_no_product_name",
+      "overall_score": 0.9034090909090909,
+      "error": null,
+      "latency_ms": 7859,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "neutral",
+          "expected": "neutral",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.5,
+          "predicted": [
+            "battery",
+            "performance"
+          ],
+          "expected": [
+            "battery",
+            "charging"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.7272727272727272,
+          "predicted": [
+            "works as advertised",
+            "battery is fine",
+            "charges overnight"
+          ],
+          "expected": [
+            "works as described",
+            "battery charges overnight"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 3,
+          "expected": 3,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "017_very_long",
+      "overall_score": 0.7799346405228758,
+      "error": null,
+      "latency_ms": 7812,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 0.0,
+          "predicted": 4,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": true,
+          "expected": true,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "positive",
+          "expected": "positive",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.5882352941176471,
+          "predicted": [
+            "sound_quality",
+            "build_quality",
+            "features",
+            "value",
+            "battery",
+            "bluetooth",
+            "design",
+            "durability",
+            "price"
+          ],
+          "expected": [
+            "sound_quality",
+            "build_quality",
+            "battery",
+            "bluetooth",
+            "microphone",
+            "eq",
+            "price",
+            "waterproofing"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [
+            "JBL",
+            "Bose"
+          ],
+          "expected": [
+            "JBL",
+            "Bose"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.6,
+          "predicted": [
+            "exceptional bass response",
+            "clear mid-tones",
+            "vocals shine through",
+            "premium aluminum chassis",
+            "rubber base prevents sliding",
+            "instant Bluetooth 5.0 pairing",
+            "honest battery life",
+            "outstanding value",
+            "IPX5 rated"
+          ],
+          "expected": [
+            "exceptional bass",
+            "clear mids and vocals",
+            "premium aluminum chassis",
+            "non-slip rubber base",
+            "fast Bluetooth 5.0 pairing",
+            "good battery life (17-18 hours)",
+            "excellent value at $89"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 0.6111111111111112,
+          "predicted": [
+            "highs are slightly harsh at maximum volume",
+            "flimsy charging port cover",
+            "limited EQ presets",
+            "built-in mic is passable but not great"
+          ],
+          "expected": [
+            "harsh highs at max volume",
+            "flimsy charging port cover",
+            "IPX5 not reliable in heavy rain",
+            "basic mic quality",
+            "limited EQ presets"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "feature_requests",
+          "score": 1.0,
+          "predicted": [
+            "sturdier charging port cover",
+            "more EQ presets"
+          ],
+          "expected": [
+            "more EQ presets",
+            "sturdier charging port cover"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 4,
+          "expected": 4,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "018_packaging_damage",
+      "overall_score": 0.7888888888888889,
+      "error": null,
+      "latency_ms": 7734,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": true,
+          "expected": true,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "mixed",
+          "expected": "mixed",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.5,
+          "predicted": [
+            "performance",
+            "adjustability",
+            "packaging",
+            "delivery"
+          ],
+          "expected": [
+            "grind_quality",
+            "settings",
+            "packaging",
+            "delivery"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 0.0,
+          "predicted": [
+            "Amazon"
+          ],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.6,
+          "predicted": [
+            "consistent grinding",
+            "easy to adjust settings"
+          ],
+          "expected": [
+            "consistent grind",
+            "easy settings adjustment"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 1.0,
+          "predicted": [
+            "poor packaging",
+            "box arrived crushed"
+          ],
+          "expected": [
+            "arrived in crushed box",
+            "poor packaging"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 4,
+          "expected": 4,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "019_three_stars_explicit",
+      "overall_score": 0.8931818181818182,
+      "error": null,
+      "latency_ms": 7593,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": 3,
+          "expected": 3,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "mixed",
+          "expected": "mixed",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.8000000000000002,
+          "predicted": [
+            "assembly",
+            "build_quality",
+            "noise",
+            "motor",
+            "height_adjustment"
+          ],
+          "expected": [
+            "assembly",
+            "build_quality",
+            "height_adjustment",
+            "motor",
+            "instructions"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.875,
+          "predicted": [
+            "sturdy",
+            "smooth height adjustment",
+            "quiet operation",
+            "reliable motor"
+          ],
+          "expected": [
+            "sturdy build",
+            "smooth height adjustment",
+            "quiet motor",
+            "reliable motor"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 0.3636363636363636,
+          "predicted": [
+            "assembly was a nightmare",
+            "instructions were terrible"
+          ],
+          "expected": [
+            "difficult assembly (4 hours)",
+            "poor instructions"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "feature_requests",
+          "score": 1.0,
+          "predicted": [
+            "pre-assembled option"
+          ],
+          "expected": [
+            "pre-assembled option"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 4,
+          "expected": 3,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "020_urgent_safety",
+      "overall_score": 0.9205128205128206,
+      "error": null,
+      "latency_ms": 7531,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": false,
+          "expected": false,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "negative",
+          "expected": "negative",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "urgency",
+          "score": 1.0,
+          "predicted": "high",
+          "expected": "high",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.6666666666666666,
+          "predicted": [
+            "safety",
+            "blade_quality",
+            "customer_service"
+          ],
+          "expected": [
+            "safety",
+            "durability",
+            "customer_service"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 0.5384615384615384,
+          "predicted": [
+            "blade flew off during use",
+            "serious safety hazard",
+            "poor customer service response"
+          ],
+          "expected": [
+            "blade detaches during use (safety hazard)",
+            "inadequate customer service response",
+            "potential for serious injury"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 1,
+          "expected": 1,
+          "method": "tolerance\u00b10"
+        }
+      ]
+    },
+    {
+      "id": "021_neutral_review",
+      "overall_score": 0.935,
+      "error": null,
+      "latency_ms": 7530,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "neutral",
+          "expected": "neutral",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 1.0,
+          "predicted": [
+            "step_tracking",
+            "sleep_tracking",
+            "heart_rate",
+            "battery",
+            "price"
+          ],
+          "expected": [
+            "step_tracking",
+            "sleep_tracking",
+            "heart_rate",
+            "battery",
+            "price"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.48000000000000004,
+          "predicted": [
+            "counts steps",
+            "tracks sleep",
+            "heart rate works",
+            "battery lasts about 7 days",
+            "price is fair"
+          ],
+          "expected": [
+            "accurate step counting",
+            "sleep tracking",
+            "heart rate monitoring",
+            "7-day battery",
+            "fair price"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 3,
+          "expected": 3,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "022_two_star_explicit",
+      "overall_score": 0.9201822142998614,
+      "error": null,
+      "latency_ms": 7672,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": 2,
+          "expected": 2,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": false,
+          "expected": false,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "negative",
+          "expected": "negative",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.6666666666666665,
+          "predicted": [
+            "sole",
+            "arch_support",
+            "breathability",
+            "comfort",
+            "design"
+          ],
+          "expected": [
+            "sole",
+            "arch_support",
+            "comfort",
+            "material"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.9090909090909091,
+          "predicted": [
+            "breathable shoe material",
+            "looks great in photos"
+          ],
+          "expected": [
+            "breathable material",
+            "looks great in photos"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 0.7058823529411765,
+          "predicted": [
+            "paper-thin sole",
+            "zero arch support",
+            "causes foot pain"
+          ],
+          "expected": [
+            "thin sole",
+            "no arch support",
+            "causes foot pain during running"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 2,
+          "expected": 2,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "023_empty_review",
+      "overall_score": 0.875,
+      "error": null,
+      "latency_ms": 7594,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "positive",
+          "expected": "positive",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.0,
+          "predicted": [
+            "overall satisfaction"
+          ],
+          "expected": [],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 3,
+          "expected": 4,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "024_return_intent",
+      "overall_score": 0.95,
+      "error": null,
+      "latency_ms": 7750,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": false,
+          "expected": false,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "negative",
+          "expected": "negative",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "urgency",
+          "score": 1.0,
+          "predicted": "high",
+          "expected": "high",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.5,
+          "predicted": [
+            "installation",
+            "build_quality",
+            "durability",
+            "customer_service"
+          ],
+          "expected": [
+            "packaging",
+            "durability",
+            "installation",
+            "damage"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 1.0,
+          "predicted": [
+            "missing installation manual",
+            "filter housing cracked",
+            "caused flooding",
+            "required plumber"
+          ],
+          "expected": [
+            "missing installation manual",
+            "cracked filter housing",
+            "caused flooding",
+            "required plumber"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 1,
+          "expected": 1,
+          "method": "tolerance\u00b10"
+        }
+      ]
+    },
+    {
+      "id": "025_competitor_switch",
+      "overall_score": 0.7788235294117647,
+      "error": null,
+      "latency_ms": 7577,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": 5,
+          "expected": 5,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": true,
+          "expected": true,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "positive",
+          "expected": "positive",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.20000000000000004,
+          "predicted": [
+            "heating_speed",
+            "basket_size",
+            "cleanup",
+            "cooking_performance",
+            "app_availability"
+          ],
+          "expected": [
+            "heating_speed",
+            "capacity",
+            "cleaning",
+            "performance",
+            "connectivity"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [
+            "Philips"
+          ],
+          "expected": [
+            "Philips"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.5882352941176471,
+          "predicted": [
+            "heats up faster",
+            "bigger basket",
+            "faster cleanup",
+            "pure cooking performance"
+          ],
+          "expected": [
+            "faster heat-up",
+            "larger basket",
+            "easier cleanup",
+            "better cooking performance"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 0.5,
+          "predicted": [
+            "lacks app"
+          ],
+          "expected": [
+            "no companion app"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "feature_requests",
+          "score": 0.5,
+          "predicted": [
+            "app availability"
+          ],
+          "expected": [
+            "companion app"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 5,
+          "expected": 5,
+          "method": "tolerance\u00b10"
+        }
+      ]
+    }
+  ]
+}

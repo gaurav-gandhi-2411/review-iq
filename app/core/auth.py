@@ -17,7 +17,10 @@ async def require_api_key(api_key: str | None = Security(_api_key_header)) -> st
     """
     settings = get_settings()
     if not settings.api_key:
-        return "no-auth-configured"
+        raise RuntimeError(
+            "API_KEY env var not configured. v1 endpoints require "
+            "this to be set. Set API_KEY in .env or do not mount v1 router."
+        )
     if not api_key or api_key != settings.api_key:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

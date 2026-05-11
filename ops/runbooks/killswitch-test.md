@@ -3,7 +3,8 @@
 **Purpose:** Prove the kill switch fires correctly before any paid services are deployed.  
 **When to run:** Once after initial deployment; re-run after any changes to `ops/budget-killswitch/`.  
 **Owner:** gaurav.gandhi2411@gmail.com  
-**Last executed:** 2026-05-10 (full disable path verified)
+**Last executed:** 2026-05-10 (full disable path verified)  
+**Re-verified:** 2026-05-11 — `terraform plan -detailed-exitcode` exit 0, zero drift, pre-Step-7 Cloud Run deploy
 
 ---
 
