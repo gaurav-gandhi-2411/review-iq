@@ -121,9 +121,9 @@ Pass threshold: ≥ 85%. Eval runs automatically in CI on every push touching pr
 | `GET` | `/v2/reviews` | `X-API-Key` | Query org's stored extractions |
 | `GET` | `/v2/insights` | `X-API-Key` | Aggregated analytics for org |
 | `POST` | `/admin/organizations` | HTTP Basic | Create org |
-| `POST` | `/admin/organizations/{org_id}/api-keys` | HTTP Basic | Issue API key |
-| `DELETE` | `/admin/api-keys/{key_id}` | HTTP Basic | Revoke key |
-| `POST` | `/admin/api-keys/{key_id}/rotate` | HTTP Basic | Rotate key (atomic) |
+| `POST` | `/admin/organizations/{org_id}/keys` | HTTP Basic | Issue API key |
+| `DELETE` | `/admin/organizations/{org_id}/keys/{key_id}` | HTTP Basic | Revoke key |
+| `POST` | `/admin/organizations/{org_id}/keys/{key_id}/rotate` | HTTP Basic | Rotate key (atomic) |
 
 ### v1 endpoints (HF Spaces — legacy)
 

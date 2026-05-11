@@ -54,6 +54,22 @@ gcloud monitoring metrics list --filter="metric.type:run.googleapis.com/request_
 
 ## Step 3 — Check Artifact Registry storage
 
+**PowerShell (Windows — python3 not available on PATH):**
+```powershell
+$TOKEN = (gcloud auth print-access-token).Trim()
+$resp = Invoke-RestMethod -Uri "https://artifactregistry.googleapis.com/v1/projects/review-iq-prod/locations/asia-south1/repositories/review-iq/packages/api/versions?view=FULL" `
+    -Headers @{ "Authorization" = "Bearer $TOKEN" }
+$total = 0
+foreach ($v in $resp.versions) {
+    $b = [long]($v.metadata.imageSizeBytes ?? 0)
+    $total += $b
+    $tags = ($v.relatedTags | ForEach-Object { $_.name.Split("/")[-1] }) -join ","
+    Write-Host "  $($v.name.Split('/')[-1].Substring(0,12))  $([math]::Round($b/1MB,1)) MB  tags=[$tags]"
+}
+Write-Host "Total: $([math]::Round($total/1MB,1)) MB  (free limit: 500 MB)"
+```
+
+**Linux/macOS (bash + python3):**
 ```bash
 TOKEN=$(gcloud auth print-access-token)
 curl -s -H "Authorization: Bearer $TOKEN" \

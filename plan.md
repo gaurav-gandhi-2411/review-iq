@@ -405,9 +405,9 @@ This is the immediate next phase. Detail level matches Phase 1's §13.
 - [x] `/v2/extract` requires API key, scopes by org_id
 - [x] Eval ≥ 85% on Cloud Run — **87.9%** (25 fixtures, HTTP mode, 2026-05-11)
 - [x] Cross-tenant isolation tested — Gauntlet 1: Beta org sees 0 reviews after Alpha extraction
-- [ ] Quota enforcement tested on Cloud Run (key with quota=10 returns 429 on 11th request)
-- [ ] Monthly cost runbook executed once successfully ($0 confirmed)
-- [ ] v0.2.0 tagged
+- [x] Quota enforcement tested on Cloud Run — 10×200 then 429 "Monthly quota exceeded (10/10)" — 2026-05-12
+- [x] Monthly cost runbook executed — ₹0.00 confirmed (97.9 MB AR, 4/6 SM versions, billing enabled) — 2026-05-12
+- [x] v0.2.0 tagged — 2026-05-12
 
 ---
 
