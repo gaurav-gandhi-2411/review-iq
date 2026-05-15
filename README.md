@@ -10,7 +10,7 @@ pinned: false
 
 # review-iq
 
-Open-source API that turns unstructured customer reviews into structured JSON — sentiment, topics, pros/cons, competitor mentions, urgency signals. Every prompt, eval fixture, and accuracy number is public and version-controlled; Hinglish + Hindi support coming in Phase 2.
+Open-source API that turns unstructured customer reviews into structured JSON — sentiment, topics, pros/cons, competitor mentions, urgency signals. Every prompt, eval fixture, and accuracy number is public and version-controlled. English, Hinglish, and Hindi are all supported as of v0.3.0.
 
 [![CI](https://github.com/gaurav-gandhi-2411/review-iq/actions/workflows/ci.yml/badge.svg)](https://github.com/gaurav-gandhi-2411/review-iq/actions/workflows/ci.yml)
 ![License](https://img.shields.io/badge/license-MIT-blue)
@@ -84,7 +84,7 @@ curl -X POST https://review-iq-ajjrytb3na-el.a.run.app/v2/extract \
   "language": "en",
   "extraction_meta": {
     "model": "llama-3.3-70b-versatile",
-    "prompt_version": "v1.1",
+    "prompt_version": "v2.0",
     "schema_version": "1.0.0",
     "latency_ms": 820
   }
@@ -120,14 +120,15 @@ curl -X POST https://gauravgandhi2411-review-iq.hf.space/extract \
 
 ## Eval results
 
-Evaluated on 25 hand-labeled fixtures across all extraction scenarios:
+Evaluated on 46 hand-labeled and synthetic fixtures across English, Hinglish, and Hindi:
 
-| Version | Environment | Overall accuracy | Fixtures | Notes |
-|---|---|---|---|---|
-| v0.2.0 | Cloud Run (production) | **87.9%** | 25 | HTTP mode against live `/v2/extract` · Gemini fallback used on 2 fixtures |
-| v0.1.3 | HF Spaces | 86.7% | 25 | Direct LLM mode · v1.1 prompt |
+| Version | Environment | Overall | en | hi-en | hi | Fixtures |
+|---|---|---|---|---|---|---|
+| v0.3.0 | CI / direct LLM | **TBD** | TBD | TBD | TBD | 46 (25 en + 15 hi-en + 6 hi) |
+| v0.2.0 | Cloud Run (production) | **87.9%** | 87.9% | — | — | 25 |
+| v0.1.3 | HF Spaces | 86.7% | 86.7% | — | — | 25 |
 
-Pass threshold: ≥ 85%. Eval runs automatically in CI on every push touching prompt/LLM/schema/fixture files.
+Gates: overall ≥ 85%, per-language ≥ 80%. Eval runs automatically in CI on every push touching prompts, LLM, schema, or fixture files. Nightly runs post results to Slack.
 
 ---
 
@@ -229,7 +230,7 @@ uv run python -m eval.report
 | Workflow | Trigger | Fails CI? |
 |---|---|---|
 | `ci.yml` | Every push / PR | Yes — lint, format, mypy, unit tests |
-| `eval.yml` | Push touching `app/core/prompt.py`, `app/core/llm.py`, `app/core/schemas.py`, `eval/fixtures/**`, `eval/runner.py` · Nightly 02:00 UTC · `workflow_dispatch` | Yes — overall accuracy must be ≥ 85% |
+| `eval.yml` | Push touching `app/core/prompt.py`, `app/core/prompts/**`, `app/core/llm.py`, `app/core/schemas.py`, `eval/fixtures/**`, `eval/runner.py` · Nightly 02:00 UTC · `workflow_dispatch` | Yes — overall ≥ 85% and per-language ≥ 80% |
 | `deploy.yml` | Push to `main` | No (informational) |
 
 Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refactor) don't burn the free-tier Groq quota.
@@ -245,11 +246,16 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 - Admin API for org/key lifecycle management
 - Kill switch — Pub/Sub budget alert → Cloud Function → Cloud Run traffic = 0
 
+**Phase 2.0b** ✓ (shipped May 2026):
+- Language detection — Devanagari regex + Hinglish keyword heuristics + lingua-py confidence
+- Language-branched prompts (v2.0) — en / hi-en / hi, each with explicit English-output instruction
+- 46-fixture eval suite — 25 English + 15 Hinglish (Claude Sonnet auto-labeled) + 6 Hindi (synthetic + verified)
+- Per-language CI gate — overall ≥ 85%, each language ≥ 80%
+- Nightly Slack drift alerts — eval results posted to channel after every scheduled run
+
 **Phase 2.x** (planned):
 - Webhook ingestion from Yotpo / Judge.me / Shopify
-- Multi-language: Hindi, Tamil, Hinglish detection + translation
-- Slack alerts on urgent reviews
-- Drift monitoring: nightly fixture re-run, alert on field-level drift
+- Tamil, Marathi support
 - Cost dashboard: tokens & $ per extraction over time
 
 **Phase 3** (vision):
