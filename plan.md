@@ -411,16 +411,244 @@ This is the immediate next phase. Detail level matches Phase 1's §13.
 
 ---
 
-## 13. Phase 2.0b — Hinglish + real data (preview)
+## 13. Phase 2.0b — Hinglish + Hindi + real-data eval
 
-Will detail in next plan iteration once 2.0a is green. Headlines:
+**Status:** Planning complete. Decisions locked. Ready for CC kickoff.
+**Predecessor:** Phase 2.0a closed at v0.2.0 (Cloud Run multi-tenant API live, 87.9% eval).
+**Target:** v0.3.0
+**Estimated CC sessions:** 5-6
 
-- `lingua-py` integration, branched prompts, language field in extractions
-- Flipkart Kaggle data ingestion script
-- Hand-labeling session with user for ~30 candidates → 18 keepers
-- Hindi (Devanagari) fixtures via similar process
-- Eval expanded to ~55 fixtures, accuracy table updated in README
-- `v0.2.1` tag
+---
+
+## 13.1 Scope summary
+
+What this phase delivers:
+
+1. **Coverage debt cleanup** from 2.0a (dashboard.py, storage.py SQLite paths)
+2. **Real review data ingestion** — Flipkart Kaggle + Amazon Reviews 2023 sample
+3. **Hand-labeled Hinglish fixtures** — 15 real reviews from Flipkart, labeled by the user
+4. **Hindi fixture set** — 6 fixtures, can be synthetic (Devanagari script is a different surface from Hinglish; LLM-generated Hindi is closer to real Hindi than LLM-generated Hinglish is to real Hinglish)
+5. **Language detection** via `lingua-py`
+6. **Branched per-language prompts** — same schema, language-specific prompt templates and few-shot examples
+7. **Eval expansion** — from 25 to ~46 fixtures (25 English + 15 Hinglish + 6 Hindi), per-language accuracy reported
+8. **Per-fixture regression cleanup** — target 85%+ on the 5 weak English fixtures (sarcasm, feature_requests, very_long, packaging_damage, competitor_switch)
+9. **Drift monitoring** — nightly eval, Slack alerts on regression
+10. **v0.3.0 tag** when all of the above is green
+
+Deliberately deferred to later phases:
+
+- Tamil → Phase 2.5
+- Bengali, Marathi, Telugu, Kannada, Gujarati → opportunistic, only if a real client asks
+- Per-language prompt optimization beyond v1 → 2.0c
+- Vector search over reviews → Phase 3.0
+- Webhook ingestion → Phase 4
+
+---
+
+## 13.2 Why these specific choices
+
+**Hinglish hand-labeled, Hindi synthetic.** Hinglish is the moat — Yotpo/Birdeye/Trustpilot don't handle it because their training data is English-centric and their prompts assume English. Real Hinglish is short, ungrammatical, code-mixed (Latin and Devanagari in same review), and full of slang ("paisa vasool", "bakwaas", "ok ok product hai") that synthetic Hinglish from English-trained LLMs does not reproduce. The hand-labeled real fixtures are the entire differentiation. Hindi (pure Devanagari) is closer to what LLMs already do well, so synthetic Hindi fixtures are acceptable as a starting point. They can be replaced with real Hindi later if accuracy is weak.
+
+**Slack for drift alerts, not email/GH issues.** Slack is where developers actually look. Email gets filtered. GitHub issues are ceremonial — they pile up unread. A real-time Slack ping into a channel you check is the only alert mechanism that gets acted on. The user must provide one Slack webhook URL (free Slack workspace, 5-minute setup).
+
+**Coverage cleanup first, not last.** Carrying uncovered prod code into a phase that adds more code means the gap compounds. Closing it before language work means the new code has tests as a baseline expectation.
+
+**Real data ingestion before hand-labeling.** Hand-labeling needs candidates. CC surfaces real reviews from Flipkart Kaggle that are Hinglish-detected by `lingua-py`, the user picks 15 from a ranked candidate set. This is much faster than the user manually scrolling through datasets.
+
+**Per-fixture regression cleanup at the end, not the beginning.** Multi-language work changes the prompt and may resolve some English regressions naturally (e.g., the prompt becomes more explicit about completeness, which helps sarcasm/feature_requests detection too). Fixing regressions before language work means doing the work twice. Defer the English fixes to a single targeted step after the language branches are in.
+
+---
+
+## 13.3 Execution sequence
+
+Each step = one feature branch off `feat/2.0b-hinglish` → sub-PR → squash merge. Same pattern as 2.0a.
+
+### Step 1 — Coverage debt cleanup
+**Branch:** `feat/2.0b-01-coverage`
+**Deliverables:**
+- `tests/unit/test_dashboard.py` — covers `app/api/dashboard.py:24-27` and any other handler logic
+- `tests/unit/test_storage_sqlite.py` — covers `app/core/storage.py:220-234, 347` and the SQLite migrate() path
+- Combined coverage target: ≥ 93% (currently 92.08%)
+- No new prod code; tests only
+**DoD:** combined coverage ≥ 93%, all existing tests still passing.
+
+### Step 2 — Real review data ingestion
+**Branch:** `feat/2.0b-02-real-data`
+**Deliverables:**
+- `eval/data/sample_flipkart.py` — script that downloads the Flipkart product reviews dataset from Kaggle, samples ~2000 reviews, runs `lingua-py` language detection on each, classifies into english/hinglish/hindi/other, writes results to `eval/data/flipkart_candidates.jsonl` (gitignored, locally stored)
+- `eval/data/sample_amazon.py` — same shape for Amazon Reviews 2023 (HuggingFace McAuley Lab), sampling ~3000 reviews. Used for English breadth, not Hinglish.
+- `eval/data/README.md` — instructions for the user to: install Kaggle CLI (`pip install kaggle`), authenticate (one-time), run the sample scripts, expected output sizes
+- `eval/data/.gitignore` — block the raw downloads and candidate JSONL files; only the sampling scripts are committed
+- `requirements-dev.txt` updated with `kaggle`, `lingua-language-detector`, `datasets` (HF datasets lib)
+**User action required:** one-time Kaggle CLI setup (~5 min). CC walks the user through it as a stop gate.
+**DoD:** running the two sample scripts produces deterministic output (same seed = same sample); candidate JSONL files exist with language labels; ~600+ Hinglish candidates identified from Flipkart.
+
+### Step 3 — Hand-labeling session (user time)
+**Branch:** `feat/2.0b-03-hinglish-fixtures`
+**This step requires ~90 minutes of the user.**
+**Pre-CC work:** CC builds `eval/label-helper.py` — an interactive CLI that:
+1. Loads the top 50 Hinglish candidates from `flipkart_candidates.jsonl` (ranked by length 50-500 chars, language confidence > 0.7, diversity heuristic)
+2. Displays one review at a time
+3. Prompts user for: product name, stars (if stated), pros (comma-sep), cons (comma-sep), buy_again (y/n/unclear), sentiment, urgency, topics, competitor_mentions
+4. Skips review (s), accepts (a), regenerates from next candidate (n)
+5. Stops at 15 accepted fixtures
+6. Writes fixtures to `eval/fixtures/hi-en/001.json` through `015.json` in the standard fixture shape
+**User action:** run `uv run python eval/label-helper.py`, label 15 reviews (skip ones that are too short, vague, or off-topic). The tool surfaces ~50 candidates so user can be selective.
+**DoD:** 15 Hinglish fixtures committed to `eval/fixtures/hi-en/`, ground truth labeled by user. Existing English fixtures untouched.
+
+### Step 4 — Hindi fixtures (synthetic)
+**Branch:** `feat/2.0b-04-hindi-fixtures`
+**Deliverables:**
+- 6 Hindi fixtures in `eval/fixtures/hi/`, generated via LLM with specific personas (frustrated customer, happy customer, ambiguous-buy-again, urgent safety issue, feature request, neutral)
+- Each fixture's ground truth verified by CC (re-extracted, compared to claimed ground truth, manually adjusted if model output is the more reasonable answer)
+- README note: Hindi fixtures are synthetic v1; replace with real Hindi reviews when a buyer demands Hindi accuracy SLA
+**DoD:** 6 Hindi fixtures committed, all extract correctly with current prompt (>=85%) before any language-branching work.
+
+### Step 5 — Language detection + routing
+**Branch:** `feat/2.0b-05-lang-detect`
+**Deliverables:**
+- `app/core/language.py` — `detect_language(text: str) -> Literal["en", "hi-en", "hi", "other"]` using `lingua-py`
+- Confidence thresholds: < 0.5 → "other" (still processed as English fallback)
+- Unit tests with fixtures from each language
+- `app/api/v2/extract.py` calls `detect_language` and passes result to the prompt builder
+- `language` field on extraction output reflects detected language (was already in schema; now populated)
+- Migration: not needed (language column already exists in extractions table)
+**DoD:** language detection unit tests pass with 95%+ accuracy on a held-out set of 50 reviews (mix of all 4 categories); v2 extract endpoint includes detected language in response.
+
+### Step 6 — Branched per-language prompts
+**Branch:** `feat/2.0b-06-prompts-v2`
+**Deliverables:**
+- `app/core/prompts/` directory:
+  - `en.py` — current prompt (renamed from prompt.py), bumped to v2.0
+  - `hi-en.py` — Hinglish prompt with Hinglish few-shot examples drawn from fixtures
+  - `hi.py` — Hindi prompt
+  - `__init__.py` — exports `build_prompt(text: str, language: str) -> str` selector
+- `PROMPTS.md` updated with the three new prompt versions, diffs from v1, rationale
+- Unit tests on `build_prompt` covering each language branch + the fallback case
+- Existing `app/core/prompt.py` removed; all imports updated
+**Design constraint:** all three prompts produce output conforming to the SAME `ReviewExtractionLLMOutput` schema. The schema does not branch by language. Only the prompt does.
+**DoD:** prompts wired in, all existing English tests pass, Hinglish and Hindi fixtures hit ≥ 85% on individual extraction.
+
+### Step 7 — Eval expansion + per-language reporting
+**Branch:** `feat/2.0b-07-eval-multilang`
+**Deliverables:**
+- `eval/runner.py` updated to:
+  - Discover fixtures from all three subdirectories (`en/`, `hi-en/`, `hi/`)
+  - Report overall accuracy AND per-language breakdown
+  - Output goes to `eval/report.md` in a table format
+- `eval/report.md` — auto-generated, committed (so README can link to it)
+- README eval table updated: per-language scores + overall
+- CI eval gate: ≥ 85% overall AND ≥ 80% per language (separate thresholds, both must pass)
+**DoD:** full eval (46 fixtures) runs locally and on Cloud Run; per-language breakdown ≥ 80% Hinglish, ≥ 80% Hindi, ≥ 85% English (regression cleanup in Step 8 will push English higher).
+
+### Step 8 — Per-fixture regression cleanup (English)
+**Branch:** `feat/2.0b-08-english-cleanup`
+**Target fixtures (current scores from v0.2.0 eval):**
+- 012_sarcasm: 70.7% → target 85% (documented hard; may stay below if it's a model limit)
+- 014_feature_requests: 75.7% → target 85%
+- 017_very_long: 78.0% → target 85% (regression from 86% on HF; investigate Cloud Run-specific behavior)
+- 018_packaging_damage: 78.9% → target 85% (Amazon hallucinated as competitor)
+- 025_competitor_switch: 77.9% → target 85% (topic vocabulary mismatch)
+**Approach:**
+1. For each fixture, run the current extractor and capture output
+2. Compare to ground truth, identify which field(s) drag the score
+3. Iterate on `en.py` prompt with targeted few-shot examples or instructions
+4. **Rule:** every prompt change must keep the OTHER 24 English fixtures at their current scores or higher. Use full English eval (25 fixtures) as the gate.
+5. If 012_sarcasm cannot reach 85% after 3 iterations, accept the regression and document it as a known model weakness in `eval/known-weaknesses.md`.
+**DoD:** English fixtures average ≥ 88% (up from 87.9%); no fixture below 80% except documented hard cases (max 1).
+
+### Step 9 — Drift monitoring with Slack alerts
+**Branch:** `feat/2.0b-09-drift-monitoring`
+**Deliverables:**
+- `.github/workflows/nightly-eval.yml` — cron: `'0 2 * * *'` UTC (~7:30 AM IST), runs full eval against Cloud Run URL with the public-demo key (or a dedicated eval key — see decision below)
+- `eval/drift_detector.py` — compares today's per-fixture scores against yesterday's `eval/report.md`; flags any drop > 5pp on a fixture or > 2pp overall
+- `app/core/slack.py` — minimal POST-to-webhook helper, used by drift detector
+- `SLACK_WEBHOOK_URL` added to GitHub Actions secrets (user provides webhook URL as a stop gate)
+- `ops/runbooks/drift-response.md` — how to investigate a drift alert
+**Decision needed from user:** create a dedicated `nightly-eval` API key with quota=5000/month, separate from `public-demo`. Reason: nightly eval is 46 calls/day × 30 days = 1380 calls/month. Eats half the public-demo quota if shared. Dedicated key keeps the demo key clean.
+**DoD:** workflow runs nightly, Slack channel receives "eval green: 88.4% overall" or "DRIFT: 005_all_positive dropped from 94% to 71%" with the failing fixture details.
+
+### Step 10 — Documentation + v0.3.0 tag
+**Branch:** `feat/2.0b-10-release`
+**Deliverables:**
+- README.md updated: Hinglish/Hindi mentioned in opener, per-language eval table, "how language detection works" section
+- `plan.md` §13 marked complete, §2 status line updated
+- `PROMPTS.md` finalized for all three languages
+- `ARCHITECTURE.md` updated with language detection flow
+- `eval/known-weaknesses.md` documents any English fixtures that didn't reach 85% (with reasoning)
+- v0.3.0 tag on main: `git tag -a v0.3.0 -m "Phase 2.0b: Hinglish + Hindi support, drift monitoring, English regression cleanup"`
+- v0.3.0 GitHub Release with notes
+**DoD:** plan.md §13 fully checked, README accurately represents the product, tag pushed.
+
+---
+
+## 13.4 Definition of done for Phase 2.0b (overall)
+
+- [ ] Combined coverage ≥ 93%
+- [ ] Real Flipkart Hinglish data sampled and 15 reviews hand-labeled by user
+- [ ] 6 synthetic Hindi fixtures committed
+- [ ] `app/core/language.py` shipped, 95%+ accuracy on held-out detection test
+- [ ] Three per-language prompts in `app/core/prompts/`
+- [ ] Full eval (46 fixtures) ≥ 85% overall AND ≥ 80% per language
+- [ ] English regression cleanup: average ≥ 88%, no fixture below 80% except ≤ 1 documented hard case
+- [ ] Nightly drift workflow in GH Actions, posts to Slack
+- [ ] Slack alert tested by intentionally introducing a regression and confirming the alert fires
+- [ ] README accurately represents the multi-language product
+- [ ] v0.3.0 tagged
+
+---
+
+## 13.5 Cost ceiling check
+
+| Resource | Phase 2.0a baseline | Expected 2.0b delta |
+|---|---|---|
+| Cloud Run requests | < 1k/mo | +1380/mo (nightly eval) = still well under 2M free |
+| Cloud Run vCPU-sec | < 1k/mo | +~3000/mo (nightly eval × 7s avg) = still under 360k free |
+| Artifact Registry | 97.9 MB / 500 MB | No image change unless lingua-py bloats it significantly; flag if > 200 MB |
+| Secret Manager | 4 / 6 versions | +1 if we add SLACK_WEBHOOK_URL there (likely) = 5/6, still under |
+| Supabase storage | < 1 MB | +small (more extractions from nightly eval) = nowhere near 500 MB |
+| Groq API calls | < 1k/mo | +1380/mo eval + dev = ~3k/mo, well under 14k/day free tier |
+
+Expected total cost: ₹0.00 throughout. Same kill-switch is armed.
+
+---
+
+## 13.6 Open decisions (need user confirmation before CC kickoff)
+
+1. **Slack workspace + webhook URL.** Does the user have a Slack workspace they want alerts in, or do they need to create one? Free Slack workspace creation is ~5 minutes. The webhook URL goes in GH secrets, never committed.
+
+2. **Dedicated `nightly-eval` API key with quota=5000.** Confirm OK to create alongside the existing `public-demo` key.
+
+3. **Kaggle account.** The user needs a Kaggle account + API token to download Flipkart data. Free, ~5 minutes. CC will walk through the setup when Step 2 hits the stop gate.
+
+4. **Time budget for hand-labeling.** Confirm ~90 minutes is acceptable. If not, we can drop to 10 fixtures (~60 min) but the per-language eval gets noisier.
+
+---
+
+## 13.7 Risk register (things that could blow up scope)
+
+| Risk | Likelihood | Mitigation |
+|---|---|---|
+| `lingua-py` confuses Hinglish ↔ Hindi | Medium | Test on 50-review held-out set; if accuracy < 90%, add fastText as secondary detector |
+| Llama 3.3 70B genuinely cannot extract Hinglish well | Medium | Step 6 has a hard gate at ≥ 80% Hinglish accuracy. If we can't hit it, escalate to user — options are: try Gemini, lower the gate and document limitation, or fall back to Path B from earlier (synthetic fixtures, marketing claim deferred) |
+| Kaggle dataset has license restrictions | Low | Flipkart product reviews dataset on Kaggle is CC0; verify before commit |
+| Cloud Run cold start affecting nightly eval | Low | Nightly eval is the warm-up; if first call cold-starts and times out, retry once is fine |
+| 012_sarcasm fixture genuinely cannot reach 85% | Medium | Acceptance documented in Step 8 |
+| English regression cleanup regresses Hinglish/Hindi | Medium | Eval gate runs ALL fixtures, not just English; prompt changes that regress non-English fail CI |
+
+---
+
+## 13.8 What Phase 2.0c looks like (preview, not in scope here)
+
+When 2.0b ships, the natural next moves:
+
+- Tamil + Bengali language support (now that the multi-language pattern is proven)
+- Python SDK (`pip install review-iq`)
+- JS SDK (`npm install review-iq`)
+- Landing page on review-iq.com (when we acquire the domain)
+- Real Hindi fixtures replacing the synthetic ones
+
+This is the bridge from "production multi-lingual API" to "product anyone can find and use." Plan in detail when we get there.
 
 ---
 
