@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - app/core/prompt.py
+      - "app/core/prompts/**"
       - app/core/llm.py
       - app/core/schemas.py
       - "eval/fixtures/**"

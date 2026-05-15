@@ -17,23 +17,43 @@ def generate_report(results_path: Path = RESULTS_PATH) -> str:
     passed: bool = data["passed"]
     threshold: float = data["threshold"]
     fixtures: list[dict] = data["fixtures"]
+    per_language: dict = data.get("per_language", {})
 
     now = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
-    status = "PASS ✅" if passed else "FAIL ❌"
+    status = "PASS" if passed else "FAIL"
 
     lines: list[str] = [
-        f"# Eval Report — {now}",
+        f"# Eval Report -- {now}",
         "",
-        f"**Overall accuracy: {overall:.1%}** — {status} (threshold: {threshold:.0%})",
+        f"**Overall accuracy: {overall:.1%}** -- {status} (threshold: {threshold:.0%})",
         "",
+    ]
+
+    if per_language:
+        lines += [
+            "## Per-language",
+            "",
+            "| Language | Score | Gate | Status |",
+            "| --- | ---: | ---: | --- |",
+        ]
+        for lang in sorted(per_language):
+            info = per_language[lang]
+            lang_status = "PASS" if info["passed"] else "FAIL"
+            lines.append(
+                f"| {lang} | {info['score']:.1%} | {info['threshold']:.0%} | {lang_status} |"
+            )
+        lines.append("")
+
+    lines += [
         "## Per-fixture results",
         "",
-        "| Fixture | Score | Error |",
-        "| --- | ---: | --- |",
+        "| Fixture | Language | Score | Error |",
+        "| --- | --- | ---: | --- |",
     ]
     for fx in fixtures:
         error_cell = fx["error"] or ""
-        lines.append(f"| {fx['id']} | {fx['overall_score']:.0%} | {error_cell} |")
+        lang = fx.get("language", "en")
+        lines.append(f"| {fx['id']} | {lang} | {fx['overall_score']:.0%} | {error_cell} |")
 
     # Aggregate per-field scores across fixtures
     field_scores: dict[str, list[float]] = {}

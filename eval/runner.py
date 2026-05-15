@@ -12,7 +12,9 @@ from typing import Any
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 RESULTS_PATH = Path(__file__).parent / "results.json"
+REPORT_PATH = Path(__file__).parent / "report.md"
 PASS_THRESHOLD = 0.85
+PER_LANG_THRESHOLD = 0.80
 
 # Security assertions keyed by fixture id.
 # These are exact-match guarantees that override the scoring threshold.
@@ -247,12 +249,22 @@ async def run_single_http(
     return result
 
 
+def _collect_fixture_paths(fixtures_dir: Path) -> list[Path]:
+    """Return all fixture JSON paths: flat files + hi-en/ and hi/ subdirs."""
+    paths: list[Path] = sorted(fixtures_dir.glob("*.json"))
+    for subdir in ("hi-en", "hi"):
+        sub = fixtures_dir / subdir
+        if sub.is_dir():
+            paths.extend(sorted(sub.glob("*.json")))
+    return paths
+
+
 async def run_all(
     fixtures_dir: Path = FIXTURES_DIR,
     http_client: Any = None,
 ) -> list[FixtureResult]:
     all_results: list[FixtureResult] = []
-    for path in sorted(fixtures_dir.glob("*.json")):
+    for path in _collect_fixture_paths(fixtures_dir):
         data: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
         print(f"  {data['id']}...", end=" ", flush=True)
         if http_client is not None:
@@ -265,14 +277,42 @@ async def run_all(
     return all_results
 
 
-def write_results(results: list[FixtureResult], out_path: Path = RESULTS_PATH) -> None:
+def per_language_scores(
+    results: list[FixtureResult],
+    fixture_lang_map: dict[str, str],
+) -> dict[str, float]:
+    """Return {language: mean_score} for all languages present."""
+    groups: dict[str, list[float]] = {}
+    for r in results:
+        lang = fixture_lang_map.get(r.fixture_id, "en")
+        groups.setdefault(lang, []).append(r.overall_score)
+    return {lang: sum(scores) / len(scores) for lang, scores in groups.items()}
+
+
+def write_results(
+    results: list[FixtureResult],
+    fixture_lang_map: dict[str, str],
+    out_path: Path = RESULTS_PATH,
+) -> None:
+    overall = aggregate_score(results)
+    lang_scores = per_language_scores(results, fixture_lang_map)
+    lang_pass = {lang: score >= PER_LANG_THRESHOLD for lang, score in lang_scores.items()}
     payload = {
-        "overall_score": aggregate_score(results),
+        "overall_score": overall,
         "threshold": PASS_THRESHOLD,
-        "passed": aggregate_score(results) >= PASS_THRESHOLD,
+        "passed": overall >= PASS_THRESHOLD,
+        "per_language": {
+            lang: {
+                "score": score,
+                "threshold": PER_LANG_THRESHOLD,
+                "passed": lang_pass[lang],
+            }
+            for lang, score in lang_scores.items()
+        },
         "fixtures": [
             {
                 "id": r.fixture_id,
+                "language": fixture_lang_map.get(r.fixture_id, "en"),
                 "overall_score": r.overall_score,
                 "error": r.error,
                 "latency_ms": r.latency_ms,
@@ -293,6 +333,54 @@ def write_results(results: list[FixtureResult], out_path: Path = RESULTS_PATH) -
     out_path.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
 
 
+def _build_lang_map(fixtures_dir: Path) -> dict[str, str]:
+    """Map fixture_id -> language from ground_truth.language field."""
+    lang_map: dict[str, str] = {}
+    for path in _collect_fixture_paths(fixtures_dir):
+        data: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
+        lang = data.get("ground_truth", {}).get("language", "en")
+        lang_map[data["id"]] = lang
+    return lang_map
+
+
+def write_report(
+    results: list[FixtureResult],
+    fixture_lang_map: dict[str, str],
+    out_path: Path = REPORT_PATH,
+) -> None:
+    """Write a human-readable Markdown report."""
+    from datetime import datetime, timezone
+
+    overall = aggregate_score(results)
+    lang_scores = per_language_scores(results, fixture_lang_map)
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+
+    lines: list[str] = [
+        "# Eval Report",
+        f"\nGenerated: {now}",
+        f"\n## Overall: {overall:.1%} {'PASS' if overall >= PASS_THRESHOLD else 'FAIL'} (threshold {PASS_THRESHOLD:.0%})",
+        "\n## Per-language",
+        "\n| Language | Score | Gate | Status |",
+        "|----------|-------|------|--------|",
+    ]
+    for lang in sorted(lang_scores):
+        score = lang_scores[lang]
+        gate = PER_LANG_THRESHOLD
+        status = "PASS" if score >= gate else "FAIL"
+        lines.append(f"| {lang} | {score:.1%} | {gate:.0%} | {status} |")
+
+    lines.append("\n## Fixtures\n")
+    lines.append("| ID | Language | Score | Error |")
+    lines.append("|----|----------|-------|-------|")
+    for r in results:
+        lang = fixture_lang_map.get(r.fixture_id, "en")
+        score_str = f"{r.overall_score:.0%}" if not r.error else "—"
+        err = r.error or ""
+        lines.append(f"| {r.fixture_id} | {lang} | {score_str} | {err[:80]} |")
+
+    out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
 async def main() -> int:
     import argparse
     import httpx
@@ -310,6 +398,8 @@ async def main() -> int:
     print("=== Review IQ Eval Runner ===")
     print(f"Fixtures: {FIXTURES_DIR}  threshold: {PASS_THRESHOLD:.0%}  mode: {mode}\n")
 
+    fixture_lang_map = _build_lang_map(FIXTURES_DIR)
+
     if args.base_url:
         async with httpx.AsyncClient(
             base_url=args.base_url,
@@ -321,17 +411,28 @@ async def main() -> int:
         results = await run_all()
 
     overall = aggregate_score(results)
-    write_results(results)
+    lang_scores = per_language_scores(results, fixture_lang_map)
+    write_results(results, fixture_lang_map)
+    write_report(results, fixture_lang_map)
 
     completed = [r for r in results if not r.error]
     if completed:
         avg_latency = sum(r.latency_ms for r in completed) / len(completed)
         print(f"\nAvg latency (completed fixtures): {avg_latency:.0f}ms")
 
-    print(f"Results written to {RESULTS_PATH}")
-    print(f"Overall accuracy: {overall:.1%} — {'PASS' if overall >= PASS_THRESHOLD else 'FAIL'}")
+    print(f"\nResults written to {RESULTS_PATH}")
+    print(f"Report written to {REPORT_PATH}")
+    print(f"\nOverall accuracy: {overall:.1%} -- {'PASS' if overall >= PASS_THRESHOLD else 'FAIL'}")
+    print("\nPer-language breakdown:")
+    for lang in sorted(lang_scores):
+        score = lang_scores[lang]
+        status = "PASS" if score >= PER_LANG_THRESHOLD else "FAIL"
+        print(f"  {lang}: {score:.1%} -- {status} (gate {PER_LANG_THRESHOLD:.0%})")
 
-    return 0 if overall >= PASS_THRESHOLD else 1
+    lang_fail = any(score < PER_LANG_THRESHOLD for score in lang_scores.values())
+    if overall < PASS_THRESHOLD or lang_fail:
+        return 1
+    return 0
 
 
 if __name__ == "__main__":

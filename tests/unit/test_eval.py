@@ -10,6 +10,7 @@ from eval.runner import (
     _set_f1,
     _tolerance_score,
     aggregate_score,
+    per_language_scores,
     score_fixture,
 )
 
@@ -223,3 +224,32 @@ class TestAggregateScore:
     def test_mixed(self):
         results = [FixtureResult("a", overall_score=1.0), FixtureResult("b", overall_score=0.0)]
         assert aggregate_score(results) == pytest.approx(0.5)
+
+
+class TestPerLanguageScores:
+    def test_single_language(self):
+        results = [FixtureResult("a", overall_score=0.8), FixtureResult("b", overall_score=1.0)]
+        lang_map = {"a": "en", "b": "en"}
+        scores = per_language_scores(results, lang_map)
+        assert scores == {"en": pytest.approx(0.9)}
+
+    def test_multiple_languages(self):
+        results = [
+            FixtureResult("a", overall_score=1.0),
+            FixtureResult("b", overall_score=0.6),
+            FixtureResult("c", overall_score=0.8),
+        ]
+        lang_map = {"a": "en", "b": "hi-en", "c": "hi"}
+        scores = per_language_scores(results, lang_map)
+        assert scores["en"] == pytest.approx(1.0)
+        assert scores["hi-en"] == pytest.approx(0.6)
+        assert scores["hi"] == pytest.approx(0.8)
+
+    def test_missing_fixture_defaults_to_en(self):
+        results = [FixtureResult("unknown", overall_score=0.9)]
+        scores = per_language_scores(results, {})
+        assert scores == {"en": pytest.approx(0.9)}
+
+    def test_empty_results(self):
+        scores = per_language_scores([], {})
+        assert scores == {}
