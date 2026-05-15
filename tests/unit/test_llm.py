@@ -200,3 +200,41 @@ class TestExtractWithLLM:
                 mock_gemini.assert_not_called()
 
         assert result.product == "Turbo-Vac 5000"
+
+    @pytest.mark.asyncio
+    async def test_groq_all_parse_retries_exhausted_falls_back(self) -> None:
+        """All retries fail with JSONDecodeError → log exhausted message, then fall back."""
+        bad_resp = _make_groq_response("not valid json at all")
+        gemini_result = ReviewExtractionLLMOutput(**_VALID_EXTRACTION)
+
+        with patch("app.core.llm.AsyncGroq") as MockGroq:
+            MockGroq.return_value.chat.completions.create = AsyncMock(
+                side_effect=[bad_resp, bad_resp]  # 2 attempts (max_retries=1)
+            )
+            with patch("app.core.llm._call_gemini", new=AsyncMock(return_value=(gemini_result, 50, 25))):
+                result, model, _, _, _ = await extract_with_llm("prompt")
+
+        assert result.product == "Turbo-Vac 5000"
+        assert "gemini" in model
+
+    @pytest.mark.asyncio
+    async def test_groq_unexpected_exception_falls_back_to_gemini(self) -> None:
+        """Unexpected (non-API, non-parse) exception → break and try Gemini."""
+        gemini_result = ReviewExtractionLLMOutput(**_VALID_EXTRACTION)
+
+        with patch("app.core.llm.AsyncGroq") as MockGroq:
+            MockGroq.return_value.chat.completions.create = AsyncMock(
+                side_effect=Exception("network timeout")
+            )
+            with patch("app.core.llm._call_gemini", new=AsyncMock(return_value=(gemini_result, 40, 20))):
+                result, model, _, _, _ = await extract_with_llm("prompt")
+
+        assert result.product == "Turbo-Vac 5000"
+        assert "gemini" in model
+
+
+def test_json_schema_for_llm() -> None:
+    from app.core.llm import _json_schema_for_llm
+    schema = _json_schema_for_llm()
+    assert "properties" in schema
+    assert "product" in schema["properties"]

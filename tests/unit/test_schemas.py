@@ -115,6 +115,10 @@ class TestReviewExtractionLLMOutput:
         assert out.product == "Gadget Pro"
         assert out.urgency == Urgency.low
 
+    def test_non_numeric_stars_coerces_to_none(self) -> None:
+        out = ReviewExtractionLLMOutput(product="Widget", stars="not-a-number")  # type: ignore[arg-type]
+        assert out.stars is None  # covers schemas.py:100-101 (except TypeError/ValueError)
+
 
 class TestBatchReviewRequest:
     def test_empty_list_raises(self) -> None:

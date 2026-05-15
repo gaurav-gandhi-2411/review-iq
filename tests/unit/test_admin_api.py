@@ -216,3 +216,49 @@ def test_revoke_key_not_found_raises_404() -> None:
 
     assert exc.value.status_code == 404
     conn.rollback.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
+# Error paths — generic exception handler (catch-all except blocks)
+# ---------------------------------------------------------------------------
+
+
+def test_create_org_generic_exception_rolls_back() -> None:
+    conn, cur = _make_conn()
+    cur.execute.side_effect = Exception("disk full")  # not a UniqueViolation
+
+    with patch("app.api.admin._db_connect", return_value=conn):
+        with pytest.raises(Exception, match="disk full"):
+            _create_org_db("Acme", "acme", "free")
+
+    conn.rollback.assert_called_once()
+    conn.close.assert_called_once()
+
+
+def test_create_key_generic_exception_rolls_back() -> None:
+    conn, cur = _make_conn()
+    # org SELECT succeeds, INSERT raises a generic error
+    cur.fetchone.side_effect = [(_ORG_ID,), Exception("constraint violated")]
+
+    with patch("app.api.admin._db_connect", return_value=conn):
+        with patch("app.api.admin.generate_api_key", return_value=("riq_live_" + "a" * 32, "riq_live_aaaaaaaa", "hash")):
+            with pytest.raises(Exception):
+                _create_key_db(_ORG_ID, "default", 1000)
+
+    conn.rollback.assert_called_once()
+    conn.close.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
+# _db_connect — the actual DB connect function body
+# ---------------------------------------------------------------------------
+
+
+def test_admin_db_connect_uses_supabase_database_url() -> None:
+    with patch("app.api.admin.get_settings") as mock_settings, \
+         patch("app.api.admin.psycopg2") as mock_psycopg2:
+        mock_settings.return_value.supabase_database_url = "postgresql://user:pw@host/db"
+        mock_psycopg2.connect.return_value = MagicMock()
+        from app.api.admin import _db_connect
+        _db_connect()
+    mock_psycopg2.connect.assert_called_once_with("postgresql://user:pw@host/db")
