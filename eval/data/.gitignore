@@ -1,0 +1,14 @@
+# Raw Kaggle downloads
+raw/
+
+# Generated candidate files (large, locally-only)
+flipkart_candidates.jsonl
+amazon_candidates.jsonl
+
+# Jupyter notebooks from exploration
+*.ipynb
+
+# Any other large data files
+*.csv
+*.parquet
+*.arrow
