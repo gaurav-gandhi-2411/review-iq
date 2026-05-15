@@ -1,0 +1,53 @@
+{
+  "id": "hi-en-007",
+  "review_text": "This earphone is just awsome yaar , everything is just so perfect yaar just go for it blindly ,i tell you u cant find a best product at this price its awsome👌👌👌👌",
+  "ground_truth": {
+    "product": "earphone",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": [
+      "perfect quality",
+      "excellent value for money",
+      "highly recommended"
+    ],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "positive",
+    "urgency": "low",
+    "topics": [
+      "value_for_money",
+      "overall_quality",
+      "price"
+    ],
+    "competitor_mentions": [],
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "claude-sonnet-4-5",
+    "labeled_at": "2026-05-15T12:16:21.960627+00:00",
+    "model_version": "claude-sonnet-4-5-20250929",
+    "input_tokens": 620,
+    "output_tokens": 155
+  }
+}

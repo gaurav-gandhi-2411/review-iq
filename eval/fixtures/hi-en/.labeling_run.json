@@ -1,0 +1,10 @@
+{
+  "model": "claude-sonnet-4-5",
+  "labeled_at": "2026-05-15T12:16:50.697443+00:00",
+  "fixtures_written": 15,
+  "candidates_considered": 15,
+  "total_input_tokens": 9315,
+  "total_output_tokens": 2517,
+  "total_cost_usd": 0.06570000000000001,
+  "avg_cost_per_fixture_usd": 0.00438
+}

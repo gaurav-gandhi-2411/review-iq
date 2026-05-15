@@ -1,0 +1,54 @@
+{
+  "id": "hi-en-009",
+  "review_text": "Mujhe bahut bekar laga I dont like sound quality the sound quality is irritating and annoying,sound beech beech me gayab ho jata h Blootootth version old h Overall i dont likeREAD MORE",
+  "ground_truth": {
+    "product": "bluetooth earphones",
+    "stars": null,
+    "stars_inferred": 1,
+    "pros": [],
+    "cons": [
+      "poor sound quality",
+      "irritating sound",
+      "sound cuts out",
+      "old bluetooth version"
+    ],
+    "buy_again": false,
+    "sentiment": "negative",
+    "urgency": "medium",
+    "topics": [
+      "sound_quality",
+      "bluetooth_version",
+      "connectivity"
+    ],
+    "competitor_mentions": [],
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "claude-sonnet-4-5",
+    "labeled_at": "2026-05-15T12:16:29.463595+00:00",
+    "model_version": "claude-sonnet-4-5-20250929",
+    "input_tokens": 627,
+    "output_tokens": 162
+  }
+}

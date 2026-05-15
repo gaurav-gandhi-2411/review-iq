@@ -1,0 +1,55 @@
+{
+  "id": "hi-en-005",
+  "review_text": "very good product from ream me. the most amazing thing is its magnetic effect. voice quality is best and also battery back up is best. go through it. paisa vasool headphone hai bhai.",
+  "ground_truth": {
+    "product": "headphone",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": [
+      "magnetic effect",
+      "voice quality best",
+      "battery backup best",
+      "paisa vasool"
+    ],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "positive",
+    "urgency": "low",
+    "topics": [
+      "magnetic_effect",
+      "voice_quality",
+      "battery_backup",
+      "value_for_money"
+    ],
+    "competitor_mentions": [],
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "claude-sonnet-4-5",
+    "labeled_at": "2026-05-15T12:16:15.540566+00:00",
+    "model_version": "claude-sonnet-4-5-20250929",
+    "input_tokens": 616,
+    "output_tokens": 172
+  }
+}

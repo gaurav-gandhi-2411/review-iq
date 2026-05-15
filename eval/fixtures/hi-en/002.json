@@ -1,0 +1,51 @@
+{
+  "id": "hi-en-002",
+  "review_text": "Bole to jhakkas . Don't think too much go for it and you will not regret about it. It's my promise . Just go for this one plus bullets wireless z and don't think too much by reading bad reviews.",
+  "ground_truth": {
+    "product": "OnePlus Bullets Wireless Z",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": [
+      "highly recommended",
+      "excellent quality"
+    ],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "positive",
+    "urgency": "low",
+    "topics": [
+      "recommendation",
+      "product_quality"
+    ],
+    "competitor_mentions": [],
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "claude-sonnet-4-5",
+    "labeled_at": "2026-05-15T12:16:04.643809+00:00",
+    "model_version": "claude-sonnet-4-5-20250929",
+    "input_tokens": 623,
+    "output_tokens": 128
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "id": "hi-en-013",
+  "review_text": "Yaar i cant believe that it will be that good i received delivery in just 15 hours and the performance is excellentit passive noice cancellation block many noice it can be wear wuile studying amazing definitely you should buy itREAD MORE",
+  "ground_truth": {
+    "product": "earphones",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": [
+      "fast delivery",
+      "excellent performance",
+      "passive noise cancellation",
+      "good for studying"
+    ],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "positive",
+    "urgency": "low",
+    "topics": [
+      "delivery_speed",
+      "performance",
+      "noise_cancellation",
+      "studying"
+    ],
+    "competitor_mentions": [],
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "claude-sonnet-4-5",
+    "labeled_at": "2026-05-15T12:16:43.583883+00:00",
+    "model_version": "claude-sonnet-4-5-20250929",
+    "input_tokens": 628,
+    "output_tokens": 166
+  }
+}

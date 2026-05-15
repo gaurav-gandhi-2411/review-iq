@@ -1,0 +1,54 @@
+{
+  "id": "hi-en-015",
+  "review_text": "Jada review mat dekho...bahut hi accha hai..base I love it...value for money... awesome product hai..😁",
+  "ground_truth": {
+    "product": "general product",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": [
+      "excellent quality",
+      "great bass",
+      "value for money",
+      "awesome product"
+    ],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "positive",
+    "urgency": "low",
+    "topics": [
+      "bass",
+      "value",
+      "quality"
+    ],
+    "competitor_mentions": [],
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "claude-sonnet-4-5",
+    "labeled_at": "2026-05-15T12:16:50.697443+00:00",
+    "model_version": "claude-sonnet-4-5-20250929",
+    "input_tokens": 603,
+    "output_tokens": 154
+  }
+}

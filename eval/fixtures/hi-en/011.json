@@ -1,0 +1,52 @@
+{
+  "id": "hi-en-011",
+  "review_text": "after using 1 month i cant say its so good i can say its voice qlty is very less and meri toh khrab ho gai bss 1 month may he.",
+  "ground_truth": {
+    "product": "earphones",
+    "stars": null,
+    "stars_inferred": 1,
+    "pros": [],
+    "cons": [
+      "very poor voice quality",
+      "broke within one month"
+    ],
+    "buy_again": false,
+    "sentiment": "negative",
+    "urgency": "medium",
+    "topics": [
+      "voice_quality",
+      "durability",
+      "product_failure"
+    ],
+    "competitor_mentions": [],
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "claude-sonnet-4-5",
+    "labeled_at": "2026-05-15T12:16:35.972942+00:00",
+    "model_version": "claude-sonnet-4-5-20250929",
+    "input_tokens": 615,
+    "output_tokens": 150
+  }
+}

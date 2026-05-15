@@ -1,0 +1,59 @@
+{
+  "id": "hi-en-010",
+  "review_text": "I purchased this on 7th june 2019 and one side of the earphone stopepd working and the jack was also become loose . When i applied for the warranty it took one month to come but the best thing is they gave me a new one . It's awesome yaar . I liked the assurity of boat .",
+  "ground_truth": {
+    "product": "earphones",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": [
+      "good warranty service",
+      "received replacement unit",
+      "reliable brand assurance"
+    ],
+    "cons": [
+      "one side stopped working",
+      "loose jack",
+      "one month warranty processing"
+    ],
+    "buy_again": true,
+    "sentiment": "mixed",
+    "urgency": "low",
+    "topics": [
+      "warranty",
+      "durability",
+      "jack",
+      "replacement",
+      "customer_service"
+    ],
+    "competitor_mentions": [],
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "claude-sonnet-4-5",
+    "labeled_at": "2026-05-15T12:16:32.925304+00:00",
+    "model_version": "claude-sonnet-4-5-20250929",
+    "input_tokens": 642,
+    "output_tokens": 189
+  }
+}

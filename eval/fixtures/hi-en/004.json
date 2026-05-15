@@ -1,0 +1,58 @@
+{
+  "id": "hi-en-004",
+  "review_text": "Best in class 11mm drives just provide a loving experience.Go for it without any doubt Bass bestBattery backup gajab h bilkul gajabSound best Best neckband in this range even better than jbl",
+  "ground_truth": {
+    "product": "neckband earphones",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": [
+      "11mm drivers",
+      "excellent bass",
+      "amazing battery backup",
+      "best sound quality"
+    ],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "positive",
+    "urgency": "low",
+    "topics": [
+      "drivers",
+      "bass",
+      "battery_backup",
+      "sound_quality",
+      "value_for_money"
+    ],
+    "competitor_mentions": [
+      "JBL"
+    ],
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "claude-sonnet-4-5",
+    "labeled_at": "2026-05-15T12:16:11.868686+00:00",
+    "model_version": "claude-sonnet-4-5-20250929",
+    "input_tokens": 622,
+    "output_tokens": 187
+  }
+}

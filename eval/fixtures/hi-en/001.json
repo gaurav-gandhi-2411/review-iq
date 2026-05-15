@@ -1,0 +1,57 @@
+{
+  "id": "hi-en-001",
+  "review_text": "Superb earphone i like it.... and the sound is just awsome....  ye earphone apple k earphone ko competition de dega.....  Not better than apple earphone... but km v nai hai apple k earphone se....",
+  "ground_truth": {
+    "product": "earphone",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": [
+      "superb quality",
+      "awesome sound",
+      "competitive with Apple"
+    ],
+    "cons": [
+      "not better than Apple"
+    ],
+    "buy_again": true,
+    "sentiment": "positive",
+    "urgency": "low",
+    "topics": [
+      "sound quality",
+      "comparison",
+      "value"
+    ],
+    "competitor_mentions": [
+      "Apple"
+    ],
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "claude-sonnet-4-5",
+    "labeled_at": "2026-05-15T12:16:01.767461+00:00",
+    "model_version": "claude-sonnet-4-5-20250929",
+    "input_tokens": 625,
+    "output_tokens": 169
+  }
+}

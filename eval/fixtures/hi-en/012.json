@@ -1,0 +1,60 @@
+{
+  "id": "hi-en-012",
+  "review_text": "Pros:    Good Sound Quality(not too much better than a local simple earphone)    Nice connectivity(utna bhi nahi)Cons:    My ear pains after using it  for around 30 min.(needed more soft material for the speaker's soft parts )READ MORE",
+  "ground_truth": {
+    "product": "earphones",
+    "stars": null,
+    "stars_inferred": 2,
+    "pros": [
+      "good sound quality",
+      "nice connectivity"
+    ],
+    "cons": [
+      "ear pain after 30 minutes",
+      "insufficient soft material",
+      "not much better than local"
+    ],
+    "buy_again": false,
+    "sentiment": "mixed",
+    "urgency": "medium",
+    "topics": [
+      "sound quality",
+      "connectivity",
+      "comfort",
+      "ear pain",
+      "material quality"
+    ],
+    "competitor_mentions": [],
+    "feature_requests": [
+      "softer ear cushions"
+    ],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "claude-sonnet-4-5",
+    "labeled_at": "2026-05-15T12:16:40.009951+00:00",
+    "model_version": "claude-sonnet-4-5-20250929",
+    "input_tokens": 635,
+    "output_tokens": 197
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "id": "hi-en-014",
+  "review_text": "Product is very good But online delivery is very bad because it's too late slow delivery Delivery boy dene nhi aata h lene jana padta hREAD MORE",
+  "ground_truth": {
+    "product": "unspecified product",
+    "stars": null,
+    "stars_inferred": 3,
+    "pros": [
+      "product quality good"
+    ],
+    "cons": [
+      "very slow delivery",
+      "delivery boy doesn't deliver",
+      "have to pick up"
+    ],
+    "buy_again": null,
+    "sentiment": "mixed",
+    "urgency": "medium",
+    "topics": [
+      "product_quality",
+      "delivery_service",
+      "delivery_speed",
+      "customer_service"
+    ],
+    "competitor_mentions": [],
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "claude-sonnet-4-5",
+    "labeled_at": "2026-05-15T12:16:47.268261+00:00",
+    "model_version": "claude-sonnet-4-5-20250929",
+    "input_tokens": 610,
+    "output_tokens": 178
+  }
+}

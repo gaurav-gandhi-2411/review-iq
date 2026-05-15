@@ -1,0 +1,53 @@
+{
+  "id": "hi-en-003",
+  "review_text": "Don't trust on bad Review i also confused when i see the bass review 3.3 but after the purchase this headset i m Totally Satisfied with this. Worth buy it. Hindi me bole to paisa vasool h bhai.",
+  "ground_truth": {
+    "product": "headset",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": [
+      "good bass",
+      "value for money",
+      "satisfying purchase"
+    ],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "positive",
+    "urgency": "low",
+    "topics": [
+      "bass",
+      "value",
+      "reviews"
+    ],
+    "competitor_mentions": [],
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "claude-sonnet-4-5",
+    "labeled_at": "2026-05-15T12:16:07.898529+00:00",
+    "model_version": "claude-sonnet-4-5-20250929",
+    "input_tokens": 626,
+    "output_tokens": 149
+  }
+}

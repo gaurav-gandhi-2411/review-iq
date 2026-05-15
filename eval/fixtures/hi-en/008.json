@@ -1,0 +1,58 @@
+{
+  "id": "hi-en-008",
+  "review_text": "Cool gadget... No sound delays while playing PUBG or any other online game...Very great device... Type c charging very quick... Full paisa vasool...😉😉😉",
+  "ground_truth": {
+    "product": "earphones",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": [
+      "no sound delays",
+      "good for gaming",
+      "type c charging",
+      "quick charging",
+      "value for money"
+    ],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "positive",
+    "urgency": "low",
+    "topics": [
+      "gaming",
+      "sound_delay",
+      "latency",
+      "charging",
+      "type_c",
+      "value_for_money"
+    ],
+    "competitor_mentions": [],
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "claude-sonnet-4-5",
+    "labeled_at": "2026-05-15T12:16:25.715399+00:00",
+    "model_version": "claude-sonnet-4-5-20250929",
+    "input_tokens": 613,
+    "output_tokens": 187
+  }
+}
