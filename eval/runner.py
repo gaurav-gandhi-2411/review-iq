@@ -175,16 +175,17 @@ def aggregate_score(results: list[FixtureResult]) -> float:
 
 async def run_single(fixture: dict[str, Any]) -> FixtureResult:
     from app.core.llm import extract_with_llm
-    from app.core.prompt import build_user_prompt
+    from app.core.prompts import build_prompt
     from app.core.sanitize import sanitize, wrap_for_llm
 
     result = FixtureResult(fixture_id=fixture["id"])
     t0 = time.monotonic()
     try:
         text = fixture["review_text"]
+        lang = fixture.get("ground_truth", {}).get("language", "en")
         sanitized, _ = sanitize(text)
         wrapped = wrap_for_llm(sanitized)
-        user_prompt = build_user_prompt(wrapped)
+        user_prompt = build_prompt(wrapped, lang)
         llm_output, _model, latency_ms, _, _ = await extract_with_llm(user_prompt)
         result.latency_ms = latency_ms
         extraction_dict = llm_output.model_dump()

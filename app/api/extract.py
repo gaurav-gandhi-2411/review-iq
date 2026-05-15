@@ -11,7 +11,8 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from app.core.auth import require_api_key
 from app.core.llm import extract_with_llm
 from app.core.metrics import EXTRACTION_LATENCY, EXTRACTIONS_TOTAL
-from app.core.prompt import PROMPT_VERSION, build_user_prompt
+from app.core.prompts import PROMPT_VERSION
+from app.core.prompts.en import build_prompt as build_user_prompt
 from app.core.sanitize import sanitize, wrap_for_llm
 from app.core.schemas import (
     BatchJob,

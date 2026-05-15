@@ -11,7 +11,7 @@ from app.auth.api_key import ApiKeyContext, require_api_key
 from app.core.language import detect_language
 from app.core.llm import extract_with_llm
 from app.core.metrics import EXTRACTION_LATENCY, EXTRACTIONS_TOTAL
-from app.core.prompt import PROMPT_VERSION, build_user_prompt
+from app.core.prompts import PROMPT_VERSION, build_prompt
 from app.core.sanitize import sanitize, wrap_for_llm
 from app.core.schemas import (
     BatchReviewRequest,
@@ -45,7 +45,7 @@ async def _run_extraction_v2(request: ReviewRequest, ctx: ApiKeyContext) -> Revi
         log.warning("extraction.suspicious_input", input_hash=input_hash)
 
     wrapped = wrap_for_llm(clean_text)
-    user_prompt = build_user_prompt(wrapped)
+    user_prompt = build_prompt(wrapped, detected_lang)
 
     t0 = datetime.utcnow()
     llm_output, model_name, latency_ms, tokens_in, tokens_out = await extract_with_llm(user_prompt)

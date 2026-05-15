@@ -4,6 +4,42 @@ This file documents every version of the extraction prompt, including eval score
 
 ---
 
+## v2.0 (2026-05-15) — Language-branched prompts
+
+**Files:** `app/core/prompts/en.py`, `app/core/prompts/hi_en.py`, `app/core/prompts/hi.py`
+**Entry point:** `app/core/prompts.build_prompt(wrapped_review, language)`
+**Model target:** Groq Llama 3.3 70B (primary), Gemini 2.0 Flash (fallback)
+
+### What changed vs v1.1
+
+| | v1.1 | v2.0 |
+|---|---|---|
+| Language support | English only | English + Hinglish + Hindi |
+| Entry point | `app/core/prompt.build_user_prompt()` | `app/core/prompts.build_prompt(text, lang)` |
+| Non-English output | LLM self-reports language, may output Hindi values | Explicit instruction: translate all field values to English |
+| Runner | Always uses English prompt | Uses fixture's `ground_truth.language` to select prompt |
+
+### English prompt (en.py)
+Content identical to v1.1 — promoted without changes.
+
+### Hinglish prompt (hi_en.py)
+Preamble explains Hinglish code-mixing. Explicit: "Output ALL field values in English, translate Hindi words." One few-shot example (earphone review with Apple comparison).
+
+### Hindi prompt (hi.py)
+Preamble for Devanagari input. Explicit: "Output ALL field values in English, translate from Hindi." Two examples: happy earphone review + safety complaint (electric shock).
+
+### Rationale
+With English-only prompt, model outputs Hindi/Hinglish field values for non-English reviews. This breaks exact-match and fuzzy scoring against English ground truth. Language-specific prompts add translation instructions so all field values are in English regardless of input.
+
+### Eval scores
+
+Run these after Step 7 wires up multi-language runner:
+```
+uv run python -m eval.runner
+```
+
+---
+
 ## v1.1 (2026-05-10) — Exhaustive pros/cons extraction
 
 **File:** `app/core/prompt.py`
@@ -114,8 +150,9 @@ feature requests, packaging damage, urgent safety, neutral, empty/minimal review
 ## Prompt change checklist
 
 Before merging a prompt change:
-- [ ] Bump `PROMPT_VERSION` in `app/core/prompt.py`
+- [ ] Bump `PROMPT_VERSION` in `app/core/prompts/__init__.py`
+- [ ] Add a section to this file (version, date, what changed, rationale, eval scores)
 - [ ] Re-run full eval suite (`uv run python -m eval.runner`)
-- [ ] Record score delta in this file
-- [ ] Check fixture #001 (Turbo-Vac) passes with `stars: null`, `stars_inferred: 3`, `competitor_mentions: ["Dyson"]`
-- [ ] Check fixture #003 (prompt injection) still fails cleanly
+- [ ] Overall accuracy must be ≥ 85%; per-language ≥ 80%
+- [ ] English: Check fixture #001 (Turbo-Vac) passes with `stars: null`, `stars_inferred: 3`, `competitor_mentions: ["Dyson"]`
+- [ ] English: Check fixture #003 (prompt injection) still fails cleanly
