@@ -8,6 +8,7 @@ import structlog
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 
 from app.auth.api_key import ApiKeyContext, require_api_key
+from app.core.language import detect_language
 from app.core.llm import extract_with_llm
 from app.core.metrics import EXTRACTION_LATENCY, EXTRACTIONS_TOTAL
 from app.core.prompt import PROMPT_VERSION, build_user_prompt
@@ -38,6 +39,7 @@ async def _run_extraction_v2(request: ReviewRequest, ctx: ApiKeyContext) -> Revi
         EXTRACTIONS_TOTAL.labels(model="cached", cached="true").inc()
         return cached
 
+    detected_lang = detect_language(request.text)
     clean_text, is_suspicious = sanitize(request.text)
     if is_suspicious:
         log.warning("extraction.suspicious_input", input_hash=input_hash)
@@ -47,6 +49,8 @@ async def _run_extraction_v2(request: ReviewRequest, ctx: ApiKeyContext) -> Revi
 
     t0 = datetime.utcnow()
     llm_output, model_name, latency_ms, tokens_in, tokens_out = await extract_with_llm(user_prompt)
+    # Detected language takes precedence over LLM's self-reported language.
+    llm_output.language = detected_lang
 
     meta = ExtractionMetaV2(
         model=model_name,

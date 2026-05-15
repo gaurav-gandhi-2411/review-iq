@@ -1,6 +1,6 @@
 {
   "id": "hi-006",
-  "review_text": "Skybags bag theek hai, khaas kuch nahi. quality average level ki hai.",
+  "review_text": "Skybags बैग ठीक-ठाक है, कुछ खास नहीं। कीमत के हिसाब से चल जाएगा।",
   "ground_truth": {
     "product": "Skybags bag",
     "stars": null,

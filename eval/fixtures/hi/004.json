@@ -1,6 +1,6 @@
 {
   "id": "hi-004",
-  "review_text": "Amazon se liya adapter ne shock diya, bahut khatarnak hai! Refund chahiye aur kabhi nahi lunga.",
+  "review_text": "बहुत खतरनाक प्रोडक्ट! Amazon se liya adapter से करंट लग गया। तुरंत रिफंड चाहिए। किसी को मत लेना ये।",
   "ground_truth": {
     "product": "adapter",
     "stars": null,

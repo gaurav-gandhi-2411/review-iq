@@ -1,6 +1,6 @@
 {
   "id": "hi-003",
-  "review_text": "Noise smartwatch ka display achha hai par battery bohot jaldi khatam hoti hai. Confused hun dobara lun ya nahi.",
+  "review_text": "Noise की स्मार्टवॉच की डिस्प्ले तो बढ़िया है पर बैटरी बहुत जल्दी खत्म हो जाती है। दोबारा लेने में संदेह है।",
   "ground_truth": {
     "product": "Noise smartwatch",
     "stars": null,
