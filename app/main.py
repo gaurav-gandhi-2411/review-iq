@@ -18,6 +18,7 @@ from app.api.dashboard import router as dashboard_router
 from app.api.extract import router as extract_router
 from app.api.query import router as query_router
 from app.api.v2.extract import router as v2_extract_router
+from app.api.v2.ingest import router as ingest_router
 from app.api.v2.reviews import router as v2_reviews_router
 from app.core.config import Settings, get_settings
 from app.core.logging import setup_logging
@@ -72,6 +73,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     # v2 and admin are always mounted
     _app.include_router(v2_extract_router)
+    _app.include_router(ingest_router)
     _app.include_router(v2_reviews_router)
     _app.include_router(admin_router)
 
