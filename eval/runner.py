@@ -7,6 +7,7 @@ import json
 import sys
 import time
 from dataclasses import dataclass, field
+from datetime import UTC
 from pathlib import Path
 from typing import Any
 
@@ -251,11 +252,11 @@ async def run_single_http(
 
 def _collect_fixture_paths(fixtures_dir: Path) -> list[Path]:
     """Return all fixture JSON paths: flat files + hi-en/ and hi/ subdirs."""
-    paths: list[Path] = sorted(fixtures_dir.glob("*.json"))
+    paths: list[Path] = sorted(p for p in fixtures_dir.glob("*.json") if not p.name.startswith("."))
     for subdir in ("hi-en", "hi"):
         sub = fixtures_dir / subdir
         if sub.is_dir():
-            paths.extend(sorted(sub.glob("*.json")))
+            paths.extend(sorted(p for p in sub.glob("*.json") if not p.name.startswith(".")))
     return paths
 
 
@@ -349,11 +350,11 @@ def write_report(
     out_path: Path = REPORT_PATH,
 ) -> None:
     """Write a human-readable Markdown report."""
-    from datetime import datetime, timezone
+    from datetime import datetime
 
     overall = aggregate_score(results)
     lang_scores = per_language_scores(results, fixture_lang_map)
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    now = datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")
 
     lines: list[str] = [
         "# Eval Report",
@@ -383,11 +384,14 @@ def write_report(
 
 async def main() -> int:
     import argparse
+
     import httpx
 
     parser = argparse.ArgumentParser(description="Review IQ eval runner")
     parser.add_argument("--base-url", default=None, help="Cloud Run base URL (enables HTTP mode)")
-    parser.add_argument("--api-key", default=None, help="X-API-Key for /v2/extract (required with --base-url)")
+    parser.add_argument(
+        "--api-key", default=None, help="X-API-Key for /v2/extract (required with --base-url)"
+    )
     args = parser.parse_args()
 
     if args.base_url and not args.api_key:
