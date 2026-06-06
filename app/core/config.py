@@ -61,6 +61,8 @@ class Settings(BaseSettings):
     # Admin HTTP Basic auth
     admin_username: str = Field(default="admin", alias="ADMIN_USERNAME")
     admin_password_hash: str = Field(default="", alias="ADMIN_PASSWORD_HASH")
+    # LLM privacy: set True only on v1/demo path; v2 org-key path is always Groq-only
+    enable_gemini_fallback: bool = Field(default=False, alias="ENABLE_GEMINI_FALLBACK")
 
     # Supabase
     supabase_url: str = Field(default="", alias="SUPABASE_URL")

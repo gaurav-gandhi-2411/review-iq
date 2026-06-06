@@ -48,7 +48,9 @@ async def _run_extraction_v2(request: ReviewRequest, ctx: ApiKeyContext) -> Revi
     user_prompt = build_prompt(wrapped, detected_lang)
 
     t0 = datetime.utcnow()
-    llm_output, model_name, latency_ms, tokens_in, tokens_out = await extract_with_llm(user_prompt)
+    llm_output, model_name, latency_ms, tokens_in, tokens_out = await extract_with_llm(
+        user_prompt, allow_gemini_fallback=False
+    )
     # Detected language takes precedence over LLM's self-reported language.
     llm_output.language = detected_lang
 
@@ -110,7 +112,8 @@ async def extract_single(
     except RuntimeError as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=str(exc),
+            detail="upstream LLM unavailable",
+            headers={"Retry-After": "30"},
         ) from exc
 
 

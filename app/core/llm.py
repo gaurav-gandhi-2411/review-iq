@@ -116,19 +116,23 @@ async def extract_with_llm(
     user_prompt: str,
     *,
     model_hint: str | None = None,
+    allow_gemini_fallback: bool = True,
 ) -> tuple[ReviewExtractionLLMOutput, str, int, int, int]:
-    """Extract a review using the LLM pipeline with fallback.
+    """Extract a review using the LLM pipeline with optional Gemini fallback.
 
     Args:
         user_prompt: Formatted prompt string (review wrapped in delimiters).
         model_hint: Override to force "groq" or "gemini" (for testing).
+        allow_gemini_fallback: When False, raises RuntimeError instead of calling
+            Gemini on Groq failure. Must be False on the v2/org-key path — Gemini
+            free tier trains on inputs and is unacceptable for client data.
 
     Returns:
         Tuple of (parsed extraction, model name, latency_ms, tokens_in, tokens_out).
         tokens_in/tokens_out are 0 if the provider did not return counts.
 
     Raises:
-        RuntimeError: When both Groq and Gemini fail after retries.
+        RuntimeError: When Groq fails and fallback is disabled, or both providers fail.
     """
     settings = get_settings()
     t0 = time.monotonic()
@@ -160,8 +164,8 @@ async def extract_with_llm(
                 log.warning("llm.unexpected_error", provider="groq", error=str(exc))
                 break
 
-    # --- Gemini fallback ---
-    if model_hint != "groq" and settings.gemini_api_key:
+    # --- Gemini fallback (disabled on v2/org-key path) ---
+    if allow_gemini_fallback and model_hint != "groq" and settings.gemini_api_key:
         try:
             result, tokens_in, tokens_out = await _call_gemini(user_prompt)
             latency_ms = int((time.monotonic() - t0) * 1000)

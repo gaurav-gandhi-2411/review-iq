@@ -232,6 +232,25 @@ class TestExtractWithLLM:
         assert result.product == "Turbo-Vac 5000"
         assert "gemini" in model
 
+    @pytest.mark.asyncio
+    async def test_v2_path_does_not_fall_back_to_gemini_on_groq_error(self) -> None:
+        """allow_gemini_fallback=False: Groq error → RuntimeError, _call_gemini never invoked."""
+        from groq import APIStatusError
+
+        groq_err = APIStatusError(
+            "rate limit",
+            response=MagicMock(status_code=429, headers={}),
+            body={},
+        )
+        with (
+            patch("app.core.llm.AsyncGroq") as MockGroq,
+            patch("app.core.llm._call_gemini", new=AsyncMock()) as mock_gemini,
+        ):
+            MockGroq.return_value.chat.completions.create = AsyncMock(side_effect=groq_err)
+            with pytest.raises(RuntimeError, match="Both LLM providers failed"):
+                await extract_with_llm("some prompt", allow_gemini_fallback=False)
+        mock_gemini.assert_not_called()
+
 
 def test_json_schema_for_llm() -> None:
     from app.core.llm import _json_schema_for_llm
