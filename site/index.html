@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>review-iq — Customer Review Intelligence API</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Syntax-highlight placeholder for pre blocks */
+    .code-block { position: relative; }
+    .copy-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.6rem;
+      background: #4b5563;
+      color: #e5e7eb;
+      border: none;
+      border-radius: 0.25rem;
+      cursor: pointer;
+    }
+    .copy-btn:hover { background: #6b7280; }
+    .tab-btn.active { background-color: #1e40af; color: #fff; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+  </style>
+</head>
+<body class="bg-gray-950 text-gray-100 font-sans antialiased">
+
+  <!-- =====================================================================
+       SECTION 1 — HERO
+  ====================================================================== -->
+  <header class="bg-gradient-to-br from-blue-950 via-gray-950 to-gray-900 border-b border-gray-800">
+    <div class="max-w-5xl mx-auto px-6 py-20 text-center">
+      <p class="text-blue-400 text-sm font-semibold tracking-widest uppercase mb-3">Open Source · MIT Licensed</p>
+      <h1 class="text-5xl md:text-6xl font-extrabold text-white mb-4 leading-tight">review-iq</h1>
+      <p class="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto mb-10">
+        Turn customer reviews into structured insights — English, Hinglish, and Hindi.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a
+          href="#demo"
+          class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-8 py-3 rounded-lg transition-colors text-lg"
+        >Try the demo &rarr;</a>
+        <a
+          href="/account"
+          class="bg-gray-700 hover:bg-gray-600 text-white font-semibold px-8 py-3 rounded-lg transition-colors text-lg"
+        >Get your API key &rarr;</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-6">
+
+    <!-- ==================================================================
+         SECTION 2 — LIVE DEMO BOX
+    =================================================================== -->
+    <section id="demo" class="py-16">
+      <h2 class="text-3xl font-bold text-white mb-2">Try it — no signup needed</h2>
+      <p class="text-gray-400 mb-6">Paste any product review and hit Analyze. The API runs live against Groq Llama 3.3 70B.</p>
+
+      <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
+        <label for="demo-text" class="block text-sm font-medium text-gray-300 mb-2">Review text</label>
+        <textarea
+          id="demo-text"
+          rows="4"
+          class="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-gray-100 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+          spellcheck="false"
+        >Superb earphone yaar, sound ekdum mast hai. But battery bahut weak hai. Paisa vasool nahi for 2000 rupees.</textarea>
+
+        <button
+          id="demo-btn"
+          onclick="runDemo()"
+          class="mt-4 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold px-6 py-2.5 rounded-lg transition-colors text-sm"
+        >Analyze &rarr;</button>
+
+        <div id="demo-error" class="hidden mt-4 bg-red-950 border border-red-700 text-red-300 rounded-lg px-4 py-3 text-sm"></div>
+
+        <div id="demo-result-wrap" class="hidden mt-4">
+          <p class="text-xs text-gray-500 mb-1 font-mono">Response (ReviewExtraction)</p>
+          <pre
+            id="demo-result"
+            class="bg-gray-800 border border-gray-700 rounded-lg p-4 text-sm text-green-300 overflow-x-auto whitespace-pre-wrap break-all"
+          ></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================
+         SECTION 3 — ACCURACY TABLE
+    =================================================================== -->
+    <section class="py-16 border-t border-gray-800">
+      <h2 class="text-3xl font-bold text-white mb-2">Real accuracy, honest gaps</h2>
+      <p class="text-gray-400 mb-8">
+        Evaluated on held-out fixtures using field-level scoring (exact match + fuzzy + set overlap).
+        Prompt v2.0, Groq Llama 3.3 70B.
+      </p>
+
+      <div class="overflow-x-auto rounded-xl border border-gray-700">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-800 text-gray-300">
+            <tr>
+              <th class="px-6 py-3 text-left font-semibold">Language</th>
+              <th class="px-6 py-3 text-left font-semibold">Score</th>
+              <th class="px-6 py-3 text-left font-semibold">Gate</th>
+              <th class="px-6 py-3 text-left font-semibold">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-700">
+            <tr class="bg-gray-900 hover:bg-gray-850">
+              <td class="px-6 py-4 text-gray-100">English <span class="text-gray-500 text-xs">(en)</span></td>
+              <td class="px-6 py-4 font-mono text-blue-300">87.9%</td>
+              <td class="px-6 py-4 text-gray-400">&ge;80%</td>
+              <td class="px-6 py-4 text-green-400 font-semibold">&#10003; PASS</td>
+            </tr>
+            <tr class="bg-gray-900 hover:bg-gray-850">
+              <td class="px-6 py-4 text-gray-100">Hindi <span class="text-gray-500 text-xs">(hi)</span></td>
+              <td class="px-6 py-4 font-mono text-blue-300">87.8%</td>
+              <td class="px-6 py-4 text-gray-400">&ge;80%</td>
+              <td class="px-6 py-4 text-green-400 font-semibold">&#10003; PASS</td>
+            </tr>
+            <tr class="bg-gray-900 hover:bg-gray-850">
+              <td class="px-6 py-4 text-gray-100">Hinglish <span class="text-gray-500 text-xs">(hi-en)</span></td>
+              <td class="px-6 py-4 font-mono text-blue-300">81.2%</td>
+              <td class="px-6 py-4 text-gray-400">&ge;80%</td>
+              <td class="px-6 py-4 text-green-400 font-semibold">&#10003; PASS</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-6 bg-gray-900 border border-yellow-800 rounded-lg px-5 py-4 text-sm text-gray-300">
+        <span class="text-yellow-400 font-semibold">Known gaps:</span>
+        Sarcastic Hinglish reviews with backhanded compliments score lower.
+        Short informal reviews (&lt;10 words) occasionally miss fields.
+        Accuracy on domain-specific jargon (pharma, auto) is untested.
+      </div>
+    </section>
+
+    <!-- ==================================================================
+         SECTION 4 — QUICKSTART
+    =================================================================== -->
+    <section class="py-16 border-t border-gray-800">
+      <h2 class="text-3xl font-bold text-white mb-2">Integrate in 2 minutes</h2>
+      <p class="text-gray-400 mb-8">One POST request. JSON in, structured insights out.</p>
+
+      <!-- Tab buttons -->
+      <div class="flex gap-2 mb-4">
+        <button
+          id="tab-curl"
+          class="tab-btn active text-sm font-medium px-4 py-2 rounded-lg bg-blue-800 text-white transition-colors"
+          onclick="switchTab('curl')"
+        >curl</button>
+        <button
+          id="tab-python"
+          class="tab-btn text-sm font-medium px-4 py-2 rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
+          onclick="switchTab('python')"
+        >Python</button>
+      </div>
+
+      <!-- Curl tab -->
+      <div id="content-curl" class="tab-content active">
+        <div class="code-block">
+          <pre class="bg-gray-900 border border-gray-700 rounded-xl p-5 text-sm text-green-300 overflow-x-auto"><code>curl -X POST https://your-instance.run.app/v2/extract \
+  -H "X-API-Key: riq_live_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Excellent product, highly recommend!"}'</code></pre>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+      </div>
+
+      <!-- Python tab -->
+      <div id="content-python" class="tab-content">
+        <div class="code-block">
+          <pre class="bg-gray-900 border border-gray-700 rounded-xl p-5 text-sm text-green-300 overflow-x-auto"><code>import httpx
+
+resp = httpx.post(
+    "https://your-instance.run.app/v2/extract",
+    headers={"X-API-Key": "riq_live_your_key"},
+    json={"text": "Excellent product, highly recommend!"},
+)
+print(resp.json())</code></pre>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================
+         SECTION 5 — SELF-HOST / HOSTED + TRANSPARENCY
+    =================================================================== -->
+    <section class="py-16 border-t border-gray-800">
+      <h2 class="text-3xl font-bold text-white mb-4">MIT licensed — self-host or use hosted</h2>
+      <p class="text-gray-300 mb-4">
+        The full source is on GitHub under MIT.
+        Run it on your own infrastructure in 10 minutes with Docker.
+        Or use the hosted version and skip the ops.
+      </p>
+      <!-- TODO: add GitHub URL -->
+      <a
+        href="#"
+        class="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 font-medium text-sm mb-8"
+      >
+        <!-- GitHub icon SVG -->
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 0C5.37 0 0 5.373 0 12c0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577
+            0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756
+            -1.089-.745.083-.729.083-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998
+            .108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22
+            -.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405
+            1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176
+            .765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22
+            0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.298 24 12
+            c0-6.627-5.373-12-12-12z"/>
+        </svg>
+        View on GitHub
+      </a>
+
+      <div class="bg-gray-900 border border-gray-700 rounded-xl px-6 py-5">
+        <h3 class="text-lg font-semibold text-white mb-2">How we make money</h3>
+        <p class="text-gray-300 text-sm leading-relaxed">
+          We charge a flat monthly fee for the hosted API once you exceed the free tier
+          (100 extractions/month). No usage-based billing surprises.
+          Pricing is TBD — first clients are invoiced manually.
+        </p>
+      </div>
+    </section>
+
+  </main><!-- /main -->
+
+  <!-- ==================================================================
+       SECTION 6 — FOOTER
+  =================================================================== -->
+  <footer class="border-t border-gray-800 mt-8">
+    <div class="max-w-5xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
+      <span><strong class="text-gray-300">review-iq</strong> &mdash; MIT License</span>
+      <a href="/docs" class="text-blue-400 hover:text-blue-300 transition-colors">API Documentation &rarr;</a>
+    </div>
+  </footer>
+
+  <!-- =====================================================================
+       JAVASCRIPT
+  ====================================================================== -->
+  <script>
+    // TODO: set API_BASE to your Cloud Run URL before deploying
+    const API_BASE = "https://review-iq-prod-<hash>-ew.a.run.app";
+
+    async function runDemo() {
+      const text = document.getElementById("demo-text").value.trim();
+      if (!text) return;
+
+      const btn = document.getElementById("demo-btn");
+      const errEl = document.getElementById("demo-error");
+      const resultWrap = document.getElementById("demo-result-wrap");
+      const resultEl = document.getElementById("demo-result");
+
+      btn.disabled = true;
+      btn.textContent = "Analyzing…";
+      errEl.classList.add("hidden");
+      resultWrap.classList.add("hidden");
+
+      try {
+        const r = await fetch(`${API_BASE}/demo/extract`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+        });
+        const data = await r.json();
+        if (!r.ok) {
+          errEl.textContent = "Error " + r.status + ": " + (data.detail || JSON.stringify(data));
+          errEl.classList.remove("hidden");
+        } else {
+          resultEl.textContent = JSON.stringify(data, null, 2);
+          resultWrap.classList.remove("hidden");
+        }
+      } catch (e) {
+        errEl.textContent = "Error: " + e.message;
+        errEl.classList.remove("hidden");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Analyze →";
+      }
+    }
+
+    function switchTab(name) {
+      ["curl", "python"].forEach(function(t) {
+        document.getElementById("tab-" + t).classList.toggle("active", t === name);
+        document.getElementById("tab-" + t).className =
+          t === name
+            ? "tab-btn active text-sm font-medium px-4 py-2 rounded-lg bg-blue-800 text-white transition-colors"
+            : "tab-btn text-sm font-medium px-4 py-2 rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors";
+        document.getElementById("content-" + t).classList.toggle("active", t === name);
+      });
+    }
+
+    function copyCode(btn) {
+      const pre = btn.parentElement.querySelector("pre");
+      navigator.clipboard.writeText(pre.textContent).then(function() {
+        const orig = btn.textContent;
+        btn.textContent = "Copied!";
+        setTimeout(function() { btn.textContent = orig; }, 1500);
+      });
+    }
+  </script>
+
+</body>
+</html>

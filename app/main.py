@@ -16,6 +16,7 @@ from slowapi.util import get_remote_address
 from app.api.account import router as account_router
 from app.api.admin import router as admin_router
 from app.api.dashboard import router as dashboard_router
+from app.api.demo import router as demo_router
 from app.api.extract import router as extract_router
 from app.api.query import router as query_router
 from app.api.v2.extract import router as v2_extract_router
@@ -73,13 +74,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     _app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
     _app.add_middleware(PrometheusMiddleware)
 
-    # v2 and admin are always mounted
+    # v2, admin, and demo are always mounted
     _app.include_router(v2_extract_router)
     _app.include_router(ingest_router)
     _app.include_router(v2_reviews_router)
     _app.include_router(admin_router)
     _app.include_router(signup_router)
     _app.include_router(account_router)
+    _app.include_router(demo_router)
 
     if settings.deploy_target != "cloud-run":
         _app.include_router(dashboard_router)
