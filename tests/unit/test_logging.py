@@ -1,4 +1,5 @@
 """Unit tests for app.core.logging — setup_logging() coverage."""
+
 from __future__ import annotations
 
 from unittest.mock import patch

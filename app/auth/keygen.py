@@ -3,6 +3,7 @@
 Used by admin endpoints (Step 5) when creating a new api_keys row.
 The raw key is shown to the caller exactly once; only the prefix and hash are stored.
 """
+
 from __future__ import annotations
 
 import secrets

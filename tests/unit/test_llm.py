@@ -151,7 +151,9 @@ class TestExtractWithLLM:
 
         with patch("app.core.llm.AsyncGroq") as MockGroq:
             MockGroq.return_value.chat.completions.create = AsyncMock(side_effect=groq_err)
-            with patch("app.core.llm._call_gemini", new=AsyncMock(return_value=(gemini_result, 60, 30))):
+            with patch(
+                "app.core.llm._call_gemini", new=AsyncMock(return_value=(gemini_result, 60, 30))
+            ):
                 result, model, _, tokens_in, tokens_out = await extract_with_llm("some prompt")
 
         assert result.product == "Turbo-Vac 5000"
@@ -211,7 +213,9 @@ class TestExtractWithLLM:
             MockGroq.return_value.chat.completions.create = AsyncMock(
                 side_effect=[bad_resp, bad_resp]  # 2 attempts (max_retries=1)
             )
-            with patch("app.core.llm._call_gemini", new=AsyncMock(return_value=(gemini_result, 50, 25))):
+            with patch(
+                "app.core.llm._call_gemini", new=AsyncMock(return_value=(gemini_result, 50, 25))
+            ):
                 result, model, _, _, _ = await extract_with_llm("prompt")
 
         assert result.product == "Turbo-Vac 5000"
@@ -226,7 +230,9 @@ class TestExtractWithLLM:
             MockGroq.return_value.chat.completions.create = AsyncMock(
                 side_effect=Exception("network timeout")
             )
-            with patch("app.core.llm._call_gemini", new=AsyncMock(return_value=(gemini_result, 40, 20))):
+            with patch(
+                "app.core.llm._call_gemini", new=AsyncMock(return_value=(gemini_result, 40, 20))
+            ):
                 result, model, _, _, _ = await extract_with_llm("prompt")
 
         assert result.product == "Turbo-Vac 5000"
@@ -254,6 +260,7 @@ class TestExtractWithLLM:
 
 def test_json_schema_for_llm() -> None:
     from app.core.llm import _json_schema_for_llm
+
     schema = _json_schema_for_llm()
     assert "properties" in schema
     assert "product" in schema["properties"]

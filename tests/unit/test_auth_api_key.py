@@ -1,17 +1,17 @@
 """Unit tests for app.auth.api_key and app.auth.keygen."""
+
 from __future__ import annotations
 
 import uuid
 from unittest.mock import MagicMock, patch
 
 import pytest
+from app.auth.api_key import _KEY_PREFIX_LEN, ApiKeyContext, _lookup_and_record, require_api_key
+from app.auth.keygen import generate_api_key
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
-
-from app.auth.api_key import ApiKeyContext, _KEY_PREFIX_LEN, _lookup_and_record, require_api_key
-from app.auth.keygen import generate_api_key
 
 # ---------------------------------------------------------------------------
 # Test data
@@ -117,7 +117,9 @@ async def test_bearer_takes_precedence_over_x_api_key() -> None:
     creds = HTTPAuthorizationCredentials(scheme="bearer", credentials=_VALID_RAW_KEY)
     with patch("app.auth.api_key._lookup_and_record") as mock_lookup:
         mock_lookup.return_value = ApiKeyContext(
-            org_id=str(_ORG_ID), api_key_id=str(_KEY_ID), key_name="k",
+            org_id=str(_ORG_ID),
+            api_key_id=str(_KEY_ID),
+            key_name="k",
             usage_record_id=str(_USAGE_ID),
         )
         await require_api_key(bearer=creds, x_api_key=other)
@@ -128,7 +130,9 @@ async def test_bearer_takes_precedence_over_x_api_key() -> None:
 async def test_x_api_key_accepted_without_bearer() -> None:
     with patch("app.auth.api_key._lookup_and_record") as mock_lookup:
         mock_lookup.return_value = ApiKeyContext(
-            org_id=str(_ORG_ID), api_key_id=str(_KEY_ID), key_name="k",
+            org_id=str(_ORG_ID),
+            api_key_id=str(_KEY_ID),
+            key_name="k",
             usage_record_id=str(_USAGE_ID),
         )
         await require_api_key(bearer=None, x_api_key=_VALID_RAW_KEY)
@@ -240,10 +244,13 @@ def test_db_error_triggers_rollback() -> None:
 
 def test_db_connect_uses_supabase_database_url() -> None:
     """_db_connect calls psycopg2.connect with the supabase_database_url from settings."""
-    with patch("app.auth.api_key.get_settings") as mock_settings, \
-         patch("app.auth.api_key.psycopg2") as mock_psycopg2:
+    with (
+        patch("app.auth.api_key.get_settings") as mock_settings,
+        patch("app.auth.api_key.psycopg2") as mock_psycopg2,
+    ):
         mock_settings.return_value.supabase_database_url = "postgresql://user:pw@host/db"
         mock_psycopg2.connect.return_value = MagicMock()
         from app.auth.api_key import _db_connect
+
         _db_connect()
     mock_psycopg2.connect.assert_called_once_with("postgresql://user:pw@host/db")

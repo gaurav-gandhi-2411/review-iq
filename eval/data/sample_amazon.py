@@ -45,10 +45,17 @@ def _detect_language(text: str) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--category", default=DEFAULT_CATEGORY,
-                        help=f"Amazon review category slug (default: {DEFAULT_CATEGORY})")
-    parser.add_argument("--n", type=int, default=DEFAULT_N,
-                        help=f"Number of reviews to sample (default: {DEFAULT_N})")
+    parser.add_argument(
+        "--category",
+        default=DEFAULT_CATEGORY,
+        help=f"Amazon review category slug (default: {DEFAULT_CATEGORY})",
+    )
+    parser.add_argument(
+        "--n",
+        type=int,
+        default=DEFAULT_N,
+        help=f"Number of reviews to sample (default: {DEFAULT_N})",
+    )
     args = parser.parse_args()
 
     try:
@@ -68,10 +75,13 @@ def main() -> None:
         )
     except Exception as exc:
         print(f"ERROR loading dataset: {exc}")
-        print(f"  Try a different category, e.g.: python eval/data/sample_amazon.py --category Electronics")
+        print(
+            "  Try a different category, e.g.: python eval/data/sample_amazon.py --category Electronics"
+        )
         sys.exit(1)
 
     import random
+
     rng = random.Random(SEED)
     candidates: list[dict] = []
     seen: set[str] = set()
@@ -99,14 +109,16 @@ def main() -> None:
 
         lang = _detect_language(text)
 
-        candidates.append({
-            "source": f"amazon/{args.category}",
-            "text": text,
-            "product": str(row.get("parent_asin", "unknown"))[:40],
-            "rating": rating,
-            "language": lang,
-            "char_len": len(text),
-        })
+        candidates.append(
+            {
+                "source": f"amazon/{args.category}",
+                "text": text,
+                "product": str(row.get("parent_asin", "unknown"))[:40],
+                "rating": rating,
+                "language": lang,
+                "char_len": len(text),
+            }
+        )
 
         if len(candidates) >= args.n:
             break

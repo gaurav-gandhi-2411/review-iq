@@ -52,10 +52,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         version="0.2.0",
         lifespan=lifespan,
         openapi_tags=[
-            {"name": "v2", "description": "Multi-tenant endpoints (Postgres-backed). Requires riq_live_* API key."},
+            {
+                "name": "v2",
+                "description": "Multi-tenant endpoints (Postgres-backed). Requires riq_live_* API key.",
+            },
             {"name": "extraction", "description": "v1 single-tenant extraction (SQLite-backed)."},
             {"name": "query", "description": "v1 query and analytics (SQLite-backed)."},
-            {"name": "admin", "description": "Admin endpoints — org and key management. Requires HTTP Basic auth."},
+            {
+                "name": "admin",
+                "description": "Admin endpoints — org and key management. Requires HTTP Basic auth.",
+            },
             {"name": "ops", "description": "Health check and Prometheus metrics."},
         ],
     )

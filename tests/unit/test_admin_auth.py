@@ -1,14 +1,14 @@
 """Unit tests for app.auth.admin — HTTP Basic auth dependency."""
+
 from __future__ import annotations
 
 from unittest.mock import patch
 
 import pytest
+from app.auth.admin import require_admin
 from argon2 import PasswordHasher
 from fastapi import HTTPException
 from fastapi.security import HTTPBasicCredentials
-
-from app.auth.admin import require_admin
 
 _PH = PasswordHasher()
 _PASSWORD = "correct-password"
@@ -35,29 +35,25 @@ def test_valid_credentials_passes() -> None:
 
 
 def test_wrong_password_raises_401() -> None:
-    with _patch_settings():
-        with pytest.raises(HTTPException) as exc:
-            require_admin(_creds(password="wrong"))
+    with _patch_settings(), pytest.raises(HTTPException) as exc:
+        require_admin(_creds(password="wrong"))
     assert exc.value.status_code == 401
     assert "WWW-Authenticate" in exc.value.headers
 
 
 def test_wrong_username_raises_401() -> None:
-    with _patch_settings():
-        with pytest.raises(HTTPException) as exc:
-            require_admin(_creds(username="hacker"))
+    with _patch_settings(), pytest.raises(HTTPException) as exc:
+        require_admin(_creds(username="hacker"))
     assert exc.value.status_code == 401
 
 
 def test_wrong_username_and_password_raises_401() -> None:
-    with _patch_settings():
-        with pytest.raises(HTTPException) as exc:
-            require_admin(_creds(username="hacker", password="wrong"))
+    with _patch_settings(), pytest.raises(HTTPException) as exc:
+        require_admin(_creds(username="hacker", password="wrong"))
     assert exc.value.status_code == 401
 
 
 def test_empty_hash_raises_401() -> None:
-    with _patch_settings(pw_hash=""):
-        with pytest.raises(HTTPException) as exc:
-            require_admin(_creds())
+    with _patch_settings(pw_hash=""), pytest.raises(HTTPException) as exc:
+        require_admin(_creds())
     assert exc.value.status_code == 401

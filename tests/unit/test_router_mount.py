@@ -2,16 +2,15 @@
 
 from __future__ import annotations
 
-from starlette.testclient import TestClient
-
 from app.core.config import Settings
 from app.main import create_app
+from starlette.testclient import TestClient
 
 
 def _app(deploy_target: str) -> object:
-    return create_app(settings=Settings.model_construct(
-        deploy_target=deploy_target, rate_limit_per_minute=30
-    ))
+    return create_app(
+        settings=Settings.model_construct(deploy_target=deploy_target, rate_limit_per_minute=30)
+    )
 
 
 def _paths(deploy_target: str) -> set[str]:

@@ -7,6 +7,7 @@ GCP project, which stops all paid services immediately.
 DRY_RUN=true  → logs intent only (used during initial verification test).
 DRY_RUN=false → actually calls updateBillingInfo with empty account (production).
 """
+
 from __future__ import annotations
 
 import base64
@@ -45,10 +46,7 @@ def kill_billing(event: dict, context: object) -> None:  # noqa: ARG001
     )
 
     if threshold < _KILL_THRESHOLD:
-        print(
-            f"[kill-switch] threshold {threshold:.1%} < {_KILL_THRESHOLD:.0%} "
-            f"— no action taken"
-        )
+        print(f"[kill-switch] threshold {threshold:.1%} < {_KILL_THRESHOLD:.0%} — no action taken")
         return
 
     if _DRY_RUN:

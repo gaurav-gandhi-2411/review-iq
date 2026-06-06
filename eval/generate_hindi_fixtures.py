@@ -18,7 +18,7 @@ import json
 import os
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -143,7 +143,9 @@ def _load_api_key(key_name: str) -> str:
 
 
 def _token_cost(input_tokens: int, output_tokens: int) -> float:
-    return (input_tokens * INPUT_COST_PER_M / 1_000_000) + (output_tokens * OUTPUT_COST_PER_M / 1_000_000)
+    return (input_tokens * INPUT_COST_PER_M / 1_000_000) + (
+        output_tokens * OUTPUT_COST_PER_M / 1_000_000
+    )
 
 
 def _validate(gt: dict) -> list[str]:
@@ -212,7 +214,7 @@ def generate_fixtures(client) -> tuple[list[dict], float]:
             "scoring_notes": SCORING_NOTES,
             "labeling_meta": {
                 "labeled_by": "claude-sonnet-4-5",
-                "labeled_at": datetime.now(timezone.utc).isoformat(),
+                "labeled_at": datetime.now(UTC).isoformat(),
                 "model_version": response.model,
                 "input_tokens": inp,
                 "output_tokens": out,
@@ -228,7 +230,7 @@ def generate_fixtures(client) -> tuple[list[dict], float]:
 
 async def verify_fixtures(fixtures: list[dict]) -> list[tuple[str, float, str | None]]:
     """Run each fixture through extract_with_llm, score against ground truth, return results."""
-    from eval.runner import run_single, score_fixture
+    from eval.runner import run_single
 
     results = []
     for fixture in fixtures:
@@ -250,9 +252,13 @@ async def verify_fixtures(fixtures: list[dict]) -> list[tuple[str, float, str | 
 
 def main() -> None:
     import argparse
+
     parser = argparse.ArgumentParser()
-    parser.add_argument("--verify-only", action="store_true",
-                        help="Skip generation; only re-score existing fixtures in FIXTURES_DIR")
+    parser.add_argument(
+        "--verify-only",
+        action="store_true",
+        help="Skip generation; only re-score existing fixtures in FIXTURES_DIR",
+    )
     args = parser.parse_args()
 
     FIXTURES_DIR.mkdir(parents=True, exist_ok=True)

@@ -9,6 +9,7 @@ Proves:
 Marked 'integration' — requires live Supabase DB.
 Run: uv run pytest tests/integration/test_auth_argon2.py -v -m integration
 """
+
 from __future__ import annotations
 
 import os
@@ -17,11 +18,10 @@ from pathlib import Path
 
 import psycopg2
 import pytest
-from dotenv import load_dotenv
-from fastapi import HTTPException
-
 from app.auth.api_key import _lookup_and_record
 from app.auth.keygen import generate_api_key
+from dotenv import load_dotenv
+from fastapi import HTTPException
 
 load_dotenv(Path(__file__).parents[2] / ".env")
 
@@ -32,8 +32,14 @@ def _direct_conn() -> psycopg2.extensions.connection:
     return psycopg2.connect(_DIRECT_URL)
 
 
-def _setup(conn: psycopg2.extensions.connection, org_id: str, key_id: str,
-           key_prefix: str, key_hash: str, quota: int = 10) -> None:
+def _setup(
+    conn: psycopg2.extensions.connection,
+    org_id: str,
+    key_id: str,
+    key_prefix: str,
+    key_hash: str,
+    quota: int = 10,
+) -> None:
     cur = conn.cursor()
     cur.execute(
         "INSERT INTO public.organizations (id, name, slug) VALUES (%s, %s, %s)",
@@ -101,7 +107,7 @@ def test_same_prefix_wrong_key_fails_401() -> None:
     last = raw_key[-1]
     wrong_key = raw_key[:-1] + ("0" if last != "0" else "1")
     assert wrong_key[:17] == key_prefix  # same prefix
-    assert wrong_key != raw_key          # different key
+    assert wrong_key != raw_key  # different key
 
     try:
         with pytest.raises(HTTPException) as exc:

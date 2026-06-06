@@ -42,7 +42,9 @@ async def apply_migrations(temp_db: None) -> None:
     await migrate()
 
 
-def _make(product: str = "Widget", h: str = "sha256:x", **kwargs: object) -> tuple[str, ReviewExtraction]:
+def _make(
+    product: str = "Widget", h: str = "sha256:x", **kwargs: object
+) -> tuple[str, ReviewExtraction]:
     meta = ExtractionMeta(
         model="llama-3.3-70b-versatile",
         prompt_version="v1.0",
@@ -124,6 +126,7 @@ class TestUpdateBatchJobNoOp:
         await create_batch_job("noop-job", total=3)
         await update_batch_job("noop-job")  # all params None — hits early return (line 347)
         from app.core.storage import get_batch_job
+
         job = await get_batch_job("noop-job")
         assert job is not None
         assert job.status == JobStatus.pending
@@ -133,6 +136,7 @@ class TestUpdateBatchJobNoOp:
         await create_batch_job("fail-job", total=5)
         await update_batch_job("fail-job", failed=2)  # covers lines 339-340
         from app.core.storage import get_batch_job
+
         job = await get_batch_job("fail-job")
         assert job is not None
         assert job.failed == 2

@@ -6,17 +6,17 @@ and soft-delete against a live Supabase DB.
 Marked 'integration' — requires live Supabase DB and valid admin credentials in .env.
 Run: uv run pytest tests/integration/test_admin.py -v -m integration
 """
+
 from __future__ import annotations
 
 import os
 from pathlib import Path
 
 import pytest
-from dotenv import load_dotenv
-from fastapi.testclient import TestClient
-
 from app.auth.api_key import _lookup_and_record
 from app.main import app
+from dotenv import load_dotenv
+from fastapi.testclient import TestClient
 
 load_dotenv(Path(__file__).parents[2] / ".env")
 
@@ -50,6 +50,7 @@ def _delete_key(org_id: str, key_id: str) -> None:
 
 def _teardown_org(org_id: str) -> None:
     import psycopg2
+
     conn = psycopg2.connect(os.environ["SUPABASE_DIRECT_URL"])
     try:
         cur = conn.cursor()
@@ -67,6 +68,7 @@ def _teardown_org(org_id: str) -> None:
 @pytest.mark.integration
 def test_create_organization() -> None:
     import uuid
+
     slug = f"integ-test-{uuid.uuid4().hex[:8]}"
     r = client.post(
         "/admin/organizations",
@@ -84,6 +86,7 @@ def test_create_organization() -> None:
 @pytest.mark.integration
 def test_create_organization_duplicate_slug_409() -> None:
     import uuid
+
     slug = f"dup-{uuid.uuid4().hex[:8]}"
     org = _post_org("First", slug)
     try:
@@ -96,6 +99,7 @@ def test_create_organization_duplicate_slug_409() -> None:
 @pytest.mark.integration
 def test_get_organization() -> None:
     import uuid
+
     org = _post_org("Get Test", f"get-{uuid.uuid4().hex[:8]}")
     try:
         r = client.get(f"/admin/organizations/{org['id']}", auth=_AUTH)
@@ -108,6 +112,7 @@ def test_get_organization() -> None:
 @pytest.mark.integration
 def test_get_organization_not_found() -> None:
     import uuid
+
     r = client.get(f"/admin/organizations/{uuid.uuid4()}", auth=_AUTH)
     assert r.status_code == 404
 
@@ -116,6 +121,7 @@ def test_get_organization_not_found() -> None:
 def test_create_key_raw_key_returned_once_and_authenticates() -> None:
     """The raw key is in the response; calling _lookup_and_record with it succeeds."""
     import uuid
+
     org = _post_org("Key Test", f"key-{uuid.uuid4().hex[:8]}")
     try:
         key_data = _post_key(org["id"])
@@ -134,6 +140,7 @@ def test_create_key_raw_key_returned_once_and_authenticates() -> None:
 def test_list_keys_returns_prefix_never_hash() -> None:
     """Listed keys include key_prefix but must not expose key_hash or raw_key."""
     import uuid
+
     org = _post_org("List Test", f"list-{uuid.uuid4().hex[:8]}")
     try:
         _post_key(org["id"])
@@ -155,6 +162,7 @@ def test_list_keys_returns_prefix_never_hash() -> None:
 def test_rotate_key_old_fails_new_succeeds() -> None:
     """After rotation, the old key returns 401; the new raw key authenticates."""
     import uuid
+
     from fastapi import HTTPException
 
     org = _post_org("Rotate Test", f"rot-{uuid.uuid4().hex[:8]}")
@@ -191,6 +199,7 @@ def test_rotate_key_old_fails_new_succeeds() -> None:
 @pytest.mark.integration
 def test_rotate_already_revoked_key_404() -> None:
     import uuid
+
     org = _post_org("Rot404 Test", f"rot404-{uuid.uuid4().hex[:8]}")
     try:
         key = _post_key(org["id"])
@@ -208,6 +217,7 @@ def test_rotate_already_revoked_key_404() -> None:
 def test_delete_key_soft_deletes() -> None:
     """DELETE sets revoked_at; the key appears in LIST with revoked_at set."""
     import uuid
+
     org = _post_org("Del Test", f"del-{uuid.uuid4().hex[:8]}")
     try:
         key = _post_key(org["id"])
@@ -221,6 +231,7 @@ def test_delete_key_soft_deletes() -> None:
 
         # Key no longer authenticates
         from fastapi import HTTPException
+
         with pytest.raises(HTTPException) as exc:
             _lookup_and_record(key["raw_key"])
         assert exc.value.status_code == 401
@@ -231,6 +242,7 @@ def test_delete_key_soft_deletes() -> None:
 @pytest.mark.integration
 def test_delete_already_revoked_key_404() -> None:
     import uuid
+
     org = _post_org("Del404 Test", f"del404-{uuid.uuid4().hex[:8]}")
     try:
         key = _post_key(org["id"])
@@ -243,5 +255,7 @@ def test_delete_already_revoked_key_404() -> None:
 
 @pytest.mark.integration
 def test_admin_wrong_credentials_returns_401() -> None:
-    r = client.get("/admin/organizations/00000000-0000-0000-0000-000000000000", auth=("admin", "wrong"))
+    r = client.get(
+        "/admin/organizations/00000000-0000-0000-0000-000000000000", auth=("admin", "wrong")
+    )
     assert r.status_code == 401

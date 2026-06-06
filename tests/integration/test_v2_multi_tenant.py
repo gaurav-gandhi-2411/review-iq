@@ -9,6 +9,7 @@ Creates two orgs (A and B), issues keys for each, verifies that:
 Marked 'integration' — requires live Supabase DB and valid admin/keys in .env.
 Run: uv run pytest tests/integration/test_v2_multi_tenant.py -v -m integration
 """
+
 from __future__ import annotations
 
 import os
@@ -91,8 +92,8 @@ def _mock_llm_output():
         ),
         "mock-model",
         42,
-        150,   # tokens_in
-        80,    # tokens_out
+        150,  # tokens_in
+        80,  # tokens_out
     )
 
 
@@ -167,8 +168,12 @@ def test_v2_cache_hit_same_org() -> None:
             mock_llm.return_value = _mock_llm_output()
 
             text = "Excellent quality, very happy with this product!"
-            r1 = client.post("/v2/extract", json={"text": text}, headers=_api_headers(key["raw_key"]))
-            r2 = client.post("/v2/extract", json={"text": text}, headers=_api_headers(key["raw_key"]))
+            r1 = client.post(
+                "/v2/extract", json={"text": text}, headers=_api_headers(key["raw_key"])
+            )
+            r2 = client.post(
+                "/v2/extract", json={"text": text}, headers=_api_headers(key["raw_key"])
+            )
 
         assert r1.status_code == 200
         assert r2.status_code == 200
@@ -232,7 +237,9 @@ def test_v2_extract_token_counts_recorded_in_db() -> None:
         tokens_in, tokens_out, tokens_used = row
         assert tokens_in > 0, f"tokens_in should be > 0, got {tokens_in}"
         assert tokens_out > 0, f"tokens_out should be > 0, got {tokens_out}"
-        assert tokens_used == tokens_in + tokens_out, "tokens_used should equal tokens_in + tokens_out"
+        assert tokens_used == tokens_in + tokens_out, (
+            "tokens_used should equal tokens_in + tokens_out"
+        )
 
     finally:
         _teardown_org(org["id"])

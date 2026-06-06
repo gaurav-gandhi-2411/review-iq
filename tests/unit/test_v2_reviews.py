@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 import uuid
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import httpx
 import pytest
-
 from app.auth.api_key import ApiKeyContext, require_api_key
 from app.main import create_app
 

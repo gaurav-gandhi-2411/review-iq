@@ -87,7 +87,9 @@ async def _run_extraction_v2(request: ReviewRequest, ctx: ApiKeyContext) -> Revi
     # (quota slot consumed, no tokens charged — see ARCHITECTURE.md).
     await asyncio.to_thread(
         update_usage_tokens,
-        ctx.usage_record_id, tokens_in, tokens_out,
+        ctx.usage_record_id,
+        tokens_in,
+        tokens_out,
     )
     EXTRACTIONS_TOTAL.labels(model=model_name, cached="false").inc()
     EXTRACTION_LATENCY.labels(model=model_name).observe(latency_ms)

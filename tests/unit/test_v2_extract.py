@@ -1,11 +1,12 @@
 """Unit tests for app.api.v2.extract — token accounting wiring."""
+
 from __future__ import annotations
 
 import uuid
-from unittest.mock import AsyncMock, MagicMock, patch, call
+from datetime import UTC
+from unittest.mock import AsyncMock, patch
 
 import pytest
-
 from app.auth.api_key import ApiKeyContext
 from app.core.schemas import ReviewExtractionLLMOutput, Sentiment, Urgency
 
@@ -37,8 +38,8 @@ _REVIEW_TEXT = "This widget is absolutely fantastic!"
 
 
 async def _run(tokens_in: int = 150, tokens_out: int = 80) -> None:
-    from app.core.schemas import ReviewRequest
     from app.api.v2.extract import _run_extraction_v2
+    from app.core.schemas import ReviewRequest
 
     req = ReviewRequest(text=_REVIEW_TEXT)
 
@@ -58,8 +59,8 @@ async def _run(tokens_in: int = 150, tokens_out: int = 80) -> None:
 @pytest.mark.asyncio
 async def test_update_usage_tokens_called_with_llm_token_counts() -> None:
     """After a successful LLM call, update_usage_tokens receives the correct counts."""
-    from app.core.schemas import ReviewRequest
     from app.api.v2.extract import _run_extraction_v2
+    from app.core.schemas import ReviewRequest
 
     req = ReviewRequest(text=_REVIEW_TEXT)
 
@@ -80,8 +81,8 @@ async def test_update_usage_tokens_called_with_llm_token_counts() -> None:
 @pytest.mark.asyncio
 async def test_update_usage_tokens_called_with_zero_when_provider_skips() -> None:
     """Tokens of 0 from provider still get written (not silently dropped)."""
-    from app.core.schemas import ReviewRequest
     from app.api.v2.extract import _run_extraction_v2
+    from app.core.schemas import ReviewRequest
 
     req = ReviewRequest(text=_REVIEW_TEXT)
 
@@ -102,17 +103,21 @@ async def test_update_usage_tokens_called_with_zero_when_provider_skips() -> Non
 @pytest.mark.asyncio
 async def test_update_usage_tokens_not_called_on_cache_hit() -> None:
     """Cache hits don't create a new LLM call, so no token update happens."""
-    from app.core.schemas import ReviewRequest, ReviewExtractionV2, ExtractionMetaV2
+    from datetime import datetime
+
     from app.api.v2.extract import _run_extraction_v2
-    from datetime import datetime, timezone
+    from app.core.schemas import ExtractionMetaV2, ReviewExtractionV2, ReviewRequest
 
     req = ReviewRequest(text=_REVIEW_TEXT)
     cached = ReviewExtractionV2(
         product="Test Widget",
         extraction_meta=ExtractionMetaV2(
-            model="mock", prompt_version="v1", schema_version="1.0.0",
-            extracted_at=datetime.now(tz=timezone.utc),
-            input_hash="sha256:abc", org_id=_ORG_ID,
+            model="mock",
+            prompt_version="v1",
+            schema_version="1.0.0",
+            extracted_at=datetime.now(tz=UTC),
+            input_hash="sha256:abc",
+            org_id=_ORG_ID,
         ),
     )
 

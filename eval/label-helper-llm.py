@@ -21,7 +21,7 @@ import json
 import os
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 CANDIDATES_FILE = Path(__file__).parent / "data" / "flipkart_candidates.jsonl"
@@ -95,9 +95,7 @@ def _load_candidates() -> list[dict]:
 
 def _rank_candidates(candidates: list[dict]) -> list[dict]:
     hinglish = [
-        c for c in candidates
-        if c.get("language") == "hi-en"
-        and 30 <= c.get("char_len", 0) <= 600
+        c for c in candidates if c.get("language") == "hi-en" and 30 <= c.get("char_len", 0) <= 600
     ]
 
     def score(c: dict) -> float:
@@ -124,7 +122,9 @@ def _text_hash(text: str) -> str:
 
 
 def _token_cost(input_tokens: int, output_tokens: int) -> float:
-    return (input_tokens * INPUT_COST_PER_M / 1_000_000) + (output_tokens * OUTPUT_COST_PER_M / 1_000_000)
+    return (input_tokens * INPUT_COST_PER_M / 1_000_000) + (
+        output_tokens * OUTPUT_COST_PER_M / 1_000_000
+    )
 
 
 def _validate_ground_truth(gt: dict) -> bool:
@@ -148,7 +148,9 @@ def _validate_ground_truth(gt: dict) -> bool:
     if stars is not None and not (isinstance(stars, int) and 1 <= stars <= 5):
         return False
     stars_inferred = gt.get("stars_inferred")
-    if stars_inferred is not None and not (isinstance(stars_inferred, int) and 1 <= stars_inferred <= 5):
+    if stars_inferred is not None and not (
+        isinstance(stars_inferred, int) and 1 <= stars_inferred <= 5
+    ):
         return False
     return True
 
@@ -186,7 +188,7 @@ def _write_fixture(
         },
         "labeling_meta": {
             "labeled_by": "claude-sonnet-4-5",
-            "labeled_at": datetime.now(timezone.utc).isoformat(),
+            "labeled_at": datetime.now(UTC).isoformat(),
             "model_version": model_id,
             "input_tokens": input_tokens,
             "output_tokens": output_tokens,
@@ -303,7 +305,7 @@ def main() -> None:
             cleaned = re.sub(r"^```(?:json)?\s*", "", raw_text, flags=re.MULTILINE)
             cleaned = re.sub(r"```\s*$", "", cleaned, flags=re.MULTILINE).strip()
             gt = json.loads(cleaned)
-        except json.JSONDecodeError as exc:
+        except json.JSONDecodeError:
             print(f" PARSE_ERROR (${step_cost:.5f})")
             print(f"    Raw: {raw_text[:120]}")
             skipped_parse += 1
@@ -323,7 +325,9 @@ def main() -> None:
         existing_hashes.add(h)
         accepted_count += 1
 
-        print(f" OK -> {path.name}  in={input_tokens} out={output_tokens}  ${step_cost:.5f}  total=${total_cost:.4f}")
+        print(
+            f" OK -> {path.name}  in={input_tokens} out={output_tokens}  ${step_cost:.5f}  total=${total_cost:.4f}"
+        )
 
     print()
     print("=" * 70)
@@ -342,16 +346,22 @@ def main() -> None:
 
     # Write cost info to a sidecar for README generation
     sidecar = FIXTURES_DIR / ".labeling_run.json"
-    sidecar.write_text(json.dumps({
-        "model": MODEL,
-        "labeled_at": datetime.now(timezone.utc).isoformat(),
-        "fixtures_written": accepted_count,
-        "candidates_considered": considered,
-        "total_input_tokens": total_input_tokens,
-        "total_output_tokens": total_output_tokens,
-        "total_cost_usd": total_cost,
-        "avg_cost_per_fixture_usd": total_cost / accepted_count if accepted_count else 0,
-    }, indent=2), encoding="utf-8")
+    sidecar.write_text(
+        json.dumps(
+            {
+                "model": MODEL,
+                "labeled_at": datetime.now(UTC).isoformat(),
+                "fixtures_written": accepted_count,
+                "candidates_considered": considered,
+                "total_input_tokens": total_input_tokens,
+                "total_output_tokens": total_output_tokens,
+                "total_cost_usd": total_cost,
+                "avg_cost_per_fixture_usd": total_cost / accepted_count if accepted_count else 0,
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
 
 
 if __name__ == "__main__":

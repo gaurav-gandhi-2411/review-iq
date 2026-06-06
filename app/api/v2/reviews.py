@@ -42,7 +42,13 @@ async def list_reviews(
         limit=limit,
         offset=offset,
     )
-    return {"org_id": ctx.org_id, "count": len(rows), "offset": offset, "limit": limit, "results": rows}
+    return {
+        "org_id": ctx.org_id,
+        "count": len(rows),
+        "offset": offset,
+        "limit": limit,
+        "results": rows,
+    }
 
 
 @router.get("/insights")

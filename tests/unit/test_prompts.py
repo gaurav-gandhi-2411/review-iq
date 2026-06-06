@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from app.core.prompts import PROMPT_VERSION, build_prompt
 
 
@@ -53,8 +51,18 @@ class TestEnglishPromptContent:
 
     def test_all_fields_mentioned(self) -> None:
         prompt = build_prompt("<review>x</review>", "en")
-        for field in ("product", "stars", "pros", "cons", "buy_again", "sentiment",
-                      "topics", "urgency", "feature_requests", "language"):
+        for field in (
+            "product",
+            "stars",
+            "pros",
+            "cons",
+            "buy_again",
+            "sentiment",
+            "topics",
+            "urgency",
+            "feature_requests",
+            "language",
+        ):
             assert field in prompt, f"Field '{field}' missing from English prompt"
 
     def test_json_only_instruction(self) -> None:
@@ -92,6 +100,7 @@ class TestHindiPromptContent:
         prompt = build_prompt("<review>x</review>", "hi")
         # Hindi examples should contain Devanagari characters
         import re
+
         assert re.search(r"[ऀ-ॿ]", prompt), "Hindi prompt should include a Devanagari example"
 
     def test_all_fields_mentioned(self) -> None:

@@ -160,7 +160,7 @@ class ExtractionMetaV2(ExtractionMeta):
 class ReviewExtractionV2(ReviewExtraction):
     """ReviewExtraction with v2 metadata (includes org_id)."""
 
-    extraction_meta: ExtractionMetaV2 | None = None  # type: ignore[assignment]
+    extraction_meta: ExtractionMetaV2 | None = None
 
 
 class StoredReview(BaseModel):

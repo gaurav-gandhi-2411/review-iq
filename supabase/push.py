@@ -7,6 +7,7 @@ Reads credentials from .env (direct connection, port 5432).
 Migrations are applied in filename order. Each file is idempotent
 (IF NOT EXISTS / CREATE OR REPLACE / DROP IF EXISTS), so re-running is safe.
 """
+
 from __future__ import annotations
 
 import os
@@ -29,7 +30,7 @@ def main() -> None:
         print("No migration files found.", file=sys.stderr)
         sys.exit(1)
 
-    print(f"Connecting via SUPABASE_DIRECT_URL (port 5432) …")
+    print("Connecting via SUPABASE_DIRECT_URL (port 5432) …")
     conn = psycopg2.connect(direct_url)
     conn.autocommit = False
 

@@ -35,8 +35,7 @@ def build_payload(results_path: Path, run_url: str) -> dict:
         info = per_language[lang]
         lang_emoji = _status_emoji(info["passed"])
         lang_lines.append(
-            f":{lang_emoji}: *{lang}* {info['score']:.1%}"
-            f" (gate {info['threshold']:.0%})"
+            f":{lang_emoji}: *{lang}* {info['score']:.1%} (gate {info['threshold']:.0%})"
         )
 
     fields = [

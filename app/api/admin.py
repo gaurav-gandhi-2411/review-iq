@@ -3,6 +3,7 @@
 All routes require HTTP Basic auth via require_admin.
 Raw API keys are returned exactly once (on creation/rotation) and never stored.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -95,12 +96,12 @@ def _create_org_db(name: str, slug: str, plan: str) -> OrgOut:
         row = cur.fetchone()
         conn.commit()
         return OrgOut(id=str(row[0]), name=row[1], slug=row[2], plan=row[3], created_at=row[4])
-    except psycopg2.errors.UniqueViolation:
+    except psycopg2.errors.UniqueViolation as exc:
         conn.rollback()
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Slug '{slug}' already in use.",
-        )
+        ) from exc
     except Exception:
         conn.rollback()
         raise
@@ -113,8 +114,7 @@ def _get_org_db(org_id: str) -> OrgOut:
     try:
         cur = conn.cursor()
         cur.execute(
-            "SELECT id, name, slug, plan, created_at "
-            "FROM public.organizations WHERE id = %s",
+            "SELECT id, name, slug, plan, created_at FROM public.organizations WHERE id = %s",
             (org_id,),
         )
         row = cur.fetchone()

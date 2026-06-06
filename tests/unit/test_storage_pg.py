@@ -1,14 +1,14 @@
 """Unit tests for app.core.storage_pg — Postgres extractions repository."""
+
 from __future__ import annotations
 
 import json
 import uuid
-from datetime import datetime, timezone
-from unittest.mock import MagicMock, call, patch
+from datetime import UTC, datetime
+from unittest.mock import MagicMock, patch
 
 import pytest
-
-from app.core.schemas import ReviewExtractionV2, ExtractionMetaV2, Sentiment, Urgency
+from app.core.schemas import ExtractionMetaV2, ReviewExtractionV2, Sentiment, Urgency
 from app.core.storage_pg import (
     aggregate_extractions_pg,
     get_by_hash_pg,
@@ -20,7 +20,7 @@ from app.core.storage_pg import (
 _ORG_ID = str(uuid.uuid4())
 _KEY_ID = str(uuid.uuid4())
 _USAGE_ID = str(uuid.uuid4())
-_NOW = datetime.now(tz=timezone.utc)
+_NOW = datetime.now(tz=UTC)
 _HASH = "sha256:" + "a" * 64
 
 
@@ -78,12 +78,26 @@ def test_get_by_hash_pg_cache_hit_returns_extraction() -> None:
     #  pros, cons, feature_requests, model, prompt_version, schema_version,
     #  latency_ms, extracted_at, input_hash)
     cur.fetchone.return_value = (
-        "Widget", 4, None, None, "positive", "low",
-        "en", 100, 0.9,
-        json.dumps(["quality"]), json.dumps([]),
-        json.dumps(["durable"]), json.dumps([]), json.dumps([]),
-        "test-model", "v1", "1.0.0",
-        100, _NOW, _HASH,
+        "Widget",
+        4,
+        None,
+        None,
+        "positive",
+        "low",
+        "en",
+        100,
+        0.9,
+        json.dumps(["quality"]),
+        json.dumps([]),
+        json.dumps(["durable"]),
+        json.dumps([]),
+        json.dumps([]),
+        "test-model",
+        "v1",
+        "1.0.0",
+        100,
+        _NOW,
+        _HASH,
     )
 
     with patch("app.core.storage_pg._db_connect", return_value=conn):
@@ -119,8 +133,16 @@ def test_save_extraction_pg_returns_id() -> None:
 
     with patch("app.core.storage_pg._db_connect", return_value=conn):
         result = save_extraction_pg(
-            _ORG_ID, _KEY_ID, _HASH, "great product", _make_extraction(),
-            "test-model", "v1", "1.0.0", 100, False,
+            _ORG_ID,
+            _KEY_ID,
+            _HASH,
+            "great product",
+            _make_extraction(),
+            "test-model",
+            "v1",
+            "1.0.0",
+            100,
+            False,
         )
 
     assert result == str(new_id)
@@ -133,8 +155,16 @@ def test_save_extraction_pg_conflict_returns_empty_string() -> None:
 
     with patch("app.core.storage_pg._db_connect", return_value=conn):
         result = save_extraction_pg(
-            _ORG_ID, _KEY_ID, _HASH, "great product", _make_extraction(),
-            "test-model", "v1", "1.0.0", 100, False,
+            _ORG_ID,
+            _KEY_ID,
+            _HASH,
+            "great product",
+            _make_extraction(),
+            "test-model",
+            "v1",
+            "1.0.0",
+            100,
+            False,
         )
 
     assert result == ""
@@ -147,8 +177,16 @@ def test_save_extraction_pg_error_triggers_rollback() -> None:
     with patch("app.core.storage_pg._db_connect", return_value=conn):
         with pytest.raises(Exception, match="DB error"):
             save_extraction_pg(
-                _ORG_ID, _KEY_ID, _HASH, "great product", _make_extraction(),
-                "test-model", "v1", "1.0.0", 100, False,
+                _ORG_ID,
+                _KEY_ID,
+                _HASH,
+                "great product",
+                _make_extraction(),
+                "test-model",
+                "v1",
+                "1.0.0",
+                100,
+                False,
             )
 
     conn.rollback.assert_called_once()

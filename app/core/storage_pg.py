@@ -38,7 +38,7 @@ def _db_connect() -> psycopg2.extensions.connection:
 def _set_tenant(cur: Any, org_id: str) -> None:
     """Set RLS context for current transaction."""
     cur.execute("SET LOCAL ROLE authenticated")
-    cur.execute("SET LOCAL \"app.current_org_id\" = %s", (org_id,))
+    cur.execute('SET LOCAL "app.current_org_id" = %s', (org_id,))
 
 
 def get_by_hash_pg(org_id: str, input_hash: str) -> ReviewExtractionV2 | None:
@@ -227,13 +227,30 @@ def list_extractions_pg(
         rows = cur.fetchall()
         conn.commit()
         cols = [
-            "id", "input_hash", "product", "stars", "stars_inferred", "buy_again",
-            "sentiment", "urgency", "language", "review_length_chars", "confidence",
-            "topics", "competitor_mentions", "pros", "cons", "feature_requests",
-            "model", "prompt_version", "schema_version", "latency_ms",
-            "extracted_at", "created_at",
+            "id",
+            "input_hash",
+            "product",
+            "stars",
+            "stars_inferred",
+            "buy_again",
+            "sentiment",
+            "urgency",
+            "language",
+            "review_length_chars",
+            "confidence",
+            "topics",
+            "competitor_mentions",
+            "pros",
+            "cons",
+            "feature_requests",
+            "model",
+            "prompt_version",
+            "schema_version",
+            "latency_ms",
+            "extracted_at",
+            "created_at",
         ]
-        return [dict(zip(cols, row)) for row in rows]
+        return [dict(zip(cols, row, strict=False)) for row in rows]
     except Exception:
         conn.rollback()
         raise
@@ -260,8 +277,7 @@ def aggregate_extractions_pg(org_id: str) -> dict[str, Any]:
         total, pos, neg, neu, mix = cur.fetchone()
 
         cur.execute(
-            "SELECT urgency, COUNT(*) FROM public.extractions "
-            "WHERE org_id = %s GROUP BY urgency",
+            "SELECT urgency, COUNT(*) FROM public.extractions WHERE org_id = %s GROUP BY urgency",
             (org_id,),
         )
         urgency_counts = {r[0]: r[1] for r in cur.fetchall()}
@@ -313,10 +329,26 @@ def aggregate_extractions_pg(org_id: str) -> dict[str, Any]:
 
 def _row_to_extraction_v2(row: tuple[Any, ...], org_id: str) -> ReviewExtractionV2:
     (
-        product, stars, stars_inferred, buy_again, sentiment, urgency,
-        language, review_length_chars, confidence, topics, competitor_mentions,
-        pros, cons, feature_requests, model, prompt_version, schema_version,
-        latency_ms, extracted_at, input_hash,
+        product,
+        stars,
+        stars_inferred,
+        buy_again,
+        sentiment,
+        urgency,
+        language,
+        review_length_chars,
+        confidence,
+        topics,
+        competitor_mentions,
+        pros,
+        cons,
+        feature_requests,
+        model,
+        prompt_version,
+        schema_version,
+        latency_ms,
+        extracted_at,
+        input_hash,
     ) = row
 
     def _load(val: Any) -> list[str]:
@@ -330,7 +362,9 @@ def _row_to_extraction_v2(row: tuple[Any, ...], org_id: str) -> ReviewExtraction
         model=model,
         prompt_version=prompt_version,
         schema_version=schema_version,
-        extracted_at=extracted_at if isinstance(extracted_at, datetime) else datetime.fromisoformat(str(extracted_at)),
+        extracted_at=extracted_at
+        if isinstance(extracted_at, datetime)
+        else datetime.fromisoformat(str(extracted_at)),
         latency_ms=latency_ms,
         input_hash=input_hash,
         org_id=org_id,

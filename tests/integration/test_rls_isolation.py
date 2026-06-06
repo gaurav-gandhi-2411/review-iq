@@ -4,6 +4,7 @@ Requires direct DB credentials (port 5432) in .env.
 Marked 'integration' — skipped in default CI; run explicitly:
     uv run pytest tests/integration/test_rls_isolation.py -v -m integration
 """
+
 from __future__ import annotations
 
 import os
@@ -187,9 +188,7 @@ class TestRLSIsolation:
 
         assert rows == [], "NULL org context must return no rows (RLS NULL guard)"
 
-    def test_org_a_cannot_insert_into_org_b(
-        self, org_ids: tuple[str, str]
-    ) -> None:
+    def test_org_a_cannot_insert_into_org_b(self, org_ids: tuple[str, str]) -> None:
         """WITH CHECK clause must prevent INSERT with foreign org_id."""
         org_a, org_b = org_ids
         ghost_ext = str(uuid.uuid4())

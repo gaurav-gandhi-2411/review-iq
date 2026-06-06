@@ -6,6 +6,7 @@ Fires N requests against a key with quota=N-1; asserts exactly N-1 succeed.
 Marked 'integration' — requires live Supabase DB.
 Run: uv run pytest tests/integration/test_auth_concurrency.py -v -m integration
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -15,11 +16,10 @@ from pathlib import Path
 
 import psycopg2
 import pytest
-from dotenv import load_dotenv
-from fastapi import HTTPException
-
 from app.auth.api_key import _lookup_and_record
 from app.auth.keygen import generate_api_key
+from dotenv import load_dotenv
+from fastapi import HTTPException
 
 load_dotenv(Path(__file__).parents[2] / ".env")
 
@@ -81,11 +81,7 @@ async def test_concurrent_quota_enforcement() -> None:
     ok_count = results.count("ok")
     quota_count = results.count("429")
 
-    assert ok_count == QUOTA, (
-        f"Expected {QUOTA} successes, got {ok_count}. "
-        f"Full results: {results}"
-    )
+    assert ok_count == QUOTA, f"Expected {QUOTA} successes, got {ok_count}. Full results: {results}"
     assert quota_count == N - QUOTA, (
-        f"Expected {N - QUOTA} quota rejections, got {quota_count}. "
-        f"Full results: {results}"
+        f"Expected {N - QUOTA} quota rejections, got {quota_count}. Full results: {results}"
     )

@@ -13,7 +13,6 @@ Prereqs:
 from __future__ import annotations
 
 import json
-import os
 import re
 import sys
 from pathlib import Path
@@ -22,9 +21,23 @@ SEED = 42
 
 # Kaggle dataset refs (primary + supplements)
 _DATASETS = [
-    ("niraliivaghani", "flipkart-product-customer-reviews-dataset", "Dataset-SA.csv", "Review", "product_name", "Rate"),
+    (
+        "niraliivaghani",
+        "flipkart-product-customer-reviews-dataset",
+        "Dataset-SA.csv",
+        "Review",
+        "product_name",
+        "Rate",
+    ),
     ("kabirnagpal", "flipkart-customer-review-and-rating", "data.csv", "review", None, "rating"),
-    ("naushads", "flipkart-reviews", "flipkart_reviews_dataset.csv", "review", "product_title", "rating"),
+    (
+        "naushads",
+        "flipkart-reviews",
+        "flipkart_reviews_dataset.csv",
+        "review",
+        "product_title",
+        "rating",
+    ),
 ]
 
 _RAW_DIR = Path(__file__).parent / "raw"
@@ -74,12 +87,22 @@ def _download(user: str, dataset: str, dest_dir: Path) -> None:
     """Download dataset from Kaggle if not already cached."""
     if not (dest_dir / dataset).exists():
         import subprocess
+
         dest_dir.mkdir(parents=True, exist_ok=True)
         print(f"Downloading {user}/{dataset}...")
         result = subprocess.run(
-            ["kaggle", "datasets", "download", "-d", f"{user}/{dataset}",
-             "-p", str(dest_dir / dataset), "--unzip"],
-            capture_output=True, text=True,
+            [
+                "kaggle",
+                "datasets",
+                "download",
+                "-d",
+                f"{user}/{dataset}",
+                "-p",
+                str(dest_dir / dataset),
+                "--unzip",
+            ],
+            capture_output=True,
+            text=True,
         )
         if result.returncode != 0:
             print(f"  Warning: {result.stderr.strip()[:200]}")
@@ -108,7 +131,9 @@ def main() -> None:
             continue
 
         try:
-            df = pd.read_csv(csv_path, on_bad_lines="skip", encoding="utf-8", encoding_errors="replace")
+            df = pd.read_csv(
+                csv_path, on_bad_lines="skip", encoding="utf-8", encoding_errors="replace"
+            )
         except Exception as exc:
             print(f"  Warning: could not read {csv_path}: {exc}")
             continue
@@ -122,20 +147,24 @@ def main() -> None:
                 continue
 
             lang = _detect_language(text)
-            product = str(row[product_col]).strip() if product_col and product_col in row else "unknown"
+            product = (
+                str(row[product_col]).strip() if product_col and product_col in row else "unknown"
+            )
             try:
                 rating = int(float(row[rating_col])) if rating_col and rating_col in row else None
             except (ValueError, TypeError):
                 rating = None
 
-            candidates.append({
-                "source": f"flipkart/{user}/{dataset}",
-                "text": text,
-                "product": product[:80] if product else "unknown",
-                "rating": rating,
-                "language": lang,
-                "char_len": len(text),
-            })
+            candidates.append(
+                {
+                    "source": f"flipkart/{user}/{dataset}",
+                    "text": text,
+                    "product": product[:80] if product else "unknown",
+                    "rating": rating,
+                    "language": lang,
+                    "char_len": len(text),
+                }
+            )
 
     # Deterministic dedup + sort
     seen: set[str] = set()
@@ -168,7 +197,7 @@ def main() -> None:
             f.write(json.dumps(c, ensure_ascii=False) + "\n")
 
     print(f"\nWrote {len(unique)} candidates to {_OUT}")
-    print(f"  Run: uv run python eval/label-helper.py  to start labeling")
+    print("  Run: uv run python eval/label-helper.py  to start labeling")
 
     if len(hinglish) < 15:
         print(f"\nWARNING: Only {len(hinglish)} Hinglish candidates found (need at least 15).")

@@ -60,6 +60,13 @@ src = ["app", "tests", "eval"]
 select = ["E", "F", "I", "UP", "B", "SIM"]
 ignore = ["E501", "B008"]
 
+[tool.ruff.lint.per-file-ignores]
+# Nested `with` blocks are intentional in tests for clarity; PT011 suppressed
+# (appears from ruff >= 0.9 even without PT in select).
+"tests/**/*.py" = ["SIM117", "PT011", "B017"]
+# Exploratory eval scripts — F841/SIM103 are acceptable in non-app code.
+"eval/**/*.py" = ["SIM103", "F841"]
+
 [tool.mypy]
 python_version = "3.11"
 strict = true

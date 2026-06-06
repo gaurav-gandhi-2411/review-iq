@@ -1,12 +1,12 @@
 """Unit tests for app.core.auth — v1 API key dependency."""
+
 from __future__ import annotations
 
 from unittest.mock import patch
 
 import pytest
-from fastapi import HTTPException
-
 from app.core.auth import require_api_key
+from fastapi import HTTPException
 
 
 def _patch_settings(api_key: str = "test-key"):
@@ -29,14 +29,12 @@ async def test_valid_key_passes() -> None:
 
 
 async def test_wrong_key_raises_401() -> None:
-    with _patch_settings(api_key="test-key"):
-        with pytest.raises(HTTPException) as exc:
-            await require_api_key(api_key="wrong-key")
+    with _patch_settings(api_key="test-key"), pytest.raises(HTTPException) as exc:
+        await require_api_key(api_key="wrong-key")
     assert exc.value.status_code == 401
 
 
 async def test_missing_key_raises_401() -> None:
-    with _patch_settings(api_key="test-key"):
-        with pytest.raises(HTTPException) as exc:
-            await require_api_key(api_key=None)
+    with _patch_settings(api_key="test-key"), pytest.raises(HTTPException) as exc:
+        await require_api_key(api_key=None)
     assert exc.value.status_code == 401

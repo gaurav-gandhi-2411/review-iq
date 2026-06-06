@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from functools import lru_cache
-from typing import Literal
+from typing import Any, Literal
 
 _DEVANAGARI = re.compile(r"[ऀ-ॿ]")
 
@@ -26,14 +26,12 @@ DetectedLanguage = Literal["en", "hi-en", "hi", "other"]
 
 
 @lru_cache(maxsize=1)
-def _get_lingua_detector():
+def _get_lingua_detector() -> Any | None:
     """Build lingua-py detector (cached — slow to initialize)."""
     try:
-        from lingua import Language, LanguageDetectorBuilder  # type: ignore[import]
+        from lingua import Language, LanguageDetectorBuilder
 
-        return LanguageDetectorBuilder.from_languages(
-            Language.ENGLISH, Language.HINDI
-        ).build()
+        return LanguageDetectorBuilder.from_languages(Language.ENGLISH, Language.HINDI).build()
     except Exception:
         return None
 
@@ -64,7 +62,7 @@ def detect_language(text: str) -> DetectedLanguage:
     detector = _get_lingua_detector()
     if detector is not None:
         try:
-            from lingua import Language  # type: ignore[import]
+            from lingua import Language
 
             confidence = detector.compute_language_confidence(text, Language.ENGLISH)
             if confidence < 0.5:

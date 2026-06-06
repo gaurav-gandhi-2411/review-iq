@@ -34,6 +34,7 @@ _URGENCIES = {"low", "medium", "high"}
 # Terminal helpers
 # ---------------------------------------------------------------------------
 
+
 def _clear() -> None:
     print("\n" + "=" * 70 + "\n")
 
@@ -59,6 +60,7 @@ def _ask_list(prompt: str) -> list[str]:
 # Progress tracking
 # ---------------------------------------------------------------------------
 
+
 def _load_progress() -> dict:
     if PROGRESS_FILE.exists():
         return json.loads(PROGRESS_FILE.read_text(encoding="utf-8"))
@@ -73,6 +75,7 @@ def _save_progress(progress: dict) -> None:
 # ---------------------------------------------------------------------------
 # Candidate ranking
 # ---------------------------------------------------------------------------
+
 
 def _load_candidates() -> list[dict]:
     if not CANDIDATES_FILE.exists():
@@ -96,9 +99,7 @@ def _rank_candidates(candidates: list[dict]) -> list[dict]:
     """Return top Hinglish candidates ranked by quality for labeling."""
     # Filter to Hinglish only, reasonable length
     hinglish = [
-        c for c in candidates
-        if c.get("language") == "hi-en"
-        and 30 <= c.get("char_len", 0) <= 600
+        c for c in candidates if c.get("language") == "hi-en" and 30 <= c.get("char_len", 0) <= 600
     ]
 
     # Sort: prefer medium-length reviews (100-400 chars) that are more informative
@@ -127,6 +128,7 @@ def _rank_candidates(candidates: list[dict]) -> list[dict]:
 # ---------------------------------------------------------------------------
 # Fixture writing
 # ---------------------------------------------------------------------------
+
 
 def _fixture_path(n: int) -> Path:
     return FIXTURES_DIR / f"{n:03d}.json"
@@ -162,6 +164,7 @@ def _write_fixture(n: int, candidate: dict, ground_truth: dict) -> Path:
 # Input collection
 # ---------------------------------------------------------------------------
 
+
 def _collect_ground_truth(candidate: dict) -> dict | None:
     """Prompt user for all ground truth fields. Returns None if user skips."""
     suggested_product = candidate.get("product", "unknown")
@@ -183,7 +186,9 @@ def _collect_ground_truth(candidate: dict) -> dict | None:
         sys.exit(0)
 
     # --- Stars (explicit) ---
-    stars_raw = _ask("Stars (1-5 or 'none')", default=str(suggested_rating) if suggested_rating else "none")
+    stars_raw = _ask(
+        "Stars (1-5 or 'none')", default=str(suggested_rating) if suggested_rating else "none"
+    )
     if stars_raw.lower() in ("s",):
         return None
     if stars_raw.lower() == "q":
@@ -198,7 +203,9 @@ def _collect_ground_truth(candidate: dict) -> dict | None:
     # --- Stars inferred ---
     stars_inf_raw = _ask("Stars inferred from tone (1-5 or 'none')", default="none")
     try:
-        stars_inferred: int | None = int(stars_inf_raw) if stars_inf_raw.lower() not in ("none", "") else None
+        stars_inferred: int | None = (
+            int(stars_inf_raw) if stars_inf_raw.lower() not in ("none", "") else None
+        )
         if stars_inferred is not None and not (1 <= stars_inferred <= 5):
             stars_inferred = None
     except ValueError:
@@ -257,6 +264,7 @@ def _collect_ground_truth(candidate: dict) -> dict | None:
 # Main loop
 # ---------------------------------------------------------------------------
 
+
 def main() -> None:
     print("\n" + "=" * 70)
     print("  Review-IQ Hinglish Label Helper")
@@ -311,7 +319,9 @@ def main() -> None:
 
         _clear()
         print(f"  Candidate {i + 1}/{len(unseen)}  |  Accepted: {accepted_count}/{TARGET}")
-        print(f"  Chars: {candidate['char_len']}  |  Rating: {candidate.get('rating')}  |  Source: {candidate.get('source', '?')}")
+        print(
+            f"  Chars: {candidate['char_len']}  |  Rating: {candidate.get('rating')}  |  Source: {candidate.get('source', '?')}"
+        )
         print()
         print("  REVIEW TEXT:")
         print("  " + "-" * 60)
@@ -359,10 +369,12 @@ def main() -> None:
     if accepted_count >= TARGET:
         print(f"  DONE! {accepted_count} Hinglish fixtures labeled.")
         print(f"\n  Fixtures are in: {FIXTURES_DIR}")
-        print(f"\n  Next steps:")
+        print("\n  Next steps:")
         print(f"    1. Review the fixtures: ls {FIXTURES_DIR}")
-        print(f"    2. git add eval/fixtures/hi-en/ && git commit -m 'feat(eval): 15 hand-labeled Hinglish fixtures'")
-        print(f"    3. Tell Claude Code: 'labels done'")
+        print(
+            "    2. git add eval/fixtures/hi-en/ && git commit -m 'feat(eval): 15 hand-labeled Hinglish fixtures'"
+        )
+        print("    3. Tell Claude Code: 'labels done'")
     else:
         remaining = TARGET - accepted_count
         print(f"  Session complete. {accepted_count}/{TARGET} fixtures labeled.")

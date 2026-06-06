@@ -11,6 +11,7 @@ Connection  : supabase_database_url (port 6543, PgBouncer transaction mode).
               Direct port 5432 is reserved for migrations and RLS integration
               tests that require session-level GUCs (SET LOCAL ROLE, etc.).
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -80,12 +81,12 @@ def _lookup_and_record(raw_key: str) -> ApiKeyContext:
         # 2. argon2id verification — constant-time
         try:
             _PH.verify(key_hash, raw_key)
-        except (VerifyMismatchError, VerificationError):
+        except (VerifyMismatchError, VerificationError) as exc:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="API key not found.",
                 headers={"WWW-Authenticate": "Bearer"},
-            )
+            ) from exc
 
         # 3. Monthly usage count — derives from usage_records, resets automatically
         cur.execute(
@@ -110,8 +111,7 @@ def _lookup_and_record(raw_key: str) -> ApiKeyContext:
 
         # 5. Record the call — tokens_in/tokens_out updated after LLM completes
         cur.execute(
-            "INSERT INTO public.usage_records (org_id, api_key_id) "
-            "VALUES (%s, %s) RETURNING id",
+            "INSERT INTO public.usage_records (org_id, api_key_id) VALUES (%s, %s) RETURNING id",
             (str(org_id), str(key_id)),
         )
         (usage_record_id,) = cur.fetchone()

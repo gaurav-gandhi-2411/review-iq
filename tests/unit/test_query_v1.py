@@ -7,7 +7,6 @@ from unittest.mock import patch
 
 import httpx
 import pytest
-
 from app.core.storage import migrate
 from app.main import create_app
 

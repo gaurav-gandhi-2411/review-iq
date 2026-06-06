@@ -1,4 +1,5 @@
 """HTTP Basic auth dependency for /admin/* endpoints."""
+
 from __future__ import annotations
 
 import secrets
