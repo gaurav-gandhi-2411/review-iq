@@ -13,6 +13,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
+from app.api.account import router as account_router
 from app.api.admin import router as admin_router
 from app.api.dashboard import router as dashboard_router
 from app.api.extract import router as extract_router
@@ -20,6 +21,7 @@ from app.api.query import router as query_router
 from app.api.v2.extract import router as v2_extract_router
 from app.api.v2.ingest import router as ingest_router
 from app.api.v2.reviews import router as v2_reviews_router
+from app.auth.signup import router as signup_router
 from app.core.config import Settings, get_settings
 from app.core.logging import setup_logging
 from app.core.metrics import PrometheusMiddleware
@@ -76,6 +78,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     _app.include_router(ingest_router)
     _app.include_router(v2_reviews_router)
     _app.include_router(admin_router)
+    _app.include_router(signup_router)
+    _app.include_router(account_router)
 
     if settings.deploy_target != "cloud-run":
         _app.include_router(dashboard_router)
