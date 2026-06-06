@@ -124,11 +124,13 @@ Evaluated on 46 hand-labeled and synthetic fixtures across English, Hinglish, an
 
 | Version | Environment | Overall | en | hi-en | hi | Fixtures |
 |---|---|---|---|---|---|---|
-| v0.3.0 | CI / direct LLM | **TBD** | TBD | TBD | TBD | 46 (25 en + 15 hi-en + 6 hi) |
+| v0.3.0 | CI / direct LLM | **86.2%** | 88.3% | 82.0% | 87.8% | 46 (25 en + 15 hi-en + 6 hi) |
 | v0.2.0 | Cloud Run (production) | **87.9%** | 87.9% | — | — | 25 |
 | v0.1.3 | HF Spaces | 86.7% | 86.7% | — | — | 25 |
 
 Gates: overall ≥ 85%, per-language ≥ 80%. Eval runs automatically in CI on every push touching prompts, LLM, schema, or fixture files. Nightly runs post results to Slack.
+
+> **Known gap (v0.3.0):** hi-en sarcasm and ambiguous-sentiment fixtures score lowest (69–76%), mirroring the English sarcasm/ambiguity cases (007, 012, 025). Flagged for a prompt-refinement pass in Phase 2.0b continuation.
 
 ---
 
