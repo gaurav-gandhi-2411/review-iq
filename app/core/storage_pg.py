@@ -323,6 +323,116 @@ def aggregate_extractions_pg(org_id: str) -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
+# Batch job helpers (v2 Postgres-backed)
+# ---------------------------------------------------------------------------
+
+
+def create_batch_job_pg(
+    org_id: str,
+    job_id: str,
+    total: int,
+    source_columns: str | None = None,
+) -> None:
+    """Insert a new batch job record (org-scoped)."""
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            INSERT INTO public.batch_jobs
+                (job_id, org_id, total, source_columns)
+            VALUES (%s, %s, %s, %s)
+            """,
+            (job_id, org_id, total, source_columns),
+        )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def get_batch_job_pg(org_id: str, job_id: str) -> dict[str, Any] | None:
+    """Return a batch job row for this org, or None if not found / wrong org."""
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT job_id, org_id, status, total, processed, failed,
+                   source_columns, created_at, completed_at
+            FROM public.batch_jobs
+            WHERE job_id = %s AND org_id = %s
+            """,
+            (job_id, org_id),
+        )
+        row = cur.fetchone()
+        conn.commit()
+        if row is None:
+            return None
+        cols = [
+            "job_id",
+            "org_id",
+            "status",
+            "total",
+            "processed",
+            "failed",
+            "source_columns",
+            "created_at",
+            "completed_at",
+        ]
+        return dict(zip(cols, row, strict=False))
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def update_batch_job_pg(
+    org_id: str,
+    job_id: str,
+    *,
+    processed: int | None = None,
+    failed: int | None = None,
+    status: str | None = None,
+    source_columns: str | None = None,
+) -> None:
+    """Update mutable fields on a batch job (org-scoped)."""
+    parts: list[str] = []
+    params: list[Any] = []
+    if processed is not None:
+        parts.append("processed = %s")
+        params.append(processed)
+    if failed is not None:
+        parts.append("failed = %s")
+        params.append(failed)
+    if status is not None:
+        parts.append("status = %s")
+        params.append(status)
+        if status in ("done", "failed"):
+            parts.append("completed_at = now()")
+    if source_columns is not None:
+        parts.append("source_columns = %s")
+        params.append(source_columns)
+    if not parts:
+        return
+    params.extend([org_id, job_id])
+    sql = f"UPDATE public.batch_jobs SET {', '.join(parts)} WHERE org_id = %s AND job_id = %s"
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute(sql, params)
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
 # Internal helper
 # ---------------------------------------------------------------------------
 
