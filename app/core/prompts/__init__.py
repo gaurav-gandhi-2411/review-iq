@@ -6,7 +6,7 @@ Only the instructions and examples vary by language.
 
 from __future__ import annotations
 
-PROMPT_VERSION = "v2.0"
+PROMPT_VERSION = "v2.1"
 
 
 def build_prompt(wrapped_review: str, language: str = "en") -> str:
