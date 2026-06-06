@@ -7,10 +7,9 @@ from datetime import UTC
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from fastapi.testclient import TestClient
-
 from app.auth.api_key import ApiKeyContext, require_api_key
 from app.core.schemas import ReviewExtractionLLMOutput, ReviewRequest, Sentiment, Urgency
+from fastapi.testclient import TestClient
 
 _ORG_ID = str(uuid.uuid4())
 _KEY_ID = str(uuid.uuid4())
