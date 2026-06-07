@@ -1,123 +1,104 @@
-# Project Spec: review-iq — Phase 2.0a (Multi-Tenant SaaS on Cloud Run)
+# Project Spec: review-iq — Phase 2.0c (Ingestion + Self-Serve → Close-Out)
 
 ## Goal
-Turn review-iq from a single-tenant demo (v0.1.3, SQLite, one shared `X-API-Key`, HF Spaces)
-into a multi-tenant hosted SaaS that can onboard real paying clients. Each client (organization)
-gets isolated data, their own API keys, and per-key quotas. The service runs on GCP Cloud Run
-with hard cost controls so it cannot generate a surprise bill. The existing `/v1/*` API and the
-HF Space demo stay live and unchanged as the legacy public demo.
-
-This is the first sellable checkpoint: after 2.0a, review-iq is revenue-capable for SMB / DTC
-clients as a hosted English review-intelligence API.
+Make review-iq a product a stranger in India can adopt without talking to you: sign up with an
+email, get a `riq_live_` key, push a marketplace CSV export of reviews (English, Hinglish, or
+Hindi), and pull back structured insights — with a public landing page whose accuracy table is
+the sales pitch. This is the final phase. When it ships, the project is closed as a sellable
+product. Everything beyond it (SDKs, browser extension, embed widget, payments) is growth, not
+close-out.
 
 ## Current state (existing project — do not break)
-- **Live, working, must keep working:** `app/main.py` mounts 3 routers (`extract`, `query`,
-  `dashboard`), Prometheus middleware, slowapi rate limiting, lifespan auto-migrate.
-- **Core modules:** `app/core/{config,llm,sanitize,auth,storage,metrics,logging,schemas,prompt}.py`.
-- **Storage:** `app/core/storage.py` — aiosqlite, WAL, manual migrations, SHA-256 idempotency
-  cache, `extractions` + `batch_jobs` tables.
-- **Auth today:** `app/core/auth.py` — single shared `X-API-Key` compared to `settings.api_key`.
-- **LLM:** `app/core/llm.py` — Groq primary, Gemini fallback.
-- **Eval:** `eval/runner.py` + `eval/fixtures/*.json` (25 fixtures present), 85% pass gate.
-- **Tests:** `tests/unit/*` + `tests/integration/*`, 128 functions, 60% coverage gate.
-- **CI:** `.github/workflows/{ci,deploy,eval}.yml`. `deploy.yml` pushes to HF Space.
-- **The contract with existing code:** the `ReviewExtraction` schema in `app/core/schemas.py`
-  and the `/v1` request/response shapes are a public contract. Do not change field names,
-  types, or `/v1` behavior.
+- `main` is at `v0.3.1` (commit `ba7e7b8`). Phases 2.0a + 2.0b are complete and live.
+- Multi-tenant core (done, must keep working): `app/auth/{api_key,keygen,admin}.py`
+  (argon2id `riq_live_<32hex>` keys, quota, usage), `app/api/v2/{extract,reviews}.py`
+  (tenant-scoped), `app/api/admin.py` (owner-only), `app/core/storage_pg.py` (Postgres),
+  `app/core/storage.py` (SQLite dev/test), RLS migrations in `supabase/migrations/`.
+- Language (done): `app/core/language.py` + `app/core/prompts/{en,hi,hi_en}.py`, fixtures in
+  `eval/fixtures/{,hi/,hi-en/}`, multi-language eval runner with 80%-per-language gate.
+- Batch pipeline (exists): `BatchJob` model + `batch_jobs` table; the v2 batch task path lives
+  in `app/api/v2/extract.py` and is currently 72% covered (integration-only) — this is the
+  load-bearing path for CSV ingestion and must be hardened first.
+- Privacy gate (done): v2/org-key path is Groq-only; `enable_gemini_fallback` defaults False.
+- Deployed: Cloud Run (`review-iq-prod`), kill-switch live, console-verified healthy.
+- The contract: do not change `ReviewExtraction` field names/types, `/v1` behavior, the
+  `riq_live_` key format, or RLS policies.
 
 ## Scope
 
 ### In scope (this iteration)
-- Repository abstraction: `ReviewRepository` interface with **two** backends — SQLite (dev/test)
-  and Postgres (prod). Same methods, swap by config.
-- Postgres schema (Supabase): `organizations`, `users`, `organization_members`, `api_keys`,
-  `usage_records`; add `org_id`, `tokens_in`, `tokens_out` to `extractions`. RLS on every
-  tenant table.
-- API-key auth middleware: `Authorization: Bearer riq_live_<32-hex>`; SHA-256 hashed at rest;
-  store `key_prefix` for display; per-key `rate_limit_rpm` / `rate_limit_rpd` / `monthly_quota`;
-  record usage in `usage_records` on every call.
-- Tenancy services: CRUD for orgs / members / keys. Owner-only `/admin/*` endpoints behind
-  HTTP Basic (single owner credential from Secret Manager) until a dashboard exists.
-- `/v2/*` endpoints: tenant-scoped copies of `/v1/extract`, `/v1/extract/batch`,
-  `/v1/extract/batch/{id}`, `/v1/reviews`, `/v1/insights`. Require Bearer key. Scope all reads
-  and writes by `org_id`.
-- **Privacy hardening:** make prod extraction Groq-only. Gate Gemini behind a `DEV_ONLY` config
-  flag; it must never be invoked when a real org key is present. (Gemini free tier trains on
-  inputs — unacceptable for client data.)
-- Cloud Run deploy path: updated `Dockerfile`, `cloudbuild.yaml`, `deploy-cloudrun.yml`,
-  secrets in Secret Manager.
-- Cost-control IaC under `ops/budget-killswitch/` (Terraform): Pub/Sub budget topic +
-  Cloud Function that disables billing on breach. Budget alerts at $0.50 / $1 / $5 / $10.
-- Tests: v1 still works; v2 requires auth; **cross-tenant isolation** (org A cannot read org B);
-  **quota enforcement** (key with quota=10 returns 429 on the 11th call).
-- README v2 section + `SECURITY.md` (PI defense, PII handling, RLS).
+- CSV bulk ingestion (v2, tenant-scoped):
+  - `POST /v2/ingest/csv` — multipart upload; caller names the review-text column (param
+    `text_column`, default tries `review_text`/`review`/`comment`/`text`) and optional
+    `product_column`; validates headers; enqueues a `BatchJob`; returns `job_id`.
+  - `GET /v2/ingest/{job_id}` — status + progress (reuse existing batch status).
+  - `GET /v2/ingest/{job_id}/result?format=csv|json` — download original rows joined with
+    extracted fields.
+  - Caps (cost guard): free tier <= 500 rows/upload and <= 5 MB/file; reject oversize with 413.
+    Stream-parse (stdlib `csv`), never load the whole file into memory.
+- Self-serve onboarding:
+  - Supabase Auth magic-link sign-up (email only; Supabase sends the email).
+  - On first verified login: create an `organization`, issue one `riq_live_` key (shown once),
+    set `monthly_quota = 100` (free tier).
+  - Minimal authenticated account page: show key prefix + reveal-once, current usage
+    (`N / 100` this month), and a regenerate-key action. NOT a full analytics dashboard.
+- Landing page + docs (static, separate host):
+  - Hero, one-line value prop (reviews -> structured insight, English + Hinglish + Hindi).
+  - Live demo box: paste a review -> calls the public v1 demo endpoint (no key, rate-limited)
+    -> shows the JSON. Zero-friction; do not require sign-up to try.
+  - Real per-language accuracy table (en/hi/hi-en, current eval numbers) + honest known-gap note.
+  - Quickstart: `curl` + Python snippets against `/v2/extract`.
+  - "Self-host (MIT) or use hosted" section; transparent "how we make money" line.
+  - `/docs` (mkdocs or plain HTML): endpoints, auth, CSV format, limits.
+- hi-en prompt refinement (bounded, one pass): improve the Hinglish few-shot examples in
+  `app/core/prompts/hi_en.py` targeting the sarcasm/ambiguity fixtures (hi-en-010/012/014/015);
+  re-run eval. Accept whatever it lands at as long as every bucket stays >= 80%. Do NOT chase a
+  specific higher number or iterate more than one attempt — escalate if it regresses any bucket.
 
 ### Out of scope (do not build)
-- Python / JS SDKs (Phase 2.5).
-- Browser extension, embed widget (Phase 3.0).
-- Hinglish / Hindi / Tamil language work (Phase 2.0b — separate spec).
-- CSV bulk ingestion + self-serve sign-up + landing page (Phase 2.0c — separate spec).
-- Any billing / payments / Stripe code.
-- Removing or rewriting the `/v1` endpoints or the HF Space deploy.
+- Python/JS SDKs, browser extension, embed widget (growth backlog).
+- Stripe/payments/billing code — first clients are invoiced manually.
+- A full per-tenant analytics dashboard (the account page is intentionally minimal).
+- Marketplace API connectors (Amazon SP-API, Flipkart) — CSV export is the ingestion path for now.
+- Any change to `/v1`, `/v2/extract`, `/v2/reviews`, RLS, or the key format.
 
 ## Tech stack
-- Python 3.11, FastAPI ≥0.115, Pydantic v2, uvicorn[standard] (unchanged).
-- Postgres via `asyncpg` (prod); `aiosqlite` retained for dev/test.
-- Migrations: `alembic` (or Supabase migration files — pick one, state it, be consistent).
-- `passlib`/`hashlib` for API-key hashing (SHA-256 is fine; no plaintext keys at rest).
-- GCP: Cloud Run, Artifact Registry, Secret Manager, Cloud Billing budgets. Terraform for the
-  kill-switch.
-- uv (package manager), ruff (line-length 100), mypy (strict on `app/`), pytest + pytest-asyncio.
+- Existing stack unchanged (Python 3.11, FastAPI, Pydantic v2, asyncpg/aiosqlite, Groq, uv,
+  ruff, mypy strict, pytest).
+- `python-multipart` for file upload (add only if not already present — confirm first).
+- CSV: stdlib `csv` only (no pandas — avoid the heavy dep).
+- Auth: Supabase Auth (already in use) — magic link; no new auth library.
+- Landing/docs: static site on Cloudflare Pages (project creation is a user/dashboard action).
 
 ## Architecture
 ```
 app/
-  main.py                 # mount v1 + v2 routers; unchanged v1 behavior
+  api/v2/
+    ingest.py            # NEW: CSV upload / status / result (tenant-scoped, reuses BatchJob)
   api/
-    v1/                    # MOVE existing extract/query/dashboard here, behavior unchanged
-    v2/                    # NEW: tenant-scoped extract, query
+    account.py           # NEW: minimal authenticated account page (key, usage, regenerate)
   auth/
-    keys.py                # NEW: parse/hash/lookup riq_live_ keys, quota check, usage record
-    admin.py               # NEW: HTTP Basic owner auth for /admin/*
-  tenancy/
-    service.py             # NEW: org/user/member/key CRUD
+    signup.py            # NEW: Supabase magic-link verify -> org + riq_live_ key issuance
   core/
-    repository.py          # NEW: ReviewRepository interface
-    repository_sqlite.py   # NEW: SQLite impl (wraps current storage.py logic)
-    repository_postgres.py # NEW: asyncpg impl
-    llm.py                 # EDIT: Groq-only prod path; Gemini behind DEV_ONLY flag
-    ...                    # config/schemas/sanitize/metrics/logging unchanged in contract
-ops/
-  budget-killswitch/       # NEW: Terraform — Pub/Sub + Cloud Function
-  runbooks/                # NEW: monthly-cost-check.md
-cloudbuild.yaml            # NEW
-.github/workflows/
-  deploy-cloudrun.yml      # NEW (deploy.yml for HF stays)
-SECURITY.md                # NEW
+    csv_ingest.py        # NEW: streaming CSV parse + column mapping + result join
+    prompts/hi_en.py     # EDIT: refined Hinglish few-shot examples (one bounded pass)
+site/                    # NEW: static landing page + /docs (Cloudflare Pages)
+  index.html
+  docs/
 ```
 
-## Data model (Postgres, v2.0a)
-```sql
-organizations (id, name, slug, plan, created_at)
-users (id, email, name, created_at)
-organization_members (org_id, user_id, role)            -- owner|admin|member
-api_keys (id, org_id, key_hash, key_prefix, name,
-          rate_limit_rpm, rate_limit_rpd, monthly_quota,
-          created_at, last_used_at, revoked_at)
-extractions (id, org_id, api_key_id, input_hash, review_text_redacted,
-             output_json, model, prompt_version, schema_version,
-             extracted_at, latency_ms, tokens_in, tokens_out)
-             INDEX (org_id, extracted_at DESC), INDEX (org_id, input_hash)
-usage_records (org_id, api_key_id, date, extractions_count,
-               tokens_in_total, tokens_out_total)        -- PK (org_id, api_key_id, date)
-```
-RLS policies on `organizations`, `api_keys`, `extractions`, `usage_records`: a tenant role can
-only read/write rows where `org_id` matches its claim. Isolation must hold even if app code is buggy.
+## Data model (additions only)
+- No new tables required. Reuse `organizations`, `api_keys`, `usage_records`, `batch_jobs`.
+- If a job needs to remember its source columns for the result join, add nullable
+  `source_columns TEXT` (JSON) to `batch_jobs` via a new migration — escalate before adding.
 
 ## Verification commands
 ```yaml
 - name: tests
   cmd: uv run pytest -v
+  required: true
+- name: integration
+  cmd: uv run pytest -v -m integration
   required: true
 - name: lint
   cmd: uv run ruff check .
@@ -128,66 +109,61 @@ only read/write rows where `org_id` matches its claim. Isolation must hold even 
 - name: types
   cmd: uv run mypy app
   required: true
+- name: eval
+  cmd: uv run python eval/runner.py
+  required: true
 ```
 
 ## Subagent usage rules
-- Use `executor` for any pass that writes or edits files.
-- Use `verifier` for running tests / lint / format / types.
-- The orchestrator does NOT write code — always delegates.
+- `executor` writes/edits files; `verifier` runs the commands above. Orchestrator delegates all code.
 
 ## Escalation rules (orchestrator must ask before doing)
-- **Ask before ANY `gcloud` / `gsutil` / billing command targeting `review-iq-prod`** — every
-  such action is individually approved by the user. Never auto-run.
-- Cloud Run cost controls (`--max-instances=2`, `--min-instances=0`, budget alerts, kill-switch)
-  MUST be deployed and verified BEFORE any production traffic. Escalate if asked to deploy a
-  service before the kill-switch exists.
-- GCP project creation, billing-account linking, Supabase project creation, and OAuth/Auth
-  config are **dashboard-only / user actions** — surface the exact steps for the user; do not
-  attempt them via CLI.
-- Ask before installing any dependency not listed in "Tech stack."
-- Ask before changing any `/v1` request/response shape or any field in `ReviewExtraction`.
-- Ask before a single executor pass would touch more than 8 files.
-- Ask if verification fails 3 times in a row on the same check.
-- Ask before committing anything that looks like a secret; secrets go to Secret Manager +
-  `.env.example` only.
+- Ask before ANY `gcloud`/billing command targeting `review-iq-prod` — per-action approval.
+- Supabase Auth configuration (magic-link, redirect URLs) and Cloudflare Pages project creation
+  are dashboard-only / user actions — surface exact steps; do not attempt via CLI.
+- Free-tier caps (100 extractions/mo, 500 rows/upload, 5 MB/file) MUST be enforced before the
+  signup or ingest endpoints are exposed — escalate if asked to ship either without caps.
+- Ask before adding any dependency beyond "Tech stack" (including pandas — don't).
+- Ask before adding the `source_columns` column or any migration.
+- Pricing numbers, free-tier limits beyond the above, ToS/Privacy/DPA copy -> the USER provides;
+  leave placeholders, do not invent legal text or prices.
+- Ask if a single executor pass would touch more than 8 files, or if verification fails 3x on the
+  same check.
+- hi-en refinement: one attempt only; escalate rather than iterating if any bucket drops below 80%.
 
-## Hard rules (existing project)
-- Do NOT modify `/v1` endpoint behavior or the HF Space `deploy.yml`.
-- Do NOT remove the SQLite backend — tests depend on it; it becomes the dev/test repository impl.
-- Do NOT change `ReviewExtraction` / `ReviewExtractionLLMOutput` field names or types.
-- Do NOT invoke Gemini on any path reachable by a real org key.
-- Run the full existing test suite after every executor pass; escalate if any existing test fails.
-- No plaintext API keys at rest — hash before store, ever.
+## Hard rules
+- Do NOT modify `/v1`, `/v2/extract`, `/v2/reviews`, `app/api/admin.py`, RLS policies, the
+  `riq_live_` format, or `ReviewExtraction` fields.
+- Do NOT invoke Gemini on any org-key path.
+- Do NOT load entire CSVs into memory — stream.
+- No plaintext keys at rest, ever.
+- Run the full suite after every executor pass; escalate if any existing test fails.
 
 ## Budget
-- Soft target: 2–3 CC sessions (this is genuinely multi-session work).
-- Hard cap: stop and escalate after 25 executor invocations.
-- Cost check: orchestrator runs `/cost` at the midpoint and reports.
+- Soft target: 1-2 CC sessions.
+- Hard cap: stop and escalate after 20 executor invocations.
+- Cost check: `/cost` at midpoint.
 
 ## Success criteria (orchestrator verifies ALL before declaring done)
-- [ ] `ReviewRepository` interface with SQLite + Postgres impls; tests green on SQLite.
-- [ ] Postgres schema applied; RLS policies present on all tenant tables.
-- [ ] `/v2/extract` requires a valid `riq_live_` Bearer key; rejects missing/invalid with 401.
-- [ ] Cross-tenant isolation test passes: org A's key cannot read org B's extractions/reviews.
-- [ ] Quota test passes: a key with `monthly_quota=10` returns 429 on the 11th extraction.
-- [ ] Usage recorded in `usage_records` for every v2 call (count + tokens).
-- [ ] Gemini unreachable on the org-key path; `DEV_ONLY` flag gates it; test asserts this.
-- [ ] All `/v1` endpoints behave identically to v0.1.3 (regression tests green).
-- [ ] Eval runner ≥85% pass (no regression).
-- [ ] Cloud Run service responds on its `*.run.app` URL; cost controls + kill-switch deployed.
-- [ ] Kill-switch tested via a simulated budget breach; billing-disable path confirmed.
-- [ ] $0 spend confirmed on `review-iq-prod`; `ops/runbooks/monthly-cost-check.md` executed once.
-- [ ] `SECURITY.md` added; README v2 section added.
-- [ ] `v0.2.0` tagged.
+- [ ] v2 batch/ingest path coverage >= 80% (closes the 72% gap), via real integration tests.
+- [ ] CSV round-trip: upload a sample marketplace CSV -> poll -> download joined results (CSV+JSON),
+      tenant-scoped, with row/size caps enforced (413 on oversize).
+- [ ] Self-serve flow end-to-end: email magic link -> verified login -> org created -> `riq_live_`
+      key issued (shown once) -> first `/v2/extract` succeeds. No manual step from the user.
+- [ ] New org defaults to `monthly_quota = 100`; the existing quota->429 path applies.
+- [ ] Account page: shows key prefix, usage `N/100`, regenerate works (old key revoked).
+- [ ] hi-en prompt refinement pass run; eval re-run; all buckets >= 80%; per-language table updated.
+- [ ] Landing page live: hero, working keyless live demo, real accuracy table, curl+Python
+      quickstart, self-host/hosted + transparency line. `/docs` published.
+- [ ] README + SECURITY.md updated for ingestion + signup; full suite + eval green.
+- [ ] `v0.4.0` tagged. Project closed.
 
 ## Build order (recommended; orchestrator may adjust)
-1. Cost controls FIRST: `ops/budget-killswitch/` Terraform + budget alerts (user runs gcloud/console steps; orchestrator authors IaC and the runbook).
-2. `ReviewRepository` interface; refactor current `storage.py` logic into `repository_sqlite.py`; keep all tests green.
-3. Postgres schema + RLS migrations; `repository_postgres.py`; config switch dev↔prod.
-4. API-key auth middleware (`app/auth/keys.py`): parse, hash, lookup, quota, usage record.
-5. Tenancy services + owner-only `/admin/*` (HTTP Basic).
-6. Move existing routers under `app/api/v1/` (behavior unchanged); add `app/api/v2/` tenant-scoped.
-7. LLM privacy hardening: Groq-only prod path, Gemini behind `DEV_ONLY`.
-8. Cloud Run: Dockerfile, `cloudbuild.yaml`, `deploy-cloudrun.yml`, Secret Manager (user approves each gcloud action).
-9. Isolation + quota + v1-regression tests; eval re-run.
-10. `SECURITY.md`, README v2 section, `v0.2.0` tag.
+1. Harden the v2 batch path with integration tests to >= 80% coverage (foundation for ingestion).
+2. `core/csv_ingest.py` + `api/v2/ingest.py` (upload/status/result) with caps + streaming.
+3. `auth/signup.py` (Supabase magic-link -> org + key) + `api/account.py` (key/usage/regenerate).
+   User configures Supabase Auth in the dashboard.
+4. hi-en prompt refinement (one pass) + eval re-run.
+5. `site/` landing + `/docs`; wire live demo to the public v1 demo endpoint. User creates the
+   Cloudflare Pages project.
+6. README/SECURITY updates, full verification, `v0.4.0` tag.

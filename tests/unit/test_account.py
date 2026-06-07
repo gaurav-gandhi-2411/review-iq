@@ -92,9 +92,7 @@ def test_regenerate_key_returns_raw_key() -> None:
             },
         ),
     ):
-        resp = _make_client().post(
-            "/account/regenerate-key", headers={"Authorization": _BEARER}
-        )
+        resp = _make_client().post("/account/regenerate-key", headers={"Authorization": _BEARER})
 
     assert resp.status_code == 200
     data = resp.json()

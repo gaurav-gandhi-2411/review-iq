@@ -1,6 +1,6 @@
 # Security
 
-This document describes the security controls in review-iq as of Phase 2.0a / v0.2.0+.
+This document describes the security controls in review-iq as of Phase 2.0c / v0.4.0+.
 
 ---
 
@@ -39,23 +39,47 @@ All review text is PII-redacted before being sent to any provider.
 
 ## 4. Tenant Isolation
 
-**Database (Postgres via Supabase):** Row-Level Security (RLS) is enabled on all tenant tables (`organizations`, `api_keys`, `extractions`, `usage_records`). Every query sets `SET LOCAL "app.current_org_id"` so a miscoded query from organization A cannot return rows belonging to organization B.
+**Database (Postgres via Supabase):** Row-Level Security (RLS) is enabled on all tenant tables (`organizations`, `api_keys`, `extractions`, `usage_records`, `batch_jobs`). Every query sets `SET LOCAL "app.current_org_id"` so a miscoded query from organization A cannot return rows belonging to organization B.
 
-**API keys:** Keys follow the format `riq_live_<32 hex chars>`. The plaintext key is shown once at creation and never written to disk or logs. Keys are stored as argon2id hashes. The key prefix (first 17 characters) is indexed for O(1) lookup without exposing the full hash.
+**API keys:** Keys follow the format `riq_live_<32 hex chars>`. The plaintext key is shown once at creation (and once again only on explicit regenerate) and never written to disk or logs. Keys are stored as argon2id hashes. The key prefix (first 17 characters) is indexed for O(1) lookup without exposing the full hash.
 
-**Quota enforcement:** Monthly extraction quotas are enforced with a `SELECT FOR UPDATE` lock, preventing TOCTOU races under concurrent requests.
+**Quota enforcement:** Monthly extraction quotas are enforced with a `SELECT FOR UPDATE` lock, preventing TOCTOU races under concurrent requests. The free-tier hard caps (100 extractions/month, 500 rows/upload, 5 MB/file) are enforced server-side and cannot be bypassed by callers.
 
 ---
 
-## 5. Secret Management
+## 5. Self-Serve Auth (Supabase JWT path)
 
-All secrets (`GROQ_API_KEY`, `ADMIN_PASSWORD_HASH`, `SUPABASE_DATABASE_URL`, `GEMINI_API_KEY`) are stored in Google Cloud Secret Manager. The Cloud Run service account is granted `secretAccessor` on a per-secret basis — not project-wide.
+The signup and account endpoints (`/auth/provision`, `GET /account`, `POST /account/regenerate-key`) use a separate auth channel: a Supabase JWT (magic-link email flow), not the `riq_live_*` API key.
+
+JWT verification calls `supabase.auth.get_user(jwt)` via the Supabase SDK; the SDK validates the token signature against Supabase's JWKS. No JWT decoding is done in-process. A 401 is returned on any verification failure.
+
+The `_provision_org_and_key` path creates exactly one org, one owner membership, and one API key per user. Re-calling provision with an existing user returns `{"status": "existing"}` — the raw_key is never re-exposed; callers must use `POST /account/regenerate-key` to cycle the key (which again shows it once).
+
+---
+
+## 6. CSV Ingest Security
+
+All PII redaction and prompt injection defenses (sections 1–2) apply per-row to every CSV upload. Rows are sanitized before any LLM call.
+
+Streaming parse rejects uploads exceeding 5 MB before fully loading them into memory. The row cap (500) is enforced before any extraction begins. Input file content is never persisted to disk — only the extracted JSON is stored.
+
+---
+
+## 7. Demo Endpoint
+
+`POST /demo/extract` requires no API key and performs no database writes. PII redaction and prompt injection defenses still apply. The endpoint is rate-limited globally (30 requests/minute across all callers) via slowapi. No review text is stored or logged beyond the standard structured log line.
+
+---
+
+## 8. Secret Management
+
+All secrets (`GROQ_API_KEY`, `ADMIN_PASSWORD_HASH`, `SUPABASE_DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY`) are stored in Google Cloud Secret Manager. The Cloud Run service account is granted `secretAccessor` on a per-secret basis — not project-wide.
 
 No plaintext secrets exist in source code or committed environment files. `.env` is gitignored. `.env.example` contains only placeholder values.
 
 ---
 
-## 6. Responsible Disclosure
+## 9. Responsible Disclosure
 
 If you discover a security vulnerability, please report it privately before opening a public issue.
 
@@ -67,4 +91,4 @@ Please include a description of the issue, reproduction steps, and any relevant 
 
 ---
 
-_This document covers Phase 2.0a / v0.2.0+ behavior. Controls may change as the product evolves; check git history for changes to this file._
+_This document covers Phase 2.0c / v0.4.0+ behavior. Controls may change as the product evolves; check git history for changes to this file._
