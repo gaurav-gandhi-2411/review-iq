@@ -64,6 +64,23 @@ class Settings(BaseSettings):
     # LLM privacy: set True only on v1/demo path; v2 org-key path is always Groq-only
     enable_gemini_fallback: bool = Field(default=False, alias="ENABLE_GEMINI_FALLBACK")
 
+    # Tiered routing (disabled until eval confirms all accuracy gates hold)
+    enable_tiered_routing: bool = Field(default=False, alias="ENABLE_TIERED_ROUTING")
+
+    # Tiered model names — both Groq (privacy-vetted)
+    groq_model_small: str = Field(
+        default="llama-3.1-8b-instant",
+        alias="GROQ_MODEL_SMALL",
+    )
+    groq_model_large: str = Field(
+        default="llama-3.3-70b-versatile",
+        alias="GROQ_MODEL_LARGE",
+    )
+
+    # Secondary failover provider — must be a no-train provider when configured
+    secondary_provider_api_key: str = Field(default="", alias="SECONDARY_PROVIDER_API_KEY")
+    secondary_provider_model: str = Field(default="", alias="SECONDARY_PROVIDER_MODEL")
+
     # Supabase
     supabase_url: str = Field(default="", alias="SUPABASE_URL")
     supabase_anon_key: str = Field(default="", alias="SUPABASE_ANON_KEY")
