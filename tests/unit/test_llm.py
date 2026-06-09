@@ -89,6 +89,9 @@ class TestExtractWithLLM:
             settings.gemini_model = "gemini-1.5-flash"
             settings.llm_max_retries = 1
             settings.llm_timeout_seconds = 30
+            # Disable secondary so these tests exercise the Groq→Gemini path only.
+            settings.secondary_provider_api_key = ""
+            settings.secondary_provider_model = ""
             mock.return_value = settings
             yield
 
@@ -175,7 +178,7 @@ class TestExtractWithLLM:
             patch(
                 "app.core.llm._call_gemini", new=AsyncMock(side_effect=RuntimeError("gemini down"))
             ),
-            pytest.raises(RuntimeError, match="Both LLM providers failed"),
+            pytest.raises(RuntimeError, match="All LLM providers failed"),
         ):
             MockGroq.return_value.chat.completions.create = AsyncMock(side_effect=groq_err)
             await extract_with_llm("some prompt")
@@ -253,7 +256,7 @@ class TestExtractWithLLM:
             patch("app.core.llm._call_gemini", new=AsyncMock()) as mock_gemini,
         ):
             MockGroq.return_value.chat.completions.create = AsyncMock(side_effect=groq_err)
-            with pytest.raises(RuntimeError, match="Both LLM providers failed"):
+            with pytest.raises(RuntimeError, match="All LLM providers failed"):
                 await extract_with_llm("some prompt", allow_gemini_fallback=False)
         mock_gemini.assert_not_called()
 

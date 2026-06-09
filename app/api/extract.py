@@ -95,6 +95,7 @@ async def extract_single(
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=str(exc),
+            headers={"Retry-After": "30"},
         ) from exc
 
 

@@ -17,6 +17,7 @@ from pydantic import ValidationError
 from app.core.config import get_settings
 from app.core.providers.base import assert_privacy_safe
 from app.core.providers.groq import GroqProvider
+from app.core.providers.secondary import SecondaryProvider
 from app.core.schemas import ReviewExtractionLLMOutput
 
 log = structlog.get_logger(__name__)
@@ -86,7 +87,13 @@ async def extract_with_llm(
     model_hint: str | None = None,
     allow_gemini_fallback: bool = True,
 ) -> tuple[ReviewExtractionLLMOutput, str, int, int, int]:
-    """Extract a review using the LLM pipeline with optional Gemini fallback.
+    """Extract a review using the LLM pipeline with secondary failover.
+
+    Extraction order:
+      1. Groq (primary, with parse retries + one API-error retry)
+      2. SecondaryProvider (if configured and privacy-safe)
+      3. Gemini (if allow_gemini_fallback=True and key present)
+      4. RuntimeError → callers return 503 + Retry-After
 
     Args:
         user_prompt: Formatted prompt string (review wrapped in delimiters).
@@ -97,17 +104,15 @@ async def extract_with_llm(
 
     Returns:
         Tuple of (parsed extraction, model name, latency_ms, tokens_in, tokens_out).
-        tokens_in/tokens_out are 0 if the provider did not return counts.
 
     Raises:
-        RuntimeError: When Groq fails and fallback is disabled, or both providers fail.
+        RuntimeError: When all providers fail.
     """
     settings = get_settings()
     t0 = time.monotonic()
 
-    # --- Groq primary (via GroqProvider) ---
+    # --- 1. Groq primary ---
     if model_hint != "gemini" and settings.groq_api_key:
-        # On the org-key path (allow_gemini_fallback=False), enforce privacy before any call.
         groq_provider = GroqProvider(
             model=settings.groq_model,
             api_key=settings.groq_api_key,
@@ -116,6 +121,7 @@ async def extract_with_llm(
         if not allow_gemini_fallback:
             assert_privacy_safe(groq_provider)
 
+        api_error_attempts = 0
         for attempt in range(settings.llm_max_retries + 1):
             try:
                 raw, tokens_in, tokens_out = await groq_provider.complete(
@@ -140,13 +146,52 @@ async def extract_with_llm(
                 if attempt >= settings.llm_max_retries:
                     log.error("llm.groq_exhausted_parse_retries")
             except (APIError, APIStatusError) as exc:
-                log.warning("llm.api_error", provider="groq", error=str(exc))
-                break
+                api_error_attempts += 1
+                log.warning(
+                    "llm.api_error",
+                    provider="groq",
+                    api_attempt=api_error_attempts,
+                    error=str(exc),
+                )
+                if api_error_attempts >= 2:  # one retry on API errors
+                    break
             except Exception as exc:  # noqa: BLE001
                 log.warning("llm.unexpected_error", provider="groq", error=str(exc))
                 break
 
-    # --- Gemini fallback (disabled on v2/org-key path) ---
+    # --- 2. Secondary failover (always-on when configured) ---
+    if (
+        model_hint not in ("groq", "gemini")
+        and settings.secondary_provider_api_key
+        and settings.secondary_provider_model
+    ):
+        secondary = SecondaryProvider(
+            api_key=settings.secondary_provider_api_key,
+            model=settings.secondary_provider_model,
+        )
+        try:
+            assert_privacy_safe(secondary, context="secondary failover path")
+            raw, tokens_in, tokens_out = await secondary.complete(
+                user_prompt,
+                system_prompt=_SYSTEM_PROMPT,
+            )
+            result = _parse_response(raw)
+            latency_ms = int((time.monotonic() - t0) * 1000)
+            log.info(
+                "llm.extracted",
+                provider="secondary",
+                model=settings.secondary_provider_model,
+                latency_ms=latency_ms,
+                tokens_in=tokens_in,
+                tokens_out=tokens_out,
+            )
+            return result, settings.secondary_provider_model, latency_ms, tokens_in, tokens_out
+        except RuntimeError:
+            raise  # privacy violation — re-raise immediately, do not fall through
+        except Exception as exc:  # noqa: BLE001
+            log.error("llm.secondary_failed", error=str(exc))
+
+    # --- 3. Gemini fallback (disabled on v2/org-key path) ---
     if allow_gemini_fallback and model_hint != "groq" and settings.gemini_api_key:
         try:
             result, tokens_in, tokens_out = await _call_gemini(user_prompt)
@@ -163,4 +208,4 @@ async def extract_with_llm(
         except Exception as exc:  # noqa: BLE001
             log.error("llm.gemini_failed", error=str(exc))
 
-    raise RuntimeError("Both LLM providers failed to extract the review.")
+    raise RuntimeError("All LLM providers failed to extract the review.")
