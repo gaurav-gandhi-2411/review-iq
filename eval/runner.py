@@ -51,6 +51,11 @@ class FixtureResult:
     overall_score: float = 0.0
     error: str | None = None
     latency_ms: int = 0
+    # Populated only in --routed mode
+    tier: str = ""  # "small" or "large"
+    escalated: bool = False
+    tokens_in: int = 0
+    tokens_out: int = 0
 
 
 def _exact_score(predicted: Any, expected: Any) -> float:
@@ -208,6 +213,70 @@ async def run_single(fixture: dict[str, Any]) -> FixtureResult:
         result.latency_ms = int((time.monotonic() - t0) * 1000)
 
     return result
+
+
+async def run_single_routed(fixture: dict[str, Any]) -> FixtureResult:
+    """Run one fixture through the tiered router and record tier/token data."""
+    from app.core.config import get_settings
+    from app.core.llm import _SYSTEM_PROMPT
+    from app.core.prompts import build_prompt
+    from app.core.router import route_extraction
+    from app.core.sanitize import sanitize, wrap_for_llm
+
+    result = FixtureResult(fixture_id=fixture["id"])
+    t0 = time.monotonic()
+    try:
+        text = fixture["review_text"]
+        settings = get_settings()
+        sanitized, _ = sanitize(text)
+        wrapped = wrap_for_llm(sanitized)
+        lang = fixture.get("ground_truth", {}).get("language", "en")
+        user_prompt = build_prompt(wrapped, lang)
+
+        extraction, model, tokens_in, tokens_out, escalated = await route_extraction(
+            user_prompt,
+            _SYSTEM_PROMPT,
+            allow_gemini_fallback=False,
+            settings=settings,
+        )
+        result.latency_ms = int((time.monotonic() - t0) * 1000)
+        result.tokens_in = tokens_in
+        result.tokens_out = tokens_out
+        result.escalated = escalated
+        result.tier = "large" if model == settings.groq_model_large else "small"
+
+        extraction_dict = extraction.model_dump()
+        security_err = _check_security(fixture["id"], extraction_dict, sanitized)
+        if security_err:
+            result.error = security_err
+            result.overall_score = 0.0
+            return result
+
+        result.field_results = score_fixture(fixture, extraction_dict)
+        scores = [fr.score for fr in result.field_results]
+        result.overall_score = sum(scores) / len(scores) if scores else 0.0
+    except Exception as e:
+        result.error = str(e)
+        result.overall_score = 0.0
+        result.latency_ms = int((time.monotonic() - t0) * 1000)
+
+    return result
+
+
+async def run_all_routed(fixtures_dir: Path = FIXTURES_DIR) -> list[FixtureResult]:
+    """Run all fixtures through the tiered router."""
+    all_results: list[FixtureResult] = []
+    for path in _collect_fixture_paths(fixtures_dir):
+        data: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
+        print(f"  {data['id']}...", end=" ", flush=True)
+        result = await run_single_routed(data)
+        tier_label = f"[{result.tier}{'↑' if result.escalated else ''}]" if result.tier else ""
+        suffix = (
+            f"ERROR: {result.error}" if result.error else f"{result.overall_score:.0%} {tier_label}"
+        )
+        print(suffix)
+        all_results.append(result)
+    return all_results
 
 
 async def run_single_http(
@@ -382,6 +451,43 @@ def write_report(
     out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def print_token_summary(results: list[FixtureResult]) -> None:
+    """Print tier distribution and token accounting for --routed runs."""
+    routed = [r for r in results if r.tier]
+    if not routed:
+        return
+
+    small = [r for r in routed if r.tier == "small"]
+    large = [r for r in routed if r.tier == "large"]
+    escalated = [r for r in routed if r.escalated]
+
+    total_in = sum(r.tokens_in for r in routed)
+    total_out = sum(r.tokens_out for r in routed)
+    small_in = sum(r.tokens_in for r in small)
+    large_in = sum(r.tokens_in for r in large)
+
+    # Direct baseline: estimate cost if every fixture used the large model.
+    # Use average tokens_in from actual large-model calls in this run.
+    if large:
+        avg_large_in = large_in / len(large)
+        direct_est = int(avg_large_in * len(routed))
+        pct_saved = (direct_est - total_in) / direct_est * 100 if direct_est > 0 else 0.0
+        savings_line = (
+            f"  Direct baseline (all-large est.): {direct_est:,} tokens_in\n"
+            f"  Token reduction:                  {pct_saved:.1f}%"
+        )
+    else:
+        savings_line = "  (All fixtures routed to large — no token reduction to report)"
+
+    print("\n=== Token Accounting (Routed) ===")
+    print(f"  Total fixtures:  {len(routed)}")
+    print(f"  Small tier:      {len(small)} fixtures, {small_in:,} tokens_in")
+    print(f"  Large tier:      {len(large)} fixtures, {large_in:,} tokens_in")
+    print(f"    of which escalated: {len(escalated)}")
+    print(f"  Total routed:    {total_in:,} tokens_in, {total_out:,} tokens_out")
+    print(savings_line)
+
+
 async def main() -> int:
     import argparse
 
@@ -392,19 +498,31 @@ async def main() -> int:
     parser.add_argument(
         "--api-key", default=None, help="X-API-Key for /v2/extract (required with --base-url)"
     )
+    parser.add_argument(
+        "--routed",
+        action="store_true",
+        help="Run fixtures through the tiered router (requires enable_tiered_routing-compatible settings)",
+    )
     args = parser.parse_args()
 
     if args.base_url and not args.api_key:
         print("ERROR: --api-key is required when --base-url is set", file=sys.stderr)
         return 1
 
-    mode = f"HTTP ({args.base_url})" if args.base_url else "direct (local LLM)"
+    if args.routed:
+        mode = "routed (tiered)"
+    elif args.base_url:
+        mode = f"HTTP ({args.base_url})"
+    else:
+        mode = "direct (local LLM)"
     print("=== Review IQ Eval Runner ===")
     print(f"Fixtures: {FIXTURES_DIR}  threshold: {PASS_THRESHOLD:.0%}  mode: {mode}\n")
 
     fixture_lang_map = _build_lang_map(FIXTURES_DIR)
 
-    if args.base_url:
+    if args.routed:
+        results = await run_all_routed()
+    elif args.base_url:
         async with httpx.AsyncClient(
             base_url=args.base_url,
             headers={"X-API-Key": args.api_key},
@@ -432,6 +550,9 @@ async def main() -> int:
         score = lang_scores[lang]
         status = "PASS" if score >= PER_LANG_THRESHOLD else "FAIL"
         print(f"  {lang}: {score:.1%} -- {status} (gate {PER_LANG_THRESHOLD:.0%})")
+
+    if args.routed:
+        print_token_summary(results)
 
     lang_fail = any(score < PER_LANG_THRESHOLD for score in lang_scores.values())
     if overall < PASS_THRESHOLD or lang_fail:
