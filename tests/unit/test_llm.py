@@ -95,7 +95,7 @@ class TestExtractWithLLM:
     @pytest.mark.asyncio
     async def test_groq_success(self) -> None:
         mock_resp = _make_groq_response(_VALID_JSON, tokens_in=200, tokens_out=80)
-        with patch("app.core.llm.AsyncGroq") as MockGroq:
+        with patch("app.core.providers.groq.AsyncGroq") as MockGroq:
             MockGroq.return_value.chat.completions.create = AsyncMock(return_value=mock_resp)
             result, model, latency, tokens_in, tokens_out = await extract_with_llm("some prompt")
 
@@ -109,7 +109,7 @@ class TestExtractWithLLM:
     async def test_groq_missing_usage_returns_zeros(self) -> None:
         resp = _make_groq_response(_VALID_JSON)
         resp.usage = None  # provider didn't return counts
-        with patch("app.core.llm.AsyncGroq") as MockGroq:
+        with patch("app.core.providers.groq.AsyncGroq") as MockGroq:
             MockGroq.return_value.chat.completions.create = AsyncMock(return_value=resp)
             _, _, _, tokens_in, tokens_out = await extract_with_llm("some prompt")
 
@@ -120,7 +120,7 @@ class TestExtractWithLLM:
     async def test_groq_returns_markdown_fenced_json(self) -> None:
         fenced = f"```json\n{_VALID_JSON}\n```"
         mock_resp = _make_groq_response(fenced)
-        with patch("app.core.llm.AsyncGroq") as MockGroq:
+        with patch("app.core.providers.groq.AsyncGroq") as MockGroq:
             MockGroq.return_value.chat.completions.create = AsyncMock(return_value=mock_resp)
             result, _, _, _, _ = await extract_with_llm("some prompt")
 
@@ -130,7 +130,7 @@ class TestExtractWithLLM:
     async def test_groq_retries_on_bad_json_then_succeeds(self) -> None:
         bad_resp = _make_groq_response("not json")
         good_resp = _make_groq_response(_VALID_JSON)
-        with patch("app.core.llm.AsyncGroq") as MockGroq:
+        with patch("app.core.providers.groq.AsyncGroq") as MockGroq:
             MockGroq.return_value.chat.completions.create = AsyncMock(
                 side_effect=[bad_resp, good_resp]
             )
@@ -149,7 +149,7 @@ class TestExtractWithLLM:
         )
         gemini_result = ReviewExtractionLLMOutput(**_VALID_EXTRACTION)
 
-        with patch("app.core.llm.AsyncGroq") as MockGroq:
+        with patch("app.core.providers.groq.AsyncGroq") as MockGroq:
             MockGroq.return_value.chat.completions.create = AsyncMock(side_effect=groq_err)
             with patch(
                 "app.core.llm._call_gemini", new=AsyncMock(return_value=(gemini_result, 60, 30))
@@ -171,7 +171,7 @@ class TestExtractWithLLM:
             body={},
         )
         with (
-            patch("app.core.llm.AsyncGroq") as MockGroq,
+            patch("app.core.providers.groq.AsyncGroq") as MockGroq,
             patch(
                 "app.core.llm._call_gemini", new=AsyncMock(side_effect=RuntimeError("gemini down"))
             ),
@@ -185,7 +185,7 @@ class TestExtractWithLLM:
         gemini_result = ReviewExtractionLLMOutput(**_VALID_EXTRACTION)
         with (
             patch("app.core.llm._call_gemini", new=AsyncMock(return_value=(gemini_result, 70, 40))),
-            patch("app.core.llm.AsyncGroq") as MockGroq,
+            patch("app.core.providers.groq.AsyncGroq") as MockGroq,
         ):
             result, model, _, _, _ = await extract_with_llm("some prompt", model_hint="gemini")
             MockGroq.assert_not_called()
@@ -195,7 +195,7 @@ class TestExtractWithLLM:
     @pytest.mark.asyncio
     async def test_model_hint_groq_skips_gemini(self) -> None:
         mock_resp = _make_groq_response(_VALID_JSON)
-        with patch("app.core.llm.AsyncGroq") as MockGroq:
+        with patch("app.core.providers.groq.AsyncGroq") as MockGroq:
             MockGroq.return_value.chat.completions.create = AsyncMock(return_value=mock_resp)
             with patch("app.core.llm._call_gemini", new=AsyncMock()) as mock_gemini:
                 result, model, _, _, _ = await extract_with_llm("some prompt", model_hint="groq")
@@ -209,7 +209,7 @@ class TestExtractWithLLM:
         bad_resp = _make_groq_response("not valid json at all")
         gemini_result = ReviewExtractionLLMOutput(**_VALID_EXTRACTION)
 
-        with patch("app.core.llm.AsyncGroq") as MockGroq:
+        with patch("app.core.providers.groq.AsyncGroq") as MockGroq:
             MockGroq.return_value.chat.completions.create = AsyncMock(
                 side_effect=[bad_resp, bad_resp]  # 2 attempts (max_retries=1)
             )
@@ -226,7 +226,7 @@ class TestExtractWithLLM:
         """Unexpected (non-API, non-parse) exception → break and try Gemini."""
         gemini_result = ReviewExtractionLLMOutput(**_VALID_EXTRACTION)
 
-        with patch("app.core.llm.AsyncGroq") as MockGroq:
+        with patch("app.core.providers.groq.AsyncGroq") as MockGroq:
             MockGroq.return_value.chat.completions.create = AsyncMock(
                 side_effect=Exception("network timeout")
             )
@@ -249,7 +249,7 @@ class TestExtractWithLLM:
             body={},
         )
         with (
-            patch("app.core.llm.AsyncGroq") as MockGroq,
+            patch("app.core.providers.groq.AsyncGroq") as MockGroq,
             patch("app.core.llm._call_gemini", new=AsyncMock()) as mock_gemini,
         ):
             MockGroq.return_value.chat.completions.create = AsyncMock(side_effect=groq_err)
