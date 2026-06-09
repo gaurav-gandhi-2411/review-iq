@@ -92,6 +92,8 @@ class TestExtractWithLLM:
             # Disable secondary so these tests exercise the Groq→Gemini path only.
             settings.secondary_provider_api_key = ""
             settings.secondary_provider_model = ""
+            # Routing OFF — keeps these tests exercising the v0.4.0 code path.
+            settings.enable_tiered_routing = False
             mock.return_value = settings
             yield
 
