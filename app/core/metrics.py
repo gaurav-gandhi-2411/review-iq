@@ -37,6 +37,29 @@ HTTP_REQUEST_DURATION = Histogram(
     buckets=[0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0],
 )
 
+ROUTER_TIER_TOTAL = Counter(
+    "review_iq_router_tier_total",
+    "Routing decisions by final tier (escalated requests counted as large)",
+    ["tier"],
+)
+
+ROUTER_ESCALATIONS_TOTAL = Counter(
+    "review_iq_router_escalations_total",
+    "Small-to-large escalation events",
+)
+
+ROUTER_TIER_TOKENS_IN = Counter(
+    "review_iq_router_tier_tokens_in_total",
+    "Input tokens consumed per routing tier",
+    ["tier"],
+)
+
+FAILOVER_TOTAL = Counter(
+    "review_iq_failover_total",
+    "Provider failover events (Groq exhausted, falling to secondary/Gemini)",
+    ["from_provider"],
+)
+
 _UUID_RE = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", re.I)
 
 

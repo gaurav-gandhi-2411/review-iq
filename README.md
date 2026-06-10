@@ -138,7 +138,8 @@ Evaluated on 46 hand-labeled and synthetic fixtures across English, Hinglish, an
 
 | Version | Environment | Overall | en | hi-en | hi | Fixtures |
 |---|---|---|---|---|---|---|
-| v0.4.0 | CI / direct LLM | **pending** | pending | pending | pending | 46 (prompt v2.1 — eval blocked by Groq TPD quota; re-runs at reset) |
+| v0.5.0 | CI / routed (tiered) | **84.4%** ⚠️ | 86.3% | 83.2% | 80.7% | 46 — 31 small / 15 large, 0 escalated; 27.9% token reduction vs all-large |
+| v0.4.0 | CI / direct LLM | **85.8%** | 87.1% | 83.1% | 87.5% | 46 (prompt v2.1) |
 | v0.3.0 | CI / direct LLM | **86.2%** | 88.3% | 82.0% | 87.8% | 46 (25 en + 15 hi-en + 6 hi) |
 | v0.2.0 | Cloud Run (production) | **87.9%** | 87.9% | — | — | 25 |
 | v0.1.3 | HF Spaces | 86.7% | 86.7% | — | — | 25 |
@@ -286,6 +287,13 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 - Keyless demo endpoint — `POST /demo/extract` (rate-limited, nothing stored)
 - Static landing page + API docs — `site/index.html` + `site/docs/index.html` (Cloudflare Pages)
 - Test coverage hardened to ≥89% on v2 path
+
+**Phase 2.1** ✓ (shipped June 2026 — v0.5.0):
+- Provider abstraction — Python `Protocol`-based adapter layer; `GroqProvider` and `SecondaryProvider` with `assert_privacy_safe()` enforcement
+- SecondaryProvider failover — configurable fallback when Groq exhausts; `trains_on_input=True` providers rejected in code on the org-key path
+- Tiered router — small model (llama-3.1-8b-instant) for en/hi, large model (llama-3.3-70b-versatile) for hi-en and escalations; escalation triggers: schema validation failure, low confidence (<0.6), star/sentiment signal mismatch
+- Routed eval: 84.4% overall (86.3% en / 83.2% hi-en / 80.7% hi); tiered routing default remains OFF pending 85% overall gate
+- Prometheus metrics: tier distribution, escalation rate, per-tier token counts, failover count
 
 **Phase 2.x** (planned):
 - Webhook ingestion from Yotpo / Judge.me / Shopify

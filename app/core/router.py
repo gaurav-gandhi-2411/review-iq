@@ -15,6 +15,7 @@ from pydantic import ValidationError
 
 from app.core.config import Settings
 from app.core.language import detect_language
+from app.core.metrics import ROUTER_ESCALATIONS_TOTAL, ROUTER_TIER_TOKENS_IN, ROUTER_TIER_TOTAL
 from app.core.providers.base import assert_privacy_safe
 from app.core.providers.groq import GroqProvider
 from app.core.routing_policy import choose_tier, escalation_triggers
@@ -112,6 +113,8 @@ async def route_extraction(
             max_retries=settings.llm_max_retries,
         )
         large_extraction = _parse_response(raw)
+        ROUTER_TIER_TOTAL.labels(tier="large").inc()
+        ROUTER_TIER_TOKENS_IN.labels(tier="large").inc(tin)
         log.info(
             "router.extracted",
             lang=lang,
@@ -156,6 +159,8 @@ async def route_extraction(
     if not triggers:
         # Small model result is good — return it.
         assert extraction is not None
+        ROUTER_TIER_TOTAL.labels(tier="small").inc()
+        ROUTER_TIER_TOKENS_IN.labels(tier="small").inc(small_tin)
         log.info(
             "router.extracted",
             lang=lang,
@@ -184,6 +189,10 @@ async def route_extraction(
     extraction = _parse_response(raw)
     total_tin = small_tin + large_tin
     total_tout = small_tout + large_tout
+    ROUTER_TIER_TOTAL.labels(tier="large").inc()
+    ROUTER_ESCALATIONS_TOTAL.inc()
+    ROUTER_TIER_TOKENS_IN.labels(tier="small").inc(small_tin)
+    ROUTER_TIER_TOKENS_IN.labels(tier="large").inc(large_tin)
     log.info(
         "router.extracted",
         lang=lang,

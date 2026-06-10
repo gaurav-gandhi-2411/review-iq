@@ -15,6 +15,7 @@ from groq import APIError, APIStatusError
 from pydantic import ValidationError
 
 from app.core.config import get_settings
+from app.core.metrics import FAILOVER_TOTAL
 from app.core.providers.base import assert_privacy_safe
 from app.core.providers.groq import GroqProvider
 from app.core.providers.secondary import SecondaryProvider
@@ -105,6 +106,7 @@ async def extract_with_llm(
     """
     settings = get_settings()
     t0 = time.monotonic()
+    _tiered_failed = False  # set True when tiered routing exhausts and falls through
 
     # --- Tiered routing (when enabled and no explicit model hint) ---
     if settings.enable_tiered_routing and model_hint is None:
@@ -127,6 +129,8 @@ async def extract_with_llm(
             return extraction, model, latency_ms, tokens_in, tokens_out
         except RuntimeError:
             log.warning("llm.tiered_groq_exhausted_falling_back")
+            FAILOVER_TOTAL.labels(from_provider="groq_tiered").inc()
+            _tiered_failed = True
             # Fall through to secondary / Gemini / RuntimeError below.
 
     # --- Groq primary (routing OFF or model_hint="groq") ---
@@ -191,6 +195,8 @@ async def extract_with_llm(
             api_key=settings.secondary_provider_api_key,
             model=settings.secondary_provider_model,
         )
+        if not _tiered_failed:
+            FAILOVER_TOTAL.labels(from_provider="groq").inc()
         try:
             assert_privacy_safe(secondary, context="secondary failover path")
             raw, tokens_in, tokens_out = await secondary.complete(

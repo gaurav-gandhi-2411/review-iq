@@ -29,7 +29,9 @@ Two independent layers guard against prompt injection attacks.
 
 ## 3. LLM Data Handling
 
-**Primary provider:** Groq (Llama 3.3 70B). Groq's API terms state that API customer inputs are not used for model training.
+**Primary provider:** Groq (Llama 3.3 70B and Llama 3.1 8B). Groq's API terms state that API customer inputs are not used for model training. Both the large and small Groq models used in tiered routing share this guarantee.
+
+**Secondary failover provider:** A configurable secondary provider can be wired via `SECONDARY_PROVIDER_API_KEY` / `SECONDARY_PROVIDER_MODEL`. The code enforces a data-handling check at the call site via `assert_privacy_safe()` — any provider whose `trains_on_input` property is `True` raises `PrivacyViolation` before the prompt is sent, making it impossible to accidentally route client data to a training-on-input provider on the org-key path. This check is unconditional; it cannot be bypassed by configuration.
 
 **Gemini (Google Gemini 2.0 Flash):** Removed from the v2 (client-data) path entirely. `allow_gemini_fallback=False` is hardcoded on every `/v2/extract` call. Gemini is reachable only on the legacy `/v1` demo path, and only when `ENABLE_GEMINI_FALLBACK=true` is explicitly set (default: `false`). This restriction exists because the Gemini free tier uses inputs for training and is therefore unsuitable for client review data.
 
@@ -91,4 +93,4 @@ Please include a description of the issue, reproduction steps, and any relevant 
 
 ---
 
-_This document covers Phase 2.0c / v0.4.0+ behavior. Controls may change as the product evolves; check git history for changes to this file._
+_This document covers Phase 2.1 / v0.5.0+ behavior. Controls may change as the product evolves; check git history for changes to this file._
