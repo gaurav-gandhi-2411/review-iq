@@ -81,6 +81,20 @@ No plaintext secrets exist in source code or committed environment files. `.env`
 
 ---
 
+## 10. Authenticity Audit Trail
+
+The `authenticity_audits` table is subject to the same RLS tenant-isolation as `extractions` and `batch_jobs`. Each row stores `org_id`, `review_hash` (SHA-256 of the review text, not the plaintext), `score`, `label`, and `flags`. Plaintext review content is never persisted in the audit table.
+
+Row-Level Security policies enforce that:
+- Authenticated requests can only read and insert rows where `org_id = public.current_org_id()` (the `WITH CHECK` clause prevents cross-tenant insertion).
+- Anonymous requests are denied unconditionally.
+
+Cross-tenant isolation is verified by an integration test (`tests/integration/test_authenticity_isolation.py`) that asserts org A cannot read org B's audit rows and cannot insert a row with org B's `org_id`.
+
+**IS 19000:2022 compliance posture:** The authenticity scorer *supports / assists* human review-administrator moderation workflows. It flags reviews for human decision — it does not auto-reject reviews, and it does not certify or guarantee IS 19000 compliance. See `docs/compliance.md`.
+
+---
+
 ## 9. Responsible Disclosure
 
 If you discover a security vulnerability, please report it privately before opening a public issue.
@@ -93,4 +107,4 @@ Please include a description of the issue, reproduction steps, and any relevant 
 
 ---
 
-_This document covers Phase 2.1 / v0.5.0+ behavior. Controls may change as the product evolves; check git history for changes to this file._
+_This document covers Phase 2.2 / v0.6.0+ behavior. Controls may change as the product evolves; check git history for changes to this file._
