@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from app.core.authenticity.batch_signals import detect_burst, find_near_duplicates, score_batch
+import pytest
+from app.core.authenticity.batch_signals import (
+    detect_burst,
+    find_near_duplicates,
+    score_batch,
+)
 from app.core.authenticity.heuristics import (
     compute_heuristic_score,
     score_brevity,
@@ -36,8 +41,9 @@ def test_from_signals_blends_scores() -> None:
         reasons="",
         review_text="blended review",
     )
-    # 0.4 * 1.0 + 0.6 * 0.0 = 0.4
-    assert abs(result.score - 0.4) < 1e-9
+    # llm_score=0.0 < 0.65 → combined = min(blended=0.4, llm_score=0.0) = 0.0
+    # LLM cap overrides clean heuristic when LLM signals maximum suspicion.
+    assert abs(result.score - 0.0) < 1e-9
 
 
 def test_from_signals_score_clamped_below_zero() -> None:
@@ -240,3 +246,81 @@ def test_score_batch_near_duplicate_flags_both() -> None:
     assert AuthenticityFlag.NEAR_DUPLICATE in result[0]
     assert AuthenticityFlag.NEAR_DUPLICATE in result[1]
     assert AuthenticityFlag.NEAR_DUPLICATE not in result[2]
+
+
+# --- New phrase coverage ---
+
+
+def test_score_incentivized_gift_sample() -> None:
+    _, flagged = score_incentivized_phrases("got this as a gift sample to review")
+    assert flagged is True
+
+
+def test_score_incentivized_review_program() -> None:
+    _, flagged = score_incentivized_phrases("part of a review program run by the brand")
+    assert flagged is True
+
+
+def test_score_incentivized_for_review_purposes() -> None:
+    _, flagged = score_incentivized_phrases("received product free for review purposes")
+    assert flagged is True
+
+
+def test_score_incentivized_discounted_rate_to_write() -> None:
+    _, flagged = score_incentivized_phrases("provided at a discounted rate to write a review")
+    assert flagged is True
+
+
+# --- Blend logic: LLM suspicion must not be overridden by clean heuristics ---
+
+
+def test_blend_suspicious_llm_caps_composite() -> None:
+    """LLM says 0.55 (suspicious), heuristics clean (1.0).
+    New blend: min(0.73, 0.55) = 0.55 → suspicious.
+    Old blend would give 0.73 → genuine (the bug we fixed).
+    """
+    result = AuthenticityResult.from_signals(
+        heuristic_score=1.0,
+        llm_score=0.55,
+        flags=[],
+        reasons="test",
+        review_text="test review",
+        model_used="test-model",
+        llm_signal_ok=True,
+    )
+    assert result.label == AuthenticityLabel.SUSPICIOUS
+    assert result.score == pytest.approx(0.55)
+
+
+def test_blend_genuine_llm_uses_normal_blend() -> None:
+    """LLM says 0.85 (genuine), heuristics clean (1.0).
+    blended = 0.4×1.0 + 0.6×0.85 = 0.91. Since llm >= 0.65, no cap.
+    """
+    result = AuthenticityResult.from_signals(
+        heuristic_score=1.0,
+        llm_score=0.85,
+        flags=[],
+        reasons="test",
+        review_text="test review",
+        model_used="test-model",
+        llm_signal_ok=True,
+    )
+    assert result.label == AuthenticityLabel.GENUINE
+    assert result.score == pytest.approx(0.91)
+
+
+def test_blend_clean_heuristics_borderline_llm() -> None:
+    """LLM says 0.60 (top of suspicious band), heuristics clean.
+    min(0.4×1.0 + 0.6×0.60, 0.60) = min(0.76, 0.60) = 0.60 → suspicious.
+    """
+    result = AuthenticityResult.from_signals(
+        heuristic_score=1.0,
+        llm_score=0.60,
+        flags=[],
+        reasons="test",
+        review_text="test review",
+        model_used="test-model",
+        llm_signal_ok=True,
+    )
+    assert result.label == AuthenticityLabel.SUSPICIOUS
+    assert result.score == pytest.approx(0.60)

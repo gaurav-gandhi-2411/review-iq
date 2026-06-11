@@ -25,6 +25,11 @@ _INCENTIVIZED_PHRASES: list[str] = [
     "discount mila",
     "sponsered",
     "gift mila",
+    # Additional disclosed-incentive patterns (regulated category)
+    "gift sample",  # "got this as a gift sample to review"
+    "review program",  # "part of a review program run by the brand"
+    "for review purposes",  # "received product free for review purposes"
+    "discounted rate to write",  # "provided at a discounted rate to write a review"
 ]
 
 _POSITIVE_WORDS: frozenset[str] = frozenset(

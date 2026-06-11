@@ -56,14 +56,24 @@ class AuthenticityResult(BaseModel):
         """Factory that combines heuristic and optional LLM scores into a final result.
 
         Blending: if llm_score is None, combined = heuristic_score.
-        Otherwise combined = 0.4 * heuristic_score + 0.6 * llm_score.
+        Otherwise: blended = 0.4 * heuristic_score + 0.6 * llm_score.
+        When llm_score < 0.65 (suspicious/fake band), combined = min(blended, llm_score)
+        to prevent clean heuristics from overriding a confident LLM suspicion.
+        When llm_score >= 0.65 (genuine band), combined = blended.
 
         Label thresholds:
             combined >= 0.65 → GENUINE
             combined >= 0.40 → SUSPICIOUS
             else             → LIKELY_FAKE
         """
-        combined = heuristic_score if llm_score is None else 0.4 * heuristic_score + 0.6 * llm_score
+        if llm_score is None:
+            combined = heuristic_score
+        else:
+            blended = 0.4 * heuristic_score + 0.6 * llm_score
+            # Absent heuristic keywords are weak evidence of genuineness.
+            # When LLM signals suspicion (score < genuine threshold), cap the
+            # composite at the LLM score so clean heuristics cannot override it.
+            combined = min(blended, llm_score) if llm_score < 0.65 else blended
 
         combined = max(0.0, min(1.0, combined))
 
