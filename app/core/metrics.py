@@ -60,6 +60,23 @@ FAILOVER_TOTAL = Counter(
     ["from_provider"],
 )
 
+AUTHENTICITY_LABEL_TOTAL = Counter(
+    "review_iq_authenticity_label_total",
+    "Authenticity scoring results by label",
+    ["label"],
+)
+
+AUTHENTICITY_FLAG_TOTAL = Counter(
+    "review_iq_authenticity_flag_total",
+    "Authenticity flag occurrences by flag type",
+    ["flag"],
+)
+
+AUTHENTICITY_DUPLICATE_CLUSTER_TOTAL = Counter(
+    "review_iq_authenticity_duplicate_clusters_total",
+    "Near-duplicate clusters detected in batch scoring",
+)
+
 _UUID_RE = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", re.I)
 
 
