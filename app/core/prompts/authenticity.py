@@ -19,6 +19,11 @@ Return ONLY a JSON object with this exact structure:
   "reasoning": "<one sentence>"
 }
 
+Score calibration:
+- 0.65–1.0 : Genuine — specific personal experience, no suspicious signals
+- 0.40–0.64: Suspicious — review discloses receiving the product free/at a discount, or content is low-information but not obviously fabricated
+- 0.00–0.39: Likely fabricated — repetitive or templated language, purely promotional copy, or no real user experience evident
+
 Allowed flags (include ONLY when clearly evidenced):
 - "incentivized_phrase"   : review mentions receiving the product free, discounts, or compensation
 - "rating_text_mismatch"  : star rating strongly contradicts the text sentiment
@@ -38,6 +43,11 @@ Return ONLY a JSON object with this exact structure:
   "flags": [<zero or more flags from the allowed set>],
   "reasoning": "<one sentence>"
 }
+
+Score calibration:
+- 0.65–1.0 : Genuine — specific personal experience, no suspicious signals
+- 0.40–0.64: Suspicious — review discloses receiving the product free/at a discount, or content is low-information but not obviously fabricated
+- 0.00–0.39: Likely fabricated — repetitive or templated language, purely promotional copy, or no real user experience evident
 
 Allowed flags (include ONLY when clearly evidenced):
 - "incentivized_phrase"   : review mentions receiving the product free, discounts, or compensation
@@ -59,6 +69,11 @@ Return ONLY a JSON object with this exact structure:
   "reasoning": "<one sentence>"
 }
 
+Score calibration:
+- 0.65–1.0 : Genuine — specific personal experience, no suspicious signals
+- 0.40–0.64: Suspicious — review discloses receiving the product free/at a discount, or content is low-information but not obviously fabricated
+- 0.00–0.39: Likely fabricated — repetitive or templated language, purely promotional copy, or no real user experience evident
+
 Allowed flags (include ONLY when clearly evidenced):
 - "incentivized_phrase"   : review mentions receiving the product free, discounts, or compensation
 - "rating_text_mismatch"  : star rating strongly contradicts the text sentiment
@@ -78,6 +93,11 @@ Return ONLY a JSON object with this exact structure:
   "flags": [<zero or more flags from the allowed set>],
   "reasoning": "<one sentence>"
 }
+
+Score calibration:
+- 0.65–1.0 : Genuine — specific personal experience, no suspicious signals
+- 0.40–0.64: Suspicious — review discloses receiving the product free/at a discount, or content is low-information but not obviously fabricated
+- 0.00–0.39: Likely fabricated — repetitive or templated language, purely promotional copy, or no real user experience evident
 
 Allowed flags (include ONLY when clearly evidenced):
 - "incentivized_phrase"   : review mentions receiving the product free, discounts, or compensation
