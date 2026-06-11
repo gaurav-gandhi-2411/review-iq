@@ -64,8 +64,9 @@ class Settings(BaseSettings):
     # LLM privacy: set True only on v1/demo path; v2 org-key path is always Groq-only
     enable_gemini_fallback: bool = Field(default=False, alias="ENABLE_GEMINI_FALLBACK")
 
-    # Tiered routing (disabled until eval confirms all accuracy gates hold)
-    enable_tiered_routing: bool = Field(default=False, alias="ENABLE_TIERED_ROUTING")
+    # Tiered routing: en-only small tier; hi+hi-en routed to large.
+    # Enabled after v0.5.1 routed eval: en 86.2 / hi 86.1 / hi-en 83.6 / overall 85.3%.
+    enable_tiered_routing: bool = Field(default=True, alias="ENABLE_TIERED_ROUTING")
 
     # Tiered model names — both Groq (privacy-vetted)
     groq_model_small: str = Field(

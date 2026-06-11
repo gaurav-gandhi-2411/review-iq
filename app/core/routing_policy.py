@@ -24,11 +24,13 @@ _HIGH_STARS_FLOOR = 4
 def choose_tier(language: DetectedLanguage) -> Tier:
     """Return the initial model tier for the given detected language.
 
-    hi-en (code-mixed) is the hardest bucket per eval — always route to large.
-    en and hi start on small and escalate only if a trigger fires.
+    hi-en and hi route to large: hi regressed -6.8% on the small tier in routed
+    eval (87.5→80.7) and the escalation path never fired (0 escalated), so hi
+    must bypass small until escalation triggers are tuned.
+    en is the only language that starts on small.
     All other languages (including 'other') default to small.
     """
-    if language == "hi-en":
+    if language in ("hi-en", "hi"):
         return "large"
     return "small"
 

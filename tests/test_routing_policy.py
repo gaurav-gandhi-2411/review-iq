@@ -41,8 +41,8 @@ class TestChooseTier:
     def test_en_returns_small(self) -> None:
         assert choose_tier("en") == "small"
 
-    def test_hi_returns_small(self) -> None:
-        assert choose_tier("hi") == "small"
+    def test_hi_returns_large(self) -> None:
+        assert choose_tier("hi") == "large"
 
     def test_hi_en_returns_large(self) -> None:
         assert choose_tier("hi-en") == "large"
