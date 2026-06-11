@@ -433,6 +433,58 @@ def update_batch_job_pg(
 
 
 # ---------------------------------------------------------------------------
+# Authenticity audit helpers (IS 19000:2022 compliance)
+# ---------------------------------------------------------------------------
+
+
+def save_authenticity_audit_pg(
+    org_id: str,
+    review_hash: str,
+    score: float,
+    label: str,
+    flags: list[str],
+) -> None:
+    """Insert one authenticity audit record, scoped to org_id."""
+    import json as _json
+
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+        cur.execute(
+            "INSERT INTO public.authenticity_audits (org_id, review_hash, score, label, flags)"
+            " VALUES (%s, %s, %s, %s, %s)",
+            (org_id, review_hash, score, label, _json.dumps(flags)),
+        )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def count_authenticity_audits_pg(org_id: str) -> int:
+    """Return count of audit rows visible to org_id (used in isolation tests)."""
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+        cur.execute(
+            "SELECT COUNT(*) FROM public.authenticity_audits WHERE org_id = %s",
+            (org_id,),
+        )
+        row = cur.fetchone()
+        conn.commit()
+        return int(row[0]) if row else 0
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
 # Internal helper
 # ---------------------------------------------------------------------------
 
