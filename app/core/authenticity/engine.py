@@ -48,10 +48,12 @@ async def _call_authenticity_llm(
     review_text: str,
     language: str,
     settings: Settings,
-) -> tuple[_LLMAuthenticityOutput, str, int, int]:
+) -> tuple[_LLMAuthenticityOutput, str, int, int, bool]:
     """Call Groq with the authenticity prompt.
 
-    Returns (output, model_name, tokens_in, tokens_out).
+    Returns (output, model_name, tokens_in, tokens_out, llm_ok).
+    llm_ok is True when the LLM call succeeded and the response was parsed
+    successfully; False on any error (network, JSON parse, validation).
     Always uses groq_model_large (precision over recall).
     Calls assert_privacy_safe before completing.
     On any exception, logs a warning and returns a default neutral output
@@ -63,6 +65,7 @@ async def _call_authenticity_llm(
         timeout=settings.llm_timeout_seconds,
     )
     neutral = _LLMAuthenticityOutput()
+    llm_ok: bool = True
     try:
         assert_privacy_safe(provider, context="authenticity scoring")
         system_prompt, user_prompt = build_authenticity_prompt(review_text, language)
@@ -70,26 +73,41 @@ async def _call_authenticity_llm(
             user_prompt,
             system_prompt=system_prompt,
         )
+        log.debug("authenticity_engine.raw", raw=raw[:200])
         text = raw.strip()
         if text.startswith("```"):
             lines = text.splitlines()
-            text = "\n".join(lines[1:-1] if lines[-1].strip() == "```" else lines[1:])
+            inner: list[str] = []
+            for line in lines[1:]:
+                if line.strip().startswith("```"):
+                    break
+                inner.append(line)
+            text = "\n".join(inner).strip()
+        # Fallback: if text doesn't start with {, extract first JSON object
+        if not text.startswith("{"):
+            import re
+
+            m = re.search(r"\{.*\}", text, re.DOTALL)
+            if m:
+                text = m.group()
         output = _LLMAuthenticityOutput.model_validate(json.loads(text))
-        return output, settings.groq_model_large, tokens_in, tokens_out
+        return output, settings.groq_model_large, tokens_in, tokens_out, llm_ok
     except (json.JSONDecodeError, ValidationError) as exc:
+        llm_ok = False
         log.warning(
             "authenticity_engine.parse_error",
             model=settings.groq_model_large,
-            error=str(exc),
+            error=f"{type(exc).__name__}: {str(exc)[:300]}",
         )
-        return neutral, settings.groq_model_large, 0, 0
+        return neutral, settings.groq_model_large, 0, 0, llm_ok
     except Exception as exc:  # noqa: BLE001
+        llm_ok = False
         log.warning(
             "authenticity_engine.llm_error",
             model=settings.groq_model_large,
-            error=str(exc),
+            error=f"{type(exc).__name__}: {str(exc)[:300]}",
         )
-        return neutral, settings.groq_model_large, 0, 0
+        return neutral, settings.groq_model_large, 0, 0, llm_ok
 
 
 async def score_single(
@@ -107,7 +125,7 @@ async def score_single(
     """
     language = detect_language(review_text)
 
-    llm_output, model_name, _tokens_in, _tokens_out = await _call_authenticity_llm(
+    llm_output, model_name, _tokens_in, _tokens_out, llm_ok = await _call_authenticity_llm(
         review_text, language, settings
     )
 
@@ -133,6 +151,7 @@ async def score_single(
         reasons=llm_output.reasoning,
         review_text=review_text,
         model_used=model_name,
+        llm_signal_ok=llm_ok,
     )
 
     # Prometheus metrics

@@ -71,6 +71,7 @@ async def run_eval(dry_run: bool) -> None:
     settings = get_settings()
 
     results: list[tuple[dict, AuthenticityResult]] = []
+    llm_error_count: int = 0
     for i, fixture in enumerate(fixtures):
         text = fixture["text"]
         stars = fixture.get("stars")
@@ -78,6 +79,9 @@ async def run_eval(dry_run: bool) -> None:
             result = score_heuristic_only(text, stars)
         else:
             result = await score_single(text, stars=stars, settings=settings)
+        if not result.llm_signal_ok and not dry_run:
+            llm_error_count += 1
+            print(f"  [LLM ERROR on fixture {fixture['id']}]")
         results.append((fixture, result))
         status_char = (
             "OK" if is_flagged_true(fixture["true_label"]) == is_flagged_pred(result) else "XX"
@@ -107,6 +111,11 @@ async def run_eval(dry_run: bool) -> None:
         print(f"\nLanguage: {lang} (n={len(subset)})")
         print(f"  TP={tp} FP={fp} FN={fn} TN={tn}")
         print(f"  Precision: {m['precision']:.3f}  Recall: {m['recall']:.3f}  F1: {m['f1']:.3f}")
+
+    if llm_error_count > 0:
+        print(f"\nINVALID RUN: LLM signal failed on {llm_error_count}/{len(fixtures)} rows.")
+        print("Fix the LLM integration and re-run — this run cannot be scored.")
+        sys.exit(2)
 
     # Precision gate
     all_tp = sum(1 for f, r in results if is_flagged_true(f["true_label"]) and is_flagged_pred(r))

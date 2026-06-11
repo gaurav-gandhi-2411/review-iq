@@ -28,7 +28,7 @@ def _make_settings() -> Settings:
 async def test_score_single_with_llm_signal() -> None:
     """Mock LLM returning score=0.85 → combined score should be > 0.6 → GENUINE."""
     llm_output = _LLMAuthenticityOutput(score=0.85, flags=[], reasoning="looks genuine")
-    mock_return = (llm_output, "mock-model", 50, 20)
+    mock_return = (llm_output, "mock-model", 50, 20, True)
 
     with patch(
         "app.core.authenticity.engine._call_authenticity_llm",
@@ -57,7 +57,7 @@ async def test_score_single_llm_failure_falls_back_to_heuristics() -> None:
     # the neutral default. Simulate the internal fallback by making the mock
     # return the neutral output instead of raising — matching real behaviour
     # where all exceptions are caught inside _call_authenticity_llm.
-    neutral = (_LLMAuthenticityOutput(), "mock-model", 0, 0)
+    neutral = (_LLMAuthenticityOutput(), "mock-model", 0, 0, False)
 
     with patch(
         "app.core.authenticity.engine._call_authenticity_llm",
@@ -85,7 +85,7 @@ async def test_score_single_incentivized_review() -> None:
         flags=["incentivized_phrase"],
         reasoning="clearly incentivized",
     )
-    mock_return = (llm_output, "mock-model", 60, 30)
+    mock_return = (llm_output, "mock-model", 60, 30, True)
 
     with patch(
         "app.core.authenticity.engine._call_authenticity_llm",
@@ -112,7 +112,7 @@ async def test_score_batch_merges_near_duplicate_flags() -> None:
     text_b = "this is a great product and I would definitely buy it again today"
 
     llm_output = _LLMAuthenticityOutput(score=0.8, flags=[], reasoning="seems genuine")
-    mock_return = (llm_output, "mock-model", 50, 20)
+    mock_return = (llm_output, "mock-model", 50, 20, True)
 
     with patch(
         "app.core.authenticity.engine._call_authenticity_llm",
@@ -143,7 +143,7 @@ async def test_score_batch_preserves_order() -> None:
     ]
 
     llm_output = _LLMAuthenticityOutput(score=0.75, flags=[], reasoning="neutral")
-    mock_return = (llm_output, "mock-model", 40, 15)
+    mock_return = (llm_output, "mock-model", 40, 15, True)
 
     with patch(
         "app.core.authenticity.engine._call_authenticity_llm",

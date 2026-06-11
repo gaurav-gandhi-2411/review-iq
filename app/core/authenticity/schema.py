@@ -31,6 +31,7 @@ class AuthenticityResult(BaseModel):
     label: AuthenticityLabel
     flags: list[AuthenticityFlag] = []
     reasons: str = ""  # short human-readable explanation
+    llm_signal_ok: bool = False  # True when LLM call succeeded and was parsed
     # Provenance
     review_hash: str  # sha256 hex of the raw review text
     scored_at: datetime
@@ -50,6 +51,7 @@ class AuthenticityResult(BaseModel):
         reasons: str,
         review_text: str,
         model_used: str | None = None,
+        llm_signal_ok: bool = False,
     ) -> AuthenticityResult:
         """Factory that combines heuristic and optional LLM scores into a final result.
 
@@ -79,6 +81,7 @@ class AuthenticityResult(BaseModel):
             label=label,
             flags=flags,
             reasons=reasons,
+            llm_signal_ok=llm_signal_ok,
             review_hash=review_hash,
             scored_at=datetime.now(UTC),
             model_used=model_used,

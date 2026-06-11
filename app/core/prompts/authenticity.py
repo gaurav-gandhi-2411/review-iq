@@ -13,11 +13,11 @@ _TASK_EN: str = """\
 Score the following customer review for authenticity.
 
 Return ONLY a JSON object with this exact structure:
-{
+{{
   "score": <float 0.0–1.0 where 1.0 = definitely genuine>,
   "flags": [<zero or more flags from the allowed set>],
   "reasoning": "<one sentence>"
-}
+}}
 
 Score calibration:
 - 0.65–1.0 : Genuine — specific personal experience, no suspicious signals
@@ -38,11 +38,11 @@ Score the following customer review for authenticity.
 Note: this review may be written in Hindi (Devanagari script). Apply the same authenticity criteria.
 
 Return ONLY a JSON object with this exact structure:
-{
+{{
   "score": <float 0.0–1.0 where 1.0 = definitely genuine>,
   "flags": [<zero or more flags from the allowed set>],
   "reasoning": "<one sentence>"
-}
+}}
 
 Score calibration:
 - 0.65–1.0 : Genuine — specific personal experience, no suspicious signals
@@ -63,11 +63,11 @@ Score the following customer review for authenticity.
 Note: this review may mix Hindi and English (Hinglish). Apply the same authenticity criteria.
 
 Return ONLY a JSON object with this exact structure:
-{
+{{
   "score": <float 0.0–1.0 where 1.0 = definitely genuine>,
   "flags": [<zero or more flags from the allowed set>],
   "reasoning": "<one sentence>"
-}
+}}
 
 Score calibration:
 - 0.65–1.0 : Genuine — specific personal experience, no suspicious signals
@@ -88,11 +88,11 @@ Score the following customer review for authenticity.
 Note: the review language may not be English. Apply the same authenticity criteria regardless.
 
 Return ONLY a JSON object with this exact structure:
-{
+{{
   "score": <float 0.0–1.0 where 1.0 = definitely genuine>,
   "flags": [<zero or more flags from the allowed set>],
   "reasoning": "<one sentence>"
-}
+}}
 
 Score calibration:
 - 0.65–1.0 : Genuine — specific personal experience, no suspicious signals
