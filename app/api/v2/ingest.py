@@ -42,6 +42,7 @@ async def _process_ingest_job(
     ctx: ApiKeyContext,
     job_id: str,
     rows: list[dict[str, str]],
+    include_authenticity: bool = False,
 ) -> None:
     """Background task: extract each CSV row and track progress in batch_jobs."""
     import asyncio
@@ -63,6 +64,26 @@ async def _process_ingest_job(
             log.error("ingest.item_failed", job_id=job_id, org_id=ctx.org_id, error=str(exc))
             failed += 1
             input_hashes.append("")  # placeholder keeps index alignment with rows
+
+        if include_authenticity:
+            from app.core.authenticity import engine as _auth_engine
+            from app.core.config import get_settings as _get_settings
+            from app.core.storage_pg import save_authenticity_audit_pg as _save_audit
+
+            try:
+                auth_result = await _auth_engine.score_single(
+                    row["text"], stars=None, settings=_get_settings()
+                )
+                await asyncio.to_thread(
+                    _save_audit,
+                    ctx.org_id,
+                    auth_result.review_hash,
+                    auth_result.score,
+                    auth_result.label.value,
+                    [f.value for f in auth_result.flags],
+                )
+            except Exception as exc:  # noqa: BLE001
+                log.warning("ingest.authenticity_failed", job_id=job_id, error=str(exc))
 
         await asyncio.to_thread(
             update_batch_job_pg,
@@ -103,6 +124,7 @@ async def ingest_csv(
     ctx: ApiKeyContext = Depends(require_api_key),
     text_column: Annotated[str | None, Form()] = None,
     product_column: Annotated[str | None, Form()] = None,
+    include_authenticity: Annotated[bool, Form()] = False,
 ) -> dict[str, object]:
     """Upload a CSV of reviews for bulk extraction.
 
@@ -147,7 +169,7 @@ async def ingest_csv(
 
     await asyncio.to_thread(create_batch_job_pg, ctx.org_id, job_id, total, initial_meta)
 
-    background_tasks.add_task(_process_ingest_job, ctx, job_id, rows)
+    background_tasks.add_task(_process_ingest_job, ctx, job_id, rows, include_authenticity)
 
     log.info("ingest.job_created", job_id=job_id, total=total, org_id=ctx.org_id)
     return {"job_id": job_id, "total": total, "status": "pending"}
