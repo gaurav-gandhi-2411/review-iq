@@ -43,17 +43,12 @@ jobs:
         env:
           SUPABASE_DIRECT_URL: ${{ secrets.SUPABASE_DIRECT_URL }}
 
-      - name: Install postgresql-client-17 (PGDG)
-        # The Supabase server is Postgres 17; pg_dump refuses to dump a server
-        # NEWER than the client ("aborting because of server version mismatch").
-        # Ubuntu's default repo tops out at pg16, so add the PGDG apt repo for pg17.
-        run: |
-          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
-            | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/pgdg.gpg
-          echo "deb [signed-by=/etc/apt/trusted.gpg.d/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
-            | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq postgresql-client-17
+      - name: Pull postgres:17 image (pg_dump 17)
+        # Supabase server is Postgres 17 and pg_dump must be >= the server major.
+        # Debian/apt pg_wrapper kept resolving pg_dump to 16 even with pg17
+        # installed, so use the official postgres:17 image directly — guaranteed
+        # pg17 client, zero PATH/pg_wrapper ambiguity.
+        run: docker pull postgres:17
 
       - name: Dump database
         id: dump
@@ -68,12 +63,12 @@ jobs:
           #   --clean         — include DROP statements so restore is idempotent
           #   --if-exists     — pair with --clean; avoids errors on first restore
           #   --schema=public — only the public schema (matches the app's usage)
-          pg_dump \
-            --no-password \
-            --clean \
-            --if-exists \
-            --schema=public \
-            "$SUPABASE_DIRECT_URL" \
+          # Run pg_dump 17 inside the postgres:17 container. DSN passed via env
+          # (-e), referenced inside the container with single-quoted sh -c so the
+          # outer shell never sees it in argv. The container shares the runner's
+          # IPv4 network, so it reaches the session-mode pooler.
+          docker run --rm -e DBURL="$SUPABASE_DIRECT_URL" postgres:17 \
+            sh -c 'pg_dump --no-password --clean --if-exists --schema=public "$DBURL"' \
             | gzip -9 > "${FILENAME}"
 
           echo "Dump written: ${FILENAME}  ($(du -h "${FILENAME}" | cut -f1))"
