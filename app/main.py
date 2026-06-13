@@ -19,6 +19,7 @@ from app.api.dashboard import router as dashboard_router
 from app.api.demo import router as demo_router
 from app.api.extract import router as extract_router
 from app.api.query import router as query_router
+from app.api.v2.authenticity import router as v2_authenticity_router
 from app.api.v2.extract import router as v2_extract_router
 from app.api.v2.ingest import router as ingest_router
 from app.api.v2.reviews import router as v2_reviews_router
@@ -78,6 +79,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     _app.include_router(v2_extract_router)
     _app.include_router(ingest_router)
     _app.include_router(v2_reviews_router)
+    _app.include_router(v2_authenticity_router)
     _app.include_router(admin_router)
     _app.include_router(signup_router)
     _app.include_router(account_router)

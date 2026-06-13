@@ -1,16 +1,16 @@
 # Eval Report
 
-Generated: 2026-06-11 13:40 UTC
+Generated: 2026-06-11 18:22 UTC
 
-## Overall: 85.3% PASS (threshold 85%)
+## Overall: 85.8% PASS (threshold 85%)
 
 ## Per-language
 
 | Language | Score | Gate | Status |
 |----------|-------|------|--------|
 | en | 86.2% | 80% | PASS |
-| hi | 86.1% | 80% | PASS |
-| hi-en | 83.6% | 80% | PASS |
+| hi | 87.5% | 80% | PASS |
+| hi-en | 84.3% | 80% | PASS |
 
 ## Fixtures
 
@@ -32,7 +32,7 @@ Generated: 2026-06-11 13:40 UTC
 | 014_feature_requests | en | 86% |  |
 | 015_medium_urgency | en | 95% |  |
 | 016_no_product_name | en | 95% |  |
-| 017_very_long | en | 81% |  |
+| 017_very_long | en | 83% |  |
 | 018_packaging_damage | en | 72% |  |
 | 019_three_stars_explicit | en | 91% |  |
 | 020_urgent_safety | en | 90% |  |
@@ -45,8 +45,8 @@ Generated: 2026-06-11 13:40 UTC
 | hi-en-002 | hi-en | 90% |  |
 | hi-en-003 | hi-en | 93% |  |
 | hi-en-004 | hi-en | 82% |  |
-| hi-en-005 | hi-en | 78% |  |
-| hi-en-006 | hi-en | 85% |  |
+| hi-en-005 | hi-en | 92% |  |
+| hi-en-006 | hi-en | 84% |  |
 | hi-en-007 | hi-en | 87% |  |
 | hi-en-008 | hi-en | 79% |  |
 | hi-en-009 | hi-en | 86% |  |
@@ -55,10 +55,10 @@ Generated: 2026-06-11 13:40 UTC
 | hi-en-012 | hi-en | 67% |  |
 | hi-en-013 | hi-en | 85% |  |
 | hi-en-014 | hi-en | 84% |  |
-| hi-en-015 | hi-en | 96% |  |
+| hi-en-015 | hi-en | 93% |  |
 | hi-001 | hi | 90% |  |
 | hi-002 | hi | 93% |  |
 | hi-003 | hi | 78% |  |
 | hi-004 | hi | 83% |  |
 | hi-005 | hi | 98% |  |
-| hi-006 | hi | 77% |  |
+| hi-006 | hi | 87% |  |

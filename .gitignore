@@ -22,6 +22,11 @@ env/
 .env.local
 .env.*.local
 
+# Local dev secrets / one-shot provisioning helpers — NEVER commit or ship in build context
+_devkey.txt
+_provision_key.py
+drafts/
+
 # Database files
 *.db
 *.sqlite

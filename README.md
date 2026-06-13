@@ -148,6 +148,14 @@ Gates: overall ≥ 85%, per-language ≥ 80%. Eval runs automatically in CI on e
 
 > **v2.1 prompt (Phase 2.0c):** Added sarcasm/negation guidance, backhanded-compliment examples, SERVICE vs PRODUCT separation rule, and warranty/resolution-story guidance for hi-en. Known sarcasm gap from v0.3.0 is directly targeted.
 
+### Authenticity eval (v0.6.0 — flagged class, 40 hand-labeled fixtures)
+
+| Version | Environment | Precision | Recall | F1 | Fixtures |
+|---|---|---|---|---|---|
+| v0.6.0 | Groq / llama-3.3-70b-versatile | **1.000** | **1.000** | **1.000** | 40 — 19 genuine / 14 suspicious / 7 likely_fake; 32 en + 8 hi-en |
+
+Gates: precision ≥ 0.80 and recall ≥ 0.60 on the flagged class (suspicious or likely_fake). Design priority: zero false accusations. See `docs/compliance.md` for IS 19000:2022 posture.
+
 ---
 
 ## API reference
@@ -166,6 +174,8 @@ Gates: overall ≥ 85%, per-language ≥ 80%. Eval runs automatically in CI on e
 | `GET` | `/v2/ingest/{job_id}/result` | `X-API-Key` | Download results (JSON or CSV) |
 | `GET` | `/v2/reviews` | `X-API-Key` | Query org's stored extractions |
 | `GET` | `/v2/insights` | `X-API-Key` | Aggregated analytics for org |
+| `POST` | `/v2/authenticity` | `X-API-Key` | Single review → authenticity score + label + flags |
+| `POST` | `/v2/authenticity/batch` | `X-API-Key` | Batch authenticity scoring (≤500 reviews) |
 | `POST` | `/auth/provision` | Supabase JWT | First-login key provisioning (magic-link flow) |
 | `GET` | `/account` | Supabase JWT | Fetch org + key metadata |
 | `POST` | `/account/regenerate-key` | Supabase JWT | Revoke current key, issue new one (shown once) |
@@ -185,6 +195,8 @@ Gates: overall ≥ 85%, per-language ≥ 80%. Eval runs automatically in CI on e
 | `GET` | `/insights` | `X-API-Key` | Aggregated analytics |
 
 Interactive docs at `/docs` (Swagger) and `/redoc`.
+
+> `POST /v2/ingest/csv` accepts an optional `include_authenticity=true` form field — adds `authenticity_score`, `authenticity_label`, and `authenticity_flags` columns to the ingest result.
 
 ---
 
@@ -294,6 +306,14 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 - Tiered router — small model (llama-3.1-8b-instant) for en/hi, large model (llama-3.3-70b-versatile) for hi-en and escalations; escalation triggers: schema validation failure, low confidence (<0.6), star/sentiment signal mismatch
 - Routed eval: 84.4% overall (86.3% en / 83.2% hi-en / 80.7% hi); tiered routing default remains OFF pending 85% overall gate
 - Prometheus metrics: tier distribution, escalation rate, per-tier token counts, failover count
+
+**Phase 2.2** ✓ (shipped June 2026 — v0.6.0):
+- Review authenticity scoring — heuristic signals (incentivized phrases, brevity, repetition, rating-text mismatch) + LLM signal (Groq, language-aware)
+- Batch-level signals — near-duplicate detection (word k-shingles + Jaccard), review burst detection
+- `POST /v2/authenticity` (single + batch), `include_authenticity` option on CSV ingest
+- `authenticity_audits` table — org-scoped compliance audit trail with RLS
+- IS 19000:2022 support posture — flags incentivized/fake reviews for human-administrator decision; see `docs/compliance.md`
+- Authenticity eval: precision 1.000 / recall 1.000 / F1 1.000 on 40 hand-labeled fixtures (32 en + 8 hi-en)
 
 **Phase 2.x** (planned):
 - Webhook ingestion from Yotpo / Judge.me / Shopify
