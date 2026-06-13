@@ -1,0 +1,38 @@
+# Controls what `gcloud builds submit` uploads to Cloud Build.
+# When this file exists, gcloud uses it INSTEAD of .gitignore — so it must
+# list everything heavy or secret, branch-independently. The Docker build only
+# needs: Dockerfile, .dockerignore, pyproject.toml, uv.lock, app/.
+
+.git/
+.gitignore
+
+# Secrets / local dev helpers — must never reach the build bucket
+.env
+.env.*
+!.env.example
+_devkey.txt
+_provision_key.py
+drafts/
+
+# Heavy / irrelevant to the image
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.claude/
+tests/
+eval/
+data/
+notebooks/
+reports/
+docs/
+.github/
+*.db
+*.sqlite
+*.sqlite3
+ops/budget-killswitch/.terraform/
