@@ -484,6 +484,116 @@ def count_authenticity_audits_pg(org_id: str) -> int:
         conn.close()
 
 
+_VALID_BUCKETS = frozenset({"day", "week", "month"})
+
+
+def authenticity_audit_summary_pg(
+    org_id: str,
+    since: datetime | None = None,
+    until: datetime | None = None,
+    bucket: str = "week",
+) -> dict[str, Any]:
+    """Return raw aggregated authenticity audit data for org_id.
+
+    Callers are responsible for mapping stored label/flag values to
+    display-safe strings before returning data to API consumers.
+
+    Args:
+        org_id:  Tenant identifier — all queries are scoped to this org.
+        since:   Optional lower bound on created_at (inclusive).
+        until:   Optional upper bound on created_at (inclusive).
+        bucket:  Time-series bucket granularity — must be one of
+                 ``day``, ``week``, or ``month`` (validated at API layer).
+
+    Returns:
+        dict with keys:
+          total_audited, label_genuine, label_suspicious, label_likely_fake,
+          mean_score, flag_frequency, time_series.
+    """
+    if bucket not in _VALID_BUCKETS:
+        raise ValueError(f"bucket must be one of {_VALID_BUCKETS}, got {bucket!r}")
+
+    # Build optional time-filter fragments once; reused across all queries.
+    time_parts: list[str] = []
+    time_params: list[Any] = []
+    if since is not None:
+        time_parts.append("created_at >= %s")
+        time_params.append(since)
+    if until is not None:
+        time_parts.append("created_at <= %s")
+        time_params.append(until)
+    time_clause = (" AND " + " AND ".join(time_parts)) if time_parts else ""
+
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+
+        # 1. Total count + per-label counts
+        cur.execute(
+            f"SELECT COUNT(*), "
+            f"COUNT(*) FILTER (WHERE label = 'genuine'), "
+            f"COUNT(*) FILTER (WHERE label = 'suspicious'), "
+            f"COUNT(*) FILTER (WHERE label = 'likely_fake') "
+            f"FROM public.authenticity_audits "
+            f"WHERE org_id = %s{time_clause}",
+            [org_id, *time_params],
+        )
+        row = cur.fetchone()
+        total, lbl_genuine, lbl_suspicious, lbl_likely_fake = (
+            (row[0], row[1], row[2], row[3]) if row else (0, 0, 0, 0)
+        )
+
+        # 2. Mean score — guard: returns None when table is empty.
+        cur.execute(
+            f"SELECT AVG(score) FROM public.authenticity_audits WHERE org_id = %s{time_clause}",
+            [org_id, *time_params],
+        )
+        avg_row = cur.fetchone()
+        mean_score: float | None = float(avg_row[0]) if avg_row and avg_row[0] is not None else None
+
+        # 3. Flag frequency: unnest the TEXT JSON column as jsonb.
+        cur.execute(
+            f"SELECT flag, COUNT(*) AS cnt "
+            f"FROM public.authenticity_audits, "
+            f"jsonb_array_elements_text(flags::jsonb) AS flag "
+            f"WHERE org_id = %s{time_clause} "
+            f"GROUP BY flag ORDER BY cnt DESC",
+            [org_id, *time_params],
+        )
+        flag_frequency = [{"flag": r[0], "count": int(r[1])} for r in cur.fetchall()]
+
+        # 4. Time series: per-bucket totals + non-genuine (flagged) count.
+        cur.execute(
+            f"SELECT date_trunc(%s, created_at) AS period, "
+            f"COUNT(*) AS audited, "
+            f"COUNT(*) FILTER (WHERE label <> 'genuine') AS flagged "
+            f"FROM public.authenticity_audits "
+            f"WHERE org_id = %s{time_clause} "
+            f"GROUP BY period ORDER BY period",
+            [bucket, org_id, *time_params],
+        )
+        time_series = [
+            {"period": r[0], "audited": int(r[1]), "flagged": int(r[2])} for r in cur.fetchall()
+        ]
+
+        conn.commit()
+        return {
+            "total_audited": int(total),
+            "label_genuine": int(lbl_genuine),
+            "label_suspicious": int(lbl_suspicious),
+            "label_likely_fake": int(lbl_likely_fake),
+            "mean_score": mean_score,
+            "flag_frequency": flag_frequency,
+            "time_series": time_series,
+        }
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
 # ---------------------------------------------------------------------------
 # Internal helper
 # ---------------------------------------------------------------------------
