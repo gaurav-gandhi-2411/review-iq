@@ -1,4 +1,4 @@
-"""GET /v2/insights/authenticity — tenant-scoped authenticity audit summary."""
+"""GET /v2/insights/authenticity and GET /v2/insights/trends — tenant-scoped insight endpoints."""
 
 from __future__ import annotations
 
@@ -7,10 +7,10 @@ from datetime import datetime
 from typing import Any
 
 import structlog
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.auth.api_key import ApiKeyContext, require_api_key
-from app.core.storage_pg import authenticity_audit_summary_pg
+from app.core.storage_pg import authenticity_audit_summary_pg, theme_trends_pg
 
 router = APIRouter(prefix="/v2/insights", tags=["v2-insights"])
 log = structlog.get_logger(__name__)
@@ -87,8 +87,6 @@ async def authenticity_summary(
     Returns 422 when ``bucket`` is not one of ``day``, ``week``, or ``month``.
     """
     if bucket not in _VALID_BUCKETS:
-        from fastapi import HTTPException, status
-
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"bucket must be one of {sorted(_VALID_BUCKETS)}, got {bucket!r}.",
@@ -164,4 +162,129 @@ async def authenticity_summary(
         "signal_frequency": signal_frequency,
         "flag_rate_series": flag_rate_series,
         "moderation_note": _MODERATION_NOTE,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Trends helpers
+# ---------------------------------------------------------------------------
+
+# Whitelist of allowed values for the ``trend_of`` parameter.  Validation here
+# mirrors the whitelist in storage_pg._TREND_OF_COLUMNS: user input never
+# reaches SQL as an identifier — only the dict's value does.
+_VALID_TREND_OF = frozenset({"topics", "cons"})
+
+
+def _compute_delta(series: list[dict[str, Any]]) -> tuple[int, float | None]:
+    """Compute latest-minus-prior bucket delta and percent change.
+
+    Args:
+        series: Chronologically-ordered list of ``{"period": str, "count": int}``.
+
+    Returns:
+        ``(delta_last, pct_change)`` where ``pct_change`` is ``None`` when the
+        prior bucket count is 0 (guard against division by zero).
+        Both values are 0 / ``None`` when the series has fewer than 2 entries.
+    """
+    if len(series) < 2:
+        return 0, None
+    latest = series[-1]["count"]
+    prior = series[-2]["count"]
+    delta = latest - prior
+    pct: float | None = None if prior == 0 else round((latest - prior) / prior, 6)
+    return delta, pct
+
+
+@router.get("/trends")
+async def theme_trends(
+    ctx: ApiKeyContext = Depends(require_api_key),
+    since: datetime | None = Query(None, description="ISO8601 lower bound on created_at"),
+    until: datetime | None = Query(None, description="ISO8601 upper bound on created_at"),
+    bucket: str = Query("week", description="Time-series granularity: day | week | month"),
+    trend_of: str = Query("topics", description="JSONB column to trend: topics | cons"),
+    product: str | None = Query(None, description="Filter by product name (partial match)"),
+    language: str | None = Query(None, description="Filter by exact language code"),
+    limit: int = Query(10, ge=1, le=50, description="Maximum number of themes to return"),
+) -> dict[str, Any]:
+    """Complaint / theme trends over time with per-language breakdown.
+
+    Returns the top-N themes (ordered by total count descending) with:
+    - A chronological count series (summed across languages).
+    - Per-language counts (the India-vernacular differentiator: en / hi-en / hi).
+    - Delta and percent-change between the latest and prior bucket.
+
+    Returns 422 when ``bucket`` is not ``day``, ``week``, or ``month``,
+    or when ``trend_of`` is not ``topics`` or ``cons``.
+    """
+    if bucket not in _VALID_BUCKETS:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"bucket must be one of {sorted(_VALID_BUCKETS)}, got {bucket!r}.",
+        )
+    if trend_of not in _VALID_TREND_OF:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"trend_of must be one of {sorted(_VALID_TREND_OF)}, got {trend_of!r}.",
+        )
+
+    raw = await asyncio.to_thread(
+        theme_trends_pg,
+        ctx.org_id,
+        since=since,
+        until=until,
+        bucket=bucket,
+        trend_of=trend_of,
+        product=product,
+        language=language,
+        limit=limit,
+    )
+
+    themes_out: list[dict[str, Any]] = []
+    for t in raw["themes"]:
+        # Build chronological series — sum across all languages per period.
+        sorted_periods = t["sorted_periods"]
+        by_period: dict[Any, dict[str, int]] = t["by_period"]
+
+        series: list[dict[str, Any]] = []
+        for period_dt in sorted_periods:
+            period_str = (
+                period_dt.date().isoformat() if hasattr(period_dt, "date") else str(period_dt)
+            )
+            count = sum(by_period[period_dt].values())
+            series.append({"period": period_str, "count": count})
+
+        delta_last, pct_change = _compute_delta(series)
+
+        themes_out.append(
+            {
+                "theme": t["theme"],
+                "total": t["total"],
+                "series": series,
+                "delta_last": delta_last,
+                "pct_change": pct_change,
+                "by_language": t["by_language"],
+            }
+        )
+
+    log.info(
+        "insights.trends",
+        org_id=ctx.org_id,
+        trend_of=trend_of,
+        bucket=bucket,
+        themes_returned=len(themes_out),
+    )
+
+    return {
+        "org_id": ctx.org_id,
+        "window": {
+            "since": since.isoformat() if since else None,
+            "until": until.isoformat() if until else None,
+            "bucket": bucket,
+            "trend_of": trend_of,
+        },
+        "filters": {
+            "product": product,
+            "language": language,
+        },
+        "themes": themes_out,
     }

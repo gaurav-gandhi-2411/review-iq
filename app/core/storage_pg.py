@@ -595,6 +595,161 @@ def authenticity_audit_summary_pg(
 
 
 # ---------------------------------------------------------------------------
+# Theme-trend aggregation (GET /v2/insights/trends)
+# ---------------------------------------------------------------------------
+
+# Whitelist for trend_of parameter — only these column names are ever injected
+# into SQL as identifiers. The dict serves as both the allow-list and the
+# canonical name map so that SQL injection on column names is structurally
+# impossible: user input never reaches the query string directly.
+_TREND_OF_COLUMNS: dict[str, str] = {
+    "topics": "topics",
+    "cons": "cons",
+}
+
+_VALID_TREND_BUCKETS = frozenset({"day", "week", "month"})
+
+
+def theme_trends_pg(
+    org_id: str,
+    *,
+    since: datetime | None = None,
+    until: datetime | None = None,
+    bucket: str = "week",
+    trend_of: str = "topics",
+    product: str | None = None,
+    language: str | None = None,
+    limit: int = 10,
+) -> dict[str, Any]:
+    """Aggregate theme/complaint trends over time for the given org.
+
+    Returns raw structured data — the API layer is responsible for shaping
+    the final response (delta computation, period ISO formatting, etc.).
+
+    SQL injection prevention
+    ------------------------
+    ``trend_of`` is validated at the API layer (422 if invalid) and again here
+    via ``_TREND_OF_COLUMNS``. The whitelisted column name is interpolated as a
+    literal into the SQL template using an ``f-string`` only after lookup from
+    the safe dict — the raw user string is never used directly.
+
+    ``bucket`` is passed as a parameterised ``%s`` placeholder in
+    ``date_trunc(%s, ...)`` — Postgres treats it as a string value, never as
+    an identifier, so no injection risk exists.
+
+    Args:
+        org_id:   Tenant identifier — all queries are scoped to this value.
+        since:    Optional lower bound on created_at (inclusive).
+        until:    Optional upper bound on created_at (inclusive).
+        bucket:   Time-series granularity — ``day``, ``week``, or ``month``.
+        trend_of: JSONB column to unnest — ``topics`` or ``cons``.
+        product:  Optional product filter (ILIKE %<product>%).
+        language: Optional exact language filter.
+        limit:    Maximum number of top themes to return (default 10, max 50).
+
+    Returns:
+        dict with key ``themes``, a list of per-theme dicts each containing:
+          theme, total, rows (raw per-(theme, period, language) rows).
+    """
+    if bucket not in _VALID_TREND_BUCKETS:
+        raise ValueError(f"bucket must be one of {_VALID_TREND_BUCKETS}, got {bucket!r}")
+
+    col = _TREND_OF_COLUMNS.get(trend_of)
+    if col is None:
+        raise ValueError(f"trend_of must be one of {set(_TREND_OF_COLUMNS)}, got {trend_of!r}")
+
+    # Build shared optional-filter fragments (reused in both queries).
+    filter_parts: list[str] = []
+    filter_params: list[Any] = []
+    if since is not None:
+        filter_parts.append("created_at >= %s")
+        filter_params.append(since)
+    if until is not None:
+        filter_parts.append("created_at <= %s")
+        filter_params.append(until)
+    if product is not None:
+        filter_parts.append("product ILIKE %s")
+        filter_params.append(f"%{product}%")
+    if language is not None:
+        filter_parts.append("language = %s")
+        filter_params.append(language)
+
+    extra_clause = (" AND " + " AND ".join(filter_parts)) if filter_parts else ""
+
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+
+        # Query A — top-N themes by total count in the window.
+        # ``col`` comes from _TREND_OF_COLUMNS — never from raw user input.
+        cur.execute(
+            f"SELECT theme, COUNT(*) AS cnt "
+            f"FROM public.extractions, jsonb_array_elements_text({col}) AS theme "
+            f"WHERE org_id = %s{extra_clause} "
+            f"GROUP BY theme ORDER BY cnt DESC LIMIT %s",
+            [org_id, *filter_params, limit],
+        )
+        top_rows = cur.fetchall()
+        top_themes = [r[0] for r in top_rows]
+        theme_totals = {r[0]: int(r[1]) for r in top_rows}
+
+        if not top_themes:
+            conn.commit()
+            return {"themes": []}
+
+        # Query B — per-(theme, period, language) counts for the top themes.
+        cur.execute(
+            f"SELECT theme, date_trunc(%s, created_at) AS period, language, COUNT(*) "
+            f"FROM public.extractions, jsonb_array_elements_text({col}) AS theme "
+            f"WHERE org_id = %s AND theme = ANY(%s){extra_clause} "
+            f"GROUP BY theme, period, language ORDER BY theme, period",
+            [bucket, org_id, top_themes, *filter_params],
+        )
+        detail_rows = cur.fetchall()
+
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+    # Assemble per-theme data structures in Python.
+    # Each detail row: (theme, period_datetime, language, count)
+    from collections import defaultdict
+
+    # theme → { period_dt → {lang → count} }
+    tree: dict[str, dict[Any, dict[str, int]]] = defaultdict(lambda: defaultdict(dict))
+    for theme, period_dt, lang, cnt in detail_rows:
+        tree[theme][period_dt][lang or "unknown"] = int(cnt)
+
+    themes_out: list[dict[str, Any]] = []
+    for theme in top_themes:
+        by_period = tree[theme]
+        # Sort periods chronologically.
+        sorted_periods = sorted(by_period.keys())
+
+        # Language breakdown summed across all periods.
+        lang_totals: dict[str, int] = defaultdict(int)
+        for lang_counts in by_period.values():
+            for lang, cnt in lang_counts.items():
+                lang_totals[lang] += cnt
+
+        themes_out.append(
+            {
+                "theme": theme,
+                "total": theme_totals[theme],
+                "sorted_periods": sorted_periods,
+                "by_period": {p: dict(by_period[p]) for p in sorted_periods},
+                "by_language": dict(lang_totals),
+            }
+        )
+
+    return {"themes": themes_out}
+
+
+# ---------------------------------------------------------------------------
 # Internal helper
 # ---------------------------------------------------------------------------
 
