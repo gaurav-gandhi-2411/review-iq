@@ -94,6 +94,7 @@ def _mock_llm_output():
         42,
         150,  # tokens_in
         80,  # tokens_out
+        False,  # degraded
     )
 
 

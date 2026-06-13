@@ -102,13 +102,16 @@ class TestExtractWithLLM:
         mock_resp = _make_groq_response(_VALID_JSON, tokens_in=200, tokens_out=80)
         with patch("app.core.providers.groq.AsyncGroq") as MockGroq:
             MockGroq.return_value.chat.completions.create = AsyncMock(return_value=mock_resp)
-            result, model, latency, tokens_in, tokens_out = await extract_with_llm("some prompt")
+            result, model, latency, tokens_in, tokens_out, degraded = await extract_with_llm(
+                "some prompt"
+            )
 
         assert result.product == "Turbo-Vac 5000"
         assert "llama" in model
         assert latency >= 0
         assert tokens_in == 200
         assert tokens_out == 80
+        assert not degraded
 
     @pytest.mark.asyncio
     async def test_groq_missing_usage_returns_zeros(self) -> None:
@@ -116,7 +119,7 @@ class TestExtractWithLLM:
         resp.usage = None  # provider didn't return counts
         with patch("app.core.providers.groq.AsyncGroq") as MockGroq:
             MockGroq.return_value.chat.completions.create = AsyncMock(return_value=resp)
-            _, _, _, tokens_in, tokens_out = await extract_with_llm("some prompt")
+            _, _, _, tokens_in, tokens_out, _ = await extract_with_llm("some prompt")
 
         assert tokens_in == 0
         assert tokens_out == 0
@@ -127,7 +130,7 @@ class TestExtractWithLLM:
         mock_resp = _make_groq_response(fenced)
         with patch("app.core.providers.groq.AsyncGroq") as MockGroq:
             MockGroq.return_value.chat.completions.create = AsyncMock(return_value=mock_resp)
-            result, _, _, _, _ = await extract_with_llm("some prompt")
+            result, _, _, _, _, _ = await extract_with_llm("some prompt")
 
         assert result.product == "Turbo-Vac 5000"
 
@@ -139,7 +142,7 @@ class TestExtractWithLLM:
             MockGroq.return_value.chat.completions.create = AsyncMock(
                 side_effect=[bad_resp, good_resp]
             )
-            result, _, _, _, _ = await extract_with_llm("some prompt")
+            result, _, _, _, _, _ = await extract_with_llm("some prompt")
 
         assert result.product == "Turbo-Vac 5000"
 
@@ -159,12 +162,15 @@ class TestExtractWithLLM:
             with patch(
                 "app.core.llm._call_gemini", new=AsyncMock(return_value=(gemini_result, 60, 30))
             ):
-                result, model, _, tokens_in, tokens_out = await extract_with_llm("some prompt")
+                result, model, _, tokens_in, tokens_out, degraded = await extract_with_llm(
+                    "some prompt"
+                )
 
         assert result.product == "Turbo-Vac 5000"
         assert "gemini" in model
         assert tokens_in == 60
         assert tokens_out == 30
+        assert not degraded
 
     @pytest.mark.asyncio
     async def test_raises_when_both_fail(self) -> None:
@@ -192,7 +198,7 @@ class TestExtractWithLLM:
             patch("app.core.llm._call_gemini", new=AsyncMock(return_value=(gemini_result, 70, 40))),
             patch("app.core.providers.groq.AsyncGroq") as MockGroq,
         ):
-            result, model, _, _, _ = await extract_with_llm("some prompt", model_hint="gemini")
+            result, model, _, _, _, _ = await extract_with_llm("some prompt", model_hint="gemini")
             MockGroq.assert_not_called()
 
         assert "gemini" in model
@@ -203,7 +209,7 @@ class TestExtractWithLLM:
         with patch("app.core.providers.groq.AsyncGroq") as MockGroq:
             MockGroq.return_value.chat.completions.create = AsyncMock(return_value=mock_resp)
             with patch("app.core.llm._call_gemini", new=AsyncMock()) as mock_gemini:
-                result, model, _, _, _ = await extract_with_llm("some prompt", model_hint="groq")
+                result, model, _, _, _, _ = await extract_with_llm("some prompt", model_hint="groq")
                 mock_gemini.assert_not_called()
 
         assert result.product == "Turbo-Vac 5000"
@@ -221,7 +227,7 @@ class TestExtractWithLLM:
             with patch(
                 "app.core.llm._call_gemini", new=AsyncMock(return_value=(gemini_result, 50, 25))
             ):
-                result, model, _, _, _ = await extract_with_llm("prompt")
+                result, model, _, _, _, _ = await extract_with_llm("prompt")
 
         assert result.product == "Turbo-Vac 5000"
         assert "gemini" in model
@@ -238,7 +244,7 @@ class TestExtractWithLLM:
             with patch(
                 "app.core.llm._call_gemini", new=AsyncMock(return_value=(gemini_result, 40, 20))
             ):
-                result, model, _, _, _ = await extract_with_llm("prompt")
+                result, model, _, _, _, _ = await extract_with_llm("prompt")
 
         assert result.product == "Turbo-Vac 5000"
         assert "gemini" in model
@@ -261,6 +267,83 @@ class TestExtractWithLLM:
             with pytest.raises(RuntimeError, match="All LLM providers failed"):
                 await extract_with_llm("some prompt", allow_gemini_fallback=False)
         mock_gemini.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_tiered_path_returns_degraded_false_on_success(self) -> None:
+        """Successful tiered route returns degraded=False."""
+        import app.core.llm as llm_module
+        from app.core.config import Settings
+        from app.core.schemas import ReviewExtractionLLMOutput, Sentiment
+
+        good_extraction = ReviewExtractionLLMOutput(
+            product="Widget",
+            sentiment=Sentiment.positive,
+            confidence=0.9,
+        )
+        settings = Settings(
+            GROQ_API_KEY="fake-key",
+            ENABLE_TIERED_ROUTING=True,
+            GROQ_MODEL_SMALL="llama-3.1-8b-instant",
+            GROQ_MODEL_LARGE="llama-3.3-70b-versatile",
+            LLM_MAX_RETRIES=0,
+        )
+
+        async def fake_route(
+            user_prompt: str,
+            system_prompt: str,
+            *,
+            allow_gemini_fallback: bool,
+            settings: Settings,
+        ) -> tuple[object, str, int, int, bool, bool]:
+            return good_extraction, "llama-3.1-8b-instant", 10, 5, False, False
+
+        with patch.object(llm_module, "get_settings", return_value=settings):
+            with patch.object(llm_module, "route_extraction", fake_route):
+                result, model, latency_ms, tin, tout, degraded = await llm_module.extract_with_llm(
+                    "test prompt", allow_gemini_fallback=False
+                )
+
+        assert not degraded
+        assert result.sentiment == "positive"
+
+    @pytest.mark.asyncio
+    async def test_tiered_path_returns_degraded_true_on_quota_cap(self) -> None:
+        """Tiered route with degraded=True is forwarded through extract_with_llm."""
+        import app.core.llm as llm_module
+        from app.core.config import Settings
+        from app.core.schemas import ReviewExtractionLLMOutput, Sentiment
+
+        small_extraction = ReviewExtractionLLMOutput(
+            product="Widget",
+            sentiment=Sentiment.positive,
+            confidence=0.45,  # low — would trigger escalation, but large is capped
+        )
+        settings = Settings(
+            GROQ_API_KEY="fake-key",
+            ENABLE_TIERED_ROUTING=True,
+            GROQ_MODEL_SMALL="llama-3.1-8b-instant",
+            GROQ_MODEL_LARGE="llama-3.3-70b-versatile",
+            LLM_MAX_RETRIES=0,
+        )
+
+        async def fake_route(
+            user_prompt: str,
+            system_prompt: str,
+            *,
+            allow_gemini_fallback: bool,
+            settings: Settings,
+        ) -> tuple[object, str, int, int, bool, bool]:
+            # Simulate: escalated but large was quota-capped → degraded
+            return small_extraction, "llama-3.1-8b-instant", 10, 5, True, True
+
+        with patch.object(llm_module, "get_settings", return_value=settings):
+            with patch.object(llm_module, "route_extraction", fake_route):
+                result, model, latency_ms, tin, tout, degraded = await llm_module.extract_with_llm(
+                    "test prompt", allow_gemini_fallback=False
+                )
+
+        assert degraded
+        assert result.confidence == 0.45
 
 
 def test_json_schema_for_llm() -> None:

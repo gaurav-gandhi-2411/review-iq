@@ -437,6 +437,57 @@ def update_batch_job_pg(
 # ---------------------------------------------------------------------------
 
 
+def get_authenticity_audit_by_hash_pg(
+    org_id: str,
+    review_hash: str,
+) -> dict[str, object] | None:
+    """Return a stored authenticity audit row for (org_id, review_hash), or None if absent.
+
+    Used as a pre-LLM short-circuit in POST /v2/authenticity to avoid re-scoring
+    identical review text.  Reuses existing columns — no DDL required.
+
+    Args:
+        org_id:      Tenant identifier — query is scoped to this org via RLS + WHERE.
+        review_hash: SHA-256 hex digest of the raw review text.
+
+    Returns:
+        dict with keys ``score``, ``label``, ``flags`` (list[str]), ``review_hash``
+        when a matching row exists; ``None`` otherwise.
+    """
+    import json as _json
+
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+        cur.execute(
+            "SELECT score, label, flags, review_hash "
+            "FROM public.authenticity_audits "
+            "WHERE org_id = %s AND review_hash = %s "
+            "LIMIT 1",
+            (org_id, review_hash),
+        )
+        row = cur.fetchone()
+        conn.commit()
+        if row is None:
+            return None
+        score_val, label_val, flags_raw, rh = row
+        flags_list: list[str] = (
+            _json.loads(flags_raw) if isinstance(flags_raw, str) else (flags_raw or [])
+        )
+        return {
+            "score": float(score_val),
+            "label": str(label_val),
+            "flags": flags_list,
+            "review_hash": str(rh),
+        }
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
 def save_authenticity_audit_pg(
     org_id: str,
     review_hash: str,

@@ -67,12 +67,13 @@ async def test_groq_success_no_failover(monkeypatch: pytest.MonkeyPatch) -> None
         mock_response.usage.completion_tokens = 5
         mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
 
-        result, model, latency_ms, tin, tout = await llm_module.extract_with_llm(
+        result, model, latency_ms, tin, tout, degraded = await llm_module.extract_with_llm(
             "test prompt", allow_gemini_fallback=False
         )
 
     assert result.sentiment == "positive"
     assert "llama" in model
+    assert not degraded
 
 
 # ---------------------------------------------------------------------------
@@ -101,12 +102,13 @@ async def test_groq_api_error_failover_to_secondary(monkeypatch: pytest.MonkeyPa
             new_callable=AsyncMock,
             return_value=(_GOOD_RAW, 8, 4),
         ):
-            result, model, latency_ms, tin, tout = await llm_module.extract_with_llm(
+            result, model, latency_ms, tin, tout, degraded = await llm_module.extract_with_llm(
                 "test prompt", allow_gemini_fallback=False
             )
 
     assert result.sentiment == "positive"
     assert model == "some-secondary-model"
+    assert not degraded
 
 
 # ---------------------------------------------------------------------------
@@ -163,11 +165,12 @@ async def test_groq_fails_no_secondary_uses_gemini_on_demo_path(
             new_callable=AsyncMock,
             return_value=(_GOOD_EXTRACTION, 12, 6),
         ):
-            result, model, latency_ms, tin, tout = await llm_module.extract_with_llm(
+            result, model, latency_ms, tin, tout, degraded = await llm_module.extract_with_llm(
                 "test prompt", allow_gemini_fallback=True
             )
 
     assert result.sentiment == "positive"
+    assert not degraded
 
 
 # ---------------------------------------------------------------------------

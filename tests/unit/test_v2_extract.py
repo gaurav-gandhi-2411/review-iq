@@ -49,7 +49,9 @@ async def _run(tokens_in: int = 150, tokens_out: int = 80) -> None:
         patch("app.api.v2.extract.save_extraction_pg", return_value=str(uuid.uuid4())),
         patch(
             "app.api.v2.extract.extract_with_llm",
-            new=AsyncMock(return_value=(_LLM_OUTPUT, "mock-model", 42, tokens_in, tokens_out)),
+            new=AsyncMock(
+                return_value=(_LLM_OUTPUT, "mock-model", 42, tokens_in, tokens_out, False)
+            ),
         ),
         patch("app.api.v2.extract.update_usage_tokens") as mock_update,
     ):
@@ -70,7 +72,7 @@ async def test_update_usage_tokens_called_with_llm_token_counts() -> None:
         patch("app.api.v2.extract.save_extraction_pg", return_value=str(uuid.uuid4())),
         patch(
             "app.api.v2.extract.extract_with_llm",
-            new=AsyncMock(return_value=(_LLM_OUTPUT, "mock-model", 42, 150, 80)),
+            new=AsyncMock(return_value=(_LLM_OUTPUT, "mock-model", 42, 150, 80, False)),
         ),
         patch("app.api.v2.extract.update_usage_tokens") as mock_update,
     ):
@@ -92,7 +94,7 @@ async def test_update_usage_tokens_called_with_zero_when_provider_skips() -> Non
         patch("app.api.v2.extract.save_extraction_pg", return_value=str(uuid.uuid4())),
         patch(
             "app.api.v2.extract.extract_with_llm",
-            new=AsyncMock(return_value=(_LLM_OUTPUT, "mock-model", 42, 0, 0)),
+            new=AsyncMock(return_value=(_LLM_OUTPUT, "mock-model", 42, 0, 0, False)),
         ),
         patch("app.api.v2.extract.update_usage_tokens") as mock_update,
     ):
@@ -148,7 +150,7 @@ async def test_suspicious_input_logs_warning_and_still_calls_update_usage() -> N
         patch("app.api.v2.extract.save_extraction_pg", return_value=str(uuid.uuid4())),
         patch(
             "app.api.v2.extract.extract_with_llm",
-            new=AsyncMock(return_value=(_LLM_OUTPUT, "mock-model", 42, 150, 80)),
+            new=AsyncMock(return_value=(_LLM_OUTPUT, "mock-model", 42, 150, 80, False)),
         ),
         patch("app.api.v2.extract.update_usage_tokens") as mock_update,
     ):
@@ -201,7 +203,7 @@ async def test_process_batch_v2_happy_path() -> None:
         patch("app.api.v2.extract.save_extraction_pg", return_value=str(uuid.uuid4())),
         patch(
             "app.api.v2.extract.extract_with_llm",
-            new=AsyncMock(return_value=(_LLM_OUTPUT, "mock-model", 42, 150, 80)),
+            new=AsyncMock(return_value=(_LLM_OUTPUT, "mock-model", 42, 150, 80, False)),
         ),
         patch("app.api.v2.extract.update_usage_tokens"),
     ):
@@ -217,7 +219,7 @@ async def test_process_batch_v2_swallows_per_item_error() -> None:
     reviews = [ReviewRequest(text="Good product"), ReviewRequest(text="Bad product")]
 
     # First call raises, second call succeeds
-    side_effects = [RuntimeError("oops"), (_LLM_OUTPUT, "mock-model", 42, 150, 80)]
+    side_effects = [RuntimeError("oops"), (_LLM_OUTPUT, "mock-model", 42, 150, 80, False)]
     call_count = 0
 
     async def _mock_extract(*args: object, **kwargs: object) -> object:

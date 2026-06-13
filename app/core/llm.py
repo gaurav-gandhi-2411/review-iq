@@ -88,7 +88,7 @@ async def extract_with_llm(
     *,
     model_hint: str | None = None,
     allow_gemini_fallback: bool = True,
-) -> tuple[ReviewExtractionLLMOutput, str, int, int, int]:
+) -> tuple[ReviewExtractionLLMOutput, str, int, int, int, bool]:
     """Extract a review using the LLM pipeline with optional tiered routing and failover.
 
     Args:
@@ -99,7 +99,10 @@ async def extract_with_llm(
             free tier trains on inputs and is unacceptable for client data.
 
     Returns:
-        Tuple of (parsed extraction, model name, latency_ms, tokens_in, tokens_out).
+        Tuple of (parsed extraction, model name, latency_ms, tokens_in, tokens_out, degraded).
+        ``degraded`` is True when the large model was quota-capped during escalation
+        and the response was served from the small-model result.  Always False on the
+        non-tiered (Groq primary, secondary, Gemini) paths.
 
     Raises:
         RuntimeError: When all providers fail.
@@ -111,7 +114,7 @@ async def extract_with_llm(
     # --- Tiered routing (when enabled and no explicit model hint) ---
     if settings.enable_tiered_routing and model_hint is None:
         try:
-            extraction, model, tokens_in, tokens_out, _escalated = await route_extraction(
+            extraction, model, tokens_in, tokens_out, _escalated, degraded = await route_extraction(
                 user_prompt,
                 _SYSTEM_PROMPT,
                 allow_gemini_fallback=allow_gemini_fallback,
@@ -125,8 +128,9 @@ async def extract_with_llm(
                 latency_ms=latency_ms,
                 tokens_in=tokens_in,
                 tokens_out=tokens_out,
+                degraded=degraded,
             )
-            return extraction, model, latency_ms, tokens_in, tokens_out
+            return extraction, model, latency_ms, tokens_in, tokens_out, degraded
         except RuntimeError:
             log.warning("llm.tiered_groq_exhausted_falling_back")
             FAILOVER_TOTAL.labels(from_provider="groq_tiered").inc()
@@ -166,7 +170,7 @@ async def extract_with_llm(
                     tokens_in=tokens_in,
                     tokens_out=tokens_out,
                 )
-                return result, settings.groq_model, latency_ms, tokens_in, tokens_out
+                return result, settings.groq_model, latency_ms, tokens_in, tokens_out, False
             except (ValidationError, json.JSONDecodeError) as exc:
                 log.warning("llm.parse_error", provider="groq", attempt=attempt, error=str(exc))
                 if attempt >= settings.llm_max_retries:
@@ -213,7 +217,14 @@ async def extract_with_llm(
                 tokens_in=tokens_in,
                 tokens_out=tokens_out,
             )
-            return result, settings.secondary_provider_model, latency_ms, tokens_in, tokens_out
+            return (
+                result,
+                settings.secondary_provider_model,
+                latency_ms,
+                tokens_in,
+                tokens_out,
+                False,
+            )
         except RuntimeError:
             raise
         except Exception as exc:  # noqa: BLE001
@@ -232,7 +243,7 @@ async def extract_with_llm(
                 tokens_in=tokens_in,
                 tokens_out=tokens_out,
             )
-            return result, settings.gemini_model, latency_ms, tokens_in, tokens_out
+            return result, settings.gemini_model, latency_ms, tokens_in, tokens_out, False
         except Exception as exc:  # noqa: BLE001
             log.error("llm.gemini_failed", error=str(exc))
 

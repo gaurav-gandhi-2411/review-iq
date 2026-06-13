@@ -41,11 +41,14 @@ class TestChooseTier:
     def test_en_returns_small(self) -> None:
         assert choose_tier("en") == "small"
 
-    def test_hi_returns_large(self) -> None:
-        assert choose_tier("hi") == "large"
+    def test_hi_returns_small(self) -> None:
+        # Carried-debt fix: hi now starts on small; escalation_triggers handle
+        # promotion when genuinely needed, conserving the free-tier 70B TPD budget.
+        assert choose_tier("hi") == "small"
 
-    def test_hi_en_returns_large(self) -> None:
-        assert choose_tier("hi-en") == "large"
+    def test_hi_en_returns_small(self) -> None:
+        # Same rationale as hi — all languages start small.
+        assert choose_tier("hi-en") == "small"
 
     def test_other_returns_small(self) -> None:
         assert choose_tier("other") == "small"

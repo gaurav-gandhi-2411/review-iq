@@ -48,7 +48,7 @@ async def _run_extraction_v2(request: ReviewRequest, ctx: ApiKeyContext) -> Revi
     user_prompt = build_prompt(wrapped, detected_lang)
 
     t0 = datetime.utcnow()
-    llm_output, model_name, latency_ms, tokens_in, tokens_out = await extract_with_llm(
+    llm_output, model_name, latency_ms, tokens_in, tokens_out, degraded = await extract_with_llm(
         user_prompt, allow_gemini_fallback=False
     )
     # Detected language takes precedence over LLM's self-reported language.
@@ -62,6 +62,7 @@ async def _run_extraction_v2(request: ReviewRequest, ctx: ApiKeyContext) -> Revi
         latency_ms=latency_ms,
         input_hash=input_hash,
         org_id=ctx.org_id,
+        degraded=degraded,
     )
     extraction = ReviewExtractionV2(
         **llm_output.model_dump(),

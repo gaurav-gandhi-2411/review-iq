@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime
+import contextlib
+import hashlib
+from datetime import UTC, datetime
 from typing import Annotated
 
 import structlog
@@ -12,11 +14,48 @@ from pydantic import BaseModel
 
 from app.auth.api_key import ApiKeyContext, require_api_key
 from app.core.authenticity import engine
+from app.core.authenticity.schema import AuthenticityFlag, AuthenticityLabel, AuthenticityResult
 from app.core.config import get_settings
-from app.core.storage_pg import save_authenticity_audit_pg
+from app.core.storage_pg import get_authenticity_audit_by_hash_pg, save_authenticity_audit_pg
 
 router = APIRouter(prefix="/v2", tags=["v2-authenticity"])
 log = structlog.get_logger(__name__)
+
+
+def _review_hash(text: str) -> str:
+    """Return sha256 hex digest of raw review text — matches how audits are stored."""
+    return hashlib.sha256(text.encode()).hexdigest()
+
+
+def _audit_row_to_result(row: dict[str, object], review_text: str) -> AuthenticityResult:
+    """Reconstruct a minimal AuthenticityResult from a stored authenticity_audits row.
+
+    The stored row has ``score``, ``label``, ``flags``, ``review_hash``.
+    ``reasons``, ``model_used``, and ``scored_at`` are set to sentinel values
+    because they are not persisted — the response shape is unchanged.
+    """
+    raw_flags: list[str] = row["flags"]  # type: ignore[assignment]
+    parsed_flags: list[AuthenticityFlag] = []
+    for f in raw_flags:
+        with contextlib.suppress(ValueError):  # ignore unknown flags stored before a schema update
+            parsed_flags.append(AuthenticityFlag(f))
+
+    raw_label = str(row["label"])
+    try:
+        label = AuthenticityLabel(raw_label)
+    except ValueError:
+        label = AuthenticityLabel.GENUINE
+
+    return AuthenticityResult(
+        score=float(row["score"]),  # type: ignore[arg-type]
+        label=label,
+        flags=parsed_flags,
+        reasons="",  # not persisted; omitted on cache-served response
+        review_hash=str(row["review_hash"]),
+        scored_at=datetime.now(UTC),  # wall-clock of this request, not original scoring time
+        model_used=None,  # not persisted
+        llm_signal_ok=False,  # not persisted; conservative default
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -57,7 +96,19 @@ async def score_authenticity_single(
 
     Returns the full ``AuthenticityResult`` serialised as JSON, including
     ``score``, ``label``, ``flags``, ``reasons``, and provenance fields.
+
+    Pre-LLM short-circuit: if an audit already exists in ``authenticity_audits``
+    for (org_id, review_hash), the stored result is returned without re-calling
+    the LLM — saving tokens on repeated identical review text.
     """
+    rh = _review_hash(body.text)
+
+    existing = await asyncio.to_thread(get_authenticity_audit_by_hash_pg, ctx.org_id, rh)
+    if existing is not None:
+        log.info("authenticity.cache_hit", org_id=ctx.org_id, review_hash=rh[:16])
+        result = _audit_row_to_result(existing, body.text)
+        return result.model_dump(mode="json")
+
     try:
         result = await engine.score_single(body.text, stars=body.stars, settings=get_settings())
     except Exception as exc:
