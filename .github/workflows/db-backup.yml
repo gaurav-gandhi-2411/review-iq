@@ -1,0 +1,127 @@
+name: DB Backup
+
+# Nightly dump of the Supabase Postgres 15 database.
+# Artifact retained for 90 days (GitHub free-tier maximum for private repos).
+# Restore procedure: ops/runbooks/db-restore.md
+#
+# Limitations (free tier):
+#   - 90-day artifact retention only; older dumps are deleted automatically.
+#   - Artifacts are stored in GitHub's US data centre — not geo-redundant.
+#   - Restore is manual; there is no automated point-in-time recovery.
+#   Upgrade path: Supabase Pro ($25/mo) gives daily automated backups + PITR.
+
+on:
+  schedule:
+    # 18:00 UTC = 23:30 IST — after business hours, before midnight IST.
+    # Low-traffic window; Supabase free plan has no reserved IOPS so off-peak
+    # reduces contention risk.
+    - cron: "0 18 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: db-backup
+  cancel-in-progress: true
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate secret is present
+        # Fail immediately with a clear message rather than a confusing pg_dump error.
+        run: |
+          if [ -z "$SUPABASE_DIRECT_URL" ]; then
+            echo "::error::SUPABASE_DIRECT_URL secret is not set."
+            echo "Add it in Settings → Secrets → Actions."
+            echo "Value must be the Supabase direct connection URL (port 5432), e.g.:"
+            echo "  postgresql://postgres:<password>@db.<ref>.supabase.co:5432/postgres"
+            exit 1
+          fi
+        env:
+          SUPABASE_DIRECT_URL: ${{ secrets.SUPABASE_DIRECT_URL }}
+
+      - name: Install postgresql-client-16
+        # Use pg_dump from the pg16 client package; it can dump Postgres 15
+        # servers (pg_dump is backwards-compatible with one major version).
+        # The ubuntu-latest runner ships postgresql-client-14 by default, which
+        # cannot connect to PG15 without --no-password flag quirks on some
+        # Supabase configurations. PG16 client is the safe choice.
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-16
+
+      - name: Dump database
+        id: dump
+        env:
+          SUPABASE_DIRECT_URL: ${{ secrets.SUPABASE_DIRECT_URL }}
+        run: |
+          FILENAME="review-iq-db-$(date -u +%Y%m%d-%H%M%S).sql.gz"
+          echo "filename=${FILENAME}" >> "$GITHUB_OUTPUT"
+
+          # pg_dump flags:
+          #   --no-password   — password comes from the DSN; never prompt
+          #   --clean         — include DROP statements so restore is idempotent
+          #   --if-exists     — pair with --clean; avoids errors on first restore
+          #   --schema=public — only the public schema (matches the app's usage)
+          pg_dump \
+            --no-password \
+            --clean \
+            --if-exists \
+            --schema=public \
+            "$SUPABASE_DIRECT_URL" \
+            | gzip -9 > "${FILENAME}"
+
+          echo "Dump written: ${FILENAME}  ($(du -h "${FILENAME}" | cut -f1))"
+
+      - name: Verify dump integrity
+        # Never upload a silently-broken backup.
+        # Checks:
+        #   1. File is non-empty (> 0 bytes).
+        #   2. gzip stream is valid (gunzip -t).
+        #   3. Plain text contains expected DDL tokens.
+        env:
+          FILENAME: ${{ steps.dump.outputs.filename }}
+        run: |
+          set -e
+
+          # 1. Non-empty?
+          if [ ! -s "${FILENAME}" ]; then
+            echo "::error::Dump file is empty — aborting."
+            exit 1
+          fi
+
+          # 2. Valid gzip?
+          if ! gunzip -t "${FILENAME}" 2>/dev/null; then
+            echo "::error::Dump file is not a valid gzip archive — aborting."
+            exit 1
+          fi
+
+          # 3. Schema sanity — look for expected DDL tokens.
+          CONTENT=$(gunzip -c "${FILENAME}")
+
+          check_token() {
+            local token="$1"
+            if ! echo "${CONTENT}" | grep -q "${token}"; then
+              echo "::error::Dump is missing expected token '${token}' — schema may be wrong or dump is corrupt. Aborting."
+              exit 1
+            fi
+            echo "  [ok] found '${token}'"
+          }
+
+          echo "Verifying dump contents..."
+          check_token "CREATE TABLE"
+          check_token "organizations"
+          check_token "authenticity_audits"
+
+          LINES=$(echo "${CONTENT}" | wc -l)
+          echo "Dump passed all checks. Uncompressed lines: ${LINES}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.dump.outputs.filename }}
+          path: ${{ steps.dump.outputs.filename }}
+          # 90 days is the practical maximum on the GitHub free tier for private
+          # repos. After 90 days the artifact is deleted automatically — see
+          # ops/runbooks/db-restore.md for the upgrade path.
+          retention-days: 90
