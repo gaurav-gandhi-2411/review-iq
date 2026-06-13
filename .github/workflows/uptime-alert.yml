@@ -1,0 +1,177 @@
+name: Uptime Alert
+
+# Polls /health every 5 minutes (GitHub's minimum cron interval).
+# On DOWN: opens or updates a GitHub issue and exits 1 (triggers owner email).
+# On recovery: closes the open alert issue with a recovery comment.
+#
+# Limitation: GitHub Actions cron has a documented delay of up to 15 minutes
+# during periods of high runner demand. This workflow is not a substitute for
+# a paid uptime monitor (Better Uptime, UptimeRobot Pro, etc.) for SLA-grade
+# alerting. For the current free-tier portfolio deployment it is sufficient.
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: uptime-alert
+  cancel-in-progress: true
+
+permissions:
+  issues: write
+
+env:
+  HEALTH_URL: "https://review-iq-ajjrytb3na-el.a.run.app/health"
+  # Title must be stable so the duplicate-search logic works reliably.
+  ALERT_TITLE: "prod /health is DOWN"
+  CURL_TIMEOUT: "10"
+  # Cloud Run min-instances=0 means cold starts can take ~5s. One retry after
+  # a short sleep avoids alerting on transient cold-start latency.
+  RETRY_SLEEP: "15"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Probe /health (with cold-start retry)
+        id: probe
+        run: |
+          probe() {
+            HTTP_STATUS=$(curl -s -o /tmp/health_body.txt -w "%{http_code}" \
+              --max-time "${CURL_TIMEOUT}" \
+              "${HEALTH_URL}" 2>/dev/null || echo "000")
+            echo "${HTTP_STATUS}"
+          }
+
+          STATUS=$(probe)
+          echo "First probe: HTTP ${STATUS}"
+
+          if [ "${STATUS}" != "200" ]; then
+            echo "Non-200 on first probe. Waiting ${RETRY_SLEEP}s for cold-start, then retrying..."
+            sleep "${RETRY_SLEEP}"
+            STATUS=$(probe)
+            echo "Retry probe: HTTP ${STATUS}"
+          fi
+
+          BODY=$(cat /tmp/health_body.txt 2>/dev/null || echo "(no body)")
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          echo "status=${STATUS}" >> "$GITHUB_OUTPUT"
+          echo "timestamp=${TIMESTAMP}" >> "$GITHUB_OUTPUT"
+          # Truncate body to avoid oversized env vars; max 500 chars.
+          echo "body=${BODY:0:500}" >> "$GITHUB_OUTPUT"
+
+      - name: Handle DOWN
+        if: steps.probe.outputs.status != '200'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HTTP_STATUS: ${{ steps.probe.outputs.status }}
+          TIMESTAMP: ${{ steps.probe.outputs.timestamp }}
+          HEALTH_BODY: ${{ steps.probe.outputs.body }}
+        run: |
+          REPO="${{ github.repository }}"
+
+          # Search for an existing open issue with the exact alert title.
+          EXISTING_ISSUE=$(gh issue list \
+            --repo "${REPO}" \
+            --state open \
+            --search "\"${ALERT_TITLE}\" in:title" \
+            --json number \
+            --jq '.[0].number // empty')
+
+          RUN_URL="https://github.com/${REPO}/actions/runs/${{ github.run_id }}"
+
+          if [ -n "${EXISTING_ISSUE}" ]; then
+            # Issue already open — add a comment rather than creating a duplicate.
+            echo "Existing alert issue #${EXISTING_ISSUE} found. Adding comment."
+            gh issue comment "${EXISTING_ISSUE}" \
+              --repo "${REPO}" \
+              --body "$(cat <<EOF
+          Still DOWN at ${TIMESTAMP}
+
+          **HTTP status:** \`${HTTP_STATUS}\`
+
+          **Response body:**
+          \`\`\`
+          ${HEALTH_BODY}
+          \`\`\`
+
+          [Workflow run](${RUN_URL})
+          EOF
+          )"
+          else
+            # No open alert issue — create one.
+            echo "No existing alert issue found. Creating new issue."
+            gh issue create \
+              --repo "${REPO}" \
+              --title "${ALERT_TITLE}" \
+              --body "$(cat <<EOF
+          ## prod /health is DOWN
+
+          **Detected at:** ${TIMESTAMP}
+          **HTTP status:** \`${HTTP_STATUS}\`
+          **Endpoint:** \`${HEALTH_URL}\`
+
+          **Response body:**
+          \`\`\`
+          ${HEALTH_BODY}
+          \`\`\`
+
+          ---
+
+          ### Likely causes
+
+          - Supabase free-plan auto-pause (see \`ops/runbooks/supabase-pause-recovery.md\`)
+          - Cloud Run revision unhealthy (see \`ops/runbooks/cloud-run-deploy.md\` → Rollback)
+          - DB credentials rotated but service not redeployed (see \`ops/runbooks/secret-rotation.md\`)
+
+          ### Quick triage
+
+          \`\`\`bash
+          curl -sf ${HEALTH_URL} | jq .
+          # {"status":"unhealthy","db":"unreachable",...} → DB issue
+          # timeout / connection refused → Cloud Run issue
+          \`\`\`
+
+          [Workflow run that detected this](${RUN_URL})
+
+          ---
+
+          *This issue is managed by the uptime-alert workflow. Do not rename it — the title is used to deduplicate alerts.*
+          EOF
+          )" \
+              --label "incident"
+          fi
+
+          # Exit 1 so the workflow run is marked failed → GitHub sends owner email.
+          echo "::error::/health returned HTTP ${HTTP_STATUS} at ${TIMESTAMP}. See alert issue."
+          exit 1
+
+      - name: Handle recovery
+        if: steps.probe.outputs.status == '200'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TIMESTAMP: ${{ steps.probe.outputs.timestamp }}
+        run: |
+          REPO="${{ github.repository }}"
+
+          EXISTING_ISSUE=$(gh issue list \
+            --repo "${REPO}" \
+            --state open \
+            --search "\"${ALERT_TITLE}\" in:title" \
+            --json number \
+            --jq '.[0].number // empty')
+
+          if [ -n "${EXISTING_ISSUE}" ]; then
+            echo "Recovery detected. Closing alert issue #${EXISTING_ISSUE}."
+            gh issue comment "${EXISTING_ISSUE}" \
+              --repo "${REPO}" \
+              --body "**Recovered** at ${TIMESTAMP} — /health is returning HTTP 200 again."
+            gh issue close "${EXISTING_ISSUE}" \
+              --repo "${REPO}" \
+              --reason "completed"
+          else
+            echo "/health is UP (HTTP 200). No open alert issue to close."
+          fi
