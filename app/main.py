@@ -18,6 +18,7 @@ from app.api.admin import router as admin_router
 from app.api.dashboard import router as dashboard_router
 from app.api.demo import router as demo_router
 from app.api.extract import router as extract_router
+from app.api.ops import router as ops_router
 from app.api.query import router as query_router
 from app.api.v2.authenticity import router as v2_authenticity_router
 from app.api.v2.extract import router as v2_extract_router
@@ -75,6 +76,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     _app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
     _app.add_middleware(PrometheusMiddleware)
 
+    # Ops (health + metrics) — always mounted, unauthenticated
+    _app.include_router(ops_router)
+
     # v2, admin, and demo are always mounted
     _app.include_router(v2_extract_router)
     _app.include_router(ingest_router)
@@ -89,11 +93,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         _app.include_router(dashboard_router)
         _app.include_router(extract_router)
         _app.include_router(query_router)
-
-    @_app.get("/health", tags=["ops"])
-    async def health() -> dict[str, str]:
-        """Health check — returns 200 when the service is running."""
-        return {"status": "ok"}
 
     @_app.get("/metrics", tags=["ops"])
     async def metrics() -> Response:
