@@ -170,7 +170,11 @@ class TestHealth:
     async def test_health_returns_ok(self, client: AsyncClient) -> None:
         resp = await client.get("/health")
         assert resp.status_code == 200
-        assert resp.json() == {"status": "ok"}
+        data = resp.json()
+        # /health is now a real probe: status + active DB reachability (503 on outage),
+        # not a static {"status": "ok"}. Assert the invariants, not exact equality.
+        assert data["status"] == "ok"
+        assert data["db"] == "ok"
 
 
 class TestBatch:
