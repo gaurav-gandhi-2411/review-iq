@@ -21,10 +21,10 @@
 
 ## Prerequisites
 
-- `psql` and `gunzip` available locally, **or** a fresh Supabase project / local Postgres 15 instance as the restore target.
+- `psql` and `gunzip` available locally, **or** a fresh Supabase project / local Postgres **17** instance as the restore target. The production server is Postgres 17 — restore into 17+, not an older major.
 - `gh` CLI authenticated (`gh auth login`) for downloading the artifact.
 - Connection string for the **target** database (NOT prod — see Step 3 note).
-- `SUPABASE_DIRECT_URL` of the target — port 5432, not the pooler port 6543.
+- Target connection: use the **session-mode pooler** host on port **5432** (IPv4, `postgres.<ref>@aws-1-<region>.pooler.supabase.com:5432`). The direct `db.<ref>.supabase.co` host is **IPv6-only** and unreachable from many networks (incl. GitHub Actions). The transaction pooler (6543) is not usable for psql/pg_dump.
 
 ---
 
@@ -87,7 +87,7 @@ Appropriate restore targets:
 | Target | When to use |
 |---|---|
 | **Fresh Supabase project** (staging) | Full DR test or schema migration rehearsal |
-| **Local Postgres 15** (`docker run postgres:15`) | Quick data inspection or development |
+| **Local Postgres 17** (`docker run postgres:17`) | Quick data inspection or development. Pre-create the Supabase roles first (see Step 4 note) or the RLS policies won't apply. |
 | **Supabase shadow DB** | If you use Supabase CLI migrations locally |
 
 ---
@@ -97,25 +97,35 @@ Appropriate restore targets:
 Set the target connection string (replace the placeholder with your target's actual URL):
 
 ```bash
-TARGET_URL="postgresql://postgres:<password>@db.<ref>.supabase.co:5432/postgres"
-# or for local Docker:
+# Fresh Supabase project target (session pooler, IPv4) — roles already exist:
+TARGET_URL="postgresql://postgres.<ref>:<password>@aws-1-<region>.pooler.supabase.com:5432/postgres"
+# or for local Docker (postgres:17):
 # TARGET_URL="postgresql://postgres:postgres@localhost:5432/postgres"
 
-DUMPFILE=$(find ./restore-tmp -name "*.sql.gz" | head -1)
+DUMPFILE=$(find ./restore-tmp -type f -name "*.sql.gz" | head -1)   # -type f: gh nests the file in a dir of the same name
 ```
+
+> **Roles note (important for non-Supabase targets).** The dump is `--schema=public`,
+> so it contains the `public.current_org_id()` function and all 14 RLS policies, but
+> NOT the global roles `authenticated` / `anon` those policies grant to (roles are
+> cluster-global, not dumped by `--schema`). On a **fresh Supabase project** these roles
+> already exist → clean restore. On a **vanilla local Postgres** you MUST pre-create them
+> first, or every `CREATE POLICY ... TO authenticated` fails and your restored DB has the
+> data **without RLS**:
+> ```bash
+> psql "${TARGET_URL}" -c "CREATE ROLE authenticated; CREATE ROLE anon; CREATE ROLE service_role; CREATE ROLE authenticator;"
+> ```
 
 Run the restore:
 
 ```bash
-gunzip -c "${DUMPFILE}" | psql \
-  --no-password \
-  "${TARGET_URL}"
+gunzip -c "${DUMPFILE}" | psql --no-password "${TARGET_URL}"
 ```
 
-Expected output: a stream of `DROP TABLE`, `CREATE TABLE`, `COPY`, `ALTER TABLE` lines, ending without `ERROR:` lines. Some `ERROR:  role "..." does not exist` lines from `ALTER OWNER` statements on Supabase-managed objects are harmless — Supabase's internal roles do not exist in a fresh project.
+Expected output: a stream of `DROP TABLE`, `CREATE TABLE`, `COPY`, `CREATE POLICY` lines, ending without `ERROR:` lines. On a fresh Supabase target, any `ERROR: role "..." does not exist` from `ALTER OWNER` on Supabase-internal roles is harmless. If you see `ERROR: role "authenticated" does not exist`, you skipped the roles note above — the RLS policies did NOT apply; pre-create the roles and re-restore.
 
 If you see `psql: error: connection to server ... failed`, check:
-- The target URL is port **5432** (direct), not 6543 (pooler). `psql` does not work with the pooler.
+- The target URL uses the **session pooler** on port **5432** (works with psql), not the transaction pooler on 6543 (does not). The direct `db.<ref>` host is IPv6-only — unreachable from IPv4-only networks.
 - The Supabase project is not paused (see `ops/runbooks/supabase-pause-recovery.md`).
 - SSL is required: add `?sslmode=require` to the URL if psql complains about SSL.
 
@@ -138,7 +148,7 @@ SELECT 'organizations'     AS tbl, COUNT(*) AS rows FROM public.organizations
 UNION ALL
 SELECT 'authenticity_audits',       COUNT(*)         FROM public.authenticity_audits
 UNION ALL
-SELECT 'org_members',               COUNT(*)         FROM public.org_members
+SELECT 'organization_members',       COUNT(*)         FROM public.organization_members
 UNION ALL
 SELECT 'api_keys',                  COUNT(*)         FROM public.api_keys;
 SQL
