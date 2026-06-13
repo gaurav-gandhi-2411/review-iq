@@ -1,6 +1,8 @@
 name: DB Backup
 
-# Nightly dump of the Supabase Postgres 15 database.
+# Nightly dump of the Supabase Postgres 17 database via the session-mode pooler.
+# Connection MUST be the IPv4 session-mode pooler (port 5432) — the direct
+# db.<ref>.supabase.co host is IPv6-only and unreachable from GitHub's IPv4 runners.
 # Artifact retained for 90 days (GitHub free-tier maximum for private repos).
 # Restore procedure: ops/runbooks/db-restore.md
 #
@@ -33,22 +35,25 @@ jobs:
           if [ -z "$SUPABASE_DIRECT_URL" ]; then
             echo "::error::SUPABASE_DIRECT_URL secret is not set."
             echo "Add it in Settings → Secrets → Actions."
-            echo "Value must be the Supabase direct connection URL (port 5432), e.g.:"
-            echo "  postgresql://postgres:<password>@db.<ref>.supabase.co:5432/postgres"
+            echo "Value must be the Supabase SESSION-mode pooler URL (IPv4, port 5432):"
+            echo "  postgresql://postgres.<ref>:<password>@aws-1-<region>.pooler.supabase.com:5432/postgres"
+            echo "(The direct db.<ref>.supabase.co host is IPv6-only — unreachable from GitHub Actions.)"
             exit 1
           fi
         env:
           SUPABASE_DIRECT_URL: ${{ secrets.SUPABASE_DIRECT_URL }}
 
-      - name: Install postgresql-client-16
-        # Use pg_dump from the pg16 client package; it can dump Postgres 15
-        # servers (pg_dump is backwards-compatible with one major version).
-        # The ubuntu-latest runner ships postgresql-client-14 by default, which
-        # cannot connect to PG15 without --no-password flag quirks on some
-        # Supabase configurations. PG16 client is the safe choice.
+      - name: Install postgresql-client-17 (PGDG)
+        # The Supabase server is Postgres 17; pg_dump refuses to dump a server
+        # NEWER than the client ("aborting because of server version mismatch").
+        # Ubuntu's default repo tops out at pg16, so add the PGDG apt repo for pg17.
         run: |
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+            | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/pgdg.gpg
+          echo "deb [signed-by=/etc/apt/trusted.gpg.d/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
           sudo apt-get update -qq
-          sudo apt-get install -y -qq postgresql-client-16
+          sudo apt-get install -y -qq postgresql-client-17
 
       - name: Dump database
         id: dump
