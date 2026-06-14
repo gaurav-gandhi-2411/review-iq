@@ -36,9 +36,57 @@ _FABRICATION_PATTERNS: list[re.Pattern[str]] = [
 ]
 
 _STOPWORDS = frozenset(
-    "a an the and or but in on at to for of is are was were be been "
-    "with that this it its i we you he she they have has had do does did "
-    "not no by from as so if all which will can would could should".split()
+    [
+        "a",
+        "an",
+        "the",
+        "and",
+        "or",
+        "but",
+        "in",
+        "on",
+        "at",
+        "to",
+        "for",
+        "of",
+        "is",
+        "are",
+        "was",
+        "were",
+        "be",
+        "been",
+        "with",
+        "that",
+        "this",
+        "it",
+        "its",
+        "i",
+        "we",
+        "you",
+        "he",
+        "she",
+        "they",
+        "have",
+        "has",
+        "had",
+        "do",
+        "does",
+        "did",
+        "not",
+        "no",
+        "by",
+        "from",
+        "as",
+        "so",
+        "if",
+        "all",
+        "which",
+        "will",
+        "can",
+        "would",
+        "could",
+        "should",
+    ]
 )
 
 

@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import hashlib
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
 from app.core.schemas import ReviewExtraction
 
 
-class ReplyTone(str, Enum):
+class ReplyTone(StrEnum):
     apologetic = "apologetic"
     appreciative = "appreciative"
     professional = "professional"

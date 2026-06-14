@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 from app.core.reply.guardrails import (
     check_grounded,
     check_language_match,
@@ -9,7 +7,6 @@ from app.core.reply.guardrails import (
     check_no_fabrication,
     run_guardrails,
 )
-
 
 # ---------------------------------------------------------------------------
 # check_no_fabrication
@@ -201,10 +198,7 @@ def test_grounded_skipped_for_hi_en() -> None:
 
 
 def test_grounded_battery_in_reply_passes() -> None:
-    reply = (
-        "We are sorry to hear about the battery performance issue. "
-        "We have noted your concern."
-    )
+    reply = "We are sorry to hear about the battery performance issue. We have noted your concern."
     assert check_grounded(reply, ["battery drains fast"], [], "en") is None
 
 

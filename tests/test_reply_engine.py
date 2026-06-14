@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import pytest
 from unittest.mock import AsyncMock, patch
 
+import pytest
 from app.core.reply.engine import _parse_reply, draft_reply
 from app.core.reply.schema import ReplyRequest, ReplyTone
 from app.core.schemas import ReviewExtraction
-
 
 # ---------------------------------------------------------------------------
 # _parse_reply — pure function, no async
@@ -174,9 +173,7 @@ async def test_draft_reply_signature_appended() -> None:
     # LLM reply does NOT include the signature
     with patch(
         "app.core.reply.engine._call_groq",
-        new=AsyncMock(
-            return_value=('{"reply_text": "Thank you for your kind review!"}', 60, 30)
-        ),
+        new=AsyncMock(return_value=('{"reply_text": "Thank you for your kind review!"}', 60, 30)),
     ):
         draft, _tin, _tout = await draft_reply(request)
 
@@ -220,9 +217,7 @@ async def test_draft_reply_guardrail_violation_becomes_caveat() -> None:
     fabricating_reply = "We will give you a full refund immediately."
     with patch(
         "app.core.reply.engine._call_groq",
-        new=AsyncMock(
-            return_value=(f'{{"reply_text": "{fabricating_reply}"}}', 100, 50)
-        ),
+        new=AsyncMock(return_value=(f'{{"reply_text": "{fabricating_reply}"}}', 100, 50)),
     ):
         draft, _tin, _tout = await draft_reply(request)
 
