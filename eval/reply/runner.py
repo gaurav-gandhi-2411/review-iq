@@ -142,7 +142,9 @@ def _print_results(results: list[dict]) -> None:
             for c in result["caveats"]:
                 print(f"       CAVEAT:    {c}")
         if result.get("reply_preview"):
-            print(f"       PREVIEW:   {result['reply_preview'][:120]!r}")
+            enc = sys.stdout.encoding or "utf-8"
+            safe = result["reply_preview"][:120].encode(enc, errors="replace").decode(enc)
+            print(f"       PREVIEW:   {safe!r}")
 
     total = len(results)
     passed = sum(1 for r in results if r["passed"])
