@@ -19,9 +19,14 @@ log = structlog.get_logger(__name__)
 
 _QUOTA_MESSAGE_SIGNALS = frozenset(["rate_limit_exceeded", "tokens per day", "tpd", "rate limit"])
 
+# In cassette replay mode, a missing large-model cassette means the recording session
+# degraded to the small model. Treat it as quota to replay the small-model cassette.
+_CASSETTE_MISS_SIGNAL = "no cassette for key"
+
 
 def _is_quota_error(exc: Exception) -> bool:
-    """Return True when exc represents a Groq quota/rate-limit/TPD cap."""
+    """Return True when exc represents a Groq quota/rate-limit/TPD cap,
+    or a cassette miss in replay mode (recorded under the degraded model)."""
     for candidate in (exc, exc.__cause__):
         if candidate is None:
             continue
@@ -29,6 +34,8 @@ def _is_quota_error(exc: Exception) -> bool:
             return True
         msg = str(candidate).lower()
         if any(signal in msg for signal in _QUOTA_MESSAGE_SIGNALS):
+            return True
+        if _CASSETTE_MISS_SIGNAL in msg:
             return True
     return False
 
@@ -140,7 +147,10 @@ async def draft_reply(
         model_used = settings.groq_model_large
         total_tokens_in += tin
         total_tokens_out += tout
-    except RuntimeError as exc:
+    except (RuntimeError, APIStatusError) as exc:
+        # APIStatusError is raised directly by GroqProvider.complete(); RuntimeError
+        # is raised by router._call_provider which wraps it. Catch both so degradation
+        # works on the direct-call path used here.
         if _is_quota_error(exc):
             caveats.append("drafted on degraded model (large model quota cap reached)")
             REPLY_DEGRADED_TOTAL.inc()

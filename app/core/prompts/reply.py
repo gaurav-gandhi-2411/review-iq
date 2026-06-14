@@ -26,8 +26,26 @@ _TONE_INSTRUCTIONS: dict[ReplyTone, str] = {
 _LANGUAGE_NAMES: dict[str, str] = {
     "en": "English",
     "hi": "Hindi (Devanagari script)",
-    "hi-en": "Hinglish (a natural mix of Hindi and English as typically written by Indian speakers)",
+    "hi-en": "Hinglish (Hindi-dominant code-mixed Roman script, matching the customer's register)",
     "other": "the same language as the customer review",
+}
+
+# Extra guidance injected after tone instruction for specific language codes.
+_LANGUAGE_EXTRA_GUIDANCE: dict[str, str] = {
+    "hi-en": (
+        "Hinglish-specific rules (these override any generic instruction above):\n"
+        "- MIRROR the customer's code-mix ratio and formality level. If they wrote casual "
+        "Hinglish ('yaar', 'bakwaas', 'ekdum', 'bilkul', 'paisa vasool', 'bahut bura'), "
+        "your reply must be equally casual — not stiff, not formal.\n"
+        "- Prefer Hindi words where natural: 'pareshani' not 'inconvenience', "
+        "'jaldi se' not 'promptly', 'mushkil' not 'difficult', 'bahut bura laga' not "
+        "'unfortunate', 'samajhte hain' not 'we understand your concern'.\n"
+        "- Do NOT open with English when the customer wrote in Hindi-dominant Hinglish. "
+        "Open with Hindi-Hinglish: 'Hume bahut afsos hua ki...', "
+        "'Aapki baat sunke dukh hua...', 'Bahut khed hai ki...' etc.\n"
+        "- Write carefully and accurately — no typos, no garbled or invented words. "
+        "Double-check every word before outputting."
+    ),
 }
 
 _CRITICAL_RULES = """\
@@ -51,6 +69,7 @@ You draft replies to customer reviews that are empathetic, helpful, and brand-ap
 
 {tone_instruction}
 
+{language_extra}\
 {concerns_section}\
 {signature_section}\
 Output ONLY a JSON object with this exact structure:
@@ -99,10 +118,14 @@ def build_reply_prompt(
         f'End the reply with this exact signature:\n"{signature}"\n\n' if signature else ""
     )
 
+    extra = _LANGUAGE_EXTRA_GUIDANCE.get(language, "")
+    language_extra = f"{extra}\n\n" if extra else ""
+
     system_prompt = _SYSTEM_TEMPLATE.format(
         brand_line=brand_line,
         critical_rules=critical_rules,
         tone_instruction=tone_instruction,
+        language_extra=language_extra,
         concerns_section=concerns_section,
         signature_section=signature_section,
         language_name=language_name,
