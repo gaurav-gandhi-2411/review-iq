@@ -53,6 +53,12 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
+          # Free-tier-friendly: skip cleanly when no webhook is configured, so a
+          # missing Slack secret never reds an otherwise-passing eval (dispatch/nightly).
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "SLACK_WEBHOOK_URL not configured — skipping eval notification."
+            exit 0
+          fi
           uv run python -m eval.slack_notify \
             --webhook "$SLACK_WEBHOOK_URL" \
             --run-url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
