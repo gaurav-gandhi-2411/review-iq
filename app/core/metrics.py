@@ -87,6 +87,23 @@ def _normalize_path(path: str) -> str:
     return path
 
 
+REPLY_DRAFT_TOTAL = Counter(
+    "review_iq_reply_drafts_total",
+    "Total reply drafts produced",
+    ["language", "tone"],
+)
+
+REPLY_DEGRADED_TOTAL = Counter(
+    "review_iq_reply_degraded_total",
+    "Reply drafts that fell back to small model due to large model quota cap",
+)
+
+REPLY_CACHE_HIT_TOTAL = Counter(
+    "review_iq_reply_cache_hits_total",
+    "Reply draft cache hits (same review/tone/brand/signature re-requested)",
+)
+
+
 class PrometheusMiddleware(BaseHTTPMiddleware):
     def __init__(self, app: ASGIApp) -> None:
         super().__init__(app)
