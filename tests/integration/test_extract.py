@@ -34,7 +34,7 @@ _TURBO_VAC_TEXT = (
 
 _MOCK_LLM = patch(
     "app.api.extract.extract_with_llm",
-    new=AsyncMock(return_value=(_VALID_LLM_OUTPUT, "llama-3.3-70b-versatile", 250, 120, 60)),
+    new=AsyncMock(return_value=(_VALID_LLM_OUTPUT, "llama-3.3-70b-versatile", 250, 120, 60, False)),
 )
 
 
@@ -135,7 +135,7 @@ class TestExtractSingle:
         async def _mock_llm(*args, **kwargs):  # type: ignore[no-untyped-def]
             nonlocal call_count
             call_count += 1
-            return _VALID_LLM_OUTPUT, "llama-3.3-70b-versatile", 250, 120, 60
+            return _VALID_LLM_OUTPUT, "llama-3.3-70b-versatile", 250, 120, 60, False
 
         with patch("app.api.extract.extract_with_llm", new=_mock_llm):
             await client.post(

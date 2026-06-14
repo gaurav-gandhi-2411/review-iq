@@ -54,34 +54,31 @@ _SYSTEM = "system prompt"
 
 
 # ---------------------------------------------------------------------------
-# hi-en → large model directly
+# hi-en → small model first (carried-debt fix: all languages start small now)
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
-async def test_hi_en_routes_to_large_model() -> None:
-    """hi-en language always routes directly to groq_model_large."""
+async def test_hi_en_routes_to_small_model_first() -> None:
+    """hi-en now starts on small (carried-debt fix); high-confidence → no escalation."""
     # A prompt with a strong Hinglish marker triggers hi-en detection.
     prompt = "ekdum sahi product hai, bahut achha hai"
     settings = _settings()
 
     with patch("app.core.router.GroqProvider") as MockProvider:
         instance = MockProvider.return_value
-        instance.model = settings.groq_model_large
+        instance.model = settings.groq_model_small
         instance.trains_on_input = False
+        # High confidence → no escalation; small model result is accepted.
         instance.complete = AsyncMock(return_value=(_GOOD_RAW_HIGH, 10, 5))
 
-        extraction, model, tin, tout, escalated = await router_module.route_extraction(
+        extraction, model, tin, tout, escalated, degraded = await router_module.route_extraction(
             prompt, _SYSTEM, allow_gemini_fallback=False, settings=settings
         )
 
-    assert model == settings.groq_model_large
     assert not escalated
-    # Verify the large model name was used (GroqProvider called with groq_model_large)
-    calls = MockProvider.call_args_list
-    # At least one call with groq_model_large
-    models_used = [c.kwargs.get("model") or c.args[0] for c in calls]
-    assert settings.groq_model_large in models_used
+    assert not degraded
+    assert extraction.confidence == 0.95
 
 
 # ---------------------------------------------------------------------------
@@ -102,11 +99,12 @@ async def test_en_routes_to_small_no_escalation() -> None:
         small_instance.trains_on_input = False
         small_instance.complete = AsyncMock(return_value=(_GOOD_RAW_HIGH, 8, 4))
 
-        extraction, model, tin, tout, escalated = await router_module.route_extraction(
+        extraction, model, tin, tout, escalated, degraded = await router_module.route_extraction(
             prompt, _SYSTEM, allow_gemini_fallback=False, settings=settings
         )
 
     assert not escalated
+    assert not degraded
     assert extraction.sentiment == "positive"
 
 
@@ -143,11 +141,12 @@ async def test_en_low_confidence_escalates_to_large() -> None:
         instance.trains_on_input = False
         instance.complete = fake_complete
 
-        extraction, model, tin, tout, escalated = await router_module.route_extraction(
+        extraction, model, tin, tout, escalated, degraded = await router_module.route_extraction(
             prompt, _SYSTEM, allow_gemini_fallback=False, settings=settings
         )
 
     assert escalated
+    assert not degraded
     assert call_count == 2  # small + large
 
 
@@ -183,11 +182,12 @@ async def test_en_schema_fail_escalates_to_large() -> None:
         instance.trains_on_input = False
         instance.complete = fake_complete
 
-        extraction, model, tin, tout, escalated = await router_module.route_extraction(
+        extraction, model, tin, tout, escalated, degraded = await router_module.route_extraction(
             prompt, _SYSTEM, allow_gemini_fallback=False, settings=settings
         )
 
     assert escalated
+    assert not degraded
     assert extraction.sentiment == "positive"
 
 
@@ -218,11 +218,12 @@ async def test_routing_off_uses_groq_model_directly() -> None:
             mock_resp.usage.completion_tokens = 5
             mock_client.chat.completions.create = AsyncMock(return_value=mock_resp)
 
-            result, model, latency_ms, tin, tout = await llm_module.extract_with_llm(
+            result, model, latency_ms, tin, tout, degraded = await llm_module.extract_with_llm(
                 "test prompt", allow_gemini_fallback=False
             )
 
     assert model == "llama-3.3-70b-versatile"
+    assert not degraded
     assert result.sentiment == "positive"
 
 
@@ -251,14 +252,14 @@ async def test_routing_on_delegates_to_route_extraction() -> None:
         *,
         allow_gemini_fallback: bool,
         settings: Settings,
-    ) -> tuple[object, str, int, int, bool]:
+    ) -> tuple[object, str, int, int, bool, bool]:
         nonlocal router_called
         router_called = True
-        return _GOOD_HIGH_CONF, "llama-3.3-70b-versatile", 10, 5, False
+        return _GOOD_HIGH_CONF, "llama-3.3-70b-versatile", 10, 5, False, False
 
     with patch.object(llm_module, "get_settings", return_value=settings):
         with patch.object(llm_module, "route_extraction", fake_route):
-            result, model, latency_ms, tin, tout = await llm_module.extract_with_llm(
+            result, model, latency_ms, tin, tout, degraded = await llm_module.extract_with_llm(
                 "test prompt", allow_gemini_fallback=False
             )
 

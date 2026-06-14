@@ -3,6 +3,10 @@
 Called by extract_with_llm when enable_tiered_routing=True.
 Returns the extraction result or raises RuntimeError on Groq exhaustion
 (caller then falls back to secondary / Gemini / 503).
+
+Graceful degradation: when the LARGE model fails specifically due to a quota /
+rate-limit / TPD error, the router returns the small-model result with
+``degraded=True`` rather than raising.  Non-quota large failures still raise.
 """
 
 from __future__ import annotations
@@ -22,6 +26,34 @@ from app.core.routing_policy import choose_tier, escalation_triggers
 from app.core.schemas import ReviewExtractionLLMOutput
 
 log = structlog.get_logger(__name__)
+
+# Substring signals that indicate a Groq quota / TPD cap rather than a generic
+# server error.  Checked case-insensitively against both the exception message
+# and any __cause__ message (RuntimeError wraps the original APIStatusError).
+_QUOTA_MESSAGE_SIGNALS = frozenset(["rate_limit_exceeded", "tokens per day", "tpd", "rate limit"])
+
+
+def _is_quota_error(exc: Exception) -> bool:
+    """Return True when *exc* represents a Groq quota / rate-limit / TPD cap.
+
+    Covers two shapes:
+    - A ``groq.APIStatusError`` with ``status_code == 429``.
+    - A ``RuntimeError`` wrapping an ``APIStatusError`` via ``__cause__``
+      (as produced by ``_call_provider`` which re-raises as RuntimeError).
+
+    Also catches plain 429 signals buried in the exception message for any
+    exception type, which guards against provider SDK version drift.
+    """
+    # Walk the immediate exception and its cause.
+    for candidate in (exc, exc.__cause__):
+        if candidate is None:
+            continue
+        if isinstance(candidate, APIStatusError) and candidate.status_code == 429:
+            return True
+        msg = str(candidate).lower()
+        if any(signal in msg for signal in _QUOTA_MESSAGE_SIGNALS):
+            return True
+    return False
 
 
 def _parse_response(raw: str) -> ReviewExtractionLLMOutput:
@@ -76,7 +108,7 @@ async def route_extraction(
     *,
     allow_gemini_fallback: bool,
     settings: Settings,
-) -> tuple[ReviewExtractionLLMOutput, str, int, int, bool]:
+) -> tuple[ReviewExtractionLLMOutput, str, int, int, bool, bool]:
     """Route a single extraction through the tiered model selection policy.
 
     Args:
@@ -86,8 +118,10 @@ async def route_extraction(
         settings: Application settings (injected to avoid repeated lru_cache calls).
 
     Returns:
-        Tuple of (extraction, model_name, tokens_in, tokens_out, escalated).
+        Tuple of (extraction, model_name, tokens_in, tokens_out, escalated, degraded).
         ``escalated`` is True when the small model triggered escalation to large.
+        ``degraded`` is True when the large model was quota-capped and the
+        response falls back to the small-model result rather than raising.
 
     Raises:
         RuntimeError: When Groq is fully exhausted (caller falls back to secondary/Gemini).
@@ -105,13 +139,27 @@ async def route_extraction(
         assert_privacy_safe(large_provider)
 
     if initial_tier == "large":
-        # hi-en: route directly to large model — eval shows it is the hard bucket.
-        raw, tin, tout = await _call_provider(
-            large_provider,
-            user_prompt,
-            system_prompt,
-            max_retries=settings.llm_max_retries,
-        )
+        # Defensive branch: choose_tier currently always returns "small", so this
+        # code is only reachable if a future policy change re-enables direct-large
+        # routing for some language.  Kept to avoid silent breakage.
+        try:
+            raw, tin, tout = await _call_provider(
+                large_provider,
+                user_prompt,
+                system_prompt,
+                max_retries=settings.llm_max_retries,
+            )
+        except RuntimeError as exc:
+            if _is_quota_error(exc):
+                # Large quota hit on the direct-large path: no small result exists,
+                # so we cannot degrade gracefully — propagate and let the caller
+                # fall back to secondary / Gemini / 503.
+                log.warning(
+                    "router.large_quota_error_no_small_fallback",
+                    lang=lang,
+                    model=settings.groq_model_large,
+                )
+            raise
         large_extraction = _parse_response(raw)
         ROUTER_TIER_TOTAL.labels(tier="large").inc()
         ROUTER_TIER_TOKENS_IN.labels(tier="large").inc(tin)
@@ -120,13 +168,14 @@ async def route_extraction(
             lang=lang,
             tier="large",
             escalated=False,
+            degraded=False,
             model=settings.groq_model_large,
             tokens_in=tin,
             tokens_out=tout,
         )
-        return large_extraction, settings.groq_model_large, tin, tout, False
+        return large_extraction, settings.groq_model_large, tin, tout, False, False
 
-    # en / hi: try small model first.
+    # All languages: try small model first.
     small_provider = GroqProvider(
         model=settings.groq_model_small,
         api_key=settings.groq_api_key,
@@ -166,11 +215,12 @@ async def route_extraction(
             lang=lang,
             tier="small",
             escalated=False,
+            degraded=False,
             model=settings.groq_model_small,
             tokens_in=small_tin,
             tokens_out=small_tout,
         )
-        return extraction, settings.groq_model_small, small_tin, small_tout, False
+        return extraction, settings.groq_model_small, small_tin, small_tout, False, False
 
     # Escalate to large model.
     log.info(
@@ -180,13 +230,34 @@ async def route_extraction(
         small_model=settings.groq_model_small,
         large_model=settings.groq_model_large,
     )
-    raw, large_tin, large_tout = await _call_provider(
-        large_provider,
-        user_prompt,
-        system_prompt,
-        max_retries=settings.llm_max_retries,
-    )
-    extraction = _parse_response(raw)
+    try:
+        raw, large_tin, large_tout = await _call_provider(
+            large_provider,
+            user_prompt,
+            system_prompt,
+            max_retries=settings.llm_max_retries,
+        )
+    except RuntimeError as exc:
+        if _is_quota_error(exc) and extraction is not None:
+            # Quota cap hit during escalation AND we have a valid small-model
+            # result.  Serve the small result as degraded rather than 503-ing
+            # the caller — the request was answerable, just not optimally.
+            log.warning(
+                "router.degraded_large_capped",
+                lang=lang,
+                triggers=triggers,
+                model=settings.groq_model_large,
+                tokens_in=small_tin,
+                tokens_out=small_tout,
+            )
+            ROUTER_TIER_TOTAL.labels(tier="small").inc()
+            ROUTER_TIER_TOKENS_IN.labels(tier="small").inc(small_tin)
+            return extraction, settings.groq_model_small, small_tin, small_tout, True, True
+        # Non-quota large failure, or quota with no valid small result: propagate
+        # so the caller can try secondary / Gemini / 503.
+        raise
+
+    large_extraction = _parse_response(raw)
     total_tin = small_tin + large_tin
     total_tout = small_tout + large_tout
     ROUTER_TIER_TOTAL.labels(tier="large").inc()
@@ -198,8 +269,9 @@ async def route_extraction(
         lang=lang,
         tier="large",
         escalated=True,
+        degraded=False,
         model=settings.groq_model_large,
         tokens_in=total_tin,
         tokens_out=total_tout,
     )
-    return extraction, settings.groq_model_large, total_tin, total_tout, True
+    return large_extraction, settings.groq_model_large, total_tin, total_tout, True, False

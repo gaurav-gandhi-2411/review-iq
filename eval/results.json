@@ -1,20 +1,20 @@
 {
-  "overall_score": 0.8577329647267126,
-  "threshold": 0.85,
+  "overall_score": 0.8343742641298727,
+  "threshold": 0.83,
   "passed": true,
   "per_language": {
     "en": {
-      "score": 0.8621745779166399,
+      "score": 0.8618924039502555,
       "threshold": 0.8,
       "passed": true
     },
     "hi": {
-      "score": 0.8750535971964545,
+      "score": 0.8071031746031745,
       "threshold": 0.8,
       "passed": true
     },
     "hi-en": {
-      "score": 0.842543421803616,
+      "score": 0.8030717488630531,
       "threshold": 0.8,
       "passed": true
     }
@@ -25,7 +25,7 @@
       "language": "en",
       "overall_score": 0.9335968379446641,
       "error": null,
-      "latency_ms": 1109,
+      "latency_ms": 844,
       "fields": [
         {
           "field": "product",
@@ -135,7 +135,7 @@
       "language": "en",
       "overall_score": 0.9312169312169313,
       "error": null,
-      "latency_ms": 796,
+      "latency_ms": 655,
       "fields": [
         {
           "field": "stars",
@@ -223,7 +223,7 @@
       "language": "en",
       "overall_score": 0.8962962962962963,
       "error": null,
-      "latency_ms": 812,
+      "latency_ms": 610,
       "fields": [
         {
           "field": "stars",
@@ -307,9 +307,9 @@
     {
       "id": "004_hinglish",
       "language": "hi",
-      "overall_score": 0.8331529581529582,
+      "overall_score": 0.6875,
       "error": null,
-      "latency_ms": 1108,
+      "latency_ms": 1030,
       "fields": [
         {
           "field": "stars",
@@ -327,19 +327,18 @@
         },
         {
           "field": "sentiment",
-          "score": 1.0,
-          "predicted": "mixed",
+          "score": 0.0,
+          "predicted": "positive",
           "expected": "mixed",
           "method": "exact"
         },
         {
           "field": "topics",
-          "score": 0.8571428571428571,
+          "score": 0.3333333333333333,
           "predicted": [
-            "suction",
-            "battery",
-            "price",
-            "cleaning"
+            "suction_power",
+            "battery_life",
+            "price"
           ],
           "expected": [
             "suction",
@@ -357,11 +356,10 @@
         },
         {
           "field": "pros",
-          "score": 0.4444444444444445,
+          "score": 0.5,
           "predicted": [
             "excellent suction",
-            "quick cleaning",
-            "recommended"
+            "efficient cleaning"
           ],
           "expected": [
             "excellent suction",
@@ -371,10 +369,10 @@
         },
         {
           "field": "cons",
-          "score": 0.36363636363636365,
+          "score": 0.6666666666666666,
           "predicted": [
             "weak battery life",
-            "expensive"
+            "high price"
           ],
           "expected": [
             "poor battery life (20 minutes)",
@@ -396,7 +394,7 @@
       "language": "en",
       "overall_score": 0.9824561403508771,
       "error": null,
-      "latency_ms": 1329,
+      "latency_ms": 906,
       "fields": [
         {
           "field": "stars",
@@ -488,7 +486,7 @@
       "language": "en",
       "overall_score": 0.8933333333333332,
       "error": null,
-      "latency_ms": 1780,
+      "latency_ms": 5921,
       "fields": [
         {
           "field": "stars",
@@ -584,7 +582,7 @@
       "language": "en",
       "overall_score": 0.8958333333333333,
       "error": null,
-      "latency_ms": 1094,
+      "latency_ms": 13171,
       "fields": [
         {
           "field": "stars",
@@ -667,7 +665,7 @@
       "language": "en",
       "overall_score": 0.9282263630089717,
       "error": null,
-      "latency_ms": 1437,
+      "latency_ms": 10858,
       "fields": [
         {
           "field": "stars",
@@ -756,7 +754,7 @@
       "language": "en",
       "overall_score": 0.8209876543209877,
       "error": null,
-      "latency_ms": 6093,
+      "latency_ms": 12672,
       "fields": [
         {
           "field": "stars",
@@ -861,7 +859,7 @@
       "language": "en",
       "overall_score": 0.8761904761904763,
       "error": null,
-      "latency_ms": 6172,
+      "latency_ms": 11125,
       "fields": [
         {
           "field": "stars",
@@ -956,7 +954,7 @@
       "language": "en",
       "overall_score": 0.7777777777777778,
       "error": null,
-      "latency_ms": 10405,
+      "latency_ms": 10765,
       "fields": [
         {
           "field": "stars",
@@ -1034,7 +1032,7 @@
       "language": "en",
       "overall_score": 0.6574074074074074,
       "error": null,
-      "latency_ms": 11280,
+      "latency_ms": 5906,
       "fields": [
         {
           "field": "stars",
@@ -1124,7 +1122,7 @@
       "language": "en",
       "overall_score": 0.8448564593301436,
       "error": null,
-      "latency_ms": 12094,
+      "latency_ms": 12000,
       "fields": [
         {
           "field": "stars",
@@ -1216,7 +1214,7 @@
       "language": "en",
       "overall_score": 0.8561538461538462,
       "error": null,
-      "latency_ms": 11625,
+      "latency_ms": 12718,
       "fields": [
         {
           "field": "stars",
@@ -1330,7 +1328,7 @@
       "language": "en",
       "overall_score": 0.9457671957671958,
       "error": null,
-      "latency_ms": 12125,
+      "latency_ms": 10734,
       "fields": [
         {
           "field": "stars",
@@ -1424,7 +1422,7 @@
       "language": "en",
       "overall_score": 0.9519230769230769,
       "error": null,
-      "latency_ms": 11109,
+      "latency_ms": 6905,
       "fields": [
         {
           "field": "stars",
@@ -1501,9 +1499,9 @@
     {
       "id": "017_very_long",
       "language": "en",
-      "overall_score": 0.8251628551628553,
+      "overall_score": 0.8097782397782398,
       "error": null,
-      "latency_ms": 15125,
+      "latency_ms": 13155,
       "fields": [
         {
           "field": "stars",
@@ -1535,10 +1533,10 @@
         },
         {
           "field": "topics",
-          "score": 0.4615384615384615,
+          "score": 0.3076923076923077,
           "predicted": [
             "sound_quality",
-            "build_quality",
+            "build",
             "features",
             "value",
             "price"
@@ -1636,7 +1634,7 @@
       "language": "en",
       "overall_score": 0.7231040564373897,
       "error": null,
-      "latency_ms": 12171,
+      "latency_ms": 13062,
       "fields": [
         {
           "field": "stars",
@@ -1730,7 +1728,7 @@
       "language": "en",
       "overall_score": 0.9120370370370369,
       "error": null,
-      "latency_ms": 10515,
+      "latency_ms": 11094,
       "fields": [
         {
           "field": "stars",
@@ -1833,7 +1831,7 @@
       "language": "en",
       "overall_score": 0.9010526315789473,
       "error": null,
-      "latency_ms": 12062,
+      "latency_ms": 11937,
       "fields": [
         {
           "field": "stars",
@@ -1926,7 +1924,7 @@
       "language": "en",
       "overall_score": 0.7975,
       "error": null,
-      "latency_ms": 11077,
+      "latency_ms": 11796,
       "fields": [
         {
           "field": "stars",
@@ -2020,7 +2018,7 @@
       "language": "en",
       "overall_score": 0.8839869281045751,
       "error": null,
-      "latency_ms": 12063,
+      "latency_ms": 11812,
       "fields": [
         {
           "field": "stars",
@@ -2115,7 +2113,7 @@
       "language": "en",
       "overall_score": 0.875,
       "error": null,
-      "latency_ms": 10969,
+      "latency_ms": 10766,
       "fields": [
         {
           "field": "stars",
@@ -2178,9 +2176,9 @@
     {
       "id": "024_return_intent",
       "language": "en",
-      "overall_score": 0.8545454545454545,
+      "overall_score": 0.8631578947368421,
       "error": null,
-      "latency_ms": 6139,
+      "latency_ms": 10828,
       "fields": [
         {
           "field": "stars",
@@ -2223,7 +2221,7 @@
           "predicted": [
             "installation_manual",
             "build_quality",
-            "customer_service"
+            "flood"
           ],
           "expected": [
             "packaging",
@@ -2249,12 +2247,11 @@
         },
         {
           "field": "cons",
-          "score": 0.5454545454545454,
+          "score": 0.631578947368421,
           "predicted": [
             "missing installation manual",
             "cracked filter housing",
-            "flooded sink area",
-            "poor customer service"
+            "flooded sink area"
           ],
           "expected": [
             "missing installation manual",
@@ -2278,7 +2275,7 @@
       "language": "en",
       "overall_score": 0.7277777777777777,
       "error": null,
-      "latency_ms": 12110,
+      "latency_ms": 11921,
       "fields": [
         {
           "field": "stars",
@@ -2387,9 +2384,9 @@
     {
       "id": "hi-en-001",
       "language": "hi-en",
-      "overall_score": 0.9058119658119658,
+      "overall_score": 0.8669230769230769,
       "error": null,
-      "latency_ms": 921,
+      "latency_ms": 18921,
       "fields": [
         {
           "field": "product",
@@ -2467,9 +2464,9 @@
         },
         {
           "field": "cons",
-          "score": 0.888888888888889,
+          "score": 0.5,
           "predicted": [
-            "not better than Apple earphone"
+            "not as good as Apple earphone"
           ],
           "expected": [
             "not better than Apple"
@@ -2488,14 +2485,14 @@
     {
       "id": "hi-en-002",
       "language": "hi-en",
-      "overall_score": 0.8952380952380953,
+      "overall_score": 0.77,
       "error": null,
-      "latency_ms": 953,
+      "latency_ms": 17906,
       "fields": [
         {
           "field": "product",
-          "score": 1.0,
-          "predicted": "OnePlus Bullets Wireless Z",
+          "score": 0.0,
+          "predicted": "wireless earbuds",
           "expected": "OnePlus Bullets Wireless Z",
           "method": "exact"
         },
@@ -2529,9 +2526,10 @@
         },
         {
           "field": "topics",
-          "score": 0.6666666666666666,
+          "score": 0.5,
           "predicted": [
-            "product_quality"
+            "product_quality",
+            "value"
           ],
           "expected": [
             "recommendation",
@@ -2548,10 +2546,11 @@
         },
         {
           "field": "pros",
-          "score": 0.28571428571428575,
+          "score": 0.2,
           "predicted": [
             "excellent product",
-            "no regrets"
+            "worth buying",
+            "good value"
           ],
           "expected": [
             "highly recommended",
@@ -2578,9 +2577,9 @@
     {
       "id": "hi-en-003",
       "language": "hi-en",
-      "overall_score": 0.93,
+      "overall_score": 0.8833333333333334,
       "error": null,
-      "latency_ms": 1217,
+      "latency_ms": 19359,
       "fields": [
         {
           "field": "product",
@@ -2619,10 +2618,11 @@
         },
         {
           "field": "topics",
-          "score": 0.8,
+          "score": 0.6666666666666666,
           "predicted": [
-            "value",
-            "bass"
+            "sound_quality",
+            "bass",
+            "value"
           ],
           "expected": [
             "bass",
@@ -2640,10 +2640,10 @@
         },
         {
           "field": "pros",
-          "score": 0.5,
+          "score": 0.16666666666666666,
           "predicted": [
-            "worth buying",
-            "value for money"
+            "excellent bass quality",
+            "worth buying"
           ],
           "expected": [
             "good bass",
@@ -2671,9 +2671,9 @@
     {
       "id": "hi-en-004",
       "language": "hi-en",
-      "overall_score": 0.8208695652173912,
+      "overall_score": 0.7971428571428572,
       "error": null,
-      "latency_ms": 1108,
+      "latency_ms": 17030,
       "fields": [
         {
           "field": "product",
@@ -2712,13 +2712,13 @@
         },
         {
           "field": "topics",
-          "score": 0.6,
+          "score": 0.4000000000000001,
           "predicted": [
-            "sound_quality",
             "bass",
-            "battery_backup",
-            "comfort",
-            "comparison"
+            "battery",
+            "sound_quality",
+            "neckband",
+            "price"
           ],
           "expected": [
             "drivers",
@@ -2742,13 +2742,12 @@
         },
         {
           "field": "pros",
-          "score": 0.608695652173913,
+          "score": 0.5714285714285713,
           "predicted": [
-            "excellent sound quality",
-            "best bass",
-            "outstanding battery backup",
-            "loving experience",
-            "better than JBL"
+            "excellent bass",
+            "good battery life",
+            "best sound quality",
+            "best neckband in this range"
           ],
           "expected": [
             "11mm drivers",
@@ -2777,9 +2776,9 @@
     {
       "id": "hi-en-005",
       "language": "hi-en",
-      "overall_score": 0.9199999999999999,
+      "overall_score": 0.9109243697478991,
       "error": null,
-      "latency_ms": 1391,
+      "latency_ms": 17844,
       "fields": [
         {
           "field": "product",
@@ -2818,12 +2817,11 @@
         },
         {
           "field": "topics",
-          "score": 0.5,
+          "score": 0.28571428571428575,
           "predicted": [
-            "voice_quality",
-            "battery",
             "magnetic_effect",
-            "value"
+            "sound_quality",
+            "battery"
           ],
           "expected": [
             "magnetic_effect",
@@ -2842,12 +2840,11 @@
         },
         {
           "field": "pros",
-          "score": 0.7000000000000001,
+          "score": 0.823529411764706,
           "predicted": [
-            "excellent voice quality",
-            "best battery backup",
-            "magnetic effect",
-            "value for money"
+            "excellent magnetic effect",
+            "best voice quality",
+            "excellent battery backup"
           ],
           "expected": [
             "magnetic effect",
@@ -2876,14 +2873,14 @@
     {
       "id": "hi-en-006",
       "language": "hi-en",
-      "overall_score": 0.8388888888888889,
+      "overall_score": 0.8688888888888888,
       "error": null,
-      "latency_ms": 1015,
+      "latency_ms": 19015,
       "fields": [
         {
           "field": "product",
           "score": 0.0,
-          "predicted": "hometheatre",
+          "predicted": "earbuds",
           "expected": "audio device",
           "method": "exact"
         },
@@ -2917,10 +2914,12 @@
         },
         {
           "field": "topics",
-          "score": 0.5,
+          "score": 0.8000000000000002,
           "predicted": [
             "performance",
+            "range",
             "sound_quality",
+            "price",
             "value"
           ],
           "expected": [
@@ -2949,7 +2948,7 @@
           "predicted": [
             "excellent performance",
             "super quality",
-            "perfect sound",
+            "sound perfect",
             "value for money"
           ],
           "expected": [
@@ -2979,9 +2978,9 @@
     {
       "id": "hi-en-007",
       "language": "hi-en",
-      "overall_score": 0.8666666666666668,
+      "overall_score": 0.875,
       "error": null,
-      "latency_ms": 1155,
+      "latency_ms": 18905,
       "fields": [
         {
           "field": "product",
@@ -3041,9 +3040,10 @@
         },
         {
           "field": "pros",
-          "score": 0.6666666666666666,
+          "score": 0.75,
           "predicted": [
-            "excellent product quality",
+            "excellent product",
+            "perfect quality",
             "great value for money"
           ],
           "expected": [
@@ -3072,9 +3072,9 @@
     {
       "id": "hi-en-008",
       "language": "hi-en",
-      "overall_score": 0.7857142857142858,
+      "overall_score": 0.7862222222222222,
       "error": null,
-      "latency_ms": 7280,
+      "latency_ms": 17859,
       "fields": [
         {
           "field": "product",
@@ -3113,12 +3113,11 @@
         },
         {
           "field": "topics",
-          "score": 0.0,
+          "score": 0.2222222222222222,
           "predicted": [
             "sound_quality",
-            "gaming_performance",
             "charging_speed",
-            "value"
+            "gaming"
           ],
           "expected": [
             "gaming",
@@ -3139,11 +3138,11 @@
         },
         {
           "field": "pros",
-          "score": 0.8571428571428572,
+          "score": 0.64,
           "predicted": [
-            "no sound delays",
+            "no sound delays while playing online games",
+            "fast type c charging",
             "great device",
-            "quick type c charging",
             "good value for money"
           ],
           "expected": [
@@ -3174,14 +3173,14 @@
     {
       "id": "hi-en-009",
       "language": "hi-en",
-      "overall_score": 0.8623529411764705,
+      "overall_score": 0.7988235294117647,
       "error": null,
-      "latency_ms": 9172,
+      "latency_ms": 18000,
       "fields": [
         {
           "field": "product",
           "score": 0.0,
-          "predicted": "Bluetooth",
+          "predicted": "sound quality",
           "expected": "bluetooth earphones",
           "method": "exact"
         },
@@ -3215,10 +3214,10 @@
         },
         {
           "field": "topics",
-          "score": 0.8,
+          "score": 0.4,
           "predicted": [
             "sound_quality",
-            "bluetooth_version"
+            "delivery_service"
           ],
           "expected": [
             "sound_quality",
@@ -3243,11 +3242,12 @@
         },
         {
           "field": "cons",
-          "score": 0.823529411764706,
+          "score": 0.5882352941176471,
           "predicted": [
-            "poor sound quality",
-            "sound cuts out",
-            "outdated Bluetooth version"
+            "irritating sound quality",
+            "annoying sound quality",
+            "sound disappears in between",
+            "old version"
           ],
           "expected": [
             "poor sound quality",
@@ -3269,9 +3269,9 @@
     {
       "id": "hi-en-010",
       "language": "hi-en",
-      "overall_score": 0.6806286549707602,
+      "overall_score": 0.5178571428571429,
       "error": null,
-      "latency_ms": 9171,
+      "latency_ms": 12906,
       "fields": [
         {
           "field": "product",
@@ -3310,12 +3310,11 @@
         },
         {
           "field": "topics",
-          "score": 0.4444444444444445,
+          "score": 0.0,
           "predicted": [
-            "sound_quality",
-            "warranty",
-            "customer_service",
-            "product_durability"
+            "warranty_service",
+            "product_quality",
+            "assurity"
           ],
           "expected": [
             "warranty",
@@ -3328,18 +3327,19 @@
         },
         {
           "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
+          "score": 0.0,
+          "predicted": [
+            "boat"
+          ],
           "expected": [],
           "method": "set_f1"
         },
         {
           "field": "pros",
-          "score": 0.6250000000000001,
+          "score": 0.42857142857142855,
           "predicted": [
-            "good customer service",
-            "reliable warranty",
-            "assuring brand"
+            "good warranty service",
+            "assurity of boat"
           ],
           "expected": [
             "good warranty service",
@@ -3350,11 +3350,10 @@
         },
         {
           "field": "cons",
-          "score": 0.7368421052631577,
+          "score": 0.75,
           "predicted": [
-            "earphone stopped working on one side",
-            "loose jack",
-            "slow warranty process"
+            "one side stopped working",
+            "jack became loose"
           ],
           "expected": [
             "one side stopped working",
@@ -3375,9 +3374,9 @@
     {
       "id": "hi-en-011",
       "language": "hi-en",
-      "overall_score": 0.8333333333333333,
+      "overall_score": 0.7861538461538462,
       "error": null,
-      "latency_ms": 9139,
+      "latency_ms": 2733,
       "fields": [
         {
           "field": "product",
@@ -3416,10 +3415,10 @@
         },
         {
           "field": "topics",
-          "score": 0.8,
+          "score": 0.4,
           "predicted": [
             "voice_quality",
-            "durability"
+            "experience"
           ],
           "expected": [
             "voice_quality",
@@ -3444,10 +3443,10 @@
         },
         {
           "field": "cons",
-          "score": 0.5333333333333333,
+          "score": 0.4615384615384615,
           "predicted": [
             "poor voice quality",
-            "stopped working after 1 month"
+            "bad experience"
           ],
           "expected": [
             "very poor voice quality",
@@ -3467,9 +3466,9 @@
     {
       "id": "hi-en-012",
       "language": "hi-en",
-      "overall_score": 0.6720689655172414,
+      "overall_score": 0.6621739130434782,
       "error": null,
-      "latency_ms": 9250,
+      "latency_ms": 2750,
       "fields": [
         {
           "field": "product",
@@ -3545,12 +3544,10 @@
         },
         {
           "field": "cons",
-          "score": 0.6206896551724139,
+          "score": 0.5217391304347826,
           "predicted": [
-            "not significantly better than cheap alternatives",
-            "poor connectivity",
-            "ear pain after 30 minutes",
-            "lacks soft material for comfort"
+            "causes ear pain after 30 minutes",
+            "speaker's soft parts need more soft material"
           ],
           "expected": [
             "ear pain after 30 minutes",
@@ -3571,14 +3568,14 @@
     {
       "id": "hi-en-013",
       "language": "hi-en",
-      "overall_score": 0.8511904761904763,
+      "overall_score": 0.8271428571428572,
       "error": null,
-      "latency_ms": 9219,
+      "latency_ms": 3734,
       "fields": [
         {
           "field": "product",
           "score": 0.0,
-          "predicted": "headphone",
+          "predicted": "noise cancellation earphone",
           "expected": "earphones",
           "method": "exact"
         },
@@ -3612,12 +3609,11 @@
         },
         {
           "field": "topics",
-          "score": 0.75,
+          "score": 0.5714285714285715,
           "predicted": [
             "performance",
             "noise_cancellation",
-            "delivery_speed",
-            "comfort"
+            "portability"
           ],
           "expected": [
             "delivery_speed",
@@ -3636,12 +3632,11 @@
         },
         {
           "field": "pros",
-          "score": 0.761904761904762,
+          "score": 0.7,
           "predicted": [
             "excellent performance",
-            "good noise cancellation",
-            "fast delivery",
-            "comfortable for long wear"
+            "good passive noise cancellation",
+            "can be worn while studying"
           ],
           "expected": [
             "fast delivery",
@@ -3670,9 +3665,9 @@
     {
       "id": "hi-en-014",
       "language": "hi-en",
-      "overall_score": 0.8412698412698412,
+      "overall_score": 0.7588235294117647,
       "error": null,
-      "latency_ms": 8921,
+      "latency_ms": 2875,
       "fields": [
         {
           "field": "product",
@@ -3697,8 +3692,8 @@
         },
         {
           "field": "sentiment",
-          "score": 1.0,
-          "predicted": "mixed",
+          "score": 0.0,
+          "predicted": "negative",
           "expected": "mixed",
           "method": "exact"
         },
@@ -3711,11 +3706,12 @@
         },
         {
           "field": "topics",
-          "score": 0.8571428571428571,
+          "score": 1.0,
           "predicted": [
             "product_quality",
             "delivery_service",
-            "delivery_speed"
+            "delivery_speed",
+            "customer_service"
           ],
           "expected": [
             "product_quality",
@@ -3745,12 +3741,11 @@
         },
         {
           "field": "cons",
-          "score": 0.5555555555555556,
+          "score": 0.5882352941176471,
           "predicted": [
+            "very bad online delivery",
             "slow delivery",
-            "late delivery",
-            "delivery boy doesn't come to door",
-            "must go pick up yourself"
+            "delivery boy doesn't come to door"
           ],
           "expected": [
             "very slow delivery",
@@ -3771,9 +3766,9 @@
     {
       "id": "hi-en-015",
       "language": "hi-en",
-      "overall_score": 0.9341176470588236,
+      "overall_score": 0.9366666666666668,
       "error": null,
-      "latency_ms": 9234,
+      "latency_ms": 8782,
       "fields": [
         {
           "field": "product",
@@ -3812,9 +3807,10 @@
         },
         {
           "field": "topics",
-          "score": 0.4,
+          "score": 0.6666666666666666,
           "predicted": [
-            "product_quality",
+            "sound_quality",
+            "bass",
             "value"
           ],
           "expected": [
@@ -3833,11 +3829,12 @@
         },
         {
           "field": "pros",
-          "score": 0.9411764705882353,
+          "score": 0.7000000000000001,
           "predicted": [
-            "excellent product",
+            "very good",
+            "love the bass",
             "great value for money",
-            "awesome bass"
+            "awesome product"
           ],
           "expected": [
             "excellent quality",
@@ -3866,9 +3863,9 @@
     {
       "id": "hi-001",
       "language": "hi",
-      "overall_score": 0.9,
+      "overall_score": 0.8,
       "error": null,
-      "latency_ms": 5000,
+      "latency_ms": 3905,
       "fields": [
         {
           "field": "product",
@@ -3907,11 +3904,10 @@
         },
         {
           "field": "topics",
-          "score": 0.5,
+          "score": 0.0,
           "predicted": [
-            "quality",
-            "durability",
-            "price"
+            "charger_quality",
+            "value"
           ],
           "expected": [
             "quality"
@@ -3934,10 +3930,9 @@
         },
         {
           "field": "cons",
-          "score": 0.5,
+          "score": 0.0,
           "predicted": [
             "poor quality",
-            "stopped working after 2 days",
             "waste of money"
           ],
           "expected": [
@@ -3959,7 +3954,7 @@
       "language": "hi",
       "overall_score": 0.9333333333333333,
       "error": null,
-      "latency_ms": 5015,
+      "latency_ms": 10687,
       "fields": [
         {
           "field": "product",
@@ -4046,9 +4041,9 @@
     {
       "id": "hi-003",
       "language": "hi",
-      "overall_score": 0.7833333333333333,
+      "overall_score": 0.8333333333333333,
       "error": null,
-      "latency_ms": 5000,
+      "latency_ms": 9796,
       "fields": [
         {
           "field": "product",
@@ -4066,15 +4061,15 @@
         },
         {
           "field": "buy_again",
-          "score": 0.0,
-          "predicted": false,
+          "score": 1.0,
+          "predicted": null,
           "expected": null,
           "method": "exact"
         },
         {
           "field": "sentiment",
-          "score": 1.0,
-          "predicted": "mixed",
+          "score": 0.0,
+          "predicted": "negative",
           "expected": "mixed",
           "method": "exact"
         },
@@ -4107,9 +4102,9 @@
         },
         {
           "field": "pros",
-          "score": 0.5,
+          "score": 1.0,
           "predicted": [
-            "excellent display"
+            "good display"
           ],
           "expected": [
             "good display"
@@ -4120,7 +4115,7 @@
           "field": "cons",
           "score": 0.3333333333333333,
           "predicted": [
-            "poor battery life"
+            "battery life is short"
           ],
           "expected": [
             "battery drains fast"
@@ -4130,7 +4125,7 @@
         {
           "field": "stars_inferred",
           "score": 1.0,
-          "predicted": 3,
+          "predicted": 2,
           "expected": 3,
           "method": "tolerance\u00b11"
         }
@@ -4141,7 +4136,7 @@
       "language": "hi",
       "overall_score": 0.828888888888889,
       "error": null,
-      "latency_ms": 5889,
+      "latency_ms": 10812,
       "fields": [
         {
           "field": "product",
@@ -4233,14 +4228,14 @@
     {
       "id": "hi-005",
       "language": "hi",
-      "overall_score": 0.9800000000000001,
+      "overall_score": 0.8,
       "error": null,
-      "latency_ms": 4844,
+      "latency_ms": 11000,
       "fields": [
         {
           "field": "product",
-          "score": 1.0,
-          "predicted": "Portronics speaker",
+          "score": 0.0,
+          "predicted": "Portronics sound",
           "expected": "Portronics speaker",
           "method": "exact"
         },
@@ -4260,8 +4255,8 @@
         },
         {
           "field": "sentiment",
-          "score": 1.0,
-          "predicted": "mixed",
+          "score": 0.0,
+          "predicted": "neutral",
           "expected": "mixed",
           "method": "exact"
         },
@@ -4294,9 +4289,9 @@
         },
         {
           "field": "pros",
-          "score": 0.8,
+          "score": 1.0,
           "predicted": [
-            "good sound quality"
+            "good sound"
           ],
           "expected": [
             "good sound"
@@ -4326,9 +4321,9 @@
     {
       "id": "hi-006",
       "language": "hi",
-      "overall_score": 0.8666666666666668,
+      "overall_score": 0.7666666666666667,
       "error": null,
-      "latency_ms": 4828,
+      "latency_ms": 8765,
       "fields": [
         {
           "field": "product",
@@ -4369,8 +4364,8 @@
           "field": "topics",
           "score": 0.6666666666666666,
           "predicted": [
-            "price",
-            "quality"
+            "quality",
+            "price"
           ],
           "expected": [
             "quality"
@@ -4388,15 +4383,18 @@
           "field": "pros",
           "score": 0.0,
           "predicted": [
-            "affordable"
+            "average quality",
+            "value for money"
           ],
           "expected": [],
           "method": "fuzzy"
         },
         {
           "field": "cons",
-          "score": 1.0,
-          "predicted": [],
+          "score": 0.0,
+          "predicted": [
+            "nothing special"
+          ],
           "expected": [],
           "method": "fuzzy"
         },

@@ -152,9 +152,15 @@ class BatchJob(BaseModel):
 
 
 class ExtractionMetaV2(ExtractionMeta):
-    """ExtractionMeta extended with multi-tenant org_id for v2 responses."""
+    """ExtractionMeta extended with multi-tenant org_id for v2 responses.
+
+    ``degraded`` is set True when the large model was quota-capped mid-escalation
+    and the response was served from the small-model result instead.  Additive
+    optional field — existing v2 clients that don't read it are unaffected.
+    """
 
     org_id: str
+    degraded: bool = False
 
 
 class ReviewExtractionV2(ReviewExtraction):

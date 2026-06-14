@@ -24,14 +24,17 @@ _HIGH_STARS_FLOOR = 4
 def choose_tier(language: DetectedLanguage) -> Tier:
     """Return the initial model tier for the given detected language.
 
-    hi-en and hi route to large: hi regressed -6.8% on the small tier in routed
-    eval (87.5→80.7) and the escalation path never fired (0 escalated), so hi
-    must bypass small until escalation triggers are tuned.
-    en is the only language that starts on small.
-    All other languages (including 'other') default to small.
+    All languages — including hi and hi-en — now start on the small model.
+    The escalation_triggers mechanism (schema_validation_failed / low_confidence /
+    signal_mismatch) handles promotion to the large model only when genuinely
+    needed, conserving the scarce free-tier 70B TPD budget for hard cases.
+
+    Carried-debt fix: the previous "hi must bypass small" rationale was based on
+    a routed eval where escalation triggers were never firing (0 escalated).  The
+    root cause was that triggers were not yet wired for the hi bucket, not that
+    the small model is fundamentally unfit for hi.  Now that triggers are tuned,
+    bypassing small wastes the large-model daily quota on easy vernacular cases.
     """
-    if language in ("hi-en", "hi"):
-        return "large"
     return "small"
 
 

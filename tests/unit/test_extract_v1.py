@@ -30,7 +30,7 @@ _LLM_OUTPUT = ReviewExtractionLLMOutput(
     confidence=0.9,
 )
 
-_LLM_RETURN = (_LLM_OUTPUT, "llama-3.3-70b-versatile", 100, 150, 80)
+_LLM_RETURN = (_LLM_OUTPUT, "llama-3.3-70b-versatile", 100, 150, 80, False)
 
 
 @pytest.fixture()

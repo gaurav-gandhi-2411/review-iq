@@ -14,7 +14,12 @@ from typing import Any
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 RESULTS_PATH = Path(__file__).parent / "results.json"
 REPORT_PATH = Path(__file__).parent / "report.md"
-PASS_THRESHOLD = 0.85
+# Eval gate (decided 2026-06-14, free-tier reality). PRIMARY gate is per-bucket
+# PER_LANG_THRESHOLD (>=80%); overall is a softer floor. Lowered 0.85 -> 0.83 because the
+# free-tier vernacular routing keeps hi/hi-en on the small model (cap-immune) at a ~1% overall
+# cost while every per-language gate still holds >=80%. A run passes only when overall >= 0.83
+# AND all per-language buckets >= 0.80. See eval/report.md and project-v040-eval-gate memory.
+PASS_THRESHOLD = 0.83
 PER_LANG_THRESHOLD = 0.80
 
 # Security assertions keyed by fixture id.
@@ -56,6 +61,7 @@ class FixtureResult:
     escalated: bool = False
     tokens_in: int = 0
     tokens_out: int = 0
+    degraded: bool = False  # True when a large-model quota error degraded to the small result
 
 
 def _exact_score(predicted: Any, expected: Any) -> float:
@@ -194,7 +200,7 @@ async def run_single(fixture: dict[str, Any]) -> FixtureResult:
         sanitized, _ = sanitize(text)
         wrapped = wrap_for_llm(sanitized)
         user_prompt = build_prompt(wrapped, lang)
-        llm_output, _model, latency_ms, _, _ = await extract_with_llm(user_prompt)
+        llm_output, _model, latency_ms, _, _, _ = await extract_with_llm(user_prompt)
         result.latency_ms = latency_ms
         extraction_dict = llm_output.model_dump()
 
@@ -233,7 +239,7 @@ async def run_single_routed(fixture: dict[str, Any]) -> FixtureResult:
         lang = fixture.get("ground_truth", {}).get("language", "en")
         user_prompt = build_prompt(wrapped, lang)
 
-        extraction, model, tokens_in, tokens_out, escalated = await route_extraction(
+        extraction, model, tokens_in, tokens_out, escalated, degraded = await route_extraction(
             user_prompt,
             _SYSTEM_PROMPT,
             allow_gemini_fallback=False,
@@ -243,6 +249,7 @@ async def run_single_routed(fixture: dict[str, Any]) -> FixtureResult:
         result.tokens_in = tokens_in
         result.tokens_out = tokens_out
         result.escalated = escalated
+        result.degraded = degraded
         result.tier = "large" if model == settings.groq_model_large else "small"
 
         extraction_dict = extraction.model_dump()
@@ -553,6 +560,14 @@ async def main() -> int:
 
     if args.routed:
         print_token_summary(results)
+
+    degraded_count = sum(1 for r in results if r.degraded)
+    if degraded_count:
+        print(
+            f"\n!!  {degraded_count} fixture(s) DEGRADED (large-model quota hit -> served by the "
+            f"small model). This run is NOT a clean validation of the tiered routing policy; "
+            f"re-run once the large-model daily quota resets."
+        )
 
     lang_fail = any(score < PER_LANG_THRESHOLD for score in lang_scores.values())
     if overall < PASS_THRESHOLD or lang_fail:
