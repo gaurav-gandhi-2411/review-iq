@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.auth.api_key import ApiKeyContext, require_api_key
 from app.core.metrics import REPLY_CACHE_HIT_TOTAL
-from app.core.reply.engine import draft_reply
+from app.core.reply.engine import VernacularModelUnavailableError, draft_reply
 from app.core.reply.schema import ReplyBatchRequest, ReplyDraft, ReplyRequest
 from app.core.storage_pg import update_usage_tokens
 
@@ -64,6 +64,12 @@ async def draft_single(
     """
     try:
         return await _run_draft(body, ctx)
+    except VernacularModelUnavailableError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(exc),
+            headers={"Retry-After": "60"},
+        ) from exc
     except RuntimeError as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -87,7 +93,7 @@ async def draft_batch(
     for req in body.reviews:
         try:
             results.append(await _run_draft(req, ctx))
-        except RuntimeError as exc:
+        except (RuntimeError, VernacularModelUnavailableError) as exc:
             log.error("reply.batch_item_failed", org_id=ctx.org_id, error=str(exc))
             failed += 1
 

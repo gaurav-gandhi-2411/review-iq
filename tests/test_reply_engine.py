@@ -3,7 +3,7 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from app.core.reply.engine import _parse_reply, draft_reply
+from app.core.reply.engine import VernacularModelUnavailableError, _parse_reply, draft_reply
 from app.core.reply.schema import ReplyRequest, ReplyTone
 from app.core.schemas import ReviewExtraction
 
@@ -85,10 +85,11 @@ async def test_draft_reply_basic() -> None:
     assert tokens_out == 50
 
 
-async def test_draft_reply_degrades_on_quota() -> None:
+async def test_draft_reply_english_degrades_on_quota() -> None:
+    """English on small model is acceptable — degrades with caveat, no error raised."""
     extraction = _make_extraction(cons=["battery"], topics=["battery"])
     request = ReplyRequest(
-        text="Battery is terrible",
+        text="Battery is terrible",  # English
         tone=ReplyTone.apologetic,
         extraction=extraction,
     )
@@ -111,9 +112,33 @@ async def test_draft_reply_degrades_on_quota() -> None:
         draft, _tin, _tout = await draft_reply(request)
 
     assert draft.reply_text == "Sorry to hear this."
-    assert any("degraded model" in c for c in draft.caveats)
-    # model_used is the actual model name from settings (groq_model_small default)
+    assert any("reduced-capacity model" in c for c in draft.caveats)
     assert draft.model_used == "llama-3.1-8b-instant"
+
+
+async def test_draft_reply_vernacular_raises_on_quota() -> None:
+    """Vernacular (hi/hi-en) must NOT silently degrade — raises VernacularModelUnavailableError.
+
+    The small model produces semantically incoherent Hindi/Hinglish (tested: 'proud of
+    ourselves for your trouble', 'thank you for understanding it was defective'). Degrading
+    silently would post brand-damaging text. Surface as 503 instead.
+    """
+    for review_text in (
+        "बैटरी बहुत खराब है यार",  # hi (Devanagari)
+        "Yaar battery bahut kharab hai ekdum",  # hi-en (Hinglish keywords)
+    ):
+        extraction = _make_extraction(cons=["battery"], topics=["battery"])
+        request = ReplyRequest(
+            text=review_text,
+            tone=ReplyTone.apologetic,
+            extraction=extraction,
+        )
+        with patch(
+            "app.core.reply.engine._call_groq",
+            new=AsyncMock(side_effect=RuntimeError("rate_limit_exceeded")),
+        ):
+            with pytest.raises(VernacularModelUnavailableError):
+                await draft_reply(request)
 
 
 async def test_draft_reply_both_models_fail() -> None:

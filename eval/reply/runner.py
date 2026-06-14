@@ -24,7 +24,7 @@ os.environ.setdefault("EVAL_CASSETTE_MODE", "replay")
 _ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(_ROOT))
 
-from app.core.reply.engine import draft_reply  # noqa: E402
+from app.core.reply.engine import VernacularModelUnavailableError, draft_reply  # noqa: E402
 from app.core.reply.guardrails import run_guardrails  # noqa: E402
 from app.core.reply.schema import ReplyRequest, ReplyTone  # noqa: E402
 from app.core.schemas import ReviewExtraction, Urgency  # noqa: E402
@@ -66,6 +66,21 @@ async def _run_fixture(fixture: dict) -> dict:
     request = _build_request(fixture)
     try:
         draft, tokens_in, tokens_out = await draft_reply(request)
+    except VernacularModelUnavailableError:
+        return {
+            "id": fixture["id"],
+            "passed": False,
+            "cassette_missing": True,
+            "error": (
+                "Large-model cassette not recorded for this vernacular fixture. "
+                "Run: EVAL_CASSETTE_MODE=record uv run python eval/reply/record_hien.py"
+            ),
+            "violations": [],
+            "caveats": [],
+            "reply_preview": "",
+            "tokens_in": 0,
+            "tokens_out": 0,
+        }
     except RuntimeError as exc:
         msg = str(exc)
         if "No cassette for key" in msg:

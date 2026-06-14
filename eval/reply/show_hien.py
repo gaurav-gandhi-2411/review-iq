@@ -10,7 +10,7 @@ from pathlib import Path
 os.environ.setdefault("EVAL_CASSETTE_MODE", "replay")
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from app.core.reply.engine import draft_reply  # noqa: E402
+from app.core.reply.engine import VernacularModelUnavailableError, draft_reply  # noqa: E402
 from app.core.reply.schema import ReplyRequest, ReplyTone  # noqa: E402
 from app.core.schemas import ReviewExtraction, Urgency  # noqa: E402
 
@@ -46,7 +46,12 @@ async def main() -> None:
             signature=f.get("signature"),
             extraction=ext,
         )
-        draft, _, _ = await draft_reply(req)
+        try:
+            draft, _, _ = await draft_reply(req)
+        except VernacularModelUnavailableError:
+            print(f"=== {f['id']} | {f['tone']} | [LARGE MODEL UNAVAILABLE — re-record] ===")
+            print()
+            continue
         model_tag = f"[{draft.model_used}]"
         caveat_tag = " [DEGRADED]" if any("degraded" in c for c in draft.caveats) else ""
         print(f"=== {f['id']} | {f['tone']} | {model_tag}{caveat_tag} ===")

@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))  # noqa: E402
 
 from groq import APIStatusError, RateLimitError  # noqa: E402
 
-from app.core.reply.engine import draft_reply  # noqa: E402
+from app.core.reply.engine import VernacularModelUnavailableError, draft_reply  # noqa: E402
 from app.core.reply.schema import ReplyRequest, ReplyTone  # noqa: E402
 from app.core.schemas import ReviewExtraction, Urgency  # noqa: E402
 
@@ -42,6 +42,12 @@ async def _record_one(f: dict, attempt: int = 1) -> None:
     )
     try:
         draft, tin, tout = await draft_reply(req)
+    except VernacularModelUnavailableError:
+        # Policy: vernacular quota → large model unavailable → retry after window clears.
+        print(f"  [QUOTA] {f['id']} — large model capped, sleeping {_RETRY_WAIT_SECONDS}s then retrying...")
+        await asyncio.sleep(_RETRY_WAIT_SECONDS)
+        await _record_one(f, attempt + 1)
+        return
     except (RuntimeError, APIStatusError, RateLimitError) as exc:
         if "rate_limit" in str(exc).lower() or "429" in str(exc):
             print(f"  [QUOTA] {f['id']} — sleeping {_RETRY_WAIT_SECONDS}s then retrying...")

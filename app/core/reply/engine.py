@@ -17,11 +17,25 @@ from app.core.reply.schema import ReplyDraft, ReplyRequest
 
 log = structlog.get_logger(__name__)
 
+# Languages where the small model produces incoherent composition (tested: 013/014
+# "proud of ourselves for your trouble", "thank you for understanding it was defective").
+# English degrades acceptably; vernacular does not.
+_VERNACULAR_LANGUAGES = frozenset({"hi", "hi-en"})
+
 _QUOTA_MESSAGE_SIGNALS = frozenset(["rate_limit_exceeded", "tokens per day", "tpd", "rate limit"])
 
 # In cassette replay mode, a missing large-model cassette means the recording session
 # degraded to the small model. Treat it as quota to replay the small-model cassette.
 _CASSETTE_MISS_SIGNAL = "no cassette for key"
+
+
+class VernacularModelUnavailableError(Exception):
+    """Raised when the large model is quota-capped for a vernacular (hi/hi-en) reply.
+
+    The small model produces incoherent vernacular composition — brand-damaging in
+    customer-facing text. Callers should return 503 with Retry-After rather than
+    silently posting a broken draft.
+    """
 
 
 def _is_quota_error(exc: Exception) -> bool:
@@ -152,8 +166,22 @@ async def draft_reply(
         # is raised by router._call_provider which wraps it. Catch both so degradation
         # works on the direct-call path used here.
         if _is_quota_error(exc):
-            caveats.append("drafted on degraded model (large model quota cap reached)")
             REPLY_DEGRADED_TOTAL.inc()
+            if language in _VERNACULAR_LANGUAGES:
+                # Small model produces incoherent vernacular (tested: "proud of ourselves
+                # for your trouble", "thank you for understanding it was defective").
+                # Surface as 503 — caller should retry when large model is available.
+                log.warning(
+                    "reply_engine.vernacular_quota_hard_stop",
+                    language=language,
+                    model=settings.groq_model_large,
+                )
+                raise VernacularModelUnavailableError(
+                    f"Large model quota reached; {language} reply drafting requires the "
+                    "large model. Retry when quota resets (typically within minutes)."
+                ) from exc
+            # English degrades acceptably on the small model.
+            caveats.append("drafted on reduced-capacity model — review carefully before posting")
             log.warning("reply_engine.degraded_to_small", model=settings.groq_model_small)
             raw, tin, tout = await _call_groq(
                 settings.groq_model_small, system_prompt, user_prompt, settings
