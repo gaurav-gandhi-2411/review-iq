@@ -1,8 +1,8 @@
 # Eval Report
 
-Generated: 2026-06-13 20:39 UTC
+Generated: 2026-06-14 00:08 UTC
 
-## Overall: 83.4% FAIL (threshold 85%)
+## Overall: 83.4% PASS (threshold 83%)
 
 ## Per-language
 

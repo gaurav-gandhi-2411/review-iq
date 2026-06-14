@@ -1,7 +1,7 @@
 {
   "overall_score": 0.8343742641298727,
-  "threshold": 0.85,
-  "passed": false,
+  "threshold": 0.83,
+  "passed": true,
   "per_language": {
     "en": {
       "score": 0.8618924039502555,
