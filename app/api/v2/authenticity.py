@@ -103,7 +103,14 @@ async def score_authenticity_single(
     """
     rh = _review_hash(body.text)
 
-    existing = await asyncio.to_thread(get_authenticity_audit_by_hash_pg, ctx.org_id, rh)
+    # Pre-LLM cache short-circuit. A cache-lookup failure must NEVER fail the request —
+    # the cache only saves tokens, it is not load-bearing for correctness. Degrade to a
+    # cache miss and score normally.
+    try:
+        existing = await asyncio.to_thread(get_authenticity_audit_by_hash_pg, ctx.org_id, rh)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("authenticity.cache_lookup_failed", org_id=ctx.org_id, error=str(exc))
+        existing = None
     if existing is not None:
         log.info("authenticity.cache_hit", org_id=ctx.org_id, review_hash=rh[:16])
         result = _audit_row_to_result(existing, body.text)

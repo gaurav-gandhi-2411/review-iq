@@ -71,6 +71,10 @@ def test_authenticity_single_valid_key(client: TestClient) -> None:
 
     with (
         patch(
+            "app.api.v2.authenticity.get_authenticity_audit_by_hash_pg",
+            new=MagicMock(return_value=None),
+        ),
+        patch(
             "app.api.v2.authenticity.engine.score_single",
             new=AsyncMock(return_value=fake),
         ),
