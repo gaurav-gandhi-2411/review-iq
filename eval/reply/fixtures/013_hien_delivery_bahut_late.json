@@ -1,0 +1,13 @@
+{
+  "id": "013_hien_delivery_bahut_late",
+  "description": "Hinglish delivery complaint with required signature",
+  "review_text": "Delivery bahut late aayi. Teen hafte wait karna pada. Customer service ne bhi koi response nahi diya. Bahut bura experience tha.",
+  "language": "hi-en",
+  "tone": "warm",
+  "brand_name": null,
+  "signature": "Team Support",
+  "pre_extracted_cons": ["very late delivery", "no customer service response"],
+  "pre_extracted_topics": ["delivery", "customer_service"],
+  "expected_guardrail_pass": true,
+  "notes": "Hinglish delivery complaint with signature"
+}

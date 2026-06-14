@@ -1,0 +1,13 @@
+{
+  "id": "009_hi_delivery_delay",
+  "description": "Hindi delivery delay complaint — warm tone",
+  "review_text": "डिलीवरी में बहुत ज्यादा देरी हुई। तीन हफ्ते बाद भी प्रोडक्ट नहीं आया। बहुत निराशा हुई।",
+  "language": "hi",
+  "tone": "warm",
+  "brand_name": null,
+  "signature": null,
+  "pre_extracted_cons": ["डिलीवरी में बहुत देरी", "तीन हफ्ते की प्रतीक्षा"],
+  "pre_extracted_topics": ["delivery", "wait_time"],
+  "expected_guardrail_pass": true,
+  "notes": "Hindi delivery complaint — warm tone"
+}

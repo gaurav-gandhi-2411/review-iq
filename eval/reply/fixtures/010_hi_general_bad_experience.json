@@ -1,0 +1,13 @@
+{
+  "id": "010_hi_general_bad_experience",
+  "description": "Hindi general complaint with brand name",
+  "review_text": "बिल्कुल निराशाजनक अनुभव रहा। प्रोडक्ट की क्वालिटी बहुत खराब है और कस्टमर सर्विस भी बेकार है।",
+  "language": "hi",
+  "tone": "professional",
+  "brand_name": "ShopIQ",
+  "signature": null,
+  "pre_extracted_cons": ["खराब प्रोडक्ट क्वालिटी", "खराब कस्टमर सर्विस"],
+  "pre_extracted_topics": ["quality", "customer_service"],
+  "expected_guardrail_pass": true,
+  "notes": "Hindi general complaint with brand_name"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "004_en_slow_delivery_signature",
+  "description": "English slow delivery complaint with required signature",
+  "review_text": "Ordered 3 weeks ago and still waiting. The tracking shows it has been sitting in the warehouse for 10 days. No customer support response either.",
+  "language": "en",
+  "tone": "apologetic",
+  "brand_name": null,
+  "signature": "Warm regards, Customer Care Team",
+  "pre_extracted_cons": ["slow delivery", "no tracking updates", "no customer support response"],
+  "pre_extracted_topics": ["delivery", "customer_service", "tracking"],
+  "expected_guardrail_pass": true,
+  "notes": "Signature required — runner checks it appears in the reply"
+}

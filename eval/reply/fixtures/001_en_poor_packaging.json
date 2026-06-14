@@ -1,0 +1,13 @@
+{
+  "id": "001_en_poor_packaging",
+  "description": "English packaging damage complaint",
+  "review_text": "The product arrived completely damaged. The packaging was terrible — just a thin plastic bag with no protection. The item had scratches all over it and one corner was dented.",
+  "language": "en",
+  "tone": "professional",
+  "brand_name": null,
+  "signature": null,
+  "pre_extracted_cons": ["damaged on arrival", "poor packaging", "scratches on item", "dented corner"],
+  "pre_extracted_topics": ["packaging", "delivery", "product_condition"],
+  "expected_guardrail_pass": true,
+  "notes": "Standard English packaging complaint — reply must address packaging specifically, not give generic response"
+}

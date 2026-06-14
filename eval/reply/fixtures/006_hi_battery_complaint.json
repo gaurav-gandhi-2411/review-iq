@@ -1,0 +1,13 @@
+{
+  "id": "006_hi_battery_complaint",
+  "description": "Hindi battery complaint — professional tone",
+  "review_text": "यह प्रोडक्ट बिल्कुल बेकार है। बैटरी सिर्फ दो घंटे चलती है। इतने पैसे में इससे बेहतर की उम्मीद थी।",
+  "language": "hi",
+  "tone": "professional",
+  "brand_name": null,
+  "signature": null,
+  "pre_extracted_cons": ["बैटरी बहुत जल्दी खत्म होती है", "कम बैटरी लाइफ"],
+  "pre_extracted_topics": ["battery", "value"],
+  "expected_guardrail_pass": true,
+  "notes": "Hindi review — reply must be in Hindi (Devanagari)"
+}

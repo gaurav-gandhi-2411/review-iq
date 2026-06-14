@@ -1,0 +1,13 @@
+{
+  "id": "007_hi_packaging_complaint",
+  "description": "Hindi packaging complaint — apologetic tone",
+  "review_text": "पैकेजिंग बिल्कुल खराब थी। प्रोडक्ट टूटा हुआ आया। दोबारा इस कंपनी से नहीं खरीदूंगा।",
+  "language": "hi",
+  "tone": "apologetic",
+  "brand_name": null,
+  "signature": null,
+  "pre_extracted_cons": ["खराब पैकेजिंग", "टूटा हुआ प्रोडक्ट"],
+  "pre_extracted_topics": ["packaging", "product_condition"],
+  "expected_guardrail_pass": true,
+  "notes": "Hindi packaging complaint — apologetic tone"
+}
