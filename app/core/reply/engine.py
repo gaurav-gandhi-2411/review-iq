@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import structlog
 from groq import APIStatusError
@@ -17,9 +17,7 @@ from app.core.reply.schema import ReplyDraft, ReplyRequest
 
 log = structlog.get_logger(__name__)
 
-_QUOTA_MESSAGE_SIGNALS = frozenset(
-    ["rate_limit_exceeded", "tokens per day", "tpd", "rate limit"]
-)
+_QUOTA_MESSAGE_SIGNALS = frozenset(["rate_limit_exceeded", "tokens per day", "tpd", "rate limit"])
 
 
 def _is_quota_error(exc: Exception) -> bool:
@@ -191,7 +189,7 @@ async def draft_reply(
             grounded_on=cons + topics,
             caveats=caveats,
             model_used=model_used,
-            drafted_at=datetime.now(tz=timezone.utc),
+            drafted_at=datetime.now(tz=UTC),
         ),
         total_tokens_in,
         total_tokens_out,

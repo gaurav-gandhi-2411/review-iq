@@ -96,9 +96,7 @@ def build_reply_prompt(
     concerns_section = "\n".join(concerns_parts) + "\n\n" if concerns_parts else ""
 
     signature_section = (
-        f'End the reply with this exact signature:\n"{signature}"\n\n'
-        if signature
-        else ""
+        f'End the reply with this exact signature:\n"{signature}"\n\n' if signature else ""
     )
 
     system_prompt = _SYSTEM_TEMPLATE.format(
