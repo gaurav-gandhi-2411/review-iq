@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 
 import structlog
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -76,6 +77,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     _app.state.limiter = limiter
     _app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
     _app.add_middleware(PrometheusMiddleware)
+    # CORSMiddleware runs outermost (last added = first executed in Starlette LIFO order).
+    # Allows the demo page and its branch-preview aliases to call /demo/extract from browsers.
+    # V2 endpoints still require X-API-Key; CORS does not bypass auth.
+    _app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["https://review-iq-demo.pages.dev"],
+        allow_origin_regex=r"https://[a-z0-9]+\.review-iq-demo\.pages\.dev",
+        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_headers=["Content-Type", "X-API-Key"],
+    )
 
     # Ops (health + metrics) — always mounted, unauthenticated
     _app.include_router(ops_router)
