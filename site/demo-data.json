@@ -1,0 +1,402 @@
+{
+  "examples": [
+    {
+      "id": "ext-en",
+      "category": "extraction",
+      "lang_badge": "EN",
+      "title": "English review",
+      "description": "Mixed-sentiment review with competitor mention — extracted to structured fields in under a second.",
+      "input_label": "Customer review",
+      "input": "So I bought the 'Turbo-Vac 5000' last week. Honestly? It's a mixed bag. The suction is incredible—it picked up a penny from under the rug! And it's super quiet, which my cat appreciates. But oh man, the battery life is a joke. It died after 15 minutes. Also, the plastic handle feels like it's going to snap any second. For $300, I expected better build quality. I'm keeping it because I hate returning things, but if I had to choose again, I'd definitely go with a Dyson instead.",
+      "output": {
+        "product": "Turbo-Vac 5000",
+        "stars": null,
+        "stars_inferred": 3,
+        "pros": ["incredible suction", "very quiet operation"],
+        "cons": ["poor battery life — dies in 15 minutes", "fragile plastic handle", "overpriced at $300 for build quality"],
+        "buy_again": false,
+        "sentiment": "mixed",
+        "topics": ["suction", "noise", "battery", "build_quality", "price"],
+        "competitor_mentions": ["Dyson"],
+        "urgency": "low",
+        "feature_requests": [],
+        "language": "en",
+        "review_length_chars": 402,
+        "confidence": 0.94,
+        "extraction_meta": {
+          "model": "llama-3.3-70b-versatile",
+          "prompt_version": "2.1",
+          "schema_version": "1.0.0",
+          "extracted_at": "2026-06-10T09:14:32Z",
+          "latency_ms": 834,
+          "input_hash": "sha256:a3f7d8c2e1b409f6"
+        }
+      }
+    },
+    {
+      "id": "ext-hi",
+      "category": "extraction",
+      "lang_badge": "HI",
+      "title": "Hindi (Devanagari) review",
+      "description": "Pure Devanagari script — fields extracted accurately including detected language.",
+      "input_label": "Customer review",
+      "input": "Syska चार्जर 2 दिन में ही टूट गया। बहुत खराब क्वालिटी है। दोबारा नहीं खरीदूंगा। पैसे बर्बाद हो गए। बिल्कुल निराश हूं।",
+      "input_translation": "(Translation: Syska charger broke in just 2 days. Very bad quality. Won't buy again. Money wasted. Completely disappointed.)",
+      "output": {
+        "product": "Syska charger",
+        "stars": null,
+        "stars_inferred": 1,
+        "pros": [],
+        "cons": ["stopped working in two days", "extremely poor quality"],
+        "buy_again": false,
+        "sentiment": "negative",
+        "topics": ["quality", "durability"],
+        "competitor_mentions": [],
+        "urgency": "medium",
+        "feature_requests": [],
+        "language": "hi",
+        "review_length_chars": 95,
+        "confidence": 0.91,
+        "extraction_meta": {
+          "model": "llama-3.3-70b-versatile",
+          "prompt_version": "2.1",
+          "schema_version": "1.0.0",
+          "extracted_at": "2026-06-10T09:14:41Z",
+          "latency_ms": 721,
+          "input_hash": "sha256:f8c2a1d4e7b309a5"
+        }
+      }
+    },
+    {
+      "id": "ext-hi-en",
+      "category": "extraction",
+      "lang_badge": "HI-EN",
+      "title": "Hinglish / code-mixed review",
+      "description": "Code-mixed Hindi-English — the differentiator. Western tools mislabel this; review-iq parses 'apple k earphone ko competition de dega' correctly.",
+      "input_label": "Customer review",
+      "input": "Superb earphone i like it.... and the sound is just awsome.... ye earphone apple k earphone ko competition de dega..... Not better than apple earphone... but km v nai hai apple k earphone se....",
+      "input_annotation": "\"apple k earphone ko competition de dega\" = will compete with Apple earphones | \"km v nai hai\" = not less than",
+      "output": {
+        "product": "earphone",
+        "stars": null,
+        "stars_inferred": 4,
+        "pros": ["superb quality", "awesome sound", "competitive with Apple earphones"],
+        "cons": ["slightly inferior to Apple earphones"],
+        "buy_again": true,
+        "sentiment": "positive",
+        "topics": ["sound_quality", "comparison", "value"],
+        "competitor_mentions": ["Apple"],
+        "urgency": "low",
+        "feature_requests": [],
+        "language": "hi-en",
+        "review_length_chars": 167,
+        "confidence": 0.88,
+        "extraction_meta": {
+          "model": "llama-3.3-70b-versatile",
+          "prompt_version": "2.1",
+          "schema_version": "1.0.0",
+          "extracted_at": "2026-06-10T09:14:58Z",
+          "latency_ms": 891,
+          "input_hash": "sha256:b7e3f1c9d2a04b8e"
+        }
+      }
+    },
+    {
+      "id": "auth-clear",
+      "category": "authenticity",
+      "lang_badge": "EN",
+      "title": "Genuine review → clear",
+      "description": "Natural first-person voice, specific details, balanced pros/cons. Precision-first disposition: clear (no further action needed).",
+      "input_label": "Review being scored",
+      "input": "Bought this Realme Narzo 70 phone a month ago. Camera is excellent for the price, takes sharp photos even in low light. Battery easily lasts 2 days on light use. Fingerprint sensor is fast. The only downside is the bloatware — it comes preloaded with too many apps. Overall a great mid-range phone, would recommend to family.",
+      "output": {
+        "score": 0.83,
+        "label": "genuine",
+        "disposition": "clear",
+        "flags": [],
+        "reasons": "Balanced assessment with specific, verifiable details (camera performance, battery life, fingerprint speed). Natural first-person voice. Cons included unprompted.",
+        "llm_signal_ok": true,
+        "review_hash": "sha256:9f2c8e1a3b7d4f0c",
+        "scored_at": "2026-06-10T09:15:12Z",
+        "model_used": "llama-3.3-70b-versatile"
+      }
+    },
+    {
+      "id": "auth-flagged",
+      "category": "authenticity",
+      "lang_badge": "EN",
+      "title": "Disclosed incentive → flagged_for_review",
+      "description": "Reviewer disclosed receiving the product for free (Amazon Vine). Under BIS IS 19000:2022 this is a material disclosure that triggers administrator review.",
+      "input_label": "Review being scored",
+      "input": "I received this product as part of the Amazon Vine program in exchange for my honest review. The Philips air fryer performs well — good build quality and easy to clean. Crispy results on most foods tested. The only issue is the display can be hard to read in bright light.",
+      "output": {
+        "score": 0.51,
+        "label": "suspicious",
+        "disposition": "flagged_for_review",
+        "flags": ["incentivized_phrase"],
+        "reasons": "Explicit disclosure of incentivized review ('received in exchange for honest review'). Content itself appears balanced, but disclosed incentive requires administrator review per IS 19000:2022.",
+        "llm_signal_ok": true,
+        "review_hash": "sha256:c4a8f2e7b1d3950e",
+        "scored_at": "2026-06-10T09:15:19Z",
+        "model_used": "llama-3.3-70b-versatile"
+      }
+    },
+    {
+      "id": "auth-priority",
+      "category": "authenticity",
+      "lang_badge": "EN",
+      "title": "Templated / fabricated → priority_review",
+      "description": "No specific product details, excessive superlatives, promotional phrasing. Heuristic + LLM both signal fabrication. Disposition: priority_review.",
+      "input_label": "Review being scored",
+      "input": "AMAZING PRODUCT!! BEST PURCHASE I EVER MADE!! EVERYONE SHOULD BUY THIS RIGHT NOW!! WORKS PERFECTLY 100%!! HIGHLY RECOMMENDED TO ALL!! 5 STARS!! SUPERB QUALITY!! DO NOT HESITATE!!",
+      "output": {
+        "score": 0.17,
+        "label": "likely_fake",
+        "disposition": "priority_review",
+        "flags": ["promotional_tone", "generic_low_info", "excessive_brevity"],
+        "reasons": "All-caps promotional language, no specific product details, no balanced pros/cons, generic superlatives consistent with coordinated fake review patterns.",
+        "llm_signal_ok": true,
+        "review_hash": "sha256:7b1e4f9c2a8d350b",
+        "scored_at": "2026-06-10T09:15:26Z",
+        "model_used": "llama-3.3-70b-versatile"
+      }
+    },
+    {
+      "id": "insights-trends",
+      "category": "insights",
+      "lang_badge": "TRENDS",
+      "title": "Theme trends — by_language breakdown",
+      "description": "delivery_speed complaints appear only in Hindi and Hinglish reviews — zero in English. This vernacular-only signal is invisible to English-only tools.",
+      "input_label": "API call",
+      "input": "GET /v2/insights/trends?trend_of=topics&bucket=week&language=&limit=5",
+      "output": {
+        "org_id": "org_demo_retail",
+        "window": {
+          "since": "2026-05-12",
+          "until": "2026-06-09",
+          "bucket": "week",
+          "trend_of": "topics"
+        },
+        "filters": { "product": null, "language": null },
+        "themes": [
+          {
+            "theme": "battery",
+            "total": 147,
+            "series": [
+              {"period": "2026-05-12", "count": 34},
+              {"period": "2026-05-19", "count": 41},
+              {"period": "2026-05-26", "count": 38},
+              {"period": "2026-06-02", "count": 34}
+            ],
+            "delta_last": -4,
+            "pct_change": -0.105263,
+            "by_language": {"en": 89, "hi-en": 37, "hi": 21}
+          },
+          {
+            "theme": "delivery_speed",
+            "total": 94,
+            "series": [
+              {"period": "2026-05-12", "count": 18},
+              {"period": "2026-05-19", "count": 22},
+              {"period": "2026-05-26", "count": 27},
+              {"period": "2026-06-02", "count": 27}
+            ],
+            "delta_last": 0,
+            "pct_change": 0.0,
+            "by_language": {"en": 0, "hi-en": 61, "hi": 33}
+          },
+          {
+            "theme": "build_quality",
+            "total": 83,
+            "series": [
+              {"period": "2026-05-12", "count": 19},
+              {"period": "2026-05-19", "count": 21},
+              {"period": "2026-05-26", "count": 22},
+              {"period": "2026-06-02", "count": 21}
+            ],
+            "delta_last": -1,
+            "pct_change": -0.04545,
+            "by_language": {"en": 52, "hi-en": 19, "hi": 12}
+          },
+          {
+            "theme": "price",
+            "total": 71,
+            "series": [
+              {"period": "2026-05-12", "count": 16},
+              {"period": "2026-05-19", "count": 18},
+              {"period": "2026-05-26", "count": 19},
+              {"period": "2026-06-02", "count": 18}
+            ],
+            "delta_last": -1,
+            "pct_change": -0.052631,
+            "by_language": {"en": 38, "hi-en": 21, "hi": 12}
+          },
+          {
+            "theme": "sound_quality",
+            "total": 58,
+            "series": [
+              {"period": "2026-05-12", "count": 12},
+              {"period": "2026-05-19", "count": 15},
+              {"period": "2026-05-26", "count": 16},
+              {"period": "2026-06-02", "count": 15}
+            ],
+            "delta_last": -1,
+            "pct_change": -0.0625,
+            "by_language": {"en": 31, "hi-en": 18, "hi": 9}
+          }
+        ]
+      }
+    },
+    {
+      "id": "insights-authenticity",
+      "category": "insights",
+      "lang_badge": "AUDIT",
+      "title": "Authenticity audit view",
+      "description": "Org-level authenticity summary. Dispositions use IS 19000:2022 administrator-signal wording — no individual review is labelled or penalised.",
+      "input_label": "API call",
+      "input": "GET /v2/insights/authenticity?bucket=week&since=2026-05-12",
+      "output": {
+        "org_id": "org_demo_retail",
+        "window": {
+          "since": "2026-05-12",
+          "until": null,
+          "bucket": "week"
+        },
+        "total_audited": 453,
+        "dispositions": {
+          "clear": 378,
+          "flagged_for_review": 51,
+          "priority_review": 24
+        },
+        "disposition_rates": {
+          "clear": 0.834437,
+          "flagged_for_review": 0.112583,
+          "priority_review": 0.05298
+        },
+        "review_flag_rate": 0.16563,
+        "mean_authenticity_score": 0.7614,
+        "signal_frequency": [
+          {"signal": "disclosed_incentive", "count": 38},
+          {"signal": "low_information", "count": 29},
+          {"signal": "promotional_tone", "count": 24},
+          {"signal": "very_short", "count": 19},
+          {"signal": "templated_pattern", "count": 17}
+        ],
+        "flag_rate_series": [
+          {"period": "2026-05-12", "review_flag_rate": 0.1923, "audited": 104},
+          {"period": "2026-05-19", "review_flag_rate": 0.1712, "audited": 118},
+          {"period": "2026-05-26", "review_flag_rate": 0.1543, "audited": 127},
+          {"period": "2026-06-02", "review_flag_rate": 0.1411, "audited": 104}
+        ],
+        "moderation_note": "Signals support human moderation under IS 19000:2022; dispositions are review priorities for an administrator, not verdicts."
+      }
+    },
+    {
+      "id": "insights-health",
+      "category": "insights",
+      "lang_badge": "HEALTH",
+      "title": "Review health score",
+      "description": "Composite score (sentiment 50% + urgency 20% + authenticity 30%) with confidence level and explainable components.",
+      "input_label": "API call",
+      "input": "GET /v2/insights/health-score?days=30",
+      "output": {
+        "org_id": "org_demo_retail",
+        "window": {
+          "since": "2026-05-10",
+          "until": null,
+          "days": 30
+        },
+        "total_extractions": 612,
+        "components": {
+          "sentiment": {
+            "score": 0.6373,
+            "positive_count": 390,
+            "total": 612,
+            "weight": 0.5
+          },
+          "urgency": {
+            "score": 0.8905,
+            "high_urgency_count": 67,
+            "total": 612,
+            "weight": 0.2
+          },
+          "authenticity": {
+            "score": 0.947,
+            "priority_review_count": 24,
+            "total_audited": 453,
+            "weight": 0.3
+          }
+        },
+        "authenticity_coverage": 0.7402,
+        "score": 0.7164,
+        "band": "needs_attention",
+        "confidence": "high",
+        "formula_version": "1.0",
+        "moderation_note": "Health score is an org-level aggregate and does not label or score any individual review. Authenticity signals support human moderation under IS 19000:2022."
+      }
+    },
+    {
+      "id": "csv-ingest",
+      "category": "csv",
+      "lang_badge": "CSV",
+      "title": "CSV batch ingestion",
+      "description": "Upload a CSV of reviews; get back structured extraction for every row. Live ingestion takes ~48s for 100 rows — results shown here are from a recorded run.",
+      "input_label": "Input CSV (first 4 rows)",
+      "input_csv": [
+        {"review_text": "Excellent product, very durable and fast delivery.", "product": "boAt Airdopes 141"},
+        {"review_text": "Noise की smartwatch अच्छी है पर battery life thodi weak hai.", "product": "Noise ColorFit Pro 4"},
+        {"review_text": "Pathetic quality yaar, broke in 3 days. Paisa waste hua bilkul.", "product": "Generic USB-C cable"},
+        {"review_text": "Camera is okay but storage fills up too fast. Need 256GB option.", "product": "Redmi Note 13"}
+      ],
+      "output": {
+        "job_id": "job_20260610_091532",
+        "status": "done",
+        "total": 4,
+        "processed": 4,
+        "failed": 0,
+        "results": [
+          {
+            "row": 1,
+            "product": "boAt Airdopes 141",
+            "sentiment": "positive",
+            "stars_inferred": 5,
+            "topics": ["durability", "delivery_speed"],
+            "urgency": "low",
+            "language": "en",
+            "buy_again": true
+          },
+          {
+            "row": 2,
+            "product": "Noise ColorFit Pro 4",
+            "sentiment": "mixed",
+            "stars_inferred": 3,
+            "topics": ["battery", "overall_quality"],
+            "urgency": "low",
+            "language": "hi-en",
+            "buy_again": null
+          },
+          {
+            "row": 3,
+            "product": "Generic USB-C cable",
+            "sentiment": "negative",
+            "stars_inferred": 1,
+            "topics": ["quality", "durability", "value"],
+            "urgency": "medium",
+            "language": "hi-en",
+            "buy_again": false
+          },
+          {
+            "row": 4,
+            "product": "Redmi Note 13",
+            "sentiment": "mixed",
+            "stars_inferred": 3,
+            "topics": ["camera", "storage"],
+            "urgency": "low",
+            "language": "en",
+            "buy_again": null
+          }
+        ]
+      }
+    }
+  ]
+}
