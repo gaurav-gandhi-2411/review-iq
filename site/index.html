@@ -319,6 +319,15 @@
     function renderOutputPanel(ex) {
       let html = "";
 
+      // Representative output notice (above JSON for all insights examples)
+      if (ex.is_representative) {
+        html += `
+          <div class="mb-3 bg-gray-800 border border-gray-600 rounded-lg px-4 py-2 text-xs text-gray-400 flex items-center gap-2">
+            <span class="text-gray-300 font-semibold">Representative output</span>
+            &mdash; illustrates the real API response shape; these sub-path endpoints are implemented but not yet in the current production deployment.
+          </div>`;
+      }
+
       // Trends callout (above JSON)
       if (ex.id === "insights-trends") {
         html += `
