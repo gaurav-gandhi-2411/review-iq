@@ -861,8 +861,16 @@ def health_score_pg(
         )
         row = cur.fetchone()
         total, pos, neg, neu, mix, high_urg, med_urg, low_urg = (
-            (int(row[0]), int(row[1]), int(row[2]), int(row[3]),
-             int(row[4]), int(row[5]), int(row[6]), int(row[7]))
+            (
+                int(row[0]),
+                int(row[1]),
+                int(row[2]),
+                int(row[3]),
+                int(row[4]),
+                int(row[5]),
+                int(row[6]),
+                int(row[7]),
+            )
             if row
             else (0, 0, 0, 0, 0, 0, 0, 0)
         )
@@ -876,9 +884,7 @@ def health_score_pg(
             [org_id, *time_params],
         )
         audit_row = cur.fetchone()
-        total_audited, likely_fake = (
-            (int(audit_row[0]), int(audit_row[1])) if audit_row else (0, 0)
-        )
+        total_audited, likely_fake = (int(audit_row[0]), int(audit_row[1])) if audit_row else (0, 0)
 
         conn.commit()
         return {

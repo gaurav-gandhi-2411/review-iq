@@ -183,9 +183,16 @@ class TestHealthScoreHappyPath:
             data = (await client.get("/v2/insights/health-score")).json()
 
         required = {
-            "org_id", "window", "total_extractions", "components",
-            "authenticity_coverage", "score", "band", "confidence",
-            "formula_version", "moderation_note",
+            "org_id",
+            "window",
+            "total_extractions",
+            "components",
+            "authenticity_coverage",
+            "score",
+            "band",
+            "confidence",
+            "formula_version",
+            "moderation_note",
         }
         assert required.issubset(data.keys())
 
@@ -198,7 +205,10 @@ class TestHealthScoreHappyPath:
         assert set(c["sentiment"].keys()) == {"score", "positive_count", "total", "weight"}
         assert set(c["urgency"].keys()) == {"score", "high_urgency_count", "total", "weight"}
         assert set(c["authenticity"].keys()) == {
-            "score", "priority_review_count", "total_audited", "weight"
+            "score",
+            "priority_review_count",
+            "total_audited",
+            "weight",
         }
 
     async def test_score_computed_correctly(self, client: httpx.AsyncClient) -> None:
@@ -359,9 +369,7 @@ class TestWindowParams:
     async def test_until_in_response_window(self, client: httpx.AsyncClient) -> None:
         until_str = "2024-06-01T00:00:00"
         with patch("app.api.v2.insights.health_score_pg", return_value=_RAW_FULL):
-            data = (
-                await client.get(f"/v2/insights/health-score?until={until_str}")
-            ).json()
+            data = (await client.get(f"/v2/insights/health-score?until={until_str}")).json()
         assert data["window"]["until"] == "2024-06-01T00:00:00"
 
     async def test_until_none_when_not_provided(self, client: httpx.AsyncClient) -> None:

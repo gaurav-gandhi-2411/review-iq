@@ -343,7 +343,9 @@ async def health_score(
     ctx: ApiKeyContext = Depends(require_api_key),
     since: datetime | None = Query(None, description="ISO8601 lower bound on created_at"),
     until: datetime | None = Query(None, description="ISO8601 upper bound on created_at"),
-    days: int = Query(30, ge=1, le=365, description="Rolling window in days (ignored when since is set)"),
+    days: int = Query(
+        30, ge=1, le=365, description="Rolling window in days (ignored when since is set)"
+    ),
 ) -> dict[str, Any]:
     """Org-level health score for the authenticated org.
 
@@ -361,7 +363,11 @@ async def health_score(
     (score = 0.50, confidence = "low", band = "needs_attention").
     """
     # When `since` is not provided, default to a rolling window of `days` days.
-    effective_since = since if since is not None else datetime.now(UTC).replace(tzinfo=None) - timedelta(days=days)
+    effective_since = (
+        since
+        if since is not None
+        else datetime.now(UTC).replace(tzinfo=None) - timedelta(days=days)
+    )
 
     raw = await asyncio.to_thread(health_score_pg, ctx.org_id, effective_since, until)
 
@@ -372,7 +378,9 @@ async def health_score(
     u_score = 1.0 - _safe_rate(raw["high_urgency_count"], total) if total > 0 else 1.0
     total_audited = raw["total_audited"]
     # Spec: A = 1.0 when total_audited = 0; only likely_fake penalises.
-    a_score = 1.0 - _safe_rate(raw["likely_fake_count"], total_audited) if total_audited > 0 else 1.0
+    a_score = (
+        1.0 - _safe_rate(raw["likely_fake_count"], total_audited) if total_audited > 0 else 1.0
+    )
 
     score = round(_W_S * s_score + _W_U * u_score + _W_A * a_score, 4)
     authenticity_coverage = _safe_rate(total_audited, total)
