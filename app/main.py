@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 
 import structlog
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -15,12 +16,12 @@ from slowapi.util import get_remote_address
 
 from app.api.account import router as account_router
 from app.api.admin import router as admin_router
+from app.api.bff.router import router as bff_router
 from app.api.dashboard import router as dashboard_router
 from app.api.demo import router as demo_router
 from app.api.extract import router as extract_router
 from app.api.ops import router as ops_router
 from app.api.query import router as query_router
-from app.api.bff.router import router as bff_router
 from app.api.v2.authenticity import router as v2_authenticity_router
 from app.api.v2.corrections import router as v2_corrections_router
 from app.api.v2.dataset import router as v2_dataset_router
@@ -79,6 +80,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     _app.state.limiter = limiter
     _app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
+
+    # CORS must be added before other middleware so preflight OPTIONS requests are
+    # handled before they reach authentication layers. Wildcard is safe here because
+    # we use Bearer-token auth (no cookies), so CSRF via CORS is not a risk.
+    _app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["*"],
+    )
+
     _app.add_middleware(PrometheusMiddleware)
 
     # Ops (health + metrics) — always mounted, unauthenticated
