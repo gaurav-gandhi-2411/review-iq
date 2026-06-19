@@ -119,3 +119,115 @@ export async function getTrends(limit = 5): Promise<TrendsData> {
 export async function getAccount(): Promise<{ org_id: string; quota: number; usage_this_month: number }> {
   return bff('/account')
 }
+
+// ---- Types ----
+
+export interface Review {
+  id: number
+  input_hash: string        // "sha256:{hex}" — strip prefix for URLs
+  review_text: string       // original review text
+  product: string
+  stars: number | null
+  stars_inferred: number | null
+  sentiment: 'positive' | 'negative' | 'neutral' | 'mixed' | null
+  urgency: 'low' | 'medium' | 'high'
+  language: string
+  pros: string[]
+  cons: string[]
+  topics: string[]
+  competitor_mentions: string[]
+  feature_requests: string[]
+  buy_again: boolean | null
+  review_length_chars: number | null
+  confidence: number | null
+  created_at: string
+}
+
+export interface ReviewsResponse {
+  count: number
+  offset: number
+  limit: number
+  results: Review[]
+}
+
+export type AuthLabel = 'genuine' | 'suspicious' | 'likely_fake'
+
+export interface AuthenticityResult {
+  score: number
+  label: AuthLabel
+  flags: string[]
+  reasons: string
+  review_hash: string
+  scored_at: string
+}
+
+export type ReplyTone = 'apologetic' | 'appreciative' | 'professional' | 'warm'
+
+export interface ReplyDraft {
+  reply_text: string
+  language: string
+  tone: ReplyTone
+  grounded_on: string[]
+  caveats: string[]
+  model_used: string
+  drafted_at: string
+}
+
+export interface AuthInsights {
+  total_audited: number
+  dispositions: { clear: number; flagged_for_review: number; priority_review: number }
+  disposition_rates: { clear: number; flagged_for_review: number; priority_review: number }
+  review_flag_rate: number
+  mean_authenticity_score: number
+  signal_frequency: Array<{ signal: string; count: number }>
+  flag_rate_series: Array<{ period: string; review_flag_rate: number; audited: number }>
+  moderation_note: string
+}
+
+// ---- API functions ----
+
+export async function getReviews(params: {
+  limit?: number
+  offset?: number
+  sentiment?: string
+  urgency?: string
+} = {}): Promise<ReviewsResponse> {
+  const q = new URLSearchParams()
+  if (params.limit) q.set('limit', String(params.limit))
+  if (params.offset) q.set('offset', String(params.offset))
+  if (params.sentiment) q.set('sentiment', params.sentiment)
+  if (params.urgency) q.set('urgency', params.urgency)
+  const qs = q.toString()
+  return bff(`/reviews${qs ? '?' + qs : ''}`)
+}
+
+export async function scoreAuthenticity(text: string, stars?: number | null): Promise<AuthenticityResult> {
+  return bff('/authenticity', {
+    method: 'POST',
+    body: JSON.stringify({ text, stars: stars ?? null }),
+  })
+}
+
+export async function draftReply(
+  text: string,
+  tone: ReplyTone,
+  extraction?: object,
+): Promise<ReplyDraft> {
+  return bff('/reply', {
+    method: 'POST',
+    body: JSON.stringify({ text, tone, extraction: extraction ?? null }),
+  })
+}
+
+export async function getAuthInsights(params: {
+  since?: string
+  until?: string
+  bucket?: string
+} = {}): Promise<AuthInsights> {
+  const q = new URLSearchParams()
+  if (params.bucket) q.set('bucket', params.bucket)
+  if (params.since) q.set('since', params.since)
+  if (params.until) q.set('until', params.until)
+  const qs = q.toString()
+  return bff(`/insights/authenticity${qs ? '?' + qs : ''}`)
+}

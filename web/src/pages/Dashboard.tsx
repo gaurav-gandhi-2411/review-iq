@@ -69,6 +69,22 @@ export default function DashboardPage() {
               </div>
             )}
 
+            {/* See all reviews CTA */}
+            <button
+              onClick={() => navigate('/reviews')}
+              className="w-full text-left bg-white rounded-xl border border-gray-100 shadow-card p-5 flex items-center justify-between hover:border-gray-200 hover:shadow-card-hover transition-all group"
+            >
+              <div>
+                <p className="font-sans font-medium text-charcoal text-sm">See all reviews</p>
+                <p className="font-sans text-xs text-charcoal-light mt-0.5">
+                  Browse individual reviews, view analysis and draft replies.
+                </p>
+              </div>
+              <span className="text-sm font-sans text-green group-hover:text-green-muted transition-colors">
+                See all reviews →
+              </span>
+            </button>
+
             {/* Upload more CTA */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-card p-6 flex items-center justify-between">
               <div>

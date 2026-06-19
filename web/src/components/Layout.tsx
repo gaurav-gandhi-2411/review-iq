@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom'
-import { Upload, BarChart2, LogOut } from 'lucide-react'
+import { Upload, BarChart2, LogOut, MessageSquare, ShieldCheck } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
-interface Props { children: React.ReactNode; active?: 'upload' | 'dashboard' }
+interface Props { children: React.ReactNode; active?: 'upload' | 'dashboard' | 'reviews' | 'authenticity' }
 
 export default function Layout({ children, active }: Props) {
   const navigate = useNavigate()
@@ -20,6 +20,12 @@ export default function Layout({ children, active }: Props) {
           <nav className="flex items-center gap-1">
             <NavLink href="/dashboard" active={active === 'dashboard'} icon={<BarChart2 size={15} />}>
               Dashboard
+            </NavLink>
+            <NavLink href="/reviews" active={active === 'reviews'} icon={<MessageSquare size={15} />}>
+              Reviews
+            </NavLink>
+            <NavLink href="/authenticity" active={active === 'authenticity'} icon={<ShieldCheck size={15} />}>
+              Authenticity
             </NavLink>
             <NavLink href="/upload" active={active === 'upload'} icon={<Upload size={15} />}>
               Upload
