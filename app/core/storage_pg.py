@@ -504,7 +504,8 @@ def save_authenticity_audit_pg(
         _set_tenant(cur, org_id)
         cur.execute(
             "INSERT INTO public.authenticity_audits (org_id, review_hash, score, label, flags)"
-            " VALUES (%s, %s, %s, %s, %s)",
+            " VALUES (%s, %s, %s, %s, %s)"
+            " ON CONFLICT (org_id, review_hash) DO NOTHING",
             (org_id, review_hash, score, label, _json.dumps(flags)),
         )
         conn.commit()
@@ -798,6 +799,112 @@ def theme_trends_pg(
         )
 
     return {"themes": themes_out}
+
+
+# ---------------------------------------------------------------------------
+# Health-score aggregation (GET /v2/insights/health-score)
+# ---------------------------------------------------------------------------
+
+
+def health_score_pg(
+    org_id: str,
+    since: datetime | None = None,
+    until: datetime | None = None,
+) -> dict[str, Any]:
+    """Return raw counts for computing the org-level health score.
+
+    Two queries are issued inside a single RLS-scoped transaction:
+      1. Extraction counts — sentiment + urgency breakdown.
+      2. Authenticity audit counts — total audited + likely_fake count.
+
+    The API layer is responsible for applying weights, deriving component
+    scores, and assigning a band.  This function returns only raw integers
+    so the formula stays auditable in one place.
+
+    Args:
+        org_id:  Tenant identifier — all queries are scoped to this org.
+        since:   Optional lower bound on created_at (inclusive).
+        until:   Optional upper bound on created_at (inclusive).
+
+    Returns:
+        dict with keys:
+          total_extractions, positive_count, negative_count, neutral_count,
+          mixed_count, high_urgency_count, medium_urgency_count,
+          low_urgency_count, total_audited, likely_fake_count.
+    """
+    time_parts: list[str] = []
+    time_params: list[Any] = []
+    if since is not None:
+        time_parts.append("created_at >= %s")
+        time_params.append(since)
+    if until is not None:
+        time_parts.append("created_at <= %s")
+        time_params.append(until)
+    time_clause = (" AND " + " AND ".join(time_parts)) if time_parts else ""
+
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+
+        # 1. Extraction sentiment + urgency breakdown.
+        cur.execute(
+            f"SELECT COUNT(*), "
+            f"COUNT(*) FILTER (WHERE sentiment = 'positive'), "
+            f"COUNT(*) FILTER (WHERE sentiment = 'negative'), "
+            f"COUNT(*) FILTER (WHERE sentiment = 'neutral'), "
+            f"COUNT(*) FILTER (WHERE sentiment = 'mixed'), "
+            f"COUNT(*) FILTER (WHERE urgency = 'high'), "
+            f"COUNT(*) FILTER (WHERE urgency = 'medium'), "
+            f"COUNT(*) FILTER (WHERE urgency = 'low') "
+            f"FROM public.extractions WHERE org_id = %s{time_clause}",
+            [org_id, *time_params],
+        )
+        row = cur.fetchone()
+        total, pos, neg, neu, mix, high_urg, med_urg, low_urg = (
+            (
+                int(row[0]),
+                int(row[1]),
+                int(row[2]),
+                int(row[3]),
+                int(row[4]),
+                int(row[5]),
+                int(row[6]),
+                int(row[7]),
+            )
+            if row
+            else (0, 0, 0, 0, 0, 0, 0, 0)
+        )
+
+        # 2. Authenticity: total_audited + likely_fake count only.
+        #    suspicious reviews do NOT penalise the score (spec: only likely_fake penalises).
+        cur.execute(
+            f"SELECT COUNT(*), "
+            f"COUNT(*) FILTER (WHERE label = 'likely_fake') "
+            f"FROM public.authenticity_audits WHERE org_id = %s{time_clause}",
+            [org_id, *time_params],
+        )
+        audit_row = cur.fetchone()
+        total_audited, likely_fake = (int(audit_row[0]), int(audit_row[1])) if audit_row else (0, 0)
+
+        conn.commit()
+        return {
+            "total_extractions": total,
+            "positive_count": pos,
+            "negative_count": neg,
+            "neutral_count": neu,
+            "mixed_count": mix,
+            "high_urgency_count": high_urg,
+            "medium_urgency_count": med_urg,
+            "low_urgency_count": low_urg,
+            "total_audited": total_audited,
+            "likely_fake_count": likely_fake,
+        }
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
 
 
 # ---------------------------------------------------------------------------

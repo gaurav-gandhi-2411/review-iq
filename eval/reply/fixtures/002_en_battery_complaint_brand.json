@@ -1,0 +1,13 @@
+{
+  "id": "002_en_battery_complaint_brand",
+  "description": "English battery complaint with brand name",
+  "review_text": "Battery life is absolutely terrible. It dies within 2 hours of use. For a product at this price point, I expected much better.",
+  "language": "en",
+  "tone": "appreciative",
+  "brand_name": "TechFlow",
+  "signature": null,
+  "pre_extracted_cons": ["poor battery life", "dies within 2 hours", "poor value for price"],
+  "pre_extracted_topics": ["battery", "price", "value"],
+  "expected_guardrail_pass": true,
+  "notes": "Includes brand_name — reply should mention TechFlow team"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "005_en_customer_service_warm",
+  "description": "English customer service complaint — warm tone",
+  "review_text": "The product itself is okay but the customer service was horrible. Called three times and nobody picked up. Sent two emails with zero response.",
+  "language": "en",
+  "tone": "warm",
+  "brand_name": null,
+  "signature": null,
+  "pre_extracted_cons": ["poor customer service", "calls not answered", "emails ignored"],
+  "pre_extracted_topics": ["customer_service", "communication"],
+  "expected_guardrail_pass": true,
+  "notes": "Warm tone test — reply should feel friendly and caring"
+}

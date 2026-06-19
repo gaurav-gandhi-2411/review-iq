@@ -1,0 +1,13 @@
+{
+  "id": "012_hien_packaging_bakwaas",
+  "description": "Hinglish packaging complaint with bakwaas markers",
+  "review_text": "Packaging bilkul bakwaas thi. Product damaged condition mein aaya. Ekdum waste. Kabhi mat khareedna.",
+  "language": "hi-en",
+  "tone": "apologetic",
+  "brand_name": null,
+  "signature": null,
+  "pre_extracted_cons": ["very bad packaging", "product arrived damaged"],
+  "pre_extracted_topics": ["packaging", "product_condition"],
+  "expected_guardrail_pass": true,
+  "notes": "Hinglish packaging complaint with bakwaas, bilkul, ekdum"
+}

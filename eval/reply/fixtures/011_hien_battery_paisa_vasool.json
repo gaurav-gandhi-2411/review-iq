@@ -1,0 +1,13 @@
+{
+  "id": "011_hien_battery_paisa_vasool",
+  "description": "Hinglish battery complaint with paisa vasool markers",
+  "review_text": "Yaar ye product bahut kharab hai. Paisa vasool nahi hua bilkul. Battery sirf 2 ghante chali aur phir band ho gayi. Waste of money ekdum.",
+  "language": "hi-en",
+  "tone": "professional",
+  "brand_name": null,
+  "signature": null,
+  "pre_extracted_cons": ["poor battery life", "battery lasts only 2 hours", "not value for money"],
+  "pre_extracted_topics": ["battery", "value"],
+  "expected_guardrail_pass": true,
+  "notes": "Hinglish with paisa vasool, ekdum, yaar markers — reply should also be in Hinglish"
+}

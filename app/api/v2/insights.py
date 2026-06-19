@@ -1,16 +1,16 @@
-"""GET /v2/insights/authenticity and GET /v2/insights/trends — tenant-scoped insight endpoints."""
+"""GET /v2/insights/authenticity, /trends, and /health-score — tenant-scoped insight endpoints."""
 
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.auth.api_key import ApiKeyContext, require_api_key
-from app.core.storage_pg import authenticity_audit_summary_pg, theme_trends_pg
+from app.core.storage_pg import authenticity_audit_summary_pg, health_score_pg, theme_trends_pg
 
 router = APIRouter(prefix="/v2/insights", tags=["v2-insights"])
 log = structlog.get_logger(__name__)
@@ -287,4 +287,146 @@ async def theme_trends(
             "language": language,
         },
         "themes": themes_out,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Health-score endpoint
+# ---------------------------------------------------------------------------
+
+_FORMULA_VERSION = "1.0"
+
+# Component weights — must sum to 1.0.
+# 0.50 S: sentiment drives score variation most (fake-rate is near-constant and low).
+# 0.20 U: urgency provides a secondary signal without dominating.
+# 0.30 A: authenticity can crater the score on a fake spike; 0.30 preserves that signal.
+_W_S: float = 0.50
+_W_U: float = 0.20
+_W_A: float = 0.30
+
+# Band thresholds (score in [0, 1]).  Proposed based on real DB distribution:
+#   gaurav-dev=0.445 → at_risk, 1-review orgs=0.50 → needs_attention,
+#   Eval=0.632 → needs_attention, Quota Test=1.00 → healthy.
+# 75/50 is mathematically grounded: 0.50 is the formula midpoint and should
+# not default to "at_risk" for orgs with sparse data.
+_BAND_HEALTHY: float = 0.75
+_BAND_NEEDS_ATTENTION: float = 0.50
+
+# Confidence thresholds: number of extractions in the window.
+_CONFIDENCE_HIGH: int = 50
+_CONFIDENCE_MEDIUM: int = 10
+
+_HS_NOTE = (
+    "Health score is an org-level aggregate and does not label or score any individual review. "
+    "Authenticity signals support human moderation under IS 19000:2022."
+)
+
+
+def _assign_band(score: float) -> str:
+    if score >= _BAND_HEALTHY:
+        return "healthy"
+    if score >= _BAND_NEEDS_ATTENTION:
+        return "needs_attention"
+    return "at_risk"
+
+
+def _assign_confidence(total_extractions: int) -> str:
+    if total_extractions >= _CONFIDENCE_HIGH:
+        return "high"
+    if total_extractions >= _CONFIDENCE_MEDIUM:
+        return "medium"
+    return "low"
+
+
+@router.get("/health-score")
+async def health_score(
+    ctx: ApiKeyContext = Depends(require_api_key),
+    since: datetime | None = Query(None, description="ISO8601 lower bound on created_at"),
+    until: datetime | None = Query(None, description="ISO8601 upper bound on created_at"),
+    days: int = Query(
+        30, ge=1, le=365, description="Rolling window in days (ignored when since is set)"
+    ),
+) -> dict[str, Any]:
+    """Org-level health score for the authenticated org.
+
+    Combines three components into a single [0, 1] score:
+    - **Sentiment (S, weight 0.50):** fraction of positive reviews.
+    - **Urgency (U, weight 0.20):** 1 − fraction of high-urgency reviews.
+    - **Authenticity (A, weight 0.30):** 1 − likely-flagged rate; 1.0 when unaudited.
+
+    ``score = 0.50·S + 0.20·U + 0.30·A``
+
+    ``confidence`` reflects data volume and is held separate from ``score``
+    so callers can weight the band assignment accordingly.
+
+    Returns 200 for all authenticated orgs, including those with no data
+    (score = 0.50, confidence = "low", band = "needs_attention").
+    """
+    # When `since` is not provided, default to a rolling window of `days` days.
+    effective_since = (
+        since
+        if since is not None
+        else datetime.now(UTC).replace(tzinfo=None) - timedelta(days=days)
+    )
+
+    raw = await asyncio.to_thread(health_score_pg, ctx.org_id, effective_since, until)
+
+    total = raw["total_extractions"]
+
+    # --- component scores ---
+    s_score = _safe_rate(raw["positive_count"], total)
+    u_score = 1.0 - _safe_rate(raw["high_urgency_count"], total) if total > 0 else 1.0
+    total_audited = raw["total_audited"]
+    # Spec: A = 1.0 when total_audited = 0; only likely_fake penalises.
+    a_score = (
+        1.0 - _safe_rate(raw["likely_fake_count"], total_audited) if total_audited > 0 else 1.0
+    )
+
+    score = round(_W_S * s_score + _W_U * u_score + _W_A * a_score, 4)
+    authenticity_coverage = _safe_rate(total_audited, total)
+
+    log.info(
+        "insights.health_score",
+        org_id=ctx.org_id,
+        total_extractions=total,
+        total_audited=total_audited,
+        score=score,
+        band=_assign_band(score),
+    )
+
+    return {
+        "org_id": ctx.org_id,
+        "window": {
+            "since": effective_since.isoformat(),
+            "until": until.isoformat() if until else None,
+            "days": days,
+        },
+        "total_extractions": total,
+        "components": {
+            "sentiment": {
+                "score": round(s_score, 4),
+                "positive_count": raw["positive_count"],
+                "total": total,
+                "weight": _W_S,
+            },
+            "urgency": {
+                "score": round(u_score, 4),
+                "high_urgency_count": raw["high_urgency_count"],
+                "total": total,
+                "weight": _W_U,
+            },
+            "authenticity": {
+                "score": round(a_score, 4),
+                # Map stored label to precision-first display name.
+                "priority_review_count": raw["likely_fake_count"],
+                "total_audited": total_audited,
+                "weight": _W_A,
+            },
+        },
+        "authenticity_coverage": authenticity_coverage,
+        "score": score,
+        "band": _assign_band(score),
+        "confidence": _assign_confidence(total),
+        "formula_version": _FORMULA_VERSION,
+        "moderation_note": _HS_NOTE,
     }

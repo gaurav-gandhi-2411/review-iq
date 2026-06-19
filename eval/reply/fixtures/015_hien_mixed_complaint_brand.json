@@ -1,0 +1,13 @@
+{
+  "id": "015_hien_mixed_complaint_brand",
+  "description": "Hinglish multi-complaint with brand name",
+  "review_text": "Yaar sach mein bahut disappointed hun. Product quality nahi hai, aur upar se delivery bhi late. Aur customer support? Bilkul nahi sunta.",
+  "language": "hi-en",
+  "tone": "professional",
+  "brand_name": "ZenShop",
+  "signature": null,
+  "pre_extracted_cons": ["poor product quality", "late delivery", "poor customer support"],
+  "pre_extracted_topics": ["quality", "delivery", "customer_service"],
+  "expected_guardrail_pass": true,
+  "notes": "Hinglish multi-complaint with brand_name — reply should address all three issues"
+}

@@ -1,4 +1,9 @@
 {
+  "00277a79ca827fc0faad246472035968dfde8718706d0825d92f8e10a29b80a6": {
+    "raw": "{\n  \"reply_text\": \"We apologize for the frustrating experience you've had with our product. It's disappointing to hear that it stopped working after just one week, and we understand how this has fallen short of your expectations. We take concerns about quality and durability seriously, and we're truly sorry that our product did not meet the standards you deserve. We would like to learn more about what happened and see how we can assist you. Please contact us so we can discuss this further and explore options to resolve the issue. We will follow up with you soon to help find a resolution.\"\n}",
+    "tokens_in": 419,
+    "tokens_out": 119
+  },
   "00c63c810b35ef560c8cba11822533a6c7149163da240c92e22eb918de0f2b36": {
     "raw": "{\n  \"product\": \"earbuds\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\n      \"excellent performance\",\n      \"super quality\",\n      \"perfect sound\",\n      \"great value for money\"\n   ],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\n      \"performance\",\n      \"range\",\n      \"sound_quality\",\n      \"price\",\n      \"value\"\n   ],\n   \"competitor_mentions\": [\"realme\"],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.95\n}",
     "tokens_in": 1697,
@@ -13,6 +18,16 @@
     "raw": "{\n  \"product\": \"CleanBot X9\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\n      \"better suction than Dyson\",\n      \"cost-effective compared to Dyson\",\n      \"smarter navigation\",\n      \"better battery life than Shark\"\n   ],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\n      \"suction\",\n      \"price\",\n      \"navigation\",\n      \"battery\",\n      \"build_quality\"\n   ],\n   \"competitor_mentions\": [\n      \"Dyson\",\n      \"Shark\",\n      \"iRobot\",\n      \"Roomba\"\n   ],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
     "tokens_in": 1028,
     "tokens_out": 175
+  },
+  "0ac83fbc8da6e9ac5d4254bec5e6f3f1a0b15c1f8b63721a5e1de44d8a0d02a7": {
+    "raw": "{\n  \"reply_text\": \"Hume bahut khed hai ki aapko packaging aur product condition ka anubhav bahut bura laga. Aapki baat sunke hume pata chala ki aapko product damaged mila. Hum aapke saath milkar is mushkil ko hal karne ke liye taiyar hain. Kripya humse contact karein taaki hum aapki madad kar sakein. Hum aapki samasya ko jaldi se samajhne aur hal karne ke liye taiyar hain.\"\n}",
+    "tokens_in": 716,
+    "tokens_out": 129
+  },
+  "0cb06bd850ebb1123e018120d476d45e988847a9ac306f346f50de0f6f61c90b": {
+    "raw": "{\n  \"reply_text\": \"Namaste, aapka review padhkar hume bahut afsos hua. Aapko product quality aur delivery ke maamle mein pareshani ho rahi hai, yeh baat humein bilkul pasand nahi aayi. Aapki customer support ke experience ke baare mein bhi hume maloom hai, aur hum isko seriously le rahe hain. Hum aapki pareshani ko samajhne ki koshish kar rahe hain aur isse suljhane ke liye aapki madad karna chahte hain. Kripya humse sampark karein, taaki hum aapki samasya ko hal karne mein aapki madad kar sakein. Hum aapki samasya ko jald se jald hal karne ki koshish kar rahe hain.\"\n}",
+    "tokens_in": 491,
+    "tokens_out": 195
   },
   "0ceda4ce9eac5da2eea20e90b620a6aaa326d4dd9cee1c853f7f896d0729e838": {
     "raw": "{\n  \"product\": \"CrispMaster 4000\",\n   \"stars\": 5,\n   \"stars_inferred\": 5,\n   \"pros\": [\n      \"fast heating\",\n      \"larger basket\",\n      \"easier cleanup\",\n      \"better cooking performance\"\n   ],\n   \"cons\": [\n      \"lacks app\"\n   ],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\n      \"heating\",\n      \"basket_size\",\n      \"cleanliness\",\n      \"cooking_performance\",\n      \"app\"\n   ],\n   \"competitor_mentions\": [\n      \"Philips\"\n   ],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
@@ -54,15 +69,45 @@
     "tokens_in": 1709,
     "tokens_out": 114
   },
+  "363c90c97ab93b919af304365eb94fbf28551e4572c145ed008b4bdca30a97ba": {
+    "raw": "{\n  \"reply_text\": \"Bahut khed hai ki aapko ye product pasand nahi aaya. Aapki pareshani samajhte hain, aur hume bahut afsos hua ki battery life aapke ummeed ke hisab se nahi thi. Aapki baat sunke dukh hua ki sirf 2 ghante chali aur phir band ho gayi. Hum aapki pareshani ko seriously le rahe hain, aur jaldi se iska hal nikalne ki koshish kar rahe hain. Aap se request hai ki humse directly contact karein, taaki hum aapki mushkil ko samajh sakein aur uska suljhana nikal sakein.\"\n}",
+    "tokens_in": 739,
+    "tokens_out": 166
+  },
   "46d0b8afe79a1bb640d4b86630506ed5cce6895ed5324615896f487c94cc15ac": {
     "raw": "{\n  \"product\": \"adapter\",\n   \"stars\": null,\n   \"stars_inferred\": 1,\n   \"pros\": [],\n   \"cons\": [\"electric shock risk\", \"dangerous product\"],\n   \"buy_again\": false,\n   \"sentiment\": \"negative\",\n   \"topics\": [\"safety\", \"electric_shock\"],\n   \"competitor_mentions\": [\"Amazon\"],\n   \"urgency\": \"high\",\n   \"feature_requests\": [],\n   \"language\": \"hi\",\n   \"confidence\": 0.95\n}",
     "tokens_in": 898,
     "tokens_out": 111
   },
+  "481cb0d27ec5a0d3d0df1302efaeb3953a7d9807d94f8b92f94df6c8f359aecc": {
+    "raw": "{\n  \"reply_text\": \"\u0939\u092e\u0947\u0902 \u0906\u092a\u0915\u0947 \u0905\u0928\u0941\u092d\u0935 \u0915\u0947 \u092c\u093e\u0930\u0947 \u092e\u0947\u0902 \u091c\u093e\u0928\u0915\u0930 \u0916\u0947\u0926 \u0939\u0948\u0964 \u0939\u092e \u0938\u092e\u091d\u0924\u0947 \u0939\u0948\u0902 \u0915\u093f \u092a\u094d\u0930\u094b\u0921\u0915\u094d\u091f \u0915\u0940 \u0915\u094d\u0935\u093e\u0932\u093f\u091f\u0940 \u0914\u0930 \u0915\u0938\u094d\u091f\u092e\u0930 \u0938\u0930\u094d\u0935\u093f\u0938 \u0906\u092a\u0915\u0940 \u0905\u092a\u0947\u0915\u094d\u0937\u093e\u0913\u0902 \u092a\u0930 \u0916\u0930\u0947 \u0928\u0939\u0940\u0902 \u0909\u0924\u0930\u0947\u0964 \u0939\u092e \u0906\u092a\u0915\u0940 \u091a\u093f\u0902\u0924\u093e\u0913\u0902 \u0915\u094b \u0917\u0902\u092d\u0940\u0930\u0924\u093e \u0938\u0947 \u0932\u0947\u0924\u0947 \u0939\u0948\u0902 \u0914\u0930 \u091c\u0932\u094d\u0926 \u0939\u0940 \u0906\u092a\u0915\u0947 \u0938\u093e\u0925 \u0938\u0902\u092a\u0930\u094d\u0915 \u092e\u0947\u0902 \u0930\u0939\u0928\u093e \u091a\u093e\u0939\u0947\u0902\u0917\u0947\u0964 \u0915\u0943\u092a\u092f\u093e \u0939\u092e\u0938\u0947 \u0938\u0902\u092a\u0930\u094d\u0915 \u0915\u0930\u0928\u0947 \u092e\u0947\u0902 \u0938\u0902\u0915\u094b\u091a \u0928 \u0915\u0930\u0947\u0902 \u0924\u093e\u0915\u093f \u0939\u092e \u0906\u092a\u0915\u0940 \u0938\u092e\u0938\u094d\u092f\u093e \u0915\u093e \u0938\u092e\u093e\u0927\u093e\u0928 \u0928\u093f\u0915\u093e\u0932 \u0938\u0915\u0947\u0902\u0964\"\n}",
+    "tokens_in": 468,
+    "tokens_out": 155
+  },
   "4978f86e4f5e02252d86361579e0d465021848afa3278cc52f75dd7e3b2c5947": {
     "raw": "{\n  \"product\": \"FitBand Lite\",\n   \"stars\": null,\n   \"stars_inferred\": 4,\n   \"pros\": [\n      \"accurate step counting\",\n      \"sleep tracking\",\n      \"heart rate monitoring\",\n      \"long battery life\",\n      \"fair price\"\n   ],\n   \"cons\": [\n      \"nothing impressive\",\n      \"basic features\"\n   ],\n   \"buy_again\": null,\n   \"sentiment\": \"neutral\",\n   \"topics\": [\n      \"steps\",\n      \"sleep\",\n      \"heart_rate\",\n      \"battery\",\n      \"price\",\n      \"build_quality\",\n      \"features\"\n   ],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
     "tokens_in": 1020,
     "tokens_out": 169
+  },
+  "4d80563a7352e6188a7895709d189cacd39196c152cc1e48b20f06296f332f4a": {
+    "raw": "{\n  \"reply_text\": \"Dear valued customer, we apologize for the disappointing experience with your recent delivery. We take concerns about packaging and product condition very seriously. It's clear that the packaging did not meet our standards, and we're sorry to hear that the item arrived with scratches and a dented corner. We would like to learn more about your experience and work towards a resolution. Please contact us so we can discuss this further and explore options for addressing your concerns. We will follow up with you soon to ensure that your issue is being handled with the attention it deserves.\"\n}",
+    "tokens_in": 428,
+    "tokens_out": 117
+  },
+  "4e1b894e6121c1104ebcbc233eb2654564cfcec5271d804b59d6a55148bc6beb": {
+    "raw": "{\n  \"reply_text\": \"Hume bahut khed hai ki aapko humari product ki quality aur delivery se pareshani hogayi hai. Aapki baat sunke hum samajhte hain ki aapko customer support se bhi kami lagti hai. Hum aapki madad karne ke liye yahaan hain aur aapko jaldi se jaldi samadhan pradan karna chahte hain. Kripya humse contact karein taaki hum aapki problem ko solve kar sakein.\"\n}",
+    "tokens_in": 731,
+    "tokens_out": 121
+  },
+  "4f5d3d464f8119b0382aa7a978b49337fd3a318624b74bf91d5bfda437d740d3": {
+    "raw": "{\n  \"reply_text\": \"Thank you for taking the time to share your thoughts about your experience with our product. We appreciate your feedback and apologize that the battery life has not met your expectations. We understand that a longer battery life is important, especially given the price point. We're here to listen and want to learn more about your experience. We will follow up with you soon to discuss this further and see how we can better assist you.\"\n}",
+    "tokens_in": 416,
+    "tokens_out": 91
+  },
+  "53d220b217c7ea98997736065b254f62d96aaf8802c809bcf5e4f43e458f535d": {
+    "raw": "{\n  \"reply_text\": \"Namaste, aapka review padhke hume bahut afsos hua. Aapko delivery mein itna late ho gaya, yeh humare liye bahut khed ki baat hai. Aapko teen hafte wait karna pada, isse hume pata chalta hai ki aapko kitna inconvenience hua hoga. Aur customer service se aapko response na mila, yeh bhi humare liye ek badi chinta ki baat hai. Hum aapki samasya ko samajh rahe hain aur hume aapka bura experience sunke bahut dukh hua. Hum aapki samasya ko solve karne ke liye jald se jald aapke sath follow up karenge. Dhanyavad aapka review share karne ke liye. Team Support\"\n}",
+    "tokens_in": 490,
+    "tokens_out": 196
   },
   "59a670d09472cb0b2039290bbd02efeb36f3c1299f57a48128be48d7f8f8aa46": {
     "raw": "{\n  \"product\": \"LightStep running shoes\",\n   \"stars\": 2,\n   \"stars_inferred\": 2,\n   \"pros\": [\"breathable shoe material\"],\n   \"cons\": [\"paper-thin sole\", \"zero arch support\", \"causes foot pain\"],\n   \"buy_again\": false,\n   \"sentiment\": \"negative\",\n   \"topics\": [\"sole\", \"arch_support\", \"breathability\", \"comfort\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"high\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
@@ -78,6 +123,11 @@
     "raw": "{\n  \"product\": \"NovaPod X earbuds along with the NovaPod charging case\",\n   \"stars\": null,\n   \"stars_inferred\": 4,\n   \"pros\": [\n      \"crystal clear sound\",\n      \"good active noise cancellation\",\n      \"comfortable for hours\"\n   ],\n   \"cons\": [\n      \"charging case lid hinge broke\",\n      \"poor build quality for charging case\",\n      \"poor value for price\"\n   ],\n   \"buy_again\": false,\n   \"sentiment\": \"mixed\",\n   \"topics\": [\n      \"sound_quality\",\n      \"noise_cancellation\",\n      \"comfort\",\n      \"build_quality\",\n      \"price\"\n   ],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
     "tokens_in": 1032,
     "tokens_out": 181
+  },
+  "660b7f27548c0982bda1e99c78deb77d057642f9b99d2d8908c52e6d00804d29": {
+    "raw": "{\n  \"reply_text\": \"\u0906\u092a\u0915\u094b \u0921\u093f\u0932\u0940\u0935\u0930\u0940 \u092e\u0947\u0902 \u0939\u0941\u0908 \u0926\u0947\u0930\u0940 \u0915\u0947 \u0932\u093f\u090f \u0939\u092e\u0947\u0902 \u0916\u0947\u0926 \u0939\u0948\u0964 \u0939\u092e \u0938\u092e\u091d\u0924\u0947 \u0939\u0948\u0902 \u0915\u093f \u0924\u0940\u0928 \u0939\u092b\u094d\u0924\u0947 \u0915\u0940 \u092a\u094d\u0930\u0924\u0940\u0915\u094d\u0937\u093e \u0915\u0930\u0928\u093e \u0915\u093f\u0924\u0928\u093e \u0928\u093f\u0930\u093e\u0936\u093e\u091c\u0928\u0915 \u0939\u094b \u0938\u0915\u0924\u093e \u0939\u0948\u0964 \u0939\u092e \u0906\u092a\u0915\u0940 \u091a\u093f\u0902\u0924\u093e \u0915\u094b \u0938\u092e\u091d\u0924\u0947 \u0939\u0948\u0902 \u0914\u0930 \u0906\u092a\u0915\u0940 \u0938\u092e\u0938\u094d\u092f\u093e \u0915\u093e \u0938\u092e\u093e\u0927\u093e\u0928 \u0915\u0930\u0928\u0947 \u0915\u0947 \u0932\u093f\u090f \u0939\u092e\u093e\u0930\u0940 \u0913\u0930 \u0938\u0947 \u0939\u0930 \u0938\u0902\u092d\u0935 \u092a\u094d\u0930\u092f\u093e\u0938 \u0915\u093f\u092f\u093e \u091c\u093e\u090f\u0917\u093e\u0964 \u0939\u092e \u091c\u0932\u094d\u0926 \u0939\u0940 \u0906\u092a\u0915\u0947 \u0938\u093e\u0925 \u0938\u0902\u092a\u0930\u094d\u0915 \u092e\u0947\u0902 \u0930\u0939\u0947\u0902\u0917\u0947 \u0914\u0930 \u0907\u0938 \u092e\u0941\u0926\u094d\u0926\u0947 \u092a\u0930 \u0914\u0930 \u091a\u0930\u094d\u091a\u093e \u0915\u0930\u0947\u0902\u0917\u0947\u0964\"\n}",
+    "tokens_in": 466,
+    "tokens_out": 154
   },
   "66996db4005cfefcbd118a7c4495738d19892f4bc04eae36da9ba9ce33ad61a6": {
     "raw": "{\n  \"product\": \"CoolAir AC unit\",\n   \"stars\": 0,\n   \"stars_inferred\": 1,\n   \"pros\": [],\n   \"cons\": [\"catches fire\", \"smoke damage\", \"dangerous\"],\n   \"buy_again\": false,\n   \"sentiment\": \"negative\",\n   \"topics\": [\"safety\", \"build_quality\", \"fire\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"high\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
@@ -119,6 +169,11 @@
     "tokens_in": 1013,
     "tokens_out": 134
   },
+  "8135d8648f6d25ee6e5294fc6cae0a5ee1167d8b2716a13e4aac3187d08cd66f": {
+    "raw": "{\n  \"reply_text\": \"Hume bahut afsos hua ki aapko ye product pasand nahi aaya. Pehle din se hi kharab hone ka samajhne ke liye hum aapko dhanyavaad karte hain. Aapki baat sunke hum bahut dukhi hain. Hum aapko vishwas dilate hain ki hum aapki pareshani ko door karne ke liye kuchh kar sakte hain. Kripya humse contact karein taaki hum aapki madad kar sakein.\"\n}",
+    "tokens_in": 738,
+    "tokens_out": 132
+  },
   "8467d28afb5dd859e05f78dc07c8d1a50ee72087696eaab3898c7e2378ecbb1a": {
     "raw": "{\n  \"product\": \"KitchenMaster Pro\",\n   \"stars\": null,\n   \"stars_inferred\": 1,\n   \"pros\": [],\n   \"cons\": [\n      \"cracked lid\",\n      \"poor customer service\",\n      \"leaks constantly\",\n      \"loud motor\",\n      \"blades rusted after 2 washes\"\n   ],\n   \"buy_again\": false,\n   \"sentiment\": \"negative\",\n   \"topics\": [\n      \"build_quality\",\n      \"customer_service\",\n      \"leaks\",\n      \"motor_noise\",\n      \"durability\"\n   ],\n   \"competitor_mentions\": [],\n   \"urgency\": \"high\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
     "tokens_in": 1019,
@@ -128,6 +183,11 @@
     "raw": "{\n  \"product\": \"headphones\",\n   \"stars\": null,\n   \"stars_inferred\": 1,\n   \"pros\": [],\n   \"cons\": [\"breaks after one week\", \"short battery life\"],\n   \"buy_again\": false,\n   \"sentiment\": \"negative\",\n   \"topics\": [\"build_quality\", \"battery\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"high\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
     "tokens_in": 1005,
     "tokens_out": 110
+  },
+  "87c7e73f1bd67ba386c2e1503fe1016d852e2a07bac347e2af039685cd20268d": {
+    "raw": "{\n  \"reply_text\": \"We apologize for the frustrating experience you've had with your order. We understand how disappointing it must be to wait for so long without any updates. We regret that our delivery process has not met your expectations, and we're truly sorry that you haven't received the tracking updates you deserve. Furthermore, we're concerned to hear that our customer support team hasn't been able to get back to you yet. We want to make things right and would like to look into this matter further. We invite you to contact us so we can help resolve the issue with your order. We will follow up with you soon to see how we can assist you better. Warm regards, Customer Care Team\"\n}",
+    "tokens_in": 437,
+    "tokens_out": 144
   },
   "95e501126004ac50172a0b188d4ffeafb36e9ce98866a71dfd1e03471cdacc6b": {
     "raw": "{\n  \"product\": \"gadget\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\"no sound delays while playing online games\", \"fast type c charging\", \"great device\", \"good value for money\"],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\"sound_quality\", \"charging_speed\", \"gaming\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.95\n}",
@@ -154,6 +214,11 @@
     "tokens_in": 994,
     "tokens_out": 114
   },
+  "af4014a9c42d57342dc79ab7c1f869cf1cf9297208d06afe1df330fede86736a": {
+    "raw": "{\n  \"reply_text\": \"Thank you for taking the time to share your experience with us. We're sorry to hear that you had a poor experience with our customer service. We understand how frustrating it can be when calls go unanswered and emails are not responded to. We want to assure you that we're here to listen and help. We will follow up with you soon to better understand your concerns and see how we can improve our communication with you. Your feedback is valuable to us, and we appreciate your patience and understanding as we work to provide a better experience for our customers.\"\n}",
+    "tokens_in": 410,
+    "tokens_out": 118
+  },
   "b0024201c10c5a1643f8a9c3850ccd01ebfd2bfeca08e846e0d068dc06d819c5": {
     "raw": "{\n  \"product\": \"Noise smartwatch\",\n   \"stars\": null,\n   \"stars_inferred\": 2,\n   \"pros\": [\"good display\"],\n   \"cons\": [\"battery life is short\"],\n   \"buy_again\": null,\n   \"sentiment\": \"negative\",\n   \"topics\": [\"display\", \"battery\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"medium\",\n   \"feature_requests\": [\"improve battery life\"],\n   \"language\": \"hi\",\n   \"confidence\": 0.85\n}",
     "tokens_in": 912,
@@ -179,6 +244,16 @@
     "tokens_in": 1700,
     "tokens_out": 120
   },
+  "d64458abbb842deb44895e866fd39f1b78d1f345ce70afe931be3d5dc41d7010": {
+    "raw": "{\n  \"reply_text\": \"\u0939\u092e\u0947\u0902 \u0906\u092a\u0915\u0947 \u0905\u0928\u0941\u092d\u0935 \u0915\u0947 \u092c\u093e\u0930\u0947 \u092e\u0947\u0902 \u091c\u093e\u0928\u0915\u0930 \u092c\u0939\u0941\u0924 \u0916\u0947\u0926 \u0939\u0948\u0964 \u092f\u0939 \u0926\u0941\u0916\u0926 \u0939\u0948 \u0915\u093f \u0906\u092a\u0915\u093e \u092a\u094d\u0930\u094b\u0921\u0915\u094d\u091f \u090f\u0915 \u0939\u092b\u094d\u0924\u0947 \u092e\u0947\u0902 \u0939\u0940 \u0916\u0930\u093e\u092c \u0939\u094b \u0917\u092f\u093e\u0964 \u0939\u092e \u0938\u092e\u091d\u0924\u0947 \u0939\u0948\u0902 \u0915\u093f \u0916\u0930\u093e\u092c \u0917\u0941\u0923\u0935\u0924\u094d\u0924\u093e \u0915\u0947 \u0915\u093e\u0930\u0923 \u0906\u092a\u0915\u094b \u092a\u0930\u0947\u0936\u093e\u0928\u0940 \u0939\u0941\u0908 \u0939\u0948\u0964 \u0939\u092e \u0906\u092a\u0915\u0940 \u091a\u093f\u0902\u0924\u093e\u0913\u0902 \u0915\u094b \u0938\u0941\u0928\u0928\u0947 \u0914\u0930 \u0907\u0938 \u092e\u0941\u0926\u094d\u0926\u0947 \u0915\u094b \u0939\u0932 \u0915\u0930\u0928\u0947 \u0915\u0947 \u0932\u093f\u090f \u092f\u0939\u093e\u0901 \u0939\u0948\u0902\u0964 \u0915\u0943\u092a\u092f\u093e \u0939\u092e\u0938\u0947 \u0938\u0902\u092a\u0930\u094d\u0915 \u0915\u0930\u0947\u0902 \u0924\u093e\u0915\u093f \u0939\u092e \u0906\u092a\u0915\u0940 \u0938\u092e\u0938\u094d\u092f\u093e \u0915\u094b \u092c\u0947\u0939\u0924\u0930 \u0922\u0902\u0917 \u0938\u0947 \u0938\u092e\u091d \u0938\u0915\u0947\u0902 \u0914\u0930 \u0906\u092a\u0915\u0940 \u0938\u0939\u093e\u092f\u0924\u093e \u0915\u0930 \u0938\u0915\u0947\u0902\u0964 \u0939\u092e \u091c\u0932\u094d\u0926 \u0939\u0940 \u0906\u092a\u0915\u0947 \u0938\u093e\u0925 \u0938\u0902\u092a\u0930\u094d\u0915 \u092e\u0947\u0902 \u0930\u0939\u0947\u0902\u0917\u0947\u0964\"\n}",
+    "tokens_in": 459,
+    "tokens_out": 183
+  },
+  "d9cba4ae5970fd6419cad1882a74fef6be27462f47d06869794f4fa936c0f5c7": {
+    "raw": "{\n  \"reply_text\": \"Hum aapki samasya ko samajhte hain aur aapko ho rahe inconvenience ke liye khed prakat karte hain. Aapka product damaged condition mein aana aur packaging ki poor quality humare liye ek gambhir mudde hain. Hum aapse anurodh karte hain ki aap humse sampark karein taaki hum is mudde ko suljha saken. Hum aapki madad karne ke liye yahaan hain aur hum aapko jald se jald update denge.\"\n}",
+    "tokens_in": 476,
+    "tokens_out": 131
+  },
   "db3ca943ac6fc49fa633329d217c9d09e0653f0bf4529d989ec171352584c592": {
     "raw": "{\n  \"product\": \"BrewMaster coffee grinder\",\n   \"stars\": null,\n   \"stars_inferred\": 4,\n   \"pros\": [\"fantastic product\", \"grinds consistently\", \"easy to adjust settings\"],\n   \"cons\": [\"poor packaging\", \"crushed box\"],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\"coffee_grinder\", \"build_quality\", \"packaging\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
     "tokens_in": 1018,
@@ -188,6 +263,26 @@
     "raw": "{\n  \"product\": \"headset\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\"excellent bass quality\", \"worth buying\"],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\"sound_quality\", \"bass\", \"value\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.9\n}",
     "tokens_in": 1708,
     "tokens_out": 113
+  },
+  "e0f5d69b4b4047a126844ef544fd52c1dbffc7085488420c6812e3f15a300e68": {
+    "raw": "{\n  \"reply_text\": \"\u0939\u092e\u0947\u0902 \u0906\u092a\u0915\u0947 \u0905\u0928\u0941\u092d\u0935 \u0915\u0947 \u092c\u093e\u0930\u0947 \u092e\u0947\u0902 \u091c\u093e\u0928\u0915\u0930 \u092c\u0939\u0941\u0924 \u0916\u0947\u0926 \u0939\u0948\u0964 \u0916\u0930\u093e\u092c \u092a\u0948\u0915\u0947\u091c\u093f\u0902\u0917 \u0914\u0930 \u091f\u0942\u091f\u093e \u0939\u0941\u0906 \u092a\u094d\u0930\u094b\u0921\u0915\u094d\u091f \u092a\u094d\u0930\u093e\u092a\u094d\u0924 \u0915\u0930\u0928\u093e \u0928\u093f\u0930\u093e\u0936\u093e\u091c\u0928\u0915 \u0939\u094b \u0938\u0915\u0924\u093e \u0939\u0948\u0964 \u0939\u092e \u0906\u092a\u0915\u0940 \u091a\u093f\u0902\u0924\u093e\u0913\u0902 \u0915\u094b \u0938\u092e\u091d\u0924\u0947 \u0939\u0948\u0902 \u0914\u0930 \u0906\u092a\u0915\u0940 \u0938\u092e\u0938\u094d\u092f\u093e \u0915\u093e \u0938\u092e\u093e\u0927\u093e\u0928 \u0915\u0930\u0928\u0947 \u0915\u0947 \u0932\u093f\u090f \u092a\u094d\u0930\u0924\u093f\u092c\u0926\u094d\u0927 \u0939\u0948\u0902\u0964 \u0915\u0943\u092a\u092f\u093e \u0939\u092e\u0938\u0947 \u0938\u0902\u092a\u0930\u094d\u0915 \u0915\u0930\u0947\u0902 \u0924\u093e\u0915\u093f \u0939\u092e \u0906\u092a\u0915\u0940 \u092e\u0926\u0926 \u0915\u0930 \u0938\u0915\u0947\u0902 \u0914\u0930 \u0907\u0938 \u092e\u0941\u0926\u094d\u0926\u0947 \u0915\u094b \u0939\u0932 \u0915\u0930\u0928\u0947 \u0915\u0947 \u0932\u093f\u090f \u0906\u0917\u0947 \u092c\u0922\u093c \u0938\u0915\u0947\u0902\u0964\"\n}",
+    "tokens_in": 460,
+    "tokens_out": 149
+  },
+  "e1de6faab0e89ead12d8cd818a78d4d3b601d6f3ae62ba10e0ddb24593ebbd07": {
+    "raw": "{\n  \"reply_text\": \"\u0939\u092e\u0947\u0902 \u0906\u092a\u0915\u0940 \u091a\u093f\u0902\u0924\u093e \u0915\u0947 \u092c\u093e\u0930\u0947 \u092e\u0947\u0902 \u091c\u093e\u0928\u0928\u0947 \u092e\u0947\u0902 \u0926\u0941\u0916 \u0939\u0941\u0906\u0964 \u092c\u0948\u091f\u0930\u0940 \u0932\u093e\u0907\u092b \u0915\u0947 \u0938\u0902\u092c\u0902\u0927 \u092e\u0947\u0902 \u0906\u092a\u0915\u0940 \u0938\u092e\u0938\u094d\u092f\u093e \u0915\u094b \u0939\u092e \u0917\u0902\u092d\u0940\u0930\u0924\u093e \u0938\u0947 \u0932\u0947\u0924\u0947 \u0939\u0948\u0902 \u0914\u0930 \u0907\u0938\u0915\u093e \u0938\u092e\u093e\u0927\u093e\u0928 \u0928\u093f\u0915\u093e\u0932\u0928\u0947 \u0915\u0947 \u0932\u093f\u090f \u0939\u092e\u093e\u0930\u0940 \u091f\u0940\u092e \u0906\u092a\u0915\u0940 \u092e\u0926\u0926 \u0915\u0930\u0928\u0947 \u0915\u0947 \u0932\u093f\u090f \u0924\u0948\u092f\u093e\u0930 \u0939\u0948\u0964 \u0915\u0943\u092a\u092f\u093e \u0939\u092e\u0938\u0947 \u0938\u0902\u092a\u0930\u094d\u0915 \u0915\u0930\u0947\u0902 \u0924\u093e\u0915\u093f \u0939\u092e \u0906\u092a\u0915\u0940 \u0938\u092e\u0938\u094d\u092f\u093e \u0915\u094b \u092c\u0947\u0939\u0924\u0930 \u0922\u0902\u0917 \u0938\u0947 \u0938\u092e\u091d \u0938\u0915\u0947\u0902 \u0914\u0930 \u0906\u092a\u0915\u094b \u0909\u091a\u093f\u0924 \u0938\u092e\u093e\u0927\u093e\u0928 \u092a\u094d\u0930\u0926\u093e\u0928 \u0915\u0930 \u0938\u0915\u0947\u0902\u0964 \u0939\u092e \u0906\u092a\u0915\u0940 \u0938\u0902\u0924\u0941\u0937\u094d\u091f\u093f \u0915\u094b \u092e\u0939\u0924\u094d\u0935 \u0926\u0947\u0924\u0947 \u0939\u0948\u0902 \u0914\u0930 \u0906\u092a\u0915\u0947 \u0905\u0928\u0941\u092d\u0935 \u0915\u094b \u092c\u0947\u0939\u0924\u0930 \u092c\u0928\u093e\u0928\u0947 \u0915\u0947 \u0932\u093f\u090f \u092a\u094d\u0930\u092f\u093e\u0938\u0930\u0924 \u0939\u0948\u0902\u0964\"\n}",
+    "tokens_in": 472,
+    "tokens_out": 187
+  },
+  "e33896a8ba2b3d746915c6c101bc7a3a73a9069524387175182be66b6e40f8c4": {
+    "raw": "{\n  \"reply_text\": \"Hume bahut khed hai ki aapko delivery late aayi aur customer service se aapko sahi jawab nahi mila. Aapki pareshani ke liye hum khud par garv hai aur aapko vishwas hai ki hum aapki samasya ko suljhaane ke liye kuch kar sakte hain. Kripaya humse contact karein aur hum aapki madad karenge. Team Support\"\n}",
+    "tokens_in": 730,
+    "tokens_out": 110
+  },
+  "e7fa65dbf95ae79a111967cdbc8ed30e291a074f1b74cdd3f048c56d3f06fd63": {
+    "raw": "{\n  \"reply_text\": \"Namaste, aapka review padhkar hume bahut afsos hua. Aapko product se paisa vasool nahi hua, ye baat hume seriously lekar dekhi jaa rahi hai. Battery life ke mamle mein aapki shikayat sunke hume khushi nahi hui, hume pata hai ki aapko 2 ghante ke andar battery khali ho gayi thi. Hum aapki problem samajhte hain aur isse suljhane ke liye aapki madad karna chahte hain. Aap humse sampark karein, hum aapki samasya ko hal karne ki koshish karenge.\"\n}",
+    "tokens_in": 499,
+    "tokens_out": 165
   },
   "e95b5984e74ff21aff92e3f052dc65a89cc7f107cfeee35f24f538cf1e3d678e": {
     "raw": "{\n  \"product\": \"Skybags bag\",\n   \"stars\": null,\n   \"stars_inferred\": 3,\n   \"pros\": [\"average quality\", \"value for money\"],\n   \"cons\": [\"nothing special\"],\n   \"buy_again\": null,\n   \"sentiment\": \"neutral\",\n   \"topics\": [\"quality\", \"price\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"hi\",\n   \"confidence\": 0.85\n}",
@@ -208,6 +303,11 @@
     "raw": "{\n  \"product\": \"UltraSound Pro speaker\",\n   \"stars\": 4,\n   \"stars_inferred\": 4,\n   \"pros\": [\n      \"exceptional bass response\",\n      \"clear mid-tones\",\n      \"vocals shine through\",\n      \"premium aluminum chassis\",\n      \"rubber base prevents sliding\",\n      \"Bluetooth 5.0 pairs instantly\",\n      \"outstanding value\"\n   ],\n   \"cons\": [\n      \"harsh highs at maximum volume\",\n      \"flimsy charging port cover\",\n      \"IPX5 rating not trusted in heavy rain\",\n      \"passable built-in mic\",\n      \"limited EQ presets\"\n   ],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\n      \"sound_quality\",\n      \"build_quality\",\n      \"features\",\n      \"value\",\n      \"price\"\n   ],\n   \"competitor_mentions\": [\n      \"JBL\",\n      \"Bose\"\n   ],\n   \"urgency\": \"low\",\n   \"feature_requests\": [\n      \"more EQ presets\"\n   ],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
     "tokens_in": 1226,
     "tokens_out": 240
+  },
+  "f722e8f0d75d909840f5a6e48711b68f6916f03a0292d1fb6e13e642d9f40aaf": {
+    "raw": "{\n  \"reply_text\": \"Sorry to hear ki aapko humara product pasand nahi aaya. Aapke experience ke bare mein jaanne ke liye khed hai, khaskar jab aapkeh liye product pehle din se hi kharab tha. Aapki quality ke concern ko hum seriously lete hain aur aapki samasya ko suljhane mein madad karna chahte hain. Aap se request hai ki aap humse contact karein taaki hum aapki problem ko samajh sakein aur aapki madad kar sakein. Hum aapki samasya ko jald se jald hal karne ki koshish karenge.\"\n}",
+    "tokens_in": 498,
+    "tokens_out": 157
   },
   "f9665823f97d4c0e1ab18eb8cd931586afe6656cdb1227e2bfeff740093f89af": {
     "raw": "{\n  \"product\": \"The SleepPro mattress\",\n   \"stars\": null,\n   \"stars_inferred\": 3,\n   \"pros\": [\"okay quality\", \"fast delivery\", \"works as expected\"],\n   \"cons\": [\"soft edge support\"],\n   \"buy_again\": null,\n   \"sentiment\": \"neutral\",\n   \"topics\": [\"mattress\", \"edge_support\", \"delivery\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
