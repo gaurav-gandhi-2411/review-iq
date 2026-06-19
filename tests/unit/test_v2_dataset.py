@@ -7,9 +7,8 @@ import uuid
 from unittest.mock import MagicMock, patch
 
 import pytest
-from fastapi.testclient import TestClient
-
 from app.auth.api_key import ApiKeyContext, require_api_key
+from fastapi.testclient import TestClient
 
 # ---------------------------------------------------------------------------
 # Shared fixtures

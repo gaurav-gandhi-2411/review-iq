@@ -3,23 +3,22 @@
 Handles Groq TPD 429 rate limits with automatic retry (sliding window — typically
 clears in a few minutes for the free tier).
 """
+
 from __future__ import annotations
 
 import asyncio
 import json
 import os
 import sys
-import time
 from pathlib import Path
 
 os.environ["EVAL_CASSETTE_MODE"] = "record"
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))  # noqa: E402
 
-from groq import APIStatusError, RateLimitError  # noqa: E402
-
 from app.core.reply.engine import VernacularModelUnavailableError, draft_reply  # noqa: E402
 from app.core.reply.schema import ReplyRequest, ReplyTone  # noqa: E402
 from app.core.schemas import ReviewExtraction, Urgency  # noqa: E402
+from groq import APIStatusError, RateLimitError  # noqa: E402
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 _RETRY_WAIT_SECONDS = 420  # 7 min — gives sliding window time to release tokens
@@ -30,8 +29,11 @@ async def _record_one(f: dict, attempt: int = 1) -> None:
         product="unknown product",
         cons=f["pre_extracted_cons"],
         topics=f["pre_extracted_topics"],
-        pros=[], feature_requests=[], competitor_mentions=[],
-        language=f["language"], urgency=Urgency.low,
+        pros=[],
+        feature_requests=[],
+        competitor_mentions=[],
+        language=f["language"],
+        urgency=Urgency.low,
     )
     req = ReplyRequest(
         text=f["review_text"],
@@ -44,7 +46,9 @@ async def _record_one(f: dict, attempt: int = 1) -> None:
         draft, tin, tout = await draft_reply(req)
     except VernacularModelUnavailableError:
         # Policy: vernacular quota → large model unavailable → retry after window clears.
-        print(f"  [QUOTA] {f['id']} — large model capped, sleeping {_RETRY_WAIT_SECONDS}s then retrying...")
+        print(
+            f"  [QUOTA] {f['id']} — large model capped, sleeping {_RETRY_WAIT_SECONDS}s then retrying..."
+        )
         await asyncio.sleep(_RETRY_WAIT_SECONDS)
         await _record_one(f, attempt + 1)
         return
