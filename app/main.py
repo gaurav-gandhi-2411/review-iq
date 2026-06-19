@@ -22,6 +22,7 @@ from app.api.ops import router as ops_router
 from app.api.query import router as query_router
 from app.api.v2.authenticity import router as v2_authenticity_router
 from app.api.v2.corrections import router as v2_corrections_router
+from app.api.v2.dataset import router as v2_dataset_router
 from app.api.v2.extract import router as v2_extract_router
 from app.api.v2.ingest import router as ingest_router
 from app.api.v2.insights import router as v2_insights_router
@@ -90,6 +91,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     _app.include_router(v2_insights_router)
     _app.include_router(v2_reply_router)
     _app.include_router(v2_corrections_router)
+    _app.include_router(v2_dataset_router)
     _app.include_router(admin_router)
     _app.include_router(signup_router)
     _app.include_router(account_router)
