@@ -72,6 +72,9 @@ outputs/
 # Claude Code
 .claude/
 
+# Web frontend local env — contains real Supabase/API keys
+web/.env.local
+
 # Terraform — provider cache and state (state must stay local or in GCS backend)
 ops/budget-killswitch/.terraform/
 ops/budget-killswitch/terraform.tfstate
