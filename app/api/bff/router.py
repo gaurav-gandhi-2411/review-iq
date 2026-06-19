@@ -22,7 +22,16 @@ from datetime import UTC, datetime, timedelta
 from typing import Annotated, Any
 
 import structlog
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    Form,
+    HTTPException,
+    Query,
+    UploadFile,
+    status,
+)
 from pydantic import BaseModel, field_validator, model_validator
 
 # _process_ingest_job is defined in app.api.v2.ingest because it depends on
@@ -288,8 +297,13 @@ async def bff_list_reviews(
         limit=limit,
         offset=offset,
     )
-    return {"org_id": ctx.org_id, "count": len(rows), "offset": offset, "limit": limit,
-            "results": rows}
+    return {
+        "org_id": ctx.org_id,
+        "count": len(rows),
+        "offset": offset,
+        "limit": limit,
+        "results": rows,
+    }
 
 
 @router.post("/authenticity")
@@ -620,9 +634,7 @@ async def bff_authenticity_summary(
     flag_rate_series = []
     for entry in raw["time_series"]:
         period_dt = entry["period"]
-        period_str = (
-            period_dt.date().isoformat() if hasattr(period_dt, "date") else str(period_dt)
-        )
+        period_str = period_dt.date().isoformat() if hasattr(period_dt, "date") else str(period_dt)
         audited_in_bucket = int(entry["audited"])
         flagged_in_bucket = int(entry["flagged"])
         flag_rate_series.append(
@@ -653,12 +665,12 @@ async def bff_authenticity_summary(
 
 @router.post("/ingest/csv", status_code=status.HTTP_202_ACCEPTED)
 async def bff_ingest_csv(
-    file: Any,  # UploadFile — typed as Any to avoid a complex import at the top
+    file: UploadFile,
     background_tasks: BackgroundTasks,
     ctx: Annotated[ApiKeyContext, Depends(require_session)],
-    text_column: str | None = None,
-    product_column: str | None = None,
-    include_authenticity: bool = False,
+    text_column: Annotated[str | None, Form()] = None,
+    product_column: Annotated[str | None, Form()] = None,
+    include_authenticity: Annotated[bool, Form()] = False,
 ) -> dict[str, object]:
     """Upload a CSV of reviews for bulk extraction (BFF path)."""
 
