@@ -319,22 +319,27 @@
     function renderOutputPanel(ex) {
       let html = "";
 
-      // Representative output notice (above JSON for all insights examples)
+      // Representative output notice (only if example is still labelled representative)
       if (ex.is_representative) {
         html += `
           <div class="mb-3 bg-gray-800 border border-gray-600 rounded-lg px-4 py-2 text-xs text-gray-400 flex items-center gap-2">
             <span class="text-gray-300 font-semibold">Representative output</span>
-            &mdash; illustrates the real API response shape; these sub-path endpoints are implemented but not yet in the current production deployment.
+            &mdash; illustrates the real API response shape.
           </div>`;
       }
 
       // Trends callout (above JSON)
       if (ex.id === "insights-trends") {
+        const dsTheme = ex.output && ex.output.themes && ex.output.themes.find(t => t.theme === "delivery_speed");
+        const dsTotal = dsTheme ? dsTheme.total : 0;
+        const dsEn    = dsTheme && dsTheme.by_language ? (dsTheme.by_language.en || 0) : 0;
+        const dsHiEn  = dsTheme && dsTheme.by_language ? (dsTheme.by_language["hi-en"] || 0) : 0;
+        const dsHi    = dsTheme && dsTheme.by_language ? (dsTheme.by_language.hi || 0) : 0;
         html += `
           <div class="mb-4 bg-violet-950 border border-violet-700 rounded-lg px-4 py-3 text-sm text-violet-300 leading-relaxed">
             <span class="font-semibold">Key insight:</span>
             <code class="font-mono text-violet-200">delivery_speed</code> &mdash;
-            94 total mentions, but <strong>0 in English</strong>, 61 in Hinglish, 33 in Hindi.
+            ${dsTotal} total mention${dsTotal !== 1 ? "s" : ""}, but <strong>${dsEn} in English</strong>${dsHiEn ? ", " + dsHiEn + " in Hinglish" : ""}${dsHi ? ", " + dsHi + " in Hindi" : ""}.
             Invisible to English-only tools.
           </div>`;
       }
