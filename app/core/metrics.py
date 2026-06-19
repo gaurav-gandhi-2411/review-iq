@@ -103,6 +103,12 @@ REPLY_CACHE_HIT_TOTAL = Counter(
     "Reply draft cache hits (same review/tone/brand/signature re-requested)",
 )
 
+CORRECTIONS_SUBMITTED = Counter(
+    "review_iq_corrections_submitted_total",
+    "Correction submissions by source_type",
+    ["source_type"],
+)
+
 
 class PrometheusMiddleware(BaseHTTPMiddleware):
     def __init__(self, app: ASGIApp) -> None:
