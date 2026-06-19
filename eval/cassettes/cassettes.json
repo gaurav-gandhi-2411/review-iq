@@ -64,6 +64,16 @@
     "tokens_in": 1026,
     "tokens_out": 117
   },
+  "21f96d92a415775b47a81aeda3850916250148cf0785c379e844dab8311d8b3a": {
+    "raw": "{\n  \"reply_text\": \"Hume bahut afsos hua ki aapko ye product ekdum bakwaas laga. Pehle din se hi kharab hone ki baat sunke bahut bura laga. Aapki pareshani samajhte hain aur hume ye jaankar khed hai ki aapko ye product pasand nahi aaya. Aapki quality ki shikayat hum jaldi se dekhege. Hum aapse jaldi se sampark karenge taaki hum aapki mushkil ko suljha sakein.\"\n}",
+    "tokens_in": 738,
+    "tokens_out": 130
+  },
+  "2600c03ba48b64a8319f014b0b8bb1745d618b91141ab8589cccb232e4aa3c97": {
+    "raw": "{\n  \"reply_text\": \"Bahut khed hai ki aapko humara product pasand nahi aaya, aur delivery bhi late hui. Aapki pareshani samajhte hain, aur hume afsos hua ki aapko accha anubhav nahi mila. Hum aapki baat sunne ke liye yahan hain, aur jaldi se is mushkil ko hal karne ki koshish karenge. Aap humse sampark karein, taaki hum aapki samasya ko suljha sakein.\"\n}",
+    "tokens_in": 731,
+    "tokens_out": 130
+  },
   "2a37558d06cf9a056bdf35f515728de8baeb49835abb9bc829fff0b350dac4d9": {
     "raw": "{\n  \"product\": \"earphone\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\"excellent product\", \"perfect quality\", \"great value for money\"],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\"product_quality\", \"value\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.95\n}",
     "tokens_in": 1709,
@@ -128,6 +138,11 @@
     "raw": "{\n  \"reply_text\": \"\u0906\u092a\u0915\u094b \u0921\u093f\u0932\u0940\u0935\u0930\u0940 \u092e\u0947\u0902 \u0939\u0941\u0908 \u0926\u0947\u0930\u0940 \u0915\u0947 \u0932\u093f\u090f \u0939\u092e\u0947\u0902 \u0916\u0947\u0926 \u0939\u0948\u0964 \u0939\u092e \u0938\u092e\u091d\u0924\u0947 \u0939\u0948\u0902 \u0915\u093f \u0924\u0940\u0928 \u0939\u092b\u094d\u0924\u0947 \u0915\u0940 \u092a\u094d\u0930\u0924\u0940\u0915\u094d\u0937\u093e \u0915\u0930\u0928\u093e \u0915\u093f\u0924\u0928\u093e \u0928\u093f\u0930\u093e\u0936\u093e\u091c\u0928\u0915 \u0939\u094b \u0938\u0915\u0924\u093e \u0939\u0948\u0964 \u0939\u092e \u0906\u092a\u0915\u0940 \u091a\u093f\u0902\u0924\u093e \u0915\u094b \u0938\u092e\u091d\u0924\u0947 \u0939\u0948\u0902 \u0914\u0930 \u0906\u092a\u0915\u0940 \u0938\u092e\u0938\u094d\u092f\u093e \u0915\u093e \u0938\u092e\u093e\u0927\u093e\u0928 \u0915\u0930\u0928\u0947 \u0915\u0947 \u0932\u093f\u090f \u0939\u092e\u093e\u0930\u0940 \u0913\u0930 \u0938\u0947 \u0939\u0930 \u0938\u0902\u092d\u0935 \u092a\u094d\u0930\u092f\u093e\u0938 \u0915\u093f\u092f\u093e \u091c\u093e\u090f\u0917\u093e\u0964 \u0939\u092e \u091c\u0932\u094d\u0926 \u0939\u0940 \u0906\u092a\u0915\u0947 \u0938\u093e\u0925 \u0938\u0902\u092a\u0930\u094d\u0915 \u092e\u0947\u0902 \u0930\u0939\u0947\u0902\u0917\u0947 \u0914\u0930 \u0907\u0938 \u092e\u0941\u0926\u094d\u0926\u0947 \u092a\u0930 \u0914\u0930 \u091a\u0930\u094d\u091a\u093e \u0915\u0930\u0947\u0902\u0917\u0947\u0964\"\n}",
     "tokens_in": 466,
     "tokens_out": 154
+  },
+  "66202bc0b1ac84dec0af816f2ead41bb693349c138c2b7035c5eea0bc6cdbc06": {
+    "raw": "{\n  \"reply_text\": \"Bahut khed hai ki aapko delivery mein itna late ho gayi, teen hafte wait karna pada. Aapki pareshani samajhte hain aur hume afsos hua ki customer service se aapko sahi jawab nahi mila. Hum aapki baat sunke bahut dukh hue hain aur jaldi se is mushkil ko suljhane ki koshish karenge. Hum aap se jaldi se contact karenge.\"\n}",
+    "tokens_in": 730,
+    "tokens_out": 114
   },
   "66996db4005cfefcbd118a7c4495738d19892f4bc04eae36da9ba9ce33ad61a6": {
     "raw": "{\n  \"product\": \"CoolAir AC unit\",\n   \"stars\": 0,\n   \"stars_inferred\": 1,\n   \"pros\": [],\n   \"cons\": [\"catches fire\", \"smoke damage\", \"dangerous\"],\n   \"buy_again\": false,\n   \"sentiment\": \"negative\",\n   \"topics\": [\"safety\", \"build_quality\", \"fire\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"high\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
@@ -228,6 +243,11 @@
     "raw": "{\n  \"product\": \"sound quality\",\n   \"stars\": null,\n   \"stars_inferred\": 1,\n   \"pros\": [],\n   \"cons\": [\n      \"irritating sound quality\",\n      \"annoying sound quality\",\n      \"sound disappears in between\",\n      \"old version\"\n   ],\n   \"buy_again\": false,\n   \"sentiment\": \"negative\",\n   \"topics\": [\n      \"sound_quality\",\n      \"delivery_service\"\n   ],\n   \"competitor_mentions\": [],\n   \"urgency\": \"high\",\n   \"feature_requests\": [],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.95\n}",
     "tokens_in": 1706,
     "tokens_out": 136
+  },
+  "b53b63a0528c1987ed57d51e74a7f1156caff143f84466b1b16a8b1aca8a4822": {
+    "raw": "{\n  \"reply_text\": \"Hume bahut afsos hua ki aapko packaging bilkul bakwaas lagi aur product damaged condition mein aaya. Aapki pareshani samajhte hain, aur hume bahut bura laga ki aapko ekdum waste experience hua. Aapki baat sunke hum jaldi se aapki madad karna chahte hain. Kripya humse sampark karein, taaki hum aapki mushkil ko suljha saken.\"\n}",
+    "tokens_in": 716,
+    "tokens_out": 117
   },
   "b63090230b9dac3ec1ed26a91ef4206ed31d1dfb200c51cf7a0b80aac47a919c": {
     "raw": "{\n  \"product\": \"general product\",\n   \"stars\": null,\n   \"stars_inferred\": 3,\n   \"pros\": [\"good product quality\"],\n   \"cons\": [\"very bad online delivery\", \"slow delivery\", \"delivery boy doesn't come to door\"],\n   \"buy_again\": null,\n   \"sentiment\": \"negative\",\n   \"topics\": [\"product_quality\", \"delivery_service\", \"delivery_speed\", \"customer_service\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"medium\",\n   \"feature_requests\": [],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.85\n}",
