@@ -2,26 +2,95 @@ from __future__ import annotations
 
 from app.core.reply.schema import ReplyTone
 
-REPLY_PROMPT_VERSION = "v1.0"
+REPLY_PROMPT_VERSION = "v2.0"
 
+# Each tone specifies register + structure + explicit do-nots.
+# The model previously collapsed all complaint tones to the same arc
+# (afsos/khed → pareshani samajhte hain → jaldi se contact karenge).
+# v2.0 breaks this by making openings, body posture, and closings
+# structurally distinct per tone.
 _TONE_INSTRUCTIONS: dict[ReplyTone, str] = {
     ReplyTone.apologetic: (
-        "Use an apologetic, empathetic tone — acknowledge the customer's experience with genuine "
-        "regret and invite them to contact you so you can help resolve the matter."
+        "Tone: APOLOGETIC\n"
+        "For genuine failures: defective product, wrong item, undelivered order, "
+        "ignored support requests — situations where blame is clear.\n"
+        "Structure:\n"
+        "  Opening: Lead with direct ownership, not a sympathy preamble. Own the failure "
+        "before anything else. (hi-en examples: 'Yeh bilkul nahi hona chahiye tha.' / "
+        "'Sunke dil ko dukh hua — yeh hamare end pe galti thi.')\n"
+        "  Body: Name each failure specifically. Don't hedge, don't make excuses, "
+        "don't list the complaint back at the customer.\n"
+        "  Close: Commit to resolution without promising a specific remedy. "
+        "(hi-en examples: 'Isko hum suljhaenge — humse baat karo.' / "
+        "'Hum directly aapke saath is matter ko fix karenge.')\n"
+        "Do NOT: open with generic sympathy before taking ownership. Do NOT use both "
+        "'afsos' AND 'khed' in the same reply — pick one word and be direct."
     ),
     ReplyTone.appreciative: (
-        "Use an appreciative, warm tone — thank the customer sincerely, acknowledge any concerns "
-        "with care, and encourage further conversation."
+        "Tone: APPRECIATIVE\n"
+        "For positive reviews where the customer is happy. No apology — pure gratitude.\n"
+        "Structure:\n"
+        "  Opening: Mirror the reviewer's energy and register precisely. If they wrote "
+        "enthusiastically ('Bhai mast product!'), match that ('Bhai, aapka review "
+        "padhke bahut achha laga!'). If they wrote formally, match that. Do NOT open "
+        "with a stiff 'Thank you for your feedback' or 'Hume khushi hui'.\n"
+        "  Body: Thank them for SPECIFIC things they praised — name the actual attributes "
+        "(quality, packaging, fast delivery). Do NOT use generic 'your feedback is "
+        "valuable to us'.\n"
+        "  Close: Warm and forward-looking. (hi-en examples: 'Aage bhi aise hi "
+        "experience milega!' / 'Dhanyavad — aapke jaison ki wajah se hum behtar "
+        "bante hain!')\n"
+        "Do NOT: add apologetic framing, use khed/afsos, or close with 'humse sampark "
+        "karein' — a happy customer doesn't need a support CTA."
     ),
     ReplyTone.professional: (
-        "Use a professional, solution-oriented tone — acknowledge the concern clearly, express "
-        "that you take it seriously, and invite the customer to reach out for resolution."
+        "Tone: PROFESSIONAL\n"
+        "Factual, composed, solution-focused. Minimal emotion, maximum clarity.\n"
+        "Structure:\n"
+        "  Opening: Acknowledge the issue without emotional weight. One sentence, neutral. "
+        "(hi-en examples: 'Aapka feedback note kar liya hai.' / "
+        "'Hum is matter ko seriously le rahe hain.')\n"
+        "  Body: State the one concrete next step. No open-ended pledges to 'try to help'. "
+        "Avoid repeating the complaint back at the customer.\n"
+        "  Close: Direct and specific. (hi-en examples: 'Is matter ke liye humse "
+        "connect karein — hum jaldi dekh lete hain.' / 'Aap apna order detail share "
+        "karein, hum aage badhate hain.')\n"
+        "Do NOT: use heavy-emotion language like 'dil ko dukh hua', 'bahut afsos hua', "
+        "'aapki pareshani samajhte hain' — these make a professional reply melodramatic. "
+        "Acknowledge once, move to solution."
     ),
     ReplyTone.warm: (
-        "Use a warm, friendly, conversational tone — make the customer feel heard and valued; "
-        "address the concern with genuine care and kindness."
+        "Tone: WARM\n"
+        "Friendly, personal, conversational. Match the customer's register exactly — "
+        "casual if they were casual, polite-but-warm if they were polite.\n"
+        "Structure:\n"
+        "  Opening: Personal and direct, matching their register. If they said 'yaar', "
+        "open with 'Yaar, sunke bura laga.' If they were polite and measured, "
+        "be warmly measured in return. Do NOT open with corporate sympathy phrases.\n"
+        "  Body: Talk TO the customer, not ABOUT them. 'Aapki baat samajh aaye' not "
+        "'Aapki pareshani samajhte hain'. Keep it conversational — not a formal "
+        "complaint acknowledgment.\n"
+        "  Close: Open and inviting, not a formal CTA. (hi-en examples: 'Batao kya "
+        "ho sakta hai — hum milke dekhte hain.' / 'Koi baat nahi, hum sort out "
+        "karte hain.')\n"
+        "Do NOT: grovel with full apologetic language for mild issues — warmth is not "
+        "apology. Do NOT use 'Aap se request hai ki humse sampark karein' or "
+        "'Hume bahut afsos hua ki' — these are too formal and too heavy for a warm tone."
     ),
 }
+
+_INTENSITY_INSTRUCTION = """\
+INTENSITY MATCHING — scale emotional weight to match the review's severity:
+- Harsh/angry (explicit insults like "bakwaas", "worst ever", multiple compounding
+  failures, explicit refund demand, says they'll never buy again):
+  Full ownership and direct apology. Use the full weight of the selected tone.
+- Moderate complaint (delivery late, one specific quality issue, below expectations):
+  Genuine concern. Acknowledge clearly. Medium emotional weight.
+- Mild or constructive (e.g., "overall theek-thak", "quality average but not bad",
+  "price thoda zyada", mixed but not angry):
+  Light touch — a warm acknowledgment and offer to discuss is enough.
+  Heavy 'khed hai' / 'afsos hua' language for a mild comment reads as insincere.
+- Positive (all praise, no complaints): No apology. Pure thanks and forward-looking close."""
 
 _LANGUAGE_NAMES: dict[str, str] = {
     "en": "English",
@@ -30,7 +99,6 @@ _LANGUAGE_NAMES: dict[str, str] = {
     "other": "the same language as the customer review",
 }
 
-# Extra guidance injected after tone instruction for specific language codes.
 _LANGUAGE_EXTRA_GUIDANCE: dict[str, str] = {
     "hi-en": (
         "Hinglish-specific rules (these override any generic instruction above):\n"
@@ -39,12 +107,24 @@ _LANGUAGE_EXTRA_GUIDANCE: dict[str, str] = {
         "your reply must be equally casual — not stiff, not formal.\n"
         "- Prefer Hindi words where natural: 'pareshani' not 'inconvenience', "
         "'jaldi se' not 'promptly', 'mushkil' not 'difficult', 'bahut bura laga' not "
-        "'unfortunate', 'samajhte hain' not 'we understand your concern'.\n"
-        "- Do NOT open with English when the customer wrote in Hindi-dominant Hinglish. "
-        "Open with Hindi-Hinglish: 'Hume bahut afsos hua ki...', "
-        "'Aapki baat sunke dukh hua...', 'Bahut khed hai ki...' etc.\n"
-        "- Write carefully and accurately — no typos, no garbled or invented words. "
-        "Double-check every word before outputting."
+        "'unfortunate'.\n"
+        "- Vary opening and closing to match the tone as follows:\n"
+        "    Apologetic open: 'Yeh hona hi nahi chahiye tha.' / "
+        "'Bilkul galat hua — hum zimmedaar hain.'\n"
+        "    Professional open: 'Aapka feedback note kar liya hai.' / "
+        "'Hum is matter ko seriously le rahe hain.'\n"
+        "    Warm open: 'Yaar, sunke bura laga.' / 'Aapki baat samajh aaye.'\n"
+        "    Appreciative open: Mirror their energy — 'Bhai, aapka review padhke "
+        "bahut achha laga!' not 'Hume khushi hui ki aapko product pasand aaya.'\n"
+        "    Apologetic close: 'Hum isko theek karenge — humse baat karo.'\n"
+        "    Professional close: 'Is matter ke liye humse connect karein.'\n"
+        "    Warm close: 'Batao kya ho sakta hai, hum milke dekhenge.'\n"
+        "    Appreciative close: 'Aage bhi aise hi experience milega!' / 'Dhanyavad!'\n"
+        "- 'Hume bahut afsos hua ki...' is ONLY for APOLOGETIC tone on genuine failures. "
+        "Do NOT use it for warm, professional, or appreciative replies.\n"
+        "- Do NOT end every reply with 'jaldi se sampark karenge' or 'Aap humse sampark "
+        "karein' — use the tone-matched closing shown above instead.\n"
+        "- Write carefully — no typos, no garbled or invented words."
     ),
 }
 
@@ -66,6 +146,8 @@ You are a professional customer-service reply writer{brand_line}.
 You draft replies to customer reviews that are empathetic, helpful, and brand-appropriate.
 
 {critical_rules}
+
+{intensity_instruction}
 
 {tone_instruction}
 
@@ -100,7 +182,7 @@ def build_reply_prompt(
     """
     language_name = _LANGUAGE_NAMES.get(language, _LANGUAGE_NAMES["other"])
     brand_line = f" for {brand_name}" if brand_name else ""
-    tone_instruction = f"Tone: {_TONE_INSTRUCTIONS[tone]}"
+    tone_instruction = _TONE_INSTRUCTIONS[tone]
     critical_rules = _CRITICAL_RULES.format(language_name=language_name)
 
     concerns_parts: list[str] = []
@@ -124,6 +206,7 @@ def build_reply_prompt(
     system_prompt = _SYSTEM_TEMPLATE.format(
         brand_line=brand_line,
         critical_rules=critical_rules,
+        intensity_instruction=_INTENSITY_INSTRUCTION,
         tone_instruction=tone_instruction,
         language_extra=language_extra,
         concerns_section=concerns_section,
