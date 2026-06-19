@@ -212,7 +212,7 @@ def list_extractions_pg(
         _set_tenant(cur, org_id)
         cur.execute(
             f"""
-            SELECT id, input_hash, product, stars, stars_inferred, buy_again,
+            SELECT id, input_hash, review_text, product, stars, stars_inferred, buy_again,
                    sentiment, urgency, language, review_length_chars, confidence,
                    topics, competitor_mentions, pros, cons, feature_requests,
                    model, prompt_version, schema_version, latency_ms,
@@ -229,6 +229,7 @@ def list_extractions_pg(
         cols = [
             "id",
             "input_hash",
+            "review_text",
             "product",
             "stars",
             "stars_inferred",
