@@ -11,6 +11,7 @@ import {
   type Review, type AuthenticityResult, type ReplyDraft, type ReplyTone,
   QuotaError, ServiceWarmingError,
 } from '../lib/api'
+import { useFilterContext } from '../lib/filterContext'
 
 // --- Constants ---
 
@@ -72,6 +73,7 @@ export default function ReviewDetailPage() {
   const { reviewHash } = useParams<{ reviewHash: string }>()
   const location = useLocation()
   const navigate = useNavigate()
+  const { setFilter } = useFilterContext()
 
   // Review comes from navigation state (no extra fetch needed)
   const review: Review | undefined = location.state?.review
@@ -173,12 +175,17 @@ export default function ReviewDetailPage() {
           <h2 className="font-sans font-semibold text-charcoal text-sm mb-4">What we found</h2>
           <div className="grid grid-cols-2 gap-3 text-sm">
             {review.sentiment && (
-              <InfoCell label="Sentiment" value={SENTIMENT_LABEL[review.sentiment] ?? review.sentiment} />
+              <InfoCell
+                label="Sentiment"
+                value={SENTIMENT_LABEL[review.sentiment] ?? review.sentiment}
+                onClick={() => { setFilter('sentiment', review.sentiment!); navigate('/reviews') }}
+              />
             )}
             <InfoCell
               label="Urgency"
               value={URGENCY_LABEL[review.urgency] ?? review.urgency}
               valueClass={review.urgency === 'high' ? 'text-amber font-medium' : undefined}
+              onClick={() => { setFilter('urgency', review.urgency); navigate('/reviews') }}
             />
           </div>
 
@@ -217,9 +224,13 @@ export default function ReviewDetailPage() {
               <p className="text-xs font-sans text-charcoal-light uppercase tracking-wide mb-2">Topics</p>
               <div className="flex flex-wrap gap-1.5">
                 {review.topics.map(t => (
-                  <span key={t} className="text-xs font-sans bg-gray-50 text-charcoal-light border border-gray-100 px-2 py-0.5 rounded-full">
+                  <button
+                    key={t}
+                    onClick={() => { setFilter('topic', t); navigate('/reviews') }}
+                    className="text-xs font-sans bg-gray-50 text-charcoal-light border border-gray-100 px-2 py-0.5 rounded-full hover:bg-green-light hover:text-green hover:border-green/20 transition-all"
+                  >
                     {t}
-                  </span>
+                  </button>
                 ))}
               </div>
             </div>
@@ -405,11 +416,24 @@ export default function ReviewDetailPage() {
   )
 }
 
-function InfoCell({ label, value, valueClass }: { label: string; value: string; valueClass?: string }) {
+function InfoCell({
+  label,
+  value,
+  valueClass,
+  onClick,
+}: {
+  label: string
+  value: string
+  valueClass?: string
+  onClick?: () => void
+}) {
   return (
-    <div className="bg-gray-50 rounded-lg p-3">
+    <button
+      onClick={onClick}
+      className={`bg-gray-50 rounded-lg p-3 text-left w-full ${onClick ? 'hover:bg-green-light/50 hover:ring-1 hover:ring-green/20 transition-all cursor-pointer' : 'cursor-default'}`}
+    >
       <p className="text-xs font-sans text-charcoal-light mb-0.5">{label}</p>
       <p className={`text-sm font-sans font-medium text-charcoal ${valueClass ?? ''}`}>{value}</p>
-    </div>
+    </button>
   )
 }

@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronRight, AlertTriangle, Upload } from 'lucide-react'
 import Layout from '../components/Layout'
+import FilterBar from '../components/FilterBar'
 import ErrorBox from '../components/ErrorBox'
-import { getReviews, type Review } from '../lib/api'
+import { useFilterContext } from '../lib/filterContext'
+import type { Review } from '../lib/api'
 
-// Sentiment colours
 const SENTIMENT_STYLE: Record<string, string> = {
   positive: 'bg-green-light text-green',
   negative: 'bg-amber-light text-amber',
@@ -18,33 +18,8 @@ const SENTIMENT_LABEL: Record<string, string> = {
 }
 
 export default function ReviewsPage() {
-  const [reviews, setReviews] = useState<Review[]>([])
-  const [loading, setLoading] = useState(true)
-  const [loadingMore, setLoadingMore] = useState(false)
-  const [error, setError] = useState<Error | null>(null)
-  const [hasMore, setHasMore] = useState(false)
-  const [offset, setOffset] = useState(0)
+  const { filteredReviews, loading, loadError, hasActiveFilters, stats, setFilter } = useFilterContext()
   const navigate = useNavigate()
-  const PAGE = 25
-
-  async function load(reset = false) {
-    const currentOffset = reset ? 0 : offset
-    reset ? setLoading(true) : setLoadingMore(true)
-    setError(null)
-    try {
-      const data = await getReviews({ limit: PAGE, offset: currentOffset })
-      setReviews(prev => reset ? data.results : [...prev, ...data.results])
-      setOffset(currentOffset + data.results.length)
-      setHasMore(data.results.length === PAGE)
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Could not load reviews'))
-    } finally {
-      setLoading(false)
-      setLoadingMore(false)
-    }
-  }
-
-  useEffect(() => { load(true) }, [])
 
   function openDetail(review: Review) {
     const hash = review.input_hash.replace('sha256:', '')
@@ -54,20 +29,49 @@ export default function ReviewsPage() {
   return (
     <Layout active="reviews">
       <div className="max-w-3xl">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="font-display text-2xl text-charcoal">Your reviews</h1>
             <p className="text-sm text-charcoal-light font-sans mt-0.5">
-              Click any review to see its analysis and draft a reply.
+              {hasActiveFilters
+                ? `${filteredReviews.length} of ${stats.total} reviews match active filters.`
+                : 'Click any review to see its analysis and draft a reply.'}
             </p>
           </div>
         </div>
 
+        {/* Quick filter chips */}
+        {!loading && !loadError && stats.total > 0 && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            <span className="text-xs font-sans text-charcoal-light self-center">Quick filter:</span>
+            <button
+              onClick={() => setFilter('urgency', 'high')}
+              className="text-xs font-sans px-2.5 py-1 rounded-full bg-amber-light text-amber hover:ring-2 hover:ring-amber/30 transition-all"
+            >
+              Urgent
+            </button>
+            <button
+              onClick={() => setFilter('sentiment', 'negative')}
+              className="text-xs font-sans px-2.5 py-1 rounded-full bg-amber-light text-amber hover:ring-2 hover:ring-amber/30 transition-all"
+            >
+              Negative
+            </button>
+            <button
+              onClick={() => setFilter('sentiment', 'positive')}
+              className="text-xs font-sans px-2.5 py-1 rounded-full bg-green-light text-green hover:ring-2 hover:ring-green/30 transition-all"
+            >
+              Positive
+            </button>
+          </div>
+        )}
+
+        <FilterBar />
+
         {loading && <SkeletonList />}
 
-        {error && <ErrorBox error={error} onRetry={() => load(true)} />}
+        {!loading && loadError && <ErrorBox error={loadError} onRetry={() => window.location.reload()} />}
 
-        {!loading && !error && reviews.length === 0 && (
+        {!loading && !loadError && filteredReviews.length === 0 && !hasActiveFilters && (
           <div className="text-center py-16">
             <Upload size={32} className="text-charcoal-light/40 mx-auto mb-4" />
             <h2 className="font-display text-lg text-charcoal mb-2">No reviews yet</h2>
@@ -83,9 +87,15 @@ export default function ReviewsPage() {
           </div>
         )}
 
-        {!loading && reviews.length > 0 && (
+        {!loading && !loadError && filteredReviews.length === 0 && hasActiveFilters && (
+          <div className="text-center py-12">
+            <p className="text-charcoal-light font-sans text-sm">No reviews match the active filters.</p>
+          </div>
+        )}
+
+        {!loading && !loadError && filteredReviews.length > 0 && (
           <div className="space-y-2">
-            {reviews.map(review => (
+            {filteredReviews.map(review => (
               <button
                 key={review.input_hash}
                 onClick={() => openDetail(review)}
@@ -114,16 +124,6 @@ export default function ReviewsPage() {
                 <ChevronRight size={16} className="text-charcoal-light/40 group-hover:text-charcoal-light shrink-0 transition-colors" />
               </button>
             ))}
-
-            {hasMore && (
-              <button
-                onClick={() => load(false)}
-                disabled={loadingMore}
-                className="w-full mt-2 py-3 text-sm font-sans text-green hover:text-green-muted border border-gray-100 rounded-lg bg-white shadow-card transition-colors disabled:opacity-50"
-              >
-                {loadingMore ? 'Loading…' : 'Load more reviews'}
-              </button>
-            )}
           </div>
         )}
       </div>

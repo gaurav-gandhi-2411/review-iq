@@ -1,69 +1,78 @@
-import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { TrendingUp, TrendingDown, Minus, Upload, AlertTriangle, Heart, ShieldCheck } from 'lucide-react'
+import { Upload, AlertTriangle, Heart } from 'lucide-react'
 import Layout from '../components/Layout'
+import FilterBar from '../components/FilterBar'
 import ErrorBox from '../components/ErrorBox'
-import { getHealthScore, getTrends, type HealthScore, type TrendTheme } from '../lib/api'
-
-type LoadState = 'loading' | 'empty' | 'loaded' | 'error'
+import { useFilterContext } from '../lib/filterContext'
 
 export default function DashboardPage() {
-  const [state, setState] = useState<LoadState>('loading')
-  const [health, setHealth] = useState<HealthScore | null>(null)
-  const [themes, setThemes] = useState<TrendTheme[]>([])
-  const [error, setError] = useState<Error | null>(null)
+  const { stats, loading, loadError, setFilter, filteredReviews, hasActiveFilters } = useFilterContext()
   const navigate = useNavigate()
 
-  async function load() {
-    setState('loading')
-    setError(null)
-    try {
-      const [h, t] = await Promise.all([getHealthScore(), getTrends(5)])
-      if (h.total_extractions === 0) {
-        setState('empty')
-        return
-      }
-      setHealth(h)
-      setThemes(t.themes)
-      setState('loaded')
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Could not load your dashboard'))
-      setState('error')
-    }
-  }
-
-  useEffect(() => { load() }, [])
+  const total = stats.total
+  const s_score = total > 0 ? stats.positiveCount / total : 0
+  const u_score = total > 0 ? 1 - stats.highUrgencyCount / total : 1
+  // auth component approximated as 1.0 (authenticity page has its own view)
+  const score = Math.round((0.50 * s_score + 0.20 * u_score + 0.30 * 1.0) * 100)
+  const band: 'healthy' | 'needs_attention' | 'at_risk' =
+    score >= 75 ? 'healthy' : score >= 50 ? 'needs_attention' : 'at_risk'
 
   return (
     <Layout active="dashboard">
       <div className="max-w-3xl">
         <h1 className="font-display text-2xl text-charcoal mb-1">What customers are saying</h1>
-        <p className="text-sm text-charcoal-light font-sans mb-8">
-          Based on your uploaded reviews.
+        <p className="text-sm text-charcoal-light font-sans mb-6">
+          {hasActiveFilters
+            ? `Showing ${total} filtered review${total !== 1 ? 's' : ''}.`
+            : 'Based on your uploaded reviews.'}
         </p>
 
-        {state === 'loading' && <SkeletonDashboard />}
+        <FilterBar />
 
-        {state === 'error' && error && (
-          <ErrorBox error={error} onRetry={load} />
+        {loading && <SkeletonDashboard />}
+
+        {!loading && loadError && (
+          <ErrorBox error={loadError} onRetry={() => window.location.reload()} />
         )}
 
-        {state === 'empty' && <EmptyState onUpload={() => navigate('/upload')} />}
+        {!loading && !loadError && total === 0 && !hasActiveFilters && (
+          <EmptyState onUpload={() => navigate('/upload')} />
+        )}
 
-        {state === 'loaded' && health && (
+        {!loading && !loadError && total === 0 && hasActiveFilters && (
+          <div className="text-center py-12">
+            <p className="text-charcoal-light font-sans text-sm">No reviews match the active filters.</p>
+          </div>
+        )}
+
+        {!loading && !loadError && total > 0 && (
           <div className="space-y-6">
             {/* Health score card */}
-            <HealthCard health={health} />
+            <HealthCard
+              score={score}
+              band={band}
+              positiveCount={stats.positiveCount}
+              total={total}
+              highUrgencyCount={stats.highUrgencyCount}
+              onFilterSentiment={(v) => setFilter('sentiment', v)}
+              onFilterUrgency={(v) => setFilter('urgency', v)}
+            />
 
-            {/* Top complaint themes */}
-            {themes.length > 0 && (
+            {/* Top concern themes */}
+            {stats.topTopics.length > 0 && (
               <div>
                 <h2 className="font-sans font-semibold text-charcoal text-base mb-3">
                   Top concerns from customers
                 </h2>
                 <div className="space-y-3">
-                  {themes.map((theme, i) => (
-                    <ThemeCard key={theme.theme} theme={theme} rank={i + 1} />
+                  {stats.topTopics.map((t, i) => (
+                    <TopicCard
+                      key={t.topic}
+                      topic={t.topic}
+                      count={t.count}
+                      rank={i + 1}
+                      onClick={() => setFilter('topic', t.topic)}
+                    />
                   ))}
                 </div>
               </div>
@@ -81,7 +90,7 @@ export default function DashboardPage() {
                 </p>
               </div>
               <span className="text-sm font-sans text-green group-hover:text-green-muted transition-colors">
-                See all reviews →
+                {hasActiveFilters ? `See ${total} filtered reviews` : 'See all reviews'} →
               </span>
             </button>
 
@@ -90,7 +99,9 @@ export default function DashboardPage() {
               <div>
                 <p className="font-sans font-medium text-charcoal text-sm">Add more reviews</p>
                 <p className="font-sans text-xs text-charcoal-light mt-0.5">
-                  {health.total_extractions} reviews analysed so far
+                  {filteredReviews.length !== total
+                    ? `${filteredReviews.length} of ${total} reviews showing`
+                    : `${total} reviews analysed so far`}
                 </p>
               </div>
               <button
@@ -107,9 +118,24 @@ export default function DashboardPage() {
   )
 }
 
-function HealthCard({ health }: { health: HealthScore }) {
-  const score = Math.round(health.score * 100)
-  const band = health.band
+function HealthCard({
+  score,
+  band,
+  positiveCount,
+  total,
+  highUrgencyCount,
+  onFilterSentiment,
+  onFilterUrgency,
+}: {
+  score: number
+  band: 'healthy' | 'needs_attention' | 'at_risk'
+  positiveCount: number
+  total: number
+  highUrgencyCount: number
+  onFilterSentiment: (v: string) => void
+  onFilterUrgency: (v: string) => void
+}) {
+  void total // used by caller for context; individual count is displayed instead
 
   const bandLabel = {
     healthy: 'Looking healthy',
@@ -146,20 +172,16 @@ function HealthCard({ health }: { health: HealthScore }) {
           <MetricPill
             icon={<Heart size={12} />}
             label="Positive sentiment"
-            value={`${Math.round(health.components.sentiment.score * 100)}%`}
+            value={`${positiveCount} reviews`}
             color="green"
+            onClick={() => onFilterSentiment('positive')}
           />
           <MetricPill
             icon={<AlertTriangle size={12} />}
             label="Urgent issues"
-            value={`${health.components.urgency.high_urgency_count} reviews`}
-            color={health.components.urgency.high_urgency_count > 5 ? 'amber' : 'neutral'}
-          />
-          <MetricPill
-            icon={<ShieldCheck size={12} />}
-            label="Flagged for review"
-            value={`${health.components.authenticity.priority_review_count} reviews`}
-            color={health.components.authenticity.priority_review_count > 0 ? 'amber' : 'neutral'}
+            value={`${highUrgencyCount} reviews`}
+            color={highUrgencyCount > 5 ? 'amber' : 'neutral'}
+            onClick={() => onFilterUrgency('high')}
           />
         </div>
       </div>
@@ -172,11 +194,13 @@ function MetricPill({
   label,
   value,
   color,
+  onClick,
 }: {
   icon: React.ReactNode
   label: string
   value: string
   color: 'green' | 'amber' | 'neutral'
+  onClick?: () => void
 }) {
   const colorClass = {
     green: 'text-green bg-green-light',
@@ -185,46 +209,46 @@ function MetricPill({
   }[color]
 
   return (
-    <div className={`flex items-center gap-1.5 text-xs font-sans px-2.5 py-1 rounded-full ${colorClass}`}>
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-1.5 text-xs font-sans px-2.5 py-1 rounded-full transition-all ${colorClass} ${onClick ? 'hover:ring-2 hover:ring-offset-1 hover:ring-current/30 cursor-pointer' : 'cursor-default'}`}
+    >
       {icon}
       <span className="font-medium">{value}</span>
       <span className="opacity-70">· {label}</span>
-    </div>
+    </button>
   )
 }
 
-function ThemeCard({ theme, rank }: { theme: TrendTheme; rank: number }) {
-  const pct = theme.pct_change
-  const delta = theme.delta_last
-
-  const TrendIcon = delta > 0 ? TrendingUp : delta < 0 ? TrendingDown : Minus
-  const trendColor = delta > 0 ? 'text-amber' : delta < 0 ? 'text-green' : 'text-charcoal-light'
-
-  // Plain-English theme name: capitalise and clean up underscore-separated labels
-  const label = theme.theme
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, c => c.toUpperCase())
+function TopicCard({
+  topic,
+  count,
+  rank,
+  onClick,
+}: {
+  topic: string
+  count: number
+  rank: number
+  onClick: () => void
+}) {
+  const label = topic.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 
   return (
-    <div className="bg-white rounded-lg border border-gray-100 shadow-card px-5 py-4 flex items-center gap-4">
-      <span className="font-display text-2xl text-charcoal-light/40 w-6 shrink-0">
-        {rank}
-      </span>
+    <button
+      onClick={onClick}
+      className="w-full text-left bg-white rounded-lg border border-gray-100 shadow-card px-5 py-4 flex items-center gap-4 hover:border-green/30 hover:shadow-card-hover transition-all group"
+    >
+      <span className="font-display text-2xl text-charcoal-light/40 w-6 shrink-0">{rank}</span>
       <div className="flex-1 min-w-0">
         <p className="font-sans font-medium text-charcoal text-sm">{label}</p>
         <p className="font-sans text-xs text-charcoal-light mt-0.5">
-          {theme.total} mention{theme.total !== 1 ? 's' : ''} total
+          {count} mention{count !== 1 ? 's' : ''}
         </p>
       </div>
-      <div className={`flex items-center gap-1 text-xs font-sans ${trendColor} shrink-0`}>
-        <TrendIcon size={14} />
-        {pct !== null
-          ? `${delta > 0 ? '+' : ''}${Math.round(pct * 100)}% this month`
-          : delta !== 0
-          ? `${delta > 0 ? '+' : ''}${delta} this month`
-          : 'Stable'}
-      </div>
-    </div>
+      <span className="text-xs font-sans text-green opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+        Filter →
+      </span>
+    </button>
   )
 }
 

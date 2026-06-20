@@ -22,6 +22,7 @@ export default function AuthenticityPage() {
     }
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- async data-loading in effect is intentional
   useEffect(() => { load() }, [])
 
   return (
