@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-route
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
 import { provision } from './lib/api'
+import { FilterProvider } from './lib/filterContext'
 import LoginPage from './pages/Login'
 import UploadPage from './pages/Upload'
 import DashboardPage from './pages/Dashboard'
@@ -26,8 +27,9 @@ function AuthRouter() {
       if (session) {
         // Ensure org is provisioned on every sign-in (idempotent on the server)
         try { await provision() } catch { /* provision errors are non-fatal — BFF handles missing org gracefully */ }
-        // New sign-in → go to upload so they can add data
-        if (_event === 'SIGNED_IN') navigate('/upload')
+        // New sign-in → go to upload so they can add data.
+        // Guard against session-restore on refresh (SIGNED_IN fires for both).
+        if (_event === 'SIGNED_IN' && window.location.pathname === '/') navigate('/upload')
       } else {
         navigate('/')
       }
@@ -44,15 +46,17 @@ function AuthRouter() {
   }
 
   return (
-    <Routes>
-      <Route path="/" element={session ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
-      <Route path="/upload" element={session ? <UploadPage /> : <Navigate to="/" replace />} />
-      <Route path="/dashboard" element={session ? <DashboardPage /> : <Navigate to="/" replace />} />
-      <Route path="/reviews" element={session ? <ReviewsPage /> : <Navigate to="/" replace />} />
-      <Route path="/reviews/:reviewHash" element={session ? <ReviewDetailPage /> : <Navigate to="/" replace />} />
-      <Route path="/authenticity" element={session ? <AuthenticityPage /> : <Navigate to="/" replace />} />
-      <Route path="*" element={<Navigate to={session ? '/dashboard' : '/'} replace />} />
-    </Routes>
+    <FilterProvider key={session?.user?.id ?? 'no-session'}>
+      <Routes>
+        <Route path="/" element={session ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
+        <Route path="/upload" element={session ? <UploadPage /> : <Navigate to="/" replace />} />
+        <Route path="/dashboard" element={session ? <DashboardPage /> : <Navigate to="/" replace />} />
+        <Route path="/reviews" element={session ? <ReviewsPage /> : <Navigate to="/" replace />} />
+        <Route path="/reviews/:reviewHash" element={session ? <ReviewDetailPage /> : <Navigate to="/" replace />} />
+        <Route path="/authenticity" element={session ? <AuthenticityPage /> : <Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to={session ? '/dashboard' : '/'} replace />} />
+      </Routes>
+    </FilterProvider>
   )
 }
 
