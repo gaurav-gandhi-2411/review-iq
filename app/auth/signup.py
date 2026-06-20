@@ -9,10 +9,11 @@ from typing import Any
 
 import psycopg2
 import structlog
-from fastapi import APIRouter, Header, HTTPException, status
+from fastapi import APIRouter, Header, HTTPException, Request, status
 
 from app.auth.keygen import generate_api_key
 from app.core.config import get_settings
+from app.core.rate_limit import limiter
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 log = structlog.get_logger(__name__)
@@ -128,7 +129,9 @@ def _provision_org_and_key(user_id: str, email: str) -> dict[str, str | int]:
 
 
 @router.post("/provision")
+@limiter.limit("10/minute")
 async def provision(
+    request: Request,
     authorization: str = Header(default="", alias="Authorization"),
 ) -> dict[str, object]:
     """On first Supabase login, create org + riq_live_ key.

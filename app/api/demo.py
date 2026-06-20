@@ -7,11 +7,12 @@ from collections import OrderedDict
 from datetime import datetime
 
 import structlog
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Request, status
 
 from app.core.language import detect_language
 from app.core.llm import extract_with_llm
 from app.core.prompts import PROMPT_VERSION, build_prompt
+from app.core.rate_limit import limiter
 from app.core.sanitize import sanitize, wrap_for_llm
 from app.core.schemas import ExtractionMeta, ReviewExtraction, ReviewRequest
 
@@ -74,7 +75,8 @@ def demo_cache_size() -> int:
 
 
 @router.post("/extract", response_model=ReviewExtraction)
-async def demo_extract(body: ReviewRequest) -> ReviewExtraction:
+@limiter.limit("5/minute")
+async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtraction:
     """Keyless demo extraction. Rate-limited. No results stored.
 
     Repeated identical reviews are served from a process-local in-memory LRU

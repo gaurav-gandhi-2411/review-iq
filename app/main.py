@@ -10,9 +10,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
-from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
-from slowapi.util import get_remote_address
+from slowapi.middleware import SlowAPIMiddleware
 
 from app.api.account import router as account_router
 from app.api.admin import router as admin_router
@@ -34,6 +34,7 @@ from app.auth.signup import router as signup_router
 from app.core.config import Settings, get_settings
 from app.core.logging import setup_logging
 from app.core.metrics import PrometheusMiddleware
+from app.core.rate_limit import limiter
 from app.core.storage import migrate
 
 log = structlog.get_logger(__name__)
@@ -52,11 +53,6 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 def create_app(settings: Settings | None = None) -> FastAPI:
     if settings is None:
         settings = get_settings()
-
-    limiter = Limiter(
-        key_func=get_remote_address,
-        default_limits=[f"{settings.rate_limit_per_minute}/minute"],
-    )
 
     _app = FastAPI(
         title="Review IQ",
@@ -81,6 +77,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     _app.state.limiter = limiter
     _app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
 
+    # Middleware order (last add_middleware = outermost = first to process requests):
+    #   SlowAPIMiddleware → PrometheusMiddleware → CORSMiddleware → route handler
+    # CORS is innermost so it handles preflight OPTIONS before rate-limit counters advance.
     # CORS — explicit allowlist only. Wildcard must never reach production.
     # Origins configured via ALLOWED_ORIGINS env var (comma-separated).
     # Default covers local dev + demo Pages site; production Cloud Run sets
@@ -94,6 +93,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
 
     _app.add_middleware(PrometheusMiddleware)
+    _app.add_middleware(SlowAPIMiddleware)
 
     # Ops (health + metrics) — always mounted, unauthenticated
     _app.include_router(ops_router)
