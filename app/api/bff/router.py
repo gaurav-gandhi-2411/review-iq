@@ -807,3 +807,7 @@ async def bff_request_quota_increase(
     )
     log.info("bff.quota_request.recorded", org_id=ctx.org_id, usage=usage_this_month, quota=quota)
     return {"recorded": True, "org_id": ctx.org_id}
+
+from app.api.bff.alerts import router as _alerts_router
+
+router.include_router(_alerts_router)
