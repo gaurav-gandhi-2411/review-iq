@@ -1,7 +1,7 @@
 # review-iq Vernacular Benchmark v0.1
 
 **Flipkart e-commerce reviews — audio/headphone category, English + Hinglish**
-Generated: 2026-06-20 11:03 UTC  |  Status: **INTERNAL ONLY — not for publication**
+Generated: 2026-06-20 11:13 UTC  |  Status: **INTERNAL ONLY — not for publication**
 
 ---
 
@@ -60,8 +60,8 @@ The candidate list is at `benchmark/dataset/candidates_for_review.jsonl`.
 | System | _all | en | hi-en |
 |---|---|---|---|
 | majority-baseline | 26.9% (n=43) | 24.8% (n=22) | 28.8% (n=21) |
-| llm-judge-llama-3.1-8b | 89.4% (n=43) | 56.5% (n=22) | 86.9% (n=21) |
-| review-iq | 49.7% (n=43) | 34.6% (n=22) | 66.9% (n=21) |
+| llm-judge-llama-3.1-8b | 61.4% (n=43) | 48.1% (n=22) | 86.9% (n=21) |
+| review-iq | 68.5% (n=43) | 67.6% (n=22) | 66.9% (n=21) |
 
 ### Task: LANG
 
@@ -89,17 +89,14 @@ The candidate list is at `benchmark/dataset/candidates_for_review.jsonl`.
 | bench-hien-015 | hi-en | Mahol Yarr Ky banawat Hai Iski Too Lovely Its Very Useful In Gym and CookingREAD | positive | neutral |
 | bench-hien-019 | hi-en | Osm products I am happy sound Bess kafi acha haiREAD MORE | positive | neutral |
 
-### URG divergences (11 of 43)
+### URG divergences (8 of 43)
 | ID | Slice | Text (preview) | Gold | Predicted |
 |---|---|---|---|---|
 | bench-en-002 | en | Good product..sound quality is good but bass is not so heavy as they are saying. | medium | low |
-| bench-en-005 | en | dissipointed !!!!    (not comfortable)                                           | medium | high |
 | bench-en-009 | en | I received a quick delivery from flipkart. The headphones are light weight and f | medium | low |
 | bench-en-011 | en | Hi guys I recently brought these headphone and have been using it for a while no | medium | low |
-| bench-en-013 | en | The bass the sound is aswsome. You will not face any issues with the sound as it | medium | low |
+| bench-en-013 | en | The bass the sound is aswsome. You will not face any issues with the sound as it | high | low |
 | bench-en-015 | en | It's been 3 month I'm using this headphone, Personally I'm Boat speaker and head | medium | low |
-| bench-en-018 | en | i am writing review after a 15 days use. sound quality and battery backup is qui | medium | high |
-| bench-en-021 | en | YOU PROBABLY NOTICED HOW MANY NOM OF PEOPLE BOUGHT UT AND RATED IT. but tell you | medium | high |
 | bench-hien-008 | hi-en | Slightly disappointed to buy this at 1800 price range neck band is irritating ma | medium | low |
 | bench-hien-014 | hi-en | Mivi collar wireless is best....... Not good, may be all paid youtube reviews... | medium | high |
 | bench-hien-020 | hi-en | Bass thoda kam hai jitna socha tha. 👌READ MORE | medium | low |
@@ -157,7 +154,7 @@ This is the floor.
 
 **Majority labels in this run:**
 - SENT: `positive` (distribution: {'positive': 30, 'negative': 12, 'neutral': 1})
-- URG: `low` (distribution: {'low': 29, 'medium': 13, 'high': 1})
+- URG: `low` (distribution: {'low': 29, 'medium': 9, 'high': 5})
 - LANG: `hi-en` (distribution: {'hi-en': 22, 'en': 21})
 
 ---
