@@ -1,0 +1,25 @@
+{
+  "id": "026_defect_no_escalation_medium",
+  "review_text": "Decent headphones overall — the sound quality is surprisingly good for the price and battery easily lasts all day. But the microphone is completely useless for calls. My coworkers can barely hear me even at full volume. Not worth the hassle of returning them since I mostly use them for music, but whoever designed the mic clearly didn't test it.",
+  "ground_truth": {
+    "product": "headphones",
+    "stars": null,
+    "stars_inferred": 3,
+    "pros": ["good sound quality for price", "long battery life"],
+    "cons": ["microphone inaudible on calls", "poor microphone quality"],
+    "buy_again": null,
+    "sentiment": "mixed",
+    "topics": ["sound_quality", "battery", "microphone"],
+    "competitor_mentions": [],
+    "urgency": "medium",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "buy_again", "sentiment", "language", "urgency"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons"],
+    "tolerance_fields": {"stars_inferred": 1},
+    "notes": "urgency MUST be medium — concrete fixable defect (mic failure) with no harm and no return demand. The low/medium boundary is 'is there a fixable defect?', not 'did they demand a refund?'. Regression guard for the defect-no-escalation under-call gap."
+  }
+}

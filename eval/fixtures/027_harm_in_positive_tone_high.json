@@ -1,0 +1,25 @@
+{
+  "id": "027_harm_in_positive_tone_high",
+  "review_text": "Really loving these headphones! Sound quality is excellent and the bass is punchy. Bluetooth pairs instantly every time. 5 stars for audio. Only issue is the ear cups press really tight — my ears start aching after about 20 minutes of use. Still a great buy for the price and I'd recommend them for short listening sessions.",
+  "ground_truth": {
+    "product": "headphones",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": ["excellent sound quality", "punchy bass", "instant Bluetooth pairing", "good value for price"],
+    "cons": ["ear cups too tight", "ear aching after 20 minutes of use"],
+    "buy_again": true,
+    "sentiment": "positive",
+    "topics": ["sound_quality", "bass", "bluetooth", "comfort"],
+    "competitor_mentions": [],
+    "urgency": "high",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "buy_again", "sentiment", "language", "urgency"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons"],
+    "tolerance_fields": {"stars_inferred": 1},
+    "notes": "urgency MUST be high — physical harm signal (ear aching after 20 min) regardless of 5-star audio praise or overall positive tone. Tone must not mask harm. Regression guard for the harm-in-positive-tone miss (benchmark case en-013)."
+  }
+}

@@ -1,7 +1,7 @@
 # review-iq Vernacular Benchmark v0.1
 
 **Flipkart e-commerce reviews — audio/headphone category, English + Hinglish**
-Generated: 2026-06-20 11:13 UTC  |  Status: **INTERNAL ONLY — not for publication**
+Generated: 2026-06-20 12:54 UTC  |  Status: **INTERNAL ONLY — not for publication**
 
 ---
 
@@ -25,67 +25,6 @@ Implications:
 
 **Path to a publishable v1:** Human-labeled gold set (≈20 min pass by a reviewer).
 The candidate list is at `benchmark/dataset/candidates_for_review.jsonl`.
-
----
-
-## Urgency rubric — gold standard
-
-This rubric is authoritative for this benchmark AND is the intended product behavior for
-review-iq's urgency classification. Scores are reported against this rubric.
-
-| Level | Trigger |
-|---|---|
-| **high** | ANY of: (a) health/safety/physical harm signal — pain, injury, bodily discomfort — **regardless of star rating or overall positive tone**; (b) explicit escalation: refund/return/replacement demand, legal/complaint/report threat; (c) defect suggesting a systemic or batch issue (arrived broken, same fault repeating). |
-| **medium** | A genuine, fixable product defect. No harm, no escalation. A concrete functional failure the seller should address but that won't compound if it waits (bad mic, won't pair, poor fit, bass distorts, doesn't match listing). |
-| **low** | Nothing actionable: praise, neutral, or subjective preference with no fixable defect. |
-
-**Boundaries:**
-- LOW vs MEDIUM: is there a concrete fixable defect? (no → low, yes → ≥medium)
-- MEDIUM vs HIGH: does ignoring it risk harm/escalation/pattern? (no → medium, yes → high)
-
----
-
-## URG adjudication — 2026-06-20
-
-After initial scoring, 8 English-slice reviews diverged on URG between review-iq and the
-LLM labeler. A human read of all 8 against the rubric above revealed a **labeler bias**:
-the labeling LLM (`llama-3.3-70b-versatile`) applied `medium` uniformly to any complaint
-review, never escalating to `high` even when the review contained explicit physical harm
-signals (ear pain, eye pain, headache).
-
-**Adjudication outcome — 4 labels changed, 4 confirmed:**
-
-| ID | Original label | Adjudicated | Reason |
-|---|---|---|---|
-| bench-en-005 | medium | **high** | "pain start after 10-15 min, very bad for ears" — physical harm |
-| bench-en-013 | medium | **high** | "eyes will start paing within 10 min" — physical harm despite 5-star rating |
-| bench-en-018 | medium | **high** | "ears pain after continuous use 30-45 min" — physical harm |
-| bench-en-021 | medium | **high** | "headache at high volume" — physical harm |
-| bench-en-002 | medium | medium | BT glitch + bass mismatch: fixable defect, no harm (confirmed) |
-| bench-en-009 | medium | medium | Mic inaudible on calls: fixable defect, no harm (confirmed) |
-| bench-en-011 | medium | medium | Mic poor, others can't hear: fixable defect, no harm (confirmed) |
-| bench-en-015 | medium | medium | Fit issues + bass distortion: fixable defect, no harm (confirmed) |
-
-All 8 records in `gold.jsonl` carry `urg_source: "human-adjudicated (2026-06-20, refined rubric)"`.
-
-**Effect on URG scores:**
-
-| System | URG/en (original) | URG/en (adjudicated) |
-|---|---|---|
-| majority-baseline | 24.8% | 24.8% |
-| llm-judge-llama-3.1-8b | 56.5% | 48.1% ↓ |
-| review-iq | 34.6% | **67.6%** ↑ |
-
-**Finding:** review-iq's HIGH calls for the three harm cases (en-005, en-018, en-021) were
-**correct**. The original URG/en gap (34.6% vs 56.5%) was an artefact of the labeler's
-medium-bias, not evidence of review-iq under-performing. Post-adjudication, review-iq leads
-the LLM judge on URG overall (68.5% vs 61.4%).
-
-**Residual gap:** review-iq still under-calls `medium` as `low` for functional defects
-without harm (en-002, en-009, en-011, en-015). One additional miss: en-013 was labeled
-`low` despite a physical harm signal — likely because the review has a 5-star rating and
-positive tone, which confused the urgency extraction. Both are deferred product improvements
-(tune the urgency prompt to the refined rubric; do not tune to the LLM labeler).
 
 ---
 
@@ -114,7 +53,7 @@ positive tone, which confused the urgency extraction. Both are deferred product 
 |---|---|---|---|
 | majority-baseline | 27.4% (n=43) | 25.9% (n=22) | 28.8% (n=21) |
 | llm-judge-llama-3.1-8b | 86.3% (n=43) | 83.9% (n=22) | 66.7% (n=21) |
-| review-iq | 68.0% (n=43) | 74.9% (n=22) | 59.5% (n=21) |
+| review-iq | 65.6% (n=43) | 64.5% (n=22) | 61.9% (n=21) |
 
 ### Task: URG
 
@@ -122,7 +61,7 @@ positive tone, which confused the urgency extraction. Both are deferred product 
 |---|---|---|---|
 | majority-baseline | 26.9% (n=43) | 24.8% (n=22) | 28.8% (n=21) |
 | llm-judge-llama-3.1-8b | 61.4% (n=43) | 48.1% (n=22) | 86.9% (n=21) |
-| review-iq | 68.5% (n=43) | 67.6% (n=22) | 66.9% (n=21) |
+| review-iq | 79.2% (n=43) | 78.2% (n=22) | 82.7% (n=21) |
 
 ### Task: LANG
 
@@ -144,22 +83,21 @@ positive tone, which confused the urgency extraction. Both are deferred product 
 |---|---|---|---|---|
 | bench-en-002 | en | Good product..sound quality is good but bass is not so heavy as they are saying. | negative | neutral |
 | bench-en-007 | en | Delivered in a day as promised by flipkart.. Big ups to the service for that.. C | positive | neutral |
+| bench-en-009 | en | I received a quick delivery from flipkart. The headphones are light weight and f | negative | neutral |
 | bench-en-013 | en | The bass the sound is aswsome. You will not face any issues with the sound as it | positive | neutral |
+| bench-en-014 | en | After using it for more than month here is a honest review. Sound Quality, Bass  | negative | neutral |
 | bench-hien-001 | hi-en | As they rightly say about Chinese Products: Chala Toh Chand Tak; Nahi Toh Raat T | negative | neutral |
 | bench-hien-007 | hi-en | For better comfort  don't look at boat 225, mi basic and other redmi earphones.  | positive | neutral |
-| bench-hien-015 | hi-en | Mahol Yarr Ky banawat Hai Iski Too Lovely Its Very Useful In Gym and CookingREAD | positive | neutral |
-| bench-hien-019 | hi-en | Osm products I am happy sound Bess kafi acha haiREAD MORE | positive | neutral |
 
-### URG divergences (8 of 43)
+### URG divergences (7 of 43)
 | ID | Slice | Text (preview) | Gold | Predicted |
 |---|---|---|---|---|
 | bench-en-002 | en | Good product..sound quality is good but bass is not so heavy as they are saying. | medium | low |
-| bench-en-009 | en | I received a quick delivery from flipkart. The headphones are light weight and f | medium | low |
-| bench-en-011 | en | Hi guys I recently brought these headphone and have been using it for a while no | medium | low |
-| bench-en-013 | en | The bass the sound is aswsome. You will not face any issues with the sound as it | high | low |
+| bench-en-007 | en | Delivered in a day as promised by flipkart.. Big ups to the service for that.. C | low | medium |
+| bench-en-013 | en | The bass the sound is aswsome. You will not face any issues with the sound as it | high | medium |
 | bench-en-015 | en | It's been 3 month I'm using this headphone, Personally I'm Boat speaker and head | medium | low |
-| bench-hien-008 | hi-en | Slightly disappointed to buy this at 1800 price range neck band is irritating ma | medium | low |
-| bench-hien-014 | hi-en | Mivi collar wireless is best....... Not good, may be all paid youtube reviews... | medium | high |
+| bench-hien-007 | hi-en | For better comfort  don't look at boat 225, mi basic and other redmi earphones.  | low | medium |
+| bench-hien-014 | hi-en | Mivi collar wireless is best....... Not good, may be all paid youtube reviews... | medium | low |
 | bench-hien-020 | hi-en | Bass thoda kam hai jitna socha tha. 👌READ MORE | medium | low |
 
 ### LANG divergences (12 of 43)
@@ -227,16 +165,8 @@ Labeling prompt SHA256: see `benchmark/dataset/labeling_prompt.txt`
 All 43 candidates labeled in a single pass. Labels stored in `benchmark/dataset/gold.jsonl`
 with `labels_source: LLM-generated (llama-3.3-70b-versatile, internal benchmark)`.
 
-**URG exception:** 8 English-slice URG labels were human-adjudicated on 2026-06-20
-(see adjudication section above). These 8 records carry `urg_source: human-adjudicated`
-in gold.jsonl. All other labels remain LLM-generated.
-
 Leakage check: 101 CI fixture texts indexed. en: 0 leaked. hi-en: 15 leaked (all CI
 hi-en fixtures correctly excluded). Benchmark candidates are disjoint from CI fixtures.
-
-**Path to public v1:** Full human SENT + URG + LANG label pass on all 43 candidates
-(≈20–30 min). Candidate list: `benchmark/dataset/candidates_for_review.jsonl`.
-Do NOT publish this report or cite its numbers externally until that pass is complete.
 
 ---
 

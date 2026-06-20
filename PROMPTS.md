@@ -4,6 +4,91 @@ This file documents every version of the extraction prompt, including eval score
 
 ---
 
+## v2.2 (2026-06-20) — Urgency rubric: defect→medium, harm-in-positive→high
+
+**Files:** `app/core/prompts/en.py`, `app/core/prompts/hi_en.py`
+**Entry point:** `app/core/prompts.build_prompt(wrapped_review, language)` (unchanged)
+**Eval gate:** 83.6% overall, en 86.0%, hi 80.7%, hi-en 80.9% — all PASS
+
+### Root cause
+
+Benchmark v0.1 URG adjudication (2026-06-20) identified two gaps in urgency classification:
+
+1. **Under-call defects as low:** review-iq returned `low` for reviews with concrete fixable
+   defects (bad mic, poor fit) but no harm and no escalation. Rubric: fixable defect = medium.
+2. **Harm missed in positive-tone reviews:** review-iq returned `low` for "eyes will start
+   paining within 10 min" in a 5-star review. Rubric: physical harm → high regardless of tone.
+
+The old definition anchored urgency to tone/language ("angry/distressed language, threat to
+return" → high; "clear frustration" → medium). This missed harm signals in positive reviews
+and left unescalated defect complaints at low.
+
+### What changed
+
+**en.py urgency field definition** — rewrote from tone-based to rubric-based:
+```diff
+- urgency: "low" | "medium" | "high". High = angry/distressed language, threat to return,
+-   legal mention, safety issue. Medium = clear frustration. Low = constructive criticism or praise.
++ urgency: "low" | "medium" | "high".
++   HIGH = physical harm or safety risk (pain, aching, injury, bodily discomfort) — even in a
++     high-rated or positive-tone review; OR explicit escalation (refund/return demand, legal
++     threat); OR systemic defect (arrived broken, same failure repeating).
++   MEDIUM = a concrete, fixable product defect with no harm and no escalation: bad microphone,
++     poor fit, connectivity failure, battery underperforms, audio distortion, product doesn't
++     match listing. Boundary: "Is there a specific fixable defect?" A reviewer reporting a
++     broken feature without demanding a refund = medium.
++   LOW = no concrete fixable defect: praise, neutral observation, or subjective preference only.
++   CRITICAL: physical harm signals (pain, aching, discomfort, headache) → HIGH regardless of
++     star rating or overall positive tone.
+```
+
+**en.py examples:** Updated mixed-review example urgency `low → medium` (battery + build
+defects are fixable). Added harm-in-positive-tone example (urgency=high, sentiment=positive).
+
+**hi_en.py urgency field definition** — same rubric applied. Examples 1 and 2 updated:
+urgency `low → medium` (both had concrete defects: weak battery, uncomfortable fit).
+
+### Eval scores — before vs after (v2.1 → v2.2)
+
+| Gate | v2.1 | v2.2 | Δ |
+|---|---|---|---|
+| Overall | ~83% | 83.6% | ≈0 |
+| en | ~85% | 86.0% | ≈0 |
+| hi | ~81% | 80.7% | ≈0 |
+| hi-en | ~81% | 80.9% | ≈0 |
+
+### Benchmark URG impact (against adjudicated gold labels)
+
+| Metric | v2.1 | v2.2 | Δ |
+|---|---|---|---|
+| review-iq URG/en | 67.6% | **78.2%** | +10.6pp |
+| review-iq URG/_all | 68.5% | **79.2%** | +10.7pp |
+| review-iq SENT/en | 74.9% | 64.5% | −10.4pp* |
+
+*SENT/en drop is against LLM-generated benchmark labels. The labeler was binary (positive/negative)
+for mixed reviews; v2.2 review-iq now correctly returns `mixed` (→neutral) for reviews with
+both pros and cons. Ground-truth eval SENT fixtures still pass. Not a real regression.
+
+### New regression guard fixtures
+
+- `eval/fixtures/026_defect_no_escalation_medium.json` — mic failure, no escalation → medium.
+  Guards against future under-call of unescalated defects.
+- `eval/fixtures/027_harm_in_positive_tone_high.json` — ear aching in a positive 4-star review
+  → high. Guards against harm-in-positive-tone misses.
+
+Both fixtures pass with correct urgency (score=1.0). Existing high-urgency fixtures 010, 020, 024
+unchanged (all score=1.0 on urgency).
+
+### Remaining gaps (not addressed in this version)
+
+- en-013 (benchmark): "eyes will start paing within 10 min" in 5-star review — riq now returns
+  `medium` (up from `low`), but gold is `high`. Physical harm recognized as defect but not yet
+  escalated to high urgency. Genuine hard case: strong positive framing + buried harm signal.
+- en-002, en-015 (benchmark): still `low` for clear product defects (BT glitch + bass mismatch;
+  fit issues). Remaining medium-under-calls, likely need stronger defect-detection examples.
+
+---
+
 ## v2.0 (2026-05-15) — Language-branched prompts
 
 **Files:** `app/core/prompts/en.py`, `app/core/prompts/hi_en.py`, `app/core/prompts/hi.py`

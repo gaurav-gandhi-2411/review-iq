@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-20 11:13 UTC",
-  "replay_mode": true,
+  "generated_at": "2026-06-20 12:54 UTC",
+  "replay_mode": false,
   "n_candidates": 43,
   "slices": [
     "en",
@@ -1776,7 +1776,7 @@
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 15,
+          "latency_ms": 0,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -2326,7 +2326,7 @@
             "LANG": "hi-en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 15,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -2563,18 +2563,18 @@
             "n": 43,
             "n_error": 0,
             "accuracy": 0.8372,
-            "macro_f1": 0.6801,
-            "primary_metric": 0.6801,
+            "macro_f1": 0.6565,
+            "primary_metric": 0.6565,
             "primary_metric_name": "macro_f1",
             "per_class_f1": {
-              "positive": 0.9091,
+              "positive": 0.9474,
               "neutral": 0.2222,
-              "negative": 0.9091
+              "negative": 0.8
             },
             "confusion": [
               [
-                25,
-                5,
+                27,
+                3,
                 0
               ],
               [
@@ -2584,8 +2584,8 @@
               ],
               [
                 0,
-                2,
-                10
+                4,
+                8
               ]
             ],
             "labels": [
@@ -2597,14 +2597,14 @@
           "en": {
             "n": 22,
             "n_error": 0,
-            "accuracy": 0.8636,
-            "macro_f1": 0.7487,
-            "primary_metric": 0.7487,
+            "accuracy": 0.7727,
+            "macro_f1": 0.6454,
+            "primary_metric": 0.6454,
             "primary_metric_name": "macro_f1",
             "per_class_f1": {
               "positive": 0.9231,
-              "neutral": 0.4,
-              "negative": 0.9231
+              "neutral": 0.2857,
+              "negative": 0.7273
             },
             "confusion": [
               [
@@ -2619,8 +2619,8 @@
               ],
               [
                 0,
-                1,
-                6
+                3,
+                4
               ]
             ],
             "labels": [
@@ -2632,19 +2632,19 @@
           "hi-en": {
             "n": 21,
             "n_error": 0,
-            "accuracy": 0.8095,
-            "macro_f1": 0.5951,
-            "primary_metric": 0.5951,
+            "accuracy": 0.9048,
+            "macro_f1": 0.6189,
+            "primary_metric": 0.6189,
             "primary_metric_name": "macro_f1",
             "per_class_f1": {
-              "positive": 0.8966,
+              "positive": 0.9677,
               "neutral": 0.0,
               "negative": 0.8889
             },
             "confusion": [
               [
-                13,
-                3,
+                15,
+                1,
                 0
               ],
               [
@@ -2669,29 +2669,29 @@
           "_all": {
             "n": 43,
             "n_error": 0,
-            "accuracy": 0.814,
-            "macro_f1": 0.6853,
-            "primary_metric": 0.6853,
+            "accuracy": 0.8372,
+            "macro_f1": 0.7924,
+            "primary_metric": 0.7924,
             "primary_metric_name": "macro_f1",
             "per_class_f1": {
-              "low": 0.8923,
-              "medium": 0.3636,
-              "high": 0.8
+              "low": 0.9,
+              "medium": 0.5882,
+              "high": 0.8889
             },
             "confusion": [
               [
-                29,
-                0,
+                27,
+                2,
                 0
               ],
               [
-                6,
-                2,
-                1
+                4,
+                5,
+                0
               ],
               [
-                1,
                 0,
+                1,
                 4
               ]
             ],
@@ -2704,29 +2704,29 @@
           "en": {
             "n": 22,
             "n_error": 0,
-            "accuracy": 0.7727,
-            "macro_f1": 0.6764,
-            "primary_metric": 0.6764,
+            "accuracy": 0.8182,
+            "macro_f1": 0.782,
+            "primary_metric": 0.782,
             "primary_metric_name": "macro_f1",
             "per_class_f1": {
-              "low": 0.8387,
-              "medium": 0.3333,
+              "low": 0.8889,
+              "medium": 0.6,
               "high": 0.8571
             },
             "confusion": [
               [
-                13,
-                0,
-                0
-              ],
-              [
-                4,
+                12,
                 1,
                 0
               ],
               [
-                1,
+                2,
+                3,
+                0
+              ],
+              [
                 0,
+                1,
                 3
               ]
             ],
@@ -2740,24 +2740,24 @@
             "n": 21,
             "n_error": 0,
             "accuracy": 0.8571,
-            "macro_f1": 0.6693,
-            "primary_metric": 0.6693,
+            "macro_f1": 0.8268,
+            "primary_metric": 0.8268,
             "primary_metric_name": "macro_f1",
             "per_class_f1": {
-              "low": 0.9412,
-              "medium": 0.4,
-              "high": 0.6667
+              "low": 0.9091,
+              "medium": 0.5714,
+              "high": 1.0
             },
             "confusion": [
               [
-                16,
-                0,
+                15,
+                1,
                 0
               ],
               [
                 2,
-                1,
-                1
+                2,
+                0
               ],
               [
                 0,
@@ -2896,7 +2896,7 @@
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 171,
+          "latency_ms": 1250,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -2918,7 +2918,7 @@
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 16,
+          "latency_ms": 3969,
           "diverges": {
             "SENT": true,
             "URG": true,
@@ -2940,7 +2940,7 @@
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 16030,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -2962,7 +2962,7 @@
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 16,
+          "latency_ms": 16047,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -2984,7 +2984,7 @@
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 15546,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3006,7 +3006,7 @@
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 16141,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3024,14 +3024,14 @@
           },
           "pred": {
             "SENT": "neutral",
-            "URG": "low",
+            "URG": "medium",
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 14,
+          "latency_ms": 15202,
           "diverges": {
             "SENT": true,
-            "URG": false,
+            "URG": true,
             "LANG": false
           }
         },
@@ -3050,7 +3050,7 @@
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 16172,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3067,15 +3067,15 @@
             "LANG": "en"
           },
           "pred": {
-            "SENT": "negative",
-            "URG": "low",
+            "SENT": "neutral",
+            "URG": "medium",
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 16,
+          "latency_ms": 15250,
           "diverges": {
-            "SENT": false,
-            "URG": true,
+            "SENT": true,
+            "URG": false,
             "LANG": false
           }
         },
@@ -3094,7 +3094,7 @@
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 15171,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3112,14 +3112,14 @@
           },
           "pred": {
             "SENT": "neutral",
-            "URG": "low",
+            "URG": "medium",
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 16280,
           "diverges": {
             "SENT": false,
-            "URG": true,
+            "URG": false,
             "LANG": false
           }
         },
@@ -3138,7 +3138,7 @@
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 16,
+          "latency_ms": 16172,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3156,11 +3156,11 @@
           },
           "pred": {
             "SENT": "neutral",
-            "URG": "low",
+            "URG": "medium",
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 15155,
           "diverges": {
             "SENT": true,
             "URG": true,
@@ -3177,14 +3177,14 @@
             "LANG": "en"
           },
           "pred": {
-            "SENT": "negative",
+            "SENT": "neutral",
             "URG": "medium",
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 16187,
           "diverges": {
-            "SENT": false,
+            "SENT": true,
             "URG": false,
             "LANG": false
           }
@@ -3204,7 +3204,7 @@
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 15,
+          "latency_ms": 15296,
           "diverges": {
             "SENT": false,
             "URG": true,
@@ -3226,7 +3226,7 @@
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 1509344,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3248,7 +3248,7 @@
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 1453,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3270,7 +3270,7 @@
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 15,
+          "latency_ms": 1015,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3292,7 +3292,7 @@
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 1234,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3314,7 +3314,7 @@
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 1625,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3336,7 +3336,7 @@
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 15,
+          "latency_ms": 6250,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3358,7 +3358,7 @@
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 15375,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3380,7 +3380,7 @@
             "LANG": "hi-en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 29890,
           "diverges": {
             "SENT": true,
             "URG": false,
@@ -3402,7 +3402,7 @@
             "LANG": "hi-en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 10890,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3424,7 +3424,7 @@
             "LANG": "hi-en"
           },
           "errors": null,
-          "latency_ms": 16,
+          "latency_ms": 20219,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3446,7 +3446,7 @@
             "LANG": "hi-en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 20046,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3468,7 +3468,7 @@
             "LANG": "hi-en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 20108,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3490,7 +3490,7 @@
             "LANG": "hi-en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 20157,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3508,14 +3508,14 @@
           },
           "pred": {
             "SENT": "neutral",
-            "URG": "low",
+            "URG": "medium",
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 15092,
           "diverges": {
             "SENT": true,
-            "URG": false,
+            "URG": true,
             "LANG": true
           }
         },
@@ -3530,14 +3530,14 @@
           },
           "pred": {
             "SENT": "negative",
-            "URG": "low",
+            "URG": "medium",
             "LANG": "hi-en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 20109,
           "diverges": {
             "SENT": false,
-            "URG": true,
+            "URG": false,
             "LANG": false
           }
         },
@@ -3556,7 +3556,7 @@
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 14984,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3578,7 +3578,7 @@
             "LANG": "hi-en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 20155,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3600,7 +3600,7 @@
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 16,
+          "latency_ms": 14141,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3622,7 +3622,7 @@
             "LANG": "hi-en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 18062,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3644,7 +3644,7 @@
             "LANG": "hi-en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 19015,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3662,11 +3662,11 @@
           },
           "pred": {
             "SENT": "negative",
-            "URG": "high",
+            "URG": "low",
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 15202,
           "diverges": {
             "SENT": false,
             "URG": true,
@@ -3683,14 +3683,14 @@
             "LANG": "hi-en"
           },
           "pred": {
-            "SENT": "neutral",
+            "SENT": "positive",
             "URG": "low",
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 4078,
           "diverges": {
-            "SENT": true,
+            "SENT": false,
             "URG": false,
             "LANG": true
           }
@@ -3710,7 +3710,7 @@
             "LANG": "hi-en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 17984,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3732,7 +3732,7 @@
             "LANG": "hi-en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 20062,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3754,7 +3754,7 @@
             "LANG": "hi-en"
           },
           "errors": null,
-          "latency_ms": 14,
+          "latency_ms": 18078,
           "diverges": {
             "SENT": false,
             "URG": false,
@@ -3771,14 +3771,14 @@
             "LANG": "hi-en"
           },
           "pred": {
-            "SENT": "neutral",
+            "SENT": "positive",
             "URG": "low",
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 14796,
           "diverges": {
-            "SENT": true,
+            "SENT": false,
             "URG": false,
             "LANG": true
           }
@@ -3798,7 +3798,7 @@
             "LANG": "en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 13875,
           "diverges": {
             "SENT": false,
             "URG": true,
@@ -3820,7 +3820,7 @@
             "LANG": "hi-en"
           },
           "errors": null,
-          "latency_ms": 0,
+          "latency_ms": 18141,
           "diverges": {
             "SENT": false,
             "URG": false,

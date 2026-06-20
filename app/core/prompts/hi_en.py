@@ -1,4 +1,4 @@
-"""Hinglish (Roman-script Hindi/English code-mix) extraction prompt — v2.1."""
+"""Hinglish (Roman-script Hindi/English code-mix) extraction prompt — v2.2 (urgency rubric: defect→medium, harm-in-positive→high)."""
 
 from __future__ import annotations
 
@@ -24,8 +24,7 @@ Field definitions:
 - sentiment: "positive" | "negative" | "neutral" | "mixed".
 - topics: English topic words. Use snake_case (e.g. sound_quality, battery, price, delivery_service).
 - competitor_mentions: Brand names mentioned. Empty list if none.
-- urgency: "high" (safety/return intent/anger), "medium" (frustration, delivery issues),
-  "low" (normal feedback).
+- urgency: "high" (physical pain or bodily discomfort — regardless of rating or positive tone — or explicit refund/return demand or legal threat); "medium" (concrete fixable defect with no harm and no escalation: bad mic, poor fit, connectivity failure, battery too weak, audio distortion — reporting a broken feature without demanding a refund = medium); "low" (no concrete fixable defect: praise, neutral observation, subjective preference). CRITICAL: physical harm signals (pain, aching, headache, discomfort) → HIGH even when the overall review is enthusiastic or 5-star.
 - feature_requests: Feature wishes — translate to English. Empty list if none.
 - confidence: 0.0–1.0.
 
@@ -51,13 +50,13 @@ WARRANTY/RESOLUTION STORIES:
 """
 
 _EXAMPLES = """
-Example 1 — Hinglish mixed review (standard case):
+Example 1 — Hinglish mixed review, concrete battery defect, no escalation (urgency=medium):
 Review: <review>Superb earphone, sound ekdum mast hai yaar. Apple earphone ko competition dega. But battery bahut weak hai. Paisa vasool nahi laga for 2000 rupees.</review>
-Output: {"product": "earphone", "stars": null, "stars_inferred": 3, "pros": ["excellent sound quality", "competitive with Apple"], "cons": ["poor battery life", "not value for money at 2000 rupees"], "buy_again": null, "sentiment": "mixed", "topics": ["sound_quality", "battery", "price", "comparison"], "competitor_mentions": ["Apple"], "urgency": "low", "feature_requests": [], "language": "hi-en", "confidence": 0.88}
+Output: {"product": "earphone", "stars": null, "stars_inferred": 3, "pros": ["excellent sound quality", "competitive with Apple"], "cons": ["poor battery life", "not value for money at 2000 rupees"], "buy_again": null, "sentiment": "mixed", "topics": ["sound_quality", "battery", "price", "comparison"], "competitor_mentions": ["Apple"], "urgency": "medium", "feature_requests": [], "language": "hi-en", "confidence": 0.88}
 
-Example 2 — Sarcastic backhanded pros (parenthetical negation):
+Example 2 — Sarcastic backhanded pros, comfort/fit defect, no escalation (urgency=medium):
 Review: <review>Pros: Good sound quality(not much better than a cheap local earphone) Nice design(thoda plastic lagta hai)Cons: Gets uncomfortable after 30 min. Not worth the price.</review>
-Output: {"product": "earphone", "stars": null, "stars_inferred": 2, "pros": ["acceptable sound quality", "decent design"], "cons": ["not significantly better than cheap alternatives", "feels plasticky", "uncomfortable after 30 minutes", "overpriced"], "buy_again": false, "sentiment": "negative", "topics": ["sound_quality", "comfort", "design", "price"], "competitor_mentions": [], "urgency": "low", "feature_requests": [], "language": "hi-en", "confidence": 0.85}
+Output: {"product": "earphone", "stars": null, "stars_inferred": 2, "pros": ["acceptable sound quality", "decent design"], "cons": ["not significantly better than cheap alternatives", "feels plasticky", "uncomfortable after 30 minutes", "overpriced"], "buy_again": false, "sentiment": "negative", "topics": ["sound_quality", "comfort", "design", "price"], "competitor_mentions": [], "urgency": "medium", "feature_requests": [], "language": "hi-en", "confidence": 0.85}
 
 Example 3 — Short enthusiastic review with Hindi phrases:
 Review: <review>Ekdum mast product hai bhai! Bahut accha sound, bass zabardast hai. Value for money, totally recommend karta hoon.</review>
