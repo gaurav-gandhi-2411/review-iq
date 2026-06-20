@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { Upload, BarChart2, LogOut, MessageSquare, ShieldCheck } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import LogoMark from './LogoMark'
 
 interface Props { children: React.ReactNode; active?: 'upload' | 'dashboard' | 'reviews' | 'authenticity' }
 
@@ -16,7 +17,10 @@ export default function Layout({ children, active }: Props) {
     <div className="min-h-screen bg-cream">
       <header className="bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
-          <span className="font-display text-lg text-charcoal tracking-tight">review-iq</span>
+          <div className="flex items-center gap-2">
+            <LogoMark size={24} />
+            <span className="font-display text-lg text-charcoal tracking-tight">review-iq</span>
+          </div>
           <nav className="flex items-center gap-1">
             <NavLink href="/dashboard" active={active === 'dashboard'} icon={<BarChart2 size={15} />}>
               Dashboard

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { Mail, ArrowRight, Loader2 } from 'lucide-react'
+import LogoMark from '../components/LogoMark'
 
 type Phase = 'idle' | 'loading' | 'sent' | 'error'
 
@@ -37,6 +38,9 @@ export default function LoginPage() {
       <div className="relative w-full max-w-sm">
         {/* Wordmark */}
         <div className="text-center mb-8">
+          <div className="flex justify-center mb-3">
+            <LogoMark size={48} />
+          </div>
           <h1 className="font-display text-3xl text-charcoal tracking-tight">review-iq</h1>
           <p className="mt-2 text-charcoal-light font-sans text-sm leading-relaxed">
             Know what your customers actually think.

@@ -1,0 +1,16 @@
+interface Props { size?: number }
+
+export default function LogoMark({ size = 32 }: Props) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 32 32"
+      width={size}
+      height={size}
+      aria-hidden="true"
+    >
+      <rect width="32" height="32" rx="7" fill="#1E6D3D" />
+      <path d="M16,6 L18.5,13.5 L26,16 L18.5,18.5 L16,26 L13.5,18.5 L6,16 L13.5,13.5 Z" fill="white" />
+    </svg>
+  )
+}
