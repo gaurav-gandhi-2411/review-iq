@@ -7,7 +7,7 @@ from app.core.prompts import PROMPT_VERSION, build_prompt
 
 class TestPromptVersion:
     def test_version_is_v2(self) -> None:
-        assert PROMPT_VERSION == "v2.1"
+        assert PROMPT_VERSION == "v2.2"
 
 
 class TestBuildPromptDispatch:

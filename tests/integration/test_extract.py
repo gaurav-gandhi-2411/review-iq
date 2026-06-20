@@ -94,7 +94,7 @@ class TestExtractSingle:
         assert data["stars_inferred"] == 3
         assert data["buy_again"] is False
         assert "Dyson" in data["competitor_mentions"]
-        assert data["extraction_meta"]["prompt_version"] == "v2.1"
+        assert data["extraction_meta"]["prompt_version"] == "v2.2"
 
     @pytest.mark.asyncio
     async def test_extract_missing_api_key_returns_401(self, client: AsyncClient) -> None:

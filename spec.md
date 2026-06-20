@@ -1,179 +1,148 @@
-# Project Spec: review-iq — Data Asset + Correction Flywheel (the moat foundation)
+# Project Spec: review-iq — Indian Vernacular Review-Understanding Benchmark
 
 ## Goal
-Turn review-iq from a stateless processor into a system that builds a durable, structured,
-per-seller DATA ASSET out of reviews, and captures every user CORRECTION as labeled data that
-compounds into the product's only real moat (better evals, better prompts, and a future fine-tuned
-India-vernacular model nobody else can replicate). This is the foundation every other feature reads
-from. The pitch to a non-technical seller: "We turn your unstructured review pile into a structured
-intelligence asset YOU own — isolated, exportable, and yours — and it gets smarter every time you
-correct it." Vertical-agnostic (apparel, electronics, grocery, supplements — any seller without an
-ML team). Free tier, $0; this build is largely LLM-free (capture + DB + export), so quota-immune.
+Build a RIGOROUS, REPRODUCIBLE benchmark for review-understanding on Indian vernacular + code-mixed
+text (English / Hindi / Hinglish), measuring multiple systems fairly on the same tasks and gold
+labels. Purpose: (a) an honest internal yardstick of where review-iq actually stands vs. general
+LLMs and any fairly-runnable baseline, and (b) a potential public credibility artifact — published
+ONLY if results are strong, decided AFTER seeing them. Free tier, $0.
 
-## Core principles (non-negotiable)
-- **The seller's data is the seller's.** Every record and correction is org-isolated (RLS). A
-  seller can export their full asset. This is both an integrity rule and a selling point.
-- **Corrections are candidates, never auto-truth.** A user correction feeds a HUMAN-REVIEWED
-  pipeline into eval fixtures / few-shot examples — it is never silently trusted or auto-applied
-  to the model. (Same discipline that's kept this project's evals honest.)
-- **No cross-tenant data use without explicit consent.** Aggregating sellers' data into a shared
-  training corpus is a SEPARATE, consent-gated, opt-in decision — NOT built in this phase. Default
-  is strict per-org isolation. Document the consent path; do not implement cross-tenant pooling.
+## The non-negotiable principle (this build is different)
+**Credibility = honesty, including where review-iq LOSES.** This benchmark must be designed so that
+a skeptical third party would call it fair. That means:
+- Baselines run under the SAME conditions, same inputs, same scoring, no home-field advantage for
+  review-iq (e.g. don't give review-iq a tuned prompt and baselines a naive one — document every
+  prompt used for every system).
+- Gold labels created/validated independently of any system's output (no "review-iq's output is the
+  gold standard" circularity).
+- Results published/recorded INCLUDING tasks/cases where a general model beats review-iq.
+- Full methodology, data construction, prompts, and scoring code reproducible.
+- **Rigging this to make review-iq win destroys its entire value.** The orchestrator must NOT tune
+  toward review-iq winning; it reports the true numbers whatever they are.
 
 ## Current state (existing project — do not break)
-- `main` at v0.6.3 (prod live: extraction, authenticity, insights, demo UI). Multi-tenant Postgres
-  + RLS. Free tier.
-- `extractions` table stores per-review output_json already (the asset partly exists).
-  `authenticity_audits` stores authenticity results. **Known gap:** the two use different hash
-  schemes and can't be joined today (per-SKU authenticity was deferred for this reason) — this
-  phase is where review identity gets reconciled.
-- FROZEN contracts: `/v1`, `/v2/extract`, `/v2/reviews`, `/v2/ingest`, `/v2/authenticity`,
-  `/v2/insights/*`, `ReviewExtraction`, `riq_live_` format, RLS shape.
-- Standing discipline: evals fail loud; no release without verified run; no stranded tags; no
-  subagent DDL/prod writes; Groq-only on org path; $0.
+- review-iq has an internal 46-fixture extraction eval (en/hi/hi-en) + cassette-replay CI, plus
+  authenticity/reply evals. This benchmark is a NEW, broader, externally-credible artifact — not a
+  rename of the internal eval.
+- LLM access: Groq (Llama family) on free tier. Gemini exists in the codebase but is BANNED on the
+  org path; for BENCHMARK purposes Gemini/other models may be used as BASELINES (clearly separated
+  from the product path, used only as comparison systems, never on tenant data).
+- Free-tier quota constraints apply — benchmark runs are token-heavy; design for cassette-style
+  record/replay so a published result is reproducible without re-spending quota.
 
 ## Scope
 
 ### In scope
-- **Canonical review identity.** Introduce a stable `review_id` (or reconcile the hash scheme) so
-  extraction + authenticity + (future) reply + corrections all link to the SAME review. This is the
-  foundation of the asset and also unblocks the deferred per-SKU authenticity join. Migration ->
-  ESCALATE (assess whether reconciling forward-only on new records is enough vs. backfilling).
-- **Corrections capture.** New `corrections` table (org-scoped, RLS WITH CHECK + anon-deny,
-  matching the established pattern). Fields: `id, org_id, review_id, source_type
-  (extraction|authenticity|reply), field_path, original_value, corrected_value, correction_note,
-  language, corrected_at`. Migration -> ESCALATE.
-  - `POST /v2/corrections` — submit a correction; tenant-scoped; usage-recorded; field_path
-    VALIDATED against an allowed set per source_type (no arbitrary writes).
-  - `GET /v2/corrections` — list/review the org's corrections.
-- **The data-asset read model.** `GET /v2/dataset` — returns the org's structured review records
-  (raw text reference + extraction + authenticity + corrections, linked by review_id),
-  paginated, tenant-scoped. This is "your reviews as structured data."
-- **Dataset export.** `GET /v2/dataset/export?format=jsonl` — exports the org's structured records
-  + corrections as a labeled JSONL dataset (the seller's owned asset; also the substrate for future
-  training). Org-scoped only.
-- **The flywheel pipeline (the moat mechanism).** `eval/flywheel/corrections_to_fixtures.py` —
-  transforms accepted corrections into CANDIDATE eval fixtures / few-shot examples, output to a
-  review queue for HUMAN sign-off before anything enters the gold eval set or prompt examples.
-  Never auto-applied. (Fine-tuning corpus assembly is designed-for in the export format but
-  fine-tuning itself is out of scope.)
-- **Metrics:** corrections submitted by source_type, dataset records per org, candidate-fixtures
-  generated.
+- **Task definition.** Define 2-4 concrete, scoreable review-understanding tasks on vernacular text,
+  e.g.: (1) language/code-mix identification, (2) sentiment/polarity, (3) aspect/complaint
+  extraction, (4) authenticity/fake signal — pick the subset where fair gold labels are achievable.
+  Each task has a precise scoring metric (accuracy/F1/precision-recall as appropriate).
+- **Dataset.** A held-out, documented test set of Indian vernacular + code-mixed reviews with
+  INDEPENDENT gold labels (not generated by any system under test). Document: source, size, language
+  distribution (en/hi/hi-en), labeling method, and label-validation process. Must be distinct from
+  the internal eval fixtures used in CI (no train/test leakage; the benchmark must not reuse data
+  any review-iq prompt was tuned on — flag and exclude any overlap).
+- **Systems under test (all baselines we can fairly run on free tier):**
+  - review-iq (its actual extraction/authenticity path)
+  - General LLMs accessible on free tier (e.g. Llama variants via Groq; Gemini free tier as a
+    baseline ONLY) — each given a fair, documented prompt for the task.
+  - Any simple, honest baselines (e.g. a majority-class / lexicon baseline) to show the floor.
+  - Other review-tools' PUBLISHED accuracy claims may be CITED for context but NOT presented as if
+    run head-to-head unless actually run — label clearly as "their published claim, different
+    conditions," never conflated with measured results.
+- **Harness.** A reproducible runner: same inputs -> each system -> same scorer -> a results table
+  per task per language slice. Record raw outputs (cassette-style) so results are reproducible
+  without re-spending quota. Deterministic scoring.
+- **Honest reporting.** A results report with: per-task, per-language scores for every system; where
+  review-iq wins AND loses; methodology; prompts used for each system; dataset description;
+  limitations section. Written so a skeptic would call it fair.
+- **Publish-decision gate.** After results exist, present them to the user (GG) with a
+  recommendation on whether they're strong/honest enough to publish. Do NOT publish autonomously.
 
-### Out of scope (do not build)
-- Actual model fine-tuning / training (future — needs corpus accumulation + compute; $).
-- Cross-tenant data pooling / shared training corpus (consent-gated; design the consent path only).
-- Natural-language "ask anything" query UI (insights already give structured analysis; NL-query
-  is a later phase).
-- The no-code seller UI (separate build).
-- Managed ingestion connectors (the NEXT build after this).
-- Auto-applying corrections to prompts/models without human review.
-- Any change to frozen contracts, RLS shape, or key format. Any paid service.
+### Out of scope
+- Any tuning of review-iq specifically to win the benchmark (forbidden — destroys credibility).
+- Using tenant/production data as benchmark data (privacy — use a dedicated, documented dataset).
+- Presenting cited competitor claims as head-to-head measured results.
+- Publishing anything without explicit user sign-off.
+- Any paid model/API. Any change to frozen product contracts.
 
 ## Tech stack
-- Existing only. This build is mostly DB + validation + export — minimal/no LLM, so quota-immune.
-  No pandas (stdlib json/csv). No new deps.
+- Existing stack (Python, uv, ruff, mypy, pytest). Groq for in-product + Llama baselines; Gemini
+  free tier permitted strictly as a comparison baseline (isolated from product code paths). No new
+  paid services. Cassette-style recording for reproducibility + quota discipline.
 
 ## Architecture
 ```
-app/core/corrections/
-  schema.py        # NEW: Correction model, source_type + allowed field_path sets, validation (pure)
-  service.py       # NEW: submit/list, validation, review_id linking
-app/core/dataset/
-  builder.py       # NEW: assemble per-review structured records (extraction+authenticity+corrections)
-app/api/v2/
-  corrections.py   # NEW: POST/GET /v2/corrections
-  dataset.py       # NEW: GET /v2/dataset, GET /v2/dataset/export?format=jsonl
-eval/flywheel/
-  corrections_to_fixtures.py  # NEW: corrections -> CANDIDATE fixtures (human-gated, never auto)
-supabase/migrations/
-  <new>_review_id.sql         # NEW (ESCALATE): canonical review identity / hash reconciliation
-  <new>_corrections.sql       # NEW (ESCALATE): corrections table + RLS (WITH CHECK + anon-deny)
-docs/
-  data-ownership.md           # NEW: per-org isolation, export, consent path for any future shared use
-```
-
-## Data model (migrations — escalation-gated)
-```sql
--- canonical identity so all per-review artifacts join
-review_id  -- stable id on extractions (+ backfill or forward-only — assess), reused by
-            -- authenticity_audits, corrections, future replies
-
-corrections (
-  id, org_id, review_id, source_type, field_path,
-  original_value TEXT, corrected_value TEXT, correction_note TEXT,
-  language TEXT, corrected_at TIMESTAMPTZ
-)
-INDEX (org_id, corrected_at DESC), INDEX (org_id, review_id)
-RLS: ENABLE; authenticated USING/WITH CHECK (org_id = current_org_id()); anon USING(false).
+benchmark/
+  README.md            # methodology, how to reproduce, dataset description, limitations
+  dataset/
+    reviews.jsonl      # held-out vernacular reviews (no leakage from CI fixtures)
+    gold.jsonl         # independent gold labels + labeling notes
+  tasks/               # task definitions + per-task scorers (deterministic)
+  systems/             # adapters: review-iq, llama-baseline, gemini-baseline, lexicon-baseline
+                       #   each with its documented prompt
+  runner.py            # same inputs -> each system -> scorer -> results
+  cassettes/           # recorded raw outputs for reproducibility (quota-immune replay)
+  results/
+    results.json       # per-task per-language per-system scores
+    REPORT.md          # honest write-up incl. where review-iq loses
 ```
 
 ## Verification commands
 ```yaml
-- name: tests
-  cmd: uv run pytest -v
-  required: true
-- name: integration
-  cmd: uv run pytest -v -m integration
+- name: harness-tests
+  cmd: uv run pytest benchmark/ -v
   required: true
 - name: lint
-  cmd: uv run ruff check .
+  cmd: uv run ruff check benchmark/
   required: true
-- name: format
-  cmd: uv run ruff format --check .
-  required: true
-- name: types
-  cmd: uv run mypy app
+- name: reproduce-from-cassettes
+  cmd: uv run python benchmark/runner.py --replay   # deterministic, no live calls
   required: true
 ```
 
 ## Decision authority (autonomous mode per CHARTER.md)
-Orchestrator builds and reports autonomously. ESCALATE only:
-- The two migrations (review_id reconciliation, corrections table) — show DDL before applying;
-  no subagent applies it (standing rule).
-- The release/tag and any prod deploy.
-- The eval/ground-truth sign-off: folding any correction-derived candidate into the gold eval set
-  or prompt few-shots is HUMAN-approved, never automatic.
-- The cross-tenant consent design (document only; do not implement pooling without explicit sign-off).
-- Any frozen-contract change.
+Build autonomously; report. ESCALATE:
+- The DATASET + GOLD LABELS sign-off (this is the eval ground-truth — human-approved, per charter).
+  Bring the dataset construction + labeling method + a sample for approval BEFORE running systems.
+- The PUBLISH decision (never publish without explicit sign-off; present results + recommendation).
+- Any spend, any use of a new external model/service.
+- Confirm no leakage: the benchmark dataset must not overlap data any review-iq prompt was tuned on
+  — report the leakage check before results are trusted.
 
 ## Hard rules
-- Per-org isolation absolute: a cross-tenant test must prove org A cannot read org B's corrections
-  OR dataset OR export. WITH CHECK + anon-deny on the new table.
-- Corrections are candidates only — never auto-applied to model/prompt/gold-set.
-- No cross-tenant data pooling in this phase. Default = strict isolation.
-- field_path on corrections validated against an allowed set — no arbitrary writes.
-- Frozen contracts untouched. $0 / free tier. Full suite after each pass; escalate on any
-  existing-test failure. No subagent DDL/prod writes.
+- FAIRNESS over winning. No tuning review-iq to top the benchmark. Document every system's prompt.
+- Gold labels independent of systems under test (no circularity).
+- Report where review-iq LOSES; a benchmark that only shows wins is marketing, not a benchmark.
+- No tenant/prod data as benchmark data. Gemini/other models = baselines only, isolated from product
+  paths, never on tenant data.
+- Reproducible (cassettes) + $0 + frozen product contracts intact.
 
 ## Budget
-- Soft target: 2 CC sessions. Hard cap: escalate after 20 executor invocations. `/cost` at midpoint.
+- Soft target: 2 sessions. Hard cap: escalate after 20 executor invocations. Token discipline:
+  record once, replay thereafter; single clean recording pass per system (all-or-nothing, no
+  partial cassette sets — a partial set silently skews results).
 
-## Success criteria (verify ALL before declaring done)
-- [ ] Canonical `review_id` links extraction + authenticity (+ corrections); the previously-deferred
-      extraction<->authenticity join now works (or the remaining gap is documented honestly).
-- [ ] `corrections` table created (post-escalation) with RLS; cross-tenant isolation PROVEN (read +
-      insert blocked across orgs, anon denied) with rollback-wrapped proof.
-- [ ] `POST /v2/corrections` validates field_path against the allowed set, is tenant-scoped, records
-      usage; `GET /v2/corrections` returns only the org's corrections.
-- [ ] `GET /v2/dataset` returns the org's structured review records (linked artifacts), tenant-scoped.
-- [ ] `GET /v2/dataset/export?format=jsonl` exports the org's labeled dataset; org-scoped; valid JSONL
-      on REAL data.
-- [ ] `corrections_to_fixtures.py` produces CANDIDATE fixtures to a review queue; nothing auto-enters
-      the gold set; a test asserts no auto-application.
-- [ ] `docs/data-ownership.md`: per-org isolation, seller export, and the consent-gated path for ANY
-      future shared/aggregate use. No cross-tenant pooling implemented.
-- [ ] Frozen contracts intact; full suite green; $0. Next clean version tagged (escalated; after the
-      stale v0.7.0 tag is removed — reserve v0.7.0 for completed P2 reply-drafting; pick the next
-      honest linear number).
+## Success criteria
+- [ ] 2-4 well-defined vernacular review tasks with precise, deterministic scorers.
+- [ ] A documented held-out dataset with INDEPENDENT gold labels, no leakage from CI fixtures
+      (leakage check reported), language distribution documented.
+- [ ] >=3 systems run fairly (review-iq + >=1 general LLM baseline + >=1 simple baseline), each with
+      a documented prompt, same inputs, same scorer.
+- [ ] results.json with per-task, per-language, per-system scores; reproducible from cassettes with
+      zero live calls.
+- [ ] REPORT.md that a skeptic would call fair: methodology, prompts, dataset, scores incl. where
+      review-iq loses, limitations.
+- [ ] Publish recommendation presented to GG; nothing published without sign-off.
+- [ ] Harness tests green; $0; product contracts untouched.
 
 ## Build order
-1. `corrections/schema.py` (Correction model + allowed field_path sets + validation) as pure
-   functions with boundary unit tests.
-2. Review-identity: assess current hashes; design canonical `review_id`; ESCALATE the migration
-   (with DDL shown). On approval, apply + verify extraction<->authenticity linkage.
-3. `corrections` table migration (ESCALATE, DDL shown) + RLS + rollback-wrapped isolation proof.
-4. `corrections/service.py` + `POST`/`GET /v2/corrections` (validated, tenant-scoped, usage-recorded).
-5. `dataset/builder.py` + `GET /v2/dataset` + `GET /v2/dataset/export` (org-scoped, JSONL).
-6. `eval/flywheel/corrections_to_fixtures.py` — corrections -> candidate fixtures, human-gated queue.
-7. `docs/data-ownership.md` (isolation + export + consent path). Metrics. Full verify. Escalate tag.
+1. Define tasks + deterministic scorers (pure, testable). Unit-test the scorers first.
+2. Construct the dataset + independent gold labels; run the leakage check vs CI fixtures; ESCALATE
+   the dataset + labeling method + sample for sign-off BEFORE running any system.
+3. Build system adapters (review-iq, Llama baseline, a simple lexicon/majority baseline; Gemini
+   baseline if fairly runnable on free tier) — each with a documented, fair prompt.
+4. Runner: same inputs -> each system -> scorer. Record cassettes (one clean pass per system,
+   all-or-nothing).
+5. Generate results.json + REPORT.md (honest, incl. losses). Verify reproduce-from-cassettes.
+6. Present results + a publish/don't-publish recommendation to GG. Do NOT publish autonomously.

@@ -81,14 +81,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     _app.state.limiter = limiter
     _app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
 
-    # CORS must be added before other middleware so preflight OPTIONS requests are
-    # handled before they reach authentication layers. Wildcard is safe here because
-    # we use Bearer-token auth (no cookies), so CSRF via CORS is not a risk.
+    # CORS — explicit allowlist only. Wildcard must never reach production.
+    # Origins configured via ALLOWED_ORIGINS env var (comma-separated).
+    # Default covers local dev + demo Pages site; production Cloud Run sets
+    # ALLOWED_ORIGINS to the locked web-app origin before the web app deploys.
     _app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=settings.allowed_origins,
         allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allow_headers=["*"],
+        allow_headers=["Authorization", "Content-Type"],
+        allow_credentials=False,
     )
 
     _app.add_middleware(PrometheusMiddleware)

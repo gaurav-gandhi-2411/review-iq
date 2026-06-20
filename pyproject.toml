@@ -54,7 +54,7 @@ packages = ["app"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-src = ["app", "tests", "eval"]
+src = ["app", "tests", "eval", "benchmark"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
@@ -78,7 +78,7 @@ exclude = ["tests/", "eval/"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
-addopts = "--cov=app --cov-report=term-missing -v --cov-fail-under=60 -m 'not integration'"
+addopts = "--cov=app --cov-report=term-missing -v --cov-fail-under=60 -m 'not integration' --ignore=tests/benchmark"
 markers = [
     "integration: tests requiring a live Supabase/Postgres connection (run with -m integration)",
 ]
