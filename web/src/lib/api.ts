@@ -7,7 +7,7 @@ export class ServiceWarmingError extends Error {
   constructor() { super('Service is warming up. Please try again in 30 seconds.') }
 }
 export class QuotaError extends Error {
-  constructor() { super('Monthly review limit reached. Contact support to increase.') }
+  constructor() { super('Monthly review limit reached.') }
 }
 export class BffError extends Error {
   status: number
@@ -216,6 +216,13 @@ export async function draftReply(
   return bff('/reply', {
     method: 'POST',
     body: JSON.stringify({ text, tone, extraction: extraction ?? null }),
+  })
+}
+
+export async function requestQuotaIncrease(notes?: string): Promise<{ recorded: boolean }> {
+  return bff('/quota-requests', {
+    method: 'POST',
+    body: JSON.stringify({ notes: notes ?? null }),
   })
 }
 

@@ -40,7 +40,7 @@ from pydantic import BaseModel, field_validator, model_validator
 # safe and avoids duplication.
 from app.api.v2.ingest import _process_ingest_job
 from app.auth.api_key import ApiKeyContext
-from app.auth.session import require_session
+from app.auth.session import require_session, require_session_read
 from app.core.authenticity import engine
 from app.core.authenticity.schema import AuthenticityFlag, AuthenticityLabel, AuthenticityResult
 from app.core.config import get_settings
@@ -64,6 +64,7 @@ from app.core.storage_pg import (
     get_batch_job_pg,
     health_score_pg,
     list_extractions_pg,
+    record_quota_request_pg,
     save_authenticity_audit_pg,
     theme_trends_pg,
     update_usage_tokens,
@@ -272,7 +273,7 @@ def _get_quota_and_usage(api_key_id: str, org_id: str) -> tuple[int, int]:  # no
 
 @router.get("/reviews")
 async def bff_list_reviews(
-    ctx: Annotated[ApiKeyContext, Depends(require_session)],
+    ctx: Annotated[ApiKeyContext, Depends(require_session_read)],
     product: str | None = Query(None),
     sentiment: Sentiment | None = Query(None),
     urgency: Urgency | None = Query(None),
@@ -395,7 +396,7 @@ async def bff_draft_reply(
 @router.post("/corrections", status_code=status.HTTP_201_CREATED)
 async def bff_submit_correction(
     body: CorrectionRequest,
-    ctx: Annotated[ApiKeyContext, Depends(require_session)],
+    ctx: Annotated[ApiKeyContext, Depends(require_session_read)],
 ) -> dict[str, Any]:
     """Submit a correction for a review field (BFF path)."""
     try:
@@ -428,7 +429,7 @@ async def bff_submit_correction(
 
 @router.get("/corrections")
 async def bff_list_corrections(
-    ctx: Annotated[ApiKeyContext, Depends(require_session)],
+    ctx: Annotated[ApiKeyContext, Depends(require_session_read)],
     source_type: SourceType | None = Query(None),
     review_id: str | None = Query(None),
     limit: int = Query(50, ge=1, le=200),
@@ -454,7 +455,7 @@ async def bff_list_corrections(
 
 @router.get("/insights/trends")
 async def bff_theme_trends(
-    ctx: Annotated[ApiKeyContext, Depends(require_session)],
+    ctx: Annotated[ApiKeyContext, Depends(require_session_read)],
     since: datetime | None = Query(None),
     until: datetime | None = Query(None),
     bucket: str = Query("week"),
@@ -525,7 +526,7 @@ async def bff_theme_trends(
 
 @router.get("/insights/health-score")
 async def bff_health_score(
-    ctx: Annotated[ApiKeyContext, Depends(require_session)],
+    ctx: Annotated[ApiKeyContext, Depends(require_session_read)],
     since: datetime | None = Query(None),
     until: datetime | None = Query(None),
     days: int = Query(30, ge=1, le=365),
@@ -589,7 +590,7 @@ async def bff_health_score(
 
 @router.get("/insights/authenticity")
 async def bff_authenticity_summary(
-    ctx: Annotated[ApiKeyContext, Depends(require_session)],
+    ctx: Annotated[ApiKeyContext, Depends(require_session_read)],
     since: datetime | None = Query(None),
     until: datetime | None = Query(None),
     bucket: str = Query("week"),
@@ -717,7 +718,7 @@ async def bff_ingest_csv(
 @router.get("/ingest/{job_id}")
 async def bff_get_ingest_status(
     job_id: str,
-    ctx: Annotated[ApiKeyContext, Depends(require_session)],
+    ctx: Annotated[ApiKeyContext, Depends(require_session_read)],
 ) -> dict[str, object]:
     """Poll the status of a CSV ingest job (BFF path)."""
     job = await asyncio.to_thread(get_batch_job_pg, ctx.org_id, job_id)
@@ -739,7 +740,7 @@ async def bff_get_ingest_status(
 
 @router.get("/dataset")
 async def bff_get_dataset(
-    ctx: Annotated[ApiKeyContext, Depends(require_session)],
+    ctx: Annotated[ApiKeyContext, Depends(require_session_read)],
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
 ) -> dict[str, Any]:
@@ -763,7 +764,7 @@ async def bff_get_dataset(
 
 @router.get("/account")
 async def bff_account(
-    ctx: Annotated[ApiKeyContext, Depends(require_session)],
+    ctx: Annotated[ApiKeyContext, Depends(require_session_read)],
 ) -> dict[str, Any]:
     """Return org-level account summary (BFF path).
 
@@ -778,3 +779,31 @@ async def bff_account(
         "quota": quota,
         "usage_this_month": usage_this_month,
     }
+
+
+class QuotaRequestBody(BaseModel):
+    notes: str | None = None
+
+
+@router.post("/quota-requests", status_code=status.HTTP_201_CREATED)
+async def bff_request_quota_increase(
+    body: QuotaRequestBody,
+    ctx: Annotated[ApiKeyContext, Depends(require_session_read)],
+) -> dict[str, Any]:
+    """Record interest in a higher monthly quota.
+
+    Stores org_id + current usage so we can see demand and reach out
+    when tiered billing is ready. No payment or commitment implied.
+    """
+    quota, usage_this_month = await asyncio.to_thread(
+        _get_quota_and_usage, ctx.api_key_id, ctx.org_id
+    )
+    await asyncio.to_thread(
+        record_quota_request_pg,
+        ctx.org_id,
+        usage_this_month,
+        quota,
+        body.notes,
+    )
+    log.info("bff.quota_request.recorded", org_id=ctx.org_id, usage=usage_this_month, quota=quota)
+    return {"recorded": True, "org_id": ctx.org_id}

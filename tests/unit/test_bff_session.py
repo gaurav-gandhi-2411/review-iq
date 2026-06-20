@@ -18,7 +18,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import pytest
 from app.auth.api_key import ApiKeyContext
-from app.auth.session import _lookup_and_record_for_session, require_session
+from app.auth.session import _lookup_and_record_for_session, require_session, require_session_read
 from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
 
@@ -153,11 +153,13 @@ async def test_require_session_valid() -> None:
 async def test_bff_read_isolation(monkeypatch: pytest.MonkeyPatch) -> None:
     """User A's session resolves to org_A; GET /bff/reviews only queries org_A."""
     from app.auth.session import require_session as _rs
+    from app.auth.session import require_session_read as _rsr
     from app.main import create_app
 
     app = create_app()
-    # Override session → always returns org_A context
+    # Override both session deps → always returns org_A context
     app.dependency_overrides[_rs] = lambda: _CTX_A
+    app.dependency_overrides[_rsr] = lambda: _CTX_A
 
     captured_org_ids: list[str] = []
 
@@ -185,10 +187,12 @@ async def test_bff_read_isolation(monkeypatch: pytest.MonkeyPatch) -> None:
 async def test_bff_write_isolation(monkeypatch: pytest.MonkeyPatch) -> None:
     """User A's session resolves to org_A; POST /bff/corrections writes only to org_A."""
     from app.auth.session import require_session as _rs
+    from app.auth.session import require_session_read as _rsr
     from app.main import create_app
 
     app = create_app()
     app.dependency_overrides[_rs] = lambda: _CTX_A
+    app.dependency_overrides[_rsr] = lambda: _CTX_A
 
     captured_org_ids: list[str] = []
 
@@ -352,12 +356,14 @@ async def test_bff_account_response_has_no_key_fields(
 
 
 def _make_bff_app() -> object:
-    """Return a FastAPI app with require_session bypassed to _CTX_A."""
+    """Return a FastAPI app with both session deps bypassed to _CTX_A."""
     from app.auth.session import require_session as _rs
+    from app.auth.session import require_session_read as _rsr
     from app.main import create_app
 
     app = create_app()
     app.dependency_overrides[_rs] = lambda: _CTX_A
+    app.dependency_overrides[_rsr] = lambda: _CTX_A
     return app
 
 

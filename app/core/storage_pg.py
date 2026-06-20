@@ -30,6 +30,27 @@ from app.core.schemas import (
 log = structlog.get_logger(__name__)
 
 
+def record_quota_request_pg(org_id: str, usage_at_request: int, quota_at_request: int, notes: str | None = None) -> None:
+    """Insert a quota-increase interest record. Idempotent on repeated requests."""
+    conn = psycopg2.connect(get_settings().supabase_database_url)
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            INSERT INTO public.quota_requests (org_id, usage_at_request, quota_at_request, notes)
+            VALUES (%s, %s, %s, %s)
+            """,
+            (org_id, usage_at_request, quota_at_request, notes),
+        )
+        conn.commit()
+        log.info("storage.quota_request_recorded", org_id=org_id, usage=usage_at_request, quota=quota_at_request)
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
 def _db_connect() -> psycopg2.extensions.connection:
     settings = get_settings()
     return psycopg2.connect(settings.supabase_database_url)

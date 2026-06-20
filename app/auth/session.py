@@ -85,7 +85,7 @@ def _lookup_and_record_for_session(user_id: str) -> ApiKeyContext:
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                 detail=f"Monthly quota exceeded ({monthly_count}/{quota}). "
-                "Contact support to increase.",
+                "Use /bff/quota-requests to register interest in a higher limit.",
             )
 
         # 3. Stamp last_used_at — same as api_key.py:107-109.
@@ -116,10 +116,52 @@ def _lookup_and_record_for_session(user_id: str) -> ApiKeyContext:
         conn.close()
 
 
+def _lookup_context_for_read(user_id: str) -> ApiKeyContext:
+    """Sync: org lookup via JWT user_id — no quota check, no usage record.
+
+    Used for read-only BFF endpoints so previously-generated data is always
+    accessible even when an org has hit its monthly quota.
+    Run via asyncio.to_thread — never call directly from async code.
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT api_keys.id, api_keys.org_id, api_keys.name
+            FROM public.organization_members
+            JOIN public.api_keys ON api_keys.org_id = organization_members.org_id
+            WHERE organization_members.user_id = %s
+              AND api_keys.revoked_at IS NULL
+            ORDER BY api_keys.created_at DESC
+            LIMIT 1
+            """,
+            (user_id,),
+        )
+        row = cur.fetchone()
+        if row is None:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="No organization found. Call /auth/provision first.",
+            )
+        key_id, org_id, key_name = row
+        log.debug("session.read_ok", org_id=str(org_id), user_id=user_id)
+        return ApiKeyContext(
+            org_id=str(org_id),
+            api_key_id=str(key_id),
+            key_name=key_name,
+            usage_record_id="",  # read path: no usage record created
+        )
+    except Exception:
+        raise
+    finally:
+        conn.close()
+
+
 async def require_session(
     bearer: HTTPAuthorizationCredentials | None = Security(_BEARER),
 ) -> ApiKeyContext:
-    """FastAPI dependency for BFF endpoints.
+    """FastAPI dependency for write/LLM BFF endpoints (ingest, authenticity, reply).
 
     Accepts:
       Authorization: Bearer <supabase_jwt>
@@ -139,3 +181,25 @@ async def require_session(
     user = await verify_supabase_jwt(jwt)
 
     return await asyncio.to_thread(_lookup_and_record_for_session, str(user.id))
+
+
+async def require_session_read(
+    bearer: HTTPAuthorizationCredentials | None = Security(_BEARER),
+) -> ApiKeyContext:
+    """FastAPI dependency for read-only BFF endpoints (reviews, insights, account, etc.).
+
+    Same JWT validation as require_session but no quota check and no usage record.
+    Ensures data is always accessible even when an org has hit its monthly limit —
+    the quota gate caps new processing only, never read access.
+    """
+    if bearer is None or not bearer.credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing Authorization: Bearer <supabase_token>.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    jwt = bearer.credentials
+    user = await verify_supabase_jwt(jwt)
+
+    return await asyncio.to_thread(_lookup_context_for_read, str(user.id))
