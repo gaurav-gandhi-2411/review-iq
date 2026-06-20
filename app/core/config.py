@@ -83,15 +83,17 @@ class Settings(BaseSettings):
     secondary_provider_model: str = Field(default="", alias="SECONDARY_PROVIDER_MODEL")
 
     # CORS allowlist — comma-separated origins (env: ALLOWED_ORIGINS).
-    # Default covers local dev + the existing demo Cloudflare Pages site.
-    # Production Cloud Run must set ALLOWED_ORIGINS to the locked web-app origin(s).
+    # Default covers local dev (both localhost and 127.0.0.1 aliases — browsers
+    # treat these as distinct origins) + the existing demo Cloudflare Pages site.
+    # Production Cloud Run must set ALLOWED_ORIGINS to the locked public web-app
+    # origin(s) ONLY — no localhost, no 127.0.0.1, no wildcard.
     # Wildcard ("*") must never appear here — use an explicit list always.
     #
     # Stored as a raw string because pydantic_settings JSON-decodes list[str] fields
     # before validators run, which breaks comma-separated env var syntax.
     # Use the allowed_origins property everywhere.
     allowed_origins_env: str = Field(
-        default="http://localhost:5173,https://review-iq-demo.pages.dev",
+        default="http://localhost:5173,http://127.0.0.1:5173,https://review-iq-demo.pages.dev",
         alias="ALLOWED_ORIGINS",
     )
 

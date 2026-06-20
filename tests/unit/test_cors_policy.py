@@ -21,9 +21,22 @@ def test_cors_default_is_not_wildcard() -> None:
 
 
 def test_cors_default_includes_localhost_dev() -> None:
-    """Default list must include the local dev origin."""
+    """Default list must include both local dev origin aliases."""
     s = Settings()
     assert "http://localhost:5173" in s.allowed_origins
+    assert "http://127.0.0.1:5173" in s.allowed_origins
+
+
+def test_cors_default_localhost_aliases_excluded_when_prod_origin_set(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Production ALLOWED_ORIGINS must not include either localhost alias."""
+    prod_origin = "https://review-iq.vercel.app"
+    monkeypatch.setenv("ALLOWED_ORIGINS", prod_origin)
+    s = Settings()
+    assert s.allowed_origins == [prod_origin]
+    assert "http://localhost:5173" not in s.allowed_origins
+    assert "http://127.0.0.1:5173" not in s.allowed_origins
 
 
 def test_cors_default_includes_demo_pages() -> None:
