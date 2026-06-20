@@ -25,7 +25,7 @@
       "language": "en",
       "overall_score": 0.8363636363636363,
       "error": null,
-      "latency_ms": 906,
+      "latency_ms": 30,
       "fields": [
         {
           "field": "product",
@@ -135,7 +135,7 @@
       "language": "en",
       "overall_score": 0.9312169312169313,
       "error": null,
-      "latency_ms": 608,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "stars",
@@ -223,7 +223,7 @@
       "language": "en",
       "overall_score": 0.8962962962962963,
       "error": null,
-      "latency_ms": 718,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -309,7 +309,7 @@
       "language": "hi",
       "overall_score": 0.6875,
       "error": null,
-      "latency_ms": 890,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -394,7 +394,7 @@
       "language": "en",
       "overall_score": 0.9777777777777779,
       "error": null,
-      "latency_ms": 812,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -486,7 +486,7 @@
       "language": "en",
       "overall_score": 0.877665544332211,
       "error": null,
-      "latency_ms": 828,
+      "latency_ms": 15,
       "fields": [
         {
           "field": "stars",
@@ -580,7 +580,7 @@
       "language": "en",
       "overall_score": 0.8833333333333333,
       "error": null,
-      "latency_ms": 1905,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -663,7 +663,7 @@
       "language": "en",
       "overall_score": 0.89648033126294,
       "error": null,
-      "latency_ms": 15047,
+      "latency_ms": 15,
       "fields": [
         {
           "field": "stars",
@@ -752,7 +752,7 @@
       "language": "en",
       "overall_score": 0.8447971781305115,
       "error": null,
-      "latency_ms": 14984,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -857,7 +857,7 @@
       "language": "en",
       "overall_score": 0.8904761904761905,
       "error": null,
-      "latency_ms": 14953,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "stars",
@@ -952,7 +952,7 @@
       "language": "en",
       "overall_score": 0.8888888888888888,
       "error": null,
-      "latency_ms": 8875,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1028,7 +1028,7 @@
       "language": "en",
       "overall_score": 0.6574074074074073,
       "error": null,
-      "latency_ms": 15030,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "stars",
@@ -1118,7 +1118,7 @@
       "language": "en",
       "overall_score": 0.855718954248366,
       "error": null,
-      "latency_ms": 14046,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1208,7 +1208,7 @@
       "language": "en",
       "overall_score": 0.8766666666666666,
       "error": null,
-      "latency_ms": 16078,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1322,7 +1322,7 @@
       "language": "en",
       "overall_score": 0.8346560846560847,
       "error": null,
-      "latency_ms": 15000,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1416,7 +1416,7 @@
       "language": "en",
       "overall_score": 0.9464285714285714,
       "error": null,
-      "latency_ms": 13921,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1495,7 +1495,7 @@
       "language": "en",
       "overall_score": 0.8336220121049841,
       "error": null,
-      "latency_ms": 17219,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1634,7 +1634,7 @@
       "language": "en",
       "overall_score": 0.7034632034632035,
       "error": null,
-      "latency_ms": 17046,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1728,7 +1728,7 @@
       "language": "en",
       "overall_score": 0.8996913580246912,
       "error": null,
-      "latency_ms": 13984,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1830,7 +1830,7 @@
       "language": "en",
       "overall_score": 0.8600000000000001,
       "error": null,
-      "latency_ms": 14969,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1923,7 +1923,7 @@
       "language": "en",
       "overall_score": 0.8031818181818181,
       "error": null,
-      "latency_ms": 15000,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -2016,7 +2016,7 @@
       "language": "en",
       "overall_score": 0.9016636957813429,
       "error": null,
-      "latency_ms": 14890,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "stars",
@@ -2112,7 +2112,7 @@
       "language": "en",
       "overall_score": 0.875,
       "error": null,
-      "latency_ms": 14984,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -2177,7 +2177,7 @@
       "language": "en",
       "overall_score": 0.8631578947368421,
       "error": null,
-      "latency_ms": 14092,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -2274,7 +2274,7 @@
       "language": "en",
       "overall_score": 0.7477777777777778,
       "error": null,
-      "latency_ms": 14047,
+      "latency_ms": 15,
       "fields": [
         {
           "field": "stars",
@@ -2385,7 +2385,7 @@
       "language": "en",
       "overall_score": 0.9085714285714286,
       "error": null,
-      "latency_ms": 16062,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -2483,7 +2483,7 @@
       "language": "en",
       "overall_score": 0.8680555555555557,
       "error": null,
-      "latency_ms": 14983,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -2527,8 +2527,8 @@
             "sound_quality",
             "bass",
             "bluetooth",
-            "price",
-            "comfort"
+            "comfort",
+            "price"
           ],
           "expected": [
             "sound_quality",
@@ -2589,7 +2589,7 @@
       "language": "hi-en",
       "overall_score": 0.8669230769230769,
       "error": null,
-      "latency_ms": 19108,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -2690,7 +2690,7 @@
       "language": "hi-en",
       "overall_score": 0.7666666666666667,
       "error": null,
-      "latency_ms": 20141,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -2782,7 +2782,7 @@
       "language": "hi-en",
       "overall_score": 0.8833333333333334,
       "error": null,
-      "latency_ms": 19016,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -2876,7 +2876,7 @@
       "language": "hi-en",
       "overall_score": 0.8015873015873016,
       "error": null,
-      "latency_ms": 19108,
+      "latency_ms": 15,
       "fields": [
         {
           "field": "product",
@@ -2980,7 +2980,7 @@
       "language": "hi-en",
       "overall_score": 0.9573529411764706,
       "error": null,
-      "latency_ms": 19921,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -3078,7 +3078,7 @@
       "language": "hi-en",
       "overall_score": 0.8688888888888888,
       "error": null,
-      "latency_ms": 18141,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -3183,7 +3183,7 @@
       "language": "hi-en",
       "overall_score": 0.875,
       "error": null,
-      "latency_ms": 19983,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -3277,7 +3277,7 @@
       "language": "hi-en",
       "overall_score": 0.784,
       "error": null,
-      "latency_ms": 19015,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -3379,7 +3379,7 @@
       "language": "hi-en",
       "overall_score": 0.7988235294117647,
       "error": null,
-      "latency_ms": 19952,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -3475,7 +3475,7 @@
       "language": "hi-en",
       "overall_score": 0.5178571428571429,
       "error": null,
-      "latency_ms": 19094,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -3580,7 +3580,7 @@
       "language": "hi-en",
       "overall_score": 0.8333333333333333,
       "error": null,
-      "latency_ms": 20062,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -3672,7 +3672,7 @@
       "language": "hi-en",
       "overall_score": 0.6621739130434782,
       "error": null,
-      "latency_ms": 18953,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -3774,7 +3774,7 @@
       "language": "hi-en",
       "overall_score": 0.8271428571428572,
       "error": null,
-      "latency_ms": 19000,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -3871,7 +3871,7 @@
       "language": "hi-en",
       "overall_score": 0.7533333333333333,
       "error": null,
-      "latency_ms": 19921,
+      "latency_ms": 15,
       "fields": [
         {
           "field": "product",
@@ -3972,7 +3972,7 @@
       "language": "hi-en",
       "overall_score": 0.9366666666666668,
       "error": null,
-      "latency_ms": 19046,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -4069,7 +4069,7 @@
       "language": "hi",
       "overall_score": 0.8,
       "error": null,
-      "latency_ms": 9937,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -4158,7 +4158,7 @@
       "language": "hi",
       "overall_score": 0.9333333333333333,
       "error": null,
-      "latency_ms": 9953,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -4247,7 +4247,7 @@
       "language": "hi",
       "overall_score": 0.8333333333333333,
       "error": null,
-      "latency_ms": 10812,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -4340,7 +4340,7 @@
       "language": "hi",
       "overall_score": 0.828888888888889,
       "error": null,
-      "latency_ms": 9858,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -4434,7 +4434,7 @@
       "language": "hi",
       "overall_score": 0.8,
       "error": null,
-      "latency_ms": 10141,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -4527,7 +4527,7 @@
       "language": "hi",
       "overall_score": 0.7666666666666667,
       "error": null,
-      "latency_ms": 9937,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
