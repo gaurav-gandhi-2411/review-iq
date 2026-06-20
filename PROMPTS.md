@@ -79,13 +79,38 @@ both pros and cons. Ground-truth eval SENT fixtures still pass. Not a real regre
 Both fixtures pass with correct urgency (score=1.0). Existing high-urgency fixtures 010, 020, 024
 unchanged (all score=1.0 on urgency).
 
-### Remaining gaps (not addressed in this version)
+### SENT side-effect — confirmed improvement, not regression
 
-- en-013 (benchmark): "eyes will start paing within 10 min" in 5-star review — riq now returns
-  `medium` (up from `low`), but gold is `high`. Physical harm recognized as defect but not yet
-  escalated to high urgency. Genuine hard case: strong positive framing + buried harm signal.
-- en-002, en-015 (benchmark): still `low` for clear product defects (BT glitch + bass mismatch;
-  fit issues). Remaining medium-under-calls, likely need stronger defect-detection examples.
+v2.2 increased the rate at which review-iq returns `mixed` for reviews that have explicit pros
+AND cons. This reduces agreement with the LLM-labeler's SENT scores (labeler was binary:
+called mixed reviews "positive" or "negative" based on overall tone, not explicit content).
+
+Human verification of the 5 new SENT divergences (where v2.2 returns mixed, labeler returned positive/negative):
+- **bench-en-001** (labeler=positive): Reviewer literally wrote "negative: mic not clear" section alongside explicit pros. Mixed is correct.
+- **bench-en-004** (labeler=positive): "Design and build quality is not up to the mark, it's quite uncomfortable too if you wear it for too long" alongside "amazing sound and bass." Mixed is correct.
+- **bench-en-009** (labeler=negative): "Sound quality is decent, Bluetooth very good" with "call quality is terrible." Reviewer said "the ONLY negative aspect." Mixed is more accurate.
+- **bench-en-014** (labeler=negative): "Sound Quality, Bass and Battery time are good" alongside connectivity/mic failures. Mixed is more accurate.
+- **bench-en-006** (labeler=positive): "humming sound when playing" noted then minimized. Most borderline — either is defensible, mixed is slightly more accurate.
+
+Ground-truth SENT eval fixtures: 27/35 pass. Zero new failures introduced by v2.2. The 8 failures (004_hinglish, 018_packaging_damage, 023_empty_review, plus 5 hi/hi-en fixtures expecting "mixed") are all pre-existing. **SENT change is a genuine quality improvement.**
+
+### Remaining gaps (not addressed in this version, human-verified)
+
+- **en-013** (benchmark, highest-value): "eyes will start paing within 10 min" in 5-star review. riq now
+  returns `medium` (up from `low`), but gold is `high`. Physical harm recognized as defect but not yet
+  escalated to high. Hard case: very strong positive framing ("bass the sound is aswsome. You will not
+  face any issues...") buries the harm signal mid-paragraph. **Highest-value remaining urgency gap.**
+- **en-002** (benchmark, confirmed under-call): BT drops during playback + bass mismatch with listing + build
+  quality not good. Three concrete fixable defects. No harm, no escalation. Rubric = medium. riq returns low.
+  Not a subjective preference — the Bluetooth dropout is a functional failure.
+- **en-015** (benchmark, confirmed under-call): Bass distortion at high volume (concrete technical defect,
+  not "I don't like bass") + fit failure for multiple users. Rubric = medium. riq returns low. Same pattern:
+  positive opening tone, defects embedded mid-paragraph.
+
+Root of remaining gaps: the prompt's new rubric is absorbed for cases with explicit negative language,
+but when a review opens positively and buries defects without escalation language, the model still
+defaults toward low. Next fix: add a grounding example that opens positively and mid-paragraph reveals
+a concrete defect (no anger, no demand), with urgency=medium.
 
 ---
 
