@@ -1,0 +1,217 @@
+{
+  "00486a32cae16d23681938f72381433c263b49de458283af551a37ab47ab14e8": {
+    "raw": "{\n  \"product\": \"Boat Rockerz 400 wireless headphones\",\n   \"stars\": 3,\n   \"stars_inferred\": 4,\n   \"pros\": [\"decent\", \"3D surrounding\", \"home theater feeling\", \"clear\", \"crisp beats\", \"good music\"],\n   \"cons\": [\"minor issues\"],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\"sound_quality\", \"surround_sound\", \"music_experience\", \"build_quality\", \"price\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
+    "tokens_in": 1071,
+    "tokens_out": 148
+  },
+  "1349b132c2f4f1258f296519186f3a44be16b0dda491a078fe2fcfb8fc7f6263": {
+    "raw": "{\n  \"product\": \"earphone\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\"excellent sound quality\", \"good battery backup\", \"great value for money\"],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\"sound_quality\", \"battery\", \"value\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.9\n}",
+    "tokens_in": 1677,
+    "tokens_out": 119
+  },
+  "21bc921a06590ca626d68bac77fcdeacfedadc027bc98f6387a47ca76fdf181f": {
+    "raw": "{\n  \"product\": \"one plus product\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\"satisfied with all features\", \"good value for money\"],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\"features\", \"value\"],\n   \"competitor_mentions\": [\"one plus\"],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.95\n}",
+    "tokens_in": 1683,
+    "tokens_out": 115
+  },
+  "287070d7961d8b76cda8be6ad85c09e7bea20ec3eb84159e3e22c95591cb6f09": {
+    "raw": "{\n  \"product\": \"Bluetooth headset\",\n   \"stars\": null,\n   \"stars_inferred\": 4,\n   \"pros\": [\n      \"great sound\",\n      \"awesome battery life\",\n      \"super fast delivery\",\n      \"can receive call\",\n      \"aux cable included\"\n   ],\n   \"cons\": [\n      \"Bass is not that great\"\n   ],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\n      \"sound\",\n      \"battery\",\n      \"delivery\",\n      \"build_quality\",\n      \"features\"\n   ],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
+    "tokens_in": 1070,
+    "tokens_out": 158
+  },
+  "2ead3f1096980c0df9b29e104792575a0f4719111679d1af218e30fd0808f6a7": {
+    "raw": "{\n  \"product\": \"Boat wireless headset\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\n      \"good bass\",\n      \"superb sound clarity\",\n      \"call answering option\",\n      \"best quality\",\n      \"good value for price\"\n   ],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\n      \"bass\",\n      \"sound_quality\",\n      \"build_quality\",\n      \"price\",\n      \"value_for_money\"\n   ],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
+    "tokens_in": 1075,
+    "tokens_out": 154
+  },
+  "2fcdeb76709192952d175ff9ca75c9d7f5111da24bb25e29130968a450322072": {
+    "raw": "{\n  \"product\": \"headphone\",\n   \"stars\": null,\n   \"stars_inferred\": 2,\n   \"pros\": [\"audio quality is ok\", \"bass\"],\n   \"cons\": [\"not upto the level\", \"distorted sound in high volume\", \"build quality is ok but not fitting for everyone\"],\n   \"buy_again\": null,\n   \"sentiment\": \"negative\",\n   \"topics\": [\"audio_quality\", \"build_quality\", \"comfort\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
+    "tokens_in": 1072,
+    "tokens_out": 136
+  },
+  "34524c0de6eae2a0820338dff07736587b80e89987533f1911d314b42bd1ff92": {
+    "raw": "{\n  \"product\": \"Mivi collar wireless\",\n   \"stars\": null,\n   \"stars_inferred\": 1,\n   \"pros\": [],\n   \"cons\": [\"all paid youtube reviews\", \"bakwas\"],\n   \"buy_again\": null,\n   \"sentiment\": \"negative\",\n   \"topics\": [\"build_quality\", \"price\", \"customer_service\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"high\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
+    "tokens_in": 978,
+    "tokens_out": 114
+  },
+  "3c0610e9a77b8383de9ae97de1c0db2e229d819518bdbb11350ba68cdc59ce9c": {
+    "raw": "{\n  \"product\": \"Osm products\",\n   \"stars\": null,\n   \"stars_inferred\": 0,\n   \"pros\": [],\n   \"cons\": [],\n   \"buy_again\": null,\n   \"sentiment\": \"neutral\",\n   \"topics\": [],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
+    "tokens_in": 974,
+    "tokens_out": 94
+  },
+  "3e6f317c6d2e15bc42a76fa994117b66cb9cf8f681605817ae35d966ee6a7b73": {
+    "raw": "{\n  \"product\": \"headphones\",\n   \"stars\": null,\n   \"stars_inferred\": 2,\n   \"pros\": [\"sound is quite good\", \"bass nice\", \"build quality good\"],\n   \"cons\": [\"hardly 10 to 15mins u can listen music\", \"pain start\", \"very tight\", \"cushion not good\", \"treble absent\", \"mid is just ok type\"],\n   \"buy_again\": null,\n   \"sentiment\": \"negative\",\n   \"topics\": [\"sound\", \"build_quality\", \"comfort\", \"durability\", \"price\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"high\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
+    "tokens_in": 1047,
+    "tokens_out": 164
+  },
+  "4df832efc0ee0044cd63adf35521cc05c848dbf2ec91d97929323e23740af2c6": {
+    "raw": "{\n  \"product\": \"bl headset\",\n   \"stars\": 4,\n   \"stars_inferred\": 4,\n   \"pros\": [\"sound quality\", \"battery backup\"],\n   \"cons\": [\"humming sound\"],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\"sound_quality\", \"battery\", \"connectivity\", \"color\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
+    "tokens_in": 1069,
+    "tokens_out": 118
+  },
+  "4eae80a75eaab83d4e1d38c3cf826cff0cdaf966896a2139459807c331bb2ffd": {
+    "raw": "{\n  \"product\": \"earphone\",\n   \"stars\": null,\n   \"stars_inferred\": 4,\n   \"pros\": [\n      \"good sound\",\n      \"value for money\",\n      \"impressive for first-time buyers\",\n      \"better than local or generic earphones\",\n      \"good bass\"\n   ],\n   \"cons\": [\n      \"not impressive for those who have used better earphones\",\n      \"basic earphone\"\n   ],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\n      \"sound_quality\",\n      \"price\",\n      \"bass\",\n      \"value\"\n   ],\n   \"competitor_mentions\": [\n      \"boat\"\n   ],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.9\n}",
+    "tokens_in": 1760,
+    "tokens_out": 178
+  },
+  "4ef83bddebc1b7006ee8749dd7901b30159366bcccfd61de0179a9322b48e42a": {
+    "raw": "{\n  \"product\": \"headphone\",\n   \"stars\": null,\n   \"stars_inferred\": 4,\n   \"pros\": [\n      \"amazing\",\n      \"well worth\",\n      \"sound\",\n      \"bass\",\n      \"good for listening songs\"\n   ],\n   \"cons\": [\n      \"design not up to the mark\",\n      \"build quality not up to the mark\",\n      \"uncomfortable to wear for too long\"\n   ],\n   \"buy_again\": null,\n   \"sentiment\": \"positive\",\n   \"topics\": [\n      \"design\",\n      \"build_quality\",\n      \"comfort\",\n      \"sound\",\n      \"bass\",\n      \"price\"\n   ],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
+    "tokens_in": 1079,
+    "tokens_out": 181
+  },
+  "58f7ac102503dd183f0d5cfc96e260c5c56f011c64ceb7ede4419cc75e283c98": {
+    "raw": "{\n  \"product\": \"wireless earphone\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\n      \"excellent sound quality\",\n      \"good bass\",\n      \"balanced sound quality\",\n      \"long playback time\",\n      \"good value for money\"\n   ],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\n      \"sound_quality\",\n      \"bass\",\n      \"charging_quality\",\n      \"playback_time\",\n      \"value\"\n   ],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.95\n}",
+    "tokens_in": 1760,
+    "tokens_out": 156
+  },
+  "59da885e66ebdf96cafe94e3a14d67077b4e05ed0369482f89cbe3439e6fe693": {
+    "raw": "{\n  \"product\": \"Bass\",\n   \"stars\": 5,\n   \"stars_inferred\": 5,\n   \"pros\": [\"good quality\", \"good build\"],\n   \"cons\": [\"low volume\"],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\"quality\", \"build_quality\", \"volume\"],\n   \"competitor_mentions\": [\"Boat\"],\n   \"urgency\": \"low\",\n   \"feature_requests\": [\"improve volume\"],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
+    "tokens_in": 996,
+    "tokens_out": 120
+  },
+  "615f6801baff4f6f12fe76ee52e235abd6400ab2a77eedf1510c0e2464cd1853": {
+    "raw": "{\n  \"product\": \"JBL Glide 501\",\n   \"stars\": null,\n   \"stars_inferred\": 4,\n   \"pros\": [\"punchy sound\", \"decent bass\", \"good value for money\", \"better than JBL Glide 501\", \"quite loud\"],\n   \"cons\": [\"bad microphone\"],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\"sound\", \"bass\", \"value_for_money\", \"build_quality\", \"loudness\", \"microphone\"],\n   \"competitor_mentions\": [\"JBL Glide 501\"],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
+    "tokens_in": 994,
+    "tokens_out": 157
+  },
+  "63ff52b3654faa391a5949db2c86c65477ca77c0d0d87196b1b1ec04d310d37d": {
+    "raw": "{\n  \"product\": \"bluetooth headphones\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\n      \"massive budget headphone\",\n      \"gives tough competition to Comapany headphones\",\n      \"extra ordinary sound quality\",\n      \"decent build quality\",\n      \"devil bass with vibration\"\n   ],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\n      \"budget\",\n      \"sound_quality\",\n      \"build_quality\",\n      \"bass\"\n   ],\n   \"competitor_mentions\": [\"Comapany headphones\"],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
+    "tokens_in": 1073,
+    "tokens_out": 162
+  },
+  "6a7c605c9ec4befc55c7622a05ce7fd3d0a018e9789cf6a39d0810313754a746": {
+    "raw": "{\n  \"product\": \"Bass\",\n   \"stars\": null,\n   \"stars_inferred\": 2,\n   \"pros\": [],\n   \"cons\": [\"low bass\"],\n   \"buy_again\": null,\n   \"sentiment\": \"negative\",\n   \"topics\": [\"bass\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
+    "tokens_in": 975,
+    "tokens_out": 99
+  },
+  "6df198c35daaed40aee77d1d2c047510b0e4939c9fdce369356c47b97ec75370": {
+    "raw": "{\n  \"product\": \"on ear Headphones\",\n   \"stars\": null,\n   \"stars_inferred\": 2,\n   \"pros\": [\"good sound\", \"comfortable at medium and low volume\"],\n   \"cons\": [\"outdated product\", \"does not give comfort\", \"not suitable for loud volume\"],\n   \"buy_again\": false,\n   \"sentiment\": \"negative\",\n   \"topics\": [\"sound\", \"comfort\", \"build_quality\", \"volume\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"high\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
+    "tokens_in": 1078,
+    "tokens_out": 136
+  },
+  "8541e7f96b19df8c4d6ba7cf77110bc02db560c48599ae80db0d39c6861d8eba": {
+    "raw": "{\n  \"product\": \"boat rockerz 400\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\n      \"sound production\",\n      \"heavy and punchy bass\",\n      \"nice experience\",\n      \"great sound\",\n      \"awesome bass\",\n      \"good build\",\n      \"stylish design\",\n      \"good battery backup\"\n   ],\n   \"cons\": [\n      \"uncomfortable for over the ear headphones users\"\n   ],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\n      \"sound_production\",\n      \"bass\",\n      \"build_quality\",\n      \"design\",\n      \"battery_backup\"\n   ],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
+    "tokens_in": 1067,
+    "tokens_out": 183
+  },
+  "87ec532b223bb153014ea744e017894c17bfda556292220cb838ebc88351a34e": {
+    "raw": "{\n  \"product\": \"Sound Quality, Bass and Battery time are good\",\n   \"stars\": null,\n   \"stars_inferred\": 3,\n   \"pros\": [\"good sound quality\", \"good bass\", \"good battery time\"],\n   \"cons\": [\"bluetooth connection issues\", \"pathetic range\", \"inefficient microphone\"],\n   \"buy_again\": null,\n   \"sentiment\": \"negative\",\n   \"topics\": [\"sound_quality\", \"bass\", \"battery\", \"connectivity\", \"bluetooth\", \"range\", \"microphone\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"medium\",\n   \"feature_requests\": [\"improve bluetooth connection\", \"increase range\", \"add noise cancellation to microphone\"],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
+    "tokens_in": 1064,
+    "tokens_out": 170
+  },
+  "8ca302ffdc208f086cf4e514bae51b3461a415a02ed30be7e989bb8963d94b0f": {
+    "raw": "{\n  \"product\": \"good\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\"very good experience\", \"good from flipkart\"],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\"experience\", \"delivery_service\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.95\n}",
+    "tokens_in": 1676,
+    "tokens_out": 109
+  },
+  "8dca7bbd38568947984f83cc34b78aa555e8f1236a4aaeb9538809fbd4455d00": {
+    "raw": "{\n  \"product\": \"Mahol Yarr Ky banawat Hai Iski Too Lovely\",\n   \"stars\": null,\n   \"stars_inferred\": 0,\n   \"pros\": [],\n   \"cons\": [],\n   \"buy_again\": null,\n   \"sentiment\": \"neutral\",\n   \"topics\": [],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
+    "tokens_in": 981,
+    "tokens_out": 104
+  },
+  "921b1e5a0855068323d27e2284dc5f31cdc0349e9901f3b64bb68df9c0c03c05": {
+    "raw": "{\n  \"product\": \"headphones\",\n   \"stars\": null,\n   \"stars_inferred\": 2,\n   \"pros\": [\n      \"light weight\",\n      \"foldable\",\n      \"easy to carry\",\n      \"decent sound quality\",\n      \"good bluetooth connectivity\"\n   ],\n   \"cons\": [\n      \"terrible call quality\",\n      \"poor microphone\",\n      \"no handsfree calling support\"\n   ],\n   \"buy_again\": null,\n   \"sentiment\": \"negative\",\n   \"topics\": [\n      \"weight\",\n      \"portability\",\n      \"sound_quality\",\n      \"bluetooth\",\n      \"call_quality\",\n      \"microphone\",\n      \"handsfree_calling\"\n   ],\n   \"competitor_mentions\": [\n      \"flipkart\"\n   ],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
+    "tokens_in": 1067,
+    "tokens_out": 192
+  },
+  "a3a78afa14b70a4af8b476cb20fecb4bb106305784872cd5d0b09bd503702c87": {
+    "raw": "{\n  \"product\": \"bluetooth headphones\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\n      \"good sound quality\",\n      \"easy to use\",\n      \"best in price range\",\n      \"fine design\",\n      \"good bluetooth range\",\n      \"built-in mic works well\"\n   ],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\n      \"sound_quality\",\n      \"design\",\n      \"price\",\n      \"bluetooth\",\n      \"microphone\"\n   ],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.95\n}",
+    "tokens_in": 1746,
+    "tokens_out": 160
+  },
+  "a7ec89f2f13c09f2991d0353eb9e94935cc5eac07c906acfcf7009e6f0499caf": {
+    "raw": "{\n  \"product\": \"earbuds\",\n   \"stars\": null,\n   \"stars_inferred\": 3,\n   \"pros\": [\"good sound quality\", \"easy to pair and connect\", \"good fit\"],\n   \"cons\": [\"video and audio out of sync\", \"right earbud stopped working\"],\n   \"buy_again\": null,\n   \"sentiment\": \"mixed\",\n   \"topics\": [\"sound_quality\", \"connectivity\", \"fit\", \"video_sync\"],\n   \"competitor_mentions\": [\"Chinese Products\"],\n   \"urgency\": \"medium\",\n   \"feature_requests\": [\"fix video and audio sync issue\", \"improve earbud durability\"],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.83\n}",
+    "tokens_in": 1778,
+    "tokens_out": 155
+  },
+  "a8250e927d19f256abfc81a9ad91efb00777a0138a7220b1c12366c03d0cc1b4": {
+    "raw": "{\n  \"product\": \"headphones\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\n      \"boost to me after hearing songs\",\n      \"good voice\",\n      \"no issue regarding the headphones\",\n      \"good mic\",\n      \"easy to connect\",\n      \"battery life of minimum 6 hours\",\n      \"clear footsteps in PUBG\",\n      \"can make guess from where enemy is going to come\"\n   ],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\n      \"sound_quality\",\n      \"voice_clarity\",\n      \"mic_quality\",\n      \"connectivity\",\n      \"battery_life\",\n      \"gaming_performance\"\n   ],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
+    "tokens_in": 1066,
+    "tokens_out": 193
+  },
+  "addcecbff7493023975e3a6676483375bdd7e1fcf011fd3cb872e60818e93242": {
+    "raw": "{\n  \"product\": \"companion\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\n      \"amazing battery life\",\n      \"good bass\",\n      \"sound quality\",\n      \"works for calling on the go\",\n      \"additional aux cable\",\n      \"foldable mechanism\",\n      \"good product\"\n   ],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\n      \"battery\",\n      \"sound_quality\",\n      \"portability\",\n      \"price\"\n   ],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
+    "tokens_in": 1066,
+    "tokens_out": 158
+  },
+  "af70083c94430075eb8c89227bfe8fe4d049359e4e9722115e4f8645b2dd542e": {
+    "raw": "{\n  \"product\": \"headphone\",\n   \"stars\": null,\n   \"stars_inferred\": 2,\n   \"pros\": [\"sound quality\", \"battery backup\"],\n   \"cons\": [\"uncomfortable fit\", \"painful after continuous use\", \"low volume while calling\", \"poor mic quality\"],\n   \"buy_again\": null,\n   \"sentiment\": \"negative\",\n   \"topics\": [\"sound_quality\", \"battery\", \"comfort\", \"build_quality\", \"volume\", \"mic\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"high\",\n   \"feature_requests\": [\"softer cushions\", \"louder volume while calling\", \"better mic quality\"],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
+    "tokens_in": 1072,
+    "tokens_out": 159
+  },
+  "b1622d865ca84c48a99e7dbab173758520a1ea1ae4cb0bcf464b9b3a92e1dabb": {
+    "raw": "{\n  \"product\": \"headphones\",\n   \"stars\": null,\n   \"stars_inferred\": 4,\n   \"pros\": [\n      \"excellent sound quality\",\n      \"outstanding bass\",\n      \"perfect looks and design\",\n      \"good latency time\"\n   ],\n   \"cons\": [\n      \"high bass can cause ear pain and headache\"\n   ],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\n      \"sound_quality\",\n      \"bass\",\n      \"design\",\n      \"latency\"\n   ],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.9\n}",
+    "tokens_in": 1752,
+    "tokens_out": 156
+  },
+  "b49e30231dcb27f8942933dd7575c52bbb84ae046d6a628cf1733ec767bf4229": {
+    "raw": "{\n  \"product\": \"neck band\",\n   \"stars\": null,\n   \"stars_inferred\": 2,\n   \"pros\": [],\n   \"cons\": [\n      \"irritating neck band in summer\",\n      \"ear pain when using earhook\",\n      \"heavy sound\",\n      \"different sound settings for different songs\",\n      \"disappointing\",\n      \"20% sound not audible\",\n      \"should have at least 90% sound to listen to songs\"\n   ],\n   \"buy_again\": false,\n   \"sentiment\": \"negative\",\n   \"topics\": [\n      \"neck_band\",\n      \"sound_quality\",\n      \"comfort\",\n      \"price\",\n      \"sound_settings\"\n   ],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [\n      \"improve sound quality\",\n      \"reduce ear pain\",\n      \"make sound settings consistent\"\n   ],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.81\n}",
+    "tokens_in": 1730,
+    "tokens_out": 205
+  },
+  "bf0e9f53da56d062c9037c0028f9b0d83368034d22993baeee8be9a802f8af76": {
+    "raw": "{\n  \"product\": \"general product\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\"excellent bass\", \"good sound quality\", \"value for money\"],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\"sound_quality\", \"bass\", \"value\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.92\n}",
+    "tokens_in": 1687,
+    "tokens_out": 118
+  },
+  "c70c7c80a0b3a14981aa2d06e10b5727e8b5937f855ad95d27e282045f88fd6e": {
+    "raw": "{\n  \"product\": \"BoAT headphones\",\n   \"stars\": null,\n   \"stars_inferred\": 4,\n   \"pros\": [\n      \"perfect balance between treble and bass\",\n      \"long battery life\",\n      \"strong and durable\",\n      \"good sound quality\"\n   ],\n   \"cons\": [\n      \"uncomfortable after an hour of wear\"\n   ],\n   \"buy_again\": null,\n   \"sentiment\": \"mixed\",\n   \"topics\": [\n      \"sound_quality\",\n      \"battery_life\",\n      \"build_quality\",\n      \"comfort\"\n   ],\n   \"competitor_mentions\": [\n      \"jbl\",\n      \"skullcandy\",\n      \"sennheiser\"\n   ],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
+    "tokens_in": 1084,
+    "tokens_out": 179
+  },
+  "c7d9c91cbf32fe2806c76fa68f8994d08ba409742c554d21750ea433f73881d7": {
+    "raw": "{\n  \"product\": \"headphones\",\n   \"stars\": null,\n   \"stars_inferred\": 3,\n   \"pros\": [\n      \"decent for the price range\",\n      \"easy pairing\",\n      \"decent battery\",\n      \"optimal sound through equilizer\"\n   ],\n   \"cons\": [\n      \"not comfortable ear puffs\",\n      \"build quality could be better\",\n      \"microphone issue\"\n   ],\n   \"buy_again\": null,\n   \"sentiment\": \"mixed\",\n   \"topics\": [\n      \"price\",\n      \"sound_quality\",\n      \"build_quality\",\n      \"comfort\",\n      \"microphone\"\n   ],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [\n      \"softer and bigger ear puffs\"\n   ],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
+    "tokens_in": 1070,
+    "tokens_out": 186
+  },
+  "c7f577b0fbb289d9d34da31fb3ade1cf6ebfce96ad35b7068b29ee498ceb57c8": {
+    "raw": "{\n  \"product\": \"Boat headphones\",\n   \"stars\": null,\n   \"stars_inferred\": 4,\n   \"pros\": [\n      \"awesome sound\",\n      \"good bass\",\n      \"mindblowing bass\",\n      \"like being in a DJ party with best woofers\"\n   ],\n   \"cons\": [\n      \"low comfort level\",\n      \"pain in eyes within 10 minutes\",\n      \"headphones get loose after a month\"\n   ],\n   \"buy_again\": null,\n   \"sentiment\": \"mixed\",\n   \"topics\": [\n      \"sound\",\n      \"bass\",\n      \"comfort\",\n      \"design\",\n      \"build_quality\"\n   ],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [\n      \"make headphones in an oval shape\"\n   ],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
+    "tokens_in": 1080,
+    "tokens_out": 190
+  },
+  "c9df68ed1a62f54cea6327d9b933d0be8703790fa36bc06c6994e791fac3e9ae": {
+    "raw": "{\n  \"product\": \"headphones\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\n      \"build quality\",\n      \"battery\",\n      \"amazing sound quality\",\n      \"amazing sound quality with wire\"\n   ],\n   \"cons\": [\n      \"hurts ears\",\n      \"high pitch buzz with wireless connectivity\"\n   ],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\n      \"build_quality\",\n      \"battery\",\n      \"sound_quality\",\n      \"wireless_connectivity\"\n   ],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
+    "tokens_in": 1069,
+    "tokens_out": 160
+  },
+  "d0c26171911a0393db24c0c5b7f7b10dcc0cbcd34031f5d22c0deadeb03f8454": {
+    "raw": "{\n  \"product\": \"bass heavy headphones\",\n   \"stars\": 4,\n   \"stars_inferred\": 4,\n   \"pros\": [\"good sound quality\", \"good bass\", \"good Bluetooth connectivity\", \"no issues with aux mode\"],\n   \"cons\": [\"bass not heavy enough\", \"built quality not good\"],\n   \"buy_again\": true,\n   \"sentiment\": \"mixed\",\n   \"topics\": [\"sound_quality\", \"bass\", \"bluetooth\", \"build_quality\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [\"improve bass\"],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
+    "tokens_in": 1067,
+    "tokens_out": 147
+  },
+  "dd860ce0e1941f88eca1996d46a4efb0b665a203be8341bc695c3e1e4197bbee": {
+    "raw": "{\n  \"product\": \"general product\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\"worth the money\", \"full value for money\"],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\"value\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.95\n}",
+    "tokens_in": 1676,
+    "tokens_out": 106
+  },
+  "e1ff641eed2462d586d4a8d332acbf8619e17e313caee38001aca55855b4a391": {
+    "raw": "{\n  \"product\": \"general product\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\"good value for money\", \"worth it\"],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\"value\", \"price\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.92\n}",
+    "tokens_in": 1674,
+    "tokens_out": 108
+  },
+  "ec08aa449c0b506d1ae9554cce936a5cbf37df6944643db9a7f95c0f0bf6c27b": {
+    "raw": "{\n  \"product\": \"boat sound quility\",\n   \"stars\": 5,\n   \"stars_inferred\": 5,\n   \"pros\": [\n      \"built quality is not so strong\",\n      \"design is better than built quality\",\n      \"made up of chip plastic material\",\n      \"sound quality is best for this price segment\",\n      \"each bit is clear\",\n      \"bass quality is also too good\",\n      \"love it\"\n   ],\n   \"cons\": [\n      \"built quality is not so strong\"\n   ],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\n      \"build_quality\",\n      \"design\",\n      \"material\",\n      \"sound_quality\",\n      \"price\",\n      \"bass_quality\"\n   ],\n   \"competitor_mentions\": [\n      \"bemisal headphone\"\n   ],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
+    "tokens_in": 1072,
+    "tokens_out": 209
+  },
+  "ec732d45f6563d2d651fcf772604d0f57ff603241a518f6a12a5efec46b95b49": {
+    "raw": "{\n  \"product\": \"general product\",\n   \"stars\": null,\n   \"stars_inferred\": 1,\n   \"pros\": [],\n   \"cons\": [\n      \"buttons don't work properly\",\n      \"left side sound automatically gets low\",\n      \"battery suddenly low after 60%\",\n      \"company's product is very bad\",\n      \"disappointed with the purchase\"\n   ],\n   \"buy_again\": false,\n   \"sentiment\": \"negative\",\n   \"topics\": [\n      \"product_quality\",\n      \"sound_quality\",\n      \"battery\",\n      \"buttons\",\n      \"company_service\"\n   ],\n   \"competitor_mentions\": [\"BOAT\"],\n   \"urgency\": \"high\",\n   \"feature_requests\": [],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.95\n}",
+    "tokens_in": 1777,
+    "tokens_out": 167
+  },
+  "f104b455b8fd0ecb40f35f76075de46c7fe2cdcb21c9a7a4f2af64806b15fb6b": {
+    "raw": "{\n  \"product\": \"Mi Basic Earphones\",\n   \"stars\": null,\n   \"stars_inferred\": 4,\n   \"pros\": [\n      \"excellent sound quality\",\n      \"light in weight\",\n      \"easily set in ears\",\n      \"flexible cable\"\n   ],\n   \"cons\": [\n      \"made of plastic\",\n      \"Mi Basic earphones broke after 1 month\"\n   ],\n   \"buy_again\": null,\n   \"sentiment\": \"mixed\",\n   \"topics\": [\n      \"sound_quality\",\n      \"build_quality\",\n      \"weight\",\n      \"comfort\",\n      \"durability\"\n   ],\n   \"competitor_mentions\": [\n      \"boat 225\",\n      \"mi basic\",\n      \"redmi earphones\"\n   ],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
+    "tokens_in": 1043,
+    "tokens_out": 189
+  },
+  "fdeefa60405ef18f422650c6ace1ab402040aff8b6b316425ca8c9bf4ef676eb": {
+    "raw": "{\n  \"product\": \"sound\",\n   \"stars\": 4,\n   \"stars_inferred\": 4,\n   \"pros\": [\n      \"awesome battery backup\",\n      \"good value for price\",\n      \"wonderful product\",\n      \"good customer service response\"\n   ],\n   \"cons\": [\n      \"mic not clear when driving\",\n      \"mic not audible during calls\",\n      \"sound not louder in headphones\"\n   ],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\n      \"sound\",\n      \"battery\",\n      \"build_quality\",\n      \"price\",\n      \"customer_service\"\n   ],\n   \"competitor_mentions\": [\n      \"HP\",\n      \"LG\",\n      \"Sony\"\n   ],\n   \"urgency\": \"low\",\n   \"feature_requests\": [\n      \"improve mic clarity\"\n   ],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
+    "tokens_in": 1072,
+    "tokens_out": 195
+  },
+  "fec0cebb8ae00cc15be91e6f9781aaf138d020f4e2753c239be2c65e7753947f": {
+    "raw": "{\n  \"product\": \"boat\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\"good quality material\", \"value for money\"],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\"material\", \"price\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.9\n}",
+    "tokens_in": 1686,
+    "tokens_out": 107
+  }
+}

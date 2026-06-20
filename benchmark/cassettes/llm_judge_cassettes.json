@@ -1,0 +1,217 @@
+{
+  "1510e139df8b39e33a030304c917d7da8b4e8350b862108f1e4bf10b8e273278": {
+    "raw": "{\n  \"SENT\": \"negative\",\n   \"URG\": \"medium\",\n   \"LANG\": \"en\"\n}",
+    "tokens_in": 279,
+    "tokens_out": 24
+  },
+  "1513400dce024ed0eeb1bde7d923dacf64b436f9b7d8baf7ba6dcdbc2d8bc813": {
+    "raw": "{\n  \"SENT\": \"negative\",\n   \"URG\": \"medium\",\n   \"LANG\": \"en\"\n}",
+    "tokens_in": 293,
+    "tokens_out": 24
+  },
+  "1a54455a5e5a0ce4779377a9ec9118e2393129ebd9e67c0b5a315d4a2491e261": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"hi-en\"\n}",
+    "tokens_in": 190,
+    "tokens_out": 25
+  },
+  "1b6ac6bf4d6bc5b690286f9d86f2ef67628aeee2fb0e8a114b0a129dcbbef14f": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"en\"\n}",
+    "tokens_in": 288,
+    "tokens_out": 24
+  },
+  "1f5c3bfe6cb8d4ceb70b5841fb1fc7c507d9843f92bbb0ce82979079feaee445": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"en\"\n}",
+    "tokens_in": 275,
+    "tokens_out": 24
+  },
+  "1f66862aa775e8d7a412c1bb32ecbaaab8358ee82f48b94eb78cba4e3e73a3c1": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"en\"\n}",
+    "tokens_in": 281,
+    "tokens_out": 24
+  },
+  "2488ef9a3513273411ecf0ee26f89654000edc1db2e46da13ec668d298cdd079": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"hi-en\"\n}",
+    "tokens_in": 211,
+    "tokens_out": 25
+  },
+  "298fd9a92e3314d1b5a671db5c5a27995272cf5aa89fe9b5210b315e4bd4d586": {
+    "raw": "{\n  \"SENT\": \"negative\",\n   \"URG\": \"medium\",\n   \"LANG\": \"en\"\n}",
+    "tokens_in": 293,
+    "tokens_out": 24
+  },
+  "2a5e5ee0615ed1cf716487226e3ed530f3dbe9a6b2b45a6d33915ace2becfdc4": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"hi-en\"\n}",
+    "tokens_in": 261,
+    "tokens_out": 25
+  },
+  "36bb6cbd6edfa0314829d98d2abcf0ebbf530f56e03819725bedce6a0e191674": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"hi-en\"\n}",
+    "tokens_in": 191,
+    "tokens_out": 25
+  },
+  "3c76fb235f6c482f0d3130f692441d5b52b7c98a02f1ead8476d36faf6cc58ac": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"hi-en\"\n}",
+    "tokens_in": 192,
+    "tokens_out": 25
+  },
+  "3ef8ce837f905e0b0621ee215bdfb9ac8bd8cab9803bd283c32701d3d5de5007": {
+    "raw": "{\n  \"SENT\": \"negative\",\n   \"URG\": \"medium\",\n   \"LANG\": \"en\"\n}",
+    "tokens_in": 283,
+    "tokens_out": 24
+  },
+  "528d7fa7efe107f5670abb46969eb815f9832ce1c9b5896e98086fe0575bfdd0": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"en\"\n}",
+    "tokens_in": 299,
+    "tokens_out": 24
+  },
+  "582ebcfa4e5af091d7b1b6d7ec1ca167b2287f0659f1133268691cc3c765cc91": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"hi-en\"\n}",
+    "tokens_in": 202,
+    "tokens_out": 25
+  },
+  "5ad295f0134120eae469503f4a0f9ddc8df66c0e6e9c58eaccac612a8f4d373c": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"en\"\n}",
+    "tokens_in": 284,
+    "tokens_out": 24
+  },
+  "5cce2e320e58b9f74a6b823791646feff01c031803246853e1e4c4e4c8c20ef4": {
+    "raw": "{\n  \"SENT\": \"negative\",\n   \"URG\": \"low\",\n   \"LANG\": \"hi-en\"\n}",
+    "tokens_in": 193,
+    "tokens_out": 25
+  },
+  "6a315226cfad461ff2a2577622322ee3845961b1605f62ea80b10907f2b954f4": {
+    "raw": "{\n  \"SENT\": \"negative\",\n   \"URG\": \"high\",\n   \"LANG\": \"hi-en\"\n}",
+    "tokens_in": 292,
+    "tokens_out": 25
+  },
+  "72e7e8aa985c7c349dfdf9e3fe188d8d015180f0bbf1c6dddb6eeda9d497e63c": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"hi-en\"\n}",
+    "tokens_in": 196,
+    "tokens_out": 25
+  },
+  "7c9b7638a4a447448abee246a6562c7bc3b05450f4208ad672c91da657733316": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"en\"\n}",
+    "tokens_in": 282,
+    "tokens_out": 24
+  },
+  "7f03da1474f2b3c61ffad4edc434c6e60c69ce6a612042c5ea8ed54043ee62ef": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"en\"\n}",
+    "tokens_in": 285,
+    "tokens_out": 24
+  },
+  "82168ad9ea837186a6a99304688554b16539769a9659656d201831437a98737a": {
+    "raw": "{\n  \"SENT\": \"negative\",\n   \"URG\": \"low\",\n   \"LANG\": \"hi-en\"\n}",
+    "tokens_in": 190,
+    "tokens_out": 25
+  },
+  "85aff9af0e35ce53ab27eef0a2089f738c6ff4cf2378b8ae1fe364b330d9fc54": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"en\"\n}",
+    "tokens_in": 201,
+    "tokens_out": 24
+  },
+  "8cb3a5c555d23e613442d7ff5178779c9617fd35a92b501243c40117c4d5a866": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"en\"\n}",
+    "tokens_in": 209,
+    "tokens_out": 24
+  },
+  "8cbf1baca91a096cfdf8737e633b5dd90609b81bd01838c49afe8bfe9f14d05c": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"en\"\n}",
+    "tokens_in": 198,
+    "tokens_out": 24
+  },
+  "9589a0d0a3edecf7269cd2607b0df0f37580aa5def4d37f965eeba7db6b0adb0": {
+    "raw": "{\n  \"SENT\": \"negative\",\n   \"URG\": \"medium\",\n   \"LANG\": \"hi-en\"\n}",
+    "tokens_in": 245,
+    "tokens_out": 25
+  },
+  "96b40418ee345d1a17b4342a403c25489d8061032f48d6c71305b84f505c027e": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"hi-en\"\n}",
+    "tokens_in": 287,
+    "tokens_out": 25
+  },
+  "9ffca5cfe9dabe451e798a0382b8443ecd7dd421057f4129c07611e3b046b65f": {
+    "raw": "{\n  \"SENT\": \"negative\",\n   \"URG\": \"medium\",\n   \"LANG\": \"en\"\n}",
+    "tokens_in": 262,
+    "tokens_out": 24
+  },
+  "a36b90622e4a084dbe89c69ffabcc6e6c1eb65bf4894d66b00c7f611545317ba": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"hi-en\"\n}",
+    "tokens_in": 275,
+    "tokens_out": 25
+  },
+  "a88ae8b4cddac9e31cb968927071adfc6581817ab8dc5b73008145c11e028911": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"hi-en\"\n}",
+    "tokens_in": 295,
+    "tokens_out": 25
+  },
+  "abfbc5196139c428dff4fd70f8728ccbfaf1db533897188fad97c1ab77ec9d90": {
+    "raw": "{\n  \"SENT\": \"negative\",\n   \"URG\": \"medium\",\n   \"LANG\": \"hi-en\"\n}",
+    "tokens_in": 287,
+    "tokens_out": 25
+  },
+  "ae3a95fd041ddd15760a02ea819f39bd9070f12ae1f8281c27abc02c2413b235": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"en\"\n}",
+    "tokens_in": 287,
+    "tokens_out": 24
+  },
+  "b3552f24b1a57e17c2695dec66c264145b5248cc565220989c3f883e4fef1373": {
+    "raw": "{\n  \"SENT\": \"negative\",\n   \"URG\": \"medium\",\n   \"LANG\": \"hi-en\"\n}",
+    "tokens_in": 287,
+    "tokens_out": 25
+  },
+  "b869f1a2b355010f3a42e3dcb62355b193341df205e4ad9582b7796cb588b7eb": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"en\"\n}",
+    "tokens_in": 189,
+    "tokens_out": 24
+  },
+  "ba9d5d00c4b4218092c41a0e4c3320d3e1836e248160f73908d7d36fa0404938": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"en\"\n}",
+    "tokens_in": 284,
+    "tokens_out": 24
+  },
+  "bf90107b4dcf9147d79b636c67bfe37fc585ced377f2cd5b4f763f9f827930e5": {
+    "raw": "{\n  \"SENT\": \"neutral\",\n   \"URG\": \"low\",\n   \"LANG\": \"en\"\n}",
+    "tokens_in": 285,
+    "tokens_out": 24
+  },
+  "c521c660a11390adbb79589fa79b0e1e83485f6d80f0bc630b83b7955dfc3dd4": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"hi-en\"\n}",
+    "tokens_in": 267,
+    "tokens_out": 25
+  },
+  "c7d8aae1b4ae772d293f73b4a3f083f03034239d670381f18881d668b7cfac20": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"hi-en\"\n}",
+    "tokens_in": 258,
+    "tokens_out": 25
+  },
+  "c7dc1b631e2b263f7f5b2014d94b118c60dd09999754208e8f9f90d3aaa8bf85": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"hi-en\"\n}",
+    "tokens_in": 281,
+    "tokens_out": 25
+  },
+  "d3834fe3ee90f6d5e559bb8c19f92d90fb95d417ed668e12a408b6772cdd41ed": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"en\"\n}",
+    "tokens_in": 290,
+    "tokens_out": 24
+  },
+  "d4f2713c1206c48a4939361a176b07237cfce3b213f990c9778fc31a5cfb3eaf": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"hi-en\"\n}",
+    "tokens_in": 294,
+    "tokens_out": 25
+  },
+  "ddb8b0f882e6404babfb5fd3e26d87e0b2792d6c7d426a5cfff2440764633b22": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"hi-en\"\n}",
+    "tokens_in": 191,
+    "tokens_out": 25
+  },
+  "ef437b4c9e4a52a54f4a6b3e14ea805bfc7fde65a76694cae09445503d7955d3": {
+    "raw": "{\n  \"SENT\": \"positive\",\n   \"URG\": \"low\",\n   \"LANG\": \"en\"\n}",
+    "tokens_in": 282,
+    "tokens_out": 24
+  },
+  "f7d98179d3c86a5704e829a40a7256ad56eaa4c8d2a09e69872d3d250bf6cd5d": {
+    "raw": "{\n  \"SENT\": \"neutral\",\n   \"URG\": \"low\",\n   \"LANG\": \"en\"\n}",
+    "tokens_in": 284,
+    "tokens_out": 24
+  }
+}

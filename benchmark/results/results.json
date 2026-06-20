@@ -1,0 +1,3833 @@
+{
+  "generated_at": "2026-06-20 11:03 UTC",
+  "replay_mode": true,
+  "n_candidates": 43,
+  "slices": [
+    "en",
+    "hi-en"
+  ],
+  "systems": [
+    {
+      "system_id": "majority-baseline",
+      "per_task_per_slice": {
+        "SENT": {
+          "_all": {
+            "n": 43,
+            "n_error": 0,
+            "accuracy": 0.6977,
+            "macro_f1": 0.274,
+            "primary_metric": 0.274,
+            "primary_metric_name": "macro_f1",
+            "per_class_f1": {
+              "positive": 0.8219,
+              "neutral": 0.0,
+              "negative": 0.0
+            },
+            "confusion": [
+              [
+                30,
+                0,
+                0
+              ],
+              [
+                1,
+                0,
+                0
+              ],
+              [
+                12,
+                0,
+                0
+              ]
+            ],
+            "labels": [
+              "positive",
+              "neutral",
+              "negative"
+            ]
+          },
+          "en": {
+            "n": 22,
+            "n_error": 0,
+            "accuracy": 0.6364,
+            "macro_f1": 0.2593,
+            "primary_metric": 0.2593,
+            "primary_metric_name": "macro_f1",
+            "per_class_f1": {
+              "positive": 0.7778,
+              "neutral": 0.0,
+              "negative": 0.0
+            },
+            "confusion": [
+              [
+                14,
+                0,
+                0
+              ],
+              [
+                1,
+                0,
+                0
+              ],
+              [
+                7,
+                0,
+                0
+              ]
+            ],
+            "labels": [
+              "positive",
+              "neutral",
+              "negative"
+            ]
+          },
+          "hi-en": {
+            "n": 21,
+            "n_error": 0,
+            "accuracy": 0.7619,
+            "macro_f1": 0.2883,
+            "primary_metric": 0.2883,
+            "primary_metric_name": "macro_f1",
+            "per_class_f1": {
+              "positive": 0.8649,
+              "neutral": 0.0,
+              "negative": 0.0
+            },
+            "confusion": [
+              [
+                16,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                5,
+                0,
+                0
+              ]
+            ],
+            "labels": [
+              "positive",
+              "neutral",
+              "negative"
+            ]
+          }
+        },
+        "URG": {
+          "_all": {
+            "n": 43,
+            "n_error": 0,
+            "accuracy": 0.6744,
+            "macro_f1": 0.2685,
+            "primary_metric": 0.2685,
+            "primary_metric_name": "macro_f1",
+            "per_class_f1": {
+              "low": 0.8056,
+              "medium": 0.0,
+              "high": 0.0
+            },
+            "confusion": [
+              [
+                29,
+                0,
+                0
+              ],
+              [
+                13,
+                0,
+                0
+              ],
+              [
+                1,
+                0,
+                0
+              ]
+            ],
+            "labels": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "en": {
+            "n": 22,
+            "n_error": 0,
+            "accuracy": 0.5909,
+            "macro_f1": 0.2476,
+            "primary_metric": 0.2476,
+            "primary_metric_name": "macro_f1",
+            "per_class_f1": {
+              "low": 0.7429,
+              "medium": 0.0,
+              "high": 0.0
+            },
+            "confusion": [
+              [
+                13,
+                0,
+                0
+              ],
+              [
+                9,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ]
+            ],
+            "labels": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "hi-en": {
+            "n": 21,
+            "n_error": 0,
+            "accuracy": 0.7619,
+            "macro_f1": 0.2883,
+            "primary_metric": 0.2883,
+            "primary_metric_name": "macro_f1",
+            "per_class_f1": {
+              "low": 0.8649,
+              "medium": 0.0,
+              "high": 0.0
+            },
+            "confusion": [
+              [
+                16,
+                0,
+                0
+              ],
+              [
+                4,
+                0,
+                0
+              ],
+              [
+                1,
+                0,
+                0
+              ]
+            ],
+            "labels": [
+              "low",
+              "medium",
+              "high"
+            ]
+          }
+        },
+        "LANG": {
+          "_all": {
+            "n": 43,
+            "n_error": 0,
+            "accuracy": 0.5116,
+            "macro_f1": 0.2256,
+            "primary_metric": 0.5116,
+            "primary_metric_name": "accuracy",
+            "per_class_f1": {
+              "en": 0.0,
+              "hi-en": 0.6769,
+              "hi": 0.0
+            },
+            "confusion": [
+              [
+                0,
+                21,
+                0
+              ],
+              [
+                0,
+                22,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ]
+            ],
+            "labels": [
+              "en",
+              "hi-en",
+              "hi"
+            ]
+          },
+          "en": {
+            "n": 22,
+            "n_error": 0,
+            "accuracy": 0.1818,
+            "macro_f1": 0.1026,
+            "primary_metric": 0.1818,
+            "primary_metric_name": "accuracy",
+            "per_class_f1": {
+              "en": 0.0,
+              "hi-en": 0.3077,
+              "hi": 0.0
+            },
+            "confusion": [
+              [
+                0,
+                18,
+                0
+              ],
+              [
+                0,
+                4,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ]
+            ],
+            "labels": [
+              "en",
+              "hi-en",
+              "hi"
+            ]
+          },
+          "hi-en": {
+            "n": 21,
+            "n_error": 0,
+            "accuracy": 0.8571,
+            "macro_f1": 0.3077,
+            "primary_metric": 0.8571,
+            "primary_metric_name": "accuracy",
+            "per_class_f1": {
+              "en": 0.0,
+              "hi-en": 0.9231,
+              "hi": 0.0
+            },
+            "confusion": [
+              [
+                0,
+                3,
+                0
+              ],
+              [
+                0,
+                18,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ]
+            ],
+            "labels": [
+              "en",
+              "hi-en",
+              "hi"
+            ]
+          }
+        }
+      },
+      "sample_detail": [
+        {
+          "id": "bench-en-001",
+          "slice": "en",
+          "text_preview": "sound: its relay rock when I compare with other headphones I used HP, LG, Sony..",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-002",
+          "slice": "en",
+          "text_preview": "Good product..sound quality is good but bass is not so heavy as they are saying.",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": true,
+            "URG": true,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-003",
+          "slice": "en",
+          "text_preview": "1st of all its very popular and boat is very good in sound production they have ",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-004",
+          "slice": "en",
+          "text_preview": "Got this headphone at just rs. 899 in offer i can say it's just an amazing well ",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-005",
+          "slice": "en",
+          "text_preview": "dissipointed !!!!    (not comfortable)                                          ",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": true,
+            "URG": true,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-006",
+          "slice": "en",
+          "text_preview": "I gave it four stars because there's humming sound when you are playing tracks (",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-007",
+          "slice": "en",
+          "text_preview": "Delivered in a day as promised by flipkart.. Big ups to the service for that.. C",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-008",
+          "slice": "en",
+          "text_preview": "This is my first review on Flipkart as this is my first purchase from them. Now ",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-009",
+          "slice": "en",
+          "text_preview": "I received a quick delivery from flipkart. The headphones are light weight and f",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": true,
+            "URG": true,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-010",
+          "slice": "en",
+          "text_preview": "The product is too good bass and sound clarity is superb ..that too with call an",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-011",
+          "slice": "en",
+          "text_preview": "Hi guys I recently brought these headphone and have been using it for a while no",
+          "gold": {
+            "SENT": "neutral",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": true,
+            "URG": true,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-012",
+          "slice": "en",
+          "text_preview": "I have purchased these headphones at around 1080 Rs .on the freedom sale of flip",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-013",
+          "slice": "en",
+          "text_preview": "The bass the sound is aswsome. You will not face any issues with the sound as it",
+          "gold": {
+            "SENT": "positive",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": true,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-014",
+          "slice": "en",
+          "text_preview": "After using it for more than month here is a honest review. Sound Quality, Bass ",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": true,
+            "URG": true,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-015",
+          "slice": "en",
+          "text_preview": "It's been 3 month I'm using this headphone, Personally I'm Boat speaker and head",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": true,
+            "URG": true,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-016",
+          "slice": "en",
+          "text_preview": "This is a wonderful companion for both my phone and music, this has an amazing b",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-017",
+          "slice": "en",
+          "text_preview": "What to say about this? This is my first bluetooth headphones which I think this",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-018",
+          "slice": "en",
+          "text_preview": "i am writing review after a 15 days use. sound quality and battery backup is qui",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": true,
+            "URG": true,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-019",
+          "slice": "en",
+          "text_preview": "I really like these headphones. Build quality, battery, everything is amazing. T",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-020",
+          "slice": "en",
+          "text_preview": "built quality is not so strong but design is better than built quility it is mad",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-021",
+          "slice": "en",
+          "text_preview": "YOU PROBABLY NOTICED HOW MANY NOM OF PEOPLE BOUGHT UT AND RATED IT. but tell you",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": true,
+            "URG": true,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-022",
+          "slice": "en",
+          "text_preview": "The headphones are just boost to me after hearing songs I fell free and the voic",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-hien-001",
+          "slice": "hi-en",
+          "text_preview": "As they rightly say about Chinese Products: Chala Toh Chand Tak; Nahi Toh Raat T",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": true,
+            "URG": true,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-002",
+          "slice": "hi-en",
+          "text_preview": "This is an excellent wireless earphone. I should admit that Sound quality is fab",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-003",
+          "slice": "hi-en",
+          "text_preview": "Nice for the price, good sound, but if you have already used boat 220 or 225 you",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-hien-004",
+          "slice": "hi-en",
+          "text_preview": "Hear lots of things about this but fact is that sound quality is really awesome ",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-005",
+          "slice": "hi-en",
+          "text_preview": "These rockerz are branded , easy to use and good sound quality. Best bluetooth h",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-006",
+          "slice": "hi-en",
+          "text_preview": "Beyond the imagination....VERY BAD PRODUCT BUTTONS CANT WORK PROPERLYLeft side s",
+          "gold": {
+            "SENT": "negative",
+            "URG": "high",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": true,
+            "URG": true,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-007",
+          "slice": "hi-en",
+          "text_preview": "For better comfort  don't look at boat 225, mi basic and other redmi earphones. ",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-008",
+          "slice": "hi-en",
+          "text_preview": "Slightly disappointed to buy this at 1800 price range neck band is irritating ma",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": true,
+            "URG": true,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-009",
+          "slice": "hi-en",
+          "text_preview": "Quite punchy. Decent bass too. Better than JBL Glide 501 actually. Quite loud to",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-hien-010",
+          "slice": "hi-en",
+          "text_preview": "Very good and beautiful \u2764\ufe0f Wah Wah trusted material     Full paisa vasool. .than",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-011",
+          "slice": "hi-en",
+          "text_preview": "Bass 5/5Volume 4.5/5Quality Build 5/5Best but Boat ko thoda Volume Me sudhar kar",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-012",
+          "slice": "hi-en",
+          "text_preview": "Highly satisfied for all features . 100% Paisa vasool.Best product from one plus",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-hien-013",
+          "slice": "hi-en",
+          "text_preview": "Awesome i like it bass is super sound is good boleto ekdam mast, paisa vasool...",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-014",
+          "slice": "hi-en",
+          "text_preview": "Mivi collar wireless is best....... Not good, may be all paid youtube reviews...",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": true,
+            "URG": true,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-015",
+          "slice": "hi-en",
+          "text_preview": "Mahol Yarr Ky banawat Hai Iski Too Lovely Its Very Useful In Gym and CookingREAD",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-016",
+          "slice": "hi-en",
+          "text_preview": "Built quilyty sound battery backup superb all over value for money ,paisa vasul",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-017",
+          "slice": "hi-en",
+          "text_preview": "Product is worth, full paisa vasool....l liked it very muchREAD MORE",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-018",
+          "slice": "hi-en",
+          "text_preview": "mujhe bhot accha lga first time good from flipkartREAD MORE",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-019",
+          "slice": "hi-en",
+          "text_preview": "Osm products I am happy sound Bess kafi acha haiREAD MORE",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-020",
+          "slice": "hi-en",
+          "text_preview": "Bass thoda kam hai jitna socha tha. \ud83d\udc4cREAD MORE",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": true,
+            "URG": true,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-021",
+          "slice": "hi-en",
+          "text_preview": "Value for money \ud83d\udcb5\ud83d\udcb0... Worth it... Paisa vasool",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        }
+      ]
+    },
+    {
+      "system_id": "llm-judge-llama-3.1-8b",
+      "per_task_per_slice": {
+        "SENT": {
+          "_all": {
+            "n": 43,
+            "n_error": 0,
+            "accuracy": 0.9535,
+            "macro_f1": 0.8633,
+            "primary_metric": 0.8633,
+            "primary_metric_name": "macro_f1",
+            "per_class_f1": {
+              "positive": 0.9667,
+              "neutral": 0.6667,
+              "negative": 0.9565
+            },
+            "confusion": [
+              [
+                29,
+                1,
+                0
+              ],
+              [
+                0,
+                1,
+                0
+              ],
+              [
+                1,
+                0,
+                11
+              ]
+            ],
+            "labels": [
+              "positive",
+              "neutral",
+              "negative"
+            ]
+          },
+          "en": {
+            "n": 22,
+            "n_error": 0,
+            "accuracy": 0.9091,
+            "macro_f1": 0.8394,
+            "primary_metric": 0.8394,
+            "primary_metric_name": "macro_f1",
+            "per_class_f1": {
+              "positive": 0.9286,
+              "neutral": 0.6667,
+              "negative": 0.9231
+            },
+            "confusion": [
+              [
+                13,
+                1,
+                0
+              ],
+              [
+                0,
+                1,
+                0
+              ],
+              [
+                1,
+                0,
+                6
+              ]
+            ],
+            "labels": [
+              "positive",
+              "neutral",
+              "negative"
+            ]
+          },
+          "hi-en": {
+            "n": 21,
+            "n_error": 0,
+            "accuracy": 1.0,
+            "macro_f1": 0.6667,
+            "primary_metric": 0.6667,
+            "primary_metric_name": "macro_f1",
+            "per_class_f1": {
+              "positive": 1.0,
+              "neutral": 0.0,
+              "negative": 1.0
+            },
+            "confusion": [
+              [
+                16,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                5
+              ]
+            ],
+            "labels": [
+              "positive",
+              "neutral",
+              "negative"
+            ]
+          }
+        },
+        "URG": {
+          "_all": {
+            "n": 43,
+            "n_error": 0,
+            "accuracy": 0.8837,
+            "macro_f1": 0.8942,
+            "primary_metric": 0.8942,
+            "primary_metric_name": "macro_f1",
+            "per_class_f1": {
+              "low": 0.9206,
+              "medium": 0.7619,
+              "high": 1.0
+            },
+            "confusion": [
+              [
+                29,
+                0,
+                0
+              ],
+              [
+                5,
+                8,
+                0
+              ],
+              [
+                0,
+                0,
+                1
+              ]
+            ],
+            "labels": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "en": {
+            "n": 22,
+            "n_error": 0,
+            "accuracy": 0.8636,
+            "macro_f1": 0.5655,
+            "primary_metric": 0.5655,
+            "primary_metric_name": "macro_f1",
+            "per_class_f1": {
+              "low": 0.8966,
+              "medium": 0.8,
+              "high": 0.0
+            },
+            "confusion": [
+              [
+                13,
+                0,
+                0
+              ],
+              [
+                3,
+                6,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ]
+            ],
+            "labels": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "hi-en": {
+            "n": 21,
+            "n_error": 0,
+            "accuracy": 0.9048,
+            "macro_f1": 0.8693,
+            "primary_metric": 0.8693,
+            "primary_metric_name": "macro_f1",
+            "per_class_f1": {
+              "low": 0.9412,
+              "medium": 0.6667,
+              "high": 1.0
+            },
+            "confusion": [
+              [
+                16,
+                0,
+                0
+              ],
+              [
+                2,
+                2,
+                0
+              ],
+              [
+                0,
+                0,
+                1
+              ]
+            ],
+            "labels": [
+              "low",
+              "medium",
+              "high"
+            ]
+          }
+        },
+        "LANG": {
+          "_all": {
+            "n": 43,
+            "n_error": 0,
+            "accuracy": 0.7442,
+            "macro_f1": 0.4961,
+            "primary_metric": 0.7442,
+            "primary_metric_name": "accuracy",
+            "per_class_f1": {
+              "en": 0.7442,
+              "hi-en": 0.7442,
+              "hi": 0.0
+            },
+            "confusion": [
+              [
+                16,
+                5,
+                0
+              ],
+              [
+                6,
+                16,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ]
+            ],
+            "labels": [
+              "en",
+              "hi-en",
+              "hi"
+            ]
+          },
+          "en": {
+            "n": 22,
+            "n_error": 0,
+            "accuracy": 0.7273,
+            "macro_f1": 0.4078,
+            "primary_metric": 0.7273,
+            "primary_metric_name": "accuracy",
+            "per_class_f1": {
+              "en": 0.8235,
+              "hi-en": 0.4,
+              "hi": 0.0
+            },
+            "confusion": [
+              [
+                14,
+                4,
+                0
+              ],
+              [
+                2,
+                2,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ]
+            ],
+            "labels": [
+              "en",
+              "hi-en",
+              "hi"
+            ]
+          },
+          "hi-en": {
+            "n": 21,
+            "n_error": 0,
+            "accuracy": 0.7619,
+            "macro_f1": 0.431,
+            "primary_metric": 0.7619,
+            "primary_metric_name": "accuracy",
+            "per_class_f1": {
+              "en": 0.4444,
+              "hi-en": 0.8485,
+              "hi": 0.0
+            },
+            "confusion": [
+              [
+                2,
+                1,
+                0
+              ],
+              [
+                4,
+                14,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ]
+            ],
+            "labels": [
+              "en",
+              "hi-en",
+              "hi"
+            ]
+          }
+        }
+      },
+      "sample_detail": [
+        {
+          "id": "bench-en-001",
+          "slice": "en",
+          "text_preview": "sound: its relay rock when I compare with other headphones I used HP, LG, Sony..",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 16,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-002",
+          "slice": "en",
+          "text_preview": "Good product..sound quality is good but bass is not so heavy as they are saying.",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-003",
+          "slice": "en",
+          "text_preview": "1st of all its very popular and boat is very good in sound production they have ",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-004",
+          "slice": "en",
+          "text_preview": "Got this headphone at just rs. 899 in offer i can say it's just an amazing well ",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-005",
+          "slice": "en",
+          "text_preview": "dissipointed !!!!    (not comfortable)                                          ",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-006",
+          "slice": "en",
+          "text_preview": "I gave it four stars because there's humming sound when you are playing tracks (",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "neutral",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": true,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-007",
+          "slice": "en",
+          "text_preview": "Delivered in a day as promised by flipkart.. Big ups to the service for that.. C",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-008",
+          "slice": "en",
+          "text_preview": "This is my first review on Flipkart as this is my first purchase from them. Now ",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-009",
+          "slice": "en",
+          "text_preview": "I received a quick delivery from flipkart. The headphones are light weight and f",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": true,
+            "URG": true,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-010",
+          "slice": "en",
+          "text_preview": "The product is too good bass and sound clarity is superb ..that too with call an",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-011",
+          "slice": "en",
+          "text_preview": "Hi guys I recently brought these headphone and have been using it for a while no",
+          "gold": {
+            "SENT": "neutral",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "neutral",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": true,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-012",
+          "slice": "en",
+          "text_preview": "I have purchased these headphones at around 1080 Rs .on the freedom sale of flip",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-013",
+          "slice": "en",
+          "text_preview": "The bass the sound is aswsome. You will not face any issues with the sound as it",
+          "gold": {
+            "SENT": "positive",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": true,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-014",
+          "slice": "en",
+          "text_preview": "After using it for more than month here is a honest review. Sound Quality, Bass ",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-015",
+          "slice": "en",
+          "text_preview": "It's been 3 month I'm using this headphone, Personally I'm Boat speaker and head",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-016",
+          "slice": "en",
+          "text_preview": "This is a wonderful companion for both my phone and music, this has an amazing b",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-017",
+          "slice": "en",
+          "text_preview": "What to say about this? This is my first bluetooth headphones which I think this",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-018",
+          "slice": "en",
+          "text_preview": "i am writing review after a 15 days use. sound quality and battery backup is qui",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-019",
+          "slice": "en",
+          "text_preview": "I really like these headphones. Build quality, battery, everything is amazing. T",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-020",
+          "slice": "en",
+          "text_preview": "built quality is not so strong but design is better than built quility it is mad",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-021",
+          "slice": "en",
+          "text_preview": "YOU PROBABLY NOTICED HOW MANY NOM OF PEOPLE BOUGHT UT AND RATED IT. but tell you",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-022",
+          "slice": "en",
+          "text_preview": "The headphones are just boost to me after hearing songs I fell free and the voic",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-hien-001",
+          "slice": "hi-en",
+          "text_preview": "As they rightly say about Chinese Products: Chala Toh Chand Tak; Nahi Toh Raat T",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-hien-002",
+          "slice": "hi-en",
+          "text_preview": "This is an excellent wireless earphone. I should admit that Sound quality is fab",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-hien-003",
+          "slice": "hi-en",
+          "text_preview": "Nice for the price, good sound, but if you have already used boat 220 or 225 you",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-hien-004",
+          "slice": "hi-en",
+          "text_preview": "Hear lots of things about this but fact is that sound quality is really awesome ",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-005",
+          "slice": "hi-en",
+          "text_preview": "These rockerz are branded , easy to use and good sound quality. Best bluetooth h",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 14,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-006",
+          "slice": "hi-en",
+          "text_preview": "Beyond the imagination....VERY BAD PRODUCT BUTTONS CANT WORK PROPERLYLeft side s",
+          "gold": {
+            "SENT": "negative",
+            "URG": "high",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "negative",
+            "URG": "high",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-007",
+          "slice": "hi-en",
+          "text_preview": "For better comfort  don't look at boat 225, mi basic and other redmi earphones. ",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-008",
+          "slice": "hi-en",
+          "text_preview": "Slightly disappointed to buy this at 1800 price range neck band is irritating ma",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-009",
+          "slice": "hi-en",
+          "text_preview": "Quite punchy. Decent bass too. Better than JBL Glide 501 actually. Quite loud to",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-010",
+          "slice": "hi-en",
+          "text_preview": "Very good and beautiful \u2764\ufe0f Wah Wah trusted material     Full paisa vasool. .than",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-hien-011",
+          "slice": "hi-en",
+          "text_preview": "Bass 5/5Volume 4.5/5Quality Build 5/5Best but Boat ko thoda Volume Me sudhar kar",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-012",
+          "slice": "hi-en",
+          "text_preview": "Highly satisfied for all features . 100% Paisa vasool.Best product from one plus",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-013",
+          "slice": "hi-en",
+          "text_preview": "Awesome i like it bass is super sound is good boleto ekdam mast, paisa vasool...",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-014",
+          "slice": "hi-en",
+          "text_preview": "Mivi collar wireless is best....... Not good, may be all paid youtube reviews...",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "negative",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": true,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-015",
+          "slice": "hi-en",
+          "text_preview": "Mahol Yarr Ky banawat Hai Iski Too Lovely Its Very Useful In Gym and CookingREAD",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-016",
+          "slice": "hi-en",
+          "text_preview": "Built quilyty sound battery backup superb all over value for money ,paisa vasul",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-017",
+          "slice": "hi-en",
+          "text_preview": "Product is worth, full paisa vasool....l liked it very muchREAD MORE",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-018",
+          "slice": "hi-en",
+          "text_preview": "mujhe bhot accha lga first time good from flipkartREAD MORE",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-019",
+          "slice": "hi-en",
+          "text_preview": "Osm products I am happy sound Bess kafi acha haiREAD MORE",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-020",
+          "slice": "hi-en",
+          "text_preview": "Bass thoda kam hai jitna socha tha. \ud83d\udc4cREAD MORE",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "negative",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": true,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-021",
+          "slice": "hi-en",
+          "text_preview": "Value for money \ud83d\udcb5\ud83d\udcb0... Worth it... Paisa vasool",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        }
+      ]
+    },
+    {
+      "system_id": "review-iq",
+      "per_task_per_slice": {
+        "SENT": {
+          "_all": {
+            "n": 43,
+            "n_error": 0,
+            "accuracy": 0.8372,
+            "macro_f1": 0.6801,
+            "primary_metric": 0.6801,
+            "primary_metric_name": "macro_f1",
+            "per_class_f1": {
+              "positive": 0.9091,
+              "neutral": 0.2222,
+              "negative": 0.9091
+            },
+            "confusion": [
+              [
+                25,
+                5,
+                0
+              ],
+              [
+                0,
+                1,
+                0
+              ],
+              [
+                0,
+                2,
+                10
+              ]
+            ],
+            "labels": [
+              "positive",
+              "neutral",
+              "negative"
+            ]
+          },
+          "en": {
+            "n": 22,
+            "n_error": 0,
+            "accuracy": 0.8636,
+            "macro_f1": 0.7487,
+            "primary_metric": 0.7487,
+            "primary_metric_name": "macro_f1",
+            "per_class_f1": {
+              "positive": 0.9231,
+              "neutral": 0.4,
+              "negative": 0.9231
+            },
+            "confusion": [
+              [
+                12,
+                2,
+                0
+              ],
+              [
+                0,
+                1,
+                0
+              ],
+              [
+                0,
+                1,
+                6
+              ]
+            ],
+            "labels": [
+              "positive",
+              "neutral",
+              "negative"
+            ]
+          },
+          "hi-en": {
+            "n": 21,
+            "n_error": 0,
+            "accuracy": 0.8095,
+            "macro_f1": 0.5951,
+            "primary_metric": 0.5951,
+            "primary_metric_name": "macro_f1",
+            "per_class_f1": {
+              "positive": 0.8966,
+              "neutral": 0.0,
+              "negative": 0.8889
+            },
+            "confusion": [
+              [
+                13,
+                3,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                1,
+                4
+              ]
+            ],
+            "labels": [
+              "positive",
+              "neutral",
+              "negative"
+            ]
+          }
+        },
+        "URG": {
+          "_all": {
+            "n": 43,
+            "n_error": 0,
+            "accuracy": 0.7442,
+            "macro_f1": 0.4974,
+            "primary_metric": 0.4974,
+            "primary_metric_name": "macro_f1",
+            "per_class_f1": {
+              "low": 0.8923,
+              "medium": 0.2667,
+              "high": 0.3333
+            },
+            "confusion": [
+              [
+                29,
+                0,
+                0
+              ],
+              [
+                7,
+                2,
+                4
+              ],
+              [
+                0,
+                0,
+                1
+              ]
+            ],
+            "labels": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "en": {
+            "n": 22,
+            "n_error": 0,
+            "accuracy": 0.6364,
+            "macro_f1": 0.3462,
+            "primary_metric": 0.3462,
+            "primary_metric_name": "macro_f1",
+            "per_class_f1": {
+              "low": 0.8387,
+              "medium": 0.2,
+              "high": 0.0
+            },
+            "confusion": [
+              [
+                13,
+                0,
+                0
+              ],
+              [
+                5,
+                1,
+                3
+              ],
+              [
+                0,
+                0,
+                0
+              ]
+            ],
+            "labels": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "hi-en": {
+            "n": 21,
+            "n_error": 0,
+            "accuracy": 0.8571,
+            "macro_f1": 0.6693,
+            "primary_metric": 0.6693,
+            "primary_metric_name": "macro_f1",
+            "per_class_f1": {
+              "low": 0.9412,
+              "medium": 0.4,
+              "high": 0.6667
+            },
+            "confusion": [
+              [
+                16,
+                0,
+                0
+              ],
+              [
+                2,
+                1,
+                1
+              ],
+              [
+                0,
+                0,
+                1
+              ]
+            ],
+            "labels": [
+              "low",
+              "medium",
+              "high"
+            ]
+          }
+        },
+        "LANG": {
+          "_all": {
+            "n": 43,
+            "n_error": 0,
+            "accuracy": 0.7209,
+            "macro_f1": 0.4756,
+            "primary_metric": 0.7209,
+            "primary_metric_name": "accuracy",
+            "per_class_f1": {
+              "en": 0.76,
+              "hi-en": 0.6667,
+              "hi": 0.0
+            },
+            "confusion": [
+              [
+                19,
+                2,
+                0
+              ],
+              [
+                10,
+                12,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ]
+            ],
+            "labels": [
+              "en",
+              "hi-en",
+              "hi"
+            ]
+          },
+          "en": {
+            "n": 22,
+            "n_error": 0,
+            "accuracy": 0.8182,
+            "macro_f1": 0.3,
+            "primary_metric": 0.8182,
+            "primary_metric_name": "accuracy",
+            "per_class_f1": {
+              "en": 0.9,
+              "hi-en": 0.0,
+              "hi": 0.0
+            },
+            "confusion": [
+              [
+                18,
+                0,
+                0
+              ],
+              [
+                4,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ]
+            ],
+            "labels": [
+              "en",
+              "hi-en",
+              "hi"
+            ]
+          },
+          "hi-en": {
+            "n": 21,
+            "n_error": 0,
+            "accuracy": 0.619,
+            "macro_f1": 0.3167,
+            "primary_metric": 0.619,
+            "primary_metric_name": "accuracy",
+            "per_class_f1": {
+              "en": 0.2,
+              "hi-en": 0.75,
+              "hi": 0.0
+            },
+            "confusion": [
+              [
+                1,
+                2,
+                0
+              ],
+              [
+                6,
+                12,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ]
+            ],
+            "labels": [
+              "en",
+              "hi-en",
+              "hi"
+            ]
+          }
+        }
+      },
+      "sample_detail": [
+        {
+          "id": "bench-en-001",
+          "slice": "en",
+          "text_preview": "sound: its relay rock when I compare with other headphones I used HP, LG, Sony..",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 140,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-002",
+          "slice": "en",
+          "text_preview": "Good product..sound quality is good but bass is not so heavy as they are saying.",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "neutral",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 16,
+          "diverges": {
+            "SENT": true,
+            "URG": true,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-003",
+          "slice": "en",
+          "text_preview": "1st of all its very popular and boat is very good in sound production they have ",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-004",
+          "slice": "en",
+          "text_preview": "Got this headphone at just rs. 899 in offer i can say it's just an amazing well ",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-005",
+          "slice": "en",
+          "text_preview": "dissipointed !!!!    (not comfortable)                                          ",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "negative",
+            "URG": "high",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 16,
+          "diverges": {
+            "SENT": false,
+            "URG": true,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-006",
+          "slice": "en",
+          "text_preview": "I gave it four stars because there's humming sound when you are playing tracks (",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-007",
+          "slice": "en",
+          "text_preview": "Delivered in a day as promised by flipkart.. Big ups to the service for that.. C",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "neutral",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": true,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-008",
+          "slice": "en",
+          "text_preview": "This is my first review on Flipkart as this is my first purchase from them. Now ",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-009",
+          "slice": "en",
+          "text_preview": "I received a quick delivery from flipkart. The headphones are light weight and f",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "negative",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 14,
+          "diverges": {
+            "SENT": false,
+            "URG": true,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-010",
+          "slice": "en",
+          "text_preview": "The product is too good bass and sound clarity is superb ..that too with call an",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-011",
+          "slice": "en",
+          "text_preview": "Hi guys I recently brought these headphone and have been using it for a while no",
+          "gold": {
+            "SENT": "neutral",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "neutral",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": true,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-012",
+          "slice": "en",
+          "text_preview": "I have purchased these headphones at around 1080 Rs .on the freedom sale of flip",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-013",
+          "slice": "en",
+          "text_preview": "The bass the sound is aswsome. You will not face any issues with the sound as it",
+          "gold": {
+            "SENT": "positive",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "neutral",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 16,
+          "diverges": {
+            "SENT": true,
+            "URG": true,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-014",
+          "slice": "en",
+          "text_preview": "After using it for more than month here is a honest review. Sound Quality, Bass ",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-015",
+          "slice": "en",
+          "text_preview": "It's been 3 month I'm using this headphone, Personally I'm Boat speaker and head",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "negative",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": true,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-016",
+          "slice": "en",
+          "text_preview": "This is a wonderful companion for both my phone and music, this has an amazing b",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-017",
+          "slice": "en",
+          "text_preview": "What to say about this? This is my first bluetooth headphones which I think this",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 16,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-018",
+          "slice": "en",
+          "text_preview": "i am writing review after a 15 days use. sound quality and battery backup is qui",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "negative",
+            "URG": "high",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": true,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-019",
+          "slice": "en",
+          "text_preview": "I really like these headphones. Build quality, battery, everything is amazing. T",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-020",
+          "slice": "en",
+          "text_preview": "built quality is not so strong but design is better than built quility it is mad",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-en-021",
+          "slice": "en",
+          "text_preview": "YOU PROBABLY NOTICED HOW MANY NOM OF PEOPLE BOUGHT UT AND RATED IT. but tell you",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "negative",
+            "URG": "high",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 15,
+          "diverges": {
+            "SENT": false,
+            "URG": true,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-en-022",
+          "slice": "en",
+          "text_preview": "The headphones are just boost to me after hearing songs I fell free and the voic",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-001",
+          "slice": "hi-en",
+          "text_preview": "As they rightly say about Chinese Products: Chala Toh Chand Tak; Nahi Toh Raat T",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "neutral",
+            "URG": "medium",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": true,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-002",
+          "slice": "hi-en",
+          "text_preview": "This is an excellent wireless earphone. I should admit that Sound quality is fab",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-003",
+          "slice": "hi-en",
+          "text_preview": "Nice for the price, good sound, but if you have already used boat 220 or 225 you",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-hien-004",
+          "slice": "hi-en",
+          "text_preview": "Hear lots of things about this but fact is that sound quality is really awesome ",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-005",
+          "slice": "hi-en",
+          "text_preview": "These rockerz are branded , easy to use and good sound quality. Best bluetooth h",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-006",
+          "slice": "hi-en",
+          "text_preview": "Beyond the imagination....VERY BAD PRODUCT BUTTONS CANT WORK PROPERLYLeft side s",
+          "gold": {
+            "SENT": "negative",
+            "URG": "high",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "negative",
+            "URG": "high",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-007",
+          "slice": "hi-en",
+          "text_preview": "For better comfort  don't look at boat 225, mi basic and other redmi earphones. ",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "neutral",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": true,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-hien-008",
+          "slice": "hi-en",
+          "text_preview": "Slightly disappointed to buy this at 1800 price range neck band is irritating ma",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "negative",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 15,
+          "diverges": {
+            "SENT": false,
+            "URG": true,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-009",
+          "slice": "hi-en",
+          "text_preview": "Quite punchy. Decent bass too. Better than JBL Glide 501 actually. Quite loud to",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-010",
+          "slice": "hi-en",
+          "text_preview": "Very good and beautiful \u2764\ufe0f Wah Wah trusted material     Full paisa vasool. .than",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-011",
+          "slice": "hi-en",
+          "text_preview": "Bass 5/5Volume 4.5/5Quality Build 5/5Best but Boat ko thoda Volume Me sudhar kar",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-hien-012",
+          "slice": "hi-en",
+          "text_preview": "Highly satisfied for all features . 100% Paisa vasool.Best product from one plus",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-hien-013",
+          "slice": "hi-en",
+          "text_preview": "Awesome i like it bass is super sound is good boleto ekdam mast, paisa vasool...",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-014",
+          "slice": "hi-en",
+          "text_preview": "Mivi collar wireless is best....... Not good, may be all paid youtube reviews...",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "negative",
+            "URG": "high",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": true,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-hien-015",
+          "slice": "hi-en",
+          "text_preview": "Mahol Yarr Ky banawat Hai Iski Too Lovely Its Very Useful In Gym and CookingREAD",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "neutral",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": true,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-hien-016",
+          "slice": "hi-en",
+          "text_preview": "Built quilyty sound battery backup superb all over value for money ,paisa vasul",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-017",
+          "slice": "hi-en",
+          "text_preview": "Product is worth, full paisa vasool....l liked it very muchREAD MORE",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-018",
+          "slice": "hi-en",
+          "text_preview": "mujhe bhot accha lga first time good from flipkartREAD MORE",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        },
+        {
+          "id": "bench-hien-019",
+          "slice": "hi-en",
+          "text_preview": "Osm products I am happy sound Bess kafi acha haiREAD MORE",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "neutral",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": true,
+            "URG": false,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-hien-020",
+          "slice": "hi-en",
+          "text_preview": "Bass thoda kam hai jitna socha tha. \ud83d\udc4cREAD MORE",
+          "gold": {
+            "SENT": "negative",
+            "URG": "medium",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "negative",
+            "URG": "low",
+            "LANG": "en"
+          },
+          "errors": null,
+          "latency_ms": 0,
+          "diverges": {
+            "SENT": false,
+            "URG": true,
+            "LANG": true
+          }
+        },
+        {
+          "id": "bench-hien-021",
+          "slice": "hi-en",
+          "text_preview": "Value for money \ud83d\udcb5\ud83d\udcb0... Worth it... Paisa vasool",
+          "gold": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "pred": {
+            "SENT": "positive",
+            "URG": "low",
+            "LANG": "hi-en"
+          },
+          "errors": null,
+          "latency_ms": 15,
+          "diverges": {
+            "SENT": false,
+            "URG": false,
+            "LANG": false
+          }
+        }
+      ]
+    }
+  ]
+}

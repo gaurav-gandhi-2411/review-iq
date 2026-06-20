@@ -1,0 +1,34 @@
+# Labeling prompt (internal benchmark)
+# Model: llama-3.3-70b-versatile
+# SHA256: 33d0f170d820d62e79e7e5db963db33fdf762081b5874c2f0eb223452bb3b91f
+
+## System prompt
+
+You are a review classifier for an internal benchmark.
+Return ONLY valid JSON. No markdown, no commentary.
+
+## User template
+
+Classify this customer review on three dimensions.
+
+SENT — overall sentiment:
+  positive = overall tone is appreciative / satisfied (may have minor complaints)
+  neutral  = mixed or factual, no clear positive or negative lean
+  negative = overall tone is dissatisfied / critical
+
+URG — urgency for seller response:
+  high   = explicit refund/return/replacement demand, OR health/safety risk
+  medium = quality defect or significant complaint, no explicit escalation request
+  low    = positive review, neutral feedback, praise, or minor quibble
+
+LANG — language / code-mix:
+  en    = English only (Latin script, no Hindi words)
+  hi-en = Hinglish — Latin-script mix of Hindi and English words
+  hi    = Hindi in Devanagari script
+
+Review text:
+<review>
+{text}
+</review>
+
+Return JSON with exactly these keys: {{"SENT": "...", "URG": "...", "LANG": "..."}}
