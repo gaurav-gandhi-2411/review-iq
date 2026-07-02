@@ -108,6 +108,28 @@ class Settings(BaseSettings):
     def allowed_origins(self) -> list[str]:
         return [o.strip() for o in self.allowed_origins_env.split(",") if o.strip()]
 
+    # Shopify connector
+    # Register app at partners.shopify.com to get these credentials.
+    # Scopes required: write_product_reviews read_metaobjects read_products read_customers
+    shopify_client_id: str = Field(default="", alias="SHOPIFY_CLIENT_ID")
+    shopify_client_secret: str = Field(default="", alias="SHOPIFY_CLIENT_SECRET")
+    shopify_api_version: str = Field(default="2024-10", alias="SHOPIFY_API_VERSION")
+    # Fernet key for encrypting Shopify OAuth tokens at rest in shopify_installations.
+    # Generate with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+    # Dev: .env.local (gitignored). Prod: Google Secret Manager.
+    shopify_token_encryption_key: str = Field(default="", alias="SHOPIFY_TOKEN_ENCRYPTION_KEY")
+    # Base URL of the deployed API — used as webhook callback address on install and as
+    # redirect_uri in the OAuth begin flow. Dev: set to an ngrok tunnel URL.
+    # Prod: https://<cloud-run-service-url> (or custom API domain once configured).
+    shopify_webhook_base_url: str = Field(default="", alias="SHOPIFY_WEBHOOK_BASE_URL")
+
+    # Resend transactional email
+    resend_api_key: str = Field(default="", alias="RESEND_API_KEY")
+    resend_from_email: str = Field(default="", alias="RESEND_FROM_EMAIL")
+    # Sandbox: only delivers to this verified address; real-recipient delivery
+    # requires a verified sending domain in the Resend dashboard.
+    resend_test_recipient: str = Field(default="", alias="RESEND_TEST_RECIPIENT")
+
     # Supabase
     supabase_url: str = Field(default="", alias="SUPABASE_URL")
     supabase_anon_key: str = Field(default="", alias="SUPABASE_ANON_KEY")

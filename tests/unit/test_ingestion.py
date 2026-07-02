@@ -82,11 +82,12 @@ async def test_csv_source_file_too_large_raises_source_error() -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
-async def test_shopify_source_raises_not_implemented() -> None:
-    """ShopifySource.fetch_reviews raises NotImplementedError."""
-    with pytest.raises(NotImplementedError):
-        await ShopifySource().fetch_reviews()
+def test_shopify_source_implements_protocol() -> None:
+    """ShopifySource satisfies the Source Protocol and reports the correct source_type."""
+    source = ShopifySource(shop_domain="test.myshopify.com", access_token="shpat_test")
+    assert source.source_type == "shopify"
+    assert isinstance(source, Source)
+    assert source.source_meta()["shop_domain"] == "test.myshopify.com"
 
 
 @pytest.mark.asyncio

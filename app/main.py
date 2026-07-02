@@ -30,6 +30,8 @@ from app.api.v2.ingest import router as ingest_router
 from app.api.v2.insights import router as v2_insights_router
 from app.api.v2.reply import router as v2_reply_router
 from app.api.v2.reviews import router as v2_reviews_router
+from app.api.shopify_auth import router as shopify_auth_router
+from app.api.webhooks.shopify import router as shopify_webhook_router
 from app.auth.signup import router as signup_router
 from app.core.config import Settings, get_settings
 from app.core.logging import setup_logging
@@ -107,6 +109,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     _app.include_router(v2_reply_router)
     _app.include_router(v2_corrections_router)
     _app.include_router(v2_dataset_router)
+    _app.include_router(shopify_webhook_router)
+    _app.include_router(shopify_auth_router)
     _app.include_router(bff_router)
     _app.include_router(admin_router)
     _app.include_router(signup_router)

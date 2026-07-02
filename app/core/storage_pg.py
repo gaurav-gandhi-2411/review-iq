@@ -90,7 +90,7 @@ def get_by_hash_pg(org_id: str, input_hash: str) -> ReviewExtractionV2 | None:
 
 def save_extraction_pg(
     org_id: str,
-    api_key_id: str,
+    api_key_id: str | None,  # None for webhook/system-triggered extractions
     input_hash: str,
     review_text: str,
     extraction: ReviewExtractionV2,

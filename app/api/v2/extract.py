@@ -86,12 +86,14 @@ async def _run_extraction_v2(request: ReviewRequest, ctx: ApiKeyContext) -> Revi
     # Update token counts on the usage_record created during auth.
     # On LLM failure this is never reached — the record stays at 0/0
     # (quota slot consumed, no tokens charged — see ARCHITECTURE.md).
-    await asyncio.to_thread(
-        update_usage_tokens,
-        ctx.usage_record_id,
-        tokens_in,
-        tokens_out,
-    )
+    # usage_record_id is "" for system/webhook-triggered extractions — skip accounting.
+    if ctx.usage_record_id:
+        await asyncio.to_thread(
+            update_usage_tokens,
+            ctx.usage_record_id,
+            tokens_in,
+            tokens_out,
+        )
     EXTRACTIONS_TOTAL.labels(model=model_name, cached="false").inc()
     EXTRACTION_LATENCY.labels(model=model_name).observe(latency_ms)
     log.info(

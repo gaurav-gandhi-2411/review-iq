@@ -37,9 +37,9 @@ _PH = PasswordHasher()  # argon2id; parameters encoded in stored hash, not here
 @dataclass(frozen=True)
 class ApiKeyContext:
     org_id: str
-    api_key_id: str
+    api_key_id: str | None  # None for system-triggered extractions (e.g. webhooks)
     key_name: str
-    usage_record_id: str
+    usage_record_id: str  # "" for system-triggered extractions (skips token accounting)
 
 
 def _db_connect() -> psycopg2.extensions.connection:
