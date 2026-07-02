@@ -1,148 +1,152 @@
-# Project Spec: review-iq — Indian Vernacular Review-Understanding Benchmark
+# Project Spec: review-iq — Proactive Model, Phase 1: Multi-Source Ingestion + Alerting
 
 ## Goal
-Build a RIGOROUS, REPRODUCIBLE benchmark for review-understanding on Indian vernacular + code-mixed
-text (English / Hindi / Hinglish), measuring multiple systems fairly on the same tasks and gold
-labels. Purpose: (a) an honest internal yardstick of where review-iq actually stands vs. general
-LLMs and any fairly-runnable baseline, and (b) a potential public credibility artifact — published
-ONLY if results are strong, decided AFTER seeing them. Free tier, $0.
+Flip review-iq from a passive dashboard (seller must upload + visit) to a proactive service that
+WATCHES a seller's reviews and ALERTS them (email, v1) when something needs attention. Phase 1
+delivers: (1) a pluggable multi-source ingestion layer — CSV (universal on-ramp), Shopify (own-store
+webhooks), Google Business Profile (official review-notification API) — NO scraping; and (2) an
+alerting engine that emails the seller on high-signal events (urgency spikes, fake-review clusters,
+refund demands, batch-defect patterns) using the EXISTING detection engine. Free tier, $0.
 
-## The non-negotiable principle (this build is different)
-**Credibility = honesty, including where review-iq LOSES.** This benchmark must be designed so that
-a skeptical third party would call it fair. That means:
-- Baselines run under the SAME conditions, same inputs, same scoring, no home-field advantage for
-  review-iq (e.g. don't give review-iq a tuned prompt and baselines a naive one — document every
-  prompt used for every system).
-- Gold labels created/validated independently of any system's output (no "review-iq's output is the
-  gold standard" circularity).
-- Results published/recorded INCLUDING tasks/cases where a general model beats review-iq.
-- Full methodology, data construction, prompts, and scoring code reproducible.
-- **Rigging this to make review-iq win destroys its entire value.** The orchestrator must NOT tune
-  toward review-iq winning; it reports the true numbers whatever they are.
+## Strategic context (why this exists)
+The value problem (#7): a dashboard a seller must feed and visit has thin felt value. Proactive
+("we'll tell you when something's wrong") is the value + stickiness. The keystone is a LIVE review
+stream. VERIFIED FACTS that shaped this design:
+- Amazon sends NO per-review notification emails to sellers (confirmed via Amazon's own seller help);
+  there is NO API for raw review text. Flipkart same pattern. So marketplace email-forward / API
+  ingestion is NOT possible.
+- Scraping marketplaces is against ToS, an arms race (proxies/CAPTCHA, breaks on page changes, costs
+  money — breaks $0), legally exposed, and would POISON review-iq's compliance/data-sovereignty moat.
+  EXPLICITLY OUT OF SCOPE — do not build scraping of any kind.
+- LEGAL live sources DO exist with official APIs: Shopify (own-store, webhooks) and Google Business
+  Profile (official review API + NEW_REVIEW notification webhook, owner-authorized). These are the
+  proactive sources. CSV remains the universal manual on-ramp.
 
-## Current state (existing project — do not break)
-- review-iq has an internal 46-fixture extraction eval (en/hi/hi-en) + cassette-replay CI, plus
-  authenticity/reply evals. This benchmark is a NEW, broader, externally-credible artifact — not a
-  rename of the internal eval.
-- LLM access: Groq (Llama family) on free tier. Gemini exists in the codebase but is BANNED on the
-  org path; for BENCHMARK purposes Gemini/other models may be used as BASELINES (clearly separated
-  from the product path, used only as comparison systems, never on tenant data).
-- Free-tier quota constraints apply — benchmark runs are token-heavy; design for cassette-style
-  record/replay so a published result is reproducible without re-spending quota.
+## Current state (do not break)
+- `Source` Protocol already exists (app/core/ingestion/) from the flywheel work — CSVSource built;
+  shopify_source/email_source were stubs. THIS is the abstraction to extend.
+- Detection engine done: extraction (sentiment/topics/urgency), authenticity (precision-first),
+  trends. Multi-tenant Postgres + RLS, BFF, web app. Free tier (Supabase pauses; Groq caps).
+- Quota enforcement on writes intact. FROZEN: API contracts, RLS, key format.
 
 ## Scope
 
-### In scope
-- **Task definition.** Define 2-4 concrete, scoreable review-understanding tasks on vernacular text,
-  e.g.: (1) language/code-mix identification, (2) sentiment/polarity, (3) aspect/complaint
-  extraction, (4) authenticity/fake signal — pick the subset where fair gold labels are achievable.
-  Each task has a precise scoring metric (accuracy/F1/precision-recall as appropriate).
-- **Dataset.** A held-out, documented test set of Indian vernacular + code-mixed reviews with
-  INDEPENDENT gold labels (not generated by any system under test). Document: source, size, language
-  distribution (en/hi/hi-en), labeling method, and label-validation process. Must be distinct from
-  the internal eval fixtures used in CI (no train/test leakage; the benchmark must not reuse data
-  any review-iq prompt was tuned on — flag and exclude any overlap).
-- **Systems under test (all baselines we can fairly run on free tier):**
-  - review-iq (its actual extraction/authenticity path)
-  - General LLMs accessible on free tier (e.g. Llama variants via Groq; Gemini free tier as a
-    baseline ONLY) — each given a fair, documented prompt for the task.
-  - Any simple, honest baselines (e.g. a majority-class / lexicon baseline) to show the floor.
-  - Other review-tools' PUBLISHED accuracy claims may be CITED for context but NOT presented as if
-    run head-to-head unless actually run — label clearly as "their published claim, different
-    conditions," never conflated with measured results.
-- **Harness.** A reproducible runner: same inputs -> each system -> same scorer -> a results table
-  per task per language slice. Record raw outputs (cassette-style) so results are reproducible
-  without re-spending quota. Deterministic scoring.
-- **Honest reporting.** A results report with: per-task, per-language scores for every system; where
-  review-iq wins AND loses; methodology; prompts used for each system; dataset description;
-  limitations section. Written so a skeptic would call it fair.
-- **Publish-decision gate.** After results exist, present them to the user (GG) with a
-  recommendation on whether they're strong/honest enough to publish. Do NOT publish autonomously.
+### In scope — Phase 1
+**A. Pluggable ingestion (extend the existing Source abstraction):**
+- CSV (already built) — keep as the universal on-ramp; every seller can use it with zero setup.
+- **Shopify connector:** OAuth-authorized to the seller's OWN store; ingest product reviews via
+  Shopify's API/webhooks (real-time on new review). Owner-consented, legal. (Confirm exact Shopify
+  review API/app-scope at build — reviews may come via a review app like Judge.me/Shopify's own;
+  design the connector to take a configured review source.)
+- **Google Business Profile connector:** OAuth-authorized to the seller's OWN profile; use the
+  official GBP review API + the NEW_REVIEW notification webhook
+  (developers.google.com/my-business/content/notification-setup) for real-time push on new reviews.
+  Owner-consented, legal.
+- Each connector implements the Source interface; new reviews flow into the SAME extraction →
+  authenticity → storage pipeline as CSV (one processing path, source-agnostic).
+- NO scraping. NO marketplace (Amazon/Flipkart) ingestion (impossible legally/technically).
 
-### Out of scope
-- Any tuning of review-iq specifically to win the benchmark (forbidden — destroys credibility).
-- Using tenant/production data as benchmark data (privacy — use a dedicated, documented dataset).
-- Presenting cited competitor claims as head-to-head measured results.
-- Publishing anything without explicit user sign-off.
-- Any paid model/API. Any change to frozen product contracts.
+**B. Alerting engine (email, v1):**
+- A rules layer over the existing detection output that decides when a review/event is alert-worthy:
+  - high-urgency review (per the refined urgency rubric — harm signal, refund/return demand);
+  - authenticity: a likely_fake / priority_review, especially a CLUSTER (multiple in a short window);
+  - a spike: a complaint theme rising sharply vs. its baseline (batch-defect signal);
+  - (thresholds configurable; start conservative to avoid alert fatigue).
+- Email delivery (free): send the seller a clear, plain-language alert ("⚠️ A customer is demanding
+  a refund and citing a safety issue — [view review]" / "3 reviews in 2 days mention the same defect
+  — possible batch issue"). Vernacular-aware where the review is vernacular.
+- Alert PREFERENCES: per-org settings (which event types, frequency: immediate vs daily digest, on/
+  off). Default sane + conservative.
+- DEDUPE / ANTI-FATIGUE: never alert twice on the same review/event; respect digest vs immediate.
 
-## Tech stack
-- Existing stack (Python, uv, ruff, mypy, pytest). Groq for in-product + Llama baselines; Gemini
-  free tier permitted strictly as a comparison baseline (isolated from product code paths). No new
-  paid services. Cassette-style recording for reproducibility + quota discipline.
+### Out of scope (do NOT build)
+- ANY scraping or marketplace (Amazon/Flipkart) ingestion — legally/technically impossible, off the
+  table permanently.
+- WhatsApp/SMS delivery (Phase 2 — email proves the loop first; design alert layer channel-pluggable
+  so WhatsApp slots in later, but build only email now).
+- Payments/tiers. New LLM cost patterns beyond processing ingested reviews through the existing
+  pipeline.
+- Any change to frozen API contracts, RLS, key format, or quota enforcement.
+
+## Tech / cost notes (free tier)
+- Ingested reviews run through the existing extraction/authenticity pipeline → they consume Groq
+  quota like any processing. The alerting RULES layer is pure logic over stored results — no extra
+  LLM cost. Be mindful: a live connector could ingest many reviews → quota; respect per-org quota
+  (ingested reviews count toward it like uploads) and the small-first/cap-survival routing already
+  built.
+- Email sending: use a free-tier email path (e.g. a free transactional email tier / SMTP). NO paid
+  service without escalation. If no free email path exists, escalate before assuming a paid one.
+- Webhooks (Shopify, GBP) need a public endpoint on the deployed API — these connectors are only
+  fully live once the API is deployed; build + test against the API, note the deploy dependency.
 
 ## Architecture
 ```
-benchmark/
-  README.md            # methodology, how to reproduce, dataset description, limitations
-  dataset/
-    reviews.jsonl      # held-out vernacular reviews (no leakage from CI fixtures)
-    gold.jsonl         # independent gold labels + labeling notes
-  tasks/               # task definitions + per-task scorers (deterministic)
-  systems/             # adapters: review-iq, llama-baseline, gemini-baseline, lexicon-baseline
-                       #   each with its documented prompt
-  runner.py            # same inputs -> each system -> scorer -> results
-  cassettes/           # recorded raw outputs for reproducibility (quota-immune replay)
-  results/
-    results.json       # per-task per-language per-system scores
-    REPORT.md          # honest write-up incl. where review-iq loses
+app/core/ingestion/
+  base.py                  # existing Source Protocol
+  csv_source.py            # existing
+  shopify_source.py        # BUILD: OAuth + review fetch/webhook → Source
+  google_business_source.py# BUILD: GBP API + NEW_REVIEW webhook → Source
+app/core/alerts/
+  rules.py                 # BUILD: pure functions — is this event alert-worthy? (testable)
+  engine.py                # BUILD: evaluate new reviews → alerts, dedupe, respect prefs
+  channels/email.py        # BUILD: email delivery (free); channel-pluggable for future WhatsApp
+app/api/
+  webhooks/shopify.py      # BUILD: receive Shopify review webhooks (verify signature)
+  webhooks/google.py       # BUILD: receive GBP NEW_REVIEW notifications (verify)
+  bff/alerts.py            # BUILD: alert preferences GET/PUT (per-org)
+supabase/migrations/
+  <new>_alerts.sql         # BUILD (ESCALATE): alert_preferences + alert_log (dedupe) tables + RLS
 ```
 
-## Verification commands
-```yaml
-- name: harness-tests
-  cmd: uv run pytest benchmark/ -v
-  required: true
-- name: lint
-  cmd: uv run ruff check benchmark/
-  required: true
-- name: reproduce-from-cassettes
-  cmd: uv run python benchmark/runner.py --replay   # deterministic, no live calls
-  required: true
-```
+## Data model (migration — escalation-gated)
+- `alert_preferences` (org_id, event_type, enabled, frequency [immediate|daily_digest], updated_at)
+- `alert_log` (org_id, review_id, event_type, sent_at) — for dedupe + digest batching. RLS, WITH
+  CHECK + anon-deny (same pattern as corrections).
 
-## Decision authority (autonomous mode per CHARTER.md)
-Build autonomously; report. ESCALATE:
-- The DATASET + GOLD LABELS sign-off (this is the eval ground-truth — human-approved, per charter).
-  Bring the dataset construction + labeling method + a sample for approval BEFORE running systems.
-- The PUBLISH decision (never publish without explicit sign-off; present results + recommendation).
-- Any spend, any use of a new external model/service.
-- Confirm no leakage: the benchmark dataset must not overlap data any review-iq prompt was tuned on
-  — report the leakage check before results are trusted.
+## Decision authority (autonomous per CHARTER.md)
+ESCALATE: the alerts migration (DDL + RLS shown, isolation proof); any email/connector service that
+costs money (find a FREE path or escalate); OAuth app registration / external credentials (Shopify
+app, Google Cloud project) — these need GG's accounts, so surface what GG must set up; any
+frozen-contract change. Connectors + rules + email logic in code = autonomous.
 
 ## Hard rules
-- FAIRNESS over winning. No tuning review-iq to top the benchmark. Document every system's prompt.
-- Gold labels independent of systems under test (no circularity).
-- Report where review-iq LOSES; a benchmark that only shows wins is marketing, not a benchmark.
-- No tenant/prod data as benchmark data. Gemini/other models = baselines only, isolated from product
-  paths, never on tenant data.
-- Reproducible (cassettes) + $0 + frozen product contracts intact.
+- NO scraping, NO Amazon/Flipkart ingestion — ever. Legal/consented sources only.
+- New connectors flow into the EXISTING processing pipeline — one source-agnostic path, no parallel
+  extraction logic.
+- Ingested reviews respect per-org quota (count like uploads); use existing cap-survival routing.
+- Alert rules conservative by default (avoid fatigue); dedupe so no double-alerts.
+- Webhook endpoints verify signatures/authenticity (don't trust unsigned POSTs).
+- Email via a FREE path; escalate if none exists rather than incurring cost.
+- Frozen contracts/RLS/quota intact. $0. Full suite green.
 
 ## Budget
-- Soft target: 2 sessions. Hard cap: escalate after 20 executor invocations. Token discipline:
-  record once, replay thereafter; single clean recording pass per system (all-or-nothing, no
-  partial cassette sets — a partial set silently skews results).
+- This is a multi-part phase. Soft target: 3-4 CC sessions. Hard cap: escalate after 25 executor
+  invocations per session. /cost at midpoints. Build in this order so value lands incrementally.
 
-## Success criteria
-- [ ] 2-4 well-defined vernacular review tasks with precise, deterministic scorers.
-- [ ] A documented held-out dataset with INDEPENDENT gold labels, no leakage from CI fixtures
-      (leakage check reported), language distribution documented.
-- [ ] >=3 systems run fairly (review-iq + >=1 general LLM baseline + >=1 simple baseline), each with
-      a documented prompt, same inputs, same scorer.
-- [ ] results.json with per-task, per-language, per-system scores; reproducible from cassettes with
-      zero live calls.
-- [ ] REPORT.md that a skeptic would call fair: methodology, prompts, dataset, scores incl. where
-      review-iq loses, limitations.
-- [ ] Publish recommendation presented to GG; nothing published without sign-off.
-- [ ] Harness tests green; $0; product contracts untouched.
+## Success criteria (Phase 1)
+- [ ] Source abstraction extended: CSV (existing) + Shopify + Google Business connectors, each
+      implementing the Source interface, flowing into the existing extraction→authenticity→storage
+      pipeline. NO scraping anywhere in the codebase.
+- [ ] Shopify + GBP connectors are OAuth/owner-consented to the seller's OWN store/profile; webhook
+      endpoints verify signatures.
+- [ ] Alert rules engine flags high-urgency / fake-cluster / spike events from existing detection
+      output; pure-function rules are unit-tested; conservative defaults.
+- [ ] Email alerts deliver plain-language, vernacular-aware notifications via a FREE email path;
+      dedupe prevents double-alerts; per-org preferences (event types, immediate vs digest, on/off).
+- [ ] alerts migration applied (escalated, isolation-proven); RLS WITH CHECK + anon-deny.
+- [ ] Ingested reviews respect per-org quota; no new uncapped LLM cost.
+- [ ] Frozen contracts/RLS/quota intact; full suite green; $0 (no paid service without escalation).
 
 ## Build order
-1. Define tasks + deterministic scorers (pure, testable). Unit-test the scorers first.
-2. Construct the dataset + independent gold labels; run the leakage check vs CI fixtures; ESCALATE
-   the dataset + labeling method + sample for sign-off BEFORE running any system.
-3. Build system adapters (review-iq, Llama baseline, a simple lexicon/majority baseline; Gemini
-   baseline if fairly runnable on free tier) — each with a documented, fair prompt.
-4. Runner: same inputs -> each system -> scorer. Record cassettes (one clean pass per system,
-   all-or-nothing).
-5. Generate results.json + REPORT.md (honest, incl. losses). Verify reproduce-from-cassettes.
-6. Present results + a publish/don't-publish recommendation to GG. Do NOT publish autonomously.
+1. Extend Source abstraction + the alert RULES layer (pure functions, fully testable, no external
+   deps, no cost) FIRST — this is the logic core, builds with zero setup/quota.
+2. Alerts migration (ESCALATE: DDL + RLS + isolation proof) → alert_preferences + alert_log.
+3. Email channel (free path; escalate if none) + alert engine (evaluate → dedupe → send) +
+   /bff/alerts preferences. Test end-to-end with CSV-ingested reviews triggering alerts (no
+   connector setup needed to prove the alert loop).
+4. Shopify connector (OAuth + webhook, signature-verified). Surface to GG what to register
+   (Shopify app credentials).
+5. Google Business connector (GBP API + NEW_REVIEW webhook, signature-verified). Surface what GG
+   must set up (Google Cloud project / OAuth).
+6. Verify: full suite, isolation proof, dedupe, quota-respect; report what GG must configure
+   (OAuth apps) and the deploy dependency for webhooks.

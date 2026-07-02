@@ -223,3 +223,223 @@ class TestRLSIsolation:
             conn.close()
 
         assert rows == [], "Non-existent org UUID must silently return no rows"
+
+
+@pytest.mark.integration
+class TestAlertsRLSIsolation:
+    """Proves alert_preferences and alert_log are tenant-isolated.
+
+    Covers:
+      - Cross-org SELECT blocked (org B sees zero rows from org A)
+      - Cross-org INSERT blocked by WITH CHECK (not just USING)
+      - anon denied on both tables
+      - alert_log UPDATE blocked at the grant layer (append-only, no UPDATE grant)
+    """
+
+    # ------------------------------------------------------------------
+    # alert_preferences
+    # ------------------------------------------------------------------
+
+    def test_prefs_matching_org_insert_succeeds(self, org_ids: tuple[str, str]) -> None:
+        """Sanity: authenticated org can INSERT its own preferences row."""
+        org_a, _ = org_ids
+        conn = _as_authenticated(org_a)
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                "INSERT INTO public.alert_preferences (org_id, event_type, enabled, frequency) "
+                "VALUES (%s, 'high_urgency', true, 'immediate')",
+                (org_a,),
+            )
+            assert cur.rowcount == 1, "Own-org INSERT must succeed"
+        finally:
+            conn.rollback()  # keep DB clean; isolation test, not a data test
+            conn.close()
+
+    def test_prefs_cross_org_select_blocked(self, org_ids: tuple[str, str]) -> None:
+        """Org B must see zero rows from org A's alert_preferences."""
+        org_a, org_b = org_ids
+
+        # Seed a committed row as service_role (bypasses RLS); CASCADE delete cleans up.
+        conn = _conn()
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                "INSERT INTO public.alert_preferences (org_id, event_type) "
+                "VALUES (%s, 'topic_spike')",
+                (org_a,),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+        conn = _as_authenticated(org_b)
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT id FROM public.alert_preferences")
+            rows = cur.fetchall()
+        finally:
+            conn.rollback()
+            conn.close()
+
+        assert rows == [], "Org B must see zero rows from org A's alert_preferences"
+
+    def test_prefs_with_check_blocks_cross_org_insert(self, org_ids: tuple[str, str]) -> None:
+        """WITH CHECK must block org A inserting a row tagged with org B's org_id.
+
+        Expected: psycopg2.errors.InsufficientPrivilege (SQLSTATE 42501) with a message
+        that confirms the RLS WITH CHECK path ("row-level security policy"), not a generic
+        privilege denial. We assert the message text explicitly so this test cannot pass
+        on a different error path (e.g. a missing grant instead of a policy block).
+        """
+        org_a, org_b = org_ids
+        conn = _as_authenticated(org_a)
+        try:
+            cur = conn.cursor()
+            with pytest.raises(psycopg2.errors.InsufficientPrivilege) as exc_info:
+                cur.execute(
+                    "INSERT INTO public.alert_preferences (org_id, event_type) "
+                    "VALUES (%s, 'likely_fake')",
+                    (org_b,),  # org_a's session, org_b's id — must be blocked by WITH CHECK
+                )
+        finally:
+            conn.rollback()
+            conn.close()
+
+        assert "row-level security policy" in str(exc_info.value), (
+            f"Exception must be a WITH CHECK RLS violation, got: {exc_info.value}"
+        )
+
+    def test_prefs_anon_select_denied(self) -> None:
+        """anon role must be denied SELECT on alert_preferences."""
+        conn = _conn()
+        conn.autocommit = False
+        try:
+            cur = conn.cursor()
+            cur.execute("SET LOCAL ROLE anon")
+            cur.execute("SELECT id FROM public.alert_preferences")
+            rows = cur.fetchall()
+        finally:
+            conn.rollback()
+            conn.close()
+        assert rows == [], "anon must see no rows (denied by alert_prefs_anon_deny policy)"
+
+    # ------------------------------------------------------------------
+    # alert_log
+    # ------------------------------------------------------------------
+
+    def test_log_matching_org_insert_succeeds(self, org_ids: tuple[str, str]) -> None:
+        """Sanity: authenticated org can INSERT its own alert_log row."""
+        org_a, _ = org_ids
+        conn = _as_authenticated(org_a)
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                "INSERT INTO public.alert_log (org_id, event_type) VALUES (%s, 'high_urgency')",
+                (org_a,),
+            )
+            assert cur.rowcount == 1, "Own-org INSERT into alert_log must succeed"
+        finally:
+            conn.rollback()
+            conn.close()
+
+    def test_log_cross_org_select_blocked(self, org_ids: tuple[str, str]) -> None:
+        """Org B must see zero rows from org A's alert_log."""
+        org_a, org_b = org_ids
+
+        conn = _conn()
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                "INSERT INTO public.alert_log (org_id, event_type) VALUES (%s, 'fake_cluster')",
+                (org_a,),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+        conn = _as_authenticated(org_b)
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT id FROM public.alert_log")
+            rows = cur.fetchall()
+        finally:
+            conn.rollback()
+            conn.close()
+
+        assert rows == [], "Org B must see zero rows from org A's alert_log"
+
+    def test_log_with_check_blocks_cross_org_insert(self, org_ids: tuple[str, str]) -> None:
+        """WITH CHECK must block org A inserting an alert_log row tagged with org B's org_id.
+
+        Same exception-class and message-text verification as the prefs equivalent.
+        """
+        org_a, org_b = org_ids
+        conn = _as_authenticated(org_a)
+        try:
+            cur = conn.cursor()
+            with pytest.raises(psycopg2.errors.InsufficientPrivilege) as exc_info:
+                cur.execute(
+                    "INSERT INTO public.alert_log (org_id, event_type) VALUES (%s, 'likely_fake')",
+                    (org_b,),
+                )
+        finally:
+            conn.rollback()
+            conn.close()
+
+        assert "row-level security policy" in str(exc_info.value), (
+            f"Exception must be a WITH CHECK RLS violation, got: {exc_info.value}"
+        )
+
+    def test_log_update_blocked_by_rls(self, org_ids: tuple[str, str]) -> None:
+        """alert_log is append-only: UPDATE must be silently denied even for the owning org.
+
+        Supabase pre-grants ALL privileges to authenticated via DEFAULT PRIVILEGES, so
+        the denial cannot come from the grant layer. It comes instead from the absence
+        of an UPDATE RLS policy: no matching policy → PostgreSQL default-deny → 0 rows
+        affected (no error). This is the same mechanism as the existing
+        test_org_a_cannot_update_org_b_extraction test on extractions.
+        """
+        org_a, _ = org_ids
+
+        # Seed a committed row as service_role so there is something to try to update.
+        log_id = str(uuid.uuid4())
+        conn = _conn()
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                "INSERT INTO public.alert_log (id, org_id, event_type) "
+                "VALUES (%s, %s, 'high_urgency')",
+                (log_id, org_a),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+        conn = _as_authenticated(org_a)
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                "UPDATE public.alert_log SET event_type = 'tampered' WHERE id = %s",
+                (log_id,),
+            )
+            assert cur.rowcount == 0, (
+                "UPDATE on append-only alert_log must affect 0 rows (no UPDATE RLS policy)"
+            )
+        finally:
+            conn.rollback()
+            conn.close()
+
+    def test_log_anon_select_denied(self) -> None:
+        """anon role must be denied SELECT on alert_log."""
+        conn = _conn()
+        conn.autocommit = False
+        try:
+            cur = conn.cursor()
+            cur.execute("SET LOCAL ROLE anon")
+            cur.execute("SELECT id FROM public.alert_log")
+            rows = cur.fetchall()
+        finally:
+            conn.rollback()
+            conn.close()
+        assert rows == [], "anon must see no rows (denied by alert_log_anon_deny policy)"
