@@ -123,6 +123,25 @@ class Settings(BaseSettings):
     # Prod: https://<cloud-run-service-url> (or custom API domain once configured).
     shopify_webhook_base_url: str = Field(default="", alias="SHOPIFY_WEBHOOK_BASE_URL")
 
+    # Google Business Profile connector
+    # Register a GCP project + OAuth client at console.cloud.google.com to get these.
+    # Business Profile APIs require Google's manual access approval (see
+    # app/core/ingestion/google_business_source.py module docstring for the checklist).
+    google_client_id: str = Field(default="", alias="GOOGLE_CLIENT_ID")
+    google_client_secret: str = Field(default="", alias="GOOGLE_CLIENT_SECRET")
+    # Fernet key for encrypting the long-lived Google refresh_token at rest in
+    # google_business_installations. Generate the same way as shopify_token_encryption_key.
+    google_token_encryption_key: str = Field(default="", alias="GOOGLE_TOKEN_ENCRYPTION_KEY")
+    # Base URL of the deployed API — used as redirect_uri in the OAuth begin flow.
+    # Dev: ngrok tunnel URL. Prod: https://<cloud-run-service-url> (or custom API domain).
+    google_webhook_base_url: str = Field(default="", alias="GOOGLE_WEBHOOK_BASE_URL")
+    # Cloud Pub/Sub topic that receives NEW_REVIEW notifications from Google; registered
+    # per-account via the Business Profile notificationSetting API on install.
+    google_pubsub_topic: str = Field(default="", alias="GOOGLE_PUBSUB_TOPIC")
+    # Shared-secret query token verified on the Pub/Sub push endpoint
+    # (/webhooks/google/reviews?token=...) via hmac.compare_digest before any parsing.
+    google_pubsub_push_token: str = Field(default="", alias="GOOGLE_PUBSUB_PUSH_TOKEN")
+
     # Resend transactional email
     resend_api_key: str = Field(default="", alias="RESEND_API_KEY")
     resend_from_email: str = Field(default="", alias="RESEND_FROM_EMAIL")

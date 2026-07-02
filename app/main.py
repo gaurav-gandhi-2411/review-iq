@@ -20,8 +20,10 @@ from app.api.bff.router import router as bff_router
 from app.api.dashboard import router as dashboard_router
 from app.api.demo import router as demo_router
 from app.api.extract import router as extract_router
+from app.api.google_auth import router as google_auth_router
 from app.api.ops import router as ops_router
 from app.api.query import router as query_router
+from app.api.shopify_auth import router as shopify_auth_router
 from app.api.v2.authenticity import router as v2_authenticity_router
 from app.api.v2.corrections import router as v2_corrections_router
 from app.api.v2.dataset import router as v2_dataset_router
@@ -30,7 +32,7 @@ from app.api.v2.ingest import router as ingest_router
 from app.api.v2.insights import router as v2_insights_router
 from app.api.v2.reply import router as v2_reply_router
 from app.api.v2.reviews import router as v2_reviews_router
-from app.api.shopify_auth import router as shopify_auth_router
+from app.api.webhooks.google import router as google_webhook_router
 from app.api.webhooks.shopify import router as shopify_webhook_router
 from app.auth.signup import router as signup_router
 from app.core.config import Settings, get_settings
@@ -111,6 +113,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     _app.include_router(v2_dataset_router)
     _app.include_router(shopify_webhook_router)
     _app.include_router(shopify_auth_router)
+    _app.include_router(google_webhook_router)
+    _app.include_router(google_auth_router)
     _app.include_router(bff_router)
     _app.include_router(admin_router)
     _app.include_router(signup_router)
