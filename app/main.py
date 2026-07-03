@@ -21,6 +21,7 @@ from app.api.dashboard import router as dashboard_router
 from app.api.demo import router as demo_router
 from app.api.extract import router as extract_router
 from app.api.google_auth import router as google_auth_router
+from app.api.internal.digest import router as internal_digest_router
 from app.api.ops import router as ops_router
 from app.api.query import router as query_router
 from app.api.shopify_auth import router as shopify_auth_router
@@ -120,6 +121,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     _app.include_router(signup_router)
     _app.include_router(account_router)
     _app.include_router(demo_router)
+    _app.include_router(internal_digest_router)
 
     if settings.deploy_target != "cloud-run":
         _app.include_router(dashboard_router)

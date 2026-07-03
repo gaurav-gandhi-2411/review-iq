@@ -142,6 +142,10 @@ class Settings(BaseSettings):
     # (/webhooks/google/reviews?token=...) via hmac.compare_digest before any parsing.
     google_pubsub_push_token: str = Field(default="", alias="GOOGLE_PUBSUB_PUSH_TOKEN")
 
+    # Shared-secret header token protecting POST /internal/digest/run (timing-safe
+    # compare via hmac.compare_digest), mirroring GOOGLE_PUBSUB_PUSH_TOKEN's pattern.
+    digest_trigger_token: str = Field(default="", alias="DIGEST_TRIGGER_TOKEN")
+
     # Resend transactional email
     resend_api_key: str = Field(default="", alias="RESEND_API_KEY")
     resend_from_email: str = Field(default="", alias="RESEND_FROM_EMAIL")
