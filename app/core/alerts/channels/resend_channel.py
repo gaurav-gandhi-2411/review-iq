@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import structlog
 import resend
+import structlog
 
 from app.core.alerts.channels.base import AlertMessage, ChannelError
 from app.core.config import get_settings
@@ -62,6 +62,10 @@ class ResendChannel:
                 event_type=message.event.event_type,
                 org_id=message.org_id,
                 error_code=getattr(exc, "code", None),
+                # exc_info=True renders no traceback text under this app's structlog pipeline
+                # (no format_exc_info processor configured) — log the message explicitly so
+                # failures are diagnosable from structured logs alone.
+                error_message=str(exc),
             )
             raise ChannelError(f"Resend API error ({getattr(exc, 'code', '?')}): {exc}") from exc
         except Exception as exc:
@@ -70,6 +74,7 @@ class ResendChannel:
                 recipient=message.recipient_email,
                 event_type=message.event.event_type,
                 org_id=message.org_id,
-                exc_info=True,
+                error_type=type(exc).__name__,
+                error_message=str(exc),
             )
             raise ChannelError(f"Resend unexpected error: {exc}") from exc
