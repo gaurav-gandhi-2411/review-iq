@@ -15,6 +15,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, Up
 from fastapi.responses import StreamingResponse
 
 from app.auth.api_key import ApiKeyContext, require_api_key
+from app.core.alerts.engine import alert_on_review_event
 from app.core.csv_ingest import (
     CsvColumnError,
     FileTooLargeError,
@@ -81,6 +82,9 @@ async def _process_ingest_job(
                     auth_result.score,
                     auth_result.label.value,
                     [f.value for f in auth_result.flags],
+                )
+                await alert_on_review_event(
+                    org_id=ctx.org_id, review_id=auth_result.review_hash, auth=auth_result
                 )
             except Exception as exc:  # noqa: BLE001
                 log.warning("ingest.authenticity_failed", job_id=job_id, error=str(exc))

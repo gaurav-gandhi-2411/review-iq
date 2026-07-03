@@ -9,15 +9,19 @@ rules.py) and call evaluate_and_alert with the augmented event list.
 from __future__ import annotations
 
 import asyncio
+
 import structlog
 
 from app.core.alerts.channels.base import AlertMessage, Channel, ChannelError
+from app.core.alerts.channels.fake import LogChannel
+from app.core.alerts.channels.resend_channel import ResendChannel
 from app.core.alerts.rules import (
+    DEFAULT_THRESHOLDS,
     AlertEvent,
     AlertEventType,
     AlertThresholds,
-    DEFAULT_THRESHOLDS,
-    evaluate_review,
+    check_high_urgency,
+    check_likely_fake,
 )
 from app.core.alerts.storage import (
     get_org_notification_email_pg,
@@ -53,17 +57,20 @@ def _format_subject(event: AlertEvent) -> str:
 def _format_body(
     org_id: str,
     review_id: str | None,
-    extraction: ReviewExtraction,
+    extraction: ReviewExtraction | None,
     event: AlertEvent,
 ) -> str:
     lines: list[str] = ["Review-IQ detected an event requiring your attention.", ""]
 
     if event.event_type == AlertEventType.HIGH_URGENCY:
         lines.append("A customer review has been flagged as HIGH URGENCY.")
-        if extraction.cons:
-            lines.append(f"Issues mentioned: {', '.join(extraction.cons[:3])}")
-        if extraction.topics:
-            lines.append(f"Topics: {', '.join(extraction.topics[:3])}")
+        # extraction is guaranteed non-None whenever a HIGH_URGENCY event exists (see
+        # evaluate_and_alert step 2), but mypy strict needs the explicit narrowing here.
+        if extraction is not None:
+            if extraction.cons:
+                lines.append(f"Issues mentioned: {', '.join(extraction.cons[:3])}")
+            if extraction.topics:
+                lines.append(f"Topics: {', '.join(extraction.topics[:3])}")
 
     elif event.event_type == AlertEventType.LIKELY_FAKE:
         lines.append("A review was flagged as likely inauthentic.")
@@ -106,21 +113,27 @@ async def evaluate_and_alert(
     *,
     org_id: str,
     review_id: str | None,
-    extraction: ReviewExtraction,
-    auth: AuthenticityResult,
+    extraction: ReviewExtraction | None = None,
+    auth: AuthenticityResult | None = None,
     channel: Channel,
     recipient_email: str | None = None,
     thresholds: AlertThresholds = DEFAULT_THRESHOLDS,
 ) -> list[AlertEvent]:
     """Core alert loop: rules → dedupe → prefs → send → record.
 
+    Extraction and authenticity scoring happen in decoupled pipelines in this
+    codebase (no single funnel produces both at once) — pass whichever piece is
+    available at the call site and leave the other as None. The corresponding
+    rule check (check_high_urgency for extraction, check_likely_fake for auth)
+    is simply skipped when its input is None.
+
     Args:
         org_id: Tenant identifier.
         review_id: Stable review identifier for dedupe (sha256 hex or connector ID).
                    Pass None for synthetic events (cluster/spike) that don't map to a
                    single review — these skip the per-review dedupe check.
-        extraction: Extraction output for the review.
-        auth: Authenticity scoring output for the review.
+        extraction: Extraction output for the review, if available at this call site.
+        auth: Authenticity scoring output for the review, if available at this call site.
         channel: Delivery channel (FakeChannel for tests, real channel in production).
         recipient_email: Override the notification email. If None, looks up from
                          organizations.notification_email. If still None, skips
@@ -132,7 +145,11 @@ async def evaluate_and_alert(
         Events suppressed by dedupe, disabled prefs, daily_digest, or missing email
         are excluded from the return value.
     """
-    events = evaluate_review(extraction, auth, thresholds)
+    events: list[AlertEvent] = []
+    if extraction is not None and (event := check_high_urgency(extraction, thresholds)):
+        events.append(event)
+    if auth is not None and (event := check_likely_fake(auth, thresholds)):
+        events.append(event)
     if not events:
         return []
 
@@ -224,3 +241,54 @@ async def evaluate_and_alert(
         )
 
     return sent
+
+
+# ---------------------------------------------------------------------------
+# Ingestion-facing wiring
+# ---------------------------------------------------------------------------
+
+
+def _get_default_channel() -> Channel:
+    """Resend if configured, else the $0 structured-log fallback (LogChannel).
+
+    Constructing ResendChannel() raises ValueError when RESEND_API_KEY / RESEND_FROM_EMAIL
+    are unset (true for local dev and most test environments) — degrade to LogChannel rather
+    than skip alerting entirely.
+    """
+    try:
+        return ResendChannel()
+    except ValueError:
+        return LogChannel()
+
+
+async def alert_on_review_event(
+    *,
+    org_id: str,
+    review_id: str,
+    extraction: ReviewExtraction | None = None,
+    auth: AuthenticityResult | None = None,
+) -> None:
+    """Best-effort wrapper: never raises. Call once per newly-persisted extraction or
+    authenticity result from an ingestion call site, passing whichever piece is available.
+
+    Any failure here (missing Resend config surfacing some other way, a transient DB error,
+    a Resend API error not already caught inside evaluate_and_alert) is logged and swallowed
+    — alerting must never break or roll back ingestion, which has already succeeded by the
+    time this is called.
+    """
+    try:
+        channel = _get_default_channel()
+        await evaluate_and_alert(
+            org_id=org_id,
+            review_id=review_id,
+            extraction=extraction,
+            auth=auth,
+            channel=channel,
+        )
+    except Exception:
+        log.error(
+            "alert.wiring_failed",
+            org_id=org_id,
+            review_id=review_id,
+            exc_info=True,
+        )

@@ -8,6 +8,7 @@ import structlog
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 
 from app.auth.api_key import ApiKeyContext, require_api_key
+from app.core.alerts.engine import alert_on_review_event
 from app.core.language import detect_language
 from app.core.llm import extract_with_llm
 from app.core.metrics import EXTRACTION_LATENCY, EXTRACTIONS_TOTAL
@@ -37,6 +38,10 @@ async def _run_extraction_v2(request: ReviewRequest, ctx: ApiKeyContext) -> Revi
     if cached is not None:
         log.info("extraction.cache_hit", input_hash=input_hash, org_id=ctx.org_id)
         EXTRACTIONS_TOTAL.labels(model="cached", cached="true").inc()
+        # Re-evaluate on cache hit: this exact review text may have been extracted before
+        # this alert wiring existed, so it may never have been checked for alert-worthiness.
+        # Cheap to re-check — alert_log dedupe short-circuits if it really was already alerted.
+        await alert_on_review_event(org_id=ctx.org_id, review_id=input_hash, extraction=cached)
         return cached
 
     detected_lang = detect_language(request.text)
@@ -103,6 +108,7 @@ async def _run_extraction_v2(request: ReviewRequest, ctx: ApiKeyContext) -> Revi
         latency_ms=latency_ms,
         org_id=ctx.org_id,
     )
+    await alert_on_review_event(org_id=ctx.org_id, review_id=input_hash, extraction=extraction)
     return extraction
 
 

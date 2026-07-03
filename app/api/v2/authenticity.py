@@ -13,6 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
 from app.auth.api_key import ApiKeyContext, require_api_key
+from app.core.alerts.engine import alert_on_review_event
 from app.core.authenticity import engine
 from app.core.authenticity.schema import AuthenticityFlag, AuthenticityLabel, AuthenticityResult
 from app.core.config import get_settings
@@ -114,6 +115,7 @@ async def score_authenticity_single(
     if existing is not None:
         log.info("authenticity.cache_hit", org_id=ctx.org_id, review_hash=rh[:16])
         result = _audit_row_to_result(existing, body.text)
+        await alert_on_review_event(org_id=ctx.org_id, review_id=rh, auth=result)
         return result.model_dump(mode="json")
 
     try:
@@ -144,6 +146,8 @@ async def score_authenticity_single(
         label=result.label.value,
         flags=[f.value for f in result.flags],
     )
+
+    await alert_on_review_event(org_id=ctx.org_id, review_id=result.review_hash, auth=result)
 
     return result.model_dump(mode="json")
 
@@ -197,6 +201,7 @@ async def score_authenticity_batch(
             result.label.value,
             [f.value for f in result.flags],
         )
+        await alert_on_review_event(org_id=ctx.org_id, review_id=result.review_hash, auth=result)
 
     # Log label summary
     label_counts: dict[str, int] = {}
