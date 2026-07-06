@@ -1,4 +1,4 @@
-"""English extraction prompt — v2.2 (urgency rubric: defect→medium, harm-in-positive→high)."""
+"""English extraction prompt — v2.3 (urgency: pain-from-fit beats "poor fit" MEDIUM example)."""
 
 from __future__ import annotations
 
@@ -15,9 +15,9 @@ Field definitions:
 - competitor_mentions: Other brand or product names explicitly mentioned. Empty list if none.
 - urgency: "low" | "medium" | "high".
   HIGH = physical harm or safety risk (pain, aching, injury, bodily discomfort) — even in a high-rated or positive-tone review; OR explicit escalation (refund/return demand, legal threat); OR systemic defect (arrived broken, same failure repeating).
-  MEDIUM = a concrete, fixable product defect with no harm and no escalation: bad microphone, poor fit, connectivity failure, battery underperforms, audio distortion, product doesn't match listing. Boundary: "Is there a specific fixable defect?" (yes → medium or higher). A reviewer reporting a broken feature without demanding a refund = medium.
+  MEDIUM = a concrete, fixable product defect with no harm and no escalation: bad microphone, connectivity failure, battery underperforms, audio distortion, product doesn't match listing, or a fit/comfort issue that causes NO pain (e.g. "runs a little tight", "loose fit" with no ache reported). Boundary: "Is there a specific fixable defect with no harm?" (yes → medium or higher). A reviewer reporting a broken feature without demanding a refund = medium.
   LOW = no concrete fixable defect: praise, neutral observation, or subjective preference only.
-  CRITICAL: physical harm signals (pain, aching, discomfort, headache) → HIGH regardless of star rating or overall positive tone.
+  CRITICAL: ANY physical harm or pain signal is HIGH, never medium — including pain caused by a fit/shape/design mismatch (e.g. "the shape doesn't fit right so my ear/head starts to hurt/ache/pain after a while"). This applies even when phrased casually, with typos or broken grammar, or buried after several sentences of praise. Do NOT downgrade a pain signal to medium just because the review also uses fit/comfort language — pain always outranks fit. Fit/comfort wording is only medium when NO pain, ache, or hurt is mentioned.
 - feature_requests: Explicit suggestions or wishes for improvements. Empty list if none.
 - language: always "en" for this prompt.
 - confidence: Your confidence in the overall extraction quality, 0.0–1.0.
@@ -35,6 +35,10 @@ Output: {"product": "...", "stars": 5, "stars_inferred": 5, "pros": ["overall sa
 Example — positive tone, high rating, but physical harm signal (urgency=high):
 Review: "Sound quality is amazing and the Bluetooth pairs instantly — really happy with this purchase! Only thing is the ear cups press quite hard and my ears start aching after about 20 minutes. Still a great buy overall."
 Output: {"product": "...", "stars": null, "stars_inferred": 4, "pros": ["amazing sound quality", "instant Bluetooth pairing"], "cons": ["ear cups cause ear aching after 20 minutes"], "buy_again": true, "sentiment": "positive", "topics": ["sound_quality", "bluetooth", "comfort"], "competitor_mentions": [], "urgency": "high", "feature_requests": [], "language": "en", "confidence": 0.9}
+
+Example — very positive/casual tone, broken grammar, pain caused by a fit/shape mismatch (urgency=high, NOT medium — do not treat this as a plain "poor fit" case):
+Review: "Sound is amazing, bass hits hard, honestly best purchase this year. Only thing is the shape doesnt fit properly on my ear so after wearing 10-15 mins my ear starts to pain a lot. Maybe will loosen up with time but right now its painful."
+Output: {"product": "...", "stars": null, "stars_inferred": 4, "pros": ["amazing sound", "hard-hitting bass"], "cons": ["shape doesn't fit ear properly", "ear pain after 10-15 minutes of wear"], "buy_again": null, "sentiment": "positive", "topics": ["sound_quality", "bass", "comfort"], "competitor_mentions": [], "urgency": "high", "feature_requests": [], "language": "en", "confidence": 0.85}
 """
 
 _TEMPLATE = """\

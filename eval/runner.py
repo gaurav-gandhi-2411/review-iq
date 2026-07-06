@@ -7,13 +7,19 @@ import json
 import sys
 import time
 from dataclasses import dataclass, field
-from datetime import UTC
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 RESULTS_PATH = Path(__file__).parent / "results.json"
 REPORT_PATH = Path(__file__).parent / "report.md"
+# Hard wall-clock cap per fixture's LLM call. Worst case by the code's own retry/timeout
+# config is ~210s (2 tiers x 3 attempts x 30s timeout, plus a Gemini fallback attempt) — 240s
+# gives headroom above that. A stuck call (client/network hang past its own configured timeout)
+# must never silently block a run for longer than this; asyncio.wait_for enforces it externally
+# so a misbehaving client-level timeout can't cause an indefinite hang.
+FIXTURE_CALL_TIMEOUT_SECONDS = 240
 # Eval gate (decided 2026-06-14, free-tier reality). PRIMARY gate is per-bucket
 # PER_LANG_THRESHOLD (>=80%); overall is a softer floor. Lowered 0.85 -> 0.83 because the
 # free-tier vernacular routing keeps hi/hi-en on the small model (cap-immune) at a ~1% overall
@@ -188,6 +194,12 @@ def aggregate_score(results: list[FixtureResult]) -> float:
 
 
 async def run_single(fixture: dict[str, Any]) -> FixtureResult:
+    # KNOWN GAP (logged 2026-07-06, not fixed): unlike run_single_routed, this calls
+    # extract_with_llm() without allow_gemini_fallback=False, so a double-Groq-tier failure
+    # falls through to Gemini. The Gemini free tier is currently at limit:0 (unprovisioned/
+    # exhausted), so that fallback silently dead-ends in a confusing 429 instead of a clear
+    # "both Groq tiers failed" error. Fix later: either provision Gemini for eval, or pin
+    # allow_gemini_fallback=False here too so failures are legible.
     from app.core.llm import extract_with_llm
     from app.core.prompts import build_prompt
     from app.core.sanitize import sanitize, wrap_for_llm
@@ -200,7 +212,9 @@ async def run_single(fixture: dict[str, Any]) -> FixtureResult:
         sanitized, _ = sanitize(text)
         wrapped = wrap_for_llm(sanitized)
         user_prompt = build_prompt(wrapped, lang)
-        llm_output, _model, latency_ms, _, _, _ = await extract_with_llm(user_prompt)
+        llm_output, _model, latency_ms, _, _, _ = await asyncio.wait_for(
+            extract_with_llm(user_prompt), timeout=FIXTURE_CALL_TIMEOUT_SECONDS
+        )
         result.latency_ms = latency_ms
         extraction_dict = llm_output.model_dump()
 
@@ -213,6 +227,10 @@ async def run_single(fixture: dict[str, Any]) -> FixtureResult:
         result.field_results = score_fixture(fixture, extraction_dict)
         scores = [fr.score for fr in result.field_results]
         result.overall_score = sum(scores) / len(scores) if scores else 0.0
+    except TimeoutError:
+        result.error = f"TIMEOUT after {FIXTURE_CALL_TIMEOUT_SECONDS}s (stuck call, not backoff)"
+        result.overall_score = 0.0
+        result.latency_ms = int((time.monotonic() - t0) * 1000)
     except Exception as e:
         result.error = str(e)
         result.overall_score = 0.0
@@ -239,11 +257,14 @@ async def run_single_routed(fixture: dict[str, Any]) -> FixtureResult:
         lang = fixture.get("ground_truth", {}).get("language", "en")
         user_prompt = build_prompt(wrapped, lang)
 
-        extraction, model, tokens_in, tokens_out, escalated, degraded = await route_extraction(
-            user_prompt,
-            _SYSTEM_PROMPT,
-            allow_gemini_fallback=False,
-            settings=settings,
+        extraction, model, tokens_in, tokens_out, escalated, degraded = await asyncio.wait_for(
+            route_extraction(
+                user_prompt,
+                _SYSTEM_PROMPT,
+                allow_gemini_fallback=False,
+                settings=settings,
+            ),
+            timeout=FIXTURE_CALL_TIMEOUT_SECONDS,
         )
         result.latency_ms = int((time.monotonic() - t0) * 1000)
         result.tokens_in = tokens_in
@@ -262,6 +283,10 @@ async def run_single_routed(fixture: dict[str, Any]) -> FixtureResult:
         result.field_results = score_fixture(fixture, extraction_dict)
         scores = [fr.score for fr in result.field_results]
         result.overall_score = sum(scores) / len(scores) if scores else 0.0
+    except TimeoutError:
+        result.error = f"TIMEOUT after {FIXTURE_CALL_TIMEOUT_SECONDS}s (stuck call, not backoff)"
+        result.overall_score = 0.0
+        result.latency_ms = int((time.monotonic() - t0) * 1000)
     except Exception as e:
         result.error = str(e)
         result.overall_score = 0.0
@@ -275,13 +300,16 @@ async def run_all_routed(fixtures_dir: Path = FIXTURES_DIR) -> list[FixtureResul
     all_results: list[FixtureResult] = []
     for path in _collect_fixture_paths(fixtures_dir):
         data: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
-        print(f"  {data['id']}...", end=" ", flush=True)
+        started_at = datetime.now(UTC).strftime("%H:%M:%S")
+        print(f"  [{started_at}] {data['id']}...", end=" ", flush=True)
+        t_fixture = time.monotonic()
         result = await run_single_routed(data)
+        elapsed_s = time.monotonic() - t_fixture
         tier_label = f"[{result.tier}{'↑' if result.escalated else ''}]" if result.tier else ""
         suffix = (
             f"ERROR: {result.error}" if result.error else f"{result.overall_score:.0%} {tier_label}"
         )
-        print(suffix)
+        print(f"{suffix} ({elapsed_s:.1f}s)")
         all_results.append(result)
     return all_results
 
@@ -343,13 +371,16 @@ async def run_all(
     all_results: list[FixtureResult] = []
     for path in _collect_fixture_paths(fixtures_dir):
         data: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
-        print(f"  {data['id']}...", end=" ", flush=True)
+        started_at = datetime.now(UTC).strftime("%H:%M:%S")
+        print(f"  [{started_at}] {data['id']}...", end=" ", flush=True)
+        t_fixture = time.monotonic()
         if http_client is not None:
             result = await run_single_http(data, http_client)
         else:
             result = await run_single(data)
+        elapsed_s = time.monotonic() - t_fixture
         suffix = f"ERROR: {result.error}" if result.error else f"{result.overall_score:.0%}"
-        print(suffix)
+        print(f"{suffix} ({elapsed_s:.1f}s)")
         all_results.append(result)
     return all_results
 

@@ -1,15 +1,15 @@
 {
-  "overall_score": 0.836274244651458,
+  "overall_score": 0.8379758141384162,
   "threshold": 0.83,
   "passed": true,
   "per_language": {
     "en": {
-      "score": 0.8599368667955177,
+      "score": 0.8621485068961425,
       "threshold": 0.8,
       "passed": true
     },
     "hi": {
-      "score": 0.8071031746031745,
+      "score": 0.8071031746031746,
       "threshold": 0.8,
       "passed": true
     },
@@ -23,9 +23,9 @@
     {
       "id": "001_turbo_vac",
       "language": "en",
-      "overall_score": 0.8363636363636363,
+      "overall_score": 0.822485726833553,
       "error": null,
-      "latency_ms": 30,
+      "latency_ms": 15,
       "fields": [
         {
           "field": "product",
@@ -64,13 +64,12 @@
         },
         {
           "field": "topics",
-          "score": 1.0,
+          "score": 0.888888888888889,
           "predicted": [
             "suction",
             "noise",
             "battery",
-            "build_quality",
-            "price"
+            "build_quality"
           ],
           "expected": [
             "suction",
@@ -108,11 +107,11 @@
         },
         {
           "field": "cons",
-          "score": 0.6363636363636364,
+          "score": 0.608695652173913,
           "predicted": [
             "short battery life",
             "poor build quality",
-            "poor value for price"
+            "plastic handle feels flimsy"
           ],
           "expected": [
             "poor battery life (15 minutes)",
@@ -135,7 +134,7 @@
       "language": "en",
       "overall_score": 0.9312169312169313,
       "error": null,
-      "latency_ms": 16,
+      "latency_ms": 2,
       "fields": [
         {
           "field": "stars",
@@ -170,7 +169,7 @@
           "score": 0.6666666666666666,
           "predicted": [
             "performance",
-            "ease_of_cleaning",
+            "cleanliness",
             "noise"
           ],
           "expected": [
@@ -221,9 +220,9 @@
     {
       "id": "003_prompt_injection",
       "language": "en",
-      "overall_score": 0.8962962962962963,
+      "overall_score": 0.9427609427609427,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 1,
       "fields": [
         {
           "field": "stars",
@@ -255,10 +254,11 @@
         },
         {
           "field": "topics",
-          "score": 0.4,
+          "score": 0.6666666666666666,
           "predicted": [
             "build_quality",
-            "battery"
+            "battery",
+            "price"
           ],
           "expected": [
             "durability",
@@ -283,10 +283,11 @@
         },
         {
           "field": "cons",
-          "score": 0.6666666666666665,
+          "score": 0.8181818181818182,
           "predicted": [
             "breaks after one week",
-            "short battery life"
+            "short battery life",
+            "poor value for price"
           ],
           "expected": [
             "breaks after one week",
@@ -394,7 +395,7 @@
       "language": "en",
       "overall_score": 0.9777777777777779,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 2,
       "fields": [
         {
           "field": "stars",
@@ -486,7 +487,7 @@
       "language": "en",
       "overall_score": 0.877665544332211,
       "error": null,
-      "latency_ms": 15,
+      "latency_ms": 1,
       "fields": [
         {
           "field": "stars",
@@ -578,9 +579,9 @@
     {
       "id": "007_buy_again_ambiguous",
       "language": "en",
-      "overall_score": 0.8833333333333333,
+      "overall_score": 0.871031746031746,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 2,
       "fields": [
         {
           "field": "stars",
@@ -627,11 +628,11 @@
         },
         {
           "field": "pros",
-          "score": 0.4,
+          "score": 0.4444444444444445,
           "predicted": [
             "works",
             "fast delivery",
-            "edge support is not too bad"
+            "edge support is not bad"
           ],
           "expected": [
             "fast delivery"
@@ -640,9 +641,9 @@
         },
         {
           "field": "cons",
-          "score": 1.0,
+          "score": 0.8571428571428571,
           "predicted": [
-            "soft edge support"
+            "edge support is a bit soft"
           ],
           "expected": [
             "soft edge support"
@@ -663,7 +664,7 @@
       "language": "en",
       "overall_score": 0.89648033126294,
       "error": null,
-      "latency_ms": 15,
+      "latency_ms": 1,
       "fields": [
         {
           "field": "stars",
@@ -700,7 +701,7 @@
             "air_cooler",
             "room_size",
             "performance",
-            "design"
+            "ease_of_use"
           ],
           "expected": [
             "cooling_performance",
@@ -752,7 +753,7 @@
       "language": "en",
       "overall_score": 0.8447971781305115,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 1,
       "fields": [
         {
           "field": "stars",
@@ -790,7 +791,7 @@
             "price",
             "navigation",
             "battery",
-            "brand_comparison"
+            "build_quality"
           ],
           "expected": [
             "suction",
@@ -855,9 +856,9 @@
     {
       "id": "010_urgent_angry",
       "language": "en",
-      "overall_score": 0.8904761904761905,
+      "overall_score": 0.9142857142857143,
       "error": null,
-      "latency_ms": 16,
+      "latency_ms": 1,
       "fields": [
         {
           "field": "stars",
@@ -896,11 +897,12 @@
         },
         {
           "field": "topics",
-          "score": 0.3333333333333333,
+          "score": 0.5714285714285715,
           "predicted": [
+            "fire",
             "safety",
-            "fire_hazard",
-            "build_quality"
+            "build_quality",
+            "customer_service"
           ],
           "expected": [
             "safety",
@@ -950,9 +952,9 @@
     {
       "id": "011_very_short",
       "language": "en",
-      "overall_score": 0.8888888888888888,
+      "overall_score": 0.7777777777777778,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 2,
       "fields": [
         {
           "field": "stars",
@@ -984,8 +986,10 @@
         },
         {
           "field": "topics",
-          "score": 1.0,
-          "predicted": [],
+          "score": 0.0,
+          "predicted": [
+            "overall_quality"
+          ],
           "expected": [],
           "method": "set_f1"
         },
@@ -1000,7 +1004,7 @@
           "field": "pros",
           "score": 0.0,
           "predicted": [
-            "great"
+            "great quality"
           ],
           "expected": [
             "overall satisfaction"
@@ -1026,9 +1030,9 @@
     {
       "id": "012_sarcasm",
       "language": "en",
-      "overall_score": 0.6574074074074073,
+      "overall_score": 0.7777777777777778,
       "error": null,
-      "latency_ms": 16,
+      "latency_ms": 2,
       "fields": [
         {
           "field": "stars",
@@ -1039,8 +1043,8 @@
         },
         {
           "field": "buy_again",
-          "score": 0.0,
-          "predicted": null,
+          "score": 1.0,
+          "predicted": false,
           "expected": false,
           "method": "exact"
         },
@@ -1060,9 +1064,9 @@
         },
         {
           "field": "topics",
-          "score": 0.6666666666666666,
+          "score": 1.0,
           "predicted": [
-            "battery_life",
+            "battery",
             "build_quality",
             "price"
           ],
@@ -1085,17 +1089,16 @@
           "score": 0.0,
           "predicted": [
             "incredible battery life",
-            "amazing",
-            "worth the price tag"
+            "amazing build quality"
           ],
           "expected": [],
           "method": "fuzzy"
         },
         {
           "field": "cons",
-          "score": 0.25,
+          "score": 0.0,
           "predicted": [
-            "creaky build quality"
+            "creaky plastic"
           ],
           "expected": [
             "poor battery life (45 minutes)",
@@ -1116,9 +1119,9 @@
     {
       "id": "013_multi_product",
       "language": "en",
-      "overall_score": 0.855718954248366,
+      "overall_score": 0.8693553178847296,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 2,
       "fields": [
         {
           "field": "stars",
@@ -1183,9 +1186,9 @@
         },
         {
           "field": "cons",
-          "score": 0.7999999999999999,
+          "score": 0.9090909090909091,
           "predicted": [
-            "charging case lid hinge broke",
+            "charging case lid hinge broke after 2 weeks",
             "poor value for price"
           ],
           "expected": [
@@ -1206,9 +1209,9 @@
     {
       "id": "014_feature_requests",
       "language": "en",
-      "overall_score": 0.8766666666666666,
+      "overall_score": 0.8361538461538462,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 1,
       "fields": [
         {
           "field": "stars",
@@ -1240,13 +1243,13 @@
         },
         {
           "field": "topics",
-          "score": 0.6,
+          "score": 0.4,
           "predicted": [
             "basic_use",
             "trends",
             "bluetooth",
             "battery",
-            "accuracy",
+            "weight_readings",
             "display"
           ],
           "expected": [
@@ -1280,11 +1283,11 @@
         },
         {
           "field": "cons",
-          "score": 0.6666666666666666,
+          "score": 0.4615384615384615,
           "predicted": [
             "no companion app",
             "no Bluetooth sync",
-            "no rechargeable battery"
+            "uses AAA batteries"
           ],
           "expected": [
             "no companion app",
@@ -1320,9 +1323,9 @@
     {
       "id": "015_medium_urgency",
       "language": "en",
-      "overall_score": 0.8346560846560847,
+      "overall_score": 0.8388888888888889,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 1,
       "fields": [
         {
           "field": "stars",
@@ -1389,11 +1392,10 @@
         },
         {
           "field": "cons",
-          "score": 0.761904761904762,
+          "score": 0.8,
           "predicted": [
-            "lumbar support broke",
-            "poor customer service",
-            "poor value for price"
+            "lumbar support broke after 3 months",
+            "poor customer service"
           ],
           "expected": [
             "lumbar support broke after 3 months",
@@ -1405,7 +1407,7 @@
         {
           "field": "stars_inferred",
           "score": 1.0,
-          "predicted": 2,
+          "predicted": 1,
           "expected": 2,
           "method": "tolerance\u00b11"
         }
@@ -1414,9 +1416,9 @@
     {
       "id": "016_no_product_name",
       "language": "en",
-      "overall_score": 0.9464285714285714,
+      "overall_score": 0.9583333333333334,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 1,
       "fields": [
         {
           "field": "stars",
@@ -1461,12 +1463,11 @@
         },
         {
           "field": "pros",
-          "score": 0.5714285714285714,
+          "score": 0.6666666666666666,
           "predicted": [
             "works as advertised",
             "fine battery life",
-            "charges overnight",
-            "nothing broken"
+            "charges overnight"
           ],
           "expected": [
             "works as described",
@@ -1493,9 +1494,9 @@
     {
       "id": "017_very_long",
       "language": "en",
-      "overall_score": 0.8336220121049841,
+      "overall_score": 0.821509009009009,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 2,
       "fields": [
         {
           "field": "stars",
@@ -1527,17 +1528,16 @@
         },
         {
           "field": "topics",
-          "score": 0.5882352941176471,
+          "score": 0.375,
           "predicted": [
             "sound_quality",
-            "build",
+            "build_quality",
             "features",
             "value",
-            "price",
-            "build_quality",
+            "charging_port",
             "water_resistance",
             "microphone",
-            "eq"
+            "equalization"
           ],
           "expected": [
             "sound_quality",
@@ -1566,12 +1566,11 @@
         },
         {
           "field": "pros",
-          "score": 0.4912280701754386,
+          "score": 0.5833333333333334,
           "predicted": [
             "exceptional bass response",
             "clear mid-tones",
             "vocals shine through",
-            "holds its own compared to JBL or Bose at half the price",
             "premium aluminum chassis",
             "rubber base prevents sliding",
             "Bluetooth 5.0 pairs instantly",
@@ -1632,9 +1631,9 @@
     {
       "id": "018_packaging_damage",
       "language": "en",
-      "overall_score": 0.7034632034632035,
+      "overall_score": 0.6923520923520923,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 1,
       "fields": [
         {
           "field": "stars",
@@ -1689,10 +1688,9 @@
         },
         {
           "field": "pros",
-          "score": 0.5,
+          "score": 0.4000000000000001,
           "predicted": [
-            "fantastic product",
-            "consistent grinding",
+            "grinds consistently",
             "easy to adjust settings"
           ],
           "expected": [
@@ -1726,9 +1724,9 @@
     {
       "id": "019_three_stars_explicit",
       "language": "en",
-      "overall_score": 0.8996913580246912,
+      "overall_score": 0.9212962962962963,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 1,
       "fields": [
         {
           "field": "stars",
@@ -1753,11 +1751,10 @@
         },
         {
           "field": "topics",
-          "score": 0.888888888888889,
+          "score": 0.7499999999999999,
           "predicted": [
             "build_quality",
             "assembly",
-            "height_adjustment",
             "motor"
           ],
           "expected": [
@@ -1807,9 +1804,9 @@
         },
         {
           "field": "feature_requests",
-          "score": 0.6666666666666666,
+          "score": 1.0,
           "predicted": [
-            "pre-assembled"
+            "pre-assembled option"
           ],
           "expected": [
             "pre-assembled option"
@@ -1828,9 +1825,9 @@
     {
       "id": "020_urgent_safety",
       "language": "en",
-      "overall_score": 0.8600000000000001,
+      "overall_score": 0.9010526315789473,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 1,
       "fields": [
         {
           "field": "stars",
@@ -1869,10 +1866,10 @@
         },
         {
           "field": "topics",
-          "score": 0.4,
+          "score": 0.8,
           "predicted": [
             "safety",
-            "build_quality"
+            "customer_service"
           ],
           "expected": [
             "safety",
@@ -1897,10 +1894,10 @@
         },
         {
           "field": "cons",
-          "score": 0.2,
+          "score": 0.21052631578947364,
           "predicted": [
-            "blade flew off",
-            "serious safety hazard"
+            "safety hazard",
+            "unacceptable customer service"
           ],
           "expected": [
             "blade detaches during use (safety hazard)",
@@ -1921,9 +1918,9 @@
     {
       "id": "021_neutral_review",
       "language": "en",
-      "overall_score": 0.8031818181818181,
+      "overall_score": 0.8031818181818182,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 1,
       "fields": [
         {
           "field": "stars",
@@ -1955,7 +1952,7 @@
             "heart_rate",
             "price",
             "battery_life",
-            "features"
+            "build_quality"
           ],
           "expected": [
             "step_tracking",
@@ -1996,8 +1993,8 @@
           "field": "cons",
           "score": 0.0,
           "predicted": [
-            "nothing impressive",
-            "basic features"
+            "nothing wowed me",
+            "basic fitness tracker"
           ],
           "expected": [],
           "method": "fuzzy"
@@ -2014,9 +2011,9 @@
     {
       "id": "022_two_star_explicit",
       "language": "en",
-      "overall_score": 0.9016636957813429,
+      "overall_score": 0.9176767676767678,
       "error": null,
-      "latency_ms": 16,
+      "latency_ms": 1,
       "fields": [
         {
           "field": "stars",
@@ -2048,9 +2045,9 @@
         },
         {
           "field": "topics",
-          "score": 0.5,
+          "score": 0.75,
           "predicted": [
-            "sole_quality",
+            "sole",
             "arch_support",
             "breathability",
             "comfort"
@@ -2085,11 +2082,11 @@
         },
         {
           "field": "cons",
-          "score": 0.7058823529411765,
+          "score": 0.6,
           "predicted": [
             "paper-thin sole",
             "zero arch support",
-            "causes foot pain"
+            "causes foot pain after 5km run"
           ],
           "expected": [
             "thin sole",
@@ -2112,7 +2109,7 @@
       "language": "en",
       "overall_score": 0.875,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 2,
       "fields": [
         {
           "field": "stars",
@@ -2175,9 +2172,9 @@
     {
       "id": "024_return_intent",
       "language": "en",
-      "overall_score": 0.8631578947368421,
+      "overall_score": 0.8636363636363636,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 1,
       "fields": [
         {
           "field": "stars",
@@ -2220,7 +2217,8 @@
           "predicted": [
             "installation_manual",
             "build_quality",
-            "flood"
+            "performance",
+            "customer_service"
           ],
           "expected": [
             "packaging",
@@ -2246,11 +2244,12 @@
         },
         {
           "field": "cons",
-          "score": 0.631578947368421,
+          "score": 0.6363636363636365,
           "predicted": [
             "missing installation manual",
             "cracked filter housing",
-            "flooded sink area"
+            "flooded sink area",
+            "required plumber's assistance"
           ],
           "expected": [
             "missing installation manual",
@@ -2272,9 +2271,9 @@
     {
       "id": "025_competitor_switch",
       "language": "en",
-      "overall_score": 0.7477777777777778,
+      "overall_score": 0.7388888888888889,
       "error": null,
-      "latency_ms": 15,
+      "latency_ms": 1,
       "fields": [
         {
           "field": "stars",
@@ -2306,9 +2305,9 @@
         },
         {
           "field": "topics",
-          "score": 0.20000000000000004,
+          "score": 0.0,
           "predicted": [
-            "heating_speed",
+            "heating",
             "basket_size",
             "cleanliness",
             "cooking_performance",
@@ -2336,10 +2335,10 @@
         },
         {
           "field": "pros",
-          "score": 0.7777777777777778,
+          "score": 0.8888888888888888,
           "predicted": [
-            "heats up faster",
-            "bigger basket",
+            "faster heating",
+            "larger basket",
             "easier cleanup",
             "better cooking performance"
           ],
@@ -2385,7 +2384,7 @@
       "language": "en",
       "overall_score": 0.9085714285714286,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 2,
       "fields": [
         {
           "field": "stars",
@@ -2481,9 +2480,9 @@
     {
       "id": "027_harm_in_positive_tone_high",
       "language": "en",
-      "overall_score": 0.8680555555555557,
+      "overall_score": 0.8680555555555556,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 2,
       "fields": [
         {
           "field": "stars",
@@ -2527,8 +2526,8 @@
             "sound_quality",
             "bass",
             "bluetooth",
-            "comfort",
-            "price"
+            "price",
+            "comfort"
           ],
           "expected": [
             "sound_quality",
@@ -2578,7 +2577,110 @@
         {
           "field": "stars_inferred",
           "score": 1.0,
-          "predicted": 5,
+          "predicted": 4,
+          "expected": 4,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "028_fit_pain_high",
+      "language": "en",
+      "overall_score": 0.8300000000000001,
+      "error": null,
+      "latency_ms": 2,
+      "fields": [
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 0.0,
+          "predicted": null,
+          "expected": true,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "positive",
+          "expected": "positive",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "en",
+          "expected": "en",
+          "method": "exact"
+        },
+        {
+          "field": "urgency",
+          "score": 1.0,
+          "predicted": "high",
+          "expected": "high",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.5,
+          "predicted": [
+            "tracking",
+            "battery",
+            "build_quality",
+            "ergonomics"
+          ],
+          "expected": [
+            "tracking",
+            "battery",
+            "design",
+            "comfort"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.7999999999999999,
+          "predicted": [
+            "smooth tracking",
+            "long battery life",
+            "perfect DPI button placement"
+          ],
+          "expected": [
+            "smooth tracking",
+            "long battery life",
+            "good DPI button placement for gaming"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 1.0,
+          "predicted": [
+            "narrow shape for larger hands",
+            "wrist pain after an hour of use"
+          ],
+          "expected": [
+            "narrow shape for larger hands",
+            "wrist pain after an hour of use"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 4,
           "expected": 4,
           "method": "tolerance\u00b11"
         }
@@ -2589,7 +2691,7 @@
       "language": "hi-en",
       "overall_score": 0.8669230769230769,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 1,
       "fields": [
         {
           "field": "product",
@@ -2690,7 +2792,7 @@
       "language": "hi-en",
       "overall_score": 0.7666666666666667,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 1,
       "fields": [
         {
           "field": "product",
@@ -2782,7 +2884,7 @@
       "language": "hi-en",
       "overall_score": 0.8833333333333334,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 1,
       "fields": [
         {
           "field": "product",
@@ -2876,7 +2978,7 @@
       "language": "hi-en",
       "overall_score": 0.8015873015873016,
       "error": null,
-      "latency_ms": 15,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -3578,7 +3680,7 @@
     {
       "id": "hi-en-011",
       "language": "hi-en",
-      "overall_score": 0.8333333333333333,
+      "overall_score": 0.8333333333333334,
       "error": null,
       "latency_ms": 0,
       "fields": [
@@ -3670,7 +3772,7 @@
     {
       "id": "hi-en-012",
       "language": "hi-en",
-      "overall_score": 0.6621739130434782,
+      "overall_score": 0.6621739130434783,
       "error": null,
       "latency_ms": 0,
       "fields": [
@@ -3871,7 +3973,7 @@
       "language": "hi-en",
       "overall_score": 0.7533333333333333,
       "error": null,
-      "latency_ms": 15,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -4245,7 +4347,7 @@
     {
       "id": "hi-003",
       "language": "hi",
-      "overall_score": 0.8333333333333333,
+      "overall_score": 0.8333333333333334,
       "error": null,
       "latency_ms": 0,
       "fields": [

@@ -1,0 +1,25 @@
+{
+  "id": "028_fit_pain_high",
+  "review_text": "This wireless mouse is honestly great - smooth tracking, battery lasts forever, and the DPI button placement is perfect for gaming. Only issue is the shape is a bit narrow for my hand, so after an hour of use my wrist starts to hurt. Otherwise no complaints, would recommend to anyone with smaller hands.",
+  "ground_truth": {
+    "product": "wireless mouse",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": ["smooth tracking", "long battery life", "good DPI button placement for gaming"],
+    "cons": ["narrow shape for larger hands", "wrist pain after an hour of use"],
+    "buy_again": true,
+    "sentiment": "positive",
+    "topics": ["tracking", "battery", "design", "comfort"],
+    "competitor_mentions": [],
+    "urgency": "high",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": ["stars", "buy_again", "sentiment", "language", "urgency"],
+    "set_overlap_fields": ["topics", "competitor_mentions"],
+    "fuzzy_fields": ["pros", "cons"],
+    "tolerance_fields": {"stars_inferred": 1},
+    "notes": "urgency MUST be high - a shape/fit mismatch (narrow mouse body) causes physical pain (wrist hurts). Must not be downgraded to medium just because 'fit' language is present; pain outranks fit. Regression guard for the fit-causes-pain pattern (benchmark case bench-en-013: shape mismatch -> eye pain, still mis-scored medium under v2.2)."
+  }
+}

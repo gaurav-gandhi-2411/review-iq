@@ -4,6 +4,96 @@ This file documents every version of the extraction prompt, including eval score
 
 ---
 
+## v2.3 (2026-07-06) — KEPT: fit-causes-pain must beat "poor fit" medium example
+
+**Status:** SHIPPED. Target B **iteration 2 of 2** (bounded cap, spec.md Task #2). GG reviewed
+the full changed-cases list (below) and confirmed KEEP.
+
+**Eval gate:** 83.8% overall, en 86.2%, hi 80.7% (identical to v2.2), hi-en 80.9% (identical to
+v2.2) — all PASS.
+
+**Files:** `app/core/prompts/en.py` only (hi_en.py untouched — out of scope for this iteration;
+the failing case is in the `en` slice; hi/hi-en confirmed byte-for-byte unaffected, see below).
+
+### Root cause (diagnosed via existing benchmark cassette, zero new API calls)
+
+v2.2 (shipped 2026-06-20) fixed the clean-phrasing case (fixture 027: "ear cups press hard ...
+aching") but **bench-en-013** (the actual highest-priority benchmark case — see gold.jsonl,
+`urg_source: human-adjudicated, refined rubric: harm->high, fixable-defect->medium`) still
+scores `medium`, not `high`, under v2.2. Confirmed by replaying the existing
+`benchmark/cassettes/review_iq_cassettes.json` entry for the small model (llama-3.1-8b-instant,
+which handles the `en` slice) — no live call needed to prove the miss:
+
+```
+cons: ["low comfort level", "circular shape causes eye pain within 10 minutes", "may get loose after a month"]
+urgency: "medium"   <-- gold is "high"
+```
+
+The model correctly *extracts* the pain into `cons` but still classifies `medium`. Diagnosis:
+v2.2's MEDIUM bucket explicitly lists "poor fit" as an example. bench-en-013's failure is a
+headphone-shape/ear-fit mismatch that *causes pain* — the model pattern-matches to the literal
+"poor fit" example in MEDIUM rather than applying the separate HIGH/CRITICAL pain clause. The
+two rubric buckets were in tension for this exact case, and the smaller 8B model (used for the
+`en` tier) resolved the tension in favor of the more concrete keyword match.
+
+### What changed
+
+- Removed "poor fit" from the MEDIUM example list; replaced with "fit/comfort issue that causes
+  NO pain" — the boundary condition is now explicit rather than a bare example.
+- Rewrote the CRITICAL clause to explicitly resolve the conflict: pain caused by a fit/shape
+  mismatch is HIGH, and fit/comfort language never downgrades a pain signal to medium.
+- Added a second harm-in-positive-tone grounding example using casual/broken-grammar phrasing
+  and a shape-mismatch-causes-pain pattern (distinct product and wording from the existing
+  example) — the existing example alone ("ear cups press hard") did not generalize to
+  bench-en-013's messier real-world phrasing on the small model.
+
+### New regression fixture
+
+- `eval/fixtures/028_fit_pain_high.json` — wireless mouse, narrow shape -> wrist pain, positive
+  tone throughout. Deliberately a different product/wording than fixture 027 and bench-en-013
+  to test rubric generalization, not memorization. Guards the fit-vs-pain conflict specifically.
+
+### Cassette re-record
+
+Both `eval/cassettes/cassettes.json` (all 49 fixtures) and `benchmark/cassettes/review_iq_cassettes.json`
+(all 22 `en`-slice benchmark records; `hi-en`/`hi` reused unchanged) were re-recorded clean
+(0 errors, 0 spikes) against v2.3 via a paced (35-45s inter-call delay), resumable recorder —
+Groq's free-tier RPM cap could not sustain the ~42-fixture pass at native speed, so the recorder
+paces calls and can resume from the last successful fixture rather than restarting from zero.
+Replay confirmed deterministic, 0 live calls.
+
+### Result — target case + generalization
+
+- **bench-en-013** (the target case, human-adjudicated gold=`high`): `medium -> high`. Fixed.
+- **eval fixture 028** (mouse -> wrist pain, a different product/wording): `high`, as expected —
+  confirms the fix generalizes rather than memorizing the specific grounding example.
+
+### Two-directional regression check (v2.2 -> v2.3, full changed-cases list)
+
+No previously-correct HIGH call flipped away (eval 010/020/024/027; benchmark
+bench-en-005/018/021 all unchanged). No benign MEDIUM (eval 026) over-promoted. Three actual
+class changes found across the 49 eval fixtures + 22 benchmark `en` records:
+
+| Case | Gold | v2.2 -> v2.3 | Read (GG-confirmed) |
+|---|---|---|---|
+| `bench-en-013` | high (adjudicated) | medium -> **high** | Target fix. |
+| `bench-en-015` | medium (matches prior human-verified note, `project-urg-prompt-improvement` memory) | low -> **medium** | Bonus fix — genuine fit *defect* ("not fitting well... feeling discomfor[t]"), no pain; correctly medium now. |
+| `bench-en-007` | low (⚠ LLM-generated, **not** adjudicated) | medium -> **high** | Text contains literal "the ears start to pain.." after an hour, 5-star/praise-heavy — same harm-in-positive-tone pattern as en-013. Read as a correct catch exposing the same un-adjudicated-labeler harm-blindness spec.md already documented, not a regression. |
+| eval `012_sarcasm` | low (eval ground truth; urgency not in this fixture's graded fields) | low -> **high** | No pain/harm/escalation language present (sarcastic review, "creaky plastic" build complaint only). Reviewed and accepted as a known, isolated side effect on a hard sarcasm case — not blocking keep. |
+
+### hi/hi-en slices — confirmed unaffected
+
+Eval: hi 80.7% -> 80.7%, hi-en 80.9% -> 80.9% — identical, confirmed at the per-fixture urgency
+level too (zero changes across all 21 hi-en + 6 hi fixtures). Benchmark hi-en cassette entries
+reused untouched (never re-recorded — `hi_en.py` unchanged, so their cache keys didn't move).
+
+### Verification
+
+906 tests pass, `ruff check` clean, eval-replay 83.8% overall / en 86.2% / hi 80.7% / hi-en
+80.9% — all PASS (>=80% per-language gate, >=83% overall gate).
+
+---
+
 ## v2.2 (2026-06-20) — Urgency rubric: defect→medium, harm-in-positive→high
 
 **Files:** `app/core/prompts/en.py`, `app/core/prompts/hi_en.py`
