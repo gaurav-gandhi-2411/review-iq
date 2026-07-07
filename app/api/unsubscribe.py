@@ -26,14 +26,14 @@ log = structlog.get_logger(__name__)
 _OK_HTML = """<!doctype html><html><head><title>Unsubscribed</title></head>
 <body style="font-family:sans-serif;max-width:32rem;margin:4rem auto;padding:0 1rem">
 <h1>You're unsubscribed</h1>
-<p>Review-IQ alert emails have been turned off for this account.
-You can re-enable them anytime from your Review-IQ notification settings.</p>
+<p>Samidha Reviews alert emails have been turned off for this account.
+You can re-enable them anytime from your Samidha Reviews notification settings.</p>
 </body></html>"""
 
 _INVALID_HTML = """<!doctype html><html><head><title>Invalid link</title></head>
 <body style="font-family:sans-serif;max-width:32rem;margin:4rem auto;padding:0 1rem">
 <h1>This unsubscribe link is invalid or expired</h1>
-<p>Log in to Review-IQ and update your notification settings instead.</p>
+<p>Log in to Samidha Reviews and update your notification settings instead.</p>
 </body></html>"""
 
 

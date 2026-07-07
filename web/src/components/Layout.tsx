@@ -75,7 +75,7 @@ export default function Layout({ children, active }: Props) {
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <LogoMark size={24} />
-            <span className="font-display text-lg text-charcoal tracking-tight">review-iq</span>
+            <span className="font-display text-lg text-charcoal tracking-tight">Samidha Reviews</span>
           </div>
           <nav className="flex items-center gap-1">
             <NavLink href="/dashboard" active={active === 'dashboard'} icon={<BarChart2 size={15} />}>

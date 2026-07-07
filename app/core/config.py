@@ -152,10 +152,10 @@ class Settings(BaseSettings):
     # Sandbox: only delivers to this verified address; real-recipient delivery
     # requires a verified sending domain in the Resend dashboard.
     resend_test_recipient: str = Field(default="", alias="RESEND_TEST_RECIPIENT")
-    # Display name on the From header (e.g. "Review-IQ Alerts"). Combined with
+    # Display name on the From header (e.g. "Samidha Reviews"). Combined with
     # resend_from_email as "Name <email>". Switching sandbox -> custom domain
     # is env-only: RESEND_FROM_EMAIL + this + a Resend domain-verify, no code change.
-    resend_from_name: str = Field(default="Review-IQ Alerts", alias="RESEND_FROM_NAME")
+    resend_from_name: str = Field(default="Samidha Reviews", alias="RESEND_FROM_NAME")
     # Optional Reply-To so seller replies don't bounce against a noreply sender.
     resend_reply_to: str = Field(default="", alias="RESEND_REPLY_TO")
     # Toggle the leading emoji (e.g. "⚠️") on alert subject lines without a code

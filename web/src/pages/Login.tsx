@@ -41,7 +41,7 @@ export default function LoginPage() {
           <div className="flex justify-center mb-3">
             <LogoMark size={48} />
           </div>
-          <h1 className="font-display text-3xl text-charcoal tracking-tight">review-iq</h1>
+          <h1 className="font-display text-3xl text-charcoal tracking-tight">Samidha Reviews</h1>
           <p className="mt-2 text-charcoal-light font-sans text-sm leading-relaxed">
             Know what your customers actually think.
           </p>

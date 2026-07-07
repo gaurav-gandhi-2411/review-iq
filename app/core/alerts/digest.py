@@ -154,10 +154,10 @@ def build_digest_email(
         return None
 
     count = len(events)
-    subject = f"Review-IQ daily digest: {count} event(s) need attention"
+    subject = f"Samidha Reviews daily digest: {count} event(s) need attention"
 
     lines: list[str] = [
-        f"Review-IQ daily digest — {count} event(s) since your last digest.",
+        f"Samidha Reviews daily digest — {count} event(s) since your last digest.",
         "",
     ]
     for pe in events:
@@ -173,7 +173,7 @@ def build_digest_email(
             detail = str(dict(event.details))
         lines.append(f"- [{event.event_type}] review {pe.review_id}: {detail}")
     lines.append("")
-    lines.append("Log in to Review-IQ to investigate and take action.")
+    lines.append("Log in to Samidha Reviews to investigate and take action.")
 
     unsubscribe_url = build_unsubscribe_url(org_id)
     if unsubscribe_url:

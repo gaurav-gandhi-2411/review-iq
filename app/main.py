@@ -54,7 +54,7 @@ Unstructured customer reviews → queryable structured insights.
 
 ## Quickstart
 
-1. **Get an API key.** Sign in at the Review IQ dashboard (Google sign-in via
+1. **Get an API key.** Sign in at the Samidha Reviews dashboard (Google sign-in via
    Supabase). Your first `riq_live_*` key is issued automatically on first
    login — see `POST /auth/provision` below. Free tier: 100 requests/month.
 2. **Authenticate** every `/v2/*` request with either header (Bearer takes
@@ -111,7 +111,7 @@ reached — contact support to raise it.
 - Postgres Row-Level Security policies enforce the same isolation at the
   database layer, independent of the application code.
 - `/admin/*` endpoints are separate, HTTP Basic-authenticated, and are for
-  Review IQ operators only — not part of the tenant API surface.
+  Samidha Reviews operators only — not part of the tenant API surface.
 
 ## Endpoint groups
 
@@ -139,7 +139,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         settings = get_settings()
 
     _app = FastAPI(
-        title="Review IQ",
+        title="Samidha Reviews API",
         description=_API_DESCRIPTION,
         version="0.2.0",
         lifespan=lifespan,

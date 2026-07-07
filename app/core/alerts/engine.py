@@ -63,11 +63,11 @@ def _format_subject(event: AlertEvent) -> str:
         if get_settings().alert_subject_emoji_enabled
         else _SUBJECT_TEMPLATES_NO_EMOJI
     )
-    template = templates.get(event.event_type, "Review-IQ alert: {event_type}")
+    template = templates.get(event.event_type, "Samidha Reviews alert: {event_type}")
     try:
         return template.format(**event.details, event_type=event.event_type)
     except (KeyError, ValueError):
-        return f"Review-IQ alert: {event.event_type}"
+        return f"Samidha Reviews alert: {event.event_type}"
 
 
 def _format_body(
@@ -77,7 +77,7 @@ def _format_body(
     event: AlertEvent,
     unsubscribe_url: str | None = None,
 ) -> str:
-    lines: list[str] = ["Review-IQ detected an event requiring your attention.", ""]
+    lines: list[str] = ["Samidha Reviews detected an event requiring your attention.", ""]
 
     if event.event_type == AlertEventType.HIGH_URGENCY:
         lines.append("A customer review has been flagged as HIGH URGENCY.")
@@ -117,7 +117,7 @@ def _format_body(
 
     if review_id:
         lines.append(f"\nReview reference: {review_id}")
-    lines.append("\nLog in to Review-IQ to investigate and take action.")
+    lines.append("\nLog in to Samidha Reviews to investigate and take action.")
     if unsubscribe_url:
         lines.append(f"\nStop receiving these emails: {unsubscribe_url}")
     return "\n".join(lines)

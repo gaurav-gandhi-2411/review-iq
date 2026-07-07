@@ -72,7 +72,7 @@
       "category": "extraction",
       "lang_badge": "HI-EN",
       "title": "Hinglish / code-mixed review",
-      "description": "Code-mixed Hindi-English — the differentiator. Western tools mislabel this; review-iq parses 'apple k earphone ko competition de dega' correctly.",
+      "description": "Code-mixed Hindi-English — the differentiator. Western tools mislabel this; Samidha Reviews parses 'apple k earphone ko competition de dega' correctly.",
       "input_label": "Customer review",
       "input": "Superb earphone i like it.... and the sound is just awsome.... ye earphone apple k earphone ko competition de dega..... Not better than apple earphone... but km v nai hai apple k earphone se....",
       "input_annotation": "\"apple k earphone ko competition de dega\" = will compete with Apple earphones | \"km v nai hai\" = not less than",
