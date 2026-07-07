@@ -1,0 +1,14 @@
+{
+  "hosting": {
+    "site": "review-iq-prod",
+    "rewrites": [
+      {
+        "source": "**",
+        "run": {
+          "serviceId": "review-iq",
+          "region": "asia-south1"
+        }
+      }
+    ]
+  }
+}
