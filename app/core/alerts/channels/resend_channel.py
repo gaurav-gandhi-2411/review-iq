@@ -22,6 +22,8 @@ class ResendChannel:
         s = get_settings()
         self._api_key = s.resend_api_key
         self._from_email = s.resend_from_email
+        self._from_name = s.resend_from_name
+        self._reply_to = s.resend_reply_to
         if not self._api_key:
             raise ValueError("RESEND_API_KEY is not configured")
         if not self._from_email:
@@ -30,12 +32,25 @@ class ResendChannel:
 
     async def send(self, message: AlertMessage) -> None:
         resend.api_key = self._api_key
+        from_header = (
+            f"{self._from_name} <{self._from_email}>" if self._from_name else self._from_email
+        )
         params: resend.Emails.SendParams = {  # type: ignore[misc]
-            "from": self._from_email,
+            "from": from_header,
             "to": [message.recipient_email],
             "subject": message.subject,
             "text": message.body_text,
         }
+        if self._reply_to:
+            params["reply_to"] = [self._reply_to]
+        if message.unsubscribe_url:
+            # RFC 8058 one-click unsubscribe: a single HTTPS URL plus the
+            # One-Click marker lets mail clients (e.g. Gmail) POST to it
+            # automatically without the recipient opening the email.
+            params["headers"] = {
+                "List-Unsubscribe": f"<{message.unsubscribe_url}>",
+                "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+            }
         try:
             response = await resend.Emails.send_async(params)
             self.last_response = response

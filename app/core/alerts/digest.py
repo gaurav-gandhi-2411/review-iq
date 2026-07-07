@@ -46,6 +46,7 @@ from app.core.alerts.storage import (
     list_extractions_since_pg,
     record_alert_sent_pg,
 )
+from app.core.alerts.unsubscribe import build_unsubscribe_url
 from app.core.authenticity.schema import AuthenticityLabel, AuthenticityResult
 from app.core.schemas import ReviewExtraction, Urgency
 
@@ -114,9 +115,7 @@ async def collect_pending_for_org(org_id: str) -> list[PendingDigestEvent]:
                     pending.append(PendingDigestEvent(review_id=review_id, event=event))
 
         elif event_type == AlertEventType.LIKELY_FAKE:
-            audit_rows = await asyncio.to_thread(
-                list_authenticity_audits_since_pg, org_id, since
-            )
+            audit_rows = await asyncio.to_thread(list_authenticity_audits_since_pg, org_id, since)
             for arow in audit_rows:
                 auth = AuthenticityResult(
                     score=arow["score"],  # type: ignore[arg-type]
@@ -176,6 +175,11 @@ def build_digest_email(
     lines.append("")
     lines.append("Log in to Review-IQ to investigate and take action.")
 
+    unsubscribe_url = build_unsubscribe_url(org_id)
+    if unsubscribe_url:
+        lines.append("")
+        lines.append(f"Stop receiving these emails: {unsubscribe_url}")
+
     # AlertMessage.event is only used by ResendChannel for structured logging.
     # A multi-event digest doesn't map perfectly onto the single-event
     # AlertMessage shape; using the first event here is an acceptable
@@ -187,6 +191,7 @@ def build_digest_email(
         subject=subject,
         body_text="\n".join(lines),
         recipient_email=recipient_email,
+        unsubscribe_url=unsubscribe_url,
     )
 
 

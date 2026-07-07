@@ -152,6 +152,26 @@ class Settings(BaseSettings):
     # Sandbox: only delivers to this verified address; real-recipient delivery
     # requires a verified sending domain in the Resend dashboard.
     resend_test_recipient: str = Field(default="", alias="RESEND_TEST_RECIPIENT")
+    # Display name on the From header (e.g. "Review-IQ Alerts"). Combined with
+    # resend_from_email as "Name <email>". Switching sandbox -> custom domain
+    # is env-only: RESEND_FROM_EMAIL + this + a Resend domain-verify, no code change.
+    resend_from_name: str = Field(default="Review-IQ Alerts", alias="RESEND_FROM_NAME")
+    # Optional Reply-To so seller replies don't bounce against a noreply sender.
+    resend_reply_to: str = Field(default="", alias="RESEND_REPLY_TO")
+    # Toggle the leading emoji (e.g. "⚠️") on alert subject lines without a code
+    # change — emoji can nudge spam filters either way; flip this to A/B test
+    # inbox placement for a given sending domain.
+    alert_subject_emoji_enabled: bool = Field(default=True, alias="ALERT_SUBJECT_EMOJI_ENABLED")
+
+    # HMAC signing key for one-click unsubscribe links embedded in alert emails
+    # (GET/POST /unsubscribe). Unset disables the unsubscribe link and the
+    # List-Unsubscribe header entirely — emails still send, just without them.
+    # Generate with: python -c "import secrets; print(secrets.token_hex(32))"
+    unsubscribe_signing_key: str = Field(default="", alias="UNSUBSCRIBE_SIGNING_KEY")
+    # Public base URL of the deployed API, used to build the absolute unsubscribe
+    # link in alert emails (e.g. https://<cloud-run-service>.run.app). Dev: ngrok
+    # tunnel URL, same as shopify_webhook_base_url / google_webhook_base_url.
+    api_public_base_url: str = Field(default="", alias="API_PUBLIC_BASE_URL")
 
     # Supabase
     supabase_url: str = Field(default="", alias="SUPABASE_URL")

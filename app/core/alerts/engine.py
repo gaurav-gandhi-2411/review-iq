@@ -29,7 +29,9 @@ from app.core.alerts.storage import (
     is_already_alerted_pg,
     record_alert_sent_pg,
 )
+from app.core.alerts.unsubscribe import build_unsubscribe_url
 from app.core.authenticity.schema import AuthenticityResult
+from app.core.config import get_settings
 from app.core.schemas import ReviewExtraction
 
 log = structlog.get_logger(__name__)
@@ -45,9 +47,23 @@ _SUBJECT_TEMPLATES: dict[AlertEventType, str] = {
     AlertEventType.TOPIC_SPIKE: "📈 Complaint spike: '{topic}' ({recent_count}x in recent window)",
 }
 
+# Emoji-free counterparts — selected via ALERT_SUBJECT_EMOJI_ENABLED so inbox
+# placement can be A/B tested per sending domain without a code change.
+_SUBJECT_TEMPLATES_NO_EMOJI: dict[AlertEventType, str] = {
+    AlertEventType.HIGH_URGENCY: "Urgent customer review needs attention",
+    AlertEventType.LIKELY_FAKE: "Suspicious review detected",
+    AlertEventType.FAKE_CLUSTER: "{count} suspicious reviews in {window_hours}h — possible fake cluster",
+    AlertEventType.TOPIC_SPIKE: "Complaint spike: '{topic}' ({recent_count}x in recent window)",
+}
+
 
 def _format_subject(event: AlertEvent) -> str:
-    template = _SUBJECT_TEMPLATES.get(event.event_type, "Review-IQ alert: {event_type}")
+    templates = (
+        _SUBJECT_TEMPLATES
+        if get_settings().alert_subject_emoji_enabled
+        else _SUBJECT_TEMPLATES_NO_EMOJI
+    )
+    template = templates.get(event.event_type, "Review-IQ alert: {event_type}")
     try:
         return template.format(**event.details, event_type=event.event_type)
     except (KeyError, ValueError):
@@ -59,6 +75,7 @@ def _format_body(
     review_id: str | None,
     extraction: ReviewExtraction | None,
     event: AlertEvent,
+    unsubscribe_url: str | None = None,
 ) -> str:
     lines: list[str] = ["Review-IQ detected an event requiring your attention.", ""]
 
@@ -101,6 +118,8 @@ def _format_body(
     if review_id:
         lines.append(f"\nReview reference: {review_id}")
     lines.append("\nLog in to Review-IQ to investigate and take action.")
+    if unsubscribe_url:
+        lines.append(f"\nStop receiving these emails: {unsubscribe_url}")
     return "\n".join(lines)
 
 
@@ -205,12 +224,14 @@ async def evaluate_and_alert(
             continue
 
         # 5. Format message and deliver via channel.
+        unsubscribe_url = build_unsubscribe_url(org_id)
         message = AlertMessage(
             org_id=org_id,
             event=event,
             subject=_format_subject(event),
-            body_text=_format_body(org_id, review_id, extraction, event),
+            body_text=_format_body(org_id, review_id, extraction, event, unsubscribe_url),
             recipient_email=recipient_email,
+            unsubscribe_url=unsubscribe_url,
         )
         try:
             await channel.send(message)

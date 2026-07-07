@@ -25,6 +25,7 @@ from app.api.internal.digest import router as internal_digest_router
 from app.api.ops import router as ops_router
 from app.api.query import router as query_router
 from app.api.shopify_auth import router as shopify_auth_router
+from app.api.unsubscribe import router as unsubscribe_router
 from app.api.v2.authenticity import router as v2_authenticity_router
 from app.api.v2.corrections import router as v2_corrections_router
 from app.api.v2.dataset import router as v2_dataset_router
@@ -44,6 +45,84 @@ from app.core.storage import migrate
 
 log = structlog.get_logger(__name__)
 
+# The base URL below is a placeholder — swap in whatever host this deployment
+# is actually served from (Cloud Run URL today; a custom domain later). No
+# other part of these docs, or any client code following them, needs to change
+# when that host changes.
+_API_DESCRIPTION = """
+Unstructured customer reviews → queryable structured insights.
+
+## Quickstart
+
+1. **Get an API key.** Sign in at the Review IQ dashboard (Google sign-in via
+   Supabase). Your first `riq_live_*` key is issued automatically on first
+   login — see `POST /auth/provision` below. Free tier: 100 requests/month.
+2. **Authenticate** every `/v2/*` request with either header (Bearer takes
+   precedence if both are sent):
+   - `Authorization: Bearer riq_live_<32 hex chars>`
+   - `X-API-Key: riq_live_<32 hex chars>`
+3. **Call the main endpoint**, `POST /v2/extract`:
+
+```bash
+curl -X POST "{base_url}/v2/extract" \\
+  -H "Authorization: Bearer riq_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \\
+  -H "Content-Type: application/json" \\
+  -d '{"text": "Great sound quality but the battery dies after 3 hours. Would still recommend for the price."}'
+```
+
+```python
+import requests
+
+BASE_URL = "{base_url}"  # this deployment's host — see note below
+API_KEY = "riq_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+resp = requests.post(
+    f"{BASE_URL}/v2/extract",
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    json={"text": "Great sound quality but the battery dies after 3 hours. "
+                  "Would still recommend for the price."},
+)
+resp.raise_for_status()
+print(resp.json())
+```
+
+> **Base URL**: `{base_url}` above is a placeholder for whatever host this API
+> is deployed at — check the "Servers" section of this page for the actual URL.
+
+## Rate limits (actual, current values)
+
+| Scope | Limit |
+|---|---|
+| All endpoints, per IP | 30 requests/minute (`RATE_LIMIT_PER_MINUTE`) |
+| `POST /auth/provision`, per IP | 10 requests/minute |
+| `POST /demo/extract`, per IP | 5 requests/minute |
+| Monthly quota, per API key | 100 requests/month on the free tier |
+
+The per-minute limit applies regardless of authentication and returns `429`
+from the rate limiter. The monthly quota is tracked per API key (not per IP)
+and returns `429` with a `Monthly quota exceeded (used/quota)` message once
+reached — contact support to raise it.
+
+## Data isolation
+
+- Every `/v2/*` request is scoped to your organization via your API key —
+  `org_id` is resolved server-side from the key and is never taken from the
+  request body.
+- Postgres Row-Level Security policies enforce the same isolation at the
+  database layer, independent of the application code.
+- `/admin/*` endpoints are separate, HTTP Basic-authenticated, and are for
+  Review IQ operators only — not part of the tenant API surface.
+
+## Endpoint groups
+
+- **v2 / v2-authenticity / v2-insights / v2-ingest** — the multi-tenant API
+  (Postgres-backed), all requiring a `riq_live_*` API key.
+- **demo** — keyless, heavily rate-limited, for evaluation only.
+- **auth** — first-login API key issuance.
+- **admin** — org and key management (HTTP Basic auth, operators only).
+- **ops** — `/health` and `/metrics` (unauthenticated).
+"""
+
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
@@ -61,13 +140,37 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     _app = FastAPI(
         title="Review IQ",
-        description="Unstructured customer reviews → queryable structured insights.",
+        description=_API_DESCRIPTION,
         version="0.2.0",
         lifespan=lifespan,
+        servers=[{"url": "https://api.samidhareviews.xyz"}],
         openapi_tags=[
             {
                 "name": "v2",
                 "description": "Multi-tenant endpoints (Postgres-backed). Requires riq_live_* API key.",
+            },
+            {
+                "name": "v2-authenticity",
+                "description": "Tenant-scoped fake-review authenticity scoring. Requires riq_live_* API key.",
+            },
+            {
+                "name": "v2-insights",
+                "description": "Aggregated analytics — authenticity summaries, theme trends, health score. "
+                "Requires riq_live_* API key.",
+            },
+            {
+                "name": "v2-ingest",
+                "description": "Bulk CSV upload and async batch-job polling. Requires riq_live_* API key.",
+            },
+            {
+                "name": "demo",
+                "description": "Keyless public demo of extraction. Heavily rate-limited (5/minute), "
+                "no results stored — for evaluation only, not production use.",
+            },
+            {
+                "name": "auth",
+                "description": "Sign-up flow — issues your first riq_live_* API key on first login "
+                "via the web dashboard.",
             },
             {"name": "extraction", "description": "v1 single-tenant extraction (SQLite-backed)."},
             {"name": "query", "description": "v1 query and analytics (SQLite-backed)."},
@@ -122,6 +225,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     _app.include_router(account_router)
     _app.include_router(demo_router)
     _app.include_router(internal_digest_router)
+    _app.include_router(unsubscribe_router)
 
     if settings.deploy_target != "cloud-run":
         _app.include_router(dashboard_router)

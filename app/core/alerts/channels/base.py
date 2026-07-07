@@ -15,6 +15,10 @@ class AlertMessage:
     subject: str
     body_text: str
     recipient_email: str
+    # One-click unsubscribe link (see app/core/alerts/unsubscribe.py). None when
+    # UNSUBSCRIBE_SIGNING_KEY / API_PUBLIC_BASE_URL aren't configured — channels
+    # must omit the List-Unsubscribe header in that case, not send a broken link.
+    unsubscribe_url: str | None = None
 
 
 class ChannelError(Exception):
