@@ -19,7 +19,15 @@ _STRONG_HINGLISH = re.compile(
     # benchmark/vernacular_v2/ + project memory). "wasool" is the transliteration
     # of "वसूल" — Latin-script Hindi has no fixed spelling, w/v are used
     # interchangeably by Indian typists, hence both variants.
-    r"wasool|wasul|washul|faltu|ghatiya|sasta|milega|tikau|sunder)\b",
+    r"wasool|wasul|washul|faltu|ghatiya|sasta|milega|tikau|sunder|"
+    # 2026-07-10: added from a real GAP2 field-drop failure (benchmark/gap_fixes/) —
+    # "Bekar product" (2 words, no other language cue) misrouted to en.py and the
+    # model read "Bekar" as a literal product name, extracting sentiment=neutral,
+    # 0 cons on an unambiguous 1-star complaint. "kharab"/"dhoka"/"dhokha" added
+    # alongside from the same real-data sweep — previously catalogued as
+    # unproven single-occurrence tokens (see corpus-isolation notes) but now have
+    # concrete production-failure evidence, not just theoretical coverage.
+    r"bekar|bekaar|kharab|kharaab|dhoka|dhokha)\b",
     re.IGNORECASE,
 )
 

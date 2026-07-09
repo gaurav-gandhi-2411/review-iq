@@ -155,6 +155,48 @@ class TestVernacularBenchmarkNoOverRouting:
         assert detect_language("Wasted product") == "en"
 
 
+class TestGapFixBekarKharabDhoka:
+    """Pins the 2026-07-10 _STRONG_HINGLISH fix from a real GAP2 field-drop failure.
+
+    "Bekar product" (2 words, no other language cue) misrouted to the English prompt
+    and the model read "Bekar" as a literal product name — sentiment=neutral, 0 cons
+    on an unambiguous 1-star complaint. kharab/dhoka/dhokha added from the same
+    real-data sweep (benchmark/gap_fixes/). Two-directional: real misses now detected,
+    genuine English stays English (see TestGapFixNoOverRouting below).
+    """
+
+    def test_bekar_alone(self) -> None:
+        assert detect_language("Bekar product") == "hi-en"
+
+    def test_bekar_with_context(self) -> None:
+        text = "Very bekar no HDMi cable and single usb port do not buy this"
+        assert detect_language(text) == "hi-en"
+
+    def test_kharab(self) -> None:
+        assert detect_language("Cable kharab h very bed") == "hi-en"
+
+    def test_dhoka(self) -> None:
+        assert detect_language("useless... not worth. Dhoka..") == "hi-en"
+
+    def test_dhokha(self) -> None:
+        text = "Woofer ke name pe dhokha hai.Never buy....why the company making fool"
+        assert detect_language(text) == "hi-en"
+
+
+class TestGapFixNoOverRouting:
+    """No-over-routing guarantee for the bekar/kharab/dhoka addition — real corpus reviews
+    that must stay "en" (spot-checked from the same GAP2 sourcing pass, distinct texts
+    with no bekar/kharab/dhoka word present)."""
+
+    def test_device_not_working_stays_en(self) -> None:
+        text = "This device cable is not work, and the this device touch volume up and down also not work"
+        assert detect_language(text) == "en"
+
+    def test_faltu_router_stays_hi_en_not_regressed(self) -> None:
+        # Pre-existing coverage (faltu, from the 2026-07-08 fix) must be unaffected.
+        assert detect_language("Faltu router") == "hi-en"
+
+
 class TestEdgeCases:
     def test_too_short_returns_other(self) -> None:
         assert detect_language("ok") == "other"
