@@ -191,23 +191,62 @@ async def test_call_layer_caps_retry_escalation_burst() -> None:
 
 
 # ---------------------------------------------------------------------------
-# _process_batch_v2 classifies every row as bulk
+# drain_rows() classifies every row as bulk (Option B durable worker)
+#
+# The old fire-and-forget _process_batch_v2 coroutine this test previously
+# targeted was replaced (2026-07-09) by the durable batch_job_rows queue —
+# see app/core/ingest_worker.py. The bulk-classification guarantee moved with
+# it: drain_rows() calls set_bulk_call_class() before processing any row.
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
-async def test_process_batch_v2_classifies_bulk() -> None:
-    from app.api.v2 import extract as extract_mod
+async def test_drain_rows_classifies_bulk() -> None:
+    from app.core import ingest_worker as ingest_worker_mod
+
+    org_id, job_id = str(uuid.uuid4()), str(uuid.uuid4())
+    queue: list[tuple[str, int, str, str] | None] = [
+        (job_id, 0, org_id, "Good product"),
+        (job_id, 1, org_id, "Bad product"),
+    ]
+
+    class _FakeCursor:
+        def execute(self, *args: object, **kwargs: object) -> None:
+            pass
+
+        def fetchone(self) -> tuple[str, int, str, str] | None:
+            return queue.pop(0) if queue else None
+
+    class _FakeConn:
+        def cursor(self) -> _FakeCursor:
+            return _FakeCursor()
+
+        def commit(self) -> None:
+            pass
+
+        def rollback(self) -> None:
+            pass
+
+        def close(self) -> None:
+            pass
 
     captured: list[str] = []
 
     async def _fake_run(req: ReviewRequest, ctx: ApiKeyContext) -> None:
         captured.append(current_call_class())
 
-    with patch("app.api.v2.extract._run_extraction_v2", new=_fake_run):
-        await extract_mod._process_batch_v2(
-            _CTX, [ReviewRequest(text="Good product"), ReviewRequest(text="Bad product")]
-        )
+    with (
+        patch(
+            "app.core.ingest_worker.psycopg2.connect",
+            side_effect=lambda *_args, **_kwargs: _FakeConn(),
+        ),
+        patch("app.core.ingest_worker.get_batch_job_pg", return_value=None),
+        patch("app.core.ingest_worker.count_pending_rows_pg", return_value=1),
+        patch("app.core.ingest_worker.count_job_row_statuses_pg", return_value=(2, 0)),
+        patch("app.core.ingest_worker.update_batch_job_pg", return_value=None),
+        patch("app.api.v2.extract._run_extraction_v2", new=_fake_run),
+    ):
+        await ingest_worker_mod.drain_rows(max_rows=2)
 
     assert captured == ["bulk", "bulk"]
 

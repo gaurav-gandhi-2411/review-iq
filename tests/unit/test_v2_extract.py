@@ -187,76 +187,39 @@ def test_extract_single_llm_down_returns_503() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Lines 122-132 — _process_batch_v2 function body
-# ---------------------------------------------------------------------------
-
-
-@pytest.mark.asyncio
-async def test_process_batch_v2_happy_path() -> None:
-    """_process_batch_v2 processes all reviews without raising."""
-    from app.api.v2.extract import _process_batch_v2
-
-    reviews = [ReviewRequest(text="Good product"), ReviewRequest(text="Bad product")]
-
-    with (
-        patch("app.api.v2.extract.get_by_hash_pg", return_value=None),
-        patch("app.api.v2.extract.save_extraction_pg", return_value=str(uuid.uuid4())),
-        patch(
-            "app.api.v2.extract.extract_with_llm",
-            new=AsyncMock(return_value=(_LLM_OUTPUT, "mock-model", 42, 150, 80, False)),
-        ),
-        patch("app.api.v2.extract.update_usage_tokens"),
-    ):
-        # Should complete without raising any exception
-        await _process_batch_v2(_CTX, reviews)
-
-
-@pytest.mark.asyncio
-async def test_process_batch_v2_swallows_per_item_error() -> None:
-    """When the first review raises RuntimeError, the second still runs and no exception escapes."""
-    from app.api.v2.extract import _process_batch_v2
-
-    reviews = [ReviewRequest(text="Good product"), ReviewRequest(text="Bad product")]
-
-    # First call raises, second call succeeds
-    side_effects = [RuntimeError("oops"), (_LLM_OUTPUT, "mock-model", 42, 150, 80, False)]
-    call_count = 0
-
-    async def _mock_extract(*args: object, **kwargs: object) -> object:
-        nonlocal call_count
-        result = side_effects[call_count]
-        call_count += 1
-        if isinstance(result, Exception):
-            raise result
-        return result
-
-    with (
-        patch("app.api.v2.extract.get_by_hash_pg", return_value=None),
-        patch("app.api.v2.extract.save_extraction_pg", return_value=str(uuid.uuid4())),
-        patch("app.api.v2.extract.extract_with_llm", new=_mock_extract),
-        patch("app.api.v2.extract.update_usage_tokens"),
-    ):
-        # Must not raise — errors are swallowed per the except Exception block
-        await _process_batch_v2(_CTX, reviews)
-
-
-# ---------------------------------------------------------------------------
-# Lines 146-148 — extract_batch endpoint body
+# extract_batch endpoint body — durable enqueue path (Option B, 2026-07-09).
+#
+# The old fire-and-forget _process_batch_v2 coroutine (previously tested here
+# directly) was replaced by create_batch_job_pg + enqueue_batch_job_rows_pg +
+# a BackgroundTask drain loop (_drain_until_batch_complete). Per-row bulk
+# classification and per-row failure handling now live in
+# app.core.ingest_worker and are covered by tests/unit/test_ingest_worker.py
+# (test_drain_rows_attributes_each_row_to_its_own_org,
+# test_row_failure_marks_failed_with_truncated_error_and_continues).
 # ---------------------------------------------------------------------------
 
 
 def test_extract_batch_returns_202_accepted() -> None:
-    """POST /v2/extract/batch returns 202 with {status, total} immediately."""
+    """POST /v2/extract/batch returns 202 with {status, total} + additive job_id."""
     from app.main import app
 
     app.dependency_overrides[require_api_key] = lambda: _CTX
     try:
-        client = TestClient(app, raise_server_exceptions=False)
-        response = client.post(
-            "/v2/extract/batch",
-            json={"reviews": [{"text": "Good product"}, {"text": "Bad product"}]},
-        )
+        with (
+            patch("app.api.v2.extract.create_batch_job_pg", return_value=None),
+            patch("app.api.v2.extract.enqueue_batch_job_rows_pg", return_value=None),
+            patch("app.api.v2.extract.update_batch_job_pg", return_value=None),
+            patch("app.api.v2.extract._drain_until_batch_complete", new=AsyncMock()),
+        ):
+            client = TestClient(app, raise_server_exceptions=False)
+            response = client.post(
+                "/v2/extract/batch",
+                json={"reviews": [{"text": "Good product"}, {"text": "Bad product"}]},
+            )
         assert response.status_code == 202
-        assert response.json() == {"status": "accepted", "total": "2"}
+        body = response.json()
+        assert body["status"] == "accepted"
+        assert body["total"] == "2"
+        assert "job_id" in body
     finally:
         app.dependency_overrides.pop(require_api_key, None)

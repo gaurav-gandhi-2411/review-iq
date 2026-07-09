@@ -154,6 +154,17 @@ class Settings(BaseSettings):
     # compare via hmac.compare_digest), mirroring GOOGLE_PUBSUB_PUSH_TOKEN's pattern.
     digest_trigger_token: str = Field(default="", alias="DIGEST_TRIGGER_TOKEN")
 
+    # Shared-secret header token protecting POST /internal/ingest/tick (timing-safe
+    # compare via hmac.compare_digest) — same pattern as digest_trigger_token. Plain
+    # env var, not Secret Manager: same precedent as DIGEST_TRIGGER_TOKEN, the project
+    # is already at its Secret Manager free-tier ceiling (6/6 secrets).
+    ingest_tick_token: str | None = Field(default=None, alias="INGEST_TICK_TOKEN")
+    # Rows drained per tick (Option B of the CSV-throttling fix, 2026-07-09). At
+    # 3 rows/tick x 1 tick/min via Cloud Scheduler, this roughly matches the Option A
+    # bulk lane's own throughput (~2 Groq calls/min, app/core/ratelimit.py) so the
+    # tick worker can't outrun the throttle it shares with interactive traffic.
+    ingest_tick_rows: int = Field(default=3, alias="INGEST_TICK_ROWS")
+
     # Resend transactional email
     resend_api_key: str = Field(default="", alias="RESEND_API_KEY")
     resend_from_email: str = Field(default="", alias="RESEND_FROM_EMAIL")

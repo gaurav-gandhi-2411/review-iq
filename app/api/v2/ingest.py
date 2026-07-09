@@ -16,16 +16,20 @@ from fastapi.responses import StreamingResponse
 
 from app.auth.api_key import ApiKeyContext, require_api_key
 from app.core.alerts.engine import alert_on_review_event
+from app.core.config import get_settings
 from app.core.csv_ingest import (
     CsvColumnError,
     FileTooLargeError,
     RowLimitExceededError,
     read_and_validate_csv,
 )
+from app.core.ingest_worker import drain_rows
 from app.core.ratelimit import set_bulk_call_class
 from app.core.schemas import ReviewRequest
 from app.core.storage_pg import (
+    count_pending_rows_pg,
     create_batch_job_pg,
+    enqueue_batch_job_rows_pg,
     get_batch_job_pg,
     get_by_hash_pg,
     update_batch_job_pg,
@@ -120,6 +124,30 @@ async def _process_ingest_job(
     )
 
 
+# NOTE: _process_ingest_job (above) is fire-and-forget and does NOT survive a
+# Cloud Run restart mid-job — kept only because app/api/bff/router.py's own
+# /ingest/csv endpoint still calls it directly. POST /v2/ingest/csv below uses
+# the durable batch_job_rows path (Option B, 2026-07-09) instead; see
+# app/core/ingest_worker.py.
+
+
+async def _drain_until_job_complete(org_id: str, job_id: str) -> None:
+    """Background task: repeatedly drain rows until this job has no pending rows.
+
+    drain_rows() claims pending rows GLOBALLY (oldest-pending-first, any org's
+    job) — this loop just keeps calling it until THIS job's own rows are all
+    settled. If this instance dies before the loop finishes, POST
+    /internal/ingest/tick resumes the remainder on its own schedule — that is
+    the durability win; this loop only makes the common case (instance
+    survives) finish promptly without waiting on the scheduler.
+    """
+    import asyncio
+
+    settings = get_settings()
+    while await asyncio.to_thread(count_pending_rows_pg, org_id, job_id) > 0:
+        await drain_rows(settings.ingest_tick_rows)
+
+
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
@@ -165,19 +193,29 @@ async def ingest_csv(
     job_id = str(uuid.uuid4())
     total = len(rows)
 
-    # Store column mapping now; input_hashes are appended on completion.
+    # Store column mapping + include_authenticity now (the worker reads
+    # include_authenticity per row); input_hashes are appended on completion.
     initial_meta = json.dumps(
         {
             "text_column": resolved_text,
             "product_column": resolved_product,
+            "include_authenticity": include_authenticity,
             "input_hashes": [],
         }
     )
     import asyncio
 
     await asyncio.to_thread(create_batch_job_pg, ctx.org_id, job_id, total, initial_meta)
+    # Durable path (Option B, 2026-07-09): rows are persisted in batch_job_rows
+    # here, before any processing starts — if this instance dies before the
+    # BackgroundTask below finishes, POST /internal/ingest/tick resumes the
+    # remainder on a schedule.
+    await asyncio.to_thread(
+        enqueue_batch_job_rows_pg, ctx.org_id, job_id, [row["text"] for row in rows]
+    )
+    await asyncio.to_thread(update_batch_job_pg, ctx.org_id, job_id, status="processing")
 
-    background_tasks.add_task(_process_ingest_job, ctx, job_id, rows, include_authenticity)
+    background_tasks.add_task(_drain_until_job_complete, ctx.org_id, job_id)
 
     log.info("ingest.job_created", job_id=job_id, total=total, org_id=ctx.org_id)
     return {"job_id": job_id, "total": total, "status": "pending"}

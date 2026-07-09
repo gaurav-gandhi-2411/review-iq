@@ -63,7 +63,14 @@ def client() -> TestClient:
 
 
 def test_ingest_csv_returns_202_with_job_id(client: TestClient) -> None:
-    """Happy path: returns 202 with job_id, total, and status=pending."""
+    """Happy path: returns 202 with job_id, total, and status=pending.
+
+    Durable path (Option B, 2026-07-09): the endpoint now writes rows via
+    enqueue_batch_job_rows_pg and schedules _drain_until_job_complete instead
+    of the old fire-and-forget _process_ingest_job — mock all three so this
+    test stays offline/deterministic (see tests/unit/test_ingest_worker.py
+    for coverage of the drain worker itself).
+    """
     with (
         patch(
             "app.api.v2.ingest.read_and_validate_csv",
@@ -73,7 +80,9 @@ def test_ingest_csv_returns_202_with_job_id(client: TestClient) -> None:
             "app.api.v2.ingest.create_batch_job_pg",
             return_value=None,
         ),
-        patch("app.api.v2.ingest._process_ingest_job", new=AsyncMock()),
+        patch("app.api.v2.ingest.enqueue_batch_job_rows_pg", return_value=None),
+        patch("app.api.v2.ingest.update_batch_job_pg", return_value=None),
+        patch("app.api.v2.ingest._drain_until_job_complete", new=AsyncMock()),
     ):
         resp = client.post(
             "/v2/ingest/csv",

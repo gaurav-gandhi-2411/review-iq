@@ -455,6 +455,112 @@ def update_batch_job_pg(
 
 
 # ---------------------------------------------------------------------------
+# Durable batch-row queue helpers (Option B of the CSV-throttling fix,
+# 2026-07-09: batch_job_rows persists per-row queue state so bulk ingestion
+# survives a Cloud Run restart — see app/core/ingest_worker.py's module
+# docstring for the full design). The per-row claim-and-lock query itself is
+# NOT a helper here — it needs the row lock held across the extraction call,
+# so it lives inside app.core.ingest_worker.drain_rows() directly.
+# ---------------------------------------------------------------------------
+
+
+def enqueue_batch_job_rows_pg(org_id: str, job_id: str, texts: list[str]) -> None:
+    """Bulk-insert pending rows for a batch job (row_index = list position).
+
+    One multi-row INSERT via executemany, one transaction. Called immediately
+    after create_batch_job_pg at upload/submit time so rows are durable before
+    the first drain tick runs.
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.executemany(
+            "INSERT INTO public.batch_job_rows (job_id, row_index, org_id, text) "
+            "VALUES (%s, %s, %s, %s)",
+            [(job_id, i, org_id, text) for i, text in enumerate(texts)],
+        )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def count_pending_rows_pg(org_id: str, job_id: str) -> int:
+    """Return the count of rows still pending for this job (org-scoped)."""
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT COUNT(*) FROM public.batch_job_rows "
+            "WHERE org_id = %s AND job_id = %s AND status = 'pending'",
+            (org_id, job_id),
+        )
+        row = cur.fetchone()
+        conn.commit()
+        return int(row[0]) if row else 0
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def count_job_row_statuses_pg(org_id: str, job_id: str) -> tuple[int, int]:
+    """Return (done_count, failed_count) for a job's rows (org-scoped).
+
+    Computed fresh from batch_job_rows (the source of truth) rather than an
+    in-memory running counter, so two drain_rows() callers touching the same
+    job concurrently (e.g. a scheduler tick overlapping the job's own
+    completion BackgroundTask) never lose an update — update_batch_job_pg
+    writes absolute counts, not increments.
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT COUNT(*) FILTER (WHERE status = 'done'), "
+            "COUNT(*) FILTER (WHERE status = 'failed') "
+            "FROM public.batch_job_rows WHERE org_id = %s AND job_id = %s",
+            (org_id, job_id),
+        )
+        row = cur.fetchone()
+        conn.commit()
+        return (int(row[0]), int(row[1])) if row else (0, 0)
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def list_job_row_hashes_pg(org_id: str, job_id: str) -> list[str | None]:
+    """Return input_hash per row (ordered by row_index), '' for failed/unset rows.
+
+    Preserves the existing GET /v2/ingest/{job_id}/result contract: source_columns
+    JSON's "input_hashes" is a list aligned to row order, with "" marking rows that
+    never produced an extraction.
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT input_hash FROM public.batch_job_rows "
+            "WHERE org_id = %s AND job_id = %s ORDER BY row_index",
+            (org_id, job_id),
+        )
+        rows = cur.fetchall()
+        conn.commit()
+        return [r[0] or "" for r in rows]
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
 # Authenticity audit helpers (IS 19000:2022 compliance)
 # ---------------------------------------------------------------------------
 

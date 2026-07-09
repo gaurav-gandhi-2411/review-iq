@@ -9,11 +9,12 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 
 from app.auth.api_key import ApiKeyContext, require_api_key
 from app.core.alerts.engine import alert_on_review_event
+from app.core.config import get_settings
+from app.core.ingest_worker import drain_rows
 from app.core.language import detect_language
 from app.core.llm import extract_with_llm
 from app.core.metrics import EXTRACTION_LATENCY, EXTRACTIONS_TOTAL
 from app.core.prompts import PROMPT_VERSION, build_prompt
-from app.core.ratelimit import set_bulk_call_class
 from app.core.sanitize import sanitize, wrap_for_llm
 from app.core.schemas import (
     BatchReviewRequest,
@@ -21,7 +22,15 @@ from app.core.schemas import (
     ReviewExtractionV2,
     ReviewRequest,
 )
-from app.core.storage_pg import get_by_hash_pg, save_extraction_pg, update_usage_tokens
+from app.core.storage_pg import (
+    count_pending_rows_pg,
+    create_batch_job_pg,
+    enqueue_batch_job_rows_pg,
+    get_by_hash_pg,
+    save_extraction_pg,
+    update_batch_job_pg,
+    update_usage_tokens,
+)
 
 router = APIRouter(prefix="/v2", tags=["v2"])
 log = structlog.get_logger(__name__)
@@ -129,20 +138,19 @@ async def extract_single(
         ) from exc
 
 
-async def _process_batch_v2(ctx: ApiKeyContext, reviews: list[ReviewRequest]) -> None:
-    """Background task: process batch reviews (v2). Fire-and-forget — no job tracking."""
-    # Classifies every Groq call this coroutine makes (incl. retries/escalation) as
-    # bulk via ContextVar propagation — see app/core/ratelimit.py.
-    set_bulk_call_class()
-    processed = failed = 0
-    for req in reviews:
-        try:
-            await _run_extraction_v2(req, ctx)
-            processed += 1
-        except Exception as exc:  # noqa: BLE001
-            log.error("batch.item_failed", org_id=ctx.org_id, error=str(exc))
-            failed += 1
-    log.info("batch.completed", org_id=ctx.org_id, processed=processed, failed=failed)
+async def _drain_until_batch_complete(org_id: str, job_id: str) -> None:
+    """Background task: repeatedly drain rows until this batch job has no pending rows.
+
+    Durable path (Option B of the CSV-throttling fix, 2026-07-09) — mirrors
+    app.api.v2.ingest._drain_until_job_complete; see that function's docstring
+    for why draining is global-queue-fair rather than job-scoped, and
+    app/core/ingest_worker.py for the full design.
+    """
+    import asyncio
+
+    settings = get_settings()
+    while await asyncio.to_thread(count_pending_rows_pg, org_id, job_id) > 0:
+        await drain_rows(settings.ingest_tick_rows)
 
 
 @router.post("/extract/batch", status_code=status.HTTP_202_ACCEPTED)
@@ -151,11 +159,27 @@ async def extract_batch(
     background_tasks: BackgroundTasks,
     ctx: ApiKeyContext = Depends(require_api_key),
 ) -> dict[str, str]:
-    """Submit a batch of reviews for async extraction (v2).
+    """Submit a batch of reviews (max 100) for async extraction (v2).
 
-    Returns immediately with a count. No job-tracking in Phase 2 —
-    results are queryable via GET /v2/reviews once processing completes.
+    Returns immediately with a job_id. Durable path (Option B, 2026-07-09):
+    rows persist in batch_job_rows before processing starts, so a Cloud Run
+    restart mid-batch is resumed by POST /internal/ingest/tick rather than
+    silently dropping the remainder. Poll GET /v2/ingest/{job_id} for status,
+    or query GET /v2/reviews once processing completes.
     """
-    background_tasks.add_task(_process_batch_v2, ctx, body.reviews)
-    log.info("batch.submitted", org_id=ctx.org_id, total=len(body.reviews))
-    return {"status": "accepted", "total": str(len(body.reviews))}
+    import asyncio
+    import uuid
+
+    job_id = str(uuid.uuid4())
+    total = len(body.reviews)
+
+    await asyncio.to_thread(create_batch_job_pg, ctx.org_id, job_id, total)
+    await asyncio.to_thread(
+        enqueue_batch_job_rows_pg, ctx.org_id, job_id, [r.text for r in body.reviews]
+    )
+    await asyncio.to_thread(update_batch_job_pg, ctx.org_id, job_id, status="processing")
+
+    background_tasks.add_task(_drain_until_batch_complete, ctx.org_id, job_id)
+
+    log.info("batch.submitted", org_id=ctx.org_id, total=total, job_id=job_id)
+    return {"status": "accepted", "total": str(total), "job_id": job_id}
