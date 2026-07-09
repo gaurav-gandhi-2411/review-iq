@@ -74,10 +74,44 @@ def demo_cache_size() -> int:
     return len(_demo_cache)
 
 
-@router.post("/extract", response_model=ReviewExtraction)
+@router.post(
+    "/extract",
+    response_model=ReviewExtraction,
+    summary="Keyless demo extraction (5/minute, no auth)",
+    openapi_extra={
+        "requestBody": {
+            "content": {
+                "application/json": {
+                    "example": {
+                        "text": "Great sound quality but the battery dies after 3 hours. "
+                        "Would still recommend for the price.",
+                    },
+                },
+            },
+        },
+        "responses": {
+            "200": {
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "product": "wireless headphones",
+                            "stars_inferred": 4,
+                            "pros": ["great sound quality"],
+                            "cons": ["battery dies after 3 hours"],
+                            "sentiment": "mixed",
+                            "topics": ["sound quality", "battery life"],
+                            "urgency": "low",
+                            "language": "en",
+                        },
+                    },
+                },
+            },
+        },
+    },
+)
 @limiter.limit("5/minute")
 async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtraction:
-    """Keyless demo extraction. Rate-limited. No results stored.
+    """Keyless demo extraction. Rate-limited to 5/minute per IP. No results stored.
 
     Repeated identical reviews are served from a process-local in-memory LRU
     cache (max 256 entries) without re-spending LLM tokens.

@@ -46,12 +46,53 @@ class CorrectionRequest(BaseModel):
         return self
 
 
-@router.post("/corrections", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/corrections",
+    status_code=status.HTTP_201_CREATED,
+    summary="Submit a human correction for a review field",
+    openapi_extra={
+        "requestBody": {
+            "content": {
+                "application/json": {
+                    "example": {
+                        "review_id": "9f2c1a...",
+                        "source_type": "extraction",
+                        "field_path": "sentiment",
+                        "original_value": "neutral",
+                        "corrected_value": "negative",
+                        "correction_note": "Customer explicitly asked for a refund.",
+                        "language": "en",
+                    },
+                },
+            },
+        },
+        "responses": {
+            "201": {
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "id": "c7e1....",
+                            "org_id": "5b6c1e2a-....",
+                            "review_id": "9f2c1a...",
+                        },
+                    },
+                },
+            },
+        },
+    },
+)
 async def submit_correction(
     body: CorrectionRequest,
     ctx: Annotated[ApiKeyContext, Depends(require_api_key)],
 ) -> dict[str, Any]:
-    """Submit a correction for a review field that was incorrectly extracted, scored, or replied."""
+    """Submit a correction for a review field that was incorrectly extracted, scored, or replied.
+
+    ``field_path`` must be one of the fields allowed for ``source_type``:
+    extraction (sentiment, stars, stars_inferred, buy_again, urgency, language, pros,
+    cons, topics, competitor_mentions, feature_requests, product), authenticity
+    (score, label, flags), or reply (reply_text, tone). ``review_id`` is the plain
+    sha256 hex digest of the review text — no ``sha256:`` prefix.
+    """
     try:
         inserted_id = await asyncio.to_thread(
             submit_correction_pg,
@@ -81,7 +122,40 @@ async def submit_correction(
     return {"id": inserted_id, "org_id": ctx.org_id, "review_id": body.review_id}
 
 
-@router.get("/corrections")
+@router.get(
+    "/corrections",
+    summary="List corrections submitted for this org",
+    openapi_extra={
+        "responses": {
+            "200": {
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "org_id": "5b6c1e2a-....",
+                            "count": 1,
+                            "offset": 0,
+                            "limit": 50,
+                            "results": [
+                                {
+                                    "id": "c7e1....",
+                                    "org_id": "5b6c1e2a-....",
+                                    "review_id": "9f2c1a...",
+                                    "source_type": "extraction",
+                                    "field_path": "sentiment",
+                                    "original_value": "neutral",
+                                    "corrected_value": "negative",
+                                    "correction_note": "Customer explicitly asked for a refund.",
+                                    "language": "en",
+                                    "corrected_at": "2026-07-07T12:00:00Z",
+                                },
+                            ],
+                        },
+                    },
+                },
+            },
+        },
+    },
+)
 async def list_corrections(
     ctx: Annotated[ApiKeyContext, Depends(require_api_key)],
     source_type: SourceType | None = Query(None),

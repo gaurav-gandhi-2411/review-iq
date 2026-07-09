@@ -51,7 +51,41 @@ async def _run_draft(request: ReplyRequest, ctx: ApiKeyContext) -> ReplyDraft:
     return draft
 
 
-@router.post("/reply", response_model=ReplyDraft)
+_EXAMPLE_REPLY_REQUEST = {
+    "text": "Great sound quality but the battery dies after 3 hours.",
+    "tone": "apologetic",
+    "brand_name": "Acme Audio",
+    "signature": "The Acme Audio Team",
+}
+
+_EXAMPLE_REPLY_RESPONSE = {
+    "reply_text": (
+        "Thank you for the kind words about the sound quality! We're sorry to hear the "
+        "battery life fell short of your expectations — we're actively working on this. "
+        "— The Acme Audio Team"
+    ),
+    "language": "en",
+    "tone": "apologetic",
+    "grounded_on": ["great sound quality", "battery dies after 3 hours"],
+    "caveats": [],
+    "model_used": "llama-3.3-70b-versatile",
+    "drafted_at": "2026-07-07T12:00:00Z",
+}
+
+
+@router.post(
+    "/reply",
+    response_model=ReplyDraft,
+    summary="Draft a reply to a single review",
+    openapi_extra={
+        "requestBody": {
+            "content": {"application/json": {"example": _EXAMPLE_REPLY_REQUEST}},
+        },
+        "responses": {
+            "200": {"content": {"application/json": {"example": _EXAMPLE_REPLY_RESPONSE}}},
+        },
+    },
+)
 async def draft_single(
     body: ReplyRequest,
     ctx: ApiKeyContext = Depends(require_api_key),
@@ -78,7 +112,23 @@ async def draft_single(
         ) from exc
 
 
-@router.post("/reply/batch", response_model=list[ReplyDraft])
+@router.post(
+    "/reply/batch",
+    response_model=list[ReplyDraft],
+    summary="Draft replies for up to 20 reviews",
+    openapi_extra={
+        "requestBody": {
+            "content": {
+                "application/json": {"example": {"reviews": [_EXAMPLE_REPLY_REQUEST]}},
+            },
+        },
+        "responses": {
+            "200": {
+                "content": {"application/json": {"example": [_EXAMPLE_REPLY_RESPONSE]}},
+            },
+        },
+    },
+)
 async def draft_batch(
     body: ReplyBatchRequest,
     ctx: ApiKeyContext = Depends(require_api_key),

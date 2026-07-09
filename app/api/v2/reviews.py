@@ -15,7 +15,54 @@ from app.core.storage_pg import aggregate_extractions_pg, list_extractions_pg
 router = APIRouter(prefix="/v2", tags=["v2"])
 
 
-@router.get("/reviews")
+@router.get(
+    "/reviews",
+    summary="Query stored review extractions",
+    openapi_extra={
+        "responses": {
+            "200": {
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "org_id": "5b6c1e2a-....",
+                            "count": 1,
+                            "offset": 0,
+                            "limit": 50,
+                            "results": [
+                                {
+                                    "id": 42,
+                                    "input_hash": "sha256:9f2c...",
+                                    "review_text": "Great sound quality but the battery "
+                                    "dies after 3 hours.",
+                                    "product": "wireless headphones",
+                                    "stars": None,
+                                    "stars_inferred": 4,
+                                    "buy_again": True,
+                                    "sentiment": "mixed",
+                                    "urgency": "low",
+                                    "language": "en",
+                                    "review_length_chars": 96,
+                                    "confidence": 0.91,
+                                    "topics": ["sound quality", "battery life"],
+                                    "competitor_mentions": [],
+                                    "pros": ["great sound quality"],
+                                    "cons": ["battery dies after 3 hours"],
+                                    "feature_requests": [],
+                                    "model": "llama-3.1-8b-instant",
+                                    "prompt_version": "2.3",
+                                    "schema_version": "1.0.0",
+                                    "latency_ms": 480,
+                                    "extracted_at": "2026-07-07T12:00:00Z",
+                                    "created_at": "2026-07-07T12:00:00Z",
+                                },
+                            ],
+                        },
+                    },
+                },
+            },
+        },
+    },
+)
 async def list_reviews(
     ctx: ApiKeyContext = Depends(require_api_key),
     product: str | None = Query(None, description="Filter by product name (partial match)"),
@@ -51,7 +98,33 @@ async def list_reviews(
     }
 
 
-@router.get("/insights")
+@router.get(
+    "/insights",
+    summary="Aggregated review analytics for the org",
+    openapi_extra={
+        "responses": {
+            "200": {
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "org_id": "5b6c1e2a-....",
+                            "total_extractions": 128,
+                            "sentiment_breakdown": {
+                                "positive": 70,
+                                "negative": 40,
+                                "neutral": 12,
+                                "mixed": 6,
+                            },
+                            "urgency_breakdown": {"low": 100, "medium": 20, "high": 8},
+                            "top_topics": [{"topic": "battery life", "count": 34}],
+                            "top_competitor_mentions": [],
+                        },
+                    },
+                },
+            },
+        },
+    },
+)
 async def insights(
     ctx: ApiKeyContext = Depends(require_api_key),
 ) -> dict[str, Any]:

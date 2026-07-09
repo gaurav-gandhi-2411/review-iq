@@ -122,12 +122,64 @@ async def _run_extraction_v2(request: ReviewRequest, ctx: ApiKeyContext) -> Revi
     return extraction
 
 
-@router.post("/extract", response_model=ReviewExtractionV2)
+_EXAMPLE_REVIEW_TEXT = (
+    "Great sound quality but the battery dies after 3 hours. Would still recommend for the price."
+)
+
+_EXAMPLE_EXTRACTION_RESPONSE = {
+    "product": "wireless headphones",
+    "stars": None,
+    "stars_inferred": 4,
+    "pros": ["great sound quality"],
+    "cons": ["battery dies after 3 hours"],
+    "buy_again": True,
+    "sentiment": "mixed",
+    "topics": ["sound quality", "battery life"],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en",
+    "review_length_chars": 96,
+    "confidence": 0.91,
+    "extraction_meta": {
+        "model": "llama-3.1-8b-instant",
+        "prompt_version": "2.3",
+        "schema_version": "1.0.0",
+        "extracted_at": "2026-07-07T12:00:00Z",
+        "latency_ms": 480,
+        "input_hash": "sha256:9f2c...",
+        "org_id": "5b6c1e2a-....",
+        "degraded": False,
+    },
+}
+
+
+@router.post(
+    "/extract",
+    response_model=ReviewExtractionV2,
+    summary="Extract structured insights from one review",
+    openapi_extra={
+        "requestBody": {
+            "content": {
+                "application/json": {"example": {"text": _EXAMPLE_REVIEW_TEXT}},
+            },
+        },
+        "responses": {
+            "200": {
+                "content": {"application/json": {"example": _EXAMPLE_EXTRACTION_RESPONSE}},
+            },
+        },
+    },
+)
 async def extract_single(
     body: ReviewRequest,
     ctx: ApiKeyContext = Depends(require_api_key),
 ) -> ReviewExtractionV2:
-    """Extract structured insights from a single review (v2, multi-tenant)."""
+    """Extract structured insights from a single review (v2, multi-tenant).
+
+    Identical review text (same org) is served from cache — no LLM call, no
+    quota spent, but still re-checked for alert-worthiness.
+    """
     try:
         return await _run_extraction_v2(body, ctx)
     except RuntimeError as exc:
@@ -153,7 +205,29 @@ async def _drain_until_batch_complete(org_id: str, job_id: str) -> None:
         await drain_rows(settings.ingest_tick_rows)
 
 
-@router.post("/extract/batch", status_code=status.HTTP_202_ACCEPTED)
+@router.post(
+    "/extract/batch",
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Submit up to 100 reviews for async extraction",
+    openapi_extra={
+        "requestBody": {
+            "content": {
+                "application/json": {
+                    "example": {"reviews": [{"text": _EXAMPLE_REVIEW_TEXT}, {"text": "Terrible."}]},
+                },
+            },
+        },
+        "responses": {
+            "202": {
+                "content": {
+                    "application/json": {
+                        "example": {"status": "accepted", "total": "2", "job_id": "b1e2c3d4-...."}
+                    }
+                },
+            },
+        },
+    },
+)
 async def extract_batch(
     body: BatchReviewRequest,
     background_tasks: BackgroundTasks,

@@ -72,7 +72,44 @@ def _safe_rate(numerator: int, denominator: int) -> float:
     return round(numerator / denominator, 6)
 
 
-@router.get("/authenticity")
+@router.get(
+    "/authenticity",
+    summary="Aggregated authenticity audit summary",
+    openapi_extra={
+        "responses": {
+            "200": {
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "org_id": "5b6c1e2a-....",
+                            "window": {"since": None, "until": None, "bucket": "week"},
+                            "total_audited": 240,
+                            "dispositions": {
+                                "clear": 200,
+                                "flagged_for_review": 30,
+                                "priority_review": 10,
+                            },
+                            "disposition_rates": {
+                                "clear": 0.833333,
+                                "flagged_for_review": 0.125,
+                                "priority_review": 0.041667,
+                            },
+                            "review_flag_rate": 0.166667,
+                            "mean_authenticity_score": 0.81,
+                            "signal_frequency": [
+                                {"signal": "promotional_tone", "count": 18},
+                            ],
+                            "flag_rate_series": [
+                                {"period": "2026-06-29", "review_flag_rate": 0.15, "audited": 60},
+                            ],
+                            "moderation_note": _MODERATION_NOTE,
+                        },
+                    },
+                },
+            },
+        },
+    },
+)
 async def authenticity_summary(
     ctx: ApiKeyContext = Depends(require_api_key),
     since: datetime | None = Query(None, description="ISO8601 lower bound on audit created_at"),
@@ -195,7 +232,43 @@ def _compute_delta(series: list[dict[str, Any]]) -> tuple[int, float | None]:
     return delta, pct
 
 
-@router.get("/trends")
+@router.get(
+    "/trends",
+    summary="Complaint/theme trends over time",
+    openapi_extra={
+        "responses": {
+            "200": {
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "org_id": "5b6c1e2a-....",
+                            "window": {
+                                "since": None,
+                                "until": None,
+                                "bucket": "week",
+                                "trend_of": "topics",
+                            },
+                            "filters": {"product": None, "language": None},
+                            "themes": [
+                                {
+                                    "theme": "battery life",
+                                    "total": 34,
+                                    "series": [
+                                        {"period": "2026-06-29", "count": 12},
+                                        {"period": "2026-07-06", "count": 22},
+                                    ],
+                                    "delta_last": 10,
+                                    "pct_change": 0.833333,
+                                    "by_language": {"en": 20, "hi-en": 14},
+                                },
+                            ],
+                        },
+                    },
+                },
+            },
+        },
+    },
+)
 async def theme_trends(
     ctx: ApiKeyContext = Depends(require_api_key),
     since: datetime | None = Query(None, description="ISO8601 lower bound on created_at"),
@@ -338,7 +411,55 @@ def _assign_confidence(total_extractions: int) -> str:
     return "low"
 
 
-@router.get("/health-score")
+@router.get(
+    "/health-score",
+    summary="Org-level health score (sentiment + urgency + authenticity)",
+    openapi_extra={
+        "responses": {
+            "200": {
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "org_id": "5b6c1e2a-....",
+                            "window": {
+                                "since": "2026-06-07T12:00:00",
+                                "until": None,
+                                "days": 30,
+                            },
+                            "total_extractions": 128,
+                            "components": {
+                                "sentiment": {
+                                    "score": 0.7,
+                                    "positive_count": 90,
+                                    "total": 128,
+                                    "weight": 0.5,
+                                },
+                                "urgency": {
+                                    "score": 0.94,
+                                    "high_urgency_count": 8,
+                                    "total": 128,
+                                    "weight": 0.2,
+                                },
+                                "authenticity": {
+                                    "score": 0.92,
+                                    "priority_review_count": 10,
+                                    "total_audited": 120,
+                                    "weight": 0.3,
+                                },
+                            },
+                            "authenticity_coverage": 0.9375,
+                            "score": 0.813,
+                            "band": "healthy",
+                            "confidence": "high",
+                            "formula_version": _FORMULA_VERSION,
+                            "moderation_note": _HS_NOTE,
+                        },
+                    },
+                },
+            },
+        },
+    },
+)
 async def health_score(
     ctx: ApiKeyContext = Depends(require_api_key),
     since: datetime | None = Query(None, description="ISO8601 lower bound on created_at"),

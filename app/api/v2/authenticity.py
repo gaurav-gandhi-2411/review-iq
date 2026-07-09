@@ -88,7 +88,37 @@ class AuthenticityBatchRequest(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-@router.post("/authenticity")
+_EXAMPLE_AUTHENTICITY_REQUEST = {
+    "text": "Amazing!!! Best product ever!!! Buy now!!! 5 stars!!!",
+    "stars": 5,
+}
+
+_EXAMPLE_AUTHENTICITY_RESPONSE = {
+    "score": 0.22,
+    "label": "likely_fake",
+    "flags": ["promotional_tone", "generic_low_info", "excessive_brevity"],
+    "reasons": "Exclamation-heavy, no specific product detail, matches promotional template.",
+    "llm_signal_ok": True,
+    "review_hash": "6f2a...",
+    "scored_at": "2026-07-07T12:00:00Z",
+    "model_used": "llama-3.1-8b-instant",
+}
+
+
+@router.post(
+    "/authenticity",
+    summary="Score a single review for authenticity",
+    openapi_extra={
+        "requestBody": {
+            "content": {"application/json": {"example": _EXAMPLE_AUTHENTICITY_REQUEST}},
+        },
+        "responses": {
+            "200": {
+                "content": {"application/json": {"example": _EXAMPLE_AUTHENTICITY_RESPONSE}},
+            },
+        },
+    },
+)
 async def score_authenticity_single(
     body: AuthenticityReviewInput,
     ctx: Annotated[ApiKeyContext, Depends(require_api_key)],
@@ -152,7 +182,37 @@ async def score_authenticity_single(
     return result.model_dump(mode="json")
 
 
-@router.post("/authenticity/batch")
+@router.post(
+    "/authenticity/batch",
+    summary="Score up to 500 reviews for authenticity",
+    openapi_extra={
+        "requestBody": {
+            "content": {
+                "application/json": {
+                    "example": {
+                        "reviews": [
+                            _EXAMPLE_AUTHENTICITY_REQUEST,
+                            {"text": "Battery died on day two, disappointing.", "stars": 2},
+                        ],
+                        "dates": ["2026-07-01", None],
+                    },
+                },
+            },
+        },
+        "responses": {
+            "200": {
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "total": 2,
+                            "results": [_EXAMPLE_AUTHENTICITY_RESPONSE],
+                        },
+                    },
+                },
+            },
+        },
+    },
+)
 async def score_authenticity_batch(
     body: AuthenticityBatchRequest,
     ctx: Annotated[ApiKeyContext, Depends(require_api_key)],

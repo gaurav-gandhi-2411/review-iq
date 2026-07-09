@@ -128,7 +128,41 @@ def _provision_org_and_key(user_id: str, email: str) -> dict[str, str | int]:
         conn.close()
 
 
-@router.post("/provision")
+@router.post(
+    "/provision",
+    summary="Issue (or fetch) this user's riq_live_* API key",
+    openapi_extra={
+        "responses": {
+            "200": {
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "created": {
+                                "summary": "First login — key issued",
+                                "value": {
+                                    "status": "created",
+                                    "org_id": "5b6c1e2a-....",
+                                    "key_prefix": "riq_live_9f2c1a8b",
+                                    "raw_key": "riq_live_9f2c1a8b7d6e5f4a3b2c1d0e9f8a7b6c",
+                                    "monthly_quota": 100,
+                                },
+                            },
+                            "existing": {
+                                "summary": "Subsequent login — key already issued",
+                                "value": {
+                                    "status": "existing",
+                                    "org_id": "5b6c1e2a-....",
+                                    "key_prefix": "riq_live_9f2c1a8b",
+                                    "monthly_quota": 100,
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    },
+)
 @limiter.limit("10/minute")
 async def provision(
     request: Request,

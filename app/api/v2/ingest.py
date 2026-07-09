@@ -153,7 +153,22 @@ async def _drain_until_job_complete(org_id: str, job_id: str) -> None:
 # ---------------------------------------------------------------------------
 
 
-@router.post("/csv", status_code=status.HTTP_202_ACCEPTED)
+@router.post(
+    "/csv",
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Upload a CSV of reviews for bulk extraction",
+    openapi_extra={
+        "responses": {
+            "202": {
+                "content": {
+                    "application/json": {
+                        "example": {"job_id": "b1e2c3d4-....", "total": 250, "status": "pending"},
+                    },
+                },
+            },
+        },
+    },
+)
 async def ingest_csv(
     file: UploadFile,
     background_tasks: BackgroundTasks,
@@ -221,12 +236,34 @@ async def ingest_csv(
     return {"job_id": job_id, "total": total, "status": "pending"}
 
 
-@router.get("/{job_id}")
+@router.get(
+    "/{job_id}",
+    summary="Poll the status of a CSV ingest job",
+    openapi_extra={
+        "responses": {
+            "200": {
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "job_id": "b1e2c3d4-....",
+                            "status": "processing",
+                            "total": 250,
+                            "processed": 180,
+                            "failed": 2,
+                            "created_at": "2026-07-07T12:00:00Z",
+                            "completed_at": None,
+                        },
+                    },
+                },
+            },
+        },
+    },
+)
 async def get_ingest_status(
     job_id: str,
     ctx: ApiKeyContext = Depends(require_api_key),
 ) -> dict[str, object]:
-    """Poll the status of a CSV ingest job."""
+    """Poll the status of a CSV ingest job. ``status`` is one of pending, processing, done, failed."""
     import asyncio
 
     job = await asyncio.to_thread(get_batch_job_pg, ctx.org_id, job_id)
@@ -246,7 +283,32 @@ async def get_ingest_status(
     }
 
 
-@router.get("/{job_id}/result")
+@router.get(
+    "/{job_id}/result",
+    summary="Download extracted results for a completed CSV ingest job",
+    openapi_extra={
+        "responses": {
+            "200": {
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "job_id": "b1e2c3d4-....",
+                            "total": 1,
+                            "results": [{"product": "wireless headphones", "sentiment": "mixed"}],
+                        },
+                    },
+                },
+            },
+            "409": {
+                "content": {
+                    "application/json": {
+                        "example": {"detail": "Job is not complete yet (status: processing)."},
+                    },
+                },
+            },
+        },
+    },
+)
 async def get_ingest_result(
     job_id: str,
     format: str = "json",  # noqa: A002

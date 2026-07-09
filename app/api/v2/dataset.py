@@ -15,7 +15,56 @@ router = APIRouter(prefix="/v2", tags=["v2"])
 log = structlog.get_logger(__name__)
 
 
-@router.get("/dataset")
+_EXAMPLE_DATASET_RECORD = {
+    "review_id": "9f2c1a...",
+    "review_text": "Great sound quality but the battery dies after 3 hours.",
+    "extracted_at": "2026-07-07T12:00:00Z",
+    "created_at": "2026-07-07T12:00:00Z",
+    "extraction": {
+        "product": "wireless headphones",
+        "stars": None,
+        "stars_inferred": 4,
+        "buy_again": True,
+        "sentiment": "mixed",
+        "urgency": "low",
+        "language": "en",
+        "review_length_chars": 96,
+        "confidence": 0.91,
+        "topics": ["sound quality", "battery life"],
+        "competitor_mentions": [],
+        "pros": ["great sound quality"],
+        "cons": ["battery dies after 3 hours"],
+        "feature_requests": [],
+        "model": "llama-3.1-8b-instant",
+        "prompt_version": "2.3",
+        "is_suspicious": False,
+    },
+    "authenticity": {"score": 0.88, "label": "genuine", "flags": []},
+    "corrections": [],
+}
+
+
+@router.get(
+    "/dataset",
+    summary="Structured review dataset, paginated (extraction + authenticity + corrections)",
+    openapi_extra={
+        "responses": {
+            "200": {
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "org_id": "5b6c1e2a-....",
+                            "count": 1,
+                            "offset": 0,
+                            "limit": 50,
+                            "records": [_EXAMPLE_DATASET_RECORD],
+                        },
+                    },
+                },
+            },
+        },
+    },
+)
 async def get_dataset(
     ctx: Annotated[ApiKeyContext, Depends(require_api_key)],
     limit: int = Query(50, ge=1, le=200),
@@ -40,7 +89,10 @@ async def get_dataset(
     }
 
 
-@router.get("/dataset/export")
+@router.get(
+    "/dataset/export",
+    summary="Export the org's full dataset as newline-delimited JSON",
+)
 async def export_dataset(
     ctx: Annotated[ApiKeyContext, Depends(require_api_key)],
     format: str = Query("jsonl"),  # noqa: A002
