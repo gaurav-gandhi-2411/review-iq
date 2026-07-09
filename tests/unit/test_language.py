@@ -72,6 +72,89 @@ class TestEnglishDetection:
         assert detect_language("Excellent noise cancellation, Bluetooth 5.0, 30hr battery") == "en"
 
 
+class TestVernacularBenchmarkFix:
+    """Pins the 2026-07-08 _STRONG_HINGLISH fix from the vernacular silver benchmark.
+
+    Evidence: 58 real Flipkart reviews (benchmark/vernacular_v2/) were routed to the
+    English prompt path because these spelling variants were absent from the detector.
+    Two-directional requirement: recall must go up on real misses WITHOUT creating new
+    false positives on genuine English reviews (see negative-control class below).
+    """
+
+    def test_wasool_variant(self) -> None:
+        text = (
+            "Just amazing, go for it. The air is so fresh and cool as well as with "
+            "good air throw. Paisa wasool buy."
+        )
+        assert detect_language(text) == "hi-en"
+
+    def test_wasul_variant(self) -> None:
+        assert detect_language("Awesome, PESA wasul") == "hi-en"
+
+    def test_washul_variant(self) -> None:
+        text = "very nice cooler.very smooth and fast. no sound. cooling fast. paisa washul."
+        assert detect_language(text) == "hi-en"
+
+    def test_faltu(self) -> None:
+        assert detect_language("I'm not happy, faltu quality.") == "hi-en"
+
+    def test_ghatiya(self) -> None:
+        text = (
+            "ghatiya tv bluetooth doesnt work with soundbarvideo shuts without "
+            "reasonno proper testing done by xiaomipathetic purchase dont buy"
+        )
+        assert detect_language(text) == "hi-en"
+
+    def test_sasta_tikau_sunder_combo(self) -> None:
+        assert detect_language("Sasta, sunder, tikau as per name really good") == "hi-en"
+
+    def test_milega(self) -> None:
+        text = (
+            "at this price kya milega 18000 is worth buy value for money trend "
+            "of family changing each room seperate"
+        )
+        assert detect_language(text) == "hi-en"
+
+
+class TestVernacularBenchmarkNoOverRouting:
+    """No-over-routing guarantee: the fix must not flag genuine English as hi-en/hi.
+
+    Sample drawn from the same benchmark's 49-review negative-control set (slice="en",
+    multi-LLM silver consensus LANG="en") — all 49 were re-verified to still detect as
+    "en" after the fix; this class pins a representative subset so a future regex change
+    that starts over-routing English fails CI immediately.
+    """
+
+    def test_emoji_only_review(self) -> None:
+        assert detect_language("Awesome looking great product  ????????") == "en"
+
+    def test_perfume_review(self) -> None:
+        text = (
+            "Smell's very nice... Perfume spray bottle was a very unique, but its "
+            "not long lasting its very average"
+        )
+        assert detect_language(text) == "en"
+
+    def test_short_typo_review(self) -> None:
+        assert detect_language("nice bokk") == "en"
+
+    def test_autocut_review(self) -> None:
+        text = (
+            "autocut button stopped working within 2 weeks of use now the device "
+            "has no local control as it heats"
+        )
+        assert detect_language(text) == "en"
+
+    def test_kid_love_review(self) -> None:
+        assert detect_language("Absolutely worth it.My kid love this product") == "en"
+
+    def test_beautiful_review(self) -> None:
+        assert detect_language("it is soo beautiful and i love it soo much") == "en"
+
+    def test_wasted_product_short(self) -> None:
+        assert detect_language("Wasted product") == "en"
+
+
 class TestEdgeCases:
     def test_too_short_returns_other(self) -> None:
         assert detect_language("ok") == "other"

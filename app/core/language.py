@@ -12,7 +12,14 @@ _STRONG_HINGLISH = re.compile(
     r"\b(nahi|nhi|nahin|bahut|bohot|bhot|mujhe|mera|meri|yaar|paisa\s+vasool|vasool|"
     r"bakwaas|bakwas|ekdum|sahi\s+hai|bilkul|kaafi|kafi|thoda|thodi|jyada|zyada|"
     r"acha\s+hai|achha\s+hai|mast\s+(product|buy|item)|hai\s+na|kya\s+baat|"
-    r"bindaas|jhakkas|zabardast|iska|iski|iske)\b",
+    r"bindaas|jhakkas|zabardast|iska|iski|iske|"
+    # 2026-07-08: added from real-data misses on the review-iq vernacular silver
+    # benchmark (58 hi-en reviews the detector sent down the English prompt path
+    # purely because these spelling variants/words were absent — see
+    # benchmark/vernacular_v2/ + project memory). "wasool" is the transliteration
+    # of "वसूल" — Latin-script Hindi has no fixed spelling, w/v are used
+    # interchangeably by Indian typists, hence both variants.
+    r"wasool|wasul|washul|faltu|ghatiya|sasta|milega|tikau|sunder)\b",
     re.IGNORECASE,
 )
 
