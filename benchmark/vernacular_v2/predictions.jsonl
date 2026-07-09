@@ -1,0 +1,210 @@
+{"id": "flipkart-218994", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "negative", "URG": "high", "LANG": "en"}, "latency_ms": 1157}
+{"id": "flipkart-010579", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 670}
+{"id": "flipkart-140134", "slice": "en", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 688}
+{"id": "flipkart-026613", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 11827}
+{"id": "flipkart-138810", "slice": "en", "language_detected": "en", "pred": {"SENT": "neutral", "URG": "low", "LANG": "en"}, "latency_ms": 18078}
+{"id": "flipkart-104086", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "negative", "URG": "low", "LANG": "en"}, "latency_ms": 1484}
+{"id": "flipkart-040694", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 12953}
+{"id": "flipkart-110411", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 16718}
+{"id": "flipkart-083216", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "negative", "URG": "high", "LANG": "hi-en"}, "latency_ms": 18811}
+{"id": "flipkart-244230", "slice": "en", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 17766}
+{"id": "flipkart-200767", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 18797}
+{"id": "flipkart-228800", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 18842}
+{"id": "flipkart-055787", "slice": "en", "language_detected": "en", "pred": {"SENT": "negative", "URG": "low", "LANG": "en"}, "latency_ms": 17625}
+{"id": "flipkart-017840", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 18750}
+{"id": "flipkart-194001", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 18782}
+{"id": "flipkart-030536", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 19781}
+{"id": "flipkart-073500", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 19780}
+{"id": "flipkart-217452", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "negative", "URG": "low", "LANG": "en"}, "latency_ms": 16797}
+{"id": "flipkart-141863", "slice": "en", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 17781}
+{"id": "flipkart-236308", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 18812}
+{"id": "flipkart-146222", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "negative", "URG": "high", "LANG": "en"}, "latency_ms": 17922}
+{"id": "flipkart-221777", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 18827}
+{"id": "flipkart-195034", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "negative", "URG": "low", "LANG": "en"}, "latency_ms": 17703}
+{"id": "flipkart-176224", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 18889}
+{"id": "flipkart-125033", "slice": "en", "language_detected": "en", "pred": {"SENT": "negative", "URG": "low", "LANG": "en"}, "latency_ms": 3688}
+{"id": "flipkart-235853", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 17766}
+{"id": "flipkart-184596", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 19702}
+{"id": "flipkart-241494", "slice": "en", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 16750}
+{"id": "flipkart-087670", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 19717}
+{"id": "flipkart-030040", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "negative", "URG": "low", "LANG": "en"}, "latency_ms": 16922}
+{"id": "flipkart-148740", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 18797}
+{"id": "flipkart-105895", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 18937}
+{"id": "flipkart-020764", "slice": "en", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 17937}
+{"id": "flipkart-034585", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 18702}
+{"id": "flipkart-135401", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 18718}
+{"id": "flipkart-101868", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 18766}
+{"id": "flipkart-135388", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 18781}
+{"id": "flipkart-057460", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 19750}
+{"id": "flipkart-229397", "slice": "en", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 16702}
+{"id": "flipkart-052287", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "neutral", "URG": "low", "LANG": "en"}, "latency_ms": 17688}
+{"id": "flipkart-078108", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 19750}
+{"id": "flipkart-009067", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 18686}
+{"id": "flipkart-210219", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 17766}
+{"id": "flipkart-164102", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 18781}
+{"id": "flipkart-108572", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 19781}
+{"id": "flipkart-121343", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "negative", "URG": "low", "LANG": "en"}, "latency_ms": 18000}
+{"id": "flipkart-214589", "slice": "en", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 16641}
+{"id": "flipkart-220433", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 17764}
+{"id": "flipkart-056359", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "negative", "URG": "low", "LANG": "hi-en"}, "latency_ms": 18704}
+{"id": "flipkart-101640", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 18577}
+{"id": "flipkart-145676", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "negative", "URG": "low", "LANG": "en"}, "latency_ms": 15781}
+{"id": "flipkart-120814", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "negative", "URG": "low", "LANG": "en"}, "latency_ms": 1672}
+{"id": "flipkart-033130", "slice": "en", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 1875}
+{"id": "flipkart-121047", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "negative", "URG": "low", "LANG": "en"}, "latency_ms": 1764}
+{"id": "flipkart-241948", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "neutral", "URG": "medium", "LANG": "hi-en"}, "latency_ms": 1704}
+{"id": "flipkart-231046", "slice": "en", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 1967}
+{"id": "flipkart-029473", "slice": "en", "language_detected": "en", "pred": {"SENT": "neutral", "URG": "low", "LANG": "en"}, "latency_ms": 1797}
+{"id": "flipkart-031805", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "negative", "URG": "low", "LANG": "en"}, "latency_ms": 1702}
+{"id": "flipkart-218776", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 1484}
+{"id": "flipkart-108272", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 9390}
+{"id": "flipkart-008846", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "neutral", "URG": "medium", "LANG": "hi-en"}, "latency_ms": 9641}
+{"id": "flipkart-129696", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 9561}
+{"id": "flipkart-215555", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "negative", "URG": "medium", "LANG": "hi-en"}, "latency_ms": 9875}
+{"id": "flipkart-110429", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "negative", "URG": "low", "LANG": "en"}, "latency_ms": 8735}
+{"id": "flipkart-026285", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "negative", "URG": "low", "LANG": "en"}, "latency_ms": 74750}
+{"id": "flipkart-008265", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 1000}
+{"id": "flipkart-164428", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 718}
+{"id": "flipkart-200822", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "negative", "URG": "low", "LANG": "hi-en"}, "latency_ms": 983}
+{"id": "flipkart-001205", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 936}
+{"id": "flipkart-101050", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 672}
+{"id": "flipkart-230859", "slice": "en", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 3282}
+{"id": "flipkart-164598", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 875}
+{"id": "flipkart-124960", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 780}
+{"id": "flipkart-199635", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "negative", "URG": "high", "LANG": "en"}, "latency_ms": 985}
+{"id": "flipkart-150673", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 811}
+{"id": "flipkart-044261", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 25047}
+{"id": "flipkart-182487", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 1921}
+{"id": "flipkart-128708", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "negative", "URG": "high", "LANG": "en"}, "latency_ms": 46046}
+{"id": "flipkart-095863", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "negative", "URG": "low", "LANG": "en"}, "latency_ms": 2203}
+{"id": "flipkart-144624", "slice": "en", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 29750}
+{"id": "flipkart-036672", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 49827}
+{"id": "flipkart-212163", "slice": "en", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 19795}
+{"id": "flipkart-033827", "slice": "en", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 59811}
+{"id": "flipkart-240265", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "neutral", "URG": "low", "LANG": "en"}, "latency_ms": 1968}
+{"id": "flipkart-176613", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "neutral", "URG": "low", "LANG": "en"}, "latency_ms": 686}
+{"id": "flipkart-080173", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 27781}
+{"id": "flipkart-236064", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "negative", "URG": "medium", "LANG": "hi-en"}, "latency_ms": 47734}
+{"id": "flipkart-240463", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 59733}
+{"id": "flipkart-042566", "slice": "en", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 702}
+{"id": "flipkart-190669", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "negative", "URG": "low", "LANG": "en"}, "latency_ms": 36703}
+{"id": "flipkart-111336", "slice": "en", "language_detected": "en", "pred": {"SENT": "neutral", "URG": "low", "LANG": "en"}, "latency_ms": 50875}
+{"id": "flipkart-181184", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "negative", "URG": "high", "LANG": "en"}, "latency_ms": 38781}
+{"id": "flipkart-058108", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "negative", "URG": "low", "LANG": "en"}, "latency_ms": 19735}
+{"id": "flipkart-205753", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 60765}
+{"id": "flipkart-010628", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "negative", "URG": "low", "LANG": "en"}, "latency_ms": 35032}
+{"id": "flipkart-191197", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 54047}
+{"id": "flipkart-237983", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 2688}
+{"id": "flipkart-164074", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 77842}
+{"id": "flipkart-022578", "slice": "en", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 37983}
+{"id": "flipkart-168504", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "negative", "URG": "low", "LANG": "en"}, "latency_ms": 56061}
+{"id": "flipkart-147597", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "negative", "URG": "low", "LANG": "en"}, "latency_ms": 54015}
+{"id": "flipkart-149233", "slice": "en", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 51968}
+{"id": "flipkart-180219", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 2702}
+{"id": "flipkart-192505", "slice": "en", "language_detected": "en", "pred": {"SENT": "negative", "URG": "high", "LANG": "en"}, "latency_ms": 2313}
+{"id": "flipkart-167936", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "neutral", "URG": "low", "LANG": "en"}, "latency_ms": 47233}
+{"id": "flipkart-123575", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "negative", "URG": "high", "LANG": "hi-en"}, "latency_ms": 58093}
+{"id": "flipkart-139517", "slice": "en", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 843}
+{"id": "flipkart-242529", "slice": "en", "language_detected": "en", "pred": {"SENT": "negative", "URG": "medium", "LANG": "en"}, "latency_ms": 44500}
+{"id": "flipkart-210442", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "negative", "URG": "high", "LANG": "en"}, "latency_ms": 79125}
+{"id": "flipkart-043509", "slice": "en", "language_detected": "en", "pred": {"SENT": "neutral", "URG": "low", "LANG": "en"}, "latency_ms": 48141}
+{"id": "flipkart-201413", "slice": "en", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 55155}
+{"id": "flipkart-113992", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "negative", "URG": "low", "LANG": "en"}, "latency_ms": 75656}
+{"id": "flipkart-207384", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "negative", "URG": "low", "LANG": "en"}, "latency_ms": 48750}
+{"id": "flipkart-128563", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 42046}
+{"id": "flipkart-218696", "slice": "en", "language_detected": "en", "pred": {"SENT": "neutral", "URG": "medium", "LANG": "en"}, "latency_ms": 50391}
+{"id": "flipkart-236072", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "hi-en"}, "latency_ms": 1141}
+{"id": "flipkart-101656", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2875}
+{"id": "flipkart-173544", "slice": "en", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2922}
+{"id": "flipkart-204868", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2922}
+{"id": "flipkart-159854", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2907}
+{"id": "flipkart-051590", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 3670}
+{"id": "flipkart-135632", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2906}
+{"id": "flipkart-087676", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2907}
+{"id": "flipkart-133709", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2921}
+{"id": "flipkart-142891", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2890}
+{"id": "flipkart-059660", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 3016}
+{"id": "flipkart-200536", "slice": "en", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2875}
+{"id": "flipkart-012815", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2827}
+{"id": "flipkart-165976", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 3187}
+{"id": "flipkart-207616", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2921}
+{"id": "flipkart-095529", "slice": "en", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2953}
+{"id": "flipkart-193812", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 3171}
+{"id": "flipkart-224835", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2968}
+{"id": "flipkart-169009", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2983}
+{"id": "flipkart-024259", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2969}
+{"id": "flipkart-000152", "slice": "en", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 3139}
+{"id": "flipkart-076717", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 3141}
+{"id": "flipkart-175915", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 3422}
+{"id": "flipkart-219327", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 3108}
+{"id": "flipkart-124537", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 3125}
+{"id": "flipkart-188191", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 3077}
+{"id": "flipkart-037248", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 3016}
+{"id": "flipkart-000590", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2858}
+{"id": "flipkart-085334", "slice": "en", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 77266}
+{"id": "flipkart-098397", "slice": "en", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2921}
+{"id": "flipkart-128937", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 3094}
+{"id": "flipkart-005146", "slice": "en", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2858}
+{"id": "flipkart-222431", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2891}
+{"id": "flipkart-105033", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2968}
+{"id": "flipkart-157282", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2858}
+{"id": "flipkart-145364", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 3000}
+{"id": "flipkart-204470", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 3000}
+{"id": "flipkart-042610", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2967}
+{"id": "flipkart-128532", "slice": "en", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2827}
+{"id": "flipkart-012504", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2657}
+{"id": "flipkart-095876", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2750}
+{"id": "flipkart-055770", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2687}
+{"id": "flipkart-023870", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2655}
+{"id": "flipkart-159542", "slice": "en", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2688}
+{"id": "flipkart-042310", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2686}
+{"id": "flipkart-162817", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2688}
+{"id": "flipkart-018253", "slice": "en", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2766}
+{"id": "flipkart-078916", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2734}
+{"id": "flipkart-015289", "slice": "en", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2750}
+{"id": "flipkart-156789", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2843}
+{"id": "flipkart-166967", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2717}
+{"id": "flipkart-161730", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2938}
+{"id": "flipkart-076101", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2891}
+{"id": "flipkart-071205", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2828}
+{"id": "flipkart-052393", "slice": "en", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2718}
+{"id": "flipkart-238658", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2672}
+{"id": "flipkart-176629", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2750}
+{"id": "flipkart-141884", "slice": "en", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 58110}
+{"id": "flipkart-234356", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2750}
+{"id": "flipkart-220269", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 3000}
+{"id": "flipkart-124009", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 3047}
+{"id": "flipkart-129101", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2891}
+{"id": "flipkart-069795", "slice": "en", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2967}
+{"id": "flipkart-075934", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2843}
+{"id": "flipkart-107943", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2812}
+{"id": "flipkart-076728", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2952}
+{"id": "flipkart-063441", "slice": "en", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2750}
+{"id": "flipkart-083427", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2983}
+{"id": "flipkart-235917", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2827}
+{"id": "flipkart-084868", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2717}
+{"id": "flipkart-033813", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2766}
+{"id": "flipkart-040273", "slice": "en", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2594}
+{"id": "flipkart-080955", "slice": "en", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2639}
+{"id": "flipkart-170630", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2907}
+{"id": "flipkart-038231", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2688}
+{"id": "flipkart-071993", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2704}
+{"id": "flipkart-127844", "slice": "en", "language_detected": "en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 53561}
+{"id": "flipkart-012806", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2687}
+{"id": "flipkart-237148", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2796}
+{"id": "flipkart-079767", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2703}
+{"id": "flipkart-115961", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2735}
+{"id": "flipkart-076756", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2860}
+{"id": "flipkart-036034", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2733}
+{"id": "flipkart-002421", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": "positive", "URG": "low", "LANG": "en"}, "latency_ms": 33046}
+{"id": "flipkart-194329", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2672}
+{"id": "flipkart-158750", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2640}
+{"id": "flipkart-164312", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2671}
+{"id": "flipkart-204774", "slice": "en", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2812}
+{"id": "flipkart-157533", "slice": "en", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2968}
+{"id": "flipkart-151203", "slice": "hi-en-missed", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 3156}
+{"id": "flipkart-195991", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2891}
+{"id": "flipkart-063067", "slice": "en", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2938}
+{"id": "flipkart-030387", "slice": "hi-en", "language_detected": "hi-en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 3000}
+{"id": "flipkart-244278", "slice": "en", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2875}
+{"id": "flipkart-200036", "slice": "en", "language_detected": "en", "pred": {"SENT": null, "URG": null, "LANG": null, "_error": "All LLM providers failed to extract the review."}, "latency_ms": 2843}

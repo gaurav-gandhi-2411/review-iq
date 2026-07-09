@@ -85,25 +85,15 @@ async def predict(text: str, replay_mode: bool) -> dict[str, str | None]:
 
 
 def _detect_lang_hint(text: str) -> str:
-    """Heuristic language hint for review-iq's prompt builder — not the gold label."""
-    import re  # noqa: PLC0415
-    import unicodedata  # noqa: PLC0415
+    """Prompt-router hint — delegates to the REAL production router so the benchmark
+    routes exactly like prod (app/api/v2/extract.py calls detect_language() and the
+    hint decides the prompt template). Was previously an independent regex copy that
+    drifted from prod (PROMPTS.md records 5 of 9 v0.1 LANG misses were this shim's own
+    gap, not prod's). "other" maps to "en" (no "other" prompt template exists).
+    NOTE: changing routing invalidates the v0.1 internal benchmark's replay cassettes
+    for any fixture whose hint changes — re-record needed before re-running v0.1.
+    """
+    from app.core.language import detect_language  # noqa: PLC0415
 
-    chars = [c for c in text if not unicodedata.category(c).startswith("Z")]
-    if not chars:
-        return "en"
-    deva = sum(1 for c in chars if re.match(r"[ऀ-ॿ]", c))
-    frac = deva / len(chars)
-    if frac > 0.10:
-        return "hi"
-    if frac > 0.0:
-        return "hi-en"
-    # Check for Hinglish markers in Latin script
-    hinglish = re.compile(
-        r"\b(nahi|nhi|accha|bahut|paisa|vasool|bakwaas|ekdum|mast|yaar|bhai|"
-        r"gajab|bilkul|zabardast|bekar|khrab|boleto|jada|bhi|toh)\b",
-        re.IGNORECASE,
-    )
-    if hinglish.search(text):
-        return "hi-en"
-    return "en"
+    lang = detect_language(text)
+    return "en" if lang == "other" else lang
