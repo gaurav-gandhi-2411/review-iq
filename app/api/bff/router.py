@@ -34,11 +34,13 @@ from fastapi import (
 )
 from pydantic import BaseModel, field_validator, model_validator
 
-# _process_ingest_job is defined in app.api.v2.ingest because it depends on
-# _run_extraction_v2 which lives there too.  It is a pure business-logic
-# coroutine and has no coupling to the HTTP handler — importing it here is
-# safe and avoids duplication.
-from app.api.v2.ingest import _process_ingest_job
+# _drain_until_job_complete is defined in app.api.v2.ingest alongside the
+# durable batch_job_rows queue it drains (app/core/ingest_worker.py). It is a
+# pure business-logic coroutine with no coupling to the HTTP handler —
+# importing it here lets this BFF endpoint share the SAME durable queue as
+# POST /v2/ingest/csv (Option B, 2026-07-09) instead of its own fire-and-forget
+# path, so a Cloud Run restart mid-job no longer silently drops BFF uploads.
+from app.api.v2.ingest import _drain_until_job_complete
 from app.auth.api_key import ApiKeyContext
 from app.auth.session import require_session, require_session_read
 from app.core.authenticity import engine
@@ -60,6 +62,7 @@ from app.core.schemas import Sentiment, Urgency
 from app.core.storage_pg import (
     authenticity_audit_summary_pg,
     create_batch_job_pg,
+    enqueue_batch_job_rows_pg,
     get_authenticity_audit_by_hash_pg,
     get_batch_job_pg,
     health_score_pg,
@@ -67,6 +70,7 @@ from app.core.storage_pg import (
     record_quota_request_pg,
     save_authenticity_audit_pg,
     theme_trends_pg,
+    update_batch_job_pg,
     update_usage_tokens,
 )
 
@@ -700,16 +704,29 @@ async def bff_ingest_csv(
 
     job_id = str(uuid.uuid4())
     total = len(rows)
+
+    # Store column mapping + include_authenticity now (the worker reads
+    # include_authenticity per row); input_hashes are appended on completion.
     initial_meta = json.dumps(
         {
             "text_column": resolved_text,
             "product_column": resolved_product,
+            "include_authenticity": include_authenticity,
             "input_hashes": [],
         }
     )
 
     await asyncio.to_thread(create_batch_job_pg, ctx.org_id, job_id, total, initial_meta)
-    background_tasks.add_task(_process_ingest_job, ctx, job_id, rows, include_authenticity)
+    # Durable path (Option B, 2026-07-09): rows are persisted in batch_job_rows
+    # here, before any processing starts — if this instance dies before the
+    # BackgroundTask below finishes, POST /internal/ingest/tick resumes the
+    # remainder on a schedule.
+    await asyncio.to_thread(
+        enqueue_batch_job_rows_pg, ctx.org_id, job_id, [row["text"] for row in rows]
+    )
+    await asyncio.to_thread(update_batch_job_pg, ctx.org_id, job_id, status="processing")
+
+    background_tasks.add_task(_drain_until_job_complete, ctx.org_id, job_id)
 
     log.info("bff.ingest.job_created", job_id=job_id, total=total, org_id=ctx.org_id)
     return {"job_id": job_id, "total": total, "status": "pending"}

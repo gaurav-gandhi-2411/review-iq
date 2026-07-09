@@ -143,8 +143,9 @@ async def _claim_one_row() -> tuple[str, str, bool] | None:
 
 
 async def _score_authenticity(ctx: ApiKeyContext, job_id: str, text: str) -> None:
-    """Run authenticity scoring for one row — mirrors the pre-existing
-    app.api.v2.ingest._process_ingest_job authenticity path.
+    """Run authenticity scoring for one row — behavior carried over from the
+    retired fire-and-forget ingest path (app.api.v2.ingest._process_ingest_job,
+    deleted 2026-07-09 once the BFF endpoint moved to this queue).
 
     Best-effort: a scoring failure is logged and swallowed, never affects the
     row's extraction outcome (the extraction already succeeded by the time

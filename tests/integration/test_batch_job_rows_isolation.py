@@ -539,3 +539,121 @@ async def test_resume_after_partial_drain_and_zero_cost_dedup(
         assert dup_job_final is not None
         assert dup_job_final["status"] == "done"
         assert call_count == 5, "duplicate text must be served from cache — zero new LLM calls"
+
+
+# ---------------------------------------------------------------------------
+# Proof 5 — the BFF's own POST /bff/ingest/csv rides the SAME durable queue
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.integration
+class TestBffEntryPoint:
+    """Proves POST /bff/ingest/csv — the path the production web app actually
+    calls — enqueues onto the SAME durable batch_job_rows queue as POST
+    /v2/ingest/csv, rather than entering through the storage functions
+    directly like proofs 1-4 above. Goes through the real FastAPI HTTP
+    handler with require_session dependency-overridden to a fixed org A ctx,
+    exactly the way the browser's Supabase-JWT session resolves to an
+    ApiKeyContext in production.
+    """
+
+    def test_bff_upload_drains_and_isolates_by_org(
+        self, two_orgs: tuple[str, str], quiescent_queue: None, fast_bulk_limiter: None
+    ) -> None:
+        from app.auth.api_key import ApiKeyContext
+        from app.auth.session import require_session
+        from app.main import app
+        from fastapi.testclient import TestClient
+
+        org_a, org_b = two_orgs
+        text_1 = f"BffProof org A widget review one {uuid.uuid4().hex[:10]}"
+        text_2 = f"BffProof org A widget review two {uuid.uuid4().hex[:10]}"
+        csv_bytes = f"review_text\n{text_1}\n{text_2}\n".encode()
+
+        ctx_a = ApiKeyContext(
+            org_id=org_a,
+            api_key_id=str(uuid.uuid4()),
+            key_name="bff-integration-test",
+            usage_record_id=str(uuid.uuid4()),
+        )
+
+        # The real bff_ingest_csv handler schedules its own BackgroundTask
+        # (_drain_until_job_complete). Under Starlette's TestClient,
+        # BackgroundTasks run synchronously as part of response completion —
+        # i.e. BEFORE client.post() returns below — which would drain every
+        # pending row (including both of this test's) before we get a chance
+        # to call drain_rows(max_rows=1) ourselves and simulate a partial
+        # drain under the patched LLM boundary. Patch it to a no-op AsyncMock
+        # here so this test — not the endpoint's own background task —
+        # controls exactly when and how many rows get drained.
+        app.dependency_overrides[require_session] = lambda: ctx_a
+        try:
+            with patch("app.api.bff.router._drain_until_job_complete", new=AsyncMock()):
+                client = TestClient(app, raise_server_exceptions=False)
+                resp = client.post(
+                    "/bff/ingest/csv",
+                    files={"file": ("reviews.csv", csv_bytes, "text/csv")},
+                )
+        finally:
+            app.dependency_overrides.pop(require_session, None)
+
+        assert resp.status_code == 202
+        body = resp.json()
+        assert set(body.keys()) == {"job_id", "total", "status"}
+        assert body["total"] == 2
+        assert body["status"] == "pending"
+        job_id = body["job_id"]
+
+        hash_1 = ReviewRequest(text=text_1).input_hash()
+        hash_2 = ReviewRequest(text=text_2).input_hash()
+
+        call_count = 0
+
+        async def _counting_stub(prompt: str, allow_gemini_fallback: bool = False) -> tuple:
+            nonlocal call_count
+            call_count += 1
+            return _canned_llm_tuple()
+
+        with (
+            patch("app.api.v2.extract.extract_with_llm", new=AsyncMock(side_effect=_counting_stub)),
+            patch("app.api.v2.extract.alert_on_review_event", new=AsyncMock(return_value=None)),
+        ):
+            # Partial drain — simulates an instance dying mid-job, same
+            # pattern as Proof 4's test_resume_after_partial_drain_and_zero_cost_dedup.
+            first = asyncio.run(drain_rows(max_rows=1))
+            assert first["claimed"] == 1
+
+            done, failed = count_job_row_statuses_pg(org_a, job_id)
+            assert (done, failed) == (1, 0)
+            assert count_pending_rows_pg(org_a, job_id) == 1
+            job_mid = get_batch_job_pg(org_a, job_id)
+            assert job_mid is not None
+            assert job_mid["status"] not in ("done", "failed"), (
+                "job must not be finalized while one row is still pending"
+            )
+
+            second = asyncio.run(drain_rows(max_rows=10))
+            assert second["claimed"] == 1
+
+        assert call_count == 2, (
+            f"expected exactly 2 LLM-boundary calls (one per row, no reprocessing), got {call_count}"
+        )
+
+        done, failed = count_job_row_statuses_pg(org_a, job_id)
+        assert (done, failed) == (2, 0)
+        job_final = get_batch_job_pg(org_a, job_id)
+        assert job_final is not None
+        assert job_final["status"] == "done"
+
+        ext_1 = get_by_hash_pg(org_a, hash_1)
+        ext_2 = get_by_hash_pg(org_a, hash_2)
+        assert ext_1 is not None, "org A's first row must be stored"
+        assert ext_1.extraction_meta is not None
+        assert ext_1.extraction_meta.org_id == org_a
+        assert ext_2 is not None, "org A's second row must be stored"
+        assert ext_2.extraction_meta is not None
+        assert ext_2.extraction_meta.org_id == org_a
+
+        # Cross-tenant visibility: org B must not see either of org A's extractions.
+        assert get_by_hash_pg(org_b, hash_1) is None, "org B must not see org A's first extraction"
+        assert get_by_hash_pg(org_b, hash_2) is None, "org B must not see org A's second extraction"

@@ -140,12 +140,9 @@ def test_ingest_csv_422_bad_column(client: TestClient) -> None:
 
 def test_ingest_csv_422_empty_rows(client: TestClient) -> None:
     """Empty rows list (all rows were blank) maps to 422."""
-    with (
-        patch(
-            "app.api.v2.ingest.read_and_validate_csv",
-            new=AsyncMock(return_value=([], "review_text", None)),
-        ),
-        patch("app.api.v2.ingest._process_ingest_job", new=AsyncMock()),
+    with patch(
+        "app.api.v2.ingest.read_and_validate_csv",
+        new=AsyncMock(return_value=([], "review_text", None)),
     ):
         resp = client.post(
             "/v2/ingest/csv",

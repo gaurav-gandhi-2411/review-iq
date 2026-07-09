@@ -15,7 +15,6 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, Up
 from fastapi.responses import StreamingResponse
 
 from app.auth.api_key import ApiKeyContext, require_api_key
-from app.core.alerts.engine import alert_on_review_event
 from app.core.config import get_settings
 from app.core.csv_ingest import (
     CsvColumnError,
@@ -24,8 +23,6 @@ from app.core.csv_ingest import (
     read_and_validate_csv,
 )
 from app.core.ingest_worker import drain_rows
-from app.core.ratelimit import set_bulk_call_class
-from app.core.schemas import ReviewRequest
 from app.core.storage_pg import (
     count_pending_rows_pg,
     create_batch_job_pg,
@@ -42,93 +39,6 @@ log = structlog.get_logger(__name__)
 # ---------------------------------------------------------------------------
 # Background processing
 # ---------------------------------------------------------------------------
-
-
-async def _process_ingest_job(
-    ctx: ApiKeyContext,
-    job_id: str,
-    rows: list[dict[str, str]],
-    include_authenticity: bool = False,
-) -> None:
-    """Background task: extract each CSV row and track progress in batch_jobs."""
-    # Classifies every Groq call this coroutine makes (incl. retries/escalation) as
-    # bulk via ContextVar propagation — see app/core/ratelimit.py.
-    set_bulk_call_class()
-    import asyncio
-
-    from app.api.v2.extract import _run_extraction_v2  # avoid circular at module import time
-
-    await asyncio.to_thread(update_batch_job_pg, ctx.org_id, job_id, status="processing")
-
-    processed = failed = 0
-    input_hashes: list[str] = []
-
-    for row in rows:
-        try:
-            req = ReviewRequest(text=row["text"])
-            input_hashes.append(req.input_hash())
-            await _run_extraction_v2(req, ctx)
-            processed += 1
-        except Exception as exc:  # noqa: BLE001
-            log.error("ingest.item_failed", job_id=job_id, org_id=ctx.org_id, error=str(exc))
-            failed += 1
-            input_hashes.append("")  # placeholder keeps index alignment with rows
-
-        if include_authenticity:
-            from app.core.authenticity import engine as _auth_engine
-            from app.core.config import get_settings as _get_settings
-            from app.core.storage_pg import save_authenticity_audit_pg as _save_audit
-
-            try:
-                auth_result = await _auth_engine.score_single(
-                    row["text"], stars=None, settings=_get_settings()
-                )
-                await asyncio.to_thread(
-                    _save_audit,
-                    ctx.org_id,
-                    auth_result.review_hash,
-                    auth_result.score,
-                    auth_result.label.value,
-                    [f.value for f in auth_result.flags],
-                )
-                await alert_on_review_event(
-                    org_id=ctx.org_id, review_id=auth_result.review_hash, auth=auth_result
-                )
-            except Exception as exc:  # noqa: BLE001
-                log.warning("ingest.authenticity_failed", job_id=job_id, error=str(exc))
-
-        await asyncio.to_thread(
-            update_batch_job_pg,
-            ctx.org_id,
-            job_id,
-            processed=processed,
-            failed=failed,
-        )
-
-    # Persist input_hashes so the result endpoint can look up individual extractions.
-    source_meta = json.dumps({"input_hashes": input_hashes})
-    final_status = "done" if failed == 0 else "failed"
-    await asyncio.to_thread(
-        update_batch_job_pg,
-        ctx.org_id,
-        job_id,
-        status=final_status,
-        source_columns=source_meta,
-    )
-    log.info(
-        "ingest.job_completed",
-        job_id=job_id,
-        org_id=ctx.org_id,
-        processed=processed,
-        failed=failed,
-    )
-
-
-# NOTE: _process_ingest_job (above) is fire-and-forget and does NOT survive a
-# Cloud Run restart mid-job — kept only because app/api/bff/router.py's own
-# /ingest/csv endpoint still calls it directly. POST /v2/ingest/csv below uses
-# the durable batch_job_rows path (Option B, 2026-07-09) instead; see
-# app/core/ingest_worker.py.
 
 
 async def _drain_until_job_complete(org_id: str, job_id: str) -> None:

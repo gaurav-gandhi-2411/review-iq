@@ -252,34 +252,6 @@ async def test_drain_rows_classifies_bulk() -> None:
 
 
 # ---------------------------------------------------------------------------
-# _process_ingest_job classifies every row as bulk
-# ---------------------------------------------------------------------------
-
-
-@pytest.mark.asyncio
-async def test_process_ingest_job_classifies_bulk() -> None:
-    from app.api.v2 import ingest as ingest_mod
-
-    captured: list[str] = []
-
-    async def _fake_run(req: ReviewRequest, ctx: ApiKeyContext) -> None:
-        captured.append(current_call_class())
-
-    with (
-        patch("app.api.v2.ingest.update_batch_job_pg", return_value=None),
-        patch("app.api.v2.extract._run_extraction_v2", new=_fake_run),
-    ):
-        await ingest_mod._process_ingest_job(
-            _CTX,
-            str(uuid.uuid4()),
-            [{"text": "Good product"}, {"text": "Bad product"}],
-            include_authenticity=False,
-        )
-
-    assert captured == ["bulk", "bulk"]
-
-
-# ---------------------------------------------------------------------------
 # GroqProvider replay mode never touches the limiter
 # ---------------------------------------------------------------------------
 

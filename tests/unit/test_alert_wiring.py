@@ -1,10 +1,15 @@
 """Tests proving alert_on_review_event is actually wired into the ingestion pipelines.
 
 evaluate_and_alert() itself is fully covered by tests/unit/test_alert_engine.py — these
-tests instead prove the *wiring*: that the four call sites (extraction funnel cache-hit +
-fresh, authenticity single cache-hit + fresh, authenticity batch, CSV ingest) actually
-invoke it, that alert-layer failures never break ingestion, and that daily_digest-configured
-event types still don't fire immediately from this path.
+tests instead prove the *wiring*: that the three call sites covered here (extraction
+funnel cache-hit + fresh, authenticity single cache-hit + fresh, authenticity batch)
+actually invoke it, that alert-layer failures never break ingestion, and that
+daily_digest-configured event types still don't fire immediately from this path.
+
+CSV ingest's authenticity-alert wiring (the fourth call site) is covered in
+tests/unit/test_ingest_worker.py instead — it moved there when the fire-and-forget
+_process_ingest_job coroutine was replaced by the durable batch_job_rows worker
+path (Option B, 2026-07-09); see app/core/ingest_worker.py::_score_authenticity.
 """
 
 from __future__ import annotations
@@ -372,46 +377,9 @@ def test_authenticity_batch_fires_only_for_flagged_review(client: TestClient) ->
 
 
 # ---------------------------------------------------------------------------
-# 9: CSV ingest authenticity wiring
-# ---------------------------------------------------------------------------
-
-
-@pytest.mark.asyncio
-async def test_csv_ingest_authenticity_wiring_fires() -> None:
-    """_process_ingest_job(include_authenticity=True) fires an alert for a LIKELY_FAKE row."""
-    from app.api.v2.ingest import _process_ingest_job
-
-    fake_channel = FakeChannel()
-    fake_extraction = MagicMock()
-    fake_auth_result = _auth_result(label=AuthenticityLabel.LIKELY_FAKE, score=0.1, text="row text")
-    job_id = str(uuid.uuid4())
-    rows = [{"text": "row text"}]
-
-    with (
-        patch("app.api.v2.ingest.update_batch_job_pg", return_value=None),
-        patch("app.api.v2.extract._run_extraction_v2", new=AsyncMock(return_value=fake_extraction)),
-        patch(
-            "app.core.authenticity.engine.score_single",
-            new=AsyncMock(return_value=fake_auth_result),
-        ),
-        patch("app.core.storage_pg.save_authenticity_audit_pg", return_value=None),
-        patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=False)),
-        patch("app.core.alerts.engine.get_preference_pg", MagicMock(return_value=None)),
-        patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)),
-        patch(
-            "app.core.alerts.engine.get_org_notification_email_pg",
-            MagicMock(return_value="seller@example.com"),
-        ),
-        patch("app.core.alerts.engine._get_default_channel", MagicMock(return_value=fake_channel)),
-    ):
-        await _process_ingest_job(_CTX, job_id, rows, include_authenticity=True)
-
-    assert len(fake_channel.sent) == 1
-    assert fake_channel.sent[0].event.event_type == AlertEventType.LIKELY_FAKE
-
-
-# ---------------------------------------------------------------------------
-# 10-14: channel-send failure tolerance (e.g. Resend down) across all wired paths
+# 10-13: channel-send failure tolerance (e.g. Resend down) across all wired paths
+# (the CSV-ingest variant of this proof lives in tests/unit/test_ingest_worker.py
+# — see the module docstring above.)
 # ---------------------------------------------------------------------------
 
 
@@ -515,41 +483,3 @@ def test_authenticity_batch_survives_channel_send_failure(client: TestClient) ->
     assert body["total"] == 2
     assert len(body["results"]) == 2
     mock_record.assert_not_called()
-
-
-@pytest.mark.asyncio
-async def test_csv_ingest_survives_channel_send_failure() -> None:
-    """A ChannelError from channel.send never affects _process_ingest_job's bookkeeping."""
-    from app.api.v2.ingest import _process_ingest_job
-
-    error_channel = ErrorChannel()
-    fake_extraction = MagicMock()
-    fake_auth_result = _auth_result(label=AuthenticityLabel.LIKELY_FAKE, score=0.1, text="row text 2")
-    job_id = str(uuid.uuid4())
-    rows = [{"text": "row text 2"}]
-
-    with (
-        patch("app.api.v2.ingest.update_batch_job_pg", return_value=None) as mock_update_job,
-        patch("app.api.v2.extract._run_extraction_v2", new=AsyncMock(return_value=fake_extraction)),
-        patch(
-            "app.core.authenticity.engine.score_single",
-            new=AsyncMock(return_value=fake_auth_result),
-        ),
-        patch("app.core.storage_pg.save_authenticity_audit_pg", return_value=None),
-        patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=False)),
-        patch("app.core.alerts.engine.get_preference_pg", MagicMock(return_value=None)),
-        patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)) as mock_record,
-        patch(
-            "app.core.alerts.engine.get_org_notification_email_pg",
-            MagicMock(return_value="seller@example.com"),
-        ),
-        patch("app.core.alerts.engine._get_default_channel", MagicMock(return_value=error_channel)),
-    ):
-        # Should complete without raising, despite the channel failing on every send.
-        await _process_ingest_job(_CTX, job_id, rows, include_authenticity=True)
-
-    mock_record.assert_not_called()
-    # Job bookkeeping (processed/failed counts) still ran normally — the one row counts
-    # as processed (extraction succeeded), regardless of the alert channel failing.
-    final_call = mock_update_job.call_args_list[-1]
-    assert final_call.kwargs.get("status") == "done"

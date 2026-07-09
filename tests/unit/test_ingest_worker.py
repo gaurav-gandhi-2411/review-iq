@@ -8,13 +8,19 @@ real clock.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import uuid
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from app.auth.api_key import ApiKeyContext, require_api_key
-from app.core.ingest_worker import _sync_job_progress, drain_rows
+from app.core.alerts.channels.base import ChannelError
+from app.core.alerts.channels.fake import FakeChannel
+from app.core.alerts.rules import AlertEventType
+from app.core.authenticity.schema import AuthenticityLabel, AuthenticityResult
+from app.core.ingest_worker import _claim_one_row, _sync_job_progress, drain_rows
 from fastapi.testclient import TestClient
 
 # ---------------------------------------------------------------------------
@@ -434,3 +440,127 @@ def test_ingest_csv_enqueues_durable_rows_and_returns_job_id() -> None:
     assert len(enqueue_calls) == 1
     assert enqueue_calls[0][0] == ctx.org_id
     assert enqueue_calls[0][2] == ["Great product!"]
+
+
+# ---------------------------------------------------------------------------
+# (f) Per-row authenticity-alert wiring — moved here from
+# tests/unit/test_alert_wiring.py (see that file's module docstring) when the
+# fire-and-forget _process_ingest_job coroutine was replaced by this durable
+# worker path (Option B, 2026-07-09). _claim_one_row is the call site that now
+# reads include_authenticity from the job's source_columns and scores each row.
+# ---------------------------------------------------------------------------
+
+
+def _auth_result(
+    label: AuthenticityLabel = AuthenticityLabel.GENUINE, score: float = 0.9, text: str = "x"
+) -> AuthenticityResult:
+    """Minimal AuthenticityResult for use as a score_single mock return value."""
+    return AuthenticityResult(
+        score=score,
+        label=label,
+        review_hash=hashlib.sha256(text.encode()).hexdigest(),
+        scored_at=datetime.now(UTC),
+    )
+
+
+class _ErrorChannel:
+    """Channel that always fails delivery — simulates Resend being down. Mirrors
+    ErrorChannel in tests/unit/test_alert_wiring.py and test_alert_engine.py."""
+
+    async def send(self, message: object) -> None:
+        raise ChannelError("delivery failed")
+
+
+@pytest.mark.asyncio
+async def test_claim_one_row_fires_alert_for_authenticity_flagged_row() -> None:
+    """_claim_one_row() fires an alert for a LIKELY_FAKE row when the job has
+    include_authenticity=True in its source_columns.
+    """
+    org_id, job_id = str(uuid.uuid4()), str(uuid.uuid4())
+    queue = [(job_id, 0, org_id, "row text")]
+    created_conns: list[_FakeConn] = []
+    job_record = {
+        "job_id": job_id,
+        "source_columns": json.dumps({"include_authenticity": True}),
+    }
+    fake_channel = FakeChannel()
+    fake_auth_result = _auth_result(label=AuthenticityLabel.LIKELY_FAKE, score=0.1, text="row text")
+
+    with (
+        patch(
+            "app.core.ingest_worker.psycopg2.connect",
+            side_effect=_make_fake_connect(queue, created_conns),
+        ),
+        patch("app.core.ingest_worker.get_batch_job_pg", return_value=job_record),
+        patch("app.api.v2.extract._run_extraction_v2", new=AsyncMock(return_value=MagicMock())),
+        patch(
+            "app.core.authenticity.engine.score_single",
+            new=AsyncMock(return_value=fake_auth_result),
+        ),
+        patch("app.core.storage_pg.save_authenticity_audit_pg", return_value=None),
+        patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=False)),
+        patch("app.core.alerts.engine.get_preference_pg", MagicMock(return_value=None)),
+        patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)),
+        patch(
+            "app.core.alerts.engine.get_org_notification_email_pg",
+            MagicMock(return_value="seller@example.com"),
+        ),
+        patch("app.core.alerts.engine._get_default_channel", MagicMock(return_value=fake_channel)),
+    ):
+        result = await _claim_one_row()
+
+    assert result == (org_id, job_id, True)
+    assert len(fake_channel.sent) == 1
+    assert fake_channel.sent[0].event.event_type == AlertEventType.LIKELY_FAKE
+
+
+@pytest.mark.asyncio
+async def test_claim_one_row_authenticity_survives_channel_send_failure() -> None:
+    """A ChannelError from channel.send never affects the row's terminal status —
+    the extraction already succeeded by the time authenticity scoring runs.
+    """
+    org_id, job_id = str(uuid.uuid4()), str(uuid.uuid4())
+    queue = [(job_id, 0, org_id, "row text 2")]
+    created_conns: list[_FakeConn] = []
+    job_record = {
+        "job_id": job_id,
+        "source_columns": json.dumps({"include_authenticity": True}),
+    }
+    error_channel = _ErrorChannel()
+    fake_auth_result = _auth_result(
+        label=AuthenticityLabel.LIKELY_FAKE, score=0.1, text="row text 2"
+    )
+
+    with (
+        patch(
+            "app.core.ingest_worker.psycopg2.connect",
+            side_effect=_make_fake_connect(queue, created_conns),
+        ),
+        patch("app.core.ingest_worker.get_batch_job_pg", return_value=job_record),
+        patch("app.api.v2.extract._run_extraction_v2", new=AsyncMock(return_value=MagicMock())),
+        patch(
+            "app.core.authenticity.engine.score_single",
+            new=AsyncMock(return_value=fake_auth_result),
+        ),
+        patch("app.core.storage_pg.save_authenticity_audit_pg", return_value=None),
+        patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=False)),
+        patch("app.core.alerts.engine.get_preference_pg", MagicMock(return_value=None)),
+        patch(
+            "app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)
+        ) as mock_record,
+        patch(
+            "app.core.alerts.engine.get_org_notification_email_pg",
+            MagicMock(return_value="seller@example.com"),
+        ),
+        patch("app.core.alerts.engine._get_default_channel", MagicMock(return_value=error_channel)),
+    ):
+        # Should complete without raising, despite the channel failing on every send.
+        result = await _claim_one_row()
+
+    mock_record.assert_not_called()
+    # The row's terminal status still reflects extraction success — the alert
+    # channel failing never affects batch_job_rows bookkeeping.
+    assert result == (org_id, job_id, True)
+    row_status, row_error, *_rest = _update_params(created_conns[0])
+    assert row_status == "done"
+    assert row_error is None
