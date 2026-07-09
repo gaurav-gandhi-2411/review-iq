@@ -13,6 +13,7 @@ from app.core.language import detect_language
 from app.core.llm import extract_with_llm
 from app.core.metrics import EXTRACTION_LATENCY, EXTRACTIONS_TOTAL
 from app.core.prompts import PROMPT_VERSION, build_prompt
+from app.core.ratelimit import set_bulk_call_class
 from app.core.sanitize import sanitize, wrap_for_llm
 from app.core.schemas import (
     BatchReviewRequest,
@@ -130,6 +131,9 @@ async def extract_single(
 
 async def _process_batch_v2(ctx: ApiKeyContext, reviews: list[ReviewRequest]) -> None:
     """Background task: process batch reviews (v2). Fire-and-forget — no job tracking."""
+    # Classifies every Groq call this coroutine makes (incl. retries/escalation) as
+    # bulk via ContextVar propagation — see app/core/ratelimit.py.
+    set_bulk_call_class()
     processed = failed = 0
     for req in reviews:
         try:

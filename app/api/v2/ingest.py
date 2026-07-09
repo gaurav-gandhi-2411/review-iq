@@ -22,6 +22,7 @@ from app.core.csv_ingest import (
     RowLimitExceededError,
     read_and_validate_csv,
 )
+from app.core.ratelimit import set_bulk_call_class
 from app.core.schemas import ReviewRequest
 from app.core.storage_pg import (
     create_batch_job_pg,
@@ -46,6 +47,9 @@ async def _process_ingest_job(
     include_authenticity: bool = False,
 ) -> None:
     """Background task: extract each CSV row and track progress in batch_jobs."""
+    # Classifies every Groq call this coroutine makes (incl. retries/escalation) as
+    # bulk via ContextVar propagation — see app/core/ratelimit.py.
+    set_bulk_call_class()
     import asyncio
 
     from app.api.v2.extract import _run_extraction_v2  # avoid circular at module import time

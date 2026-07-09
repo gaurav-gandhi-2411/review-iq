@@ -6,6 +6,7 @@ import structlog
 from groq import AsyncGroq
 
 from app.core.providers.cassette import cassette_mode, record, replay
+from app.core.ratelimit import llm_call_slot
 
 log = structlog.get_logger(__name__)
 
@@ -87,20 +88,24 @@ class GroqProvider:
             return raw, tokens_in, tokens_out
 
         # --- live / record path (unchanged behaviour) ----------------------
-        client = AsyncGroq(api_key=self._api_key)
         prompt = user_prompt + (_RETRY_SUFFIX if retry else "")
         effective_timeout = timeout if timeout is not None else self._timeout
 
-        response = await client.chat.completions.create(
-            model=self._model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt},
-            ],
-            response_format={"type": "json_object"},
-            temperature=0.0,
-            timeout=effective_timeout,
-        )
+        # Throttled at the CALL layer, not the outer row loop: retries/escalation
+        # fire multiple calls per extraction, so only gating here bounds the
+        # actual Groq HTTP rate from bulk contexts (see app/core/ratelimit.py).
+        async with llm_call_slot():
+            client = AsyncGroq(api_key=self._api_key)
+            response = await client.chat.completions.create(
+                model=self._model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt},
+                ],
+                response_format={"type": "json_object"},
+                temperature=0.0,
+                timeout=effective_timeout,
+            )
         raw = response.choices[0].message.content or ""
         usage = getattr(response, "usage", None)
         if usage:

@@ -53,6 +53,14 @@ class Settings(BaseSettings):
     llm_max_retries: int = Field(default=2, alias="LLM_MAX_RETRIES")
     llm_timeout_seconds: int = Field(default=30, alias="LLM_TIMEOUT_SECONDS")
 
+    # Bulk-path Groq throttling (Option A of the CSV-throttling fix, 2026-07-09): bounds
+    # batch/CSV extraction at the Groq CALL layer so retry/escalation bursts cannot starve
+    # interactive /v2/extract on the shared key (2026-07-07 incident). At ~1800 tokens/call
+    # against the small model's 6000 TPM budget, ~3.3 calls/min is sustainable — 2/min for
+    # bulk leaves headroom for interactive traffic.
+    bulk_llm_calls_per_minute: float = Field(default=2.0, alias="BULK_LLM_CALLS_PER_MINUTE")
+    bulk_llm_max_concurrency: int = Field(default=1, alias="BULK_LLM_MAX_CONCURRENCY")
+
     # Deployment target — controls which routers are mounted
     deploy_target: Literal["hf-spaces", "cloud-run", "local"] = Field(
         default="local", alias="DEPLOY_TARGET"
