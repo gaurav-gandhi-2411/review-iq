@@ -1,0 +1,533 @@
+{
+  "_marker": "SYNTHETIC_TESTBED_GROUND_TRUTH",
+  "_warning": "SYNTHETIC TESTBED -- planted ground truth for LOCAL DETECTOR VALIDATION ONLY. Review TEXT is real (reused from the licensed corpus); timestamps/reviewer-IDs/product assignment are FABRICATED to create known, verifiable patterns. Passing validation against this data proves the detector CODE works correctly against patterns shaped like these -- it does NOT prove the patterns match how real defects/trends/campaigns actually look on live seller data. NEVER quote synthetic detection results as real-world accuracy.",
+  "_seed": 42,
+  "_window": {
+    "start": "2026-01-05T00:00:00Z",
+    "end_exclusive": "2026-04-27T00:00:00Z"
+  },
+  "_cross_product_reviewer_reuse": {},
+  "products": {
+    "SYN-BATCH-01": {
+      "product_id": "SYN-BATCH-01",
+      "pattern": "batch_defect",
+      "is_control": false,
+      "topic_keyword": "battery",
+      "keyword_regex": "battery",
+      "defect_negative_regex": "die|dies|died|drain|drains|draining|weak|poor|bad|not\\s+last|discharg",
+      "spike_window": {
+        "start": "2026-03-09T00:00:00Z",
+        "end": "2026-03-18T00:00:00Z"
+      },
+      "spike_target_count": 8,
+      "spike_actual_count": 8,
+      "spike_available_matches": 332,
+      "baseline_review_count": 40,
+      "baseline_topic_keyword_matches": 2,
+      "baseline_topic_keyword_rate": 0.05,
+      "planted_review_ids": [
+        "syn-000520",
+        "syn-000512",
+        "syn-000502",
+        "syn-000534",
+        "syn-000539",
+        "syn-000525",
+        "syn-000494",
+        "syn-000538"
+      ]
+    },
+    "SYN-BATCH-CTRL-01": {
+      "product_id": "SYN-BATCH-CTRL-01",
+      "pattern": "batch_defect",
+      "is_control": true,
+      "linked_planted_product_id": "SYN-BATCH-01",
+      "topic_keyword": "battery",
+      "keyword_regex": "battery",
+      "total_review_count": 48,
+      "scattered_topic_mention_target": 4,
+      "scattered_topic_mention_actual": 4,
+      "scattered_topic_review_ids": [
+        "syn-000121",
+        "syn-000765",
+        "syn-000016",
+        "syn-000166"
+      ]
+    },
+    "SYN-BATCH-02": {
+      "product_id": "SYN-BATCH-02",
+      "pattern": "batch_defect",
+      "is_control": false,
+      "topic_keyword": "screen",
+      "keyword_regex": "screen",
+      "defect_negative_regex": "crack|cracked|broken|shatter",
+      "spike_window": {
+        "start": "2026-02-16T00:00:00Z",
+        "end": "2026-02-25T00:00:00Z"
+      },
+      "spike_target_count": 8,
+      "spike_actual_count": 8,
+      "spike_available_matches": 13,
+      "baseline_review_count": 40,
+      "baseline_topic_keyword_matches": 0,
+      "baseline_topic_keyword_rate": 0.0,
+      "planted_review_ids": [
+        "syn-000323",
+        "syn-000334",
+        "syn-000321",
+        "syn-000378",
+        "syn-000320",
+        "syn-000380",
+        "syn-000337",
+        "syn-000354"
+      ]
+    },
+    "SYN-BATCH-CTRL-02": {
+      "product_id": "SYN-BATCH-CTRL-02",
+      "pattern": "batch_defect",
+      "is_control": true,
+      "linked_planted_product_id": "SYN-BATCH-02",
+      "topic_keyword": "screen",
+      "keyword_regex": "screen",
+      "total_review_count": 48,
+      "scattered_topic_mention_target": 4,
+      "scattered_topic_mention_actual": 4,
+      "scattered_topic_review_ids": [
+        "syn-000186",
+        "syn-000167",
+        "syn-000223",
+        "syn-000715"
+      ]
+    },
+    "SYN-TREND-01": {
+      "product_id": "SYN-TREND-01",
+      "pattern": "trend",
+      "is_control": false,
+      "topic_keyword": "delivery",
+      "keyword_regex": "delivery|shipping|late|delayed",
+      "defect_negative_regex": "late|delay|damaged?|broken|poor|bad|never\\s+arriv|lost|wrong|worst|not\\s+deliver",
+      "phase_targets": [
+        1,
+        3,
+        5,
+        8
+      ],
+      "phase_actual_counts": [
+        1,
+        3,
+        5,
+        8
+      ],
+      "phase_windows": [
+        {
+          "start": "2026-01-05T00:00:00Z",
+          "end": "2026-02-02T00:00:00Z"
+        },
+        {
+          "start": "2026-02-02T00:00:00Z",
+          "end": "2026-03-02T00:00:00Z"
+        },
+        {
+          "start": "2026-03-02T00:00:00Z",
+          "end": "2026-03-30T00:00:00Z"
+        },
+        {
+          "start": "2026-03-30T00:00:00Z",
+          "end": "2026-04-27T00:00:00Z"
+        }
+      ],
+      "weekly_topic_counts": [
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        2,
+        0,
+        0,
+        2,
+        2,
+        1,
+        6,
+        0,
+        2,
+        0
+      ],
+      "phase_over_phase_strictly_increasing": true,
+      "baseline_review_count": 56,
+      "topic_review_ids": [
+        "syn-000153",
+        "syn-000261",
+        "syn-000326",
+        "syn-000373",
+        "syn-000537",
+        "syn-000519",
+        "syn-000563",
+        "syn-000484",
+        "syn-000593",
+        "syn-000658",
+        "syn-000671",
+        "syn-000667",
+        "syn-000672",
+        "syn-000784",
+        "syn-000674",
+        "syn-000762",
+        "syn-000688"
+      ]
+    },
+    "SYN-TREND-CTRL-01": {
+      "product_id": "SYN-TREND-CTRL-01",
+      "pattern": "trend",
+      "is_control": true,
+      "linked_planted_product_id": "SYN-TREND-01",
+      "topic_keyword": "delivery",
+      "keyword_regex": "delivery|shipping|late|delayed",
+      "matched_total_topic_count": 17,
+      "actual_total_topic_count": 17,
+      "weekly_topic_counts": [
+        1,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "baseline_review_count": 54,
+      "topic_review_ids": [
+        "syn-000038",
+        "syn-000059",
+        "syn-000061",
+        "syn-000104",
+        "syn-000170",
+        "syn-000264",
+        "syn-000295",
+        "syn-000363",
+        "syn-000381",
+        "syn-000443",
+        "syn-000481",
+        "syn-000580",
+        "syn-000591",
+        "syn-000677",
+        "syn-000728",
+        "syn-000772",
+        "syn-000801"
+      ]
+    },
+    "SYN-TREND-02": {
+      "product_id": "SYN-TREND-02",
+      "pattern": "trend",
+      "is_control": false,
+      "topic_keyword": "packaging",
+      "keyword_regex": "packaging|box|damaged\\s+in\\s+transit|poorly\\s+packed",
+      "defect_negative_regex": "damag|broken|poor|bad|torn|crush|worst|cheap|flimsy",
+      "phase_targets": [
+        2,
+        4,
+        6,
+        10
+      ],
+      "phase_actual_counts": [
+        2,
+        4,
+        6,
+        10
+      ],
+      "phase_windows": [
+        {
+          "start": "2026-01-05T00:00:00Z",
+          "end": "2026-02-02T00:00:00Z"
+        },
+        {
+          "start": "2026-02-02T00:00:00Z",
+          "end": "2026-03-02T00:00:00Z"
+        },
+        {
+          "start": "2026-03-02T00:00:00Z",
+          "end": "2026-03-30T00:00:00Z"
+        },
+        {
+          "start": "2026-03-30T00:00:00Z",
+          "end": "2026-04-27T00:00:00Z"
+        }
+      ],
+      "weekly_topic_counts": [
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        2,
+        1,
+        1,
+        1,
+        1,
+        3,
+        2,
+        3,
+        3,
+        2
+      ],
+      "phase_over_phase_strictly_increasing": true,
+      "baseline_review_count": 58,
+      "topic_review_ids": [
+        "syn-000192",
+        "syn-000127",
+        "syn-000324",
+        "syn-000310",
+        "syn-000341",
+        "syn-000406",
+        "syn-000600",
+        "syn-000589",
+        "syn-000466",
+        "syn-000590",
+        "syn-000543",
+        "syn-000496",
+        "syn-000761",
+        "syn-000744",
+        "syn-000773",
+        "syn-000654",
+        "syn-000830",
+        "syn-000714",
+        "syn-000691",
+        "syn-000635",
+        "syn-000727",
+        "syn-000827"
+      ]
+    },
+    "SYN-TREND-CTRL-02": {
+      "product_id": "SYN-TREND-CTRL-02",
+      "pattern": "trend",
+      "is_control": true,
+      "linked_planted_product_id": "SYN-TREND-02",
+      "topic_keyword": "packaging",
+      "keyword_regex": "packaging|box|damaged\\s+in\\s+transit|poorly\\s+packed",
+      "matched_total_topic_count": 22,
+      "actual_total_topic_count": 22,
+      "weekly_topic_counts": [
+        2,
+        2,
+        2,
+        2,
+        1,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        1,
+        1
+      ],
+      "baseline_review_count": 56,
+      "topic_review_ids": [
+        "syn-000031",
+        "syn-000039",
+        "syn-000092",
+        "syn-000083",
+        "syn-000156",
+        "syn-000099",
+        "syn-000183",
+        "syn-000209",
+        "syn-000226",
+        "syn-000279",
+        "syn-000287",
+        "syn-000346",
+        "syn-000386",
+        "syn-000431",
+        "syn-000526",
+        "syn-000568",
+        "syn-000605",
+        "syn-000682",
+        "syn-000698",
+        "syn-000692",
+        "syn-000745",
+        "syn-000809"
+      ]
+    },
+    "SYN-CAMPAIGN-01": {
+      "product_id": "SYN-CAMPAIGN-01",
+      "pattern": "fake_campaign",
+      "is_control": false,
+      "burst_window": {
+        "start": "2026-02-02T00:00:00Z",
+        "end": "2026-02-03T06:00:00Z"
+      },
+      "burst_hours": 30,
+      "burst_review_count": 11,
+      "reviewer_ids_used": [
+        "rev-0525",
+        "rev-0526",
+        "rev-0527",
+        "rev-0528",
+        "rev-0529"
+      ],
+      "template_texts": [
+        "Paulo daily",
+        "Usable product",
+        "its really worthable",
+        "Very good creme."
+      ],
+      "template_usage_counts": {
+        "Paulo daily": 3,
+        "Usable product": 3,
+        "its really worthable": 3,
+        "Very good creme.": 2
+      },
+      "baseline_review_count": 30,
+      "burst_review_ids": [
+        "syn-000217",
+        "syn-000216",
+        "syn-000212",
+        "syn-000218",
+        "syn-000211",
+        "syn-000214",
+        "syn-000225",
+        "syn-000219",
+        "syn-000220",
+        "syn-000224",
+        "syn-000215"
+      ],
+      "review_id_to_template_text": {
+        "syn-000217": "Usable product",
+        "syn-000216": "its really worthable",
+        "syn-000212": "its really worthable",
+        "syn-000218": "Paulo daily",
+        "syn-000211": "Usable product",
+        "syn-000214": "Paulo daily",
+        "syn-000225": "Usable product",
+        "syn-000219": "its really worthable",
+        "syn-000220": "Very good creme.",
+        "syn-000224": "Paulo daily",
+        "syn-000215": "Very good creme."
+      }
+    },
+    "SYN-CAMPAIGN-CTRL-01": {
+      "product_id": "SYN-CAMPAIGN-CTRL-01",
+      "pattern": "fake_campaign",
+      "is_control": true,
+      "linked_planted_product_id": "SYN-CAMPAIGN-01",
+      "total_review_count": 41,
+      "unique_reviewer_count": 41,
+      "unique_text_count": 41
+    },
+    "SYN-CAMPAIGN-02": {
+      "product_id": "SYN-CAMPAIGN-02",
+      "pattern": "fake_campaign",
+      "is_control": false,
+      "burst_window": {
+        "start": "2026-03-30T00:00:00Z",
+        "end": "2026-03-31T18:00:00Z"
+      },
+      "burst_hours": 42,
+      "burst_review_count": 12,
+      "reviewer_ids_used": [
+        "rev-0601",
+        "rev-0602",
+        "rev-0603",
+        "rev-0604",
+        "rev-0605",
+        "rev-0606"
+      ],
+      "template_texts": [
+        "vevi niec",
+        "Juz wow",
+        "Good and best",
+        "goooooooood ride"
+      ],
+      "template_usage_counts": {
+        "vevi niec": 3,
+        "Juz wow": 3,
+        "Good and best": 3,
+        "goooooooood ride": 3
+      },
+      "baseline_review_count": 30,
+      "burst_review_ids": [
+        "syn-000646",
+        "syn-000648",
+        "syn-000637",
+        "syn-000624",
+        "syn-000629",
+        "syn-000647",
+        "syn-000640",
+        "syn-000628",
+        "syn-000649",
+        "syn-000642",
+        "syn-000633",
+        "syn-000645"
+      ],
+      "review_id_to_template_text": {
+        "syn-000646": "goooooooood ride",
+        "syn-000648": "vevi niec",
+        "syn-000637": "vevi niec",
+        "syn-000624": "Juz wow",
+        "syn-000629": "Good and best",
+        "syn-000647": "Good and best",
+        "syn-000640": "Good and best",
+        "syn-000628": "goooooooood ride",
+        "syn-000649": "Juz wow",
+        "syn-000642": "goooooooood ride",
+        "syn-000633": "Juz wow",
+        "syn-000645": "vevi niec"
+      }
+    },
+    "SYN-CAMPAIGN-CTRL-02": {
+      "product_id": "SYN-CAMPAIGN-CTRL-02",
+      "pattern": "fake_campaign",
+      "is_control": true,
+      "linked_planted_product_id": "SYN-CAMPAIGN-02",
+      "total_review_count": 42,
+      "unique_reviewer_count": 42,
+      "unique_text_count": 42
+    },
+    "SYN-NOISE-01": {
+      "product_id": "SYN-NOISE-01",
+      "pattern": null,
+      "is_control": false,
+      "review_count": 35
+    },
+    "SYN-NOISE-02": {
+      "product_id": "SYN-NOISE-02",
+      "pattern": null,
+      "is_control": false,
+      "review_count": 26
+    },
+    "SYN-NOISE-03": {
+      "product_id": "SYN-NOISE-03",
+      "pattern": null,
+      "is_control": false,
+      "review_count": 27
+    },
+    "SYN-NOISE-04": {
+      "product_id": "SYN-NOISE-04",
+      "pattern": null,
+      "is_control": false,
+      "review_count": 32
+    },
+    "SYN-NOISE-05": {
+      "product_id": "SYN-NOISE-05",
+      "pattern": null,
+      "is_control": false,
+      "review_count": 30
+    },
+    "SYN-NOISE-06": {
+      "product_id": "SYN-NOISE-06",
+      "pattern": null,
+      "is_control": false,
+      "review_count": 27
+    }
+  }
+}
