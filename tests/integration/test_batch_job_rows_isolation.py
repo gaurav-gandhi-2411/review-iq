@@ -34,6 +34,21 @@ is global across ALL orgs/jobs, not scoped to this test's own job. Every
 drain_rows()-touching test below therefore first asserts the queue is globally
 quiescent (quiescent_queue fixture) and fails loudly rather than silently
 trusting exact-count assertions while unrelated pending rows exist.
+
+LIVE SCHEDULER RACE (found + fixed 2026-07-10): the quiescent_queue guard above
+only checks the queue is empty at test START -- it cannot protect against the
+LIVE `review-iq-ingest-tick` Cloud Scheduler job (fires every 2 minutes against
+the real deployed API, review-iq-prod project) claiming/processing one of a
+test's own rows mid-run via the SAME global drain_rows() claim query. Confirmed
+via Cloud Scheduler execution logs: firings at 15:44-15:52 UTC exactly
+overlapped a local suite run's 15:44-15:52 UTC window, producing two different
+non-deterministic failure shapes (an LLM-boundary-patch call_count mismatch,
+and a stray extra "done" row). GG-approved fix: pause_prod_scheduler below
+pauses the job for the whole test session and resumes it in a finally block,
+guaranteed even on test failure -- NOT guaranteed against a hard process kill
+(SIGKILL) mid-run, which would leave the job paused; if that happens, resume
+manually: `gcloud scheduler jobs resume review-iq-ingest-tick
+--location=asia-south1 --project=review-iq-prod`.
 """
 
 from __future__ import annotations
@@ -41,6 +56,7 @@ from __future__ import annotations
 import asyncio
 import os
 import re
+import subprocess
 import uuid
 from collections.abc import Iterator
 from pathlib import Path
@@ -51,6 +67,56 @@ import pytest
 from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).parents[2] / ".env")
+
+_SCHEDULER_JOB = "review-iq-ingest-tick"
+_SCHEDULER_LOCATION = "asia-south1"
+_SCHEDULER_PROJECT = "review-iq-prod"
+
+
+def _scheduler_cmd(action: str) -> str:
+    # shell=True + a joined string, not a list -- on Windows, `gcloud` resolves to
+    # gcloud.cmd, a batch-file wrapper that subprocess cannot CreateProcess() directly
+    # without shell interpretation (confirmed via FileNotFoundError [WinError 2] before
+    # this fix). Every argument here is a hardcoded constant, never user input, so
+    # shell=True carries no injection risk.
+    return (
+        f"gcloud scheduler jobs {action} {_SCHEDULER_JOB} "
+        f"--location={_SCHEDULER_LOCATION} --project={_SCHEDULER_PROJECT} --quiet"
+    )
+
+
+@pytest.fixture(scope="module", autouse=True)
+def pause_prod_scheduler() -> Iterator[None]:
+    """Pause the LIVE review-iq-ingest-tick Cloud Scheduler job for this whole test
+    module's run, resume it in a finally block -- see module docstring's "LIVE
+    SCHEDULER RACE" section for why this exists. Runs once for the whole module
+    (not per-test) to minimize gcloud API calls and avoid repeatedly flapping a
+    real production schedule.
+    """
+    result = subprocess.run(
+        _scheduler_cmd("pause"), shell=True, capture_output=True, text=True, check=False
+    )
+    if result.returncode != 0:
+        pytest.fail(
+            f"Could not pause {_SCHEDULER_JOB} before running -- refusing to proceed "
+            f"with a suite known to race it: {result.stderr}"
+        )
+    print(f"\n[pause_prod_scheduler] paused {_SCHEDULER_JOB}")
+    try:
+        yield
+    finally:
+        result = subprocess.run(
+            _scheduler_cmd("resume"), shell=True, capture_output=True, text=True, check=False
+        )
+        if result.returncode != 0:
+            print(
+                f"\n[pause_prod_scheduler] WARNING: failed to resume {_SCHEDULER_JOB} -- "
+                f"resume manually: gcloud scheduler jobs resume {_SCHEDULER_JOB} "
+                f"--location={_SCHEDULER_LOCATION} --project={_SCHEDULER_PROJECT}. "
+                f"Error: {result.stderr}"
+            )
+        else:
+            print(f"\n[pause_prod_scheduler] resumed {_SCHEDULER_JOB}")
 
 from app.core.config import get_settings  # noqa: E402
 from app.core.ingest_worker import drain_rows  # noqa: E402
@@ -672,7 +738,13 @@ class TestBffEntryPoint:
 
         assert resp.status_code == 202
         body = resp.json()
-        assert set(body.keys()) == {"job_id", "total", "status"}
+        assert set(body.keys()) == {
+            "job_id",
+            "total",
+            "status",
+            "date_column",
+            "date_ambiguous",
+        }
         assert body["total"] == 2
         assert body["status"] == "pending"
         job_id = body["job_id"]
