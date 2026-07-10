@@ -10,7 +10,15 @@ import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.auth.api_key import ApiKeyContext, require_api_key
-from app.core.storage_pg import authenticity_audit_summary_pg, health_score_pg, theme_trends_pg
+from app.core.config import get_settings
+from app.core.detectors.batch_defect import WINDOW_DAYS as BATCH_DEFECT_WINDOW_DAYS
+from app.core.detectors.batch_defect import annotated_reviews_from_rows, scan_batch_defects
+from app.core.storage_pg import (
+    authenticity_audit_summary_pg,
+    health_score_pg,
+    list_dated_extractions_pg,
+    theme_trends_pg,
+)
 
 router = APIRouter(prefix="/v2/insights", tags=["v2-insights"])
 log = structlog.get_logger(__name__)
@@ -360,6 +368,100 @@ async def theme_trends(
             "language": language,
         },
         "themes": themes_out,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Batch-defect detector endpoint (Phase 2, off by default)
+# ---------------------------------------------------------------------------
+
+_BATCH_DEFECT_NOTE = (
+    "Moderation-prioritization signal only, not a verdict. Synthetic-validated; not yet "
+    "validated against real seller data. product_id reflects the extraction's free-text "
+    "product field, not a stable product ID."
+)
+
+
+@router.get(
+    "/batch-defects",
+    summary="Batch-defect (topic spike) detector -- off by default, Phase 2",
+    openapi_extra={
+        "responses": {
+            "200": {
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "org_id": "5b6c1e2a-....",
+                            "window": {"scope": "full_history", "spike_window_days": 10},
+                            "filters": {"min_confidence": 0.0, "limit": 50},
+                            "flags": [
+                                {
+                                    "product_id": "Acme Blender 3000",
+                                    "topic": "motor",
+                                    "confidence": 0.82,
+                                    "evidence": {
+                                        "window_start": "2026-06-01T00:00:00+00:00",
+                                        "window_end": "2026-06-11T00:00:00+00:00",
+                                        "window_days": 10,
+                                        "window_count": 7,
+                                        "baseline_rate_per_day": 0.05,
+                                        "expected_count": 0.5,
+                                        "ratio_vs_baseline": 14.0,
+                                        "outside_count": 1,
+                                        "review_ids": ["3f2...", "9ab..."],
+                                    },
+                                },
+                            ],
+                            "note": _BATCH_DEFECT_NOTE,
+                        },
+                    },
+                },
+            },
+            "404": {
+                "content": {
+                    "application/json": {"example": {"detail": "Not found."}},
+                },
+            },
+        },
+    },
+)
+async def batch_defects(
+    ctx: ApiKeyContext = Depends(require_api_key),
+    min_confidence: float = Query(0.0, ge=0.0, le=1.0, description="Post-filter on confidence"),
+    limit: int = Query(50, ge=1, le=200, description="Maximum number of flags to return"),
+) -> dict[str, Any]:
+    """Scan this org's full dated review history for batch-defect topic spikes.
+
+    404 when settings.enable_batch_defect_detector is off (default) -- not an authz boundary,
+    not an empty result: a 200 with `flags: []` would be indistinguishable from "scanned your
+    data, found nothing," a false-reassurance risk for a defect-detection feature that was never
+    actually turned on.
+
+    Computed fresh on every call (no caching, no scheduled job yet) -- reviews without a real
+    review_date (see supabase/migrations/20260710000001_review_date.sql) are silently excluded,
+    never backfilled from ingestion time.
+    """
+    if not get_settings().enable_batch_defect_detector:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found.")
+
+    rows = await asyncio.to_thread(list_dated_extractions_pg, ctx.org_id)
+    reviews = annotated_reviews_from_rows(rows)
+    all_flags = scan_batch_defects(reviews)
+    flags = [f.to_dict() for f in all_flags if f.confidence >= min_confidence][:limit]
+
+    log.info(
+        "insights.batch_defects",
+        org_id=ctx.org_id,
+        reviews_scanned=len(reviews),
+        flags_returned=len(flags),
+    )
+
+    return {
+        "org_id": ctx.org_id,
+        "window": {"scope": "full_history", "spike_window_days": BATCH_DEFECT_WINDOW_DAYS},
+        "filters": {"min_confidence": min_confidence, "limit": limit},
+        "flags": flags,
+        "note": _BATCH_DEFECT_NOTE,
     }
 
 

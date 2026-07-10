@@ -12,6 +12,7 @@ from app.core.schemas import ExtractionMetaV2, ReviewExtractionV2, Sentiment, Ur
 from app.core.storage_pg import (
     aggregate_extractions_pg,
     get_by_hash_pg,
+    list_dated_extractions_pg,
     list_extractions_pg,
     save_extraction_pg,
     update_usage_tokens,
@@ -261,6 +262,65 @@ def test_list_extractions_pg_filters_appended() -> None:
     sql = select_call[0][0][0]
     assert "ILIKE" in sql
     assert "sentiment" in sql
+
+
+# ---------------------------------------------------------------------------
+# list_dated_extractions_pg
+# ---------------------------------------------------------------------------
+
+
+def test_list_dated_extractions_pg_empty_result() -> None:
+    conn, cur = _make_conn()
+    cur.fetchall.return_value = []
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        result = list_dated_extractions_pg(_ORG_ID)
+
+    assert result == []
+    conn.commit.assert_called_once()
+
+
+def test_list_dated_extractions_pg_sets_rls_context() -> None:
+    conn, cur = _make_conn()
+    cur.fetchall.return_value = []
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        list_dated_extractions_pg(_ORG_ID)
+
+    sqls = [c[0][0] for c in cur.execute.call_args_list]
+    assert any("SET LOCAL ROLE" in s for s in sqls)
+
+
+def test_list_dated_extractions_pg_filters_null_review_date() -> None:
+    conn, cur = _make_conn()
+    cur.fetchall.return_value = []
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        list_dated_extractions_pg(_ORG_ID)
+
+    select_call = [c for c in cur.execute.call_args_list if "SELECT" in (c[0][0] or "")]
+    assert select_call, "Expected a SELECT call"
+    sql = select_call[0][0][0]
+    assert "review_date IS NOT NULL" in sql
+
+
+def test_list_dated_extractions_pg_maps_row_shape() -> None:
+    conn, cur = _make_conn()
+    # (id, product, topics, sentiment, review_date) -- topics as a raw JSON string, exercising
+    # the isinstance guard rather than assuming psycopg2 always auto-decodes jsonb to list.
+    cur.fetchall.return_value = [
+        (uuid.uuid4(), "Widget", json.dumps(["battery"]), "negative", _NOW),
+    ]
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        result = list_dated_extractions_pg(_ORG_ID)
+
+    assert len(result) == 1
+    row = result[0]
+    assert row["product"] == "Widget"
+    assert row["topics"] == ["battery"]
+    assert row["sentiment"] == "negative"
+    assert row["review_date"] == _NOW
 
 
 # ---------------------------------------------------------------------------

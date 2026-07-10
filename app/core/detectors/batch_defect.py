@@ -1,22 +1,25 @@
-"""Batch-defect (bad manufacturing run) detector.
+"""Batch-defect (bad manufacturing run) detector -- PRODUCTION FORK.
 
-PRODUCTION FORK EXISTS at app/core/detectors/batch_defect.py, wired behind
-settings.enable_batch_defect_detector (off by default) as of 2026-07-10 -- see that file's
-docstring for the fork rationale (this file's zero-app-dependency design is intentional for
-research portability, but the production Dockerfile excludes benchmark/ entirely, so the
-detection logic had to be ported rather than imported). This file remains the synthetic-
-validation research copy; edits here do NOT propagate to the production fork and vice versa.
+PRODUCTION FORK of benchmark/phase2_synthetic/detectors/batch_defect.py. Detection logic
+(constants, `_is_negative_mention`, `_topics_for_product`, `_window_starts`,
+`_best_window_for_topic`, `scan_batch_defects`) is ported unchanged from the synthetic-validated
+original -- see that file for the validation methodology and precision/recall findings against
+the planted-ground-truth testbed and the later stress test. This fork adds only
+`annotated_reviews_from_rows` (a Postgres-row adapter, replacing the benchmark original's
+jsonl-file loading path) and drops the file-based CLI plumbing (`write_report`, `main`), which
+has no production role. Changes to detection logic made here do not propagate back to the
+benchmark copy and vice versa -- keep both docstrings' cross-reference current if the algorithm
+changes on either side.
 
-SYNTHETIC-VALIDATED DETECTOR -- this code's logic is proven against a synthetic testbed with
-PLANTED, KNOWN ground truth (benchmark/phase2_synthetic/). It is NOT proven against real seller
-data -- planted patterns may not match how real batch defects actually look in production. Do
-not quote synthetic precision/recall as real-world accuracy. Ready to run against live tenant
-data, not yet validated against it.
+SYNTHETIC-VALIDATED DETECTOR -- proven against a synthetic testbed with PLANTED, KNOWN ground
+truth. NOT proven against real seller data -- planted patterns may not match how real batch
+defects actually look in production. Do not quote synthetic precision/recall as real-world
+accuracy. Gated behind settings.enable_batch_defect_detector (off by default) precisely because
+of this — see app/api/v2/insights.py's batch-defects endpoint for the production entry point.
 
 This is a MODERATION-PRIORITIZATION SIGNAL, not a verdict -- it mirrors review-iq's existing
-authenticity feature framing and the Phase 2 fake-campaign detector
-(benchmark/phase2_campaign/score.py): a confidence score plus concrete evidence for a human
-moderator to review, never an automated "this product has a defect" label.
+authenticity feature framing: a confidence score plus concrete evidence for a human moderator to
+review, never an automated "this product has a defect" label.
 
 What it looks for: a product where the same specific failure TOPIC (e.g. "battery", "screen")
 suddenly clusters in a short time window, well above that product's own normal steady-state rate
@@ -27,14 +30,12 @@ hardcoded product IDs, topic names, or spike windows.
 
 from __future__ import annotations
 
-import json
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from pathlib import Path
 from typing import Any
 
-from common import AnnotatedReview, load_extractions, to_annotated
+from app.core.detectors.common import AnnotatedReview
 
 # A (product, topic) pair needs at least this many negative/mixed mentions of the topic in
 # total (anywhere in the product's history) before it's even considered for windowing -- below
@@ -69,27 +70,10 @@ EXPECTED_COUNT_FLOOR = 0.3
 # zero on a product whose entire observed range is shorter than one window.
 MIN_OUTSIDE_DAYS = 0.5
 
-# 2026-07-10, second iteration: the candidate spike window's topic must ALSO be nearly SILENT
-# everywhere else in the product's observed history -- not just quiet in the one window right
-# before it. A first attempt at this (compare only against the immediately-preceding
-# WINDOW_DAYS-wide window) worked but left a thin, position-sensitive margin: it depended on
-# exactly where the preceding-window boundary fell, and a genuinely rising trend's tail could
-# still slip through if that one adjacent window happened to be sparse by chance (found on
-# SYN-TREND-01: 5 of its final-phase reviews randomly clumped within ~34 hours, and the
-# specific 10-day window this produced had a low-count immediate predecessor even though the
-# topic had been continuously active for months).
-#
-# The real, more robust distinguishing signal, found by inspecting the raw mention timestamps
-# directly: a genuine batch defect has ZERO (or near-zero) mentions of the topic ANYWHERE in
-# the product's history outside the spike window -- the topic was silent, then suddenly wasn't.
-# A rising trend has mentions spread continuously across the WHOLE observed range with
-# gradually shrinking gaps between them -- there is no quiet period to find, at any window
-# position, because the topic was never silent. Measured directly on the real data: both
-# planted batch-defect spikes have 0-1 total mentions outside their flagged window; every
-# trend-pattern product (both planted trends AND their matched controls) has 11-18 mentions
-# outside whatever window scores highest. A threshold of 3 sits with enormous margin on both
-# sides (at least 2x below the true positives' max of 1, at least 3.7x above the threshold from
-# the lowest trend-pattern product's 11) -- not a fragile, position-sensitive boundary.
+# The candidate spike window's topic must ALSO be nearly SILENT everywhere else in the product's
+# observed history -- not just quiet in the one window right before it. See the benchmark
+# original's docstring (benchmark/phase2_synthetic/detectors/batch_defect.py) for the full
+# measured-margin justification of this threshold.
 MAX_TOTAL_OUTSIDE_COUNT = 3
 
 
@@ -103,7 +87,7 @@ class BatchDefectFlag:
     evidence: dict[str, Any]
 
     def to_dict(self) -> dict[str, Any]:
-        """Flatten to the JSONL output record shape."""
+        """Flatten to the JSON output record shape."""
         return {
             "product_id": self.product_id,
             "topic": self.topic,
@@ -248,64 +232,29 @@ def scan_batch_defects(reviews: list[AnnotatedReview]) -> list[BatchDefectFlag]:
     return flags
 
 
-def write_report(flags: list[BatchDefectFlag], path: Path) -> None:
-    """Write a human-readable markdown report of all flagged (product, topic) candidates."""
-    lines = [
-        "# Phase 2 Batch-Defect Detector -- Flagged Products",
-        "",
-        "> SYNTHETIC-VALIDATED DETECTOR -- see batch_defect.py module docstring. Moderation-"
-        "prioritization signal only, never a verdict.",
-        "",
-        f"Total flagged (product, topic) pairs: {len(flags)}",
-        "",
-    ]
-    for i, flag in enumerate(flags, start=1):
-        ev = flag.evidence
-        lines.append(f"## {i}. confidence={flag.confidence} -- {flag.product_id} / {flag.topic}")
-        lines.append("")
-        lines.append(
-            f"- {ev['window_count']} reviews in {ev['window_days']} days cite '{flag.topic}' "
-            f"failure, {ev['ratio_vs_baseline']}x baseline"
-        )
-        lines.append(f"- window: {ev['window_start']} to {ev['window_end']}")
-        lines.append(
-            f"- baseline_rate_per_day: {ev['baseline_rate_per_day']}, "
-            f"expected_count: {ev['expected_count']}"
-        )
-        lines.append(f"- review_ids: {ev['review_ids']}")
-        lines.append("")
-    path.write_text("\n".join(lines), encoding="utf-8")
+def annotated_reviews_from_rows(rows: list[dict[str, Any]]) -> list[AnnotatedReview]:
+    """Adapt app.core.storage_pg.list_dated_extractions_pg's row dicts into AnnotatedReview
+    objects -- production's replacement for the benchmark original's jsonl-file loading path.
 
+    `reviewer_id`/`rating`/`urgency` are stubbed ("" / 0 / "") -- confirmed by direct inspection
+    that `scan_batch_defects` and its helpers never read these fields (only the benchmark
+    original's dropped file-loading helper touched them). `extractions` has no reviewer-identity
+    column at all, so there is no honest value to populate for `reviewer_id` even if the
+    algorithm wanted one.
 
-def main() -> None:
-    """Load `extractions.jsonl`, scan for batch-defect spikes, and write the flags JSONL + report.
-
-    Exits cleanly (no traceback) if `extractions.jsonl` does not exist yet -- it is produced by
-    a separate, long-running background extraction process.
+    Each row must have `id`, `product`, `topics`, `sentiment`, `review_date` keys (see
+    list_dated_extractions_pg's return shape).
     """
-    extractions_path = Path(__file__).resolve().parents[1] / "extractions.jsonl"
-    if not extractions_path.exists():
-        print(f"{extractions_path} does not exist yet -- nothing to scan. Exiting cleanly.")
-        return
-
-    records = load_extractions(extractions_path)
-    reviews = [to_annotated(r) for r in records]
-    flags = scan_batch_defects(reviews)
-
-    out_dir = Path(__file__).resolve().parent
-    jsonl_path = out_dir / "batch_defect_flags.jsonl"
-    with jsonl_path.open("w", encoding="utf-8") as f:
-        for flag in flags:
-            f.write(json.dumps(flag.to_dict(), ensure_ascii=False) + "\n")
-
-    report_path = out_dir / "BATCH_DEFECT_REPORT.md"
-    write_report(flags, report_path)
-
-    print(f"loaded {len(reviews)} annotated reviews (of {len(records)} extraction records)")
-    print(f"flagged {len(flags)} (product, topic) pairs")
-    print(f"wrote {jsonl_path}")
-    print(f"wrote {report_path}")
-
-
-if __name__ == "__main__":
-    main()
+    return [
+        AnnotatedReview(
+            review_id=row["id"],
+            product_id=row["product"] or "unknown product",
+            reviewer_id="",
+            timestamp=row["review_date"],
+            rating=0,
+            topics=row["topics"],
+            sentiment=row["sentiment"] or "",
+            urgency="",
+        )
+        for row in rows
+    ]

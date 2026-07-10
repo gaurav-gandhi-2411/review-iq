@@ -76,6 +76,13 @@ class Settings(BaseSettings):
     # Enabled after v0.5.1 routed eval: en 86.2 / hi 86.1 / hi-en 83.6 / overall 85.3%.
     enable_tiered_routing: bool = Field(default=True, alias="ENABLE_TIERED_ROUTING")
 
+    # Phase 2 batch-defect detector (app/core/detectors/batch_defect.py) -- off by default.
+    # SYNTHETIC-VALIDATED, not yet proven on real seller data (see project memory). v1: gates a
+    # GET-only, on-demand endpoint; no scheduled job or alerting wired yet.
+    enable_batch_defect_detector: bool = Field(
+        default=False, alias="ENABLE_BATCH_DEFECT_DETECTOR"
+    )
+
     # Tiered model names — both Groq (privacy-vetted)
     groq_model_small: str = Field(
         default="llama-3.1-8b-instant",

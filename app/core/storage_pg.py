@@ -293,6 +293,62 @@ def list_extractions_pg(
         conn.close()
 
 
+def list_dated_extractions_pg(org_id: str) -> list[dict[str, Any]]:
+    """Every extraction for this org that has a real review_date, across the org's FULL
+    history -- no pagination, no since/until bound.
+
+    Feeds one-shot temporal detectors (batch-defect now; a future trend detector, per
+    supabase/migrations/20260710000001_review_date.sql's own comment) that need each product's
+    complete observed date range in a single scan. review_date IS NULL rows are excluded, never
+    defaulted to created_at -- a fabricated timestamp would silently skew spike-window math.
+
+    Deliberately does NOT pre-filter by sentiment at the SQL level even though only
+    negative/mixed rows ultimately count as "mentions" for batch-defect: scan_batch_defects
+    computes each product's earliest/latest timestamp from ALL of that product's reviews (any
+    sentiment) to establish the observed date range the sliding window and baseline rate are
+    measured against. Pre-filtering by sentiment here would silently shrink that range and
+    corrupt the baseline-rate/ratio math for every flag -- do not "optimize" this filter later
+    without re-deriving that math.
+
+    Uses idx_extractions_review_date (org_id, review_date WHERE review_date IS NOT NULL)
+    directly -- the WHERE clause and ORDER BY match the index's column order.
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+        cur.execute(
+            "SELECT id, product, topics, sentiment, review_date FROM public.extractions "
+            "WHERE org_id = %s AND review_date IS NOT NULL ORDER BY review_date",
+            (org_id,),
+        )
+        rows = cur.fetchall()
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+    def _load_topics(val: Any) -> list[str]:
+        if val is None:
+            return []
+        if isinstance(val, list):
+            return val
+        return json.loads(val)
+
+    return [
+        {
+            "id": str(r[0]),
+            "product": r[1],
+            "topics": _load_topics(r[2]),
+            "sentiment": r[3],
+            "review_date": r[4],
+        }
+        for r in rows
+    ]
+
+
 def aggregate_extractions_pg(org_id: str) -> dict[str, Any]:
     """Return aggregated insights for this org."""
     conn = _db_connect()

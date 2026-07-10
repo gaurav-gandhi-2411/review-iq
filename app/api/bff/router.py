@@ -55,6 +55,8 @@ from app.core.csv_ingest import (
     read_and_validate_csv,
 )
 from app.core.dataset.builder import get_dataset_page
+from app.core.detectors.batch_defect import WINDOW_DAYS as BATCH_DEFECT_WINDOW_DAYS
+from app.core.detectors.batch_defect import annotated_reviews_from_rows, scan_batch_defects
 from app.core.metrics import CORRECTIONS_SUBMITTED, REPLY_CACHE_HIT_TOTAL
 from app.core.reply.engine import VernacularModelUnavailableError, draft_reply
 from app.core.reply.schema import ReplyDraft, ReplyRequest
@@ -66,12 +68,19 @@ from app.core.storage_pg import (
     get_authenticity_audit_by_hash_pg,
     get_batch_job_pg,
     health_score_pg,
+    list_dated_extractions_pg,
     list_extractions_pg,
     record_quota_request_pg,
     save_authenticity_audit_pg,
     theme_trends_pg,
     update_batch_job_pg,
     update_usage_tokens,
+)
+
+_BATCH_DEFECT_NOTE = (
+    "Moderation-prioritization signal only, not a verdict. Synthetic-validated; not yet "
+    "validated against real seller data. product_id reflects the extraction's free-text "
+    "product field, not a stable product ID."
 )
 
 router = APIRouter(prefix="/bff", tags=["bff"])
@@ -525,6 +534,31 @@ async def bff_theme_trends(
         },
         "filters": {"product": product, "language": language},
         "themes": themes_out,
+    }
+
+
+@router.get("/insights/batch-defects")
+async def bff_batch_defects(
+    ctx: Annotated[ApiKeyContext, Depends(require_session_read)],
+    min_confidence: float = Query(0.0, ge=0.0, le=1.0),
+    limit: int = Query(50, ge=1, le=200),
+) -> dict[str, Any]:
+    """Batch-defect (topic spike) detector, off by default (BFF path) -- see
+    app/api/v2/insights.py::batch_defects for the full docstring; this mirrors it exactly."""
+    if not get_settings().enable_batch_defect_detector:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found.")
+
+    rows = await asyncio.to_thread(list_dated_extractions_pg, ctx.org_id)
+    reviews = annotated_reviews_from_rows(rows)
+    all_flags = scan_batch_defects(reviews)
+    flags = [f.to_dict() for f in all_flags if f.confidence >= min_confidence][:limit]
+
+    return {
+        "org_id": ctx.org_id,
+        "window": {"scope": "full_history", "spike_window_days": BATCH_DEFECT_WINDOW_DAYS},
+        "filters": {"min_confidence": min_confidence, "limit": limit},
+        "flags": flags,
+        "note": _BATCH_DEFECT_NOTE,
     }
 
 
