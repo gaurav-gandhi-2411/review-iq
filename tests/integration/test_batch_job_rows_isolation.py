@@ -393,11 +393,14 @@ async def test_drain_carries_product_and_review_date_through_the_queue(
     CSV upload with a resolved product_column/date_column would produce) survives
     enqueue -> claim -> extraction -> storage intact -- the source-provided
     product PREFERRED over the LLM-inferred one, and review_date exactly as given
-    (never fabricated, never silently replaced with ingestion time).
+    (never fabricated, never silently replaced with ingestion time). Also proves
+    the new column is covered by the EXISTING extractions RLS policy: org B
+    cannot read org A's review_date, at the raw SQL level (not just via the
+    org_id-filtered helper function) -- same pattern as Proof 1's RLS checks.
     """
     from datetime import UTC, datetime
 
-    org_a, _org_b = two_orgs
+    org_a, org_b = two_orgs
     text = f"Proof2b review with known date and product {uuid.uuid4().hex[:10]}"
     given_date = datetime(2025, 3, 14, 9, 30, tzinfo=UTC)
     given_product = "Seller's Own Product Name"
@@ -425,6 +428,24 @@ async def test_drain_carries_product_and_review_date_through_the_queue(
     # Source-provided product wins over the canned LLM output's "Test Widget".
     assert ext.product == given_product
     assert ext.review_date == given_date
+
+    # RLS proof, specifically for review_date: org B's authenticated connection
+    # querying the review_date column directly for org A's row must return ZERO
+    # rows -- not a NULL value, no row at all -- proving the new column inherits
+    # the table's existing row-level policy rather than being reachable some
+    # other way. Mirrors TestBatchJobRowsRLSIsolation's pattern above exactly.
+    conn = _as_authenticated(org_b)
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT review_date FROM public.extractions WHERE org_id = %s AND input_hash = %s",
+            (org_a, hash_),
+        )
+        rows = cur.fetchall()
+    finally:
+        conn.rollback()
+        conn.close()
+    assert rows == [], "org B must not be able to read org A's review_date column at all"
 
 
 # ---------------------------------------------------------------------------
