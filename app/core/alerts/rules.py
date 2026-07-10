@@ -23,6 +23,12 @@ class AlertEventType(StrEnum):
     LIKELY_FAKE = "likely_fake"
     FAKE_CLUSTER = "fake_cluster"
     TOPIC_SPIKE = "topic_spike"
+    # Phase 2 detector sweep events (app/core/alerts/detector_sweep.py) -- distinct from the
+    # orphaned FAKE_CLUSTER/TOPIC_SPIKE above, which cluster a different signal (authenticity
+    # labels / pre-computed ratios) and have no production caller. These two are produced by the
+    # stress-tested batch_defect/campaign detectors in app/core/detectors/.
+    BATCH_DEFECT = "batch_defect"
+    FAKE_CAMPAIGN = "fake_campaign"
 
 
 @dataclass(frozen=True)

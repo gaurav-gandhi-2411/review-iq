@@ -17,6 +17,7 @@ from pydantic import BaseModel, field_validator
 
 from app.auth.api_key import ApiKeyContext
 from app.auth.session import require_session, require_session_read
+from app.core.alerts.digest import _DIGESTIBLE_EVENT_TYPES
 from app.core.alerts.rules import AlertEventType
 from app.core.alerts.storage import (
     get_all_preferences_pg,
@@ -30,6 +31,9 @@ log = structlog.get_logger(__name__)
 
 _VALID_EVENT_TYPES: frozenset[str] = frozenset(e.value for e in AlertEventType)
 _VALID_FREQUENCIES: frozenset[str] = frozenset({"immediate", "daily_digest"})
+# Single source of truth is digest.py's own _DIGESTIBLE_EVENT_TYPES -- reused here (not
+# duplicated) so this guard can never drift out of sync with what the batcher actually supports.
+_DIGESTIBLE_EVENT_TYPE_VALUES: frozenset[str] = frozenset(e.value for e in _DIGESTIBLE_EVENT_TYPES)
 
 
 class AlertPrefUpdate(BaseModel):
@@ -78,6 +82,19 @@ async def bff_put_alert_preference(
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Unknown event_type '{event_type}'. Valid: {sorted(_VALID_EVENT_TYPES)}",
+        )
+    if body.frequency == "daily_digest" and event_type not in _DIGESTIBLE_EVENT_TYPE_VALUES:
+        # digest.py's batcher only re-evaluates HIGH_URGENCY/LIKELY_FAKE from stored data --
+        # any other event_type set to daily_digest would have its events silently dropped
+        # forever by evaluate_and_alert's frequency gate (deferred, never batched, never sent).
+        # Reject at the source rather than let that trap exist -- see digest.py's own docstring
+        # and app/core/alerts/detector_sweep.py's module docstring for the full explanation.
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=(
+                f"event_type '{event_type}' only supports frequency='immediate' -- "
+                "daily_digest batching is not implemented for this event type."
+            ),
         )
     await asyncio.to_thread(
         upsert_preference_pg, ctx.org_id, event_type, body.enabled, body.frequency

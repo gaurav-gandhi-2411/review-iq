@@ -14,6 +14,7 @@ from app.core.storage_pg import (
     get_by_hash_pg,
     list_dated_extractions_pg,
     list_extractions_pg,
+    list_orgs_with_dated_extractions_pg,
     save_extraction_pg,
     update_usage_tokens,
 )
@@ -306,10 +307,10 @@ def test_list_dated_extractions_pg_filters_null_review_date() -> None:
 
 def test_list_dated_extractions_pg_maps_row_shape() -> None:
     conn, cur = _make_conn()
-    # (id, product, topics, sentiment, review_date) -- topics as a raw JSON string, exercising
-    # the isinstance guard rather than assuming psycopg2 always auto-decodes jsonb to list.
+    # (id, product, topics, sentiment, review_date, review_text) -- topics as a raw JSON string,
+    # exercising the isinstance guard rather than assuming psycopg2 always auto-decodes jsonb.
     cur.fetchall.return_value = [
-        (uuid.uuid4(), "Widget", json.dumps(["battery"]), "negative", _NOW),
+        (uuid.uuid4(), "Widget", json.dumps(["battery"]), "negative", _NOW, "Battery died fast"),
     ]
 
     with patch("app.core.storage_pg._db_connect", return_value=conn):
@@ -317,10 +318,50 @@ def test_list_dated_extractions_pg_maps_row_shape() -> None:
 
     assert len(result) == 1
     row = result[0]
+    assert row["review_text"] == "Battery died fast"
     assert row["product"] == "Widget"
     assert row["topics"] == ["battery"]
     assert row["sentiment"] == "negative"
     assert row["review_date"] == _NOW
+
+
+# ---------------------------------------------------------------------------
+# list_orgs_with_dated_extractions_pg
+# ---------------------------------------------------------------------------
+
+
+def test_list_orgs_with_dated_extractions_pg_empty_result() -> None:
+    conn, cur = _make_conn()
+    cur.fetchall.return_value = []
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        result = list_orgs_with_dated_extractions_pg()
+
+    assert result == []
+
+
+def test_list_orgs_with_dated_extractions_pg_maps_ids() -> None:
+    conn, cur = _make_conn()
+    org_a, org_b = uuid.uuid4(), uuid.uuid4()
+    cur.fetchall.return_value = [(org_a,), (org_b,)]
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        result = list_orgs_with_dated_extractions_pg()
+
+    assert result == [str(org_a), str(org_b)]
+
+
+def test_list_orgs_with_dated_extractions_pg_does_not_set_tenant() -> None:
+    """Cross-org query -- deliberately does NOT call _set_tenant (service-role bypass, same
+    pattern as list_orgs_with_daily_digest_pg). Confirms no SET LOCAL ROLE call is issued."""
+    conn, cur = _make_conn()
+    cur.fetchall.return_value = []
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        list_orgs_with_dated_extractions_pg()
+
+    sqls = [c[0][0] for c in cur.execute.call_args_list]
+    assert not any("SET LOCAL ROLE" in s for s in sqls)
 
 
 # ---------------------------------------------------------------------------

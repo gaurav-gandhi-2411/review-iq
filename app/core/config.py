@@ -77,10 +77,17 @@ class Settings(BaseSettings):
     enable_tiered_routing: bool = Field(default=True, alias="ENABLE_TIERED_ROUTING")
 
     # Phase 2 batch-defect detector (app/core/detectors/batch_defect.py) -- off by default.
-    # SYNTHETIC-VALIDATED, not yet proven on real seller data (see project memory). v1: gates a
-    # GET-only, on-demand endpoint; no scheduled job or alerting wired yet.
+    # SYNTHETIC-VALIDATED, not yet proven on real seller data (see project memory). Gates both
+    # the on-demand GET endpoint AND the scheduled detector sweep (app/core/alerts/detector_sweep.py).
     enable_batch_defect_detector: bool = Field(
         default=False, alias="ENABLE_BATCH_DEFECT_DETECTOR"
+    )
+    # Phase 2 fake-campaign detector (app/core/detectors/campaign.py) -- off by default.
+    # SYNTHETIC-VALIDATED, stress-tested, not yet proven on real seller data. Reviewer-identity
+    # signal is stubbed to 0 (no ingestion path captures it yet) -- see that module's docstring
+    # for the accepted recall-only limitation this implies. Gates the scheduled detector sweep.
+    enable_fake_campaign_detector: bool = Field(
+        default=False, alias="ENABLE_FAKE_CAMPAIGN_DETECTOR"
     )
 
     # Tiered model names — both Groq (privacy-vetted)
@@ -171,6 +178,12 @@ class Settings(BaseSettings):
     # bulk lane's own throughput (~2 Groq calls/min, app/core/ratelimit.py) so the
     # tick worker can't outrun the throttle it shares with interactive traffic.
     ingest_tick_rows: int = Field(default=3, alias="INGEST_TICK_ROWS")
+
+    # Shared-secret header token protecting POST /internal/detectors/run (timing-safe compare
+    # via hmac.compare_digest) — same pattern as digest_trigger_token/ingest_tick_token. Plain
+    # env var, not Secret Manager, same reason: the project is already at its Secret Manager
+    # free-tier ceiling.
+    detector_sweep_trigger_token: str = Field(default="", alias="DETECTOR_SWEEP_TRIGGER_TOKEN")
 
     # Resend transactional email
     resend_api_key: str = Field(default="", alias="RESEND_API_KEY")

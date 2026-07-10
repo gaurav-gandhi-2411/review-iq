@@ -9,6 +9,7 @@ rules.py) and call evaluate_and_alert with the augmented event list.
 from __future__ import annotations
 
 import asyncio
+from typing import Any
 
 import structlog
 
@@ -45,6 +46,8 @@ _SUBJECT_TEMPLATES: dict[AlertEventType, str] = {
     AlertEventType.LIKELY_FAKE: "🚨 Suspicious review detected",
     AlertEventType.FAKE_CLUSTER: "🚨 {count} suspicious reviews in {window_hours}h — possible fake cluster",
     AlertEventType.TOPIC_SPIKE: "📈 Complaint spike: '{topic}' ({recent_count}x in recent window)",
+    AlertEventType.BATCH_DEFECT: "📈 Possible batch defect: '{topic}' spiking for {product_id}",
+    AlertEventType.FAKE_CAMPAIGN: "🚨 Possible coordinated review campaign on {product_id}",
 }
 
 # Emoji-free counterparts — selected via ALERT_SUBJECT_EMOJI_ENABLED so inbox
@@ -54,6 +57,8 @@ _SUBJECT_TEMPLATES_NO_EMOJI: dict[AlertEventType, str] = {
     AlertEventType.LIKELY_FAKE: "Suspicious review detected",
     AlertEventType.FAKE_CLUSTER: "{count} suspicious reviews in {window_hours}h — possible fake cluster",
     AlertEventType.TOPIC_SPIKE: "Complaint spike: '{topic}' ({recent_count}x in recent window)",
+    AlertEventType.BATCH_DEFECT: "Possible batch defect: '{topic}' spiking for {product_id}",
+    AlertEventType.FAKE_CAMPAIGN: "Possible coordinated review campaign on {product_id}",
 }
 
 
@@ -115,7 +120,50 @@ def _format_body(
             f"{recent} recent mentions vs a baseline of {float(baseline):.1f}."
         )
 
-    if review_id:
+    elif event.event_type == AlertEventType.BATCH_DEFECT:
+        # details is a BatchDefectFlag.to_dict() -- product_id/topic/confidence top-level,
+        # window_count/ratio_vs_baseline nested under evidence.
+        topic = event.details.get("topic", "?")
+        product_id = event.details.get("product_id", "?")
+        confidence = event.details.get("confidence", "?")
+        evidence_raw = event.details.get("evidence")
+        evidence: dict[str, Any] = evidence_raw if isinstance(evidence_raw, dict) else {}
+        window_count = evidence.get("window_count", "?")
+        ratio = evidence.get("ratio_vs_baseline", "?")
+        window_days = evidence.get("window_days", "?")
+        lines.append(
+            f"Possible batch defect on '{product_id}': the topic '{topic}' had {window_count} "
+            f"negative mentions in a {window_days}-day window, {ratio}x the product's own "
+            f"baseline rate (confidence {confidence}). Synthetic-validated; not yet proven "
+            "against real seller data -- treat as a prioritization signal, not a verdict."
+        )
+
+    elif event.event_type == AlertEventType.FAKE_CAMPAIGN:
+        # details is a CampaignFlag.to_dict() -- product_id/confidence top-level, the rest
+        # nested under evidence.
+        product_id = event.details.get("product_id", "?")
+        confidence = event.details.get("confidence", "?")
+        evidence_raw = event.details.get("evidence")
+        evidence = evidence_raw if isinstance(evidence_raw, dict) else {}
+        window_count = evidence.get("window_review_count", "?")
+        distinct_reviewers = evidence.get("distinct_reviewers", "?")
+        distinct_texts = evidence.get("distinct_texts", "?")
+        burst_hours = evidence.get("burst_hours", "?")
+        lines.append(
+            f"Possible coordinated review campaign on '{product_id}': {window_count} reviews "
+            f"within {burst_hours}h ({distinct_reviewers} distinct reviewer IDs, "
+            f"{distinct_texts} distinct review texts), confidence {confidence}. "
+            "Synthetic-validated; not yet proven against real seller data -- treat as a "
+            "prioritization signal, not a verdict."
+        )
+
+    # BATCH_DEFECT/FAKE_CAMPAIGN's review_id is a synthetic cluster-dedupe key (e.g.
+    # "batch_defect:Widget:battery:2026-07"), not a real review -- printing it as a "review
+    # reference" would be misleading, so this line is deliberately skipped for those two types.
+    if review_id and event.event_type not in (
+        AlertEventType.BATCH_DEFECT,
+        AlertEventType.FAKE_CAMPAIGN,
+    ):
         lines.append(f"\nReview reference: {review_id}")
     lines.append("\nLog in to Samidha Reviews to investigate and take action.")
     if unsubscribe_url:
@@ -134,6 +182,7 @@ async def evaluate_and_alert(
     review_id: str | None,
     extraction: ReviewExtraction | None = None,
     auth: AuthenticityResult | None = None,
+    precomputed_events: list[AlertEvent] | None = None,
     channel: Channel,
     recipient_email: str | None = None,
     thresholds: AlertThresholds = DEFAULT_THRESHOLDS,
@@ -148,11 +197,19 @@ async def evaluate_and_alert(
 
     Args:
         org_id: Tenant identifier.
-        review_id: Stable review identifier for dedupe (sha256 hex or connector ID).
-                   Pass None for synthetic events (cluster/spike) that don't map to a
-                   single review — these skip the per-review dedupe check.
+        review_id: Stable identifier for dedupe (sha256 hex or connector ID for a real review;
+                   a synthetic cluster key like "batch_defect:Widget:battery:2026-07" for a
+                   non-review-specific finding -- see app/core/alerts/detector_sweep.py). Pass
+                   None only for synthetic events that genuinely can't be deduped -- these skip
+                   the per-review dedupe check entirely, so prefer a synthetic key whenever one
+                   exists.
         extraction: Extraction output for the review, if available at this call site.
         auth: Authenticity scoring output for the review, if available at this call site.
+        precomputed_events: Pre-built AlertEvents (e.g. from a detector sweep) that bypass the
+                   internal extraction/auth rule computation entirely -- everything downstream
+                   (dedupe, preferences, frequency gate, send, record) runs identically either
+                   way. When given, extraction/auth are ignored for event computation (still
+                   accepted as params for callers that also want to pass them, but unused).
         channel: Delivery channel (FakeChannel for tests, real channel in production).
         recipient_email: Override the notification email. If None, looks up from
                          organizations.notification_email. If still None, skips
@@ -164,11 +221,15 @@ async def evaluate_and_alert(
         Events suppressed by dedupe, disabled prefs, daily_digest, or missing email
         are excluded from the return value.
     """
-    events: list[AlertEvent] = []
-    if extraction is not None and (event := check_high_urgency(extraction, thresholds)):
-        events.append(event)
-    if auth is not None and (event := check_likely_fake(auth, thresholds)):
-        events.append(event)
+    events: list[AlertEvent]
+    if precomputed_events is not None:
+        events = list(precomputed_events)
+    else:
+        events = []
+        if extraction is not None and (event := check_high_urgency(extraction, thresholds)):
+            events.append(event)
+        if auth is not None and (event := check_likely_fake(auth, thresholds)):
+            events.append(event)
     if not events:
         return []
 

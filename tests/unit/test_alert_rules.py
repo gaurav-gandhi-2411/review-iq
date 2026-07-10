@@ -23,6 +23,19 @@ from app.core.authenticity.schema import AuthenticityFlag, AuthenticityLabel, Au
 from app.core.schemas import ReviewExtraction, Urgency
 
 # ---------------------------------------------------------------------------
+# AlertEventType -- Phase 2 detector sweep event types
+# ---------------------------------------------------------------------------
+
+
+def test_alert_event_type_has_batch_defect_and_fake_campaign() -> None:
+    """Pins the two new event types added for the Phase 2 detector sweep -- distinct from the
+    orphaned FAKE_CLUSTER/TOPIC_SPIKE, which have no production caller."""
+    assert AlertEventType.BATCH_DEFECT == "batch_defect"
+    assert AlertEventType.FAKE_CAMPAIGN == "fake_campaign"
+    assert len(AlertEventType) == 6
+
+
+# ---------------------------------------------------------------------------
 # Shared test fixtures
 # ---------------------------------------------------------------------------
 

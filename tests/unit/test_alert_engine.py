@@ -83,6 +83,69 @@ async def test_high_urgency_sends_one_alert() -> None:
 
 
 @pytest.mark.asyncio
+async def test_precomputed_events_bypasses_internal_rule_computation() -> None:
+    """A precomputed_events list is used directly, skipping check_high_urgency/check_likely_fake
+    entirely -- extraction/auth are irrelevant when precomputed_events is given. Proves the
+    Phase 2 detector sweep's whole "reuse, don't duplicate" design actually works: dedupe/
+    preference/send/record run identically for a precomputed event as for a rule-computed one."""
+    from app.core.alerts.rules import AlertEvent
+
+    fake = FakeChannel()
+    precomputed = [
+        AlertEvent(
+            event_type=AlertEventType.BATCH_DEFECT,
+            details={"product_id": "Widget", "topic": "battery", "confidence": 0.82, "evidence": {}},
+        )
+    ]
+    with (
+        patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=False)),
+        patch("app.core.alerts.engine.get_preference_pg", MagicMock(return_value=None)),
+        patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)) as mock_record,
+        patch("app.core.alerts.engine.get_org_notification_email_pg", MagicMock(return_value="seller@example.com")),
+    ):
+        result = await evaluate_and_alert(
+            org_id="org1",
+            review_id="batch_defect:Widget:battery:2026-06",
+            precomputed_events=precomputed,
+            # extraction/auth deliberately omitted (None) -- precomputed_events must not need them.
+            channel=fake,
+        )
+
+    assert len(fake.sent) == 1
+    assert fake.sent[0].event.event_type == AlertEventType.BATCH_DEFECT
+    assert result[0] is precomputed[0]
+    mock_record.assert_called_once()
+    # record_alert_sent_pg's positional args: (org_id, review_id, event_type, details)
+    assert mock_record.call_args[0][1] == "batch_defect:Widget:battery:2026-06"
+
+
+@pytest.mark.asyncio
+async def test_precomputed_events_still_deduped_via_alert_log() -> None:
+    """A precomputed event with review_id already in alert_log is suppressed exactly like a
+    rule-computed one -- the dedupe step doesn't special-case precomputed_events."""
+    from app.core.alerts.rules import AlertEvent
+
+    fake = FakeChannel()
+    precomputed = [AlertEvent(event_type=AlertEventType.FAKE_CAMPAIGN, details={"product_id": "Widget"})]
+    with (
+        patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=True)),
+        patch("app.core.alerts.engine.get_preference_pg", MagicMock(return_value=None)),
+        patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)) as mock_record,
+        patch("app.core.alerts.engine.get_org_notification_email_pg", MagicMock(return_value="seller@example.com")),
+    ):
+        result = await evaluate_and_alert(
+            org_id="org1",
+            review_id="fake_campaign:Widget:2026-06-15",
+            precomputed_events=precomputed,
+            channel=fake,
+        )
+
+    assert result == []
+    assert len(fake.sent) == 0
+    mock_record.assert_not_called()
+
+
+@pytest.mark.asyncio
 async def test_duplicate_review_not_alerted_twice() -> None:
     fake = FakeChannel()
     with (

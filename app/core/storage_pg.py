@@ -297,10 +297,10 @@ def list_dated_extractions_pg(org_id: str) -> list[dict[str, Any]]:
     """Every extraction for this org that has a real review_date, across the org's FULL
     history -- no pagination, no since/until bound.
 
-    Feeds one-shot temporal detectors (batch-defect now; a future trend detector, per
-    supabase/migrations/20260710000001_review_date.sql's own comment) that need each product's
-    complete observed date range in a single scan. review_date IS NULL rows are excluded, never
-    defaulted to created_at -- a fabricated timestamp would silently skew spike-window math.
+    Feeds one-shot temporal/text detectors (batch-defect and fake-campaign, both in
+    app/core/detectors/) that need each product's complete observed date range in a single scan.
+    review_date IS NULL rows are excluded, never defaulted to created_at -- a fabricated
+    timestamp would silently skew spike-window math.
 
     Deliberately does NOT pre-filter by sentiment at the SQL level even though only
     negative/mixed rows ultimately count as "mentions" for batch-defect: scan_batch_defects
@@ -310,6 +310,9 @@ def list_dated_extractions_pg(org_id: str) -> list[dict[str, Any]]:
     corrupt the baseline-rate/ratio math for every flag -- do not "optimize" this filter later
     without re-deriving that math.
 
+    Includes review_text -- unused by batch-defect, needed by fake-campaign's text-duplication
+    signal (see app/core/detectors/campaign.py::campaign_reviews_from_rows).
+
     Uses idx_extractions_review_date (org_id, review_date WHERE review_date IS NOT NULL)
     directly -- the WHERE clause and ORDER BY match the index's column order.
     """
@@ -318,7 +321,8 @@ def list_dated_extractions_pg(org_id: str) -> list[dict[str, Any]]:
         cur = conn.cursor()
         _set_tenant(cur, org_id)
         cur.execute(
-            "SELECT id, product, topics, sentiment, review_date FROM public.extractions "
+            "SELECT id, product, topics, sentiment, review_date, review_text "
+            "FROM public.extractions "
             "WHERE org_id = %s AND review_date IS NOT NULL ORDER BY review_date",
             (org_id,),
         )
@@ -344,9 +348,37 @@ def list_dated_extractions_pg(org_id: str) -> list[dict[str, Any]]:
             "topics": _load_topics(r[2]),
             "sentiment": r[3],
             "review_date": r[4],
+            "review_text": r[5],
         }
         for r in rows
     ]
+
+
+def list_orgs_with_dated_extractions_pg() -> list[str]:
+    """Return distinct org_ids that have at least one extraction with a real review_date.
+
+    Cross-org query -- connects via _db_connect() and does NOT call _set_tenant, same
+    intentional service-role bypass pattern as list_orgs_with_daily_digest_pg
+    (app/core/alerts/storage.py): there is no single org_id to scope the session to for a
+    scheduled-sweep use case that must see every org. Do not "fix" this by adding _set_tenant.
+
+    Feeds app/core/alerts/detector_sweep.py -- scopes the sweep to exactly the orgs where the
+    detectors could possibly find anything, reusing idx_extractions_review_date.
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT DISTINCT org_id FROM public.extractions WHERE review_date IS NOT NULL"
+        )
+        rows = cur.fetchall()
+        conn.commit()
+        return [str(r[0]) for r in rows]
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
 
 
 def aggregate_extractions_pg(org_id: str) -> dict[str, Any]:
