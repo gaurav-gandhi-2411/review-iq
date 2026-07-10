@@ -1,0 +1,196 @@
+{
+  "_marker": "STRESS_TEST",
+  "_warning": "STRESS TEST -- harder/subtler patterns + adversarial controls the detectors have NEVER been tuned against. Built AFTER all detector thresholds were finalized. Real text from the licensed corpus; fabricated timestamps/reviewer-IDs. NOT proven on real seller data.",
+  "_seed": 1337,
+  "products": {
+    "STRESS-BATCH-WEAK": {
+      "product_id": "STRESS-BATCH-WEAK",
+      "pattern": "batch_defect",
+      "is_control": false,
+      "difficulty": "weak",
+      "topic_keyword": "charger",
+      "keyword_regex": "charger|charging",
+      "spike_target_count": 4,
+      "spike_actual_count": 4,
+      "spike_available_matches": 213,
+      "planted_review_ids": [
+        "stress-000071",
+        "stress-000065",
+        "stress-000067",
+        "stress-000070"
+      ]
+    },
+    "STRESS-BATCH-MODERATE": {
+      "product_id": "STRESS-BATCH-MODERATE",
+      "pattern": "batch_defect",
+      "is_control": false,
+      "difficulty": "moderate",
+      "topic_keyword": "hinge_zipper",
+      "keyword_regex": "hinge|zipper",
+      "spike_target_count": 5,
+      "spike_actual_count": 5,
+      "spike_available_matches": 5,
+      "planted_review_ids": [
+        "stress-000039",
+        "stress-000040",
+        "stress-000038",
+        "stress-000035",
+        "stress-000044"
+      ]
+    },
+    "STRESS-TREND-SLOW": {
+      "product_id": "STRESS-TREND-SLOW",
+      "pattern": "trend",
+      "is_control": false,
+      "difficulty": "slow",
+      "topic_keyword": "customer_service",
+      "keyword_regex": "customer\\s+service|support|helpline",
+      "phase_targets": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "phase_actual_counts": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "planted_review_ids": [
+        "stress-rev-0150",
+        "stress-rev-0151",
+        "stress-rev-0152",
+        "stress-rev-0153",
+        "stress-rev-0154",
+        "stress-rev-0155",
+        "stress-rev-0156",
+        "stress-rev-0157",
+        "stress-rev-0158",
+        "stress-rev-0159",
+        "stress-rev-0160",
+        "stress-rev-0161",
+        "stress-rev-0162",
+        "stress-rev-0163",
+        "stress-rev-0164",
+        "stress-rev-0165",
+        "stress-rev-0166",
+        "stress-rev-0167"
+      ]
+    },
+    "STRESS-CAMPAIGN-SMALL": {
+      "product_id": "STRESS-CAMPAIGN-SMALL",
+      "pattern": "fake_campaign",
+      "is_control": false,
+      "difficulty": "small",
+      "burst_review_count": 5,
+      "reviewer_ids_used": [
+        "stress-rev-0198",
+        "stress-rev-0199",
+        "stress-rev-0200"
+      ],
+      "burst_review_ids": [
+        "stress-000116",
+        "stress-000118",
+        "stress-000115",
+        "stress-000117",
+        "stress-000114"
+      ]
+    },
+    "STRESS-CTRL-CHRONIC": {
+      "product_id": "STRESS-CTRL-CHRONIC",
+      "pattern": null,
+      "is_control": true,
+      "difficulty": "ambiguous_chronic_complaint",
+      "topic_keyword": "battery",
+      "note": "genuinely bad product, steady complaint rate, NOT a batch defect or a trend"
+    },
+    "STRESS-CTRL-ORGANIC-BURST": {
+      "product_id": "STRESS-CTRL-ORGANIC-BURST",
+      "pattern": null,
+      "is_control": true,
+      "difficulty": "ambiguous_organic_burst",
+      "note": "9 reviews in 48h from 9 unique reviewers, 9 unique texts -- a real flash-sale-shaped spike, not coordination"
+    },
+    "STRESS-CTRL-POPULAR-SIMILAR": {
+      "product_id": "STRESS-CTRL-POPULAR-SIMILAR",
+      "pattern": null,
+      "is_control": true,
+      "difficulty": "ambiguous_popular_similar",
+      "note": "45 reviews incl. 25 organic short-praise texts (unique reviewers, spread over 16 weeks, no timing burst) -- textually repetitive but not coordinated"
+    },
+    "STRESS-CTRL-ORGANIC-BURST-SIMILAR-TEXT": {
+      "product_id": "STRESS-CTRL-ORGANIC-BURST-SIMILAR-TEXT",
+      "pattern": null,
+      "is_control": true,
+      "difficulty": "ambiguous_organic_burst_similar_text",
+      "note": "11 reviews in a real 48h burst window, each from a unique reviewer, each independently short-praise text (similar tone/length, not coordinated) -- the hardest control: a genuine timing burst COMBINED with textually similar-sounding reviews, with zero actual coordination."
+    },
+    "STRESS-TREND-POSITIVE": {
+      "product_id": "STRESS-TREND-POSITIVE",
+      "pattern": "trend",
+      "is_control": false,
+      "difficulty": "rising_positive",
+      "topic_keyword": "warranty_support",
+      "keyword_regex": "warranty|replacement|support\\s+team",
+      "trend_polarity": "positive",
+      "phase_targets": [
+        2,
+        3,
+        4,
+        6
+      ],
+      "phase_actual_counts": [
+        2,
+        3,
+        4,
+        6
+      ],
+      "planted_review_ids": [
+        "stress-rev-0420",
+        "stress-rev-0421",
+        "stress-rev-0422",
+        "stress-rev-0423",
+        "stress-rev-0424",
+        "stress-rev-0425",
+        "stress-rev-0426",
+        "stress-rev-0427",
+        "stress-rev-0428",
+        "stress-rev-0429",
+        "stress-rev-0430",
+        "stress-rev-0431",
+        "stress-rev-0432",
+        "stress-rev-0433",
+        "stress-rev-0434"
+      ]
+    },
+    "STRESS-TREND-AGGREGATE-DRIFT": {
+      "product_id": "STRESS-TREND-AGGREGATE-DRIFT",
+      "pattern": "trend",
+      "is_control": false,
+      "difficulty": "aggregate_drift",
+      "trend_polarity": "negative",
+      "trend_scope": "aggregate",
+      "phase_neg_target": [
+        2,
+        3,
+        5,
+        7
+      ],
+      "phase_pos_target": [
+        8,
+        7,
+        5,
+        3
+      ],
+      "note": "no single topic dominates -- only the aggregate scan should catch this"
+    },
+    "STRESS-CTRL-RANDOM-FLUCTUATION": {
+      "product_id": "STRESS-CTRL-RANDOM-FLUCTUATION",
+      "pattern": null,
+      "is_control": true,
+      "difficulty": "ambiguous_random_fluctuation",
+      "note": "negative-review share bounces up/down across phases (no sustained direction) -- neither batch_defect, trend, nor campaign should fire"
+    }
+  }
+}

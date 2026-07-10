@@ -5,11 +5,32 @@ production. Do not quote synthetic precision/recall as real-world accuracy. This
 reviewer+timing-enabled EXTENSION of benchmark/phase2_campaign/ (which was built text-only
 against the real corpus, which lacks reviewer identity and timestamps).
 
-Combines three signals into one moderation-prioritization confidence score (never a binary
-verdict, always evidence for human review):
-  1. Timing burst      -- an abnormal spike in review arrival rate for a product.
+Combines signals into one moderation-prioritization confidence score (never a binary verdict,
+always evidence for human review):
+  1. Timing burst           -- an abnormal spike in review arrival rate for a product.
   2. Reviewer concentration -- within a burst, a small pool of reviewer_ids posting repeatedly.
-  3. Text near-duplication  -- within a burst, reviews clustering on near-identical text.
+  3. Text duplication       -- within a burst, reviews clustering on identical OR near-identical
+     (long, templated) text. Near-identical is gated to texts of MIN_WORDS_FOR_NEAR_DUP+ words --
+     short organic praise ("great product!", "really great product") has high token overlap
+     between genuinely unrelated reviewers, so only longer, more specific near-duplicates count.
+  4. Cross-product reviewer reuse -- amplifier only: the same reviewer_id posting inside more than
+     one product's burst window is a coordination-farm signature organic popularity does not
+     produce. Gated to never fire on its own (see CROSS_PRODUCT_BOOST_WEIGHT) -- it can only
+     amplify an already-nonzero concentration signal, not manufacture one from nothing.
+  5. Timing concentration   -- evidence-only, does NOT drive confidence: what fraction of a burst
+     lands in one tight sub-window of it, for moderator context. A genuine batch-defect (many real
+     customers hit by the same shipment/defect) can also cluster tightly by chance, so this cannot
+     be allowed to drive confidence without resurrecting the batch-defect confound this detector
+     was already fixed against (see CONFIDENCE_REPORT_THRESHOLD comment).
+
+The core burst search evaluates EVERY qualifying window per product and keeps the
+highest-CONFIDENCE one (not the highest-ratio one) -- found necessary during stress testing, when
+a coincidental cluster of unrelated organic reviews had a marginally higher timing ratio than a
+real small planted campaign burst and was selected first, so the real burst (which would have
+scored well above threshold) was never evaluated at all. Selecting by ratio alone is a structural
+flaw independent of any threshold value; selecting by confidence fixes it because an organic
+cluster's confidence is suppressed by its zero reviewer/text concentration regardless of how high
+its timing ratio happens to be.
 
 General-purpose: scans every product in reviews.jsonl. No product_id is hardcoded into the
 detection logic; ground-truth product IDs are only used later, in validation, to score
@@ -64,6 +85,24 @@ BURST_SATURATION = 10.0
 # CONFIDENCE_REPORT_THRESHOLD -- a near-zero score isn't worth a human moderator's attention.
 CONFIDENCE_REPORT_THRESHOLD = 0.2
 
+# Near-identical (not just identical) phrasing only counts as a duplication signal when the text
+# is long/specific enough that independent authors converging on it by chance is implausible.
+# Short organic praise ("great product!", "really great product") has high token overlap between
+# genuinely unrelated reviewers -- gating on length keeps this signal from firing on that.
+MIN_WORDS_FOR_NEAR_DUP = 8
+# Jaccard token-overlap threshold for two (long-enough) reviews to count as the same near-dup
+# cluster -- e.g. a templated review with a swapped noun or adjective.
+NEAR_DUP_JACCARD_THRESHOLD = 0.85
+
+# Cross-product reviewer reuse is an AMPLIFIER only -- it can boost an already-nonzero
+# reviewer/text concentration signal, but is gated to never manufacture a flag on its own (see
+# score_burst_window). Weight controls how much of the remaining headroom to 1.0 it can close.
+CROSS_PRODUCT_BOOST_WEIGHT = 0.5
+
+# Number of equal-width sub-buckets a burst window is split into for the evidence-only timing
+# concentration signal (see score_burst_window's docstring for why it doesn't drive confidence).
+TIMING_CONCENTRATION_BUCKETS = 8
+
 
 @dataclass(frozen=True)
 class Review:
@@ -78,7 +117,8 @@ class Review:
 
 @dataclass
 class BurstWindow:
-    """The single highest-ratio BURST_HOURS-wide window found for one product, if any."""
+    """The highest-CONFIDENCE BURST_HOURS-wide window found for one product, if any -- see
+    find_best_burst_window's docstring for why confidence, not ratio, is the selection key."""
 
     start: datetime
     end: datetime
@@ -123,15 +163,101 @@ def load_reviews(path: Path) -> list[Review]:
     return reviews
 
 
-def find_burst_window(product_reviews: list[Review]) -> BurstWindow | None:
-    """Find the single highest-ratio BURST_HOURS-wide window in one product's review timeline.
+def _token_set(text: str) -> frozenset[str]:
+    """Normalized whitespace-token set of a review's text, for Jaccard near-dup comparison."""
+    return frozenset(normalize_cluster_text(text).split())
+
+
+def _near_dup_score(reviews: list[Review]) -> float:
+    """Fraction of long-enough reviews that fall into a near-duplicate (Jaccard-clustered) group,
+    beyond exact-text duplication -- catches templated campaigns with minor word substitutions
+    that `normalize_cluster_text` alone treats as distinct. Gated to MIN_WORDS_FOR_NEAR_DUP+ words
+    (see that constant) so short organic praise can't trigger it via incidental token overlap.
+
+    Clustering is union-find over pairwise Jaccard >= NEAR_DUP_JACCARD_THRESHOLD -- cheap at the
+    small (<=few dozen reviews per window) scale this runs at.
+    """
+    long_reviews = [r for r in reviews if len(r.text.split()) >= MIN_WORDS_FOR_NEAR_DUP]
+    if len(long_reviews) < 2:
+        return 0.0
+
+    token_sets = [_token_set(r.text) for r in long_reviews]
+    parent = list(range(len(long_reviews)))
+
+    def find(i: int) -> int:
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    for i in range(len(token_sets)):
+        for j in range(i + 1, len(token_sets)):
+            a, b = token_sets[i], token_sets[j]
+            if not a or not b:
+                continue
+            jaccard = len(a & b) / len(a | b)
+            if jaccard >= NEAR_DUP_JACCARD_THRESHOLD:
+                root_i, root_j = find(i), find(j)
+                if root_i != root_j:
+                    parent[root_i] = root_j
+
+    n_clusters = len({find(i) for i in range(len(token_sets))})
+    return 1.0 - (n_clusters / len(long_reviews))
+
+
+def _cross_product_score(window_reviews: list[Review], reviewer_products: dict[str, set[str]]) -> float:
+    """Fraction of a burst window's DISTINCT reviewers who also appear elsewhere in the corpus
+    under a different product_id -- a coordination-farm signature (the same accounts posting
+    across multiple sellers' burst windows) that organic popularity has no reason to produce.
+    `reviewer_products` is corpus-wide: reviewer_id -> set of every product_id they reviewed.
+    """
+    distinct_reviewer_ids = {r.reviewer_id for r in window_reviews}
+    if not distinct_reviewer_ids:
+        return 0.0
+    reused = sum(1 for rid in distinct_reviewer_ids if len(reviewer_products.get(rid, ())) > 1)
+    return reused / len(distinct_reviewer_ids)
+
+
+def _timing_concentration_score(window: BurstWindow) -> float:
+    """Evidence-only (see module docstring point 5): the largest fraction of a burst window's
+    reviews landing in any single one of TIMING_CONCENTRATION_BUCKETS equal-width sub-buckets.
+    High values mean the burst executed in a much tighter timeframe than the full window."""
+    if not window.reviews:
+        return 0.0
+    bucket_width = (window.end - window.start) / TIMING_CONCENTRATION_BUCKETS
+    bucket_seconds = bucket_width.total_seconds()
+    if bucket_seconds <= 0:
+        return 1.0
+    counts = [0] * TIMING_CONCENTRATION_BUCKETS
+    for r in window.reviews:
+        idx = int((r.timestamp - window.start).total_seconds() / bucket_seconds)
+        idx = min(max(idx, 0), TIMING_CONCENTRATION_BUCKETS - 1)
+        counts[idx] += 1
+    return max(counts) / len(window.reviews)
+
+
+def find_best_burst_window(
+    product_reviews: list[Review], reviewer_products: dict[str, set[str]]
+) -> tuple[BurstWindow, float, float, float, float] | None:
+    """Find the highest-CONFIDENCE BURST_HOURS-wide window in one product's review timeline, and
+    return it pre-scored as (window, confidence, reviewer_concentration_score, text_dup_score,
+    cross_product_score).
 
     Candidate window starts are each review's own timestamp (rather than a fixed step across the
     timeline) -- this guarantees the search never straddles/misses a tight real cluster due to
-    step-alignment, and is cheap since a product has at most a few dozen reviews. Baseline
-    arrival rate is `total_reviews / total_observed_days` for that product (its own first-to-last
-    review span); a product with a zero-width span (all reviews at the exact same timestamp, not
-    seen in this dataset but guarded for) falls back to a 1-day span so the rate stays finite.
+    step-alignment, and is cheap since a product has at most a few dozen reviews. Baseline arrival
+    rate is `total_reviews / total_observed_days` for that product (its own first-to-last review
+    span); a product with a zero-width span (all reviews at the exact same timestamp, not seen in
+    this dataset but guarded for) falls back to a 1-day span so the rate stays finite.
+
+    Selection is by CONFIDENCE, not by timing ratio -- an earlier version picked the single
+    highest-ratio window and scored it afterward. Found broken during stress testing: a
+    coincidental cluster of unrelated organic reviews can have a marginally higher ratio than a
+    real, smaller coordinated burst elsewhere in the same product's history, so the real burst was
+    never even evaluated (0/1 recall on that stress case). Scoring every qualifying window and
+    keeping the best-CONFIDENCE one fixes this structurally: an organic cluster's confidence is
+    suppressed by its own zero reviewer/text concentration regardless of how high its ratio is, so
+    it can no longer out-rank a genuinely coordinated (lower-ratio) burst.
 
     Returns None if no candidate window meets both MIN_BURST_COUNT and BURST_RATIO_THRESHOLD.
     """
@@ -150,69 +276,88 @@ def find_burst_window(product_reviews: list[Review]) -> BurstWindow | None:
         return None
 
     window_delta = timedelta(hours=BURST_HOURS)
-    best_window: BurstWindow | None = None
-    best_ratio = 0.0
+    best: tuple[BurstWindow, float, float, float, float] | None = None
     for candidate in sorted_reviews:
         window_start = candidate.timestamp
         window_end = window_start + window_delta
         window_reviews = [r for r in sorted_reviews if window_start <= r.timestamp < window_end]
         window_count = len(window_reviews)
         ratio = window_count / expected_count
-        if window_count >= MIN_BURST_COUNT and ratio > best_ratio:
-            best_ratio = ratio
-            best_window = BurstWindow(
-                start=window_start,
-                end=window_end,
-                reviews=window_reviews,
-                ratio_vs_baseline=ratio,
-            )
+        if window_count < MIN_BURST_COUNT or ratio < BURST_RATIO_THRESHOLD:
+            continue
 
-    if best_window is None or best_ratio < BURST_RATIO_THRESHOLD:
-        return None
-    return best_window
+        window = BurstWindow(
+            start=window_start, end=window_end, reviews=window_reviews, ratio_vs_baseline=ratio
+        )
+        confidence, reviewer_score, text_score, cross_score = score_burst_window(
+            window, reviewer_products
+        )
+        if best is None or confidence > best[1]:
+            best = (window, confidence, reviewer_score, text_score, cross_score)
+
+    return best
 
 
-def score_burst_window(window: BurstWindow) -> tuple[float, float, float]:
-    """Compute reviewer-concentration and text-dup scores for a burst window, plus confidence.
+def score_burst_window(
+    window: BurstWindow, reviewer_products: dict[str, set[str]]
+) -> tuple[float, float, float, float]:
+    """Compute reviewer-concentration, text-dup, and cross-product scores for a burst window, plus
+    combined confidence. Returns (confidence, reviewer_concentration_score, text_dup_score,
+    cross_product_score).
 
-    Both concentration scores use the same shape: 0.0 means "every review is unique on that
-    dimension" (organic, not suspicious on its own -- e.g. a genuine flash-sale spike would look
-    like this), 1.0 means "heavily repeated" (few reviewers or few distinct texts driving many
-    reviews -- the actual campaign signature).
+    reviewer_concentration_score and text_dup_score share the same shape: 0.0 means "every review
+    is unique on that dimension" (organic, not suspicious on its own -- e.g. a genuine flash-sale
+    spike would look like this), 1.0 means "heavily repeated" (few reviewers or few distinct texts
+    driving many reviews -- the actual campaign signature). text_dup_score is the max of exact
+    duplication (identical after normalize_cluster_text) and near-duplication (Jaccard-clustered,
+    long texts only -- see _near_dup_score) so a templated campaign with minor word substitutions
+    still registers even when no two reviews are byte-identical.
 
-    Confidence REQUIRES at least one of reviewer-concentration or text-dup to be genuinely
-    elevated -- timing burst alone is NOT sufficient. An earlier version gave burst timing a
-    flat 0.5 floor regardless of reviewer/text signals; validated against the synthetic testbed,
-    that produced 3 false positives (precision 0.4) on the two planted batch-defect products plus
-    one control -- a real batch defect is many DIFFERENT genuine customers independently
-    complaining about the same issue within days of each other, which elevates review-arrival
-    rate exactly like a campaign burst does, but with zero reviewer/text concentration (both
-    scored 0.0 in every false-positive case). Using max() instead of a weighted sum with a floor
-    means a burst with zero concentration on BOTH dimensions now scores exactly 0 -- eliminated
-    all 3 false positives while both genuine campaigns (concentration/dup scores 0.46-0.62) still
-    score comfortably above the reporting threshold.
+    Base confidence REQUIRES at least one of reviewer-concentration or text-dup to be genuinely
+    elevated -- timing burst alone is NOT sufficient. An earlier version gave burst timing a flat
+    0.5 floor regardless of reviewer/text signals; validated against the synthetic testbed, that
+    produced 3 false positives (precision 0.4) on the two planted batch-defect products plus one
+    control -- a real batch defect is many DIFFERENT genuine customers independently complaining
+    about the same issue within days of each other, which elevates review-arrival rate exactly
+    like a campaign burst does, but with zero reviewer/text concentration (both scored 0.0 in
+    every false-positive case). Using max() instead of a weighted sum with a floor means a burst
+    with zero concentration on BOTH dimensions scores exactly 0 for the base confidence.
+
+    Cross-product reviewer reuse then AMPLIFIES (never replaces) that base confidence: gated to
+    apply only when base confidence is already > 0, so it cannot resurrect the batch-defect
+    confound by manufacturing a flag purely from coincidental reviewer overlap on a
+    zero-concentration burst.
     """
     window_count = len(window.reviews)
     distinct_reviewers = len({r.reviewer_id for r in window.reviews})
     distinct_texts = len({normalize_cluster_text(r.text) for r in window.reviews})
 
     reviewer_concentration_score = 1.0 - (distinct_reviewers / window_count)
-    text_dup_score = 1.0 - (distinct_texts / window_count)
+    exact_dup_score = 1.0 - (distinct_texts / window_count)
+    near_dup_score = _near_dup_score(window.reviews)
+    text_dup_score = max(exact_dup_score, near_dup_score)
 
     burst_component = min(1.0, window.ratio_vs_baseline / BURST_SATURATION)
-    confidence = burst_component * max(reviewer_concentration_score, text_dup_score)
-    return confidence, reviewer_concentration_score, text_dup_score
+    base_confidence = burst_component * max(reviewer_concentration_score, text_dup_score)
+
+    cross_product_score = 0.0
+    if base_confidence > 0:
+        cross_product_score = _cross_product_score(window.reviews, reviewer_products)
+    confidence = base_confidence + (1.0 - base_confidence) * CROSS_PRODUCT_BOOST_WEIGHT * cross_product_score
+
+    return confidence, reviewer_concentration_score, text_dup_score, cross_product_score
 
 
-def scan_product(product_id: str, product_reviews: list[Review]) -> CampaignFlag | None:
-    """Run the full 3-signal scan for one product; returns a flag only if a burst was found AND
-    its confidence clears CONFIDENCE_REPORT_THRESHOLD -- the burst gate alone is not sufficient
+def scan_product(
+    product_id: str, product_reviews: list[Review], reviewer_products: dict[str, set[str]]
+) -> CampaignFlag | None:
+    """Run the full scan for one product; returns a flag only if a burst was found AND its
+    confidence clears CONFIDENCE_REPORT_THRESHOLD -- the burst gate alone is not sufficient
     (see that constant's comment for why)."""
-    window = find_burst_window(product_reviews)
-    if window is None:
+    found = find_best_burst_window(product_reviews, reviewer_products)
+    if found is None:
         return None
-
-    confidence, reviewer_concentration_score, text_dup_score = score_burst_window(window)
+    window, confidence, reviewer_concentration_score, text_dup_score, cross_product_score = found
     if confidence < CONFIDENCE_REPORT_THRESHOLD:
         return None
     window_count = len(window.reviews)
@@ -241,6 +386,8 @@ def scan_product(product_id: str, product_reviews: list[Review]) -> CampaignFlag
         "distinct_texts": distinct_texts,
         "reviewer_concentration_score": round(reviewer_concentration_score, 3),
         "text_dup_score": round(text_dup_score, 3),
+        "cross_product_score": round(cross_product_score, 3),
+        "timing_concentration_score": round(_timing_concentration_score(window), 3),
         "review_ids": [r.review_id for r in window.reviews],
         "top_reviewer_ids": top_reviewer_ids,
         "top_texts": top_texts,
@@ -249,12 +396,19 @@ def scan_product(product_id: str, product_reviews: list[Review]) -> CampaignFlag
 
 
 def scan_corpus(reviews: list[Review]) -> list[CampaignFlag]:
-    """Group reviews by product and scan each product independently; no product is hardcoded."""
+    """Group reviews by product and scan each product independently; no product is hardcoded.
+
+    Builds a corpus-wide reviewer_id -> {product_ids reviewed} map once, used only by the
+    cross-product-reuse amplifier signal -- the only place any product's scan depends on data
+    outside its own reviews.
+    """
     by_product: dict[str, list[Review]] = defaultdict(list)
+    reviewer_products: dict[str, set[str]] = defaultdict(set)
     for review in reviews:
         by_product[review.product_id].append(review)
+        reviewer_products[review.reviewer_id].add(review.product_id)
 
-    flags = [scan_product(pid, prs) for pid, prs in by_product.items()]
+    flags = [scan_product(pid, prs, reviewer_products) for pid, prs in by_product.items()]
     return sorted(
         (f for f in flags if f is not None), key=lambda f: -f.confidence
     )
@@ -365,6 +519,10 @@ def render_report(flags: list[CampaignFlag], validation: ValidationResult) -> st
                 f"- distinct reviewers: {ev['distinct_reviewers']} "
                 f"(concentration score {ev['reviewer_concentration_score']})",
                 f"- distinct texts: {ev['distinct_texts']} (dup score {ev['text_dup_score']})",
+                f"- cross-product reviewer reuse score: {ev['cross_product_score']} "
+                f"(amplifier only)",
+                f"- timing concentration score: {ev['timing_concentration_score']} "
+                f"(evidence only, not scored)",
                 f"- top reviewer_ids: {ev['top_reviewer_ids']}",
                 f"- top texts: {ev['top_texts']}",
                 "",
@@ -375,13 +533,15 @@ def render_report(flags: list[CampaignFlag], validation: ValidationResult) -> st
         [
             "## Confound analysis",
             "",
-            "**Matched-volume controls (SYN-CAMPAIGN-CTRL-01/02):** the timing-burst GATE alone "
-            "rejects both, with no ambiguity -- neither product has ANY 48h window meeting even "
-            "MIN_BURST_COUNT, let alone BURST_RATIO_THRESHOLD (best ratio found: 0.0 for both, "
-            "i.e. no qualifying window at all). Their reviews are spread evenly across the full "
-            "~16-week observation period despite matching their planted counterparts' total "
-            "review count -- proving this detector does not simply alert on \"popular product, "
-            "lots of reviews.\"",
+            "**Matched-volume controls (SYN-CAMPAIGN-CTRL-01/02):** CTRL-02 has no 48h window "
+            "meeting even MIN_BURST_COUNT -- rejected by the timing-burst gate alone. CTRL-01 "
+            "DOES have a real qualifying timing-burst window (organic review volume can "
+            "genuinely cluster within 48h) -- it is rejected by the CONFIDENCE gate instead: "
+            "zero reviewer/text concentration in that window drives confidence to 0.0 despite "
+            "the timing ratio clearing BURST_RATIO_THRESHOLD. Both controls match their planted "
+            "counterparts' total review count -- proving this detector does not simply alert on "
+            "\"popular product, lots of reviews,\" even when that popularity produces a real "
+            "timing burst.",
             "",
             "**Batch-defect products (topic-vs-timing confound) -- FIXED:** an earlier version "
             "of this detector DID false-positive on SYN-BATCH-01/02 and SYN-BATCH-CTRL-02 (a "

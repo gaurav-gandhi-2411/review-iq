@@ -164,10 +164,14 @@ def main() -> None:
     print()
     print(f"all {len(flags)} flags (sorted by confidence):")
     for flag in flags:
+        shape = (
+            f"phase_counts={flag.evidence['phase_counts']}"
+            if "phase_counts" in flag.evidence
+            else f"phase_ratios={flag.evidence['phase_ratios']}"
+        )
         print(
-            f"  {flag.product_id} / {flag.topic}: confidence={flag.confidence} "
-            f"phase_counts={flag.evidence['phase_counts']} "
-            f"correlation={flag.evidence['correlation']}"
+            f"  {flag.product_id} / {flag.trend_type} / {flag.topic}: "
+            f"confidence={flag.confidence} {shape} correlation={flag.evidence['correlation']}"
         )
 
 
