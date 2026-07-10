@@ -58,6 +58,8 @@ async def test_csv_source_fetch_reviews_happy_path() -> None:
     assert source.source_meta() == {
         "text_column": "review_text",
         "product_column": "product_name",
+        "date_column": None,
+        "date_ambiguous": False,
     }
 
 

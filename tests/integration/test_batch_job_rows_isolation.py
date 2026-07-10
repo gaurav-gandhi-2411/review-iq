@@ -377,6 +377,57 @@ async def test_drain_writes_each_extraction_under_its_own_org(
 
 
 # ---------------------------------------------------------------------------
+# Proof 2b — review_date + product round-trip through the durable queue
+# (2026-07-10 Phase 2 plumbing fix: added AFTER the original 4-part proof --
+# extends it to cover the two new batch_job_rows/extractions columns rather
+# than adding a separate, disconnected test file.)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_drain_carries_product_and_review_date_through_the_queue(
+    two_orgs: tuple[str, str], quiescent_queue: None
+) -> None:
+    """Proof 2b: a row enqueued with a product value and a review_date (as a real
+    CSV upload with a resolved product_column/date_column would produce) survives
+    enqueue -> claim -> extraction -> storage intact -- the source-provided
+    product PREFERRED over the LLM-inferred one, and review_date exactly as given
+    (never fabricated, never silently replaced with ingestion time).
+    """
+    from datetime import UTC, datetime
+
+    org_a, _org_b = two_orgs
+    text = f"Proof2b review with known date and product {uuid.uuid4().hex[:10]}"
+    given_date = datetime(2025, 3, 14, 9, 30, tzinfo=UTC)
+    given_product = "Seller's Own Product Name"
+
+    job_id = str(uuid.uuid4())
+    create_batch_job_pg(org_a, job_id, 1)
+    enqueue_batch_job_rows_pg(org_a, job_id, [text], [given_product], [given_date])
+
+    hash_ = ReviewRequest(text=text).input_hash()
+
+    with (
+        patch(
+            "app.api.v2.extract.extract_with_llm",
+            new=AsyncMock(side_effect=lambda *a, **k: _canned_llm_tuple()),
+        ),
+        patch("app.api.v2.extract.alert_on_review_event", new=AsyncMock(return_value=None)),
+    ):
+        result = await drain_rows(max_rows=10)
+
+    assert result["claimed"] == 1
+    assert result["processed"] == 1
+
+    ext = get_by_hash_pg(org_a, hash_)
+    assert ext is not None
+    # Source-provided product wins over the canned LLM output's "Test Widget".
+    assert ext.product == given_product
+    assert ext.review_date == given_date
+
+
+# ---------------------------------------------------------------------------
 # Proof 3 — FOR UPDATE SKIP LOCKED: no double-processing
 # ---------------------------------------------------------------------------
 
@@ -399,7 +450,8 @@ def test_for_update_skip_locked_returns_different_rows_at_sql_level(
     )
 
     claim_sql = (
-        "SELECT job_id, row_index, org_id, text FROM public.batch_job_rows "
+        "SELECT job_id, row_index, org_id, text, product, review_date "
+        "FROM public.batch_job_rows "
         "WHERE status = 'pending' ORDER BY updated_at LIMIT 1 FOR UPDATE SKIP LOCKED"
     )
 

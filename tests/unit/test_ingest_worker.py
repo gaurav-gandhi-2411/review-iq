@@ -29,8 +29,13 @@ from fastapi.testclient import TestClient
 # ---------------------------------------------------------------------------
 
 
+# Claimed-row shape: (job_id, row_index, org_id, text, product, review_date) -- matches
+# _claim_one_row's SELECT (job_id, row_index, org_id, text, product, review_date).
+_ClaimedRow = tuple[str, int, str, str, str | None, object]
+
+
 class _FakeCursor:
-    def __init__(self, claim_queue: list[tuple[str, int, str, str] | None]) -> None:
+    def __init__(self, claim_queue: list[_ClaimedRow | None]) -> None:
         self._claim_queue = claim_queue
         self.execute_calls: list[tuple[str, tuple[object, ...] | None]] = []
 
@@ -42,7 +47,7 @@ class _FakeCursor:
 
 
 class _FakeConn:
-    def __init__(self, claim_queue: list[tuple[str, int, str, str] | None]) -> None:
+    def __init__(self, claim_queue: list[_ClaimedRow | None]) -> None:
         self._cur = _FakeCursor(claim_queue)
         self.commits = 0
         self.rollbacks = 0
@@ -61,7 +66,7 @@ class _FakeConn:
         self.closed = True
 
 
-def _make_fake_connect(queue: list[tuple[str, int, str, str]], created: list[_FakeConn]) -> object:
+def _make_fake_connect(queue: list[_ClaimedRow], created: list[_FakeConn]) -> object:
     """Build a psycopg2.connect stand-in that hands out fresh _FakeConn objects,
     all sharing the same claim queue (mirrors one shared pending-rows table).
     """
@@ -174,14 +179,16 @@ async def test_drain_rows_attributes_each_row_to_its_own_org() -> None:
     org_a, org_b = str(uuid.uuid4()), str(uuid.uuid4())
     job_a, job_b = str(uuid.uuid4()), str(uuid.uuid4())
 
-    queue = [
-        (job_a, 0, org_a, "review text for org A"),
-        (job_b, 0, org_b, "review text for org B"),
+    queue: list[_ClaimedRow] = [
+        (job_a, 0, org_a, "review text for org A", None, None),
+        (job_b, 0, org_b, "review text for org B", None, None),
     ]
     created_conns: list[_FakeConn] = []
     captured_ctxs: list[ApiKeyContext] = []
 
-    async def _fake_run(req: object, ctx: ApiKeyContext) -> MagicMock:
+    async def _fake_run(
+        req: object, ctx: ApiKeyContext, product_override: str | None = None
+    ) -> MagicMock:
         captured_ctxs.append(ctx)
         return MagicMock()
 
@@ -218,14 +225,16 @@ async def test_row_failure_marks_failed_with_truncated_error_and_continues() -> 
     processed — one row's failure never aborts the drain loop.
     """
     org_id, job_id = str(uuid.uuid4()), str(uuid.uuid4())
-    queue = [
-        (job_id, 0, org_id, "bad review"),
-        (job_id, 1, org_id, "good review"),
+    queue: list[_ClaimedRow] = [
+        (job_id, 0, org_id, "bad review", None, None),
+        (job_id, 1, org_id, "good review", None, None),
     ]
     created_conns: list[_FakeConn] = []
     call_count = 0
 
-    async def _run_side_effect(req: object, ctx: ApiKeyContext) -> MagicMock:
+    async def _run_side_effect(
+        req: object, ctx: ApiKeyContext, product_override: str | None = None
+    ) -> MagicMock:
         nonlocal call_count
         call_count += 1
         if call_count == 1:
@@ -361,8 +370,14 @@ def test_extract_batch_enqueues_durable_rows_and_returns_job_id() -> None:
     ) -> None:
         create_calls.append((org_id, job_id, total, source_columns))
 
-    def _fake_enqueue(org_id: str, job_id: str, texts: list[str]) -> None:
-        enqueue_calls.append((org_id, job_id, texts))
+    def _fake_enqueue(
+        org_id: str,
+        job_id: str,
+        texts: list[str],
+        products: list[str | None] | None = None,
+        review_dates: list[object] | None = None,
+    ) -> None:
+        enqueue_calls.append((org_id, job_id, texts, products, review_dates))
 
     app.dependency_overrides[require_api_key] = lambda: ctx
     try:
@@ -408,15 +423,23 @@ def test_ingest_csv_enqueues_durable_rows_and_returns_job_id() -> None:
     )
     enqueue_calls: list[tuple[object, ...]] = []
 
-    def _fake_enqueue(org_id: str, job_id: str, texts: list[str]) -> None:
-        enqueue_calls.append((org_id, job_id, texts))
+    def _fake_enqueue(
+        org_id: str,
+        job_id: str,
+        texts: list[str],
+        products: list[str | None] | None = None,
+        review_dates: list[object] | None = None,
+    ) -> None:
+        enqueue_calls.append((org_id, job_id, texts, products, review_dates))
 
     app.dependency_overrides[require_api_key] = lambda: ctx
     try:
         with (
             patch(
                 "app.api.v2.ingest.read_and_validate_csv",
-                new=AsyncMock(return_value=([{"text": "Great product!"}], "review_text", None)),
+                new=AsyncMock(
+                    return_value=([{"text": "Great product!"}], "review_text", None, None, False)
+                ),
             ),
             patch("app.api.v2.ingest.create_batch_job_pg", return_value=None),
             patch("app.api.v2.ingest.enqueue_batch_job_rows_pg", side_effect=_fake_enqueue),
@@ -477,7 +500,7 @@ async def test_claim_one_row_fires_alert_for_authenticity_flagged_row() -> None:
     include_authenticity=True in its source_columns.
     """
     org_id, job_id = str(uuid.uuid4()), str(uuid.uuid4())
-    queue = [(job_id, 0, org_id, "row text")]
+    queue: list[_ClaimedRow] = [(job_id, 0, org_id, "row text", None, None)]
     created_conns: list[_FakeConn] = []
     job_record = {
         "job_id": job_id,
@@ -520,7 +543,7 @@ async def test_claim_one_row_authenticity_survives_channel_send_failure() -> Non
     the extraction already succeeded by the time authenticity scoring runs.
     """
     org_id, job_id = str(uuid.uuid4()), str(uuid.uuid4())
-    queue = [(job_id, 0, org_id, "row text 2")]
+    queue: list[_ClaimedRow] = [(job_id, 0, org_id, "row text 2", None, None)]
     created_conns: list[_FakeConn] = []
     job_record = {
         "job_id": job_id,

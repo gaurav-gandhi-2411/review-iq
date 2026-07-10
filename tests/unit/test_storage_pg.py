@@ -76,7 +76,7 @@ def test_get_by_hash_pg_cache_hit_returns_extraction() -> None:
     # (product, stars, stars_inferred, buy_again, sentiment, urgency,
     #  language, review_length_chars, confidence, topics, competitor_mentions,
     #  pros, cons, feature_requests, model, prompt_version, schema_version,
-    #  latency_ms, extracted_at, input_hash)
+    #  latency_ms, extracted_at, input_hash, review_date)
     cur.fetchone.return_value = (
         "Widget",
         4,
@@ -98,6 +98,7 @@ def test_get_by_hash_pg_cache_hit_returns_extraction() -> None:
         100,
         _NOW,
         _HASH,
+        None,
     )
 
     with patch("app.core.storage_pg._db_connect", return_value=conn):
@@ -105,6 +106,7 @@ def test_get_by_hash_pg_cache_hit_returns_extraction() -> None:
 
     assert result is not None
     assert result.product == "Widget"
+    assert result.review_date is None
     assert result.extraction_meta is not None
     assert result.extraction_meta.org_id == _ORG_ID
 

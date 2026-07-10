@@ -78,7 +78,8 @@ async def _claim_one_row() -> tuple[str, str, bool] | None:
         cur = conn.cursor()
         await asyncio.to_thread(
             cur.execute,
-            "SELECT job_id, row_index, org_id, text FROM public.batch_job_rows "
+            "SELECT job_id, row_index, org_id, text, product, review_date "
+            "FROM public.batch_job_rows "
             "WHERE status = 'pending' ORDER BY updated_at LIMIT 1 FOR UPDATE SKIP LOCKED",
         )
         row = await asyncio.to_thread(cur.fetchone)
@@ -86,7 +87,7 @@ async def _claim_one_row() -> tuple[str, str, bool] | None:
             await asyncio.to_thread(conn.commit)
             return None
 
-        job_id, row_index, org_id_raw, text = row
+        job_id, row_index, org_id_raw, text, product, review_date = row
         org_id = str(org_id_raw)
 
         include_authenticity = False
@@ -110,9 +111,9 @@ async def _claim_one_row() -> tuple[str, str, bool] | None:
         error: str | None = None
         ok = True
         try:
-            req = ReviewRequest(text=text)
+            req = ReviewRequest(text=text, review_date=review_date)
             input_hash = req.input_hash()
-            await _run_extraction_v2(req, ctx)
+            await _run_extraction_v2(req, ctx, product_override=product)
         except Exception as exc:  # noqa: BLE001 — one row's failure must not kill the drain loop
             ok = False
             error = str(exc)[:_ERROR_TRUNCATE_LEN]

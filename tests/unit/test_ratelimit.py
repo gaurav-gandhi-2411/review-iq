@@ -205,16 +205,16 @@ async def test_drain_rows_classifies_bulk() -> None:
     from app.core import ingest_worker as ingest_worker_mod
 
     org_id, job_id = str(uuid.uuid4()), str(uuid.uuid4())
-    queue: list[tuple[str, int, str, str] | None] = [
-        (job_id, 0, org_id, "Good product"),
-        (job_id, 1, org_id, "Bad product"),
+    queue: list[tuple[str, int, str, str, str | None, object] | None] = [
+        (job_id, 0, org_id, "Good product", None, None),
+        (job_id, 1, org_id, "Bad product", None, None),
     ]
 
     class _FakeCursor:
         def execute(self, *args: object, **kwargs: object) -> None:
             pass
 
-        def fetchone(self) -> tuple[str, int, str, str] | None:
+        def fetchone(self) -> tuple[str, int, str, str, str | None, object] | None:
             return queue.pop(0) if queue else None
 
     class _FakeConn:
@@ -232,7 +232,9 @@ async def test_drain_rows_classifies_bulk() -> None:
 
     captured: list[str] = []
 
-    async def _fake_run(req: ReviewRequest, ctx: ApiKeyContext) -> None:
+    async def _fake_run(
+        req: ReviewRequest, ctx: ApiKeyContext, product_override: str | None = None
+    ) -> None:
         captured.append(current_call_class())
 
     with (

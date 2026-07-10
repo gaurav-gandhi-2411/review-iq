@@ -55,6 +55,10 @@ class ReviewExtraction(BaseModel):
     language: str = "en"
     review_length_chars: int | None = None
     confidence: Annotated[float | None, Field(ge=0.0, le=1.0)] = None
+    # The review's ORIGINAL post date, when the source provided one (NOT ingestion time, NOT
+    # LLM-extracted -- carried through from ReviewRequest.review_date). None when unknown; never
+    # fabricated from ingestion time. See ReviewRequest.review_date for the source-side contract.
+    review_date: datetime | None = None
     extraction_meta: ExtractionMeta | None = None
 
     @field_validator("language")
@@ -116,6 +120,10 @@ class ReviewRequest(BaseModel):
     """Incoming request body for POST /extract."""
 
     text: Annotated[str, Field(min_length=1, max_length=5000)]
+    # The review's ORIGINAL post date (NOT ingestion time) -- optional, since most sources don't
+    # provide one today. Never fabricated: absent/unparseable means None, not a fallback to "now".
+    # Deliberately excluded from input_hash() -- see that method's docstring.
+    review_date: datetime | None = None
 
     @model_validator(mode="after")
     def strip_text(self) -> ReviewRequest:
@@ -123,6 +131,10 @@ class ReviewRequest(BaseModel):
         return self
 
     def input_hash(self) -> str:
+        """Content hash used for extraction caching -- TEXT ONLY, deliberately excludes
+        review_date. If date were included, re-uploading identical review text with a corrected
+        date would silently create a duplicate row instead of reusing the cached extraction,
+        breaking get_by_hash_pg's "same text = same result" contract."""
         return "sha256:" + hashlib.sha256(self.text.encode()).hexdigest()
 
 

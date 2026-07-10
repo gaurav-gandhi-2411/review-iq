@@ -38,8 +38,16 @@ log = structlog.get_logger(__name__)
 _SCHEMA_VERSION = "1.0.0"
 
 
-async def _run_extraction_v2(request: ReviewRequest, ctx: ApiKeyContext) -> ReviewExtractionV2:
-    """Core extraction pipeline for a single review (v2, Postgres-backed)."""
+async def _run_extraction_v2(
+    request: ReviewRequest, ctx: ApiKeyContext, product_override: str | None = None
+) -> ReviewExtractionV2:
+    """Core extraction pipeline for a single review (v2, Postgres-backed).
+
+    `product_override`: when the ingestion source itself supplied a product value (CSV
+    product_column, a connector's native product field), passed through from the caller (e.g.
+    ingest_worker) and stored in preference to the LLM-inferred product -- see
+    save_extraction_pg's docstring.
+    """
     input_hash = request.input_hash()
 
     import asyncio
@@ -82,6 +90,7 @@ async def _run_extraction_v2(request: ReviewRequest, ctx: ApiKeyContext) -> Revi
     extraction = ReviewExtractionV2(
         **llm_output.model_dump(),
         review_length_chars=len(request.text),
+        review_date=request.review_date,
         extraction_meta=meta,
     )
 
@@ -97,6 +106,8 @@ async def _run_extraction_v2(request: ReviewRequest, ctx: ApiKeyContext) -> Revi
         _SCHEMA_VERSION,
         latency_ms,
         is_suspicious,
+        request.review_date,
+        product_override,
     )
     # Update token counts on the usage_record created during auth.
     # On LLM failure this is never reached — the record stays at 0/0
@@ -249,7 +260,12 @@ async def extract_batch(
 
     await asyncio.to_thread(create_batch_job_pg, ctx.org_id, job_id, total)
     await asyncio.to_thread(
-        enqueue_batch_job_rows_pg, ctx.org_id, job_id, [r.text for r in body.reviews]
+        enqueue_batch_job_rows_pg,
+        ctx.org_id,
+        job_id,
+        [r.text for r in body.reviews],
+        None,
+        [r.review_date for r in body.reviews],
     )
     await asyncio.to_thread(update_batch_job_pg, ctx.org_id, job_id, status="processing")
 

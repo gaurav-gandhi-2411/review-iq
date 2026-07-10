@@ -72,7 +72,7 @@ def get_by_hash_pg(org_id: str, input_hash: str) -> ReviewExtractionV2 | None:
             "SELECT product, stars, stars_inferred, buy_again, sentiment, urgency, "
             "language, review_length_chars, confidence, topics, competitor_mentions, "
             "pros, cons, feature_requests, model, prompt_version, schema_version, "
-            "latency_ms, extracted_at, input_hash "
+            "latency_ms, extracted_at, input_hash, review_date "
             "FROM public.extractions WHERE org_id = %s AND input_hash = %s",
             (org_id, input_hash),
         )
@@ -99,9 +99,20 @@ def save_extraction_pg(
     schema_version: str,
     latency_ms: int | None,
     is_suspicious: bool,
+    review_date: datetime | None = None,
+    product_override: str | None = None,
 ) -> str:
-    """Persist a new extraction. Returns the row id (UUID as str)."""
+    """Persist a new extraction. Returns the row id (UUID as str).
+
+    `review_date`: the review's ORIGINAL post date, when known (see ReviewRequest.review_date) --
+    stored as-is, never fabricated from ingestion time.
+    `product_override`: when the ingestion source itself supplied a product value (e.g. a CSV's
+    product_column, or a connector's native product field), it's stored in PREFERENCE to the
+    LLM-inferred `extraction.product` -- a source-provided value is far more stable than free-text
+    LLM inference for per-product grouping. Falls back to `extraction.product` when absent.
+    """
     meta = extraction.extraction_meta
+    product_value = product_override if product_override else extraction.product
     conn = _db_connect()
     try:
         cur = conn.cursor()
@@ -114,14 +125,14 @@ def save_extraction_pg(
                 language, review_length_chars, confidence,
                 topics, competitor_mentions, pros, cons, feature_requests,
                 model, prompt_version, schema_version, latency_ms, extracted_at,
-                is_suspicious
+                is_suspicious, review_date
             ) VALUES (
                 %s, %s, %s, %s,
                 %s, %s, %s, %s, %s, %s,
                 %s, %s, %s,
                 %s, %s, %s, %s, %s,
                 %s, %s, %s, %s, %s,
-                %s
+                %s, %s
             )
             ON CONFLICT (org_id, input_hash) DO NOTHING
             RETURNING id
@@ -131,7 +142,7 @@ def save_extraction_pg(
                 api_key_id,
                 input_hash,
                 review_text,
-                extraction.product,
+                product_value,
                 extraction.stars,
                 extraction.stars_inferred,
                 None if extraction.buy_again is None else bool(extraction.buy_again),
@@ -151,6 +162,7 @@ def save_extraction_pg(
                 latency_ms,
                 meta.extracted_at if meta else datetime.utcnow(),
                 is_suspicious,
+                review_date,
             ),
         )
         row = cur.fetchone()
@@ -237,7 +249,7 @@ def list_extractions_pg(
                    sentiment, urgency, language, review_length_chars, confidence,
                    topics, competitor_mentions, pros, cons, feature_requests,
                    model, prompt_version, schema_version, latency_ms,
-                   extracted_at, created_at
+                   extracted_at, created_at, review_date
             FROM public.extractions
             {where_clause}
             ORDER BY created_at DESC
@@ -271,6 +283,7 @@ def list_extractions_pg(
             "latency_ms",
             "extracted_at",
             "created_at",
+            "review_date",
         ]
         return [dict(zip(cols, row, strict=False)) for row in rows]
     except Exception:
@@ -464,20 +477,37 @@ def update_batch_job_pg(
 # ---------------------------------------------------------------------------
 
 
-def enqueue_batch_job_rows_pg(org_id: str, job_id: str, texts: list[str]) -> None:
+def enqueue_batch_job_rows_pg(
+    org_id: str,
+    job_id: str,
+    texts: list[str],
+    products: list[str | None] | None = None,
+    review_dates: list[datetime | None] | None = None,
+) -> None:
     """Bulk-insert pending rows for a batch job (row_index = list position).
 
     One multi-row INSERT via executemany, one transaction. Called immediately
     after create_batch_job_pg at upload/submit time so rows are durable before
     the first drain tick runs.
+
+    `products`/`review_dates`: optional, per-row, same length/order as `texts` when given --
+    the source's own product value and the review's original post date (see
+    ReviewRow.review_date), carried through the queue so ingest_worker can use them at
+    extraction time instead of losing them. Default to None per row when not supplied (existing
+    callers that don't have this data are unaffected).
     """
+    row_products = products if products is not None else [None] * len(texts)
+    row_dates = review_dates if review_dates is not None else [None] * len(texts)
     conn = _db_connect()
     try:
         cur = conn.cursor()
         cur.executemany(
-            "INSERT INTO public.batch_job_rows (job_id, row_index, org_id, text) "
-            "VALUES (%s, %s, %s, %s)",
-            [(job_id, i, org_id, text) for i, text in enumerate(texts)],
+            "INSERT INTO public.batch_job_rows (job_id, row_index, org_id, text, product, "
+            "review_date) VALUES (%s, %s, %s, %s, %s, %s)",
+            [
+                (job_id, i, org_id, text, row_products[i], row_dates[i])
+                for i, text in enumerate(texts)
+            ],
         )
         conn.commit()
     except Exception:
@@ -1062,6 +1092,7 @@ def _row_to_extraction_v2(row: tuple[Any, ...], org_id: str) -> ReviewExtraction
         latency_ms,
         extracted_at,
         input_hash,
+        review_date,
     ) = row
 
     def _load(val: Any) -> list[str]:
@@ -1097,5 +1128,8 @@ def _row_to_extraction_v2(row: tuple[Any, ...], org_id: str) -> ReviewExtraction
         language=language or "en",
         review_length_chars=review_length_chars,
         confidence=confidence,
+        review_date=review_date
+        if review_date is None or isinstance(review_date, datetime)
+        else datetime.fromisoformat(str(review_date)),
         extraction_meta=meta,
     )

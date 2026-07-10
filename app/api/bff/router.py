@@ -668,6 +668,14 @@ async def bff_authenticity_summary(
     }
 
 
+def _parse_iso(value: str | None) -> datetime | None:
+    """Round-trip a review_date string (already-parsed ISO8601, from read_and_validate_csv) back
+    into a datetime for storage_pg -- never re-guesses format, this input is already unambiguous.
+    Duplicated from app/api/v2/ingest.py (this file already near-duplicates that endpoint's CSV
+    logic; tracked as a dedup candidate, not introduced here)."""
+    return datetime.fromisoformat(value) if value else None
+
+
 @router.post("/ingest/csv", status_code=status.HTTP_202_ACCEPTED)
 async def bff_ingest_csv(
     file: UploadFile,
@@ -675,13 +683,20 @@ async def bff_ingest_csv(
     ctx: Annotated[ApiKeyContext, Depends(require_session)],
     text_column: Annotated[str | None, Form()] = None,
     product_column: Annotated[str | None, Form()] = None,
+    date_column: Annotated[str | None, Form()] = None,
+    date_format: Annotated[str | None, Form()] = None,
     include_authenticity: Annotated[bool, Form()] = False,
 ) -> dict[str, object]:
-    """Upload a CSV of reviews for bulk extraction (BFF path)."""
+    """Upload a CSV of reviews for bulk extraction (BFF path).
+
+    `date_column`: optional column holding each review's ORIGINAL post date (auto-detected from
+    common names if omitted). Unparseable/ambiguous dates are never fabricated -- left absent,
+    reflected in the returned `date_ambiguous` flag. `date_format`: optional "DMY"/"MDY" hint.
+    """
 
     try:
-        rows, resolved_text, resolved_product = await read_and_validate_csv(
-            file, text_column, product_column
+        rows, resolved_text, resolved_product, resolved_date, date_ambiguous = (
+            await read_and_validate_csv(file, text_column, product_column, date_column, date_format)
         )
     except FileTooLargeError as exc:
         raise HTTPException(
@@ -711,6 +726,8 @@ async def bff_ingest_csv(
         {
             "text_column": resolved_text,
             "product_column": resolved_product,
+            "date_column": resolved_date,
+            "date_ambiguous": date_ambiguous,
             "include_authenticity": include_authenticity,
             "input_hashes": [],
         }
@@ -722,14 +739,32 @@ async def bff_ingest_csv(
     # BackgroundTask below finishes, POST /internal/ingest/tick resumes the
     # remainder on a schedule.
     await asyncio.to_thread(
-        enqueue_batch_job_rows_pg, ctx.org_id, job_id, [row["text"] for row in rows]
+        enqueue_batch_job_rows_pg,
+        ctx.org_id,
+        job_id,
+        [row["text"] for row in rows],
+        [row.get("product") for row in rows],
+        [_parse_iso(row.get("review_date")) for row in rows],
     )
     await asyncio.to_thread(update_batch_job_pg, ctx.org_id, job_id, status="processing")
 
     background_tasks.add_task(_drain_until_job_complete, ctx.org_id, job_id)
 
-    log.info("bff.ingest.job_created", job_id=job_id, total=total, org_id=ctx.org_id)
-    return {"job_id": job_id, "total": total, "status": "pending"}
+    log.info(
+        "bff.ingest.job_created",
+        job_id=job_id,
+        total=total,
+        org_id=ctx.org_id,
+        date_column=resolved_date,
+        date_ambiguous=date_ambiguous,
+    )
+    return {
+        "job_id": job_id,
+        "total": total,
+        "status": "pending",
+        "date_column": resolved_date,
+        "date_ambiguous": date_ambiguous,
+    }
 
 
 @router.get("/ingest/{job_id}")

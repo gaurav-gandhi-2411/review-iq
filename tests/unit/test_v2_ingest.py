@@ -74,7 +74,9 @@ def test_ingest_csv_returns_202_with_job_id(client: TestClient) -> None:
     with (
         patch(
             "app.api.v2.ingest.read_and_validate_csv",
-            new=AsyncMock(return_value=([{"text": "Great product!"}], "review_text", None)),
+            new=AsyncMock(
+                return_value=([{"text": "Great product!"}], "review_text", None, None, False)
+            ),
         ),
         patch(
             "app.api.v2.ingest.create_batch_job_pg",
@@ -142,7 +144,7 @@ def test_ingest_csv_422_empty_rows(client: TestClient) -> None:
     """Empty rows list (all rows were blank) maps to 422."""
     with patch(
         "app.api.v2.ingest.read_and_validate_csv",
-        new=AsyncMock(return_value=([], "review_text", None)),
+        new=AsyncMock(return_value=([], "review_text", None, None, False)),
     ):
         resp = client.post(
             "/v2/ingest/csv",

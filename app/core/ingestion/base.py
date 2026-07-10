@@ -16,6 +16,7 @@ class ReviewRow(TypedDict, total=False):
     language: str  # optional BCP-47 language tag (e.g. "en", "hi")
     source_review_id: str  # optional connector-native ID (dedup key)
     author: str  # optional reviewer name / handle
+    review_date: str  # optional ISO8601 date the review was originally posted (NOT ingestion time)
 
 
 @runtime_checkable

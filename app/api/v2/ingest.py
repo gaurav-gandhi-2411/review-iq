@@ -8,6 +8,7 @@ import io
 import json
 import uuid
 from collections.abc import Iterator
+from datetime import datetime
 from typing import Annotated
 
 import structlog
@@ -34,6 +35,12 @@ from app.core.storage_pg import (
 
 router = APIRouter(prefix="/v2/ingest", tags=["v2-ingest"])
 log = structlog.get_logger(__name__)
+
+
+def _parse_iso(value: str | None) -> datetime | None:
+    """Round-trip a review_date string (already-parsed ISO8601, from read_and_validate_csv) back
+    into a datetime for storage_pg -- never re-guesses format, this input is already unambiguous."""
+    return datetime.fromisoformat(value) if value else None
 
 
 # ---------------------------------------------------------------------------
@@ -85,16 +92,24 @@ async def ingest_csv(
     ctx: ApiKeyContext = Depends(require_api_key),
     text_column: Annotated[str | None, Form()] = None,
     product_column: Annotated[str | None, Form()] = None,
+    date_column: Annotated[str | None, Form()] = None,
+    date_format: Annotated[str | None, Form()] = None,
     include_authenticity: Annotated[bool, Form()] = False,
 ) -> dict[str, object]:
     """Upload a CSV of reviews for bulk extraction.
 
     Caps (free tier): <= 500 rows, <= 5 MB. Returns job_id immediately.
     Poll GET /v2/ingest/{job_id} for status.
+
+    `date_column`: optional column holding each review's ORIGINAL post date (auto-detected from
+    common names if omitted). Unparseable/ambiguous dates are never fabricated -- they're left
+    absent, reflected in the returned `date_ambiguous` flag when the whole column's day/month
+    convention couldn't be determined. `date_format`: optional "DMY"/"MDY" hint to skip
+    auto-detection.
     """
     try:
-        rows, resolved_text, resolved_product = await read_and_validate_csv(
-            file, text_column, product_column
+        rows, resolved_text, resolved_product, resolved_date, date_ambiguous = (
+            await read_and_validate_csv(file, text_column, product_column, date_column, date_format)
         )
     except FileTooLargeError as exc:
         raise HTTPException(
@@ -124,6 +139,8 @@ async def ingest_csv(
         {
             "text_column": resolved_text,
             "product_column": resolved_product,
+            "date_column": resolved_date,
+            "date_ambiguous": date_ambiguous,
             "include_authenticity": include_authenticity,
             "input_hashes": [],
         }
@@ -136,14 +153,32 @@ async def ingest_csv(
     # BackgroundTask below finishes, POST /internal/ingest/tick resumes the
     # remainder on a schedule.
     await asyncio.to_thread(
-        enqueue_batch_job_rows_pg, ctx.org_id, job_id, [row["text"] for row in rows]
+        enqueue_batch_job_rows_pg,
+        ctx.org_id,
+        job_id,
+        [row["text"] for row in rows],
+        [row.get("product") for row in rows],
+        [_parse_iso(row.get("review_date")) for row in rows],
     )
     await asyncio.to_thread(update_batch_job_pg, ctx.org_id, job_id, status="processing")
 
     background_tasks.add_task(_drain_until_job_complete, ctx.org_id, job_id)
 
-    log.info("ingest.job_created", job_id=job_id, total=total, org_id=ctx.org_id)
-    return {"job_id": job_id, "total": total, "status": "pending"}
+    log.info(
+        "ingest.job_created",
+        job_id=job_id,
+        total=total,
+        org_id=ctx.org_id,
+        date_column=resolved_date,
+        date_ambiguous=date_ambiguous,
+    )
+    return {
+        "job_id": job_id,
+        "total": total,
+        "status": "pending",
+        "date_column": resolved_date,
+        "date_ambiguous": date_ambiguous,
+    }
 
 
 @router.get(
