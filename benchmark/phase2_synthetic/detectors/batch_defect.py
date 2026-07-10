@@ -62,24 +62,28 @@ EXPECTED_COUNT_FLOOR = 0.3
 # zero on a product whose entire observed range is shorter than one window.
 MIN_OUTSIDE_DAYS = 0.5
 
-# The candidate window's count must ALSO be a jump relative to the WINDOW_DAYS-wide period
-# immediately preceding it, not just the all-history average. Found via validation, after
-# fixing the trend detector's synthetic data to source genuine complaints: the all-history-
-# average baseline alone flagged the tail of a genuinely RISING complaint trend as a "spike",
-# because a smooth ramp's later (denser) phase looks anomalous against its own diluted early-
-# phase average. A real batch defect is a discontinuity -- the period right before it should
-# look like normal baseline, not already-elevated. A rising trend's immediately-preceding
-# window is itself elevated (it's mid-ramp), so this local contrast check rejects it while
-# leaving genuine step-change spikes (baseline near zero right up until the spike) untouched.
-# Threshold set from measured separation, not guessed: the two planted batch-defect spikes
-# have a preceding-window count of 0 (margin 16.0x against the floor) -- a clean discontinuity
-# -- while a rising-trend false positive found during validation (SYN-TREND-01's final phase,
-# where 5 of 8 reviews randomly clumped within ~34 hours by chance) only reaches margin 3.0x,
-# since its preceding window is already elevated mid-ramp. 5.0 sits with headroom on both
-# sides (3.1x below the true positives, 1.9x above the false positive), not tuned to force one
-# specific case.
-LOCAL_CONTRAST_RATIO = 5.0
-LOCAL_CONTRAST_FLOOR = 0.5
+# 2026-07-10, second iteration: the candidate spike window's topic must ALSO be nearly SILENT
+# everywhere else in the product's observed history -- not just quiet in the one window right
+# before it. A first attempt at this (compare only against the immediately-preceding
+# WINDOW_DAYS-wide window) worked but left a thin, position-sensitive margin: it depended on
+# exactly where the preceding-window boundary fell, and a genuinely rising trend's tail could
+# still slip through if that one adjacent window happened to be sparse by chance (found on
+# SYN-TREND-01: 5 of its final-phase reviews randomly clumped within ~34 hours, and the
+# specific 10-day window this produced had a low-count immediate predecessor even though the
+# topic had been continuously active for months).
+#
+# The real, more robust distinguishing signal, found by inspecting the raw mention timestamps
+# directly: a genuine batch defect has ZERO (or near-zero) mentions of the topic ANYWHERE in
+# the product's history outside the spike window -- the topic was silent, then suddenly wasn't.
+# A rising trend has mentions spread continuously across the WHOLE observed range with
+# gradually shrinking gaps between them -- there is no quiet period to find, at any window
+# position, because the topic was never silent. Measured directly on the real data: both
+# planted batch-defect spikes have 0-1 total mentions outside their flagged window; every
+# trend-pattern product (both planted trends AND their matched controls) has 11-18 mentions
+# outside whatever window scores highest. A threshold of 3 sits with enormous margin on both
+# sides (at least 2x below the true positives' max of 1, at least 3.7x above the threshold from
+# the lowest trend-pattern product's 11) -- not a fragile, position-sensitive boundary.
+MAX_TOTAL_OUTSIDE_COUNT = 3
 
 
 @dataclass(frozen=True)
@@ -158,17 +162,12 @@ def _best_window_for_topic(
         expected_count = max(baseline_rate_per_day * WINDOW_DAYS, EXPECTED_COUNT_FLOOR)
         ratio = window_count / expected_count
 
-        # Local before/after contrast: the window must also jump relative to the period right
-        # before it, not just the all-history average -- see LOCAL_CONTRAST_RATIO's comment.
-        preceding_start = window_start - timedelta(days=WINDOW_DAYS)
-        preceding_count = sum(
-            1 for m in negative_mentions if preceding_start <= m.timestamp < window_start
-        )
-        local_contrast_ok = window_count >= LOCAL_CONTRAST_RATIO * max(
-            preceding_count, LOCAL_CONTRAST_FLOOR
-        )
+        # Silence-elsewhere gate: the topic must be nearly silent everywhere OUTSIDE this
+        # window, not just relative to a diluted average rate -- see MAX_TOTAL_OUTSIDE_COUNT's
+        # comment for why this replaced an earlier, more position-sensitive local-contrast check.
+        silence_elsewhere_ok = outside_count <= MAX_TOTAL_OUTSIDE_COUNT
 
-        if local_contrast_ok and (best is None or ratio > best["ratio"]):
+        if silence_elsewhere_ok and (best is None or ratio > best["ratio"]):
             best = {
                 "window_start": window_start,
                 "window_end": window_end,
@@ -176,7 +175,7 @@ def _best_window_for_topic(
                 "baseline_rate_per_day": baseline_rate_per_day,
                 "expected_count": expected_count,
                 "ratio": ratio,
-                "preceding_window_count": preceding_count,
+                "outside_count": outside_count,
                 "review_ids": [m.review_id for m in in_window],
             }
     return best
@@ -226,7 +225,7 @@ def scan_batch_defects(reviews: list[AnnotatedReview]) -> list[BatchDefectFlag]:
                 "baseline_rate_per_day": round(best["baseline_rate_per_day"], 4),
                 "expected_count": round(best["expected_count"], 2),
                 "ratio_vs_baseline": round(best["ratio"], 2),
-                "preceding_window_count": best["preceding_window_count"],
+                "outside_count": best["outside_count"],
                 "review_ids": best["review_ids"],
             }
             flags.append(

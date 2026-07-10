@@ -4,6 +4,18 @@ data -- planted patterns may not match how real complaint trends actually look i
 not quote synthetic precision/recall as real-world accuracy. Ready to run against live tenant
 data, not yet validated against it.
 
+MOST REAL-DATA-DEPENDENT OF THE THREE PHASE 2 DETECTORS. Precision/recall are clean on this
+synthetic set (1.0/1.0/0.0 FPR, with wide margins on both gates -- see
+project_phase2_synthetic_testbed.md memory) -- but "rising over time" is the pattern synthetic
+timestamps simulate LEAST realistically of the three. Batch-defect's shape (a discrete event,
+then a burst) and fake-campaign's shape (coordinated reviewer/timing/text clustering) are both
+fairly universal regardless of what's being sold. A real complaint TREND on live data can look
+very different from this testbed's linear-rise-plus-random-jitter construction: seasonality,
+promotional spikes, multiple overlapping causes, non-monotonic real-world dynamics. Trust
+batch-defect and fake-campaign's synthetic-clean results more than this one's, even though all
+three are equally "SYNTHETIC-VALIDATED, not proven on real data" -- this detector specifically
+needs real-seller temporal data before its precision/recall claims should be trusted at all.
+
 Trend detector: flags a (product, topic) pair where a specific complaint theme's frequency is
 genuinely RISING over time (escalating dissatisfaction), as distinct from a product with a
 stable-but-nonzero complaint rate. This is a MODERATION-PRIORITIZATION SIGNAL, not a verdict --

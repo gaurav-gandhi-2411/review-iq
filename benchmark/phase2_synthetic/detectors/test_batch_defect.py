@@ -50,11 +50,18 @@ def _flag_for(flags: list[BatchDefectFlag], product_id: str, topic: str) -> Batc
 
 
 def test_flags_clustered_spike_against_sparse_baseline() -> None:
-    """A topic with a handful of scattered baseline mentions plus a tight burst of 6 in a
-    10-day window should be flagged, with the burst's own review_ids in the evidence."""
+    """A topic with a couple of scattered baseline mentions plus a tight burst of 6 in a
+    10-day window should be flagged, with the burst's own review_ids in the evidence.
+
+    Baseline is 2 scattered mentions (not, e.g., 10) -- MAX_TOTAL_OUTSIDE_COUNT requires the
+    topic to be nearly silent outside the spike window (measured from real data: true positives
+    have 0-1 total mentions outside their window, trend-pattern products have 11-18). A denser
+    "sparse" baseline than that is genuinely ambiguous under the real threshold, not a case this
+    detector is meant to catch -- see MAX_TOTAL_OUTSIDE_COUNT's comment in batch_defect.py.
+    """
     reviews = []
-    # Sparse baseline: 1 negative "battery" mention every 15 days over a ~150-day range.
-    for i, day in enumerate(range(0, 151, 15)):
+    # Sparse baseline: 2 negative "battery" mentions, well outside the burst window.
+    for i, day in enumerate([10, 140]):
         reviews.append(_review(f"base-{i}", "P-SPIKE", day, ["battery"]))
     # Tight burst: 6 negative "battery" mentions within a 5-day span around day 80.
     burst_ids = []
@@ -72,6 +79,29 @@ def test_flags_clustered_spike_against_sparse_baseline() -> None:
     assert flag.evidence["ratio_vs_baseline"] >= SPIKE_RATIO_THRESHOLD
     assert 0.0 < flag.confidence <= 1.0
     assert set(burst_ids).issubset(set(flag.evidence["review_ids"]))
+
+
+def test_does_not_flag_dense_tail_of_a_continuous_trend() -> None:
+    """A topic active continuously across the whole observed range, with gradually shrinking
+    gaps between mentions (a rising-trend shape), must NOT be flagged even though its densest
+    late-window sub-period alone would clear the ratio/count thresholds.
+
+    Regression pin for the real false positive found during validation on the synthetic
+    testbed (SYN-TREND-01): the topic was never silent, so no window position should pass the
+    MAX_TOTAL_OUTSIDE_COUNT gate. Mirrors the real shape found by direct inspection of the
+    failing case's mention timestamps -- mentions throughout months 1-4, several landing close
+    together near the end purely by chance.
+    """
+    reviews = [
+        _review(f"trend-{i}", "P-TREND-TAIL", day, ["delivery"])
+        for i, day in enumerate(
+            [10, 25, 40, 50, 65, 70, 75, 80, 85, 90, 91, 91, 91, 92, 95, 105, 108]
+        )
+    ]
+
+    flags = scan_batch_defects(reviews)
+
+    assert _flag_for(flags, "P-TREND-TAIL", "delivery") is None
 
 
 def test_does_not_flag_evenly_scattered_topic() -> None:
@@ -117,7 +147,7 @@ def test_only_negative_or_mixed_sentiment_counts_as_mention() -> None:
 def test_mixed_sentiment_counts_as_negative_mention() -> None:
     """'mixed' sentiment mentions count toward the spike, same as 'negative'."""
     reviews = []
-    for i, day in enumerate(range(0, 151, 15)):
+    for i, day in enumerate([10, 140]):
         reviews.append(_review(f"base-{i}", "P-MIXED", day, ["battery"]))
     for i, day in enumerate([80, 81, 82, 83, 84, 84]):
         reviews.append(
@@ -132,7 +162,7 @@ def test_mixed_sentiment_counts_as_negative_mention() -> None:
 def test_review_can_contribute_to_multiple_topics() -> None:
     """A single review's topics list can trigger spikes on more than one topic independently."""
     reviews = []
-    for i, day in enumerate(range(0, 151, 15)):
+    for i, day in enumerate([10, 140]):
         reviews.append(_review(f"base-battery-{i}", "P-MULTI", day, ["battery"]))
         reviews.append(_review(f"base-screen-{i}", "P-MULTI", day, ["screen"]))
     for i, day in enumerate([80, 81, 82, 83, 84, 84]):
