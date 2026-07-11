@@ -55,14 +55,14 @@ def test_cors_env_var_parses_csv(monkeypatch: pytest.MonkeyPatch) -> None:
     assert s.allowed_origins == ["https://app.example.com", "https://staging.example.com"]
 
 
-def test_cors_env_var_wildcard_is_parseable_but_documented_as_forbidden(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """If someone manually sets ALLOWED_ORIGINS=*, the setting parses it — but
-    the deployment runbook and the gate test above catch it before prod deploy."""
+def test_cors_env_var_wildcard_raises(monkeypatch: pytest.MonkeyPatch) -> None:
+    """If someone sets ALLOWED_ORIGINS=*, accessing allowed_origins raises rather than
+    silently returning a wildcard -- a runtime fail-closed backstop on top of the gate
+    test above: this makes wildcard CORS impossible to boot, not just impossible to merge."""
     monkeypatch.setenv("ALLOWED_ORIGINS", "*")
     s = Settings()
-    assert s.allowed_origins == ["*"]  # parses OK, but caught by the gate test
+    with pytest.raises(ValueError, match="ALLOWED_ORIGINS must not contain"):
+        _ = s.allowed_origins
 
 
 def test_cors_middleware_uses_settings_origins() -> None:

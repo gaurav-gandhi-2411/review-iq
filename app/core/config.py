@@ -128,7 +128,15 @@ class Settings(BaseSettings):
 
     @property
     def allowed_origins(self) -> list[str]:
-        return [o.strip() for o in self.allowed_origins_env.split(",") if o.strip()]
+        origins = [o.strip() for o in self.allowed_origins_env.split(",") if o.strip()]
+        if "*" in origins:
+            # Runtime fail-closed backstop: previously only test_cors_policy.py caught a
+            # wildcard ALLOWED_ORIGINS before it could ship. This makes it impossible to
+            # boot the app with wildcard CORS at all, not just impossible to merge.
+            raise ValueError(
+                "ALLOWED_ORIGINS must not contain '*' — use an explicit origin list."
+            )
+        return origins
 
     # Shopify connector
     # Register app at partners.shopify.com to get these credentials.
