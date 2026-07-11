@@ -43,7 +43,7 @@ from typing import Any
 import psycopg2
 import psycopg2.errors
 import structlog
-from cryptography.fernet import Fernet, InvalidToken
+from cryptography.fernet import Fernet, InvalidToken, MultiFernet
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, status
 
 from app.auth.api_key import ApiKeyContext
@@ -60,6 +60,18 @@ router = APIRouter(prefix="/webhooks/google", tags=["webhooks"])
 # ---------------------------------------------------------------------------
 
 
+def _build_fernet(encryption_key: str) -> MultiFernet:
+    """Build a (Multi)Fernet from one or more comma-separated keys.
+
+    Key-rotation support (audit finding #6): GOOGLE_TOKEN_ENCRYPTION_KEY can hold
+    a single key (today's exact format, unchanged) or "new_key,old_key,..." to
+    rotate. Mirrors app/api/webhooks/shopify.py's _build_fernet exactly -- see its
+    docstring for the rotation mechanics.
+    """
+    keys = [Fernet(k.strip().encode()) for k in encryption_key.split(",") if k.strip()]
+    return MultiFernet(keys)
+
+
 def _decrypt_refresh_token(refresh_token_enc: str, encryption_key: str) -> str:
     """Decrypt a Fernet-encrypted Google refresh token.
 
@@ -67,7 +79,7 @@ def _decrypt_refresh_token(refresh_token_enc: str, encryption_key: str) -> str:
     the webhook (never crash, never fall back to plaintext).
     """
     try:
-        f = Fernet(encryption_key.encode())
+        f = _build_fernet(encryption_key)
         return f.decrypt(refresh_token_enc.encode()).decode()
     except (InvalidToken, Exception) as exc:
         raise ValueError(f"Token decryption failed: {exc}") from exc
@@ -75,7 +87,7 @@ def _decrypt_refresh_token(refresh_token_enc: str, encryption_key: str) -> str:
 
 def encrypt_token(refresh_token: str, encryption_key: str) -> str:
     """Encrypt a Google refresh token for storage. Called from the OAuth callback."""
-    f = Fernet(encryption_key.encode())
+    f = _build_fernet(encryption_key)
     return f.encrypt(refresh_token.encode()).decode()
 
 

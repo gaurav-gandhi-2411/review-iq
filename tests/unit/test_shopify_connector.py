@@ -204,6 +204,60 @@ def test_decrypt_tampered_ciphertext_raises_value_error() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Key rotation (audit finding #6) — comma-separated key list
+# ---------------------------------------------------------------------------
+
+
+def test_old_key_still_decrypts_after_rotation() -> None:
+    """The core rotation guarantee: a token encrypted BEFORE rotation must still
+    decrypt AFTER the key list is updated to "new_key,old_key" -- existing
+    installations must not be silently broken by rotating the key."""
+    old_key = _make_fernet_key()
+    new_key = _make_fernet_key()
+    token = "shpat_pre_rotation_token"
+
+    encrypted_before_rotation = encrypt_token(token, old_key)
+
+    rotated_key_list = f"{new_key},{old_key}"
+    assert _decrypt_token(encrypted_before_rotation, rotated_key_list) == token
+
+
+def test_new_encryptions_use_the_first_key_after_rotation() -> None:
+    """After rotation, NEW encryptions use the first (new) key -- decrypting with
+    only the old key must fail, proving rotation actually took effect going
+    forward rather than silently continuing to use the old key."""
+    old_key = _make_fernet_key()
+    new_key = _make_fernet_key()
+    rotated_key_list = f"{new_key},{old_key}"
+
+    encrypted_after_rotation = encrypt_token("shpat_post_rotation_token", rotated_key_list)
+
+    assert _decrypt_token(encrypted_after_rotation, rotated_key_list) == "shpat_post_rotation_token"
+    with pytest.raises(ValueError, match="Token decryption failed"):
+        _decrypt_token(encrypted_after_rotation, old_key)  # old key alone can't read new ciphertext
+
+
+def test_single_key_format_unchanged_backward_compatible() -> None:
+    """A plain single-key value (today's exact format, no comma) behaves
+    identically to before this fix -- zero behavior change for the common case."""
+    key = _make_fernet_key()
+    token = "shpat_single_key_unchanged"
+    assert _decrypt_token(encrypt_token(token, key), key) == token
+
+
+def test_decrypt_fails_once_old_key_is_fully_removed() -> None:
+    """Once an old key is dropped from the list entirely (post-rotation cleanup),
+    tokens still encrypted under it can no longer be decrypted -- documents the
+    real operational constraint: don't drop the old key until nothing needs it."""
+    old_key = _make_fernet_key()
+    new_key = _make_fernet_key()
+    encrypted_with_old_key = encrypt_token("shpat_orphaned", old_key)
+
+    with pytest.raises(ValueError, match="Token decryption failed"):
+        _decrypt_token(encrypted_with_old_key, new_key)  # old key no longer in the list at all
+
+
+# ---------------------------------------------------------------------------
 # Webhook payload parsing
 # ---------------------------------------------------------------------------
 

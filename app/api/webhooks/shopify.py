@@ -45,7 +45,7 @@ from typing import Any
 
 import psycopg2
 import psycopg2.errors
-from cryptography.fernet import Fernet, InvalidToken
+from cryptography.fernet import Fernet, InvalidToken, MultiFernet
 from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Request, status
 
 from app.auth.api_key import ApiKeyContext
@@ -78,6 +78,21 @@ def _verify_shopify_hmac(raw_body: bytes, hmac_header: str, client_secret: str) 
 # ---------------------------------------------------------------------------
 
 
+def _build_fernet(encryption_key: str) -> MultiFernet:
+    """Build a (Multi)Fernet from one or more comma-separated keys.
+
+    Key-rotation support (audit finding #6): SHOPIFY_TOKEN_ENCRYPTION_KEY can hold
+    a single key (today's exact format, unchanged) or "new_key,old_key,..." to
+    rotate. encrypt_token always uses the FIRST key; decrypt_token tries each key
+    in order, so existing ciphertext keeps decrypting through a rotation -- only
+    remove an old key from the list once you're sure nothing still needs it (no
+    batch re-encryption job exists; a token is only re-encrypted if its merchant
+    re-authorizes). See ops/runbooks/secret-rotation.md for the rotation procedure.
+    """
+    keys = [Fernet(k.strip().encode()) for k in encryption_key.split(",") if k.strip()]
+    return MultiFernet(keys)
+
+
 def _decrypt_token(access_token_enc: str, encryption_key: str) -> str:
     """Decrypt a Fernet-encrypted Shopify access token.
 
@@ -85,7 +100,7 @@ def _decrypt_token(access_token_enc: str, encryption_key: str) -> str:
     the webhook (never crash, never fall back to plaintext).
     """
     try:
-        f = Fernet(encryption_key.encode())
+        f = _build_fernet(encryption_key)
         return f.decrypt(access_token_enc.encode()).decode()
     except (InvalidToken, Exception) as exc:
         raise ValueError(f"Token decryption failed: {exc}") from exc
@@ -93,7 +108,7 @@ def _decrypt_token(access_token_enc: str, encryption_key: str) -> str:
 
 def encrypt_token(access_token: str, encryption_key: str) -> str:
     """Encrypt a Shopify access token for storage. Called from the OAuth callback."""
-    f = Fernet(encryption_key.encode())
+    f = _build_fernet(encryption_key)
     return f.encrypt(access_token.encode()).decode()
 
 

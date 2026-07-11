@@ -58,6 +58,34 @@ Not tracked here (plain env vars, not Secret Manager — see `cloud-run-deploy.m
 
 ---
 
+## Rotating SHOPIFY_TOKEN_ENCRYPTION_KEY / GOOGLE_TOKEN_ENCRYPTION_KEY
+
+These encrypt Shopify access tokens / Google refresh tokens at rest
+(`shopify_installations.access_token_enc`, `google_business_installations.refresh_token_enc`).
+As of 2026-07-11 (audit finding #6) both `_build_fernet()` functions
+(`app/api/webhooks/shopify.py`, `app/api/webhooks/google.py`) support a **comma-separated key
+list** — `encrypt_token` always uses the first key; `decrypt_token` tries each key in order.
+This makes rotation possible without breaking already-installed merchants, which a single-key
+value cannot do (rotating it would make every existing installation's stored token permanently
+undecryptable).
+
+**To rotate:**
+1. Generate a new key: `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`
+2. Set the secret value to `"<new_key>,<old_key>"` (new key FIRST — it's what new encryptions use).
+3. Deploy. Existing installations keep decrypting via the old key (now second in the list); any
+   merchant who re-authorizes from this point gets re-encrypted under the new key.
+4. **Do not remove the old key from the list** until you're confident nothing still needs it —
+   there is no batch re-encryption job, so a token is only re-encrypted if its merchant
+   re-authorizes. Dropping the old key early permanently breaks decryption for any installation
+   still encrypted under it (silently — the webhook just drops with `Token decryption failed`,
+   caught and logged, not a crash).
+5. If you must force re-encryption faster than organic re-auth, that requires a dedicated
+   migration script (decrypt-with-old-key, re-encrypt-with-new-key, per installation) — not built
+   as of this writing; scope it separately if you actually need to fully retire an old key on a
+   deadline rather than indefinitely.
+
+---
+
 ## Rotation procedure
 
 ### Step 1 — Add the new version

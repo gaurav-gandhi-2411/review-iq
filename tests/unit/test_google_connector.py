@@ -189,6 +189,44 @@ def test_decrypt_refresh_token_tampered_ciphertext_raises_value_error() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Key rotation (audit finding #6) — comma-separated key list. Mirrors
+# test_shopify_connector.py's rotation tests exactly (same _build_fernet fix).
+# ---------------------------------------------------------------------------
+
+
+def test_old_key_still_decrypts_after_rotation() -> None:
+    old_key = _make_fernet_key()
+    new_key = _make_fernet_key()
+    token = "1//0gPreRotationRefreshToken"
+
+    encrypted_before_rotation = encrypt_token(token, old_key)
+
+    rotated_key_list = f"{new_key},{old_key}"
+    assert _decrypt_refresh_token(encrypted_before_rotation, rotated_key_list) == token
+
+
+def test_new_encryptions_use_the_first_key_after_rotation() -> None:
+    old_key = _make_fernet_key()
+    new_key = _make_fernet_key()
+    rotated_key_list = f"{new_key},{old_key}"
+
+    encrypted_after_rotation = encrypt_token("1//0gPostRotation", rotated_key_list)
+
+    assert (
+        _decrypt_refresh_token(encrypted_after_rotation, rotated_key_list)
+        == "1//0gPostRotation"
+    )
+    with pytest.raises(ValueError, match="Token decryption failed"):
+        _decrypt_refresh_token(encrypted_after_rotation, old_key)
+
+
+def test_single_key_format_unchanged_backward_compatible() -> None:
+    key = _make_fernet_key()
+    token = "1//0gSingleKeyUnchanged"
+    assert _decrypt_refresh_token(encrypt_token(token, key), key) == token
+
+
+# ---------------------------------------------------------------------------
 # Push-token verification (endpoint-level)
 # ---------------------------------------------------------------------------
 
