@@ -286,7 +286,8 @@ async def shopify_oauth_callback(
     the seller's active JWT in Authorization header.
 
     Security layers (applied in sequence — first failure short-circuits):
-      1. Shopify hmac verification (skipped if hmac absent — allows test calls)
+      1. Shopify hmac verification (mandatory — a real Shopify callback always
+         includes it; a request with no/wrong hmac is rejected outright)
       2. State CSRF token (must match shop_domain; expires in 10 min)
       3. Supabase JWT → org_id resolution (org_id NEVER from request params)
     """
@@ -298,19 +299,21 @@ async def shopify_oauth_callback(
     if not settings.shopify_client_secret or not settings.shopify_token_encryption_key:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Shopify app not configured.")
 
-    # 1. Verify Shopify's HMAC (when present — always present in real Shopify callbacks)
-    if body.hmac:
-        callback_params: dict[str, str] = {
-            "code": body.code,
-            "shop": body.shop,
-            "state": body.state,
-        }
-        if body.timestamp:
-            callback_params["timestamp"] = body.timestamp
-        callback_params["hmac"] = body.hmac
-        if not _verify_shopify_callback_hmac(callback_params, settings.shopify_client_secret):
-            log.warning("shopify_auth.callback_hmac_invalid", shop=body.shop)
-            raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid Shopify HMAC.")
+    # 1. Verify Shopify's HMAC — mandatory, no bypass. _verify_shopify_callback_hmac
+    # already fails closed on an empty/missing hmac (see its docstring), so simply
+    # always calling it (rather than gating on `if body.hmac:`) removes what was
+    # previously a caller-controlled auth-check skip ("for test calls").
+    callback_params: dict[str, str] = {
+        "code": body.code,
+        "shop": body.shop,
+        "state": body.state,
+    }
+    if body.timestamp:
+        callback_params["timestamp"] = body.timestamp
+    callback_params["hmac"] = body.hmac
+    if not _verify_shopify_callback_hmac(callback_params, settings.shopify_client_secret):
+        log.warning("shopify_auth.callback_hmac_invalid", shop=body.shop)
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid Shopify HMAC.")
 
     # 2. Validate shop domain format + verify state CSRF
     try:

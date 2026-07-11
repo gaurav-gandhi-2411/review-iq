@@ -48,6 +48,24 @@ def _make_user(user_id: str = "user-abc") -> MagicMock:
     return u
 
 
+def _valid_hmac(secret: str, *, code: str, shop: str, state: str, timestamp: str = "") -> str:
+    """Compute a real Shopify-style callback HMAC for test request bodies.
+
+    The callback now verifies HMAC unconditionally (2026-07-11 fix removed the
+    "skip when absent" bypass) -- every test that reaches past the HMAC check
+    needs a genuine one, or it 401s at step 1 regardless of what it's actually
+    trying to exercise.
+    """
+    import hashlib
+    import hmac as _hmac
+
+    params = {"code": code, "shop": shop, "state": state}
+    if timestamp:
+        params["timestamp"] = timestamp
+    msg = "&".join(f"{k}={v}" for k, v in sorted(params.items()))
+    return _hmac.new(secret.encode(), msg.encode(), hashlib.sha256).hexdigest()
+
+
 @pytest.fixture()
 def client() -> TestClient:
     return TestClient(create_app(_make_settings()))
@@ -180,7 +198,14 @@ class TestOrgIdFromJwtNotShopParam:
             tc = TestClient(create_app())
             resp = tc.post(
                 "/auth/shopify/callback",
-                json={"code": "shopify_code_xyz", "shop": shop, "state": state},
+                json={
+                    "code": "shopify_code_xyz",
+                    "shop": shop,
+                    "state": state,
+                    "hmac": _valid_hmac(
+                        _CLIENT_SECRET, code="shopify_code_xyz", shop=shop, state=state
+                    ),
+                },
                 headers={"Authorization": "Bearer org_a_jwt_token"},
             )
 
@@ -217,7 +242,12 @@ class TestForgedJwtRejected:
             tc = TestClient(create_app(), raise_server_exceptions=False)
             resp = tc.post(
                 "/auth/shopify/callback",
-                json={"code": "code_xyz", "shop": shop, "state": state},
+                json={
+                    "code": "code_xyz",
+                    "shop": shop,
+                    "state": state,
+                    "hmac": _valid_hmac(_CLIENT_SECRET, code="code_xyz", shop=shop, state=state),
+                },
                 headers={"Authorization": "Bearer forged.jwt.token"},
             )
 
@@ -280,7 +310,12 @@ class TestWrittenOrgIdMatchesResolved:
             tc = TestClient(create_app())
             resp = tc.post(
                 "/auth/shopify/callback",
-                json={"code": "shopify_code", "shop": shop, "state": state},
+                json={
+                    "code": "shopify_code",
+                    "shop": shop,
+                    "state": state,
+                    "hmac": _valid_hmac(_CLIENT_SECRET, code="shopify_code", shop=shop, state=state),
+                },
                 headers={"Authorization": "Bearer valid_jwt"},
             )
 
@@ -306,7 +341,12 @@ class TestCallbackBehaviour:
             tc = TestClient(create_app(), raise_server_exceptions=False)
             resp = tc.post(
                 "/auth/shopify/callback",
-                json={"code": "x", "shop": shop, "state": state},
+                json={
+                    "code": "x",
+                    "shop": shop,
+                    "state": state,
+                    "hmac": _valid_hmac(_CLIENT_SECRET, code="x", shop=shop, state=state),
+                },
                 headers={"Authorization": "Bearer token"},
             )
         assert resp.status_code == 400
@@ -332,7 +372,12 @@ class TestCallbackBehaviour:
             tc = TestClient(create_app(), raise_server_exceptions=False)
             resp = tc.post(
                 "/auth/shopify/callback",
-                json={"code": "x", "shop": shop, "state": stale_state},
+                json={
+                    "code": "x",
+                    "shop": shop,
+                    "state": stale_state,
+                    "hmac": _valid_hmac(_CLIENT_SECRET, code="x", shop=shop, state=stale_state),
+                },
                 headers={"Authorization": "Bearer token"},
             )
         assert resp.status_code == 401
@@ -368,7 +413,12 @@ class TestCallbackBehaviour:
             tc = TestClient(create_app())
             resp = tc.post(
                 "/auth/shopify/callback",
-                json={"code": "code_x", "shop": shop, "state": state},
+                json={
+                    "code": "code_x",
+                    "shop": shop,
+                    "state": state,
+                    "hmac": _valid_hmac(_CLIENT_SECRET, code="code_x", shop=shop, state=state),
+                },
                 headers={"Authorization": "Bearer token"},
             )
 
@@ -392,10 +442,79 @@ class TestCallbackBehaviour:
             tc = TestClient(create_app(), raise_server_exceptions=False)
             resp = tc.post(
                 "/auth/shopify/callback",
-                json={"code": "code_x", "shop": shop, "state": state},
+                json={
+                    "code": "code_x",
+                    "shop": shop,
+                    "state": state,
+                    "hmac": _valid_hmac(_CLIENT_SECRET, code="code_x", shop=shop, state=state),
+                },
                 headers={"Authorization": "Bearer token"},
             )
         assert resp.status_code == 403
+
+
+class TestHmacMandatory:
+    """2026-07-11 fix: the callback previously skipped HMAC verification entirely
+    when `hmac` was omitted from the body ("to allow test calls"). Proves that
+    bypass is gone -- a callback with no hmac, or a wrong one, is now always
+    rejected before state/JWT are ever checked, even with an otherwise-perfectly
+    valid state token and JWT."""
+
+    def test_missing_hmac_returns_401(self) -> None:
+        shop = "no-hmac-store.myshopify.com"
+        state = _generate_state(shop, _CLIENT_SECRET)
+        upsert_mock = MagicMock()
+
+        with (
+            patch("app.api.shopify_auth.get_settings", return_value=_make_settings()),
+            patch(
+                "app.api.shopify_auth.verify_supabase_jwt",
+                new_callable=AsyncMock,
+                return_value=_make_user(),
+            ),
+            patch("app.api.shopify_auth._upsert_installation_pg", upsert_mock),
+        ):
+            tc = TestClient(create_app(), raise_server_exceptions=False)
+            resp = tc.post(
+                "/auth/shopify/callback",
+                json={"code": "code_x", "shop": shop, "state": state},  # no hmac field
+                headers={"Authorization": "Bearer token"},
+            )
+
+        assert resp.status_code == 401, (
+            f"Expected 401 for a callback with no hmac (bypass must be gone), got "
+            f"{resp.status_code}: {resp.text}"
+        )
+        upsert_mock.assert_not_called()
+
+    def test_wrong_hmac_returns_401(self) -> None:
+        shop = "wrong-hmac-store.myshopify.com"
+        state = _generate_state(shop, _CLIENT_SECRET)
+        upsert_mock = MagicMock()
+
+        with (
+            patch("app.api.shopify_auth.get_settings", return_value=_make_settings()),
+            patch(
+                "app.api.shopify_auth.verify_supabase_jwt",
+                new_callable=AsyncMock,
+                return_value=_make_user(),
+            ),
+            patch("app.api.shopify_auth._upsert_installation_pg", upsert_mock),
+        ):
+            tc = TestClient(create_app(), raise_server_exceptions=False)
+            resp = tc.post(
+                "/auth/shopify/callback",
+                json={
+                    "code": "code_x",
+                    "shop": shop,
+                    "state": state,
+                    "hmac": "0" * 64,  # well-formed but wrong
+                },
+                headers={"Authorization": "Bearer token"},
+            )
+
+        assert resp.status_code == 401
+        upsert_mock.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
