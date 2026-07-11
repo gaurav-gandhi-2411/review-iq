@@ -116,6 +116,7 @@ async def _run_extraction_v2(
     if ctx.usage_record_id:
         await asyncio.to_thread(
             update_usage_tokens,
+            ctx.org_id,
             ctx.usage_record_id,
             tokens_in,
             tokens_out,

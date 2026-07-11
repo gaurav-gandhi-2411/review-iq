@@ -78,7 +78,7 @@ async def test_update_usage_tokens_called_with_llm_token_counts() -> None:
     ):
         await _run_extraction_v2(req, _CTX)
 
-    mock_update.assert_called_once_with(_USAGE_ID, 150, 80)
+    mock_update.assert_called_once_with(_ORG_ID, _USAGE_ID, 150, 80)
 
 
 @pytest.mark.asyncio
@@ -100,7 +100,7 @@ async def test_update_usage_tokens_called_with_zero_when_provider_skips() -> Non
     ):
         await _run_extraction_v2(req, _CTX)
 
-    mock_update.assert_called_once_with(_USAGE_ID, 0, 0)
+    mock_update.assert_called_once_with(_ORG_ID, _USAGE_ID, 0, 0)
 
 
 @pytest.mark.asyncio

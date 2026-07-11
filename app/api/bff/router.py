@@ -394,7 +394,9 @@ async def bff_draft_reply(
             headers={"Retry-After": "30"},
         ) from exc
 
-    await asyncio.to_thread(update_usage_tokens, ctx.usage_record_id, tokens_in, tokens_out)
+    await asyncio.to_thread(
+        update_usage_tokens, ctx.org_id, ctx.usage_record_id, tokens_in, tokens_out
+    )
     _DRAFT_CACHE[cache_key] = draft
     log.info(
         "bff.reply.drafted",

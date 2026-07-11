@@ -31,10 +31,16 @@ log = structlog.get_logger(__name__)
 
 
 def record_quota_request_pg(org_id: str, usage_at_request: int, quota_at_request: int, notes: str | None = None) -> None:
-    """Insert a quota-increase interest record. Idempotent on repeated requests."""
+    """Insert a quota-increase interest record. Idempotent on repeated requests.
+
+    quota_requests now has RLS (see 20260711000002_quota_requests_rls.sql, applied
+    2026-07-11 after the table was found live with no RLS and dangerous default
+    anon grants) -- _set_tenant() here matches every other write in this module.
+    """
     conn = psycopg2.connect(get_settings().supabase_database_url)
     try:
         cur = conn.cursor()
+        _set_tenant(cur, org_id)
         cur.execute(
             """
             INSERT INTO public.quota_requests (org_id, usage_at_request, quota_at_request, notes)
@@ -175,18 +181,24 @@ def save_extraction_pg(
         conn.close()
 
 
-def update_usage_tokens(usage_record_id: str, tokens_in: int, tokens_out: int) -> None:
+def update_usage_tokens(org_id: str, usage_record_id: str, tokens_in: int, tokens_out: int) -> None:
     """Write tokens_in / tokens_out on a usage_record after a successful LLM call.
 
     tokens_used is a generated column (tokens_in + tokens_out) — do not write it directly.
     On LLM failure this function is never called; the row stays at 0/0.
+
+    org_id-scoped (WHERE clause + RLS via _set_tenant) like every other write in this module --
+    usage_record_id is always server-generated and never client-supplied today, but this closes
+    the gap outright rather than depending on that invariant holding forever.
     """
     conn = _db_connect()
     try:
         cur = conn.cursor()
+        _set_tenant(cur, org_id)
         cur.execute(
-            "UPDATE public.usage_records SET tokens_in = %s, tokens_out = %s WHERE id = %s",
-            (tokens_in, tokens_out, usage_record_id),
+            "UPDATE public.usage_records SET tokens_in = %s, tokens_out = %s "
+            "WHERE id = %s AND org_id = %s",
+            (tokens_in, tokens_out, usage_record_id, org_id),
         )
         conn.commit()
     except Exception:
@@ -460,6 +472,7 @@ def create_batch_job_pg(
     conn = _db_connect()
     try:
         cur = conn.cursor()
+        _set_tenant(cur, org_id)
         cur.execute(
             """
             INSERT INTO public.batch_jobs
@@ -481,6 +494,7 @@ def get_batch_job_pg(org_id: str, job_id: str) -> dict[str, Any] | None:
     conn = _db_connect()
     try:
         cur = conn.cursor()
+        _set_tenant(cur, org_id)
         cur.execute(
             """
             SELECT job_id, org_id, status, total, processed, failed,
@@ -546,6 +560,7 @@ def update_batch_job_pg(
     conn = _db_connect()
     try:
         cur = conn.cursor()
+        _set_tenant(cur, org_id)
         cur.execute(sql, params)
         conn.commit()
     except Exception:
@@ -589,6 +604,7 @@ def enqueue_batch_job_rows_pg(
     conn = _db_connect()
     try:
         cur = conn.cursor()
+        _set_tenant(cur, org_id)
         cur.executemany(
             "INSERT INTO public.batch_job_rows (job_id, row_index, org_id, text, product, "
             "review_date) VALUES (%s, %s, %s, %s, %s, %s)",
@@ -610,6 +626,7 @@ def count_pending_rows_pg(org_id: str, job_id: str) -> int:
     conn = _db_connect()
     try:
         cur = conn.cursor()
+        _set_tenant(cur, org_id)
         cur.execute(
             "SELECT COUNT(*) FROM public.batch_job_rows "
             "WHERE org_id = %s AND job_id = %s AND status = 'pending'",
@@ -637,6 +654,7 @@ def count_job_row_statuses_pg(org_id: str, job_id: str) -> tuple[int, int]:
     conn = _db_connect()
     try:
         cur = conn.cursor()
+        _set_tenant(cur, org_id)
         cur.execute(
             "SELECT COUNT(*) FILTER (WHERE status = 'done'), "
             "COUNT(*) FILTER (WHERE status = 'failed') "
@@ -663,6 +681,7 @@ def list_job_row_hashes_pg(org_id: str, job_id: str) -> list[str | None]:
     conn = _db_connect()
     try:
         cur = conn.cursor()
+        _set_tenant(cur, org_id)
         cur.execute(
             "SELECT input_hash FROM public.batch_job_rows "
             "WHERE org_id = %s AND job_id = %s ORDER BY row_index",

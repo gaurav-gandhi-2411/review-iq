@@ -11,11 +11,19 @@ import pytest
 from app.core.schemas import ExtractionMetaV2, ReviewExtractionV2, Sentiment, Urgency
 from app.core.storage_pg import (
     aggregate_extractions_pg,
+    count_job_row_statuses_pg,
+    count_pending_rows_pg,
+    create_batch_job_pg,
+    enqueue_batch_job_rows_pg,
+    get_batch_job_pg,
     get_by_hash_pg,
     list_dated_extractions_pg,
     list_extractions_pg,
+    list_job_row_hashes_pg,
     list_orgs_with_dated_extractions_pg,
+    record_quota_request_pg,
     save_extraction_pg,
+    update_batch_job_pg,
     update_usage_tokens,
 )
 
@@ -205,7 +213,7 @@ def test_update_usage_tokens_commits() -> None:
     conn, cur = _make_conn()
 
     with patch("app.core.storage_pg._db_connect", return_value=conn):
-        update_usage_tokens(_USAGE_ID, 150, 80)
+        update_usage_tokens(_ORG_ID, _USAGE_ID, 150, 80)
 
     conn.commit.assert_called_once()
     sqls = [c[0][0] for c in cur.execute.call_args_list]
@@ -216,12 +224,139 @@ def test_update_usage_tokens_passes_correct_values() -> None:
     conn, cur = _make_conn()
 
     with patch("app.core.storage_pg._db_connect", return_value=conn):
-        update_usage_tokens(_USAGE_ID, 333, 111)
+        update_usage_tokens(_ORG_ID, _USAGE_ID, 333, 111)
 
     params = cur.execute.call_args_list[-1][0][1]  # last execute's positional params
     assert params[0] == 333  # tokens_in
     assert params[1] == 111  # tokens_out
     assert str(params[2]) == _USAGE_ID
+    assert str(params[3]) == _ORG_ID  # org_id in WHERE clause -- app-level scoping
+
+
+def test_update_usage_tokens_sets_rls_context() -> None:
+    conn, cur = _make_conn()
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        update_usage_tokens(_ORG_ID, _USAGE_ID, 100, 50)
+
+    sqls = [c[0][0] for c in cur.execute.call_args_list]
+    assert any("SET LOCAL ROLE" in s for s in sqls)
+    assert any("app.current_org_id" in s for s in sqls)
+
+
+def test_update_usage_tokens_scoped_query_cannot_touch_another_org() -> None:
+    """A row belonging to a different org must never match this WHERE clause --
+    proves the fix isn't just cosmetic (org_id is a real predicate, not decoration)."""
+    conn, cur = _make_conn()
+    other_org = str(uuid.uuid4())
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        update_usage_tokens(other_org, _USAGE_ID, 42, 7)
+
+    sql, params = cur.execute.call_args_list[-1][0]
+    assert "org_id = %s" in sql
+    assert "id = %s" in sql
+    assert str(params[3]) == other_org
+    # Both id AND org_id must match for the UPDATE to touch a row -- an attacker who
+    # somehow supplied a foreign usage_record_id with their own org_id gets 0 rows
+    # affected, not another org's row.
+
+
+# ---------------------------------------------------------------------------
+# Batch-job / batch_job_rows helpers now get the same RLS-context backstop as
+# get_by_hash_pg/save_extraction_pg above (previously only the WHERE clause
+# scoped them -- no _set_tenant call, so no RLS backstop if a WHERE clause
+# were ever dropped in a future edit).
+# ---------------------------------------------------------------------------
+
+_JOB_ID = "job-" + uuid.uuid4().hex[:8]
+
+
+def _assert_sets_rls_context(cur: MagicMock) -> None:
+    sqls = [c[0][0] for c in cur.execute.call_args_list]
+    assert any("SET LOCAL ROLE" in s for s in sqls), "expected a SET LOCAL ROLE call"
+    assert any("app.current_org_id" in s for s in sqls), "expected app.current_org_id to be set"
+
+
+def test_create_batch_job_pg_sets_rls_context() -> None:
+    conn, cur = _make_conn()
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        create_batch_job_pg(_ORG_ID, _JOB_ID, 10)
+    _assert_sets_rls_context(cur)
+
+
+def test_get_batch_job_pg_sets_rls_context() -> None:
+    conn, cur = _make_conn()
+    cur.fetchone.return_value = None
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        get_batch_job_pg(_ORG_ID, _JOB_ID)
+    _assert_sets_rls_context(cur)
+
+
+def test_update_batch_job_pg_sets_rls_context() -> None:
+    conn, cur = _make_conn()
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        update_batch_job_pg(_ORG_ID, _JOB_ID, status="done")
+    _assert_sets_rls_context(cur)
+
+
+def test_enqueue_batch_job_rows_pg_sets_rls_context() -> None:
+    conn, cur = _make_conn()
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        enqueue_batch_job_rows_pg(_ORG_ID, _JOB_ID, ["review one", "review two"])
+    _assert_sets_rls_context(cur)
+
+
+def test_count_pending_rows_pg_sets_rls_context() -> None:
+    conn, cur = _make_conn()
+    cur.fetchone.return_value = (0,)
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        count_pending_rows_pg(_ORG_ID, _JOB_ID)
+    _assert_sets_rls_context(cur)
+
+
+def test_count_job_row_statuses_pg_sets_rls_context() -> None:
+    conn, cur = _make_conn()
+    cur.fetchone.return_value = (0, 0)
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        count_job_row_statuses_pg(_ORG_ID, _JOB_ID)
+    _assert_sets_rls_context(cur)
+
+
+def test_list_job_row_hashes_pg_sets_rls_context() -> None:
+    conn, cur = _make_conn()
+    cur.fetchall.return_value = []
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        list_job_row_hashes_pg(_ORG_ID, _JOB_ID)
+    _assert_sets_rls_context(cur)
+
+
+def test_record_quota_request_pg_sets_rls_context() -> None:
+    """quota_requests was found live with no RLS + dangerous default anon grants
+    (fixed 2026-07-11, 20260711000002_quota_requests_rls.sql) -- this proves the
+    paired app-code fix, _set_tenant() here, matches the rest of the module."""
+    conn, cur = _make_conn()
+    # record_quota_request_pg uses psycopg2.connect() directly, not the module's
+    # _db_connect() helper -- patch at the source.
+    with patch("psycopg2.connect", return_value=conn):
+        record_quota_request_pg(_ORG_ID, 50, 100, "interested in higher quota")
+    _assert_sets_rls_context(cur)
+
+
+def test_get_batch_job_pg_where_clause_scopes_by_org_and_job() -> None:
+    """The app-level WHERE clause must still require BOTH org_id and job_id --
+    RLS is the backstop, not a replacement for the explicit predicate."""
+    conn, cur = _make_conn()
+    cur.fetchone.return_value = None
+    other_org = str(uuid.uuid4())
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        get_batch_job_pg(other_org, _JOB_ID)
+
+    sql, params = cur.execute.call_args_list[-1][0]
+    assert "org_id = %s" in sql
+    assert "job_id = %s" in sql
+    assert str(params[1]) == other_org
 
 
 # ---------------------------------------------------------------------------
