@@ -577,8 +577,14 @@ async def test_concurrent_drain_rows_never_double_processes_a_row(
     double-processing, no lost row.
     """
     org_a, _org_b = two_orgs
-    run_marker = f"proof3b-{uuid.uuid4().hex[:10]}"
-    texts = [f"{run_marker} distinct-row-{i} padding text for extraction" for i in range(4)]
+    # NOTE: matching solely on "distinct-row-" (not a run_marker prefix) is deliberate --
+    # a random uuid.hex prefix has a real chance (~50% empirically) of being partially
+    # rewritten by sanitize()'s phone-number regex before this stub ever sees the prompt
+    # (e.g. "proof3b-d772082bb2" -> "proof3b-d[PHONE]bb2"), which silently broke this
+    # assertion's tracking without affecting the actual claim/process/store behavior being
+    # tested. quiescent_queue already guarantees no other test's rows are in play, so a
+    # run_marker isn't needed for uniqueness here.
+    texts = [f"distinct-row-{i} padding text for extraction" for i in range(4)]
     job_id = _seed_job(org_a, texts)
 
     call_log: list[str] = []
@@ -586,9 +592,9 @@ async def test_concurrent_drain_rows_never_double_processes_a_row(
     async def _stub(prompt: str, allow_gemini_fallback: bool = False) -> tuple:
         # Option A gate genuinely exercised (not bypassed) — see fast_bulk_limiter.
         async with llm_call_slot():
-            if run_marker in prompt:
-                match = re.search(r"distinct-row-(\d+)", prompt)
-                call_log.append(match.group(0) if match else prompt)
+            match = re.search(r"distinct-row-(\d+)", prompt)
+            if match:
+                call_log.append(match.group(0))
             await asyncio.sleep(0.05)
         return _canned_llm_tuple()
 
