@@ -108,10 +108,21 @@ async def draft_reply(
     if settings is None:
         settings = get_settings()
 
+    from app.core.sanitize import sanitize, wrap_for_llm
+
     language = detect_language(request.text)
     total_tokens_in = 0
     total_tokens_out = 0
     caveats: list[str] = []
+
+    # Sanitize once, reuse for both the optional grounding extraction and the reply
+    # prompt itself -- mirrors the extraction pipeline's app.api.v2.extract funnel so
+    # the reply-drafting LLM call gets the same PII-redaction + injection-neutralization
+    # defense, not raw customer text.
+    clean_text, is_suspicious = sanitize(request.text)
+    if is_suspicious:
+        log.warning("reply_engine.suspicious_input")
+    wrapped_review = wrap_for_llm(clean_text)
 
     # 1. Resolve cons/topics for grounding
     if request.extraction is not None:
@@ -120,11 +131,8 @@ async def draft_reply(
     else:
         from app.core.llm import extract_with_llm
         from app.core.prompts import build_prompt
-        from app.core.sanitize import sanitize, wrap_for_llm
 
-        clean_text, _ = sanitize(request.text)
-        wrapped = wrap_for_llm(clean_text)
-        ext_prompt = build_prompt(wrapped, language)
+        ext_prompt = build_prompt(wrapped_review, language)
         try:
             llm_output, _, _, ex_tin, ex_tout, _ = await extract_with_llm(
                 ext_prompt, allow_gemini_fallback=False
@@ -141,7 +149,7 @@ async def draft_reply(
 
     # 2. Build the prompt
     system_prompt, user_prompt = build_reply_prompt(
-        review_text=request.text,
+        review_text=wrapped_review,
         language=language,
         tone=request.tone,
         cons=cons,
