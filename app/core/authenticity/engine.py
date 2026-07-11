@@ -73,7 +73,6 @@ async def _call_authenticity_llm(
             user_prompt,
             system_prompt=system_prompt,
         )
-        log.debug("authenticity_engine.raw", raw=raw[:200])
         text = raw.strip()
         if text.startswith("```"):
             lines = text.splitlines()
