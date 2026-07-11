@@ -139,6 +139,29 @@ def parse_review_date(value: str, dayfirst: bool | None) -> datetime | None:
         return None
 
 
+# Leading characters that Excel/Sheets/LibreOffice interpret as a formula/DDE trigger
+# when a cell is opened (CWE-1236). Tab and CR are included alongside the more familiar
+# = + - @ per standard CSV-injection guidance -- a value starting with either can also
+# be misparsed as a formula prefix by some spreadsheet importers.
+_CSV_FORMULA_TRIGGERS: tuple[str, ...] = ("=", "+", "-", "@", "\t", "\r")
+
+
+def neutralize_csv_formula(value: object) -> object:
+    """Defuse formula/DDE injection in a value about to be written to an exported CSV cell.
+
+    Only the FIRST character matters to spreadsheet formula detection -- a value like
+    "A+B" or "5-star" is untouched (the trigger character isn't leading), only a value
+    that STARTS with one of the trigger characters gets a leading `'` prefix, which
+    Excel/Sheets/LibreOffice render as a literal apostrophe-quoted string, not a formula.
+    Non-string values pass through unchanged.
+    """
+    if not isinstance(value, str) or not value:
+        return value
+    if value[0] in _CSV_FORMULA_TRIGGERS:
+        return "'" + value
+    return value
+
+
 async def read_and_validate_csv(
     file: UploadFile,
     text_column: str | None,

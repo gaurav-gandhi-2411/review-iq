@@ -9,6 +9,7 @@ from app.core.csv_ingest import (
     CsvColumnError,
     FileTooLargeError,
     RowLimitExceededError,
+    neutralize_csv_formula,
     read_and_validate_csv,
 )
 
@@ -224,3 +225,47 @@ async def test_empty_csv_raises() -> None:
     """Empty bytes (no headers) raises CsvColumnError."""
     with pytest.raises(CsvColumnError):
         await read_and_validate_csv(_FakeFile(b""), None, None)
+
+
+# ---------------------------------------------------------------------------
+# neutralize_csv_formula — CSV/formula injection defense (CWE-1236)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "raw",
+    [
+        '=HYPERLINK("http://evil.example/x","click")',
+        "=cmd|'/c calc'!A1",
+        "+1+1",
+        "-2+3",
+        "@SUM(A1:A9)",
+        "\tsneaky",
+        "\rsneaky",
+    ],
+)
+def test_neutralize_csv_formula_prefixes_trigger_chars(raw: str) -> None:
+    result = neutralize_csv_formula(raw)
+    assert result == "'" + raw
+    assert not result.startswith(("=", "+", "-", "@", "\t", "\r"))
+
+
+@pytest.mark.parametrize(
+    "raw",
+    [
+        "A+B Combo Pack",
+        "5-star rated",
+        "user@example product",  # @ not leading
+        "Widget",
+        "",
+    ],
+)
+def test_neutralize_csv_formula_leaves_legitimate_values_untouched(raw: str) -> None:
+    assert neutralize_csv_formula(raw) == raw
+
+
+def test_neutralize_csv_formula_passes_through_non_strings() -> None:
+    assert neutralize_csv_formula(None) is None
+    assert neutralize_csv_formula(5) == 5
+    assert neutralize_csv_formula(True) is True
+    assert neutralize_csv_formula(0.9) == 0.9

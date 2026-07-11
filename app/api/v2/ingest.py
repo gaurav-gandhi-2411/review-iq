@@ -21,6 +21,7 @@ from app.core.csv_ingest import (
     CsvColumnError,
     FileTooLargeError,
     RowLimitExceededError,
+    neutralize_csv_formula,
     read_and_validate_csv,
 )
 from app.core.ingest_worker import drain_rows
@@ -312,9 +313,14 @@ async def get_ingest_result(
             for ext in extractions:
                 buf = io.StringIO()
                 writer = csv.DictWriter(buf, fieldnames=fieldnames)
-                # Flatten nested dicts/lists to JSON strings for CSV compatibility.
+                # Flatten nested dicts/lists to JSON strings for CSV compatibility, then
+                # neutralize any value that could be interpreted as a formula/DDE trigger
+                # by the spreadsheet app that opens this export (CWE-1236) -- product is
+                # free text (from a CSV upload's product_column or LLM extraction), so it's
+                # the field most directly reachable by an attacker-crafted review/upload.
                 flat = {
-                    k: (json.dumps(v) if isinstance(v, (dict, list)) else v) for k, v in ext.items()
+                    k: neutralize_csv_formula(json.dumps(v) if isinstance(v, (dict, list)) else v)
+                    for k, v in ext.items()
                 }
                 writer.writerow(flat)
                 yield buf.getvalue()

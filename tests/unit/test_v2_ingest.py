@@ -272,3 +272,63 @@ def test_get_ingest_result_csv_format(client: TestClient) -> None:
 
     assert resp.status_code == 200
     assert resp.headers["content-type"].startswith("text/csv")
+
+
+def test_get_ingest_result_csv_neutralizes_formula_injection(client: TestClient) -> None:
+    """A product value that looks like a spreadsheet formula must round-trip as INERT
+    text in the exported CSV, not a live formula -- e.g. an uploaded product value of
+    '=HYPERLINK("http://evil/x")' must not reach the cell unescaped (CWE-1236)."""
+    job_record = {
+        "job_id": _JOB_ID,
+        "status": "done",
+        "total": 1,
+        "processed": 1,
+        "failed": 0,
+        "created_at": datetime.now(tz=UTC),
+        "completed_at": datetime.now(tz=UTC),
+        "source_columns": json.dumps({"input_hashes": ["sha256:abc"]}),
+    }
+    extraction = _fake_extraction()
+    extraction.product = '=HYPERLINK("http://evil.example/x","click")'
+
+    with (
+        patch("app.api.v2.ingest.get_batch_job_pg", return_value=job_record),
+        patch("app.api.v2.ingest.get_by_hash_pg", return_value=extraction),
+    ):
+        resp = client.get(f"/v2/ingest/{_JOB_ID}/result?format=csv")
+
+    assert resp.status_code == 200
+    body = resp.text
+    # The raw formula must never appear unescaped -- every occurrence of the payload
+    # is preceded by the neutralizing quote.
+    assert '=HYPERLINK' not in body or "'=HYPERLINK" in body
+    assert "\n=HYPERLINK" not in body and ",=HYPERLINK" not in body
+
+
+def test_get_ingest_result_csv_does_not_corrupt_legitimate_plus_value(
+    client: TestClient,
+) -> None:
+    """A genuinely plus-containing product name (trigger char NOT leading) must survive
+    the export unchanged -- the fix only acts on a LEADING =+-@ character."""
+    job_record = {
+        "job_id": _JOB_ID,
+        "status": "done",
+        "total": 1,
+        "processed": 1,
+        "failed": 0,
+        "created_at": datetime.now(tz=UTC),
+        "completed_at": datetime.now(tz=UTC),
+        "source_columns": json.dumps({"input_hashes": ["sha256:abc"]}),
+    }
+    extraction = _fake_extraction()
+    extraction.product = "A+B Combo Pack"
+
+    with (
+        patch("app.api.v2.ingest.get_batch_job_pg", return_value=job_record),
+        patch("app.api.v2.ingest.get_by_hash_pg", return_value=extraction),
+    ):
+        resp = client.get(f"/v2/ingest/{_JOB_ID}/result?format=csv")
+
+    assert resp.status_code == 200
+    assert "A+B Combo Pack" in resp.text
+    assert "'A+B Combo Pack" not in resp.text
