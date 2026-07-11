@@ -19,7 +19,7 @@ from httpx import AsyncClient
 async def test_health_db_ok(client: AsyncClient) -> None:
     """When the DB ping succeeds, /health returns 200 with db=ok."""
     with patch("app.api.ops._ping_db", new_callable=AsyncMock) as mock_ping:
-        mock_ping.return_value = ("ok", None)
+        mock_ping.return_value = ("ok", None, None)
         response = await client.get("/health")
 
     assert response.status_code == 200
@@ -39,7 +39,11 @@ async def test_health_db_ok(client: AsyncClient) -> None:
 async def test_health_db_unreachable_returns_503(client: AsyncClient) -> None:
     """When the DB ping fails, /health must return 503, not 200."""
     with patch("app.api.ops._ping_db", new_callable=AsyncMock) as mock_ping:
-        mock_ping.return_value = ("unreachable", "connection refused")
+        mock_ping.return_value = (
+            "unreachable",
+            "db_connection_failed",
+            ConnectionError("connection refused"),
+        )
         response = await client.get("/health")
 
     assert response.status_code == 503, f"Expected 503 when DB is down, got {response.status_code}"
@@ -47,7 +51,30 @@ async def test_health_db_unreachable_returns_503(client: AsyncClient) -> None:
     assert body["status"] == "unhealthy"
     assert body["db"] == "unreachable"
     assert "detail" in body
-    assert "connection refused" in body["detail"]
+    assert body["detail"] == "db_connection_failed"
+
+
+@pytest.mark.asyncio
+async def test_health_db_unreachable_does_not_leak_raw_exception(client: AsyncClient) -> None:
+    """The response body must carry only the fixed reason code, never the raw exception
+    text -- connection-failure messages often lead with the DSN/hostname/port."""
+    with patch("app.api.ops._ping_db", new_callable=AsyncMock) as mock_ping:
+        mock_ping.return_value = (
+            "unreachable",
+            "db_connection_failed",
+            ConnectionError(
+                'could not connect to server: Connection refused. Is the server running on '
+                'host "aws-1-ap-south-1.pooler.supabase.com" (10.0.0.5) and accepting TCP/IP '
+                "connections on port 5432?"
+            ),
+        )
+        response = await client.get("/health")
+
+    body = response.json()
+    assert body["detail"] == "db_connection_failed"
+    assert "pooler.supabase.com" not in response.text
+    assert "10.0.0.5" not in response.text
+    assert "5432" not in response.text
 
 
 # ---------------------------------------------------------------------------
@@ -62,7 +89,7 @@ async def test_health_default_no_provider_network_call(client: AsyncClient) -> N
         patch("app.api.ops._ping_db", new_callable=AsyncMock) as mock_ping,
         patch("app.api.ops._provider_status_deep", new_callable=AsyncMock) as mock_deep,
     ):
-        mock_ping.return_value = ("ok", None)
+        mock_ping.return_value = ("ok", None, None)
         response = await client.get("/health")
 
     assert response.status_code == 200
@@ -85,8 +112,8 @@ async def test_health_deep_calls_provider_probe(client: AsyncClient) -> None:
         patch("app.api.ops._ping_db", new_callable=AsyncMock) as mock_ping,
         patch("app.api.ops._provider_status_deep", new_callable=AsyncMock) as mock_deep,
     ):
-        mock_ping.return_value = ("ok", None)
-        mock_deep.return_value = ("ok", None)
+        mock_ping.return_value = ("ok", None, None)
+        mock_deep.return_value = ("ok", None, None)
         response = await client.get("/health?deep=1")
 
     assert response.status_code == 200
@@ -107,15 +134,15 @@ async def test_health_deep_provider_unreachable_db_ok_returns_200(client: AsyncC
         patch("app.api.ops._ping_db", new_callable=AsyncMock) as mock_ping,
         patch("app.api.ops._provider_status_deep", new_callable=AsyncMock) as mock_deep,
     ):
-        mock_ping.return_value = ("ok", None)
-        mock_deep.return_value = ("unreachable", "timeout")
+        mock_ping.return_value = ("ok", None, None)
+        mock_deep.return_value = ("unreachable", "provider_timeout", TimeoutError("timeout"))
         response = await client.get("/health?deep=1")
 
     assert response.status_code == 200
     body = response.json()
     assert body["db"] == "ok"
     assert body["provider"] == "unreachable"
-    assert body["provider_detail"] == "timeout"
+    assert body["provider_detail"] == "provider_timeout"
 
 
 # ---------------------------------------------------------------------------
@@ -130,8 +157,12 @@ async def test_health_deep_db_down_returns_503(client: AsyncClient) -> None:
         patch("app.api.ops._ping_db", new_callable=AsyncMock) as mock_ping,
         patch("app.api.ops._provider_status_deep", new_callable=AsyncMock) as mock_deep,
     ):
-        mock_ping.return_value = ("unreachable", "host unreachable")
-        mock_deep.return_value = ("ok", None)
+        mock_ping.return_value = (
+            "unreachable",
+            "db_connection_failed",
+            ConnectionError("host unreachable"),
+        )
+        mock_deep.return_value = ("ok", None, None)
         response = await client.get("/health?deep=1")
 
     assert response.status_code == 503

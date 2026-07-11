@@ -68,12 +68,31 @@ async def _ping_sqlite(db_url: str) -> None:
     await asyncio.wait_for(_do_ping(), timeout=_DB_PING_TIMEOUT_SECONDS)
 
 
-async def _ping_db() -> tuple[str, str | None]:
+def _safe_reason(exc: Exception, *, kind: str) -> str:
+    """Map an exception to a fixed, non-sensitive reason code for the public response body.
+
+    Connection-failure messages (psycopg2/aiosqlite/httpx) often lead with the DSN,
+    hostname, or port — truncating to 200 chars (the previous approach) doesn't
+    guarantee those leading bytes are excluded. Return only a fixed code here; the
+    full exception goes to structured logs (server-side only) via the caller.
+    """
+    name = type(exc).__name__
+    if "Timeout" in name:
+        return f"{kind}_timeout"
+    if "Operational" in name or "Connect" in name or "Connection" in name:
+        return f"{kind}_connection_failed"
+    if "Auth" in name or "Permission" in name:
+        return f"{kind}_auth_failed"
+    return f"{kind}_unreachable"
+
+
+async def _ping_db() -> tuple[str, str | None, Exception | None]:
     """Ping the right DB backend based on current settings.
 
     Returns:
-        ("ok", None)            — DB is reachable.
-        ("unreachable", reason) — DB is down; reason is a short string.
+        ("ok", None, None)                 — DB is reachable.
+        ("unreachable", safe_reason, exc)   — DB is down; safe_reason is response-safe,
+                                               exc is the full exception for logging only.
     """
     settings = get_settings()
 
@@ -81,17 +100,17 @@ async def _ping_db() -> tuple[str, str | None]:
     if settings.supabase_database_url:
         try:
             await _ping_postgres(settings.supabase_database_url)
-            return "ok", None
+            return "ok", None, None
         except Exception as exc:  # noqa: BLE001
-            return "unreachable", str(exc)[:200]  # truncate; DSN may contain secrets
+            return "unreachable", _safe_reason(exc, kind="db"), exc
 
     # v1/local path: SQLite
     db_url = settings.database_url
     try:
         await _ping_sqlite(db_url)
-        return "ok", None
+        return "ok", None, None
     except Exception as exc:  # noqa: BLE001
-        return "unreachable", str(exc)[:200]
+        return "unreachable", _safe_reason(exc, kind="db"), exc
 
 
 # ---------------------------------------------------------------------------
@@ -110,19 +129,20 @@ def _provider_status_shallow() -> str:
     return "configured" if settings.groq_api_key else "not_configured"
 
 
-async def _provider_status_deep() -> tuple[str, str | None]:
+async def _provider_status_deep() -> tuple[str, str | None, Exception | None]:
     """Perform a minimal REAL reachability probe against the configured provider.
 
     Only called when ?deep=1 is explicitly requested.  Uses the Groq models/list
     endpoint (a GET with no tokens consumed) as a lightweight connectivity check.
 
     Returns:
-        ("ok", None)         — provider is reachable.
-        ("unreachable", why) — provider is unreachable or key is invalid.
+        ("ok", None, None)               — provider is reachable.
+        ("unreachable", safe_reason, exc) — unreachable/invalid key; safe_reason is
+                                             response-safe, exc is for logging only.
     """
     settings = get_settings()
     if not settings.groq_api_key:
-        return "not_configured", None
+        return "not_configured", None, None
 
     try:
         # groq.AsyncGroq.models.list() is a cheap GET with no token cost.
@@ -130,9 +150,9 @@ async def _provider_status_deep() -> tuple[str, str | None]:
 
         client = AsyncGroq(api_key=settings.groq_api_key)
         await asyncio.wait_for(client.models.list(), timeout=5.0)
-        return "ok", None
+        return "ok", None, None
     except Exception as exc:  # noqa: BLE001
-        return "unreachable", str(exc)[:200]
+        return "unreachable", _safe_reason(exc, kind="provider"), exc
 
 
 # ---------------------------------------------------------------------------
@@ -152,7 +172,7 @@ async def health(
     With ?deep=1: also performs a live provider reachability probe.
     """
     settings = get_settings()
-    db_status, db_detail = await _ping_db()
+    db_status, db_safe_reason, db_exc = await _ping_db()
 
     # Determine which DB backend is active for the response body
     db_backend = "postgres" if settings.supabase_database_url else "sqlite"
@@ -163,24 +183,27 @@ async def health(
         "db_backend": db_backend,
     }
 
-    if db_detail:
-        body["detail"] = db_detail
+    if db_exc is not None:
+        body["detail"] = db_safe_reason  # fixed code only — full exception logged, not returned
         log.error(
             "health.db_unreachable",
             db_backend=db_backend,
-            reason=db_detail,
+            reason=db_safe_reason,
+            error=str(db_exc),
+            exc_info=True,
         )
 
     # Provider check — deep probe only when explicitly requested
     if deep:
-        prov_status, prov_detail = await _provider_status_deep()
+        prov_status, prov_safe_reason, prov_exc = await _provider_status_deep()
         body["provider"] = prov_status
-        if prov_detail:
-            body["provider_detail"] = prov_detail
+        if prov_exc is not None:
+            body["provider_detail"] = prov_safe_reason
             log.warning(
                 "health.provider_unreachable",
                 provider="groq",
-                reason=prov_detail,
+                reason=prov_safe_reason,
+                error=str(prov_exc),
             )
     else:
         body["provider"] = _provider_status_shallow()
