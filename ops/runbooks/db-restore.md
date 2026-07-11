@@ -4,6 +4,8 @@
 **Supabase ref:** enqpluazgxewepchdeut  
 **Backup source:** GitHub Actions artifact (`db-backup` workflow)  
 **Artifact retention:** 90 days (hard limit on GitHub free tier — older dumps are permanently deleted)
+**Encryption:** artifacts are gpg-symmetric-encrypted (AES256) since this repo is public — see
+"Setting/rotating the encryption key" below before your first restore.
 
 ---
 
@@ -21,10 +23,33 @@
 
 ## Prerequisites
 
-- `psql` and `gunzip` available locally, **or** a fresh Supabase project / local Postgres **17** instance as the restore target. The production server is Postgres 17 — restore into 17+, not an older major.
+- `psql`, `gunzip`, and `gpg` available locally, **or** a fresh Supabase project / local Postgres **17** instance as the restore target. The production server is Postgres 17 — restore into 17+, not an older major.
 - `gh` CLI authenticated (`gh auth login`) for downloading the artifact.
+- The `DB_BACKUP_ENCRYPTION_KEY` passphrase (from your password manager — see below), to decrypt the artifact.
 - Connection string for the **target** database (NOT prod — see Step 3 note).
 - Target connection: use the **session-mode pooler** host on port **5432** (IPv4, `postgres.<ref>@aws-1-<region>.pooler.supabase.com:5432`). The direct `db.<ref>.supabase.co` host is **IPv6-only** and unreachable from many networks (incl. GitHub Actions). The transaction pooler (6543) is not usable for psql/pg_dump.
+
+---
+
+## Setting/rotating the encryption key
+
+The backup workflow refuses to upload an unencrypted dump — `DB_BACKUP_ENCRYPTION_KEY` must be
+set as a GitHub Actions secret before the nightly job can succeed. GitHub secrets are **write-only**
+(there's no API to read a secret's value back once set), so the passphrase must also be saved in
+your own password manager the moment you generate it — there is no other way to recover it later.
+
+Generate and set it yourself (run this in your own shell, not through an AI assistant — the
+value should never pass through a third party's context):
+
+```bash
+KEY=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
+gh secret set DB_BACKUP_ENCRYPTION_KEY --repo gaurav-gandhi-2411/review-iq --body "$KEY"
+echo "$KEY"   # save this in your password manager NOW — it cannot be retrieved again
+```
+
+Rotating it: generate a new value the same way and re-run `gh secret set` — this only affects
+*future* nightly dumps. Any already-downloaded `.gpg` artifact still needs the *old* passphrase to
+decrypt, so keep old values in your password manager until their artifacts age out (90 days).
 
 ---
 
@@ -48,11 +73,11 @@ Alternatively, browse in the GitHub UI:
 https://github.com/gaurav-gandhi-2411/review-iq/actions/workflows/db-backup.yml
 ```
 
-Click the relevant run → **Artifacts** section → download the `.sql.gz` file.
+Click the relevant run → **Artifacts** section → download the `.sql.gz.gpg` file.
 
 ---
 
-## Step 2 — Download the artifact
+## Step 2 — Download and decrypt the artifact
 
 Using the `gh` CLI (replace `<RUN_ID>` with the run ID from Step 1):
 
@@ -63,15 +88,25 @@ gh run download <RUN_ID> \
   --dir ./restore-tmp
 
 ls ./restore-tmp/
-# Expected: review-iq-db-YYYYMMDD-HHMMSS.sql.gz/review-iq-db-YYYYMMDD-HHMMSS.sql.gz
+# Expected: review-iq-db-YYYYMMDD-HHMMSS.sql.gz.gpg/review-iq-db-YYYYMMDD-HHMMSS.sql.gz.gpg
 # (gh wraps the file in a subdirectory named after the artifact)
 ```
 
-Verify the download is intact before proceeding:
+Decrypt it with the passphrase from your password manager (see "Setting/rotating the encryption
+key" above — the passphrase active *at the time this dump was taken*, if you've rotated since):
 
 ```bash
-DUMPFILE=$(find ./restore-tmp -name "*.sql.gz" | head -1)
-gunzip -t "${DUMPFILE}" && echo "Archive OK" || echo "CORRUPT — re-download"
+ENCFILE=$(find ./restore-tmp -type f -name "*.sql.gz.gpg" | head -1)
+DUMPFILE="${ENCFILE%.gpg}"
+gpg --batch --yes --decrypt --output "${DUMPFILE}" "${ENCFILE}"
+# Prompts for the passphrase interactively (or pass --passphrase-fd 0 piped from stdin
+# in a non-interactive context — never put the passphrase in argv/shell history).
+```
+
+Verify the decrypted archive is intact before proceeding:
+
+```bash
+gunzip -t "${DUMPFILE}" && echo "Archive OK" || echo "CORRUPT — re-download or wrong passphrase"
 ```
 
 ---

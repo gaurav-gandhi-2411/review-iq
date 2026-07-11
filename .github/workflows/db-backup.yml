@@ -3,7 +3,10 @@ name: DB Backup
 # Nightly dump of the Supabase Postgres 17 database via the session-mode pooler.
 # Connection MUST be the IPv4 session-mode pooler (port 5432) — the direct
 # db.<ref>.supabase.co host is IPv6-only and unreachable from GitHub's IPv4 runners.
-# Artifact retained for 90 days (GitHub free-tier maximum for private repos).
+# Dump is gpg-symmetric-encrypted (AES256) before upload — this repo is public,
+# so an unencrypted dump would be downloadable by any GitHub account. The workflow
+# fails closed (no upload) if DB_BACKUP_ENCRYPTION_KEY isn't set.
+# Artifact retained for 90 days (GitHub free-tier maximum).
 # Restore procedure: ops/runbooks/db-restore.md
 #
 # Limitations (free tier):
@@ -116,12 +119,37 @@ jobs:
           LINES=$(echo "${CONTENT}" | wc -l)
           echo "Dump passed all checks. Uncompressed lines: ${LINES}"
 
+      - name: Encrypt dump
+        id: encrypt
+        # This repo is public — an unencrypted dump artifact would be downloadable by
+        # any GitHub account (Actions artifacts inherit the repo's read access, and
+        # "read" on a public repo means everyone). Encrypt before it ever reaches
+        # upload-artifact. Fails closed: no DB_BACKUP_ENCRYPTION_KEY -> no upload.
+        # gpg ships preinstalled on ubuntu-latest — no new dependency.
+        env:
+          FILENAME: ${{ steps.dump.outputs.filename }}
+          DB_BACKUP_ENCRYPTION_KEY: ${{ secrets.DB_BACKUP_ENCRYPTION_KEY }}
+        run: |
+          if [ -z "$DB_BACKUP_ENCRYPTION_KEY" ]; then
+            echo "::error::DB_BACKUP_ENCRYPTION_KEY secret is not set — refusing to upload an unencrypted dump."
+            echo "See ops/runbooks/db-restore.md for how to generate and set it."
+            exit 1
+          fi
+          # --passphrase-fd 0: passphrase is piped via stdin, never argv (avoids
+          # exposure in the runner's process list), same care as the DSN handling above.
+          gpg --batch --yes --symmetric --cipher-algo AES256 \
+            --passphrase-fd 0 \
+            --output "${FILENAME}.gpg" \
+            "${FILENAME}" <<< "$DB_BACKUP_ENCRYPTION_KEY"
+          rm -f "${FILENAME}"
+          echo "encrypted_filename=${FILENAME}.gpg" >> "$GITHUB_OUTPUT"
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.dump.outputs.filename }}
-          path: ${{ steps.dump.outputs.filename }}
-          # 90 days is the practical maximum on the GitHub free tier for private
-          # repos. After 90 days the artifact is deleted automatically — see
-          # ops/runbooks/db-restore.md for the upgrade path.
+          name: ${{ steps.encrypt.outputs.encrypted_filename }}
+          path: ${{ steps.encrypt.outputs.encrypted_filename }}
+          # 90 days is the GitHub free-tier maximum. Safe to keep even on a public
+          # repo now that the artifact is encrypted (see the "Encrypt dump" step
+          # above) — see ops/runbooks/db-restore.md for the upgrade path.
           retention-days: 90
