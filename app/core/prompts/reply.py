@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from app.core.reply.schema import ReplyTone
 
-REPLY_PROMPT_VERSION = "v2.0"
+# v2.1: added _SECURITY_NOTE (untrusted-data framing) + <review> delimiting -- see
+# app/core/reply/engine.py's sanitize()/wrap_for_llm() wiring for the matching fix.
+REPLY_PROMPT_VERSION = "v2.1"
 
 # Each tone specifies register + structure + explicit do-nots.
 # The model previously collapsed all complaint tones to the same arc
