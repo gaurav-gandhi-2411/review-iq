@@ -334,7 +334,7 @@ async def shopify_oauth_callback(
     org = await asyncio.to_thread(_get_org_for_user, str(user.id))
     if org is None:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "No org found for this user.")
-    org_id: str = org["org_id"]
+    org_id: str = str(org["org_id"])
 
     # Exchange code for plaintext access_token, then immediately encrypt
     try:

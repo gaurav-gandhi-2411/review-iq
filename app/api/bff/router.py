@@ -863,6 +863,11 @@ async def bff_account(
     Deliberately omits stored hash, prefix, and raw key material —
     the browser should never see API key internals.
     """
+    # api_key_id is str|None on ApiKeyContext (None only for system-triggered extractions like
+    # webhooks) but require_session_read's _lookup_context_for_read always sets a real string --
+    # this guard is the explicit narrowing mypy needs, not a real "missing key" case here.
+    if ctx.api_key_id is None:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "No API key found for this session.")
     quota, usage_this_month = await asyncio.to_thread(
         _get_quota_and_usage, ctx.api_key_id, ctx.org_id
     )
@@ -887,6 +892,10 @@ async def bff_request_quota_increase(
     Stores org_id + current usage so we can see demand and reach out
     when tiered billing is ready. No payment or commitment implied.
     """
+    # See bff_account's identical guard above -- require_session_read always sets a real
+    # api_key_id; this is the explicit narrowing mypy needs, not a real "missing key" case.
+    if ctx.api_key_id is None:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "No API key found for this session.")
     quota, usage_this_month = await asyncio.to_thread(
         _get_quota_and_usage, ctx.api_key_id, ctx.org_id
     )
