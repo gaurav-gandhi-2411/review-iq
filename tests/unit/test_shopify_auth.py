@@ -14,9 +14,6 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from fastapi import HTTPException
-from fastapi.testclient import TestClient
-
 from app.api.shopify_auth import (
     _generate_state,
     _validate_shop,
@@ -24,6 +21,8 @@ from app.api.shopify_auth import (
     _verify_state,
 )
 from app.main import create_app
+from fastapi import HTTPException
+from fastapi.testclient import TestClient
 
 _CLIENT_SECRET = "test_client_secret_for_auth_tests"
 _ENC_KEY = "dGVzdC10ZXN0LXRlc3QtdGVzdC10ZXN0LXRlc3Q="  # 32-byte base64 placeholder
@@ -235,7 +234,9 @@ class TestForgedJwtRejected:
             patch(
                 "app.api.shopify_auth.verify_supabase_jwt",
                 new_callable=AsyncMock,
-                side_effect=HTTPException(status_code=401, detail="Invalid or expired Supabase token."),
+                side_effect=HTTPException(
+                    status_code=401, detail="Invalid or expired Supabase token."
+                ),
             ),
             patch("app.api.shopify_auth._upsert_installation_pg", upsert_mock),
         ):
@@ -314,7 +315,9 @@ class TestWrittenOrgIdMatchesResolved:
                     "code": "shopify_code",
                     "shop": shop,
                     "state": state,
-                    "hmac": _valid_hmac(_CLIENT_SECRET, code="shopify_code", shop=shop, state=state),
+                    "hmac": _valid_hmac(
+                        _CLIENT_SECRET, code="shopify_code", shop=shop, state=state
+                    ),
                 },
                 headers={"Authorization": "Bearer valid_jwt"},
             )

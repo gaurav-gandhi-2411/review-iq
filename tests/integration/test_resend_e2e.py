@@ -34,7 +34,6 @@ from app.core.alerts.rules import AlertEventType  # noqa: E402
 from app.core.authenticity.schema import AuthenticityLabel, AuthenticityResult  # noqa: E402
 from app.core.schemas import ReviewExtraction, Urgency  # noqa: E402
 
-
 # ---------------------------------------------------------------------------
 # DB helpers (direct connection — bypasses pooler for setup/teardown)
 # ---------------------------------------------------------------------------

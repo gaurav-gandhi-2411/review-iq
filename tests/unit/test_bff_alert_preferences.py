@@ -34,7 +34,9 @@ async def client() -> httpx.AsyncClient:
     app.dependency_overrides.clear()
 
 
-@pytest.mark.parametrize("event_type", ["batch_defect", "fake_campaign", "fake_cluster", "topic_spike"])
+@pytest.mark.parametrize(
+    "event_type", ["batch_defect", "fake_campaign", "fake_cluster", "topic_spike"]
+)
 async def test_daily_digest_rejected_for_non_digestible_types(
     client: httpx.AsyncClient, event_type: str
 ) -> None:

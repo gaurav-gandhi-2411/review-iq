@@ -250,7 +250,11 @@ async def test_draft_reply_neutralizes_prompt_injection() -> None:
     ) -> tuple[str, int, int]:
         captured["system_prompt"] = system_prompt
         captured["user_prompt"] = user_prompt
-        return ('{"reply_text": "Thank you for the battery feedback -- we will look into it."}', 50, 20)
+        return (
+            '{"reply_text": "Thank you for the battery feedback -- we will look into it."}',
+            50,
+            20,
+        )
 
     with patch("app.core.reply.engine._call_groq", new=_side_effect):
         draft, _tin, _tout = await draft_reply(request)

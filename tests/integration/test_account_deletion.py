@@ -97,14 +97,28 @@ def two_seeded_orgs() -> Iterator[dict[str, dict[str, str]]]:
         input_hash_a = f"sha256:{uuid.uuid4().hex}{uuid.uuid4().hex}"[:71]
         input_hash_b = f"sha256:{uuid.uuid4().hex}{uuid.uuid4().hex}"[:71]
         save_extraction_pg(
-            orgs["a"]["org_id"], None, input_hash_a, "review text for org a",
+            orgs["a"]["org_id"],
+            None,
+            input_hash_a,
+            "review text for org a",
             _make_extraction(orgs["a"]["org_id"], input_hash_a),
-            "mock-model", "v2.0", "1.0.0", 10, False,
+            "mock-model",
+            "v2.0",
+            "1.0.0",
+            10,
+            False,
         )
         save_extraction_pg(
-            orgs["b"]["org_id"], None, input_hash_b, "review text for org b",
+            orgs["b"]["org_id"],
+            None,
+            input_hash_b,
+            "review text for org b",
             _make_extraction(orgs["b"]["org_id"], input_hash_b),
-            "mock-model", "v2.0", "1.0.0", 10, False,
+            "mock-model",
+            "v2.0",
+            "1.0.0",
+            10,
+            False,
         )
         orgs["a"]["input_hash"] = input_hash_a
         orgs["b"]["input_hash"] = input_hash_b
@@ -180,7 +194,9 @@ class TestAccountDeletion:
             conn.close()
 
         ext_b = get_by_hash_pg(org_b["org_id"], org_b["input_hash"])
-        assert ext_b is not None, "org B's extraction is still fully readable after org A's deletion"
+        assert ext_b is not None, (
+            "org B's extraction is still fully readable after org A's deletion"
+        )
 
     def test_wrong_slug_deletes_neither_org(
         self, two_seeded_orgs: dict[str, dict[str, str]]

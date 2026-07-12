@@ -71,7 +71,7 @@ def _macro_f1(gold: list[str], pred: list[str], labels: list[str]) -> float:
 
 
 def _confusion(gold: list[str], pred: list[str], labels: list[str]) -> list[list[int]]:
-    idx = {l: i for i, l in enumerate(labels)}
+    idx = {label: i for i, label in enumerate(labels)}
     n = len(labels)
     mat = [[0] * n for _ in range(n)]
     for g, p in zip(gold, pred, strict=True):
@@ -120,7 +120,9 @@ async def run_review_iq(gold_records: list[dict], replay_mode: bool) -> list[dic
         t0 = time.monotonic()
         pred = await predict(rec["text"], replay_mode)
         latency_ms = int((time.monotonic() - t0) * 1000)
-        results.append({"id": rec["id"], "slice": rec["slice"], "pred": pred, "latency_ms": latency_ms})
+        results.append(
+            {"id": rec["id"], "slice": rec["slice"], "pred": pred, "latency_ms": latency_ms}
+        )
         err = pred.get("_error", "")
         status = f"SENT={pred.get('SENT')} URG={pred.get('URG')} LANG={pred.get('LANG')}"
         if err:
@@ -130,9 +132,9 @@ async def run_review_iq(gold_records: list[dict], replay_mode: bool) -> list[dic
 
 
 async def run_llm_judge(gold_records: list[dict], replay_mode: bool) -> list[dict[str, Any]]:
+    from app.core.config import get_settings  # noqa: PLC0415
     from groq import AsyncGroq  # noqa: PLC0415
 
-    from app.core.config import get_settings  # noqa: PLC0415
     from benchmark._cassette import BenchCassette  # noqa: PLC0415
     from benchmark.systems.llm_judge import JUDGE_CASSETTE_PATH, predict  # noqa: PLC0415
 
@@ -150,7 +152,9 @@ async def run_llm_judge(gold_records: list[dict], replay_mode: bool) -> list[dic
         except Exception as exc:
             pred = {"SENT": None, "URG": None, "LANG": None, "_error": str(exc)}
         latency_ms = int((time.monotonic() - t0) * 1000)
-        results.append({"id": rec["id"], "slice": rec["slice"], "pred": pred, "latency_ms": latency_ms})
+        results.append(
+            {"id": rec["id"], "slice": rec["slice"], "pred": pred, "latency_ms": latency_ms}
+        )
         err = pred.get("_error", "")
         status = f"SENT={pred.get('SENT')} URG={pred.get('URG')} LANG={pred.get('LANG')}"
         if err:
@@ -204,18 +208,18 @@ def aggregate(
     for rec in gold_records:
         pred_rec = by_id.get(rec["id"], {})
         pred = pred_rec.get("pred", {})
-        sample_detail.append({
-            "id": rec["id"],
-            "slice": rec["slice"],
-            "text_preview": rec["text"][:80],
-            "gold": rec["gold"],
-            "pred": {k: pred.get(k) for k in TASKS},
-            "errors": pred.get("_error"),
-            "latency_ms": pred_rec.get("latency_ms", 0),
-            "diverges": {
-                task: rec["gold"].get(task) != pred.get(task) for task in TASKS
-            },
-        })
+        sample_detail.append(
+            {
+                "id": rec["id"],
+                "slice": rec["slice"],
+                "text_preview": rec["text"][:80],
+                "gold": rec["gold"],
+                "pred": {k: pred.get(k) for k in TASKS},
+                "errors": pred.get("_error"),
+                "latency_ms": pred_rec.get("latency_ms", 0),
+                "diverges": {task: rec["gold"].get(task) != pred.get(task) for task in TASKS},
+            }
+        )
 
     return {
         "system_id": system_id,
@@ -237,9 +241,10 @@ def _fmt_pct(val: float | None) -> str:
 
 def write_report(all_results: list[dict], gold_records: list[dict], generated_at: str) -> None:
     from benchmark.systems.llm_judge import (  # noqa: PLC0415
-        JUDGE_MODEL,
         JUDGE_SYSTEM_PROMPT,
         JUDGE_USER_TEMPLATE,
+    )
+    from benchmark.systems.llm_judge import (
         SYSTEM_DESCRIPTION as JUDGE_DESC,
     )
     from benchmark.systems.review_iq import SYSTEM_DESCRIPTION as RIQD  # noqa: PLC0415
@@ -293,7 +298,9 @@ def write_report(all_results: list[dict], gold_records: list[dict], generated_at
         "| Single source family | Flipkart Kaggle (niraliivaghani/kabirnagpal/naushads) — same pool as CI fixtures; DIFFERENT specific texts; SHA256 leakage-checked (0 en leaked, all 15 CI hi-en fixtures correctly excluded) |",
         "| Single product category | Audio/headphones only (both en and hi-en) |",
         "| Hindi (hi) deferred | No accessible authentic Hindi review corpus found. IndicSentiment (MIT) rejected: machine-translated from English. Abhishek4896/hindi-english-code-mixed: private (401). |",
-        "| Small n | " + "  ".join(f"{sl}: {n_by_slice[sl]}" for sl in slices) + f"  total: {len(gold_records)} |",
+        "| Small n | "
+        + "  ".join(f"{sl}: {n_by_slice[sl]}" for sl in slices)
+        + f"  total: {len(gold_records)} |",
         "| hi-en source overlap with CI | hi-en Hinglish text from the same Flipkart Kaggle pool used in CI fixture development — different specific texts, leakage-verified |",
         "| LLM-generated labels | Labels: llama-3.3-70b-versatile. Scores = agreement, not accuracy. |",
         "",
@@ -391,8 +398,8 @@ def write_report(all_results: list[dict], gold_records: list[dict], generated_at
         "",
         "## Label methodology",
         "",
-        f"Labeling model: `llama-3.3-70b-versatile` (Groq, free tier)",
-        f"Labeling prompt SHA256: see `benchmark/dataset/labeling_prompt.txt`",
+        "Labeling model: `llama-3.3-70b-versatile` (Groq, free tier)",
+        "Labeling prompt SHA256: see `benchmark/dataset/labeling_prompt.txt`",
         "All 43 candidates labeled in a single pass. Labels stored in `benchmark/dataset/gold.jsonl`",
         "with `labels_source: LLM-generated (llama-3.3-70b-versatile, internal benchmark)`.",
         "",

@@ -30,7 +30,9 @@ from app.core.schemas import (
 log = structlog.get_logger(__name__)
 
 
-def record_quota_request_pg(org_id: str, usage_at_request: int, quota_at_request: int, notes: str | None = None) -> None:
+def record_quota_request_pg(
+    org_id: str, usage_at_request: int, quota_at_request: int, notes: str | None = None
+) -> None:
     """Insert a quota-increase interest record. Idempotent on repeated requests.
 
     quota_requests now has RLS (see 20260711000002_quota_requests_rls.sql, applied
@@ -49,7 +51,12 @@ def record_quota_request_pg(org_id: str, usage_at_request: int, quota_at_request
             (org_id, usage_at_request, quota_at_request, notes),
         )
         conn.commit()
-        log.info("storage.quota_request_recorded", org_id=org_id, usage=usage_at_request, quota=quota_at_request)
+        log.info(
+            "storage.quota_request_recorded",
+            org_id=org_id,
+            usage=usage_at_request,
+            quota=quota_at_request,
+        )
     except Exception:
         conn.rollback()
         raise
@@ -380,9 +387,7 @@ def list_orgs_with_dated_extractions_pg() -> list[str]:
     conn = _db_connect()
     try:
         cur = conn.cursor()
-        cur.execute(
-            "SELECT DISTINCT org_id FROM public.extractions WHERE review_date IS NOT NULL"
-        )
+        cur.execute("SELECT DISTINCT org_id FROM public.extractions WHERE review_date IS NOT NULL")
         rows = cur.fetchall()
         conn.commit()
         return [str(r[0]) for r in rows]

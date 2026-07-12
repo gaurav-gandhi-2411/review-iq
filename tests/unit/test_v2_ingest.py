@@ -301,7 +301,7 @@ def test_get_ingest_result_csv_neutralizes_formula_injection(client: TestClient)
     body = resp.text
     # The raw formula must never appear unescaped -- every occurrence of the payload
     # is preceded by the neutralizing quote.
-    assert '=HYPERLINK' not in body or "'=HYPERLINK" in body
+    assert "=HYPERLINK" not in body or "'=HYPERLINK" in body
     assert "\n=HYPERLINK" not in body and ",=HYPERLINK" not in body
 
 

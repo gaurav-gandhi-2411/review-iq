@@ -59,15 +59,16 @@ from benchmark.vernacular_v2.benchmark_groq_key import load_benchmark_groq_key  
 
 _benchmark_groq_key = load_benchmark_groq_key()
 os.environ["GROQ_API_KEY"] = _benchmark_groq_key
-print(f"Using dedicated benchmark Groq key ({_benchmark_groq_key[:8]}...{_benchmark_groq_key[-4:]}) — isolated from prod.")
-
-from groq import AsyncGroq  # noqa: E402
+print(
+    f"Using dedicated benchmark Groq key ({_benchmark_groq_key[:8]}...{_benchmark_groq_key[-4:]}) — isolated from prod."
+)
 
 from benchmark.data.llm_labeler import (  # noqa: E402
     LABELING_SYSTEM_PROMPT,
     LABELING_USER_TEMPLATE,
     _parse_labels,
 )
+from groq import AsyncGroq  # noqa: E402
 
 CANDIDATES_PATH = ROOT / "benchmark" / "vernacular_v2" / "candidates.jsonl"
 SILVER_PATH = ROOT / "benchmark" / "vernacular_v2" / "silver_labels.jsonl"
@@ -99,7 +100,9 @@ async def _label_groq(client: AsyncGroq, model: str, text: str) -> dict[str, str
     return _parse_labels(raw)
 
 
-async def _label_one_model(model_cfg: dict, text: str, groq_client: AsyncGroq) -> tuple[str, dict[str, str] | None, str | None]:
+async def _label_one_model(
+    model_cfg: dict, text: str, groq_client: AsyncGroq
+) -> tuple[str, dict[str, str] | None, str | None]:
     try:
         labels = await _label_groq(groq_client, model_cfg["id"], text)
         if labels is None:
@@ -129,7 +132,9 @@ def _consensus_for_field(votes: dict[str, str | None], field: str) -> tuple[str 
 
 async def main() -> None:
     candidates = [
-        json.loads(line) for line in CANDIDATES_PATH.read_text(encoding="utf-8").splitlines() if line.strip()
+        json.loads(line)
+        for line in CANDIDATES_PATH.read_text(encoding="utf-8").splitlines()
+        if line.strip()
     ]
 
     existing: dict[str, dict] = {}
@@ -154,7 +159,9 @@ async def main() -> None:
             "ground truth. Scores computed against this file measure AGREEMENT WITH "
             "CONSENSUS, NOT accuracy. DO NOT quote as accuracy externally."
         ),
-        "_labeler_models": [{"id": m["id"], "family": m["family"], "provider": m["provider"]} for m in MODELS],
+        "_labeler_models": [
+            {"id": m["id"], "family": m["family"], "provider": m["provider"]} for m in MODELS
+        ],
         "_consensus_rule": "unanimous=3/3, majority=2/3, split=no majority (no silver label assigned)",
         "_generated_at_note": "see git history / file mtime for generation date",
     }
@@ -208,7 +215,9 @@ async def main() -> None:
             results.append(rec)
 
             summary = "  ".join(f"{f}={silver[f]}({agreement[f]})" for f in FIELDS)
-            print(f"  [{i}/{len(candidates)}] {cand['id']} ({cand['slice']}): {summary}  {latency_ms}ms")
+            print(
+                f"  [{i}/{len(candidates)}] {cand['id']} ({cand['slice']}): {summary}  {latency_ms}ms"
+            )
             if errors:
                 print(f"    model errors: {errors}")
             await asyncio.sleep(DELAY_SECONDS)

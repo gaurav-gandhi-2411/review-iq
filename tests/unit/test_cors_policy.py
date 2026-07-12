@@ -15,8 +15,7 @@ def test_cors_default_is_not_wildcard() -> None:
     """Default allowed_origins must not contain '*' — the gate."""
     s = Settings()
     assert "*" not in s.allowed_origins, (
-        "Wildcard origin found in default ALLOWED_ORIGINS. "
-        "This must never ship to production."
+        "Wildcard origin found in default ALLOWED_ORIGINS. This must never ship to production."
     )
 
 
@@ -69,7 +68,9 @@ def test_cors_middleware_uses_settings_origins() -> None:
     """The CORS middleware registered in create_app uses settings.allowed_origins,
     not a hardcoded list."""
     import inspect
+
     from app import main as main_module
+
     src = inspect.getsource(main_module.create_app)
     assert "settings.allowed_origins" in src
     assert '"*"' not in src  # wildcard must not be hardcoded

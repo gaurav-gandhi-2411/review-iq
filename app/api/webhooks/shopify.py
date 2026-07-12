@@ -40,11 +40,11 @@ import base64
 import hashlib
 import hmac
 import json
-import structlog
 from typing import Any
 
 import psycopg2
 import psycopg2.errors
+import structlog
 from cryptography.fernet import Fernet, InvalidToken, MultiFernet
 from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Request, status
 
@@ -239,9 +239,9 @@ async def _process_webhook_review(
     # Synthetic context: webhook extractions don't consume quota or API key slots.
     ctx = ApiKeyContext(
         org_id=installation["org_id"],
-        api_key_id=None,          # no API key — system/webhook triggered
+        api_key_id=None,  # no API key — system/webhook triggered
         key_name="shopify_webhook",
-        usage_record_id="",       # "" → update_usage_tokens skipped in _run_extraction_v2
+        usage_record_id="",  # "" → update_usage_tokens skipped in _run_extraction_v2
     )
 
     req = ReviewRequest(text=row["text"])

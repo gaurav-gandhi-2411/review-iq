@@ -44,7 +44,11 @@ _BROADER_HINGLISH = re.compile(
 
 
 def main() -> None:
-    records = [json.loads(line) for line in IN_PATH.read_text(encoding="utf-8").splitlines() if line.strip()]
+    records = [
+        json.loads(line)
+        for line in IN_PATH.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
 
     prod_hien = []
     danda_false_positive = 0

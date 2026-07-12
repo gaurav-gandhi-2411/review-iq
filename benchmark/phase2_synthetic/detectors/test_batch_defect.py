@@ -135,7 +135,9 @@ def test_only_negative_or_mixed_sentiment_counts_as_mention() -> None:
     """Positive/neutral mentions of a topic don't contribute to the spike count, even if
     clustered in time."""
     reviews = [
-        _review(f"pos-{i}", "P-POSITIVE-CLUSTER", 80 + i, ["battery"], sentiment="positive", rating=5)
+        _review(
+            f"pos-{i}", "P-POSITIVE-CLUSTER", 80 + i, ["battery"], sentiment="positive", rating=5
+        )
         for i in range(6)
     ]
 

@@ -63,7 +63,7 @@ async def test_health_db_unreachable_does_not_leak_raw_exception(client: AsyncCl
             "unreachable",
             "db_connection_failed",
             ConnectionError(
-                'could not connect to server: Connection refused. Is the server running on '
+                "could not connect to server: Connection refused. Is the server running on "
                 'host "aws-1-ap-south-1.pooler.supabase.com" (10.0.0.5) and accepting TCP/IP '
                 "connections on port 5432?"
             ),

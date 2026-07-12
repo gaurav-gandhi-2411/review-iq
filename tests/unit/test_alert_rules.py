@@ -5,12 +5,10 @@ No external I/O, no database, no async. All deterministic.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, timedelta
 
 import pytest
-
 from app.core.alerts.rules import (
-    AlertEvent,
     AlertEventType,
     AlertThresholds,
     check_fake_cluster,

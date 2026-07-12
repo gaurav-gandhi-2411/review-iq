@@ -35,7 +35,9 @@ from benchmark.vernacular_v2.benchmark_groq_key import load_benchmark_groq_key  
 
 _benchmark_key = load_benchmark_groq_key()
 os.environ["GROQ_API_KEY"] = _benchmark_key
-print(f"Using dedicated benchmark Groq key ({_benchmark_key[:8]}...{_benchmark_key[-4:]}) — isolated from prod.")
+print(
+    f"Using dedicated benchmark Groq key ({_benchmark_key[:8]}...{_benchmark_key[-4:]}) — isolated from prod."
+)
 
 import asyncio  # noqa: E402
 import json  # noqa: E402
@@ -77,7 +79,6 @@ def _pre_fix_lang_hint(text: str) -> str:
 
 async def main() -> None:
     import app.core.providers.cassette as cassette_module
-
     from app.core.language import detect_language
     from benchmark.systems.review_iq import predict
 
@@ -86,14 +87,18 @@ async def main() -> None:
     # benchmark's cassette at module level, so a redirect done before that import is
     # silently clobbered (real bug found 2026-07-09 — the 07-07/07-08 vernacular runs
     # leaked recordings into benchmark/cassettes/review_iq_cassettes.json this way).
-    cassette_module.CASSETTES_PATH = ROOT / "benchmark" / "vernacular_v2" / "cassettes_fixed_router.json"
+    cassette_module.CASSETTES_PATH = (
+        ROOT / "benchmark" / "vernacular_v2" / "cassettes_fixed_router.json"
+    )
 
     def _new_lang_hint(text: str) -> str:
         lang = detect_language(text)
         return "en" if lang == "other" else lang
 
     candidates = [
-        json.loads(line) for line in CANDIDATES_PATH.read_text(encoding="utf-8").splitlines() if line.strip()
+        json.loads(line)
+        for line in CANDIDATES_PATH.read_text(encoding="utf-8").splitlines()
+        if line.strip()
     ]
 
     # Only a genuinely SUCCESSFUL prior prediction (no _error) is eligible to be carried

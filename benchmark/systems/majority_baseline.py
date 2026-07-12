@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from collections import Counter
 
-
 SYSTEM_ID = "majority-baseline"
 SYSTEM_DESCRIPTION = (
     "Majority-class baseline: predicts the mode label from the gold distribution "

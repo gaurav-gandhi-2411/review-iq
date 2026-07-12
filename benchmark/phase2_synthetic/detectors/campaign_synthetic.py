@@ -205,7 +205,9 @@ def _near_dup_score(reviews: list[Review]) -> float:
     return 1.0 - (n_clusters / len(long_reviews))
 
 
-def _cross_product_score(window_reviews: list[Review], reviewer_products: dict[str, set[str]]) -> float:
+def _cross_product_score(
+    window_reviews: list[Review], reviewer_products: dict[str, set[str]]
+) -> float:
     """Fraction of a burst window's DISTINCT reviewers who also appear elsewhere in the corpus
     under a different product_id -- a coordination-farm signature (the same accounts posting
     across multiple sellers' burst windows) that organic popularity has no reason to produce.
@@ -343,7 +345,9 @@ def score_burst_window(
     cross_product_score = 0.0
     if base_confidence > 0:
         cross_product_score = _cross_product_score(window.reviews, reviewer_products)
-    confidence = base_confidence + (1.0 - base_confidence) * CROSS_PRODUCT_BOOST_WEIGHT * cross_product_score
+    confidence = (
+        base_confidence + (1.0 - base_confidence) * CROSS_PRODUCT_BOOST_WEIGHT * cross_product_score
+    )
 
     return confidence, reviewer_concentration_score, text_dup_score, cross_product_score
 
@@ -409,9 +413,7 @@ def scan_corpus(reviews: list[Review]) -> list[CampaignFlag]:
         reviewer_products[review.reviewer_id].add(review.product_id)
 
     flags = [scan_product(pid, prs, reviewer_products) for pid, prs in by_product.items()]
-    return sorted(
-        (f for f in flags if f is not None), key=lambda f: -f.confidence
-    )
+    return sorted((f for f in flags if f is not None), key=lambda f: -f.confidence)
 
 
 def write_flags(flags: list[CampaignFlag], path: Path) -> None:
@@ -540,7 +542,7 @@ def render_report(flags: list[CampaignFlag], validation: ValidationResult) -> st
             "zero reviewer/text concentration in that window drives confidence to 0.0 despite "
             "the timing ratio clearing BURST_RATIO_THRESHOLD. Both controls match their planted "
             "counterparts' total review count -- proving this detector does not simply alert on "
-            "\"popular product, lots of reviews,\" even when that popularity produces a real "
+            '"popular product, lots of reviews," even when that popularity produces a real '
             "timing burst.",
             "",
             "**Batch-defect products (topic-vs-timing confound) -- FIXED:** an earlier version "
@@ -576,11 +578,12 @@ def main() -> None:
     report = render_report(flags, validation)
     _REPORT_OUTPUT_PATH.write_text(report, encoding="utf-8")
 
-    print(f"scanned {len(reviews)} reviews across "
-          f"{len({r.product_id for r in reviews})} products")
+    print(f"scanned {len(reviews)} reviews across {len({r.product_id for r in reviews})} products")
     print(f"flagged {len(flags)} product(s): {[f.product_id for f in flags]}")
-    print(f"precision={validation.precision:.3f} recall={validation.recall:.3f} "
-          f"fpr={validation.false_positive_rate:.3f}")
+    print(
+        f"precision={validation.precision:.3f} recall={validation.recall:.3f} "
+        f"fpr={validation.false_positive_rate:.3f}"
+    )
     print(f"wrote {_FLAGS_OUTPUT_PATH}")
     print(f"wrote {_REPORT_OUTPUT_PATH}")
 

@@ -50,19 +50,25 @@ SILVER_WARNING = (
 
 
 def load_jsonl(path: Path) -> list[dict]:
-    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    return [
+        json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()
+    ]
 
 
 def main() -> None:
     silver_raw = load_jsonl(SILVER_PATH)
-    metadata = next((r for r in silver_raw if r.get("_marker") == "SILVER_BENCHMARK_METADATA"), None)
+    metadata = next(
+        (r for r in silver_raw if r.get("_marker") == "SILVER_BENCHMARK_METADATA"), None
+    )
     silver = {r["id"]: r for r in silver_raw if r.get("_marker") != "SILVER_BENCHMARK_METADATA"}
 
     preds_raw = load_jsonl(PRED_PATH)
     preds = {r["id"]: r for r in preds_raw if not r["pred"].get("_error")}
 
     scoreable_ids = [i for i in silver if i in preds]
-    print(f"Silver-labeled: {len(silver)}  Predicted (no error): {len(preds)}  Scoreable: {len(scoreable_ids)}")
+    print(
+        f"Silver-labeled: {len(silver)}  Predicted (no error): {len(preds)}  Scoreable: {len(scoreable_ids)}"
+    )
 
     slices = sorted({silver[i]["slice"] for i in scoreable_ids})
 
@@ -71,13 +77,25 @@ def main() -> None:
     for field in FIELDS:
         agreement_table[field] = {}
         for sl in ["_all"] + slices:
-            ids = scoreable_ids if sl == "_all" else [i for i in scoreable_ids if silver[i]["slice"] == sl]
+            ids = (
+                scoreable_ids
+                if sl == "_all"
+                else [i for i in scoreable_ids if silver[i]["slice"] == sl]
+            )
             with_consensus = [i for i in ids if silver[i]["silver"].get(field) is not None]
             n_split_excluded = len(ids) - len(with_consensus)
             if not with_consensus:
-                agreement_table[field][sl] = {"n": 0, "n_split_excluded": n_split_excluded, "agree_pct": None}
+                agreement_table[field][sl] = {
+                    "n": 0,
+                    "n_split_excluded": n_split_excluded,
+                    "agree_pct": None,
+                }
                 continue
-            agree = sum(1 for i in with_consensus if preds[i]["pred"].get(field) == silver[i]["silver"][field])
+            agree = sum(
+                1
+                for i in with_consensus
+                if preds[i]["pred"].get(field) == silver[i]["silver"][field]
+            )
             agreement_table[field][sl] = {
                 "n": len(with_consensus),
                 "n_split_excluded": n_split_excluded,
@@ -123,7 +141,12 @@ def main() -> None:
     ]
 
     for field in FIELDS:
-        lines += [f"### {field}", "", "| Slice | n scored | n split (excluded) | Agreement w/ consensus |", "|---|---|---|---|"]
+        lines += [
+            f"### {field}",
+            "",
+            "| Slice | n scored | n split (excluded) | Agreement w/ consensus |",
+            "|---|---|---|---|",
+        ]
         for sl in ["_all"] + slices:
             s = agreement_table[field][sl]
             pct = f"{s['agree_pct']}%" if s["agree_pct"] is not None else "—"
@@ -150,7 +173,11 @@ def main() -> None:
         for it in items:
             txt = it["text_preview"].replace("|", "/")
             votes_str = ", ".join(f"{m.split('/')[-1]}={v}" for m, v in it["model_votes"].items())
-            pred_val = it["v2.3_predicted"] if it["v2.3_predicted"] is not None else "(no prediction — error)"
+            pred_val = (
+                it["v2.3_predicted"]
+                if it["v2.3_predicted"] is not None
+                else "(no prediction — error)"
+            )
             lines.append(f"| {it['id']} | {it['slice']} | {txt} | {votes_str} | {pred_val} |")
         lines.append("")
 

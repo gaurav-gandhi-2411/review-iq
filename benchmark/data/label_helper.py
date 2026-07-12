@@ -17,6 +17,7 @@ Resumable: already-labeled IDs are skipped. Labels saved after every entry.
 Input file:  benchmark/dataset/candidates.jsonl
 Output file: benchmark/dataset/gold_labels.jsonl
 """
+
 from __future__ import annotations
 
 import json
@@ -28,18 +29,28 @@ from pathlib import Path
 # ---------------------------------------------------------------------------
 
 SENT_LABELS = ("positive", "neutral", "negative")
-SENT_SHORTCUTS = {"p": "positive", "n": "neutral", "neg": "negative", "1": "positive",
-                  "2": "neutral", "3": "negative"}
+SENT_SHORTCUTS = {
+    "p": "positive",
+    "n": "neutral",
+    "neg": "negative",
+    "1": "positive",
+    "2": "neutral",
+    "3": "negative",
+}
 
 URG_LABELS = ("low", "medium", "high")
-URG_SHORTCUTS = {"l": "low", "m": "medium", "h": "high", "1": "low", "2": "medium",
-                 "3": "high"}
+URG_SHORTCUTS = {"l": "low", "m": "medium", "h": "high", "1": "low", "2": "medium", "3": "high"}
 
 LANG_LABELS = ("en", "hi", "hi-en")
 LANG_SHORTCUTS = {"e": "en", "h": "hi", "he": "hi-en", "1": "en", "2": "hi", "3": "hi-en"}
 
-SENT_HINT_FROM_STARS: dict[int, str] = {1: "negative", 2: "negative", 3: "neutral",
-                                         4: "positive", 5: "positive"}
+SENT_HINT_FROM_STARS: dict[int, str] = {
+    1: "negative",
+    2: "negative",
+    3: "neutral",
+    4: "positive",
+    5: "positive",
+}
 
 URG_RUBRIC = """\
   URG rubric:
@@ -131,9 +142,9 @@ def run(candidates_path: Path, gold_path: Path) -> None:
     existing = load_existing_labels(gold_path)
     remaining = [c for c in candidates if str(c["id"]) not in existing]
 
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print("review-iq Benchmark — Human Labeling Session")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
     print(f"Total candidates: {len(candidates)}")
     print(f"Already labeled:  {len(existing)}")
     print(f"Remaining:        {len(remaining)}")
@@ -153,9 +164,11 @@ def run(candidates_path: Path, gold_path: Path) -> None:
         # --- LANG ---
         lang_detected = str(cand.get("language_detected", "en"))
         print(f"  Detected language: {lang_detected}")
-        lang_raw = input(
-            f"  LANG — confirm ({'/'.join(LANG_LABELS)}) or ENTER to accept detected: "
-        ).strip().lower()
+        lang_raw = (
+            input(f"  LANG — confirm ({'/'.join(LANG_LABELS)}) or ENTER to accept detected: ")
+            .strip()
+            .lower()
+        )
         if lang_raw == "q":
             print(f"\nQuitting. Labeled {labeled_this_session} this session.")
             break
@@ -215,8 +228,12 @@ def run(candidates_path: Path, gold_path: Path) -> None:
             "labeling_notes": {
                 "lang_detected": lang_detected,
                 "lang_overridden": lang != lang_detected,
-                "sent_star_hint": SENT_HINT_FROM_STARS.get(int(rating)) if isinstance(rating, (int, float)) and rating else None,  # noqa: E501
-                "sent_overridden": sent != SENT_HINT_FROM_STARS.get(int(rating)) if isinstance(rating, (int, float)) and rating else None,  # noqa: E501
+                "sent_star_hint": SENT_HINT_FROM_STARS.get(int(rating))
+                if isinstance(rating, (int, float)) and rating
+                else None,  # noqa: E501
+                "sent_overridden": sent != SENT_HINT_FROM_STARS.get(int(rating))
+                if isinstance(rating, (int, float)) and rating
+                else None,  # noqa: E501
                 "labeled_by": "gg",
             },
         }

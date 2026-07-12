@@ -11,7 +11,6 @@ The cassette path is overridden at import time so no eval/cassettes data is touc
 
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 
@@ -21,9 +20,7 @@ sys.path.insert(0, str(ROOT))
 # Override cassette path BEFORE importing GroqProvider (which reads module-level CASSETTES_PATH)
 import app.core.providers.cassette as _eval_cassette_module  # noqa: E402
 
-_eval_cassette_module.CASSETTES_PATH = (
-    ROOT / "benchmark" / "cassettes" / "review_iq_cassettes.json"
-)
+_eval_cassette_module.CASSETTES_PATH = ROOT / "benchmark" / "cassettes" / "review_iq_cassettes.json"
 
 from app.core.prompts import build_prompt  # noqa: E402
 from app.core.sanitize import sanitize, wrap_for_llm  # noqa: E402
@@ -39,7 +36,12 @@ SYSTEM_DESCRIPTION = (
 
 # review-iq has a 4th SENT value ('mixed') not in the benchmark's 3-class schema.
 # Map mixed → neutral (the nearest concept: both indicate no clear lean).
-_SENT_MAP = {"positive": "positive", "neutral": "neutral", "negative": "negative", "mixed": "neutral"}
+_SENT_MAP = {
+    "positive": "positive",
+    "neutral": "neutral",
+    "negative": "negative",
+    "mixed": "neutral",
+}
 _LANG_NORM = {"en": "en", "hi-en": "hi-en", "hinglish": "hi-en", "hi": "hi"}
 
 

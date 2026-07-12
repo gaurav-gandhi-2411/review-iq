@@ -118,6 +118,7 @@ def pause_prod_scheduler() -> Iterator[None]:
         else:
             print(f"\n[pause_prod_scheduler] resumed {_SCHEDULER_JOB}")
 
+
 from app.core.config import get_settings  # noqa: E402
 from app.core.ingest_worker import drain_rows  # noqa: E402
 from app.core.ratelimit import llm_call_slot, reset_bulk_limiter_for_tests  # noqa: E402

@@ -109,9 +109,13 @@ async def ingest_csv(
     auto-detection.
     """
     try:
-        rows, resolved_text, resolved_product, resolved_date, date_ambiguous = (
-            await read_and_validate_csv(file, text_column, product_column, date_column, date_format)
-        )
+        (
+            rows,
+            resolved_text,
+            resolved_product,
+            resolved_date,
+            date_ambiguous,
+        ) = await read_and_validate_csv(file, text_column, product_column, date_column, date_format)
     except FileTooLargeError as exc:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail=str(exc)

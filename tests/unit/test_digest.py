@@ -76,11 +76,24 @@ async def test_no_drop_all_pending_events_collected() -> None:
     audit_rows = [make_audit_row(review_hash="r1")]
 
     with (
-        patch("app.core.alerts.digest.get_preference_pg", MagicMock(return_value=_DAILY_DIGEST_PREF)),
-        patch("app.core.alerts.digest.get_last_digest_watermark_pg", MagicMock(return_value=_ORG_CREATED_AT)),
-        patch("app.core.alerts.digest.get_org_created_at_pg", MagicMock(return_value=_ORG_CREATED_AT)),
-        patch("app.core.alerts.digest.list_extractions_since_pg", MagicMock(return_value=extraction_rows)),
-        patch("app.core.alerts.digest.list_authenticity_audits_since_pg", MagicMock(return_value=audit_rows)),
+        patch(
+            "app.core.alerts.digest.get_preference_pg", MagicMock(return_value=_DAILY_DIGEST_PREF)
+        ),
+        patch(
+            "app.core.alerts.digest.get_last_digest_watermark_pg",
+            MagicMock(return_value=_ORG_CREATED_AT),
+        ),
+        patch(
+            "app.core.alerts.digest.get_org_created_at_pg", MagicMock(return_value=_ORG_CREATED_AT)
+        ),
+        patch(
+            "app.core.alerts.digest.list_extractions_since_pg",
+            MagicMock(return_value=extraction_rows),
+        ),
+        patch(
+            "app.core.alerts.digest.list_authenticity_audits_since_pg",
+            MagicMock(return_value=audit_rows),
+        ),
         patch("app.core.alerts.digest.is_already_alerted_pg", MagicMock(return_value=False)),
     ):
         result = await collect_pending_for_org("org1")
@@ -102,14 +115,32 @@ async def test_run_digest_sends_one_email_and_records_all_events() -> None:
     fake = FakeChannel()
 
     with (
-        patch("app.core.alerts.digest.get_preference_pg", MagicMock(return_value=_DAILY_DIGEST_PREF)),
-        patch("app.core.alerts.digest.get_last_digest_watermark_pg", MagicMock(return_value=_ORG_CREATED_AT)),
-        patch("app.core.alerts.digest.get_org_created_at_pg", MagicMock(return_value=_ORG_CREATED_AT)),
-        patch("app.core.alerts.digest.list_extractions_since_pg", MagicMock(return_value=extraction_rows)),
-        patch("app.core.alerts.digest.list_authenticity_audits_since_pg", MagicMock(return_value=audit_rows)),
+        patch(
+            "app.core.alerts.digest.get_preference_pg", MagicMock(return_value=_DAILY_DIGEST_PREF)
+        ),
+        patch(
+            "app.core.alerts.digest.get_last_digest_watermark_pg",
+            MagicMock(return_value=_ORG_CREATED_AT),
+        ),
+        patch(
+            "app.core.alerts.digest.get_org_created_at_pg", MagicMock(return_value=_ORG_CREATED_AT)
+        ),
+        patch(
+            "app.core.alerts.digest.list_extractions_since_pg",
+            MagicMock(return_value=extraction_rows),
+        ),
+        patch(
+            "app.core.alerts.digest.list_authenticity_audits_since_pg",
+            MagicMock(return_value=audit_rows),
+        ),
         patch("app.core.alerts.digest.is_already_alerted_pg", MagicMock(return_value=False)),
-        patch("app.core.alerts.digest.get_org_notification_email_pg", MagicMock(return_value="seller@example.com")),
-        patch("app.core.alerts.digest.record_alert_sent_pg", MagicMock(return_value=None)) as mock_record,
+        patch(
+            "app.core.alerts.digest.get_org_notification_email_pg",
+            MagicMock(return_value="seller@example.com"),
+        ),
+        patch(
+            "app.core.alerts.digest.record_alert_sent_pg", MagicMock(return_value=None)
+        ) as mock_record,
     ):
         result = await run_digest_for_org("org1", fake)
 
@@ -127,11 +158,24 @@ async def test_dedupe_second_sweep_sends_nothing() -> None:
     audit_rows = [make_audit_row(review_hash="r1")]
 
     with (
-        patch("app.core.alerts.digest.get_preference_pg", MagicMock(return_value=_DAILY_DIGEST_PREF)),
-        patch("app.core.alerts.digest.get_last_digest_watermark_pg", MagicMock(return_value=_ORG_CREATED_AT)),
-        patch("app.core.alerts.digest.get_org_created_at_pg", MagicMock(return_value=_ORG_CREATED_AT)),
-        patch("app.core.alerts.digest.list_extractions_since_pg", MagicMock(return_value=extraction_rows)),
-        patch("app.core.alerts.digest.list_authenticity_audits_since_pg", MagicMock(return_value=audit_rows)),
+        patch(
+            "app.core.alerts.digest.get_preference_pg", MagicMock(return_value=_DAILY_DIGEST_PREF)
+        ),
+        patch(
+            "app.core.alerts.digest.get_last_digest_watermark_pg",
+            MagicMock(return_value=_ORG_CREATED_AT),
+        ),
+        patch(
+            "app.core.alerts.digest.get_org_created_at_pg", MagicMock(return_value=_ORG_CREATED_AT)
+        ),
+        patch(
+            "app.core.alerts.digest.list_extractions_since_pg",
+            MagicMock(return_value=extraction_rows),
+        ),
+        patch(
+            "app.core.alerts.digest.list_authenticity_audits_since_pg",
+            MagicMock(return_value=audit_rows),
+        ),
         patch("app.core.alerts.digest.is_already_alerted_pg", MagicMock(return_value=True)),
     ):
         result = await collect_pending_for_org("org1")
@@ -143,13 +187,24 @@ async def test_dedupe_second_sweep_sends_nothing() -> None:
 async def test_empty_digest_sends_nothing() -> None:
     fake = FakeChannel()
     with (
-        patch("app.core.alerts.digest.get_preference_pg", MagicMock(return_value=_DAILY_DIGEST_PREF)),
-        patch("app.core.alerts.digest.get_last_digest_watermark_pg", MagicMock(return_value=_ORG_CREATED_AT)),
-        patch("app.core.alerts.digest.get_org_created_at_pg", MagicMock(return_value=_ORG_CREATED_AT)),
+        patch(
+            "app.core.alerts.digest.get_preference_pg", MagicMock(return_value=_DAILY_DIGEST_PREF)
+        ),
+        patch(
+            "app.core.alerts.digest.get_last_digest_watermark_pg",
+            MagicMock(return_value=_ORG_CREATED_AT),
+        ),
+        patch(
+            "app.core.alerts.digest.get_org_created_at_pg", MagicMock(return_value=_ORG_CREATED_AT)
+        ),
         patch("app.core.alerts.digest.list_extractions_since_pg", MagicMock(return_value=[])),
-        patch("app.core.alerts.digest.list_authenticity_audits_since_pg", MagicMock(return_value=[])),
+        patch(
+            "app.core.alerts.digest.list_authenticity_audits_since_pg", MagicMock(return_value=[])
+        ),
         patch("app.core.alerts.digest.is_already_alerted_pg", MagicMock(return_value=False)),
-        patch("app.core.alerts.digest.record_alert_sent_pg", MagicMock(return_value=None)) as mock_record,
+        patch(
+            "app.core.alerts.digest.record_alert_sent_pg", MagicMock(return_value=None)
+        ) as mock_record,
     ):
         collected = await collect_pending_for_org("org1")
         result = await run_digest_for_org("org1", fake)
@@ -172,10 +227,21 @@ async def test_disabled_preference_excluded() -> None:
 
     with (
         patch("app.core.alerts.digest.get_preference_pg", MagicMock(side_effect=pref_side_effect)),
-        patch("app.core.alerts.digest.get_last_digest_watermark_pg", MagicMock(return_value=_ORG_CREATED_AT)),
-        patch("app.core.alerts.digest.get_org_created_at_pg", MagicMock(return_value=_ORG_CREATED_AT)),
-        patch("app.core.alerts.digest.list_extractions_since_pg", MagicMock(return_value=extraction_rows)),
-        patch("app.core.alerts.digest.list_authenticity_audits_since_pg", MagicMock(return_value=audit_rows)),
+        patch(
+            "app.core.alerts.digest.get_last_digest_watermark_pg",
+            MagicMock(return_value=_ORG_CREATED_AT),
+        ),
+        patch(
+            "app.core.alerts.digest.get_org_created_at_pg", MagicMock(return_value=_ORG_CREATED_AT)
+        ),
+        patch(
+            "app.core.alerts.digest.list_extractions_since_pg",
+            MagicMock(return_value=extraction_rows),
+        ),
+        patch(
+            "app.core.alerts.digest.list_authenticity_audits_since_pg",
+            MagicMock(return_value=audit_rows),
+        ),
         patch("app.core.alerts.digest.is_already_alerted_pg", MagicMock(return_value=False)),
     ):
         result = await collect_pending_for_org("org1")
@@ -195,10 +261,20 @@ async def test_immediate_frequency_excluded_unaffected() -> None:
 
     with (
         patch("app.core.alerts.digest.get_preference_pg", MagicMock(side_effect=pref_side_effect)),
-        patch("app.core.alerts.digest.get_last_digest_watermark_pg", MagicMock(return_value=_ORG_CREATED_AT)),
-        patch("app.core.alerts.digest.get_org_created_at_pg", MagicMock(return_value=_ORG_CREATED_AT)),
-        patch("app.core.alerts.digest.list_extractions_since_pg", MagicMock(return_value=extraction_rows)),
-        patch("app.core.alerts.digest.list_authenticity_audits_since_pg", MagicMock(return_value=[])),
+        patch(
+            "app.core.alerts.digest.get_last_digest_watermark_pg",
+            MagicMock(return_value=_ORG_CREATED_AT),
+        ),
+        patch(
+            "app.core.alerts.digest.get_org_created_at_pg", MagicMock(return_value=_ORG_CREATED_AT)
+        ),
+        patch(
+            "app.core.alerts.digest.list_extractions_since_pg",
+            MagicMock(return_value=extraction_rows),
+        ),
+        patch(
+            "app.core.alerts.digest.list_authenticity_audits_since_pg", MagicMock(return_value=[])
+        ),
         patch("app.core.alerts.digest.is_already_alerted_pg", MagicMock(return_value=False)),
     ):
         result = await collect_pending_for_org("org1")
@@ -212,14 +288,28 @@ async def test_no_recipient_email_sends_nothing_and_does_not_record() -> None:
     fake = FakeChannel()
 
     with (
-        patch("app.core.alerts.digest.get_preference_pg", MagicMock(return_value=_DAILY_DIGEST_PREF)),
-        patch("app.core.alerts.digest.get_last_digest_watermark_pg", MagicMock(return_value=_ORG_CREATED_AT)),
-        patch("app.core.alerts.digest.get_org_created_at_pg", MagicMock(return_value=_ORG_CREATED_AT)),
-        patch("app.core.alerts.digest.list_extractions_since_pg", MagicMock(return_value=extraction_rows)),
-        patch("app.core.alerts.digest.list_authenticity_audits_since_pg", MagicMock(return_value=[])),
+        patch(
+            "app.core.alerts.digest.get_preference_pg", MagicMock(return_value=_DAILY_DIGEST_PREF)
+        ),
+        patch(
+            "app.core.alerts.digest.get_last_digest_watermark_pg",
+            MagicMock(return_value=_ORG_CREATED_AT),
+        ),
+        patch(
+            "app.core.alerts.digest.get_org_created_at_pg", MagicMock(return_value=_ORG_CREATED_AT)
+        ),
+        patch(
+            "app.core.alerts.digest.list_extractions_since_pg",
+            MagicMock(return_value=extraction_rows),
+        ),
+        patch(
+            "app.core.alerts.digest.list_authenticity_audits_since_pg", MagicMock(return_value=[])
+        ),
         patch("app.core.alerts.digest.is_already_alerted_pg", MagicMock(return_value=False)),
         patch("app.core.alerts.digest.get_org_notification_email_pg", MagicMock(return_value=None)),
-        patch("app.core.alerts.digest.record_alert_sent_pg", MagicMock(return_value=None)) as mock_record,
+        patch(
+            "app.core.alerts.digest.record_alert_sent_pg", MagicMock(return_value=None)
+        ) as mock_record,
     ):
         result = await run_digest_for_org("org1", fake)
 
@@ -234,14 +324,31 @@ async def test_send_failure_does_not_record_preserves_retry() -> None:
     error_channel = ErrorChannel()
 
     with (
-        patch("app.core.alerts.digest.get_preference_pg", MagicMock(return_value=_DAILY_DIGEST_PREF)),
-        patch("app.core.alerts.digest.get_last_digest_watermark_pg", MagicMock(return_value=_ORG_CREATED_AT)),
-        patch("app.core.alerts.digest.get_org_created_at_pg", MagicMock(return_value=_ORG_CREATED_AT)),
-        patch("app.core.alerts.digest.list_extractions_since_pg", MagicMock(return_value=extraction_rows)),
-        patch("app.core.alerts.digest.list_authenticity_audits_since_pg", MagicMock(return_value=[])),
+        patch(
+            "app.core.alerts.digest.get_preference_pg", MagicMock(return_value=_DAILY_DIGEST_PREF)
+        ),
+        patch(
+            "app.core.alerts.digest.get_last_digest_watermark_pg",
+            MagicMock(return_value=_ORG_CREATED_AT),
+        ),
+        patch(
+            "app.core.alerts.digest.get_org_created_at_pg", MagicMock(return_value=_ORG_CREATED_AT)
+        ),
+        patch(
+            "app.core.alerts.digest.list_extractions_since_pg",
+            MagicMock(return_value=extraction_rows),
+        ),
+        patch(
+            "app.core.alerts.digest.list_authenticity_audits_since_pg", MagicMock(return_value=[])
+        ),
         patch("app.core.alerts.digest.is_already_alerted_pg", MagicMock(return_value=False)),
-        patch("app.core.alerts.digest.get_org_notification_email_pg", MagicMock(return_value="seller@example.com")),
-        patch("app.core.alerts.digest.record_alert_sent_pg", MagicMock(return_value=None)) as mock_record,
+        patch(
+            "app.core.alerts.digest.get_org_notification_email_pg",
+            MagicMock(return_value="seller@example.com"),
+        ),
+        patch(
+            "app.core.alerts.digest.record_alert_sent_pg", MagicMock(return_value=None)
+        ) as mock_record,
     ):
         result = await run_digest_for_org("org1", error_channel)  # type: ignore[arg-type]
 
@@ -252,11 +359,17 @@ async def test_send_failure_does_not_record_preserves_retry() -> None:
 @pytest.mark.asyncio
 async def test_watermark_fallback_to_org_created_at() -> None:
     with (
-        patch("app.core.alerts.digest.get_preference_pg", MagicMock(return_value=_DAILY_DIGEST_PREF)),
+        patch(
+            "app.core.alerts.digest.get_preference_pg", MagicMock(return_value=_DAILY_DIGEST_PREF)
+        ),
         patch("app.core.alerts.digest.get_last_digest_watermark_pg", MagicMock(return_value=None)),
-        patch("app.core.alerts.digest.get_org_created_at_pg", MagicMock(return_value=_ORG_CREATED_AT)) as mock_created_at,
+        patch(
+            "app.core.alerts.digest.get_org_created_at_pg", MagicMock(return_value=_ORG_CREATED_AT)
+        ) as mock_created_at,
         patch("app.core.alerts.digest.list_extractions_since_pg", MagicMock(return_value=[])),
-        patch("app.core.alerts.digest.list_authenticity_audits_since_pg", MagicMock(return_value=[])),
+        patch(
+            "app.core.alerts.digest.list_authenticity_audits_since_pg", MagicMock(return_value=[])
+        ),
         patch("app.core.alerts.digest.is_already_alerted_pg", MagicMock(return_value=False)),
     ):
         await collect_pending_for_org("org1")

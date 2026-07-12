@@ -62,8 +62,12 @@ router = APIRouter(prefix="/auth/google", tags=["google-oauth"])
 _STATE_MAX_AGE_SECONDS = 600  # 10 minutes
 _TOKEN_URL = "https://oauth2.googleapis.com/token"
 _ACCOUNTS_URL = "https://mybusinessaccountmanagement.googleapis.com/v1/accounts"
-_LOCATIONS_URL_TMPL = "https://mybusinessbusinessinformation.googleapis.com/v1/{account_name}/locations"
-_NOTIFICATIONS_URL_TMPL = "https://mybusinessnotifications.googleapis.com/v1/{account_name}/notificationSetting"
+_LOCATIONS_URL_TMPL = (
+    "https://mybusinessbusinessinformation.googleapis.com/v1/{account_name}/locations"
+)
+_NOTIFICATIONS_URL_TMPL = (
+    "https://mybusinessnotifications.googleapis.com/v1/{account_name}/notificationSetting"
+)
 
 
 # ---------------------------------------------------------------------------
@@ -258,7 +262,7 @@ async def google_oauth_begin(
     """
     if not authorization.startswith("Bearer "):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Bearer token required.")
-    bearer = authorization[len("Bearer "):]
+    bearer = authorization[len("Bearer ") :]
     # Validate the seller is authenticated. Identity is re-verified in the callback.
     await verify_supabase_jwt(bearer)
 
@@ -303,7 +307,7 @@ async def google_oauth_callback(
     """
     if not authorization.startswith("Bearer "):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Bearer token required.")
-    bearer = authorization[len("Bearer "):]
+    bearer = authorization[len("Bearer ") :]
 
     settings = get_settings()
     if not settings.google_client_secret or not settings.google_token_encryption_key:

@@ -40,9 +40,13 @@ class _FakeFile:
 async def test_happy_path_review_text_column() -> None:
     """CSV with review_text header is auto-detected; returns 3 rows."""
     csv_bytes = b"review_text\nGreat product\nDecent item\nPoor quality\n"
-    rows, resolved_text, resolved_product, resolved_date, date_ambiguous = (
-        await read_and_validate_csv(_FakeFile(csv_bytes), None, None)
-    )
+    (
+        rows,
+        resolved_text,
+        resolved_product,
+        resolved_date,
+        date_ambiguous,
+    ) = await read_and_validate_csv(_FakeFile(csv_bytes), None, None)
 
     assert len(rows) == 3
     assert resolved_text == "review_text"
@@ -56,9 +60,13 @@ async def test_happy_path_review_text_column() -> None:
 async def test_happy_path_explicit_text_column() -> None:
     """CSV with body header; caller passes text_column='body'; works."""
     csv_bytes = b"body,rating\nLove it,5\nHate it,1\n"
-    rows, resolved_text, resolved_product, resolved_date, date_ambiguous = (
-        await read_and_validate_csv(_FakeFile(csv_bytes), "body", None)
-    )
+    (
+        rows,
+        resolved_text,
+        resolved_product,
+        resolved_date,
+        date_ambiguous,
+    ) = await read_and_validate_csv(_FakeFile(csv_bytes), "body", None)
 
     assert len(rows) == 2
     assert resolved_text == "body"
@@ -72,9 +80,13 @@ async def test_happy_path_explicit_text_column() -> None:
 async def test_happy_path_product_column() -> None:
     """CSV with review_text and product columns; rows include 'product' key."""
     csv_bytes = b"review_text,product\nAmazing gadget,Widget Pro\nOkay device,Widget Lite\n"
-    rows, resolved_text, resolved_product, resolved_date, date_ambiguous = (
-        await read_and_validate_csv(_FakeFile(csv_bytes), None, "product")
-    )
+    (
+        rows,
+        resolved_text,
+        resolved_product,
+        resolved_date,
+        date_ambiguous,
+    ) = await read_and_validate_csv(_FakeFile(csv_bytes), None, "product")
 
     assert len(rows) == 2
     assert resolved_text == "review_text"
@@ -109,13 +121,13 @@ async def test_ambiguous_numeric_dates_resolved_via_self_disambiguating_row() ->
     """One row's day>12 (13) disambiguates the whole column's day-first convention, applied to
     every ambiguous row -- never fabricated per-row guessing, one file-wide detected convention."""
     csv_bytes = b"review_text,review_date\nA,13/02/2026\nB,01/03/2026\n"
-    rows, _t, _p, _d, date_ambiguous = await read_and_validate_csv(
-        _FakeFile(csv_bytes), None, None
-    )
+    rows, _t, _p, _d, date_ambiguous = await read_and_validate_csv(_FakeFile(csv_bytes), None, None)
 
     assert date_ambiguous is False
     assert rows[0]["review_date"] == "2026-02-13T00:00:00"  # self-resolving: 13 must be the day
-    assert rows[1]["review_date"] == "2026-03-01T00:00:00"  # day-first convention applied: 01/03 -> Mar 1
+    assert (
+        rows[1]["review_date"] == "2026-03-01T00:00:00"
+    )  # day-first convention applied: 01/03 -> Mar 1
 
 
 @pytest.mark.asyncio
@@ -169,9 +181,13 @@ async def test_no_date_column_leaves_rows_unaffected() -> None:
 async def test_empty_rows_skipped() -> None:
     """A row with empty review_text is silently skipped; returns fewer rows."""
     csv_bytes = b"review_text\nGreat product\n\nAnother review\n"
-    rows, resolved_text, resolved_product, _resolved_date, _date_ambiguous = (
-        await read_and_validate_csv(_FakeFile(csv_bytes), None, None)
-    )
+    (
+        rows,
+        resolved_text,
+        resolved_product,
+        _resolved_date,
+        _date_ambiguous,
+    ) = await read_and_validate_csv(_FakeFile(csv_bytes), None, None)
 
     # The empty row should have been skipped
     assert len(rows) == 2

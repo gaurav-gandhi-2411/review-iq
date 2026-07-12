@@ -192,7 +192,9 @@ class TestForgedJwtRejected:
             patch(
                 "app.api.google_auth.verify_supabase_jwt",
                 new_callable=AsyncMock,
-                side_effect=HTTPException(status_code=401, detail="Invalid or expired Supabase token."),
+                side_effect=HTTPException(
+                    status_code=401, detail="Invalid or expired Supabase token."
+                ),
             ),
             patch("app.api.google_auth._upsert_installation_pg", upsert_mock),
         ):
@@ -234,7 +236,9 @@ class TestWrittenOrgIdMatchesResolved:
         def capture_upsert(
             org_id: str, google_account_name: str, google_location_name: str, refresh_token_enc: str
         ) -> None:
-            upsert_calls.append((org_id, google_account_name, google_location_name, refresh_token_enc))
+            upsert_calls.append(
+                (org_id, google_account_name, google_location_name, refresh_token_enc)
+            )
 
         with (
             patch("app.api.google_auth.get_settings", return_value=_make_settings()),

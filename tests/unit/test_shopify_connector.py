@@ -9,21 +9,19 @@ import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from fastapi.testclient import TestClient
-
-from app.core.ingestion.shopify_source import (
-    ShopifySource,
-    _fields_to_dict,
-    _node_to_review_row,
-    _parse_rating,
-)
 from app.api.webhooks.shopify import (
     _decrypt_token,
     _parse_webhook_payload,
     _verify_shopify_hmac,
     encrypt_token,
 )
-
+from app.core.ingestion.shopify_source import (
+    ShopifySource,
+    _fields_to_dict,
+    _node_to_review_row,
+    _parse_rating,
+)
+from fastapi.testclient import TestClient
 
 # ---------------------------------------------------------------------------
 # Field parsing helpers
@@ -98,7 +96,11 @@ def _make_node(
         "fields": [
             {"key": "body", "value": body},
             {"key": "rating", "value": rating},
-            {"key": "product", "value": "gid://shopify/Product/1", "reference": {"title": product_title}},
+            {
+                "key": "product",
+                "value": "gid://shopify/Product/1",
+                "reference": {"title": product_title},
+            },
             {"key": "author_display_name", "value": author},
             {"key": "language", "value": language},
         ],
@@ -142,9 +144,7 @@ def test_node_to_review_row_missing_optional_fields() -> None:
 
 
 def _make_hmac(secret: str, body: bytes) -> str:
-    return base64.b64encode(
-        hmac.new(secret.encode(), body, hashlib.sha256).digest()
-    ).decode()
+    return base64.b64encode(hmac.new(secret.encode(), body, hashlib.sha256).digest()).decode()
 
 
 def test_verify_shopify_hmac_correct() -> None:
@@ -179,6 +179,7 @@ def test_verify_shopify_hmac_empty_body() -> None:
 
 def _make_fernet_key() -> str:
     from cryptography.fernet import Fernet
+
     return Fernet.generate_key().decode()
 
 
@@ -400,8 +401,17 @@ async def test_shopify_source_fetch_single_page() -> None:
             "metaobjects": {
                 "pageInfo": {"hasNextPage": False, "endCursor": None},
                 "edges": [
-                    {"node": _make_node(body="Good bass quality.", rating='{"scale_min":1,"scale_max":5,"value":4}')},
-                    {"node": _make_node(body="", rating='{"scale_min":1,"scale_max":5,"value":1}')},  # empty → skipped
+                    {
+                        "node": _make_node(
+                            body="Good bass quality.",
+                            rating='{"scale_min":1,"scale_max":5,"value":4}',
+                        )
+                    },
+                    {
+                        "node": _make_node(
+                            body="", rating='{"scale_min":1,"scale_max":5,"value":1}'
+                        )
+                    },  # empty → skipped
                 ],
             }
         }

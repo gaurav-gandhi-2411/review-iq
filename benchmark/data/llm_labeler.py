@@ -166,7 +166,9 @@ async def run(replay_mode: bool = False) -> None:
         renumbered.append((new_id, cand))
 
     pending = [(new_id, cand) for new_id, cand in renumbered if new_id not in existing_ids]
-    print(f"Candidates: {len(renumbered)}  Already labeled: {len(existing_ids)}  Pending: {len(pending)}")
+    print(
+        f"Candidates: {len(renumbered)}  Already labeled: {len(existing_ids)}  Pending: {len(pending)}"
+    )
     print(f"Model: {LABELER_MODEL}  Cassette: {CASSETTE_PATH}  Replay: {replay_mode}")
     print()
 
@@ -205,8 +207,20 @@ async def run(replay_mode: bool = False) -> None:
                 "labeling_tokens_out": tout,
             }
             fh.write(json.dumps(record, ensure_ascii=False) + "\n")
-            cached_flag = "(cached)" if cassette.get(make_key(LABELER_MODEL, LABELING_SYSTEM_PROMPT, LABELING_USER_TEMPLATE.format(text=text))) else "(live)"
-            print(f"  [{new_id}] SENT={labels['SENT']}  URG={labels['URG']}  LANG={labels['LANG']}  {latency_ms}ms {cached_flag}")
+            cached_flag = (
+                "(cached)"
+                if cassette.get(
+                    make_key(
+                        LABELER_MODEL,
+                        LABELING_SYSTEM_PROMPT,
+                        LABELING_USER_TEMPLATE.format(text=text),
+                    )
+                )
+                else "(live)"
+            )
+            print(
+                f"  [{new_id}] SENT={labels['SENT']}  URG={labels['URG']}  LANG={labels['LANG']}  {latency_ms}ms {cached_flag}"
+            )
 
     print(f"\nLabeling complete. Errors: {errors}")
     print(f"Tokens — in: {total_in:,}  out: {total_out:,}")

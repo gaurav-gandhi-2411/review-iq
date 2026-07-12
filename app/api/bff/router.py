@@ -731,9 +731,13 @@ async def bff_ingest_csv(
     """
 
     try:
-        rows, resolved_text, resolved_product, resolved_date, date_ambiguous = (
-            await read_and_validate_csv(file, text_column, product_column, date_column, date_format)
-        )
+        (
+            rows,
+            resolved_text,
+            resolved_product,
+            resolved_date,
+            date_ambiguous,
+        ) = await read_and_validate_csv(file, text_column, product_column, date_column, date_format)
     except FileTooLargeError as exc:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail=str(exc)
@@ -896,6 +900,7 @@ async def bff_request_quota_increase(
     log.info("bff.quota_request.recorded", org_id=ctx.org_id, usage=usage_this_month, quota=quota)
     return {"recorded": True, "org_id": ctx.org_id}
 
-from app.api.bff.alerts import router as _alerts_router
+
+from app.api.bff.alerts import router as _alerts_router  # noqa: E402, I001 -- deliberately after all route handlers, not a top-level import (see module docstring's import constraints)
 
 router.include_router(_alerts_router)

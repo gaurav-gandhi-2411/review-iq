@@ -79,9 +79,7 @@ class Settings(BaseSettings):
     # Phase 2 batch-defect detector (app/core/detectors/batch_defect.py) -- off by default.
     # SYNTHETIC-VALIDATED, not yet proven on real seller data (see project memory). Gates both
     # the on-demand GET endpoint AND the scheduled detector sweep (app/core/alerts/detector_sweep.py).
-    enable_batch_defect_detector: bool = Field(
-        default=False, alias="ENABLE_BATCH_DEFECT_DETECTOR"
-    )
+    enable_batch_defect_detector: bool = Field(default=False, alias="ENABLE_BATCH_DEFECT_DETECTOR")
     # Phase 2 fake-campaign detector (app/core/detectors/campaign.py) -- off by default.
     # SYNTHETIC-VALIDATED, stress-tested, not yet proven on real seller data. Reviewer-identity
     # signal is stubbed to 0 (no ingestion path captures it yet) -- see that module's docstring
@@ -133,9 +131,7 @@ class Settings(BaseSettings):
             # Runtime fail-closed backstop: previously only test_cors_policy.py caught a
             # wildcard ALLOWED_ORIGINS before it could ship. This makes it impossible to
             # boot the app with wildcard CORS at all, not just impossible to merge.
-            raise ValueError(
-                "ALLOWED_ORIGINS must not contain '*' — use an explicit origin list."
-            )
+            raise ValueError("ALLOWED_ORIGINS must not contain '*' — use an explicit origin list.")
         return origins
 
     # Shopify connector
