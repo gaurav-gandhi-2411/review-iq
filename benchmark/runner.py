@@ -120,7 +120,9 @@ async def run_review_iq(gold_records: list[dict], replay_mode: bool) -> list[dic
         t0 = time.monotonic()
         pred = await predict(rec["text"], replay_mode)
         latency_ms = int((time.monotonic() - t0) * 1000)
-        results.append({"id": rec["id"], "slice": rec["slice"], "pred": pred, "latency_ms": latency_ms})
+        results.append(
+            {"id": rec["id"], "slice": rec["slice"], "pred": pred, "latency_ms": latency_ms}
+        )
         err = pred.get("_error", "")
         status = f"SENT={pred.get('SENT')} URG={pred.get('URG')} LANG={pred.get('LANG')}"
         if err:
@@ -150,7 +152,9 @@ async def run_llm_judge(gold_records: list[dict], replay_mode: bool) -> list[dic
         except Exception as exc:
             pred = {"SENT": None, "URG": None, "LANG": None, "_error": str(exc)}
         latency_ms = int((time.monotonic() - t0) * 1000)
-        results.append({"id": rec["id"], "slice": rec["slice"], "pred": pred, "latency_ms": latency_ms})
+        results.append(
+            {"id": rec["id"], "slice": rec["slice"], "pred": pred, "latency_ms": latency_ms}
+        )
         err = pred.get("_error", "")
         status = f"SENT={pred.get('SENT')} URG={pred.get('URG')} LANG={pred.get('LANG')}"
         if err:
@@ -204,18 +208,18 @@ def aggregate(
     for rec in gold_records:
         pred_rec = by_id.get(rec["id"], {})
         pred = pred_rec.get("pred", {})
-        sample_detail.append({
-            "id": rec["id"],
-            "slice": rec["slice"],
-            "text_preview": rec["text"][:80],
-            "gold": rec["gold"],
-            "pred": {k: pred.get(k) for k in TASKS},
-            "errors": pred.get("_error"),
-            "latency_ms": pred_rec.get("latency_ms", 0),
-            "diverges": {
-                task: rec["gold"].get(task) != pred.get(task) for task in TASKS
-            },
-        })
+        sample_detail.append(
+            {
+                "id": rec["id"],
+                "slice": rec["slice"],
+                "text_preview": rec["text"][:80],
+                "gold": rec["gold"],
+                "pred": {k: pred.get(k) for k in TASKS},
+                "errors": pred.get("_error"),
+                "latency_ms": pred_rec.get("latency_ms", 0),
+                "diverges": {task: rec["gold"].get(task) != pred.get(task) for task in TASKS},
+            }
+        )
 
     return {
         "system_id": system_id,
@@ -294,7 +298,9 @@ def write_report(all_results: list[dict], gold_records: list[dict], generated_at
         "| Single source family | Flipkart Kaggle (niraliivaghani/kabirnagpal/naushads) — same pool as CI fixtures; DIFFERENT specific texts; SHA256 leakage-checked (0 en leaked, all 15 CI hi-en fixtures correctly excluded) |",
         "| Single product category | Audio/headphones only (both en and hi-en) |",
         "| Hindi (hi) deferred | No accessible authentic Hindi review corpus found. IndicSentiment (MIT) rejected: machine-translated from English. Abhishek4896/hindi-english-code-mixed: private (401). |",
-        "| Small n | " + "  ".join(f"{sl}: {n_by_slice[sl]}" for sl in slices) + f"  total: {len(gold_records)} |",
+        "| Small n | "
+        + "  ".join(f"{sl}: {n_by_slice[sl]}" for sl in slices)
+        + f"  total: {len(gold_records)} |",
         "| hi-en source overlap with CI | hi-en Hinglish text from the same Flipkart Kaggle pool used in CI fixture development — different specific texts, leakage-verified |",
         "| LLM-generated labels | Labels: llama-3.3-70b-versatile. Scores = agreement, not accuracy. |",
         "",

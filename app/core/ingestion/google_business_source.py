@@ -70,9 +70,7 @@ async def _refresh_access_token(refresh_token: str, client_id: str, client_secre
             )
             resp.raise_for_status()
         except httpx.HTTPStatusError as exc:
-            raise SourceError(
-                f"Google token refresh HTTP {exc.response.status_code}"
-            ) from exc
+            raise SourceError(f"Google token refresh HTTP {exc.response.status_code}") from exc
         except httpx.RequestError as exc:
             raise SourceError(f"Google token refresh request failed: {exc}") from exc
 
@@ -179,8 +177,7 @@ class GoogleBusinessSource:
                     resp.raise_for_status()
                 except httpx.HTTPStatusError as exc:
                     raise SourceError(
-                        f"Google Reviews HTTP {exc.response.status_code} "
-                        f"for {self._location_name}"
+                        f"Google Reviews HTTP {exc.response.status_code} for {self._location_name}"
                     ) from exc
                 except httpx.RequestError as exc:
                     raise SourceError(

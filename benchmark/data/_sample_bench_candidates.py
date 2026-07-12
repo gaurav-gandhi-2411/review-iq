@@ -8,6 +8,7 @@ Slices:
 Outputs benchmark/dataset/candidates_for_review.jsonl
 Each record: id, slice, source, text, char_len, leakage (bool), leakage_source (str|None)
 """
+
 from __future__ import annotations
 
 import json
@@ -59,8 +60,7 @@ print(f"Raw flipkart records: {len(all_records)}")
 # Slice: en
 # ---------------------------------------------------------------------------
 en_raw = [
-    r for r in all_records
-    if r.get("language") == "en" and int(r.get("char_len", 0)) >= _MIN_LEN
+    r for r in all_records if r.get("language") == "en" and int(r.get("char_len", 0)) >= _MIN_LEN
 ]
 # Sort longest-first (richer reviews), then cap at 60 to run leakage on
 en_raw.sort(key=lambda r: int(r.get("char_len", 0)), reverse=True)
@@ -68,20 +68,24 @@ en_candidates: list[dict] = []
 for r in en_raw[:60]:
     text = r["text"]
     leaked = checker.is_leaked(text)
-    en_candidates.append({
-        "id": f"bench-en-{len(en_candidates)+1:03d}",
-        "slice": "en",
-        "domain": "e-commerce reviews (Flipkart)",
-        "source": r.get("source", "flipkart"),
-        "text": text,
-        "char_len": int(r.get("char_len", len(text))),
-        "rating": r.get("rating"),
-        "leakage": leaked is not None,
-        "leakage_source": leaked,
-    })
+    en_candidates.append(
+        {
+            "id": f"bench-en-{len(en_candidates) + 1:03d}",
+            "slice": "en",
+            "domain": "e-commerce reviews (Flipkart)",
+            "source": r.get("source", "flipkart"),
+            "text": text,
+            "char_len": int(r.get("char_len", len(text))),
+            "rating": r.get("rating"),
+            "leakage": leaked is not None,
+            "leakage_source": leaked,
+        }
+    )
 
 en_clean = [c for c in en_candidates if not c["leakage"]]
-print(f"\nen slice: {len(en_raw)} candidates >=45ch; top-60 checked; {len(en_clean)} clean after leakage.")
+print(
+    f"\nen slice: {len(en_raw)} candidates >=45ch; top-60 checked; {len(en_clean)} clean after leakage."
+)
 
 # Take top 22 clean (size to honest yield; user will trim further)
 en_final = en_clean[:22]
@@ -91,7 +95,8 @@ print(f"en final (top 22 by length, leakage-clean): {len(en_final)}")
 # Slice: hi-en (Flipkart, e-commerce, code-mixed)
 # ---------------------------------------------------------------------------
 hien_raw = [
-    r for r in all_records
+    r
+    for r in all_records
     if r.get("language") == "hi-en"
     and int(r.get("char_len", 0)) >= _MIN_LEN
     and _HINGLISH_MARKERS.search(r["text"])
@@ -103,20 +108,24 @@ hien_candidates: list[dict] = []
 for r in hien_raw:
     text = r["text"]
     leaked = checker.is_leaked(text)
-    hien_candidates.append({
-        "id": f"bench-hien-{len(hien_candidates)+1:03d}",
-        "slice": "hi-en",
-        "domain": "e-commerce reviews (Flipkart, held-out)",
-        "source": r.get("source", "flipkart"),
-        "text": text,
-        "char_len": int(r.get("char_len", len(text))),
-        "rating": r.get("rating"),
-        "leakage": leaked is not None,
-        "leakage_source": leaked,
-    })
+    hien_candidates.append(
+        {
+            "id": f"bench-hien-{len(hien_candidates) + 1:03d}",
+            "slice": "hi-en",
+            "domain": "e-commerce reviews (Flipkart, held-out)",
+            "source": r.get("source", "flipkart"),
+            "text": text,
+            "char_len": int(r.get("char_len", len(text))),
+            "rating": r.get("rating"),
+            "leakage": leaked is not None,
+            "leakage_source": leaked,
+        }
+    )
 
 hien_clean = [c for c in hien_candidates if not c["leakage"]]
-print(f"\nhi-en slice: {len(hien_raw)} genuine Hinglish >=45ch; {len(hien_clean)} clean after leakage.")
+print(
+    f"\nhi-en slice: {len(hien_raw)} genuine Hinglish >=45ch; {len(hien_clean)} clean after leakage."
+)
 hien_final = hien_clean  # take all clean (target 15-18; we need honest yield)
 print(f"hi-en final (all clean, genuine): {len(hien_final)}")
 

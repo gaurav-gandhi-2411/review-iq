@@ -212,10 +212,7 @@ def test_new_encryptions_use_the_first_key_after_rotation() -> None:
 
     encrypted_after_rotation = encrypt_token("1//0gPostRotation", rotated_key_list)
 
-    assert (
-        _decrypt_refresh_token(encrypted_after_rotation, rotated_key_list)
-        == "1//0gPostRotation"
-    )
+    assert _decrypt_refresh_token(encrypted_after_rotation, rotated_key_list) == "1//0gPostRotation"
     with pytest.raises(ValueError, match="Token decryption failed"):
         _decrypt_refresh_token(encrypted_after_rotation, old_key)
 
@@ -299,9 +296,7 @@ def test_webhook_no_push_token_configured_returns_503() -> None:
         "app.api.webhooks.google.get_settings",
         return_value=_make_mock_settings(push_token=""),
     ):
-        resp = client.post(
-            "/webhooks/google/reviews", json=envelope, params={"token": "anything"}
-        )
+        resp = client.post("/webhooks/google/reviews", json=envelope, params={"token": "anything"})
     assert resp.status_code == 503
 
 
@@ -358,7 +353,9 @@ def test_google_business_source_meta_before_fetch() -> None:
 async def test_refresh_access_token_success() -> None:
     mock_resp = MagicMock()
     mock_resp.raise_for_status = MagicMock()
-    mock_resp.json = MagicMock(return_value={"access_token": "new_access_token", "expires_in": 3600})
+    mock_resp.json = MagicMock(
+        return_value={"access_token": "new_access_token", "expires_in": 3600}
+    )
 
     with patch("httpx.AsyncClient") as mock_client_cls:
         mock_ctx = AsyncMock()
@@ -438,7 +435,10 @@ async def test_google_business_source_pagination() -> None:
     page1 = MagicMock()
     page1.raise_for_status = MagicMock()
     page1.json = MagicMock(
-        return_value={"reviews": [_make_review(comment="Page one review.")], "nextPageToken": "cursor1"}
+        return_value={
+            "reviews": [_make_review(comment="Page one review.")],
+            "nextPageToken": "cursor1",
+        }
     )
     page2 = MagicMock()
     page2.raise_for_status = MagicMock()

@@ -19,6 +19,7 @@ Each candidate in candidates.jsonl:
         "leakage": false
     }
 """
+
 from __future__ import annotations
 
 import argparse
@@ -131,7 +132,7 @@ def run_sampler(
 ) -> None:
     from benchmark.data.leakage_check import LeakageChecker
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"Sampling: source={source!r}  slice={language_slice!r}  n={n}")
 
     checker = LeakageChecker.from_eval_dir(project_root / "eval")

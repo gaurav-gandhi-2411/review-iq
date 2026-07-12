@@ -117,9 +117,7 @@ def _verify_state(
     if int(time.time()) - ts > max_age:
         return False
     msg = f"{shop_domain}:{ts_str}"
-    expected_mac = _hmac.new(
-        client_secret.encode(), msg.encode(), hashlib.sha256
-    ).hexdigest()
+    expected_mac = _hmac.new(client_secret.encode(), msg.encode(), hashlib.sha256).hexdigest()
     return _hmac.compare_digest(expected_mac, received_mac)
 
 
@@ -178,7 +176,13 @@ async def _register_webhook(shop_domain: str, access_token: str, settings: Any) 
         resp = await client.post(
             api_url,
             headers={"X-Shopify-Access-Token": access_token},
-            json={"webhook": {"topic": "metaobjects/create", "address": callback_url, "format": "json"}},
+            json={
+                "webhook": {
+                    "topic": "metaobjects/create",
+                    "address": callback_url,
+                    "format": "json",
+                }
+            },
         )
     if resp.status_code in (200, 201):
         webhook_id = str(resp.json().get("webhook", {}).get("id", ""))
@@ -242,7 +246,7 @@ async def shopify_oauth_begin(
     """
     if not authorization.startswith("Bearer "):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Bearer token required.")
-    bearer = authorization[len("Bearer "):]
+    bearer = authorization[len("Bearer ") :]
     # Validate the seller is authenticated. We don't need user_id here
     # because the state is not carrying identity — identity is re-verified
     # in the callback.
@@ -293,7 +297,7 @@ async def shopify_oauth_callback(
     """
     if not authorization.startswith("Bearer "):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Bearer token required.")
-    bearer = authorization[len("Bearer "):]
+    bearer = authorization[len("Bearer ") :]
 
     settings = get_settings()
     if not settings.shopify_client_secret or not settings.shopify_token_encryption_key:

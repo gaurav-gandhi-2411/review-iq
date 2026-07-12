@@ -30,7 +30,11 @@ OUT_COUNTS = ROOT / "data" / "processed" / "language_counts.json"
 
 
 def main() -> None:
-    records = [json.loads(line) for line in IN_PATH.read_text(encoding="utf-8").splitlines() if line.strip()]
+    records = [
+        json.loads(line)
+        for line in IN_PATH.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
     print(f"Classifying {len(records)} deduped reviews...")
 
     counts: Counter[str] = Counter()
@@ -63,7 +67,7 @@ def main() -> None:
     print("LANGUAGE DISTRIBUTION")
     print("=" * 50)
     for lang, n in counts.most_common():
-        print(f"  {lang:8s}: {n:7d}  ({100*n/len(records):.2f}%)")
+        print(f"  {lang:8s}: {n:7d}  ({100 * n / len(records):.2f}%)")
     print(f"\nVernacular (hi-en + hi) total: {len(vernacular)} ({result['vernacular_pct']}%)")
     print(f"Written: {OUT_ALL.relative_to(ROOT)}")
     print(f"Written: {OUT_VERNACULAR.relative_to(ROOT)}")

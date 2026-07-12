@@ -121,16 +121,13 @@ class TestHappyPath:
             patch("app.api.v2.insights.get_settings", return_value=_settings(True)),
             patch("app.api.v2.insights.list_dated_extractions_pg", return_value=weak_rows),
         ):
-            resp = await client.get(
-                "/v2/insights/batch-defects", params={"min_confidence": 0.9}
-            )
+            resp = await client.get("/v2/insights/batch-defects", params={"min_confidence": 0.9})
         assert resp.status_code == 200
         assert resp.json()["flags"] == []
 
     async def test_limit_truncates_flags(self, client: httpx.AsyncClient) -> None:
         two_products_rows = _SPIKE_ROWS + [
-            {**row, "id": f"b{i}", "product": "Widget Lite"}
-            for i, row in enumerate(_SPIKE_ROWS)
+            {**row, "id": f"b{i}", "product": "Widget Lite"} for i, row in enumerate(_SPIKE_ROWS)
         ]
         with (
             patch("app.api.v2.insights.get_settings", return_value=_settings(True)),

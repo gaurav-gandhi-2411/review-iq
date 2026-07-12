@@ -56,7 +56,9 @@ def _macro_f1(gold: list[str], pred: list[str], labels: list[str]) -> float:
 def load_jsonl(path: Path) -> list[dict]:
     if not path.exists():
         return []
-    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    return [
+        json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()
+    ]
 
 
 def main() -> None:
@@ -78,7 +80,9 @@ def main() -> None:
     print(f"Predictions available: {len(pred_records)}")
     print(f"Scoreable (both present): {len(scored_ids)}")
     if unscored:
-        print(f"WARNING: {len(unscored)} gold labels have no matching prediction yet: {unscored[:5]}...")
+        print(
+            f"WARNING: {len(unscored)} gold labels have no matching prediction yet: {unscored[:5]}..."
+        )
 
     slices = sorted({gold_by_id[i].get("slice", "?") for i in scored_ids})
 
@@ -102,10 +106,16 @@ def main() -> None:
         labels = TASK_LABELS[task]
         lines += [f"### {task}", "", "| Slice | n | Accuracy | Macro-F1 |", "|---|---|---|---|"]
         for sl in ["_all"] + slices:
-            ids = scored_ids if sl == "_all" else [i for i in scored_ids if gold_by_id[i].get("slice") == sl]
+            ids = (
+                scored_ids
+                if sl == "_all"
+                else [i for i in scored_ids if gold_by_id[i].get("slice") == sl]
+            )
             g = [gold_by_id[i]["gold"].get(task) for i in ids]
             p = [pred_by_id[i]["pred"].get(task) for i in ids]
-            valid = [(gg, pp) for gg, pp in zip(g, p, strict=True) if gg is not None and pp is not None]
+            valid = [
+                (gg, pp) for gg, pp in zip(g, p, strict=True) if gg is not None and pp is not None
+            ]
             if not valid:
                 lines.append(f"| {sl} | 0 | — | — |")
                 continue
@@ -116,7 +126,12 @@ def main() -> None:
         lines.append("")
 
     # Confusion detail for LANG (does the language ROUTER agree with human judgment?)
-    lines += ["---", "", "## LANG confusion (router's detected language vs. human-confirmed gold)", ""]
+    lines += [
+        "---",
+        "",
+        "## LANG confusion (router's detected language vs. human-confirmed gold)",
+        "",
+    ]
     lang_labels = TASK_LABELS["LANG"]
     lines.append("| Gold \\ Pred | " + " | ".join(lang_labels) + " |")
     lines.append("|---|" + "|".join("---" for _ in lang_labels) + "|")
@@ -126,7 +141,8 @@ def main() -> None:
             n = sum(
                 1
                 for i in scored_ids
-                if gold_by_id[i]["gold"].get("LANG") == gl and pred_by_id[i]["pred"].get("LANG") == pl
+                if gold_by_id[i]["gold"].get("LANG") == gl
+                and pred_by_id[i]["pred"].get("LANG") == pl
             )
             row.append(str(n))
         lines.append("| " + " | ".join(row) + " |")

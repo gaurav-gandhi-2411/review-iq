@@ -234,7 +234,9 @@ class TestForgedJwtRejected:
             patch(
                 "app.api.shopify_auth.verify_supabase_jwt",
                 new_callable=AsyncMock,
-                side_effect=HTTPException(status_code=401, detail="Invalid or expired Supabase token."),
+                side_effect=HTTPException(
+                    status_code=401, detail="Invalid or expired Supabase token."
+                ),
             ),
             patch("app.api.shopify_auth._upsert_installation_pg", upsert_mock),
         ):
@@ -313,7 +315,9 @@ class TestWrittenOrgIdMatchesResolved:
                     "code": "shopify_code",
                     "shop": shop,
                     "state": state,
-                    "hmac": _valid_hmac(_CLIENT_SECRET, code="shopify_code", shop=shop, state=state),
+                    "hmac": _valid_hmac(
+                        _CLIENT_SECRET, code="shopify_code", shop=shop, state=state
+                    ),
                 },
                 headers={"Authorization": "Bearer valid_jwt"},
             )

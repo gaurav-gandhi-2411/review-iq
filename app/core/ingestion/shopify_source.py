@@ -180,8 +180,7 @@ class ShopifySource:
                     resp.raise_for_status()
                 except httpx.HTTPStatusError as exc:
                     raise SourceError(
-                        f"Shopify GraphQL HTTP {exc.response.status_code} "
-                        f"for {self._shop_domain}"
+                        f"Shopify GraphQL HTTP {exc.response.status_code} for {self._shop_domain}"
                     ) from exc
                 except httpx.RequestError as exc:
                     raise SourceError(
@@ -191,9 +190,7 @@ class ShopifySource:
                 payload = resp.json()
                 errors = payload.get("errors")
                 if errors:
-                    raise SourceError(
-                        f"Shopify GraphQL errors for {self._shop_domain}: {errors}"
-                    )
+                    raise SourceError(f"Shopify GraphQL errors for {self._shop_domain}: {errors}")
 
                 data = (payload.get("data") or {}).get("metaobjects", {})
                 edges = data.get("edges", [])

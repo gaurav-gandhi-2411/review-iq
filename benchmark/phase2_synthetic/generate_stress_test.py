@@ -188,8 +188,15 @@ def gen_weak_batch_defect(pool: SourcePool) -> None:
     neg_re = r"stop|stopped|not\s+work|dead|fail|slow|damag"
     baseline = pool.sample_diverse(40)
     baseline_reviews = [
-        RawReview(product_id, alloc_reviewer_id(), random_timestamp(WINDOW_START, WINDOW_END_EXCLUSIVE),
-                  r["rate"], r["text"], r["id"], "stress_batch_weak")
+        RawReview(
+            product_id,
+            alloc_reviewer_id(),
+            random_timestamp(WINDOW_START, WINDOW_END_EXCLUSIVE),
+            r["rate"],
+            r["text"],
+            r["id"],
+            "stress_batch_weak",
+        )
         for r in baseline
     ]
     matches = pool.find_matching(keyword_re, neg_re=neg_re, max_rate=2)
@@ -197,17 +204,30 @@ def gen_weak_batch_defect(pool: SourcePool) -> None:
     spike_end = spike_start + timedelta(days=10)  # spread across the FULL window width, not tight
     spike_source = pool.take_sample(matches, 4)  # bare MIN_ABSOLUTE_SPIKE_COUNT
     spike_reviews = [
-        RawReview(product_id, alloc_reviewer_id(), random_timestamp(spike_start, spike_end),
-                  r["rate"], r["text"], r["id"], "stress_batch_weak")
+        RawReview(
+            product_id,
+            alloc_reviewer_id(),
+            random_timestamp(spike_start, spike_end),
+            r["rate"],
+            r["text"],
+            r["id"],
+            "stress_batch_weak",
+        )
         for r in spike_source
     ]
     all_reviews.extend(baseline_reviews + spike_reviews)
     ground_truth[product_id] = {
-        "product_id": product_id, "pattern": "batch_defect", "is_control": False,
-        "difficulty": "weak", "topic_keyword": "charger", "keyword_regex": keyword_re,
-        "spike_target_count": 4, "spike_actual_count": len(spike_reviews),
+        "product_id": product_id,
+        "pattern": "batch_defect",
+        "is_control": False,
+        "difficulty": "weak",
+        "topic_keyword": "charger",
+        "keyword_regex": keyword_re,
+        "spike_target_count": 4,
+        "spike_actual_count": len(spike_reviews),
         "spike_available_matches": len(matches),
-        "planted_review_ids": [], "_planted_objs": spike_reviews,
+        "planted_review_ids": [],
+        "_planted_objs": spike_reviews,
     }
 
 
@@ -221,8 +241,15 @@ def gen_moderate_batch_defect(pool: SourcePool) -> None:
     neg_re = r"broke|broken|crack|tear|torn|loose|damag"
     baseline = pool.sample_diverse(45)
     baseline_reviews = [
-        RawReview(product_id, alloc_reviewer_id(), random_timestamp(WINDOW_START, WINDOW_END_EXCLUSIVE),
-                  r["rate"], r["text"], r["id"], "stress_batch_moderate")
+        RawReview(
+            product_id,
+            alloc_reviewer_id(),
+            random_timestamp(WINDOW_START, WINDOW_END_EXCLUSIVE),
+            r["rate"],
+            r["text"],
+            r["id"],
+            "stress_batch_moderate",
+        )
         for r in baseline
     ]
     matches = pool.find_matching(keyword_re, neg_re=neg_re, max_rate=2)
@@ -230,17 +257,30 @@ def gen_moderate_batch_defect(pool: SourcePool) -> None:
     spike_end = spike_start + timedelta(days=10)
     spike_source = pool.take_sample(matches, 5)
     spike_reviews = [
-        RawReview(product_id, alloc_reviewer_id(), random_timestamp(spike_start, spike_end),
-                  r["rate"], r["text"], r["id"], "stress_batch_moderate")
+        RawReview(
+            product_id,
+            alloc_reviewer_id(),
+            random_timestamp(spike_start, spike_end),
+            r["rate"],
+            r["text"],
+            r["id"],
+            "stress_batch_moderate",
+        )
         for r in spike_source
     ]
     all_reviews.extend(baseline_reviews + spike_reviews)
     ground_truth[product_id] = {
-        "product_id": product_id, "pattern": "batch_defect", "is_control": False,
-        "difficulty": "moderate", "topic_keyword": "hinge_zipper", "keyword_regex": keyword_re,
-        "spike_target_count": 5, "spike_actual_count": len(spike_reviews),
+        "product_id": product_id,
+        "pattern": "batch_defect",
+        "is_control": False,
+        "difficulty": "moderate",
+        "topic_keyword": "hinge_zipper",
+        "keyword_regex": keyword_re,
+        "spike_target_count": 5,
+        "spike_actual_count": len(spike_reviews),
         "spike_available_matches": len(matches),
-        "planted_review_ids": [], "_planted_objs": spike_reviews,
+        "planted_review_ids": [],
+        "_planted_objs": spike_reviews,
     }
 
 
@@ -257,8 +297,15 @@ def gen_slow_trend(pool: SourcePool) -> None:
         start, end = week_range(week_idx)
         for r in pool.sample_diverse(n):
             baseline_reviews.append(
-                RawReview(product_id, alloc_reviewer_id(), random_timestamp(start, end),
-                          r["rate"], r["text"], r["id"], "stress_trend_slow")
+                RawReview(
+                    product_id,
+                    alloc_reviewer_id(),
+                    random_timestamp(start, end),
+                    r["rate"],
+                    r["text"],
+                    r["id"],
+                    "stress_trend_slow",
+                )
             )
     matches = pool.find_matching(keyword_re, neg_re=neg_re, max_rate=2)
     random.shuffle(matches)
@@ -269,20 +316,32 @@ def gen_slow_trend(pool: SourcePool) -> None:
     for phase_idx, target in enumerate(phase_targets):
         s = WINDOW_START + timedelta(weeks=phase_idx * 4)
         e = s + timedelta(weeks=4)
-        take = matches[cursor:cursor + target]
+        take = matches[cursor : cursor + target]
         cursor += len(take)
         pool.mark_used(take)
         for r in take:
             topic_reviews.append(
-                RawReview(product_id, alloc_reviewer_id(), random_timestamp(s, e),
-                          r["rate"], r["text"], r["id"], "stress_trend_slow")
+                RawReview(
+                    product_id,
+                    alloc_reviewer_id(),
+                    random_timestamp(s, e),
+                    r["rate"],
+                    r["text"],
+                    r["id"],
+                    "stress_trend_slow",
+                )
             )
         phase_actual.append(len(take))
     all_reviews.extend(baseline_reviews + topic_reviews)
     ground_truth[product_id] = {
-        "product_id": product_id, "pattern": "trend", "is_control": False,
-        "difficulty": "slow", "topic_keyword": "customer_service", "keyword_regex": keyword_re,
-        "phase_targets": phase_targets, "phase_actual_counts": phase_actual,
+        "product_id": product_id,
+        "pattern": "trend",
+        "is_control": False,
+        "difficulty": "slow",
+        "topic_keyword": "customer_service",
+        "keyword_regex": keyword_re,
+        "phase_targets": phase_targets,
+        "phase_actual_counts": phase_actual,
         "planted_review_ids": [r.reviewer_id for r in topic_reviews],
     }
 
@@ -294,8 +353,15 @@ def gen_small_campaign(pool: SourcePool) -> None:
     product_id = "STRESS-CAMPAIGN-SMALL"
     baseline = pool.sample_diverse(30)
     baseline_reviews = [
-        RawReview(product_id, alloc_reviewer_id(), random_timestamp(WINDOW_START, WINDOW_END_EXCLUSIVE),
-                  r["rate"], r["text"], r["id"], "stress_campaign_small")
+        RawReview(
+            product_id,
+            alloc_reviewer_id(),
+            random_timestamp(WINDOW_START, WINDOW_END_EXCLUSIVE),
+            r["rate"],
+            r["text"],
+            r["id"],
+            "stress_campaign_small",
+        )
         for r in baseline
     ]
     templates = pool.take_sample(pool.find_short_praise(), 2)
@@ -310,15 +376,26 @@ def gen_small_campaign(pool: SourcePool) -> None:
             rid = reviewer_pool[idx % 3]
             idx += 1
             burst_reviews.append(
-                RawReview(product_id, rid, random_timestamp(burst_start, burst_end),
-                          template["rate"], template["text"], template["id"], "stress_campaign_small")
+                RawReview(
+                    product_id,
+                    rid,
+                    random_timestamp(burst_start, burst_end),
+                    template["rate"],
+                    template["text"],
+                    template["id"],
+                    "stress_campaign_small",
+                )
             )
     all_reviews.extend(baseline_reviews + burst_reviews)
     ground_truth[product_id] = {
-        "product_id": product_id, "pattern": "fake_campaign", "is_control": False,
-        "difficulty": "small", "burst_review_count": len(burst_reviews),
+        "product_id": product_id,
+        "pattern": "fake_campaign",
+        "is_control": False,
+        "difficulty": "small",
+        "burst_review_count": len(burst_reviews),
         "reviewer_ids_used": reviewer_pool,
-        "burst_review_ids": [], "_burst_objs": burst_reviews,
+        "burst_review_ids": [],
+        "_burst_objs": burst_reviews,
     }
 
 
@@ -339,25 +416,42 @@ def gen_chronic_complaint_control(pool: SourcePool) -> None:
     cursor = 0
     for week_idx in range(N_WEEKS):
         s, e = week_range(week_idx)
-        take = matches[cursor:cursor + per_week]
+        take = matches[cursor : cursor + per_week]
         cursor += len(take)
         pool.mark_used(take)
         for r in take:
             reviews.append(
-                RawReview(product_id, alloc_reviewer_id(), random_timestamp(s, e),
-                          r["rate"], r["text"], r["id"], "stress_ctrl_chronic")
+                RawReview(
+                    product_id,
+                    alloc_reviewer_id(),
+                    random_timestamp(s, e),
+                    r["rate"],
+                    r["text"],
+                    r["id"],
+                    "stress_ctrl_chronic",
+                )
             )
     # plus diverse non-topic baseline
     baseline = pool.sample_diverse(20)
     for r in baseline:
         reviews.append(
-            RawReview(product_id, alloc_reviewer_id(), random_timestamp(WINDOW_START, WINDOW_END_EXCLUSIVE),
-                      r["rate"], r["text"], r["id"], "stress_ctrl_chronic")
+            RawReview(
+                product_id,
+                alloc_reviewer_id(),
+                random_timestamp(WINDOW_START, WINDOW_END_EXCLUSIVE),
+                r["rate"],
+                r["text"],
+                r["id"],
+                "stress_ctrl_chronic",
+            )
         )
     all_reviews.extend(reviews)
     ground_truth[product_id] = {
-        "product_id": product_id, "pattern": None, "is_control": True,
-        "difficulty": "ambiguous_chronic_complaint", "topic_keyword": "battery",
+        "product_id": product_id,
+        "pattern": None,
+        "is_control": True,
+        "difficulty": "ambiguous_chronic_complaint",
+        "topic_keyword": "battery",
         "note": "genuinely bad product, steady complaint rate, NOT a batch defect or a trend",
     }
 
@@ -371,8 +465,15 @@ def gen_organic_burst_control(pool: SourcePool) -> None:
     product_id = "STRESS-CTRL-ORGANIC-BURST"
     baseline = pool.sample_diverse(25)
     reviews = [
-        RawReview(product_id, alloc_reviewer_id(), random_timestamp(WINDOW_START, WINDOW_END_EXCLUSIVE),
-                  r["rate"], r["text"], r["id"], "stress_ctrl_organic_burst")
+        RawReview(
+            product_id,
+            alloc_reviewer_id(),
+            random_timestamp(WINDOW_START, WINDOW_END_EXCLUSIVE),
+            r["rate"],
+            r["text"],
+            r["id"],
+            "stress_ctrl_organic_burst",
+        )
         for r in baseline
     ]
     burst_start, _ = week_range(10)
@@ -380,15 +481,24 @@ def gen_organic_burst_control(pool: SourcePool) -> None:
     burst_source = pool.sample_diverse(9)  # a real burst, but every reviewer + text unique
     for r in burst_source:
         reviews.append(
-            RawReview(product_id, alloc_reviewer_id(), random_timestamp(burst_start, burst_end),
-                      r["rate"], r["text"], r["id"], "stress_ctrl_organic_burst")
+            RawReview(
+                product_id,
+                alloc_reviewer_id(),
+                random_timestamp(burst_start, burst_end),
+                r["rate"],
+                r["text"],
+                r["id"],
+                "stress_ctrl_organic_burst",
+            )
         )
     all_reviews.extend(reviews)
     ground_truth[product_id] = {
-        "product_id": product_id, "pattern": None, "is_control": True,
+        "product_id": product_id,
+        "pattern": None,
+        "is_control": True,
         "difficulty": "ambiguous_organic_burst",
         "note": "9 reviews in 48h from 9 unique reviewers, 9 unique texts -- a real flash-sale-"
-                "shaped spike, not coordination",
+        "shaped spike, not coordination",
     }
 
 
@@ -401,22 +511,38 @@ def gen_popular_similar_control(pool: SourcePool) -> None:
     short_praise_pool = pool.find_short_praise()
     chosen = pool.take_sample(short_praise_pool, 25)
     reviews = [
-        RawReview(product_id, alloc_reviewer_id(), random_timestamp(WINDOW_START, WINDOW_END_EXCLUSIVE),
-                  r["rate"], r["text"], r["id"], "stress_ctrl_popular_similar")
+        RawReview(
+            product_id,
+            alloc_reviewer_id(),
+            random_timestamp(WINDOW_START, WINDOW_END_EXCLUSIVE),
+            r["rate"],
+            r["text"],
+            r["id"],
+            "stress_ctrl_popular_similar",
+        )
         for r in chosen
     ]
     diverse = pool.sample_diverse(20)
     for r in diverse:
         reviews.append(
-            RawReview(product_id, alloc_reviewer_id(), random_timestamp(WINDOW_START, WINDOW_END_EXCLUSIVE),
-                      r["rate"], r["text"], r["id"], "stress_ctrl_popular_similar")
+            RawReview(
+                product_id,
+                alloc_reviewer_id(),
+                random_timestamp(WINDOW_START, WINDOW_END_EXCLUSIVE),
+                r["rate"],
+                r["text"],
+                r["id"],
+                "stress_ctrl_popular_similar",
+            )
         )
     all_reviews.extend(reviews)
     ground_truth[product_id] = {
-        "product_id": product_id, "pattern": None, "is_control": True,
+        "product_id": product_id,
+        "pattern": None,
+        "is_control": True,
         "difficulty": "ambiguous_popular_similar",
         "note": "45 reviews incl. 25 organic short-praise texts (unique reviewers, spread over "
-                "16 weeks, no timing burst) -- textually repetitive but not coordinated",
+        "16 weeks, no timing burst) -- textually repetitive but not coordinated",
     }
 
 
@@ -432,8 +558,15 @@ def gen_organic_burst_similar_text_control(pool: SourcePool) -> None:
     product_id = "STRESS-CTRL-ORGANIC-BURST-SIMILAR-TEXT"
     baseline = pool.sample_diverse(22)
     reviews = [
-        RawReview(product_id, alloc_reviewer_id(), random_timestamp(WINDOW_START, WINDOW_END_EXCLUSIVE),
-                  r["rate"], r["text"], r["id"], "stress_ctrl_organic_burst_similar_text")
+        RawReview(
+            product_id,
+            alloc_reviewer_id(),
+            random_timestamp(WINDOW_START, WINDOW_END_EXCLUSIVE),
+            r["rate"],
+            r["text"],
+            r["id"],
+            "stress_ctrl_organic_burst_similar_text",
+        )
         for r in baseline
     ]
     burst_start, _ = week_range(13)
@@ -441,17 +574,26 @@ def gen_organic_burst_similar_text_control(pool: SourcePool) -> None:
     burst_source = pool.take_sample(pool.find_short_praise(), 11)
     for r in burst_source:
         reviews.append(
-            RawReview(product_id, alloc_reviewer_id(), random_timestamp(burst_start, burst_end),
-                      r["rate"], r["text"], r["id"], "stress_ctrl_organic_burst_similar_text")
+            RawReview(
+                product_id,
+                alloc_reviewer_id(),
+                random_timestamp(burst_start, burst_end),
+                r["rate"],
+                r["text"],
+                r["id"],
+                "stress_ctrl_organic_burst_similar_text",
+            )
         )
     all_reviews.extend(reviews)
     ground_truth[product_id] = {
-        "product_id": product_id, "pattern": None, "is_control": True,
+        "product_id": product_id,
+        "pattern": None,
+        "is_control": True,
         "difficulty": "ambiguous_organic_burst_similar_text",
         "note": f"{len(burst_source)} reviews in a real 48h burst window, each from a unique "
-                "reviewer, each independently short-praise text (similar tone/length, not "
-                "coordinated) -- the hardest control: a genuine timing burst COMBINED with "
-                "textually similar-sounding reviews, with zero actual coordination.",
+        "reviewer, each independently short-praise text (similar tone/length, not "
+        "coordinated) -- the hardest control: a genuine timing burst COMBINED with "
+        "textually similar-sounding reviews, with zero actual coordination.",
     }
 
 
@@ -470,8 +612,15 @@ def gen_rising_positive_trend(pool: SourcePool) -> None:
         start, end = week_range(week_idx)
         for r in pool.sample_diverse(n):
             baseline_reviews.append(
-                RawReview(product_id, alloc_reviewer_id(), random_timestamp(start, end),
-                          r["rate"], r["text"], r["id"], "stress_trend_positive")
+                RawReview(
+                    product_id,
+                    alloc_reviewer_id(),
+                    random_timestamp(start, end),
+                    r["rate"],
+                    r["text"],
+                    r["id"],
+                    "stress_trend_positive",
+                )
             )
     matches = pool.find_matching(keyword_re, neg_re=pos_re, min_rate=4)
     random.shuffle(matches)
@@ -482,21 +631,33 @@ def gen_rising_positive_trend(pool: SourcePool) -> None:
     for phase_idx, target in enumerate(phase_targets):
         s = WINDOW_START + timedelta(weeks=phase_idx * 4)
         e = s + timedelta(weeks=4)
-        take = matches[cursor:cursor + target]
+        take = matches[cursor : cursor + target]
         cursor += len(take)
         pool.mark_used(take)
         for r in take:
             topic_reviews.append(
-                RawReview(product_id, alloc_reviewer_id(), random_timestamp(s, e),
-                          r["rate"], r["text"], r["id"], "stress_trend_positive")
+                RawReview(
+                    product_id,
+                    alloc_reviewer_id(),
+                    random_timestamp(s, e),
+                    r["rate"],
+                    r["text"],
+                    r["id"],
+                    "stress_trend_positive",
+                )
             )
         phase_actual.append(len(take))
     all_reviews.extend(baseline_reviews + topic_reviews)
     ground_truth[product_id] = {
-        "product_id": product_id, "pattern": "trend", "is_control": False,
-        "difficulty": "rising_positive", "topic_keyword": "warranty_support",
-        "keyword_regex": keyword_re, "trend_polarity": "positive",
-        "phase_targets": phase_targets, "phase_actual_counts": phase_actual,
+        "product_id": product_id,
+        "pattern": "trend",
+        "is_control": False,
+        "difficulty": "rising_positive",
+        "topic_keyword": "warranty_support",
+        "keyword_regex": keyword_re,
+        "trend_polarity": "positive",
+        "phase_targets": phase_targets,
+        "phase_actual_counts": phase_actual,
         "planted_review_ids": [r.reviewer_id for r in topic_reviews],
     }
 
@@ -521,15 +682,26 @@ def gen_aggregate_negative_drift(pool: SourcePool) -> None:
         pos = pool.sample_by_rating(n_pos, min_rate=4)
         for r in neg + pos:
             reviews.append(
-                RawReview(product_id, alloc_reviewer_id(), random_timestamp(s, e),
-                          r["rate"], r["text"], r["id"], "stress_trend_aggregate_drift")
+                RawReview(
+                    product_id,
+                    alloc_reviewer_id(),
+                    random_timestamp(s, e),
+                    r["rate"],
+                    r["text"],
+                    r["id"],
+                    "stress_trend_aggregate_drift",
+                )
             )
     all_reviews.extend(reviews)
     ground_truth[product_id] = {
-        "product_id": product_id, "pattern": "trend", "is_control": False,
-        "difficulty": "aggregate_drift", "trend_polarity": "negative",
+        "product_id": product_id,
+        "pattern": "trend",
+        "is_control": False,
+        "difficulty": "aggregate_drift",
+        "trend_polarity": "negative",
         "trend_scope": "aggregate",
-        "phase_neg_target": phase_neg_target, "phase_pos_target": phase_pos_target,
+        "phase_neg_target": phase_neg_target,
+        "phase_pos_target": phase_pos_target,
         "note": "no single topic dominates -- only the aggregate scan should catch this",
     }
 
@@ -554,15 +726,24 @@ def gen_random_fluctuation_control(pool: SourcePool) -> None:
         pos = pool.sample_by_rating(n_pos, min_rate=4)
         for r in neg + pos:
             reviews.append(
-                RawReview(product_id, alloc_reviewer_id(), random_timestamp(s, e),
-                          r["rate"], r["text"], r["id"], "stress_ctrl_random_fluctuation")
+                RawReview(
+                    product_id,
+                    alloc_reviewer_id(),
+                    random_timestamp(s, e),
+                    r["rate"],
+                    r["text"],
+                    r["id"],
+                    "stress_ctrl_random_fluctuation",
+                )
             )
     all_reviews.extend(reviews)
     ground_truth[product_id] = {
-        "product_id": product_id, "pattern": None, "is_control": True,
+        "product_id": product_id,
+        "pattern": None,
+        "is_control": True,
         "difficulty": "ambiguous_random_fluctuation",
         "note": "negative-review share bounces up/down across phases (no sustained direction) "
-                "-- neither batch_defect, trend, nor campaign should fire",
+        "-- neither batch_defect, trend, nor campaign should fire",
     }
 
 
@@ -592,7 +773,9 @@ def main() -> None:
     with REVIEWS_PATH.open(encoding="utf-8") as f:
         for line in f:
             rec = json.loads(line)
-            id_by_identity[(rec["product_id"], rec["timestamp"], rec["source_review_id"])] = rec["review_id"]
+            id_by_identity[(rec["product_id"], rec["timestamp"], rec["source_review_id"])] = rec[
+                "review_id"
+            ]
 
     for pid, entry in ground_truth.items():
         for key in ("_planted_objs", "_burst_objs"):
@@ -628,7 +811,9 @@ def main() -> None:
     print(f"Wrote {len(all_reviews)} reviews to {REVIEWS_PATH}")
     print(f"Wrote ground truth for {len(ground_truth)} products to {GT_PATH}")
     for pid, e in ground_truth.items():
-        print(f"  {pid}: pattern={e['pattern']} is_control={e['is_control']} difficulty={e['difficulty']}")
+        print(
+            f"  {pid}: pattern={e['pattern']} is_control={e['is_control']} difficulty={e['difficulty']}"
+        )
 
 
 if __name__ == "__main__":

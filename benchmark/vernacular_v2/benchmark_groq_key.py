@@ -79,4 +79,6 @@ def load_benchmark_groq_key() -> str:
 
 if __name__ == "__main__":
     key = load_benchmark_groq_key()
-    print(f"OK — dedicated benchmark key loaded ({key[:8]}...{key[-4:]}), verified distinct from prod's.")
+    print(
+        f"OK — dedicated benchmark key loaded ({key[:8]}...{key[-4:]}), verified distinct from prod's."
+    )

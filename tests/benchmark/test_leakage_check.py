@@ -97,7 +97,7 @@ def test_check_report_counts(temp_fixture_dir: Path) -> None:
     checker = LeakageChecker.from_eval_dir(temp_fixture_dir)
     candidates = [
         {"id": "c1", "text": "Battery backup is great, loved the product!"},  # LEAKED
-        {"id": "c2", "text": "This is a completely fresh review text."},       # clean
+        {"id": "c2", "text": "This is a completely fresh review text."},  # clean
         {"id": "c3", "text": "Product arrived damaged. Terrible packaging."},  # LEAKED
     ]
     report = checker.check(candidates)  # type: ignore[arg-type]

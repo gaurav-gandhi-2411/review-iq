@@ -68,7 +68,11 @@ def _to_label_helper_schema(rec: dict, slice_name: str) -> dict:
 
 def main() -> None:
     random.seed(SEED)
-    candidates = [json.loads(line) for line in CANDIDATES_PATH.read_text(encoding="utf-8").splitlines() if line.strip()]
+    candidates = [
+        json.loads(line)
+        for line in CANDIDATES_PATH.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
 
     prod_hien = [r for r in candidates if r["detection_method"] == "prod_detector_hi-en"]
     broader = [r for r in candidates if r["detection_method"] == "broader_sweep_only"]
@@ -76,7 +80,11 @@ def main() -> None:
     sample_hien = random.sample(prod_hien, min(N_HIEN_PROD, len(prod_hien)))
     sample_broader = random.sample(broader, min(N_BROADER_SWEEP, len(broader)))
 
-    all_classified = [json.loads(line) for line in CLASSIFIED_PATH.read_text(encoding="utf-8").splitlines() if line.strip()]
+    all_classified = [
+        json.loads(line)
+        for line in CLASSIFIED_PATH.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
     en_pool = [r for r in all_classified if r["detected_language"] == "en"]
     sample_en = random.sample(en_pool, min(N_EN_CONTROL, len(en_pool)))
 

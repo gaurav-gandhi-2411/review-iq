@@ -156,7 +156,9 @@ def main() -> None:
     print(f"caught (true positives): {results['true_positives']}")
     print(f"missed (false negatives): {results['false_negatives']}")
     print(f"false positives (any non-trend-planted product flagged): {results['false_positives']}")
-    print(f"  of which batch-defect discrimination check: {results['batch_defect_false_positives']}")
+    print(
+        f"  of which batch-defect discrimination check: {results['batch_defect_false_positives']}"
+    )
     print(f"true negatives: {results['true_negatives_count']}")
     print(f"precision: {_fmt(results['precision'])}")
     print(f"recall: {_fmt(results['recall'])}")

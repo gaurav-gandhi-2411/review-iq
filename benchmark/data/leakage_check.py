@@ -10,6 +10,7 @@ Usage:
     checker = LeakageChecker.from_eval_dir(Path("eval"))
     result = checker.check(candidates)   # returns LeakageReport
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -134,9 +135,7 @@ class LeakageChecker:
             text = str(cand.get("text", ""))
             source = self.is_leaked(text)
             if source:
-                report.leaked.append(
-                    {"id": cid, "text_preview": text[:120], "source": source}
-                )
+                report.leaked.append({"id": cid, "text_preview": text[:120], "source": source})
             else:
                 report.clean.append(cid)
         return report

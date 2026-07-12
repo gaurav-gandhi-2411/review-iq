@@ -180,9 +180,7 @@ class TestShopifyInstallationsRLS:
     # INSERT block — mechanism is RLS (no INSERT policy), NOT grant layer
     # ------------------------------------------------------------------
 
-    def test_authenticated_same_org_insert_blocked_by_rls(
-        self, org_ids: tuple[str, str]
-    ) -> None:
+    def test_authenticated_same_org_insert_blocked_by_rls(self, org_ids: tuple[str, str]) -> None:
         """authenticated INSERT is blocked by RLS even for same-org rows.
 
         Supabase DEFAULT PRIVILEGES grant INSERT to authenticated, so this is NOT
@@ -212,9 +210,7 @@ class TestShopifyInstallationsRLS:
         finally:
             conn.close()
 
-    def test_authenticated_cross_org_insert_blocked_by_rls(
-        self, org_ids: tuple[str, str]
-    ) -> None:
+    def test_authenticated_cross_org_insert_blocked_by_rls(self, org_ids: tuple[str, str]) -> None:
         """Cross-org INSERT (org A session, org B's org_id) is also blocked by RLS.
 
         Same mechanism as same-org block: no INSERT policy for authenticated role.
@@ -226,7 +222,7 @@ class TestShopifyInstallationsRLS:
         conn = _conn()
         try:
             cur = conn.cursor()
-            _set_tenant(cur, org_a)       # authenticated as org A
+            _set_tenant(cur, org_a)  # authenticated as org A
             with pytest.raises(psycopg2.errors.InsufficientPrivilege) as exc_info:
                 cur.execute(
                     "INSERT INTO public.shopify_installations (org_id, shop_domain, access_token_enc) "
@@ -266,9 +262,7 @@ class TestShopifyInstallationsRLS:
             "service-role must see both installs for webhook routing"
         )
 
-    def test_shop_domain_unique_prevents_duplicate_stores(
-        self, org_ids: tuple[str, str]
-    ) -> None:
+    def test_shop_domain_unique_prevents_duplicate_stores(self, org_ids: tuple[str, str]) -> None:
         """A second service-role INSERT with the same shop_domain must raise UniqueViolation.
 
         UNIQUE(shop_domain) is the anti-ambiguity gate that makes webhook routing
@@ -385,9 +379,7 @@ class TestShopifyInstallationsRLS:
                 "SELECT COUNT(*) FROM public.extractions WHERE input_hash = %s",
                 (extraction_hash,),
             )
-            assert cur.fetchone()[0] == 0, (
-                "org B must NOT see org A's Shopify-ingested extraction"
-            )
+            assert cur.fetchone()[0] == 0, "org B must NOT see org A's Shopify-ingested extraction"
         finally:
             conn.close()
 
@@ -396,9 +388,7 @@ class TestShopifyInstallationsRLS:
         conn = _conn()
         try:
             cur = conn.cursor()
-            cur.execute(
-                "DELETE FROM public.extractions WHERE input_hash = %s", (extraction_hash,)
-            )
+            cur.execute("DELETE FROM public.extractions WHERE input_hash = %s", (extraction_hash,))
             conn.commit()
         finally:
             conn.close()

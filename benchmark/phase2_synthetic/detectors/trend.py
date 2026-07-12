@@ -411,9 +411,7 @@ def _scan_aggregate_polarity(
         "phase_ratios": [round(r, 3) for r in ratios],
         "phase_totals": phase_total,
         "phase_match_counts": phase_match,
-        "phase_windows": [
-            {"start": w[0].isoformat(), "end": w[1].isoformat()} for w in windows
-        ],
+        "phase_windows": [{"start": w[0].isoformat(), "end": w[1].isoformat()} for w in windows],
         "correlation": round(correlation, 3),
         "first_phase_ratio": round(ratios[0], 3),
         "last_phase_ratio": round(ratios[-1], 3),
@@ -455,16 +453,34 @@ def scan_for_trends(
 
         flags.extend(
             _scan_topic_polarity(
-                product_id, product_records, min_ts, width_seconds, windows, n_phases,
-                NEGATIVE_SENTIMENTS, "topic_negative", min_total_mentions,
-                correlation_threshold, min_rise, rise_saturation,
+                product_id,
+                product_records,
+                min_ts,
+                width_seconds,
+                windows,
+                n_phases,
+                NEGATIVE_SENTIMENTS,
+                "topic_negative",
+                min_total_mentions,
+                correlation_threshold,
+                min_rise,
+                rise_saturation,
             )
         )
         flags.extend(
             _scan_topic_polarity(
-                product_id, product_records, min_ts, width_seconds, windows, n_phases,
-                POSITIVE_SENTIMENTS, "topic_positive", min_total_mentions,
-                correlation_threshold, min_rise, rise_saturation,
+                product_id,
+                product_records,
+                min_ts,
+                width_seconds,
+                windows,
+                n_phases,
+                POSITIVE_SENTIMENTS,
+                "topic_positive",
+                min_total_mentions,
+                correlation_threshold,
+                min_rise,
+                rise_saturation,
             )
         )
         for sentiment_set, trend_type in (
@@ -472,8 +488,14 @@ def scan_for_trends(
             (POSITIVE_SENTIMENTS, "aggregate_positive"),
         ):
             agg_flag = _scan_aggregate_polarity(
-                product_id, product_records, min_ts, width_seconds, windows, n_phases,
-                sentiment_set, trend_type,
+                product_id,
+                product_records,
+                min_ts,
+                width_seconds,
+                windows,
+                n_phases,
+                sentiment_set,
+                trend_type,
             )
             if agg_flag is not None:
                 flags.append(agg_flag)

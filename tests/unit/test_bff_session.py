@@ -339,9 +339,7 @@ async def test_bff_account_response_has_no_key_fields(
     )
 
     async with httpx.AsyncClient(
-        transport=httpx.ASGITransport(
-            app=_make_bff_app()
-        ),
+        transport=httpx.ASGITransport(app=_make_bff_app()),
         base_url="http://test",
     ) as c:
         resp = await c.get("/bff/account")

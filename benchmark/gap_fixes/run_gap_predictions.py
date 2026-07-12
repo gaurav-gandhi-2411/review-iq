@@ -30,7 +30,9 @@ from benchmark.vernacular_v2.benchmark_groq_key import load_benchmark_groq_key  
 
 _benchmark_key = load_benchmark_groq_key()
 os.environ["GROQ_API_KEY"] = _benchmark_key
-print(f"Using dedicated benchmark Groq key ({_benchmark_key[:8]}...{_benchmark_key[-4:]}) — isolated from prod.")
+print(
+    f"Using dedicated benchmark Groq key ({_benchmark_key[:8]}...{_benchmark_key[-4:]}) — isolated from prod."
+)
 
 import asyncio  # noqa: E402
 import json  # noqa: E402
@@ -79,13 +81,17 @@ async def main(out_name: str, candidates_name: str) -> None:
     # not review_iq.predict(), the import still triggers that module-level reassign.
     import benchmark.systems.review_iq  # noqa: F401
 
-    cassette_module.CASSETTES_PATH = ROOT / "benchmark" / "gap_fixes" / f"cassettes_{out_name.replace('.jsonl', '')}.json"
+    cassette_module.CASSETTES_PATH = (
+        ROOT / "benchmark" / "gap_fixes" / f"cassettes_{out_name.replace('.jsonl', '')}.json"
+    )
 
     out_path = ROOT / "benchmark" / "gap_fixes" / out_name
     candidates_path = ROOT / "benchmark" / "gap_fixes" / candidates_name
 
     candidates = [
-        json.loads(line) for line in candidates_path.read_text(encoding="utf-8").splitlines() if line.strip()
+        json.loads(line)
+        for line in candidates_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
     ]
 
     existing: dict[str, dict] = {}
@@ -130,7 +136,9 @@ async def main(out_name: str, candidates_name: str) -> None:
             )
             if err:
                 status = f"ERROR: {err[:80]}"
-            print(f"  [{i}/{len(candidates)}] {cand['id']} ({cand['gap']}): {status}  {latency_ms}ms")
+            print(
+                f"  [{i}/{len(candidates)}] {cand['id']} ({cand['gap']}): {status}  {latency_ms}ms"
+            )
             await asyncio.sleep(DELAY_SECONDS)
 
     print(f"\nDone. Total: {len(results)}  Written: {out_path.relative_to(ROOT)}")
@@ -138,7 +146,9 @@ async def main(out_name: str, candidates_name: str) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--out", required=True, help="Output filename, e.g. predictions_baseline.jsonl")
+    parser.add_argument(
+        "--out", required=True, help="Output filename, e.g. predictions_baseline.jsonl"
+    )
     parser.add_argument("--candidates", default="candidates.jsonl", help="Candidates filename")
     args = parser.parse_args()
     asyncio.run(main(args.out, args.candidates))

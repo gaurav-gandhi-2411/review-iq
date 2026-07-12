@@ -62,8 +62,13 @@ async def test_high_urgency_sends_one_alert() -> None:
     with (
         patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=False)),
         patch("app.core.alerts.engine.get_preference_pg", MagicMock(return_value=None)),
-        patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)) as mock_record,
-        patch("app.core.alerts.engine.get_org_notification_email_pg", MagicMock(return_value="seller@example.com")),
+        patch(
+            "app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)
+        ) as mock_record,
+        patch(
+            "app.core.alerts.engine.get_org_notification_email_pg",
+            MagicMock(return_value="seller@example.com"),
+        ),
     ):
         await evaluate_and_alert(
             org_id="org1",
@@ -92,14 +97,24 @@ async def test_precomputed_events_bypasses_internal_rule_computation() -> None:
     precomputed = [
         AlertEvent(
             event_type=AlertEventType.BATCH_DEFECT,
-            details={"product_id": "Widget", "topic": "battery", "confidence": 0.82, "evidence": {}},
+            details={
+                "product_id": "Widget",
+                "topic": "battery",
+                "confidence": 0.82,
+                "evidence": {},
+            },
         )
     ]
     with (
         patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=False)),
         patch("app.core.alerts.engine.get_preference_pg", MagicMock(return_value=None)),
-        patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)) as mock_record,
-        patch("app.core.alerts.engine.get_org_notification_email_pg", MagicMock(return_value="seller@example.com")),
+        patch(
+            "app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)
+        ) as mock_record,
+        patch(
+            "app.core.alerts.engine.get_org_notification_email_pg",
+            MagicMock(return_value="seller@example.com"),
+        ),
     ):
         result = await evaluate_and_alert(
             org_id="org1",
@@ -124,12 +139,19 @@ async def test_precomputed_events_still_deduped_via_alert_log() -> None:
     from app.core.alerts.rules import AlertEvent
 
     fake = FakeChannel()
-    precomputed = [AlertEvent(event_type=AlertEventType.FAKE_CAMPAIGN, details={"product_id": "Widget"})]
+    precomputed = [
+        AlertEvent(event_type=AlertEventType.FAKE_CAMPAIGN, details={"product_id": "Widget"})
+    ]
     with (
         patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=True)),
         patch("app.core.alerts.engine.get_preference_pg", MagicMock(return_value=None)),
-        patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)) as mock_record,
-        patch("app.core.alerts.engine.get_org_notification_email_pg", MagicMock(return_value="seller@example.com")),
+        patch(
+            "app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)
+        ) as mock_record,
+        patch(
+            "app.core.alerts.engine.get_org_notification_email_pg",
+            MagicMock(return_value="seller@example.com"),
+        ),
     ):
         result = await evaluate_and_alert(
             org_id="org1",
@@ -149,8 +171,13 @@ async def test_duplicate_review_not_alerted_twice() -> None:
     with (
         patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=True)),
         patch("app.core.alerts.engine.get_preference_pg", MagicMock(return_value=None)),
-        patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)) as mock_record,
-        patch("app.core.alerts.engine.get_org_notification_email_pg", MagicMock(return_value="seller@example.com")),
+        patch(
+            "app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)
+        ) as mock_record,
+        patch(
+            "app.core.alerts.engine.get_org_notification_email_pg",
+            MagicMock(return_value="seller@example.com"),
+        ),
     ):
         await evaluate_and_alert(
             org_id="org1",
@@ -172,10 +199,19 @@ async def test_disabled_event_type_not_alerted() -> None:
         patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=False)),
         patch(
             "app.core.alerts.engine.get_preference_pg",
-            MagicMock(return_value={"event_type": "high_urgency", "enabled": False, "frequency": "immediate"}),
+            MagicMock(
+                return_value={
+                    "event_type": "high_urgency",
+                    "enabled": False,
+                    "frequency": "immediate",
+                }
+            ),
         ),
         patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)),
-        patch("app.core.alerts.engine.get_org_notification_email_pg", MagicMock(return_value="seller@example.com")),
+        patch(
+            "app.core.alerts.engine.get_org_notification_email_pg",
+            MagicMock(return_value="seller@example.com"),
+        ),
     ):
         await evaluate_and_alert(
             org_id="org1",
@@ -196,10 +232,21 @@ async def test_daily_digest_frequency_skips_immediate_send() -> None:
         patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=False)),
         patch(
             "app.core.alerts.engine.get_preference_pg",
-            MagicMock(return_value={"event_type": "high_urgency", "enabled": True, "frequency": "daily_digest"}),
+            MagicMock(
+                return_value={
+                    "event_type": "high_urgency",
+                    "enabled": True,
+                    "frequency": "daily_digest",
+                }
+            ),
         ),
-        patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)) as mock_record,
-        patch("app.core.alerts.engine.get_org_notification_email_pg", MagicMock(return_value="seller@example.com")),
+        patch(
+            "app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)
+        ) as mock_record,
+        patch(
+            "app.core.alerts.engine.get_org_notification_email_pg",
+            MagicMock(return_value="seller@example.com"),
+        ),
     ):
         await evaluate_and_alert(
             org_id="org1",
@@ -221,7 +268,10 @@ async def test_likely_fake_sends_alert() -> None:
         patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=False)),
         patch("app.core.alerts.engine.get_preference_pg", MagicMock(return_value=None)),
         patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)),
-        patch("app.core.alerts.engine.get_org_notification_email_pg", MagicMock(return_value="seller@example.com")),
+        patch(
+            "app.core.alerts.engine.get_org_notification_email_pg",
+            MagicMock(return_value="seller@example.com"),
+        ),
     ):
         await evaluate_and_alert(
             org_id="org1",
@@ -240,10 +290,15 @@ async def test_likely_fake_sends_alert() -> None:
 async def test_high_urgency_and_likely_fake_both_fire() -> None:
     fake = FakeChannel()
     with (
-        patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(side_effect=[False, False])),
+        patch(
+            "app.core.alerts.engine.is_already_alerted_pg", MagicMock(side_effect=[False, False])
+        ),
         patch("app.core.alerts.engine.get_preference_pg", MagicMock(side_effect=[None, None])),
         patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)),
-        patch("app.core.alerts.engine.get_org_notification_email_pg", MagicMock(return_value="seller@example.com")),
+        patch(
+            "app.core.alerts.engine.get_org_notification_email_pg",
+            MagicMock(return_value="seller@example.com"),
+        ),
     ):
         await evaluate_and_alert(
             org_id="org1",
@@ -266,7 +321,9 @@ async def test_no_recipient_email_no_send() -> None:
         patch("app.core.alerts.engine.get_org_notification_email_pg", MagicMock(return_value=None)),
         patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=False)),
         patch("app.core.alerts.engine.get_preference_pg", MagicMock(return_value=None)),
-        patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)) as mock_record,
+        patch(
+            "app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)
+        ) as mock_record,
     ):
         await evaluate_and_alert(
             org_id="org1",
@@ -314,7 +371,10 @@ async def test_channel_error_does_not_propagate() -> None:
         patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=False)),
         patch("app.core.alerts.engine.get_preference_pg", MagicMock(return_value=None)),
         patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)),
-        patch("app.core.alerts.engine.get_org_notification_email_pg", MagicMock(return_value="seller@example.com")),
+        patch(
+            "app.core.alerts.engine.get_org_notification_email_pg",
+            MagicMock(return_value="seller@example.com"),
+        ),
     ):
         result = await evaluate_and_alert(
             org_id="org1",
@@ -335,7 +395,10 @@ async def test_message_subject_contains_event_info() -> None:
         patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=False)),
         patch("app.core.alerts.engine.get_preference_pg", MagicMock(return_value=None)),
         patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)),
-        patch("app.core.alerts.engine.get_org_notification_email_pg", MagicMock(return_value="seller@example.com")),
+        patch(
+            "app.core.alerts.engine.get_org_notification_email_pg",
+            MagicMock(return_value="seller@example.com"),
+        ),
     ):
         await evaluate_and_alert(
             org_id="org1",

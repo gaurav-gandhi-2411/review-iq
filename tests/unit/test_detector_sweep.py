@@ -195,9 +195,7 @@ async def test_below_threshold_flag_never_calls_evaluate_and_alert() -> None:
             "app.core.alerts.detector_sweep.list_dated_extractions_pg",
             return_value=weak_rows,
         ),
-        patch(
-            "app.core.alerts.detector_sweep.evaluate_and_alert", new=AsyncMock()
-        ) as mock_alert,
+        patch("app.core.alerts.detector_sweep.evaluate_and_alert", new=AsyncMock()) as mock_alert,
     ):
         result = await run_detector_sweep(MagicMock())
 

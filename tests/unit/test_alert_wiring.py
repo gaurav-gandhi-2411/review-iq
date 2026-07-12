@@ -145,7 +145,9 @@ async def test_high_urgency_extraction_fires_immediate_alert() -> None:
         patch("app.api.v2.extract.update_usage_tokens"),
         patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=False)),
         patch("app.core.alerts.engine.get_preference_pg", MagicMock(return_value=None)),
-        patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)) as mock_record,
+        patch(
+            "app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)
+        ) as mock_record,
         patch(
             "app.core.alerts.engine.get_org_notification_email_pg",
             MagicMock(return_value="seller@example.com"),
@@ -203,7 +205,9 @@ async def test_extraction_dedupe_holds() -> None:
         patch("app.api.v2.extract.update_usage_tokens"),
         patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=True)),
         patch("app.core.alerts.engine.get_preference_pg", MagicMock(return_value=None)),
-        patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)) as mock_record,
+        patch(
+            "app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)
+        ) as mock_record,
         patch(
             "app.core.alerts.engine.get_org_notification_email_pg",
             MagicMock(return_value="seller@example.com"),
@@ -294,8 +298,12 @@ def test_likely_fake_authenticity_fires_immediate_alert(client: TestClient) -> N
             "app.api.v2.authenticity.get_authenticity_audit_by_hash_pg",
             new=MagicMock(return_value=None),
         ),
-        patch("app.api.v2.authenticity.engine.score_single", new=AsyncMock(return_value=fake_result)),
-        patch("app.api.v2.authenticity.save_authenticity_audit_pg", new=MagicMock(return_value=None)),
+        patch(
+            "app.api.v2.authenticity.engine.score_single", new=AsyncMock(return_value=fake_result)
+        ),
+        patch(
+            "app.api.v2.authenticity.save_authenticity_audit_pg", new=MagicMock(return_value=None)
+        ),
         patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=False)),
         patch("app.core.alerts.engine.get_preference_pg", MagicMock(return_value=None)),
         patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)),
@@ -323,9 +331,12 @@ def test_genuine_authenticity_no_alert(client: TestClient) -> None:
             new=MagicMock(return_value=None),
         ),
         patch(
-            "app.api.v2.authenticity.engine.score_single", new=AsyncMock(return_value=genuine_result)
+            "app.api.v2.authenticity.engine.score_single",
+            new=AsyncMock(return_value=genuine_result),
         ),
-        patch("app.api.v2.authenticity.save_authenticity_audit_pg", new=MagicMock(return_value=None)),
+        patch(
+            "app.api.v2.authenticity.save_authenticity_audit_pg", new=MagicMock(return_value=None)
+        ),
         patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=False)),
         patch("app.core.alerts.engine.get_preference_pg", MagicMock(return_value=None)),
         patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)),
@@ -356,7 +367,9 @@ def test_authenticity_batch_fires_only_for_flagged_review(client: TestClient) ->
 
     with (
         patch("app.api.v2.authenticity.engine.score_batch", new=AsyncMock(return_value=results)),
-        patch("app.api.v2.authenticity.save_authenticity_audit_pg", new=MagicMock(return_value=None)),
+        patch(
+            "app.api.v2.authenticity.save_authenticity_audit_pg", new=MagicMock(return_value=None)
+        ),
         patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=False)),
         patch("app.core.alerts.engine.get_preference_pg", MagicMock(return_value=None)),
         patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)),
@@ -409,7 +422,9 @@ async def test_extraction_survives_channel_send_failure() -> None:
         patch("app.api.v2.extract.update_usage_tokens"),
         patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=False)),
         patch("app.core.alerts.engine.get_preference_pg", MagicMock(return_value=None)),
-        patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)) as mock_record,
+        patch(
+            "app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)
+        ) as mock_record,
         patch(
             "app.core.alerts.engine.get_org_notification_email_pg",
             MagicMock(return_value="seller@example.com"),
@@ -433,11 +448,17 @@ def test_authenticity_single_survives_channel_send_failure(client: TestClient) -
             "app.api.v2.authenticity.get_authenticity_audit_by_hash_pg",
             new=MagicMock(return_value=None),
         ),
-        patch("app.api.v2.authenticity.engine.score_single", new=AsyncMock(return_value=fake_result)),
-        patch("app.api.v2.authenticity.save_authenticity_audit_pg", new=MagicMock(return_value=None)),
+        patch(
+            "app.api.v2.authenticity.engine.score_single", new=AsyncMock(return_value=fake_result)
+        ),
+        patch(
+            "app.api.v2.authenticity.save_authenticity_audit_pg", new=MagicMock(return_value=None)
+        ),
         patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=False)),
         patch("app.core.alerts.engine.get_preference_pg", MagicMock(return_value=None)),
-        patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)) as mock_record,
+        patch(
+            "app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)
+        ) as mock_record,
         patch(
             "app.core.alerts.engine.get_org_notification_email_pg",
             MagicMock(return_value="seller@example.com"),
@@ -463,10 +484,14 @@ def test_authenticity_batch_survives_channel_send_failure(client: TestClient) ->
 
     with (
         patch("app.api.v2.authenticity.engine.score_batch", new=AsyncMock(return_value=results)),
-        patch("app.api.v2.authenticity.save_authenticity_audit_pg", new=MagicMock(return_value=None)),
+        patch(
+            "app.api.v2.authenticity.save_authenticity_audit_pg", new=MagicMock(return_value=None)
+        ),
         patch("app.core.alerts.engine.is_already_alerted_pg", MagicMock(return_value=False)),
         patch("app.core.alerts.engine.get_preference_pg", MagicMock(return_value=None)),
-        patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)) as mock_record,
+        patch(
+            "app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)
+        ) as mock_record,
         patch(
             "app.core.alerts.engine.get_org_notification_email_pg",
             MagicMock(return_value="seller@example.com"),

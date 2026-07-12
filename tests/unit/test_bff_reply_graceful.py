@@ -3,6 +3,7 @@
 The reply feature is the daily-value differentiator for the free tier.
 Its failure mode must feel intentional, not broken.
 """
+
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, patch
@@ -34,7 +35,9 @@ async def client() -> httpx.AsyncClient:
 
 
 @pytest.mark.asyncio
-async def test_reply_groq_capped_returns_503_with_friendly_message(client: httpx.AsyncClient) -> None:
+async def test_reply_groq_capped_returns_503_with_friendly_message(
+    client: httpx.AsyncClient,
+) -> None:
     """Groq quota exhausted → 503 with human-readable message, not stack trace."""
     from app.core.reply.engine import VernacularModelUnavailableError
 

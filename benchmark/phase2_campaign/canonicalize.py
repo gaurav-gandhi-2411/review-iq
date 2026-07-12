@@ -83,16 +83,17 @@ def _run_assertions() -> None:
         "Revital Men Multivitamin with Calcium, Zinc & Ginseng for Immunity, Strong Bones & "
         "Energy??(30 Capsules)",
         "Butterfly JADE Electric Rice Cooker??(1.8 L, White)",
-        "Green Home Reusable Latex Hand Gloves for Kitchen Black Wet and Dry Glove??"
-        "(Free Size)",
+        "Green Home Reusable Latex Hand Gloves for Kitchen Black Wet and Dry Glove??(Free Size)",
     ]
     canonical_keys = [canonical_product(n) for n in distinct_names]
     assert len(set(canonical_keys)) == len(distinct_names), (
         f"unrelated products collapsed: {canonical_keys}"
     )
 
-    print(f"assertions passed: {len(merge_pairs)} merge pairs, "
-          f"{len(distinct_names)} distinct products stayed distinct")
+    print(
+        f"assertions passed: {len(merge_pairs)} merge pairs, "
+        f"{len(distinct_names)} distinct products stayed distinct"
+    )
 
 
 def _validate_corpus(path: Path) -> dict[str, float | int]:
@@ -124,16 +125,16 @@ def main() -> None:
     on the full deduped corpus."""
     _run_assertions()
 
-    corpus_path = Path(__file__).resolve().parents[2] / "data" / "processed" / \
-        "flipkart_deduped.jsonl"
+    corpus_path = (
+        Path(__file__).resolve().parents[2] / "data" / "processed" / "flipkart_deduped.jsonl"
+    )
     stats = _validate_corpus(corpus_path)
     print("\ncanonicalization validation report")
     print(f"  raw distinct product_name values: {stats['n_raw_distinct_names']}")
     print(f"  distinct canonical keys:          {stats['n_canonical_keys']}")
     print(f"  canonical/raw ratio:              {stats['canonical_to_raw_ratio']}")
     if stats["canonical_to_raw_ratio"] < 0.4:
-        print("  WARNING: ratio below 0.4 -- possible over-merging, investigate before "
-              "proceeding")
+        print("  WARNING: ratio below 0.4 -- possible over-merging, investigate before proceeding")
 
 
 if __name__ == "__main__":

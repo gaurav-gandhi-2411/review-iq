@@ -73,9 +73,7 @@ TEXT_ENRICHMENT_MIN_EXPECTED = 0.3  # floor on the expected count, avoids blowup
 NO_TEXT_EVIDENCE_RATING_DISCOUNT = 0.5
 
 
-def _cluster_to_evidence(
-    cluster: ReviewCluster, enrichment: float | None = None
-) -> dict[str, Any]:
+def _cluster_to_evidence(cluster: ReviewCluster, enrichment: float | None = None) -> dict[str, Any]:
     """Convert a ReviewCluster into the flat evidence dict shape used in output records.
     `enrichment` (residual clusters only) shows the human reviewer WHY this cluster scored, not
     just its raw count -- a large cluster with low enrichment is base-rate noise, not evidence."""
@@ -90,7 +88,9 @@ def _cluster_to_evidence(
     return evidence
 
 
-def _cluster_enrichment(cluster: ReviewCluster, n_reviews: int, global_rates: dict[str, float]) -> float:
+def _cluster_enrichment(
+    cluster: ReviewCluster, n_reviews: int, global_rates: dict[str, float]
+) -> float:
     """How many times more often this cluster's phrase appears on this product than the
     corpus-wide base rate predicts, given this product's review volume. >1 = enriched here;
     <=1 = fully explained by the phrase just being common everywhere."""
@@ -118,7 +118,9 @@ def score_product(
         (_cluster_enrichment(c, n_reviews, global_rates) for c in breakdown.residual_clusters),
         default=0.0,
     )
-    text_signal = min(1.0, max(0.0, max_enrichment - 1.0) / (TEXT_ENRICHMENT_SATURATION_RATIO - 1.0))
+    text_signal = min(
+        1.0, max(0.0, max_enrichment - 1.0) / (TEXT_ENRICHMENT_SATURATION_RATIO - 1.0)
+    )
     rating_signal = (LOW_VARIANCE_WEIGHT if rating_stats.low_variance else 0.0) + (
         HIGH_BIMODALITY_WEIGHT if rating_stats.high_bimodality else 0.0
     )
@@ -247,9 +249,7 @@ def write_report(flagged: list[dict[str, Any]], path: Path, top_n: int = 25) -> 
         "",
     ]
     for i, record in enumerate(flagged[:top_n], start=1):
-        lines.append(
-            f"## {i}. confidence={record['confidence']} -- {record['canonical_product']}"
-        )
+        lines.append(f"## {i}. confidence={record['confidence']} -- {record['canonical_product']}")
         lines.append("")
         lines.append(f"- n_reviews: {record['n_reviews']}")
         lines.append(
@@ -304,8 +304,10 @@ def main() -> None:
     print(f"  products in output (reporting bar or residual cluster): {len(flagged)}")
     print(f"  of which confidence > {CONFIDENCE_REPORT_THRESHOLD}: {n_above_bar}")
     if confidences:
-        print(f"  confidence min/median/max: {min(confidences)} / "
-              f"{statistics.median(confidences)} / {max(confidences)}")
+        print(
+            f"  confidence min/median/max: {min(confidences)} / "
+            f"{statistics.median(confidences)} / {max(confidences)}"
+        )
         print("  histogram (0.1-wide buckets, lower bound inclusive):")
         for bucket in sorted(buckets):
             print(f"    [{bucket:.1f}, {bucket + 0.1:.1f}): {buckets[bucket]}")

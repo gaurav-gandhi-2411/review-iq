@@ -97,9 +97,7 @@ def build_interim_annotated(
     return annotated
 
 
-def evaluate(
-    flags: list[BatchDefectFlag], ground_truth: dict[str, Any]
-) -> dict[str, Any]:
+def evaluate(flags: list[BatchDefectFlag], ground_truth: dict[str, Any]) -> dict[str, Any]:
     """Compare flagged products against ground truth. Any flag on a product not labeled
     `pattern == "batch_defect"` and `is_control == False` counts as a false positive; a missed
     planted product counts as a false negative."""

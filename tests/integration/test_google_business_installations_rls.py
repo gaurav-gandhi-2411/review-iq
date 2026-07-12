@@ -188,9 +188,7 @@ class TestGoogleBusinessInstallationsRLS:
     # INSERT block — mechanism is RLS (no INSERT policy), NOT grant layer
     # ------------------------------------------------------------------
 
-    def test_authenticated_same_org_insert_blocked_by_rls(
-        self, org_ids: tuple[str, str]
-    ) -> None:
+    def test_authenticated_same_org_insert_blocked_by_rls(self, org_ids: tuple[str, str]) -> None:
         """authenticated INSERT is blocked by RLS even for same-org rows.
 
         The OAuth callback writes as service-role (postgres, no SET ROLE). Direct
@@ -207,7 +205,12 @@ class TestGoogleBusinessInstallationsRLS:
                     "INSERT INTO public.google_business_installations "
                     "(org_id, google_account_name, google_location_name, refresh_token_enc) "
                     "VALUES (%s, %s, %s, %s)",
-                    (org_a, "accounts/blocked", "accounts/blocked/locations/same-org", _FAKE_ENC_REFRESH_TOKEN),
+                    (
+                        org_a,
+                        "accounts/blocked",
+                        "accounts/blocked/locations/same-org",
+                        _FAKE_ENC_REFRESH_TOKEN,
+                    ),
                 )
             assert "row-level security policy" in str(exc_info.value), (
                 "Block must come from RLS (no INSERT policy), not the grant layer"
@@ -216,9 +219,7 @@ class TestGoogleBusinessInstallationsRLS:
         finally:
             conn.close()
 
-    def test_authenticated_cross_org_insert_blocked_by_rls(
-        self, org_ids: tuple[str, str]
-    ) -> None:
+    def test_authenticated_cross_org_insert_blocked_by_rls(self, org_ids: tuple[str, str]) -> None:
         """Cross-org INSERT (org A session, org B's org_id) is also blocked by RLS.
 
         Both attacks fail structurally — the block is not contingent on the org_id
@@ -229,13 +230,18 @@ class TestGoogleBusinessInstallationsRLS:
         conn = _conn()
         try:
             cur = conn.cursor()
-            _set_tenant(cur, org_a)       # authenticated as org A
+            _set_tenant(cur, org_a)  # authenticated as org A
             with pytest.raises(psycopg2.errors.InsufficientPrivilege) as exc_info:
                 cur.execute(
                     "INSERT INTO public.google_business_installations "
                     "(org_id, google_account_name, google_location_name, refresh_token_enc) "
                     "VALUES (%s, %s, %s, %s)",
-                    (org_b, "accounts/attack", "accounts/attack/locations/cross-org", _FAKE_ENC_REFRESH_TOKEN),
+                    (
+                        org_b,
+                        "accounts/attack",
+                        "accounts/attack/locations/cross-org",
+                        _FAKE_ENC_REFRESH_TOKEN,
+                    ),
                 )
             assert "row-level security policy" in str(exc_info.value), (
                 "Cross-org block must also be RLS, not grant-layer"
@@ -391,9 +397,7 @@ class TestGoogleBusinessInstallationsRLS:
                 "SELECT COUNT(*) FROM public.extractions WHERE input_hash = %s",
                 (extraction_hash,),
             )
-            assert cur.fetchone()[0] == 0, (
-                "org B must NOT see org A's GBP-ingested extraction"
-            )
+            assert cur.fetchone()[0] == 0, "org B must NOT see org A's GBP-ingested extraction"
         finally:
             conn.close()
 
@@ -402,9 +406,7 @@ class TestGoogleBusinessInstallationsRLS:
         conn = _conn()
         try:
             cur = conn.cursor()
-            cur.execute(
-                "DELETE FROM public.extractions WHERE input_hash = %s", (extraction_hash,)
-            )
+            cur.execute("DELETE FROM public.extractions WHERE input_hash = %s", (extraction_hash,))
             conn.commit()
         finally:
             conn.close()

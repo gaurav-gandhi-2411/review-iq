@@ -176,7 +176,9 @@ def _near_dup_score(reviews: list[Review]) -> float:
     return 1.0 - (n_clusters / len(long_reviews))
 
 
-def _cross_product_score(window_reviews: list[Review], reviewer_products: dict[str, set[str]]) -> float:
+def _cross_product_score(
+    window_reviews: list[Review], reviewer_products: dict[str, set[str]]
+) -> float:
     """Fraction of a burst window's DISTINCT reviewers who also appear elsewhere in the corpus
     under a different product_id -- a coordination-farm signature (the same accounts posting
     across multiple sellers' burst windows) that organic popularity has no reason to produce.
@@ -317,7 +319,9 @@ def score_burst_window(
     cross_product_score = 0.0
     if base_confidence > 0:
         cross_product_score = _cross_product_score(window.reviews, reviewer_products)
-    confidence = base_confidence + (1.0 - base_confidence) * CROSS_PRODUCT_BOOST_WEIGHT * cross_product_score
+    confidence = (
+        base_confidence + (1.0 - base_confidence) * CROSS_PRODUCT_BOOST_WEIGHT * cross_product_score
+    )
 
     return confidence, reviewer_concentration_score, text_dup_score, cross_product_score
 

@@ -224,7 +224,9 @@ async def _process_webhook_review(raw_body: bytes) -> None:
 
     if not review_name:
         log.warning(
-            "google_webhook.missing_review_name", location=location_name, org_id=installation["org_id"]
+            "google_webhook.missing_review_name",
+            location=location_name,
+            org_id=installation["org_id"],
         )
         return
 
@@ -270,9 +272,9 @@ async def _process_webhook_review(raw_body: bytes) -> None:
     # Synthetic context: webhook extractions don't consume quota or API key slots.
     ctx = ApiKeyContext(
         org_id=installation["org_id"],
-        api_key_id=None,          # no API key — system/webhook triggered
+        api_key_id=None,  # no API key — system/webhook triggered
         key_name="google_webhook",
-        usage_record_id="",       # "" → update_usage_tokens skipped in _run_extraction_v2
+        usage_record_id="",  # "" → update_usage_tokens skipped in _run_extraction_v2
     )
 
     req = ReviewRequest(text=row["text"])

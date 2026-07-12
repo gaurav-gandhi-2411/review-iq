@@ -42,14 +42,18 @@ class CSVSource:
     async def fetch_reviews(self) -> list[dict[str, str | float | None]]:
         """Delegate to read_and_validate_csv; re-raise validation errors as SourceError."""
         try:
-            rows, resolved_text, resolved_product, resolved_date, date_ambiguous = (
-                await read_and_validate_csv(
-                    self._file,
-                    self._text_column,
-                    self._product_column,
-                    self._date_column,
-                    self._date_format,
-                )
+            (
+                rows,
+                resolved_text,
+                resolved_product,
+                resolved_date,
+                date_ambiguous,
+            ) = await read_and_validate_csv(
+                self._file,
+                self._text_column,
+                self._product_column,
+                self._date_column,
+                self._date_format,
             )
         except (FileTooLargeError, RowLimitExceededError, CsvColumnError) as exc:
             raise SourceError(str(exc)) from exc
