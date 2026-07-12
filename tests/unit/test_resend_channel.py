@@ -123,3 +123,34 @@ async def test_no_list_unsubscribe_header_when_url_absent() -> None:
         await channel.send(_message(unsubscribe_url=None))
 
     assert "headers" not in mock_send.call_args[0][0]
+
+
+# ---------------------------------------------------------------------------
+# Regression: resend.Emails.SendResponse is a TypedDict (subclasses dict) at
+# real runtime, not an object -- attribute access on the response raises
+# AttributeError. The five tests above all mock the response as a MagicMock
+# with `.id` set as an attribute (`_fake_response()`), which is dict-UNlike
+# and never actually exercises this path -- they'd pass identically whether
+# send() reads the id via `.id` or `["id"]`, since none of them assert on the
+# response/log side at all. This test uses a real plain dict (`{"id": ...}`),
+# matching resend's actual TypedDict shape, and asserts on the post-send
+# state that a `.id` access would break.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_send_succeeds_with_real_dict_shaped_response() -> None:
+    """resend.Emails.send_async returns a TypedDict (a real dict at runtime),
+    not an object -- this uses a plain dict `{"id": ...}`, not a MagicMock, so
+    a `.id` attribute-access bug in send() would raise AttributeError here
+    exactly as it would against the real Resend SDK."""
+    with patch("app.core.alerts.channels.resend_channel.get_settings", return_value=_settings()):
+        channel = ResendChannel()
+
+    with patch(
+        "app.core.alerts.channels.resend_channel.resend.Emails.send_async",
+        new=AsyncMock(return_value={"id": "msg-123"}),
+    ):
+        await channel.send(_message())  # must not raise
+
+    assert channel.last_response == {"id": "msg-123"}
