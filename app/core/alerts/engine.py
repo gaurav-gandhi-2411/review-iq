@@ -97,7 +97,7 @@ def _format_body(
     elif event.event_type == AlertEventType.LIKELY_FAKE:
         lines.append("A review was flagged as likely inauthentic.")
         score = event.details.get("score")
-        if score is not None:
+        if isinstance(score, (int, float, str)):
             lines.append(f"Authenticity score: {float(score):.2f} (lower = more suspicious)")
         reasons = event.details.get("reasons")
         if reasons:
@@ -114,10 +114,11 @@ def _format_body(
     elif event.event_type == AlertEventType.TOPIC_SPIKE:
         topic = event.details.get("topic", "?")
         recent = event.details.get("recent_count", "?")
-        baseline = event.details.get("baseline", 0.0)
+        baseline_raw = event.details.get("baseline", 0.0)
+        baseline = float(baseline_raw) if isinstance(baseline_raw, (int, float, str)) else 0.0
         lines.append(
             f"The complaint topic '{topic}' has spiked: "
-            f"{recent} recent mentions vs a baseline of {float(baseline):.1f}."
+            f"{recent} recent mentions vs a baseline of {baseline:.1f}."
         )
 
     elif event.event_type == AlertEventType.BATCH_DEFECT:

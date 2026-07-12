@@ -35,7 +35,7 @@ class ResendChannel:
         from_header = (
             f"{self._from_name} <{self._from_email}>" if self._from_name else self._from_email
         )
-        params: resend.Emails.SendParams = {  # type: ignore[misc]
+        params: resend.Emails.SendParams = {
             "from": from_header,
             "to": [message.recipient_email],
             "subject": message.subject,
@@ -56,7 +56,7 @@ class ResendChannel:
             self.last_response = response
             log.info(
                 "resend.sent",
-                message_id=response.id,
+                message_id=response["id"],
                 recipient=message.recipient_email,
                 event_type=message.event.event_type,
                 org_id=message.org_id,
