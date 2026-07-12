@@ -14,9 +14,6 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from fastapi import HTTPException
-from fastapi.testclient import TestClient
-
 from app.api.shopify_auth import (
     _generate_state,
     _validate_shop,
@@ -24,6 +21,8 @@ from app.api.shopify_auth import (
     _verify_state,
 )
 from app.main import create_app
+from fastapi import HTTPException
+from fastapi.testclient import TestClient
 
 _CLIENT_SECRET = "test_client_secret_for_auth_tests"
 _ENC_KEY = "dGVzdC10ZXN0LXRlc3QtdGVzdC10ZXN0LXRlc3Q="  # 32-byte base64 placeholder

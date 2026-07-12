@@ -5,10 +5,10 @@ Its failure mode must feel intentional, not broken.
 """
 from __future__ import annotations
 
-import pytest
-import httpx
 from unittest.mock import AsyncMock, patch
 
+import httpx
+import pytest
 from app.auth.api_key import ApiKeyContext
 from app.auth.session import require_session
 from app.main import create_app
@@ -77,7 +77,8 @@ async def test_reply_runtime_error_also_returns_503_friendly(client: httpx.Async
 @pytest.mark.asyncio
 async def test_reply_success_returns_reply_text(client: httpx.AsyncClient) -> None:
     """Happy path: draft_reply returns a ReplyDraft → 200 with reply_text."""
-    from datetime import datetime, UTC
+    from datetime import UTC, datetime
+
     from app.core.reply.schema import ReplyDraft, ReplyTone
 
     mock_draft = ReplyDraft(

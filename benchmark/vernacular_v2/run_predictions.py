@@ -60,7 +60,6 @@ DELAY_SECONDS = 5
 
 async def main() -> None:
     import app.core.providers.cassette as cassette_module
-
     from benchmark.systems.review_iq import predict
 
     # Redirect the cassette path AFTER importing the predict() wrapper: importing

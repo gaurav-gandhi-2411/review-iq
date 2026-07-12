@@ -40,11 +40,11 @@ import base64
 import hashlib
 import hmac
 import json
-import structlog
 from typing import Any
 
 import psycopg2
 import psycopg2.errors
+import structlog
 from cryptography.fernet import Fernet, InvalidToken, MultiFernet
 from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Request, status
 

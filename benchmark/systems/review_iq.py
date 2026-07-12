@@ -11,7 +11,6 @@ The cassette path is overridden at import time so no eval/cassettes data is touc
 
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 

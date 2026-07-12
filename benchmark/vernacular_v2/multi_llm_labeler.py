@@ -61,13 +61,12 @@ _benchmark_groq_key = load_benchmark_groq_key()
 os.environ["GROQ_API_KEY"] = _benchmark_groq_key
 print(f"Using dedicated benchmark Groq key ({_benchmark_groq_key[:8]}...{_benchmark_groq_key[-4:]}) — isolated from prod.")
 
-from groq import AsyncGroq  # noqa: E402
-
 from benchmark.data.llm_labeler import (  # noqa: E402
     LABELING_SYSTEM_PROMPT,
     LABELING_USER_TEMPLATE,
     _parse_labels,
 )
+from groq import AsyncGroq  # noqa: E402
 
 CANDIDATES_PATH = ROOT / "benchmark" / "vernacular_v2" / "candidates.jsonl"
 SILVER_PATH = ROOT / "benchmark" / "vernacular_v2" / "silver_labels.jsonl"

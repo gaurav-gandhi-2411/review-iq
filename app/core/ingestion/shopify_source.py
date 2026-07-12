@@ -30,10 +30,10 @@ WHAT GG MUST SET UP (escalation items):
 from __future__ import annotations
 
 import json
-import structlog
 from typing import Any
 
 import httpx
+import structlog
 
 from app.core.ingestion.base import ReviewRow, SourceError
 

@@ -9,21 +9,19 @@ import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from fastapi.testclient import TestClient
-
-from app.core.ingestion.shopify_source import (
-    ShopifySource,
-    _fields_to_dict,
-    _node_to_review_row,
-    _parse_rating,
-)
 from app.api.webhooks.shopify import (
     _decrypt_token,
     _parse_webhook_payload,
     _verify_shopify_hmac,
     encrypt_token,
 )
-
+from app.core.ingestion.shopify_source import (
+    ShopifySource,
+    _fields_to_dict,
+    _node_to_review_row,
+    _parse_rating,
+)
+from fastapi.testclient import TestClient
 
 # ---------------------------------------------------------------------------
 # Field parsing helpers

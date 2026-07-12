@@ -9,9 +9,8 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from fastapi.testclient import TestClient
-
 from app.core.schemas import ReviewExtractionLLMOutput, Sentiment, Urgency
+from fastapi.testclient import TestClient
 
 _LLM_OUTPUT = ReviewExtractionLLMOutput(
     product="Rate Widget",
@@ -59,7 +58,7 @@ def test_demo_extract_cached_hit_counts_toward_limit(client: TestClient) -> None
         "app.api.demo.extract_with_llm",
         new=AsyncMock(return_value=(_LLM_OUTPUT, "mock-model", 10, 0, 0, False)),
     ):
-        for i in range(5):
+        for _i in range(5):
             resp = client.post("/demo/extract", json={"text": text})
             assert resp.status_code == 200
 

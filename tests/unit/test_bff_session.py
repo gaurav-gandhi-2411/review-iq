@@ -18,7 +18,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import pytest
 from app.auth.api_key import ApiKeyContext
-from app.auth.session import _lookup_and_record_for_session, require_session, require_session_read
+from app.auth.session import _lookup_and_record_for_session, require_session
 from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
 

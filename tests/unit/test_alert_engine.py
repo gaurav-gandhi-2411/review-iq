@@ -4,14 +4,12 @@ from datetime import UTC, datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from app.core.alerts.channels.base import ChannelError
 from app.core.alerts.channels.fake import FakeChannel
 from app.core.alerts.engine import evaluate_and_alert
 from app.core.alerts.rules import AlertEventType
 from app.core.authenticity.schema import AuthenticityLabel, AuthenticityResult
 from app.core.schemas import ReviewExtraction, Urgency
-
 
 # ---------------------------------------------------------------------------
 # Factory helpers
@@ -67,7 +65,7 @@ async def test_high_urgency_sends_one_alert() -> None:
         patch("app.core.alerts.engine.record_alert_sent_pg", MagicMock(return_value=None)) as mock_record,
         patch("app.core.alerts.engine.get_org_notification_email_pg", MagicMock(return_value="seller@example.com")),
     ):
-        result = await evaluate_and_alert(
+        await evaluate_and_alert(
             org_id="org1",
             review_id="rev1",
             extraction=make_extraction(urgency=Urgency.high),

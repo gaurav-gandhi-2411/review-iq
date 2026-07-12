@@ -77,7 +77,6 @@ def _pre_fix_lang_hint(text: str) -> str:
 
 async def main() -> None:
     import app.core.providers.cassette as cassette_module
-
     from app.core.language import detect_language
     from benchmark.systems.review_iq import predict
 

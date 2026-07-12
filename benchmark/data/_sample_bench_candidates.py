@@ -10,7 +10,6 @@ Each record: id, slice, source, text, char_len, leakage (bool), leakage_source (
 """
 from __future__ import annotations
 
-import hashlib
 import json
 import re
 import sys
@@ -139,7 +138,7 @@ print(f"\nTotal candidates written: {len(all_final)} → {out_path}")
 # ---------------------------------------------------------------------------
 leaked_en = [c for c in en_candidates if c["leakage"]]
 leaked_hien = [c for c in hien_candidates if c["leakage"]]
-print(f"\nLeakage report:")
+print("\nLeakage report:")
 print(f"  en: {len(leaked_en)} leaked (excluded)")
 for item in leaked_en[:5]:
     print(f"    [{item['id']}] matched {item['leakage_source']!r}: {item['text'][:60]!r}")

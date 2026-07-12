@@ -71,7 +71,7 @@ def _macro_f1(gold: list[str], pred: list[str], labels: list[str]) -> float:
 
 
 def _confusion(gold: list[str], pred: list[str], labels: list[str]) -> list[list[int]]:
-    idx = {l: i for i, l in enumerate(labels)}
+    idx = {label: i for i, label in enumerate(labels)}
     n = len(labels)
     mat = [[0] * n for _ in range(n)]
     for g, p in zip(gold, pred, strict=True):
@@ -130,9 +130,9 @@ async def run_review_iq(gold_records: list[dict], replay_mode: bool) -> list[dic
 
 
 async def run_llm_judge(gold_records: list[dict], replay_mode: bool) -> list[dict[str, Any]]:
+    from app.core.config import get_settings  # noqa: PLC0415
     from groq import AsyncGroq  # noqa: PLC0415
 
-    from app.core.config import get_settings  # noqa: PLC0415
     from benchmark._cassette import BenchCassette  # noqa: PLC0415
     from benchmark.systems.llm_judge import JUDGE_CASSETTE_PATH, predict  # noqa: PLC0415
 
@@ -237,9 +237,10 @@ def _fmt_pct(val: float | None) -> str:
 
 def write_report(all_results: list[dict], gold_records: list[dict], generated_at: str) -> None:
     from benchmark.systems.llm_judge import (  # noqa: PLC0415
-        JUDGE_MODEL,
         JUDGE_SYSTEM_PROMPT,
         JUDGE_USER_TEMPLATE,
+    )
+    from benchmark.systems.llm_judge import (
         SYSTEM_DESCRIPTION as JUDGE_DESC,
     )
     from benchmark.systems.review_iq import SYSTEM_DESCRIPTION as RIQD  # noqa: PLC0415
@@ -391,8 +392,8 @@ def write_report(all_results: list[dict], gold_records: list[dict], generated_at
         "",
         "## Label methodology",
         "",
-        f"Labeling model: `llama-3.3-70b-versatile` (Groq, free tier)",
-        f"Labeling prompt SHA256: see `benchmark/dataset/labeling_prompt.txt`",
+        "Labeling model: `llama-3.3-70b-versatile` (Groq, free tier)",
+        "Labeling prompt SHA256: see `benchmark/dataset/labeling_prompt.txt`",
         "All 43 candidates labeled in a single pass. Labels stored in `benchmark/dataset/gold.jsonl`",
         "with `labels_source: LLM-generated (llama-3.3-70b-versatile, internal benchmark)`.",
         "",
