@@ -4,6 +4,65 @@ This file documents every version of the extraction prompt, including eval score
 
 ---
 
+## Target A (hi-en prompt tuning): NOT PURSUED (2026-07-06)
+
+**No prompt change. `hi_en.py` unchanged. No cassette re-record (nothing to invalidate).**
+
+spec.md Task #2 scoped Target A as a bounded 1-2 iteration attempt to improve hi-en extraction
+quality, on the assumption that the ~80% hi-en score reflected a genuine model weakness. Inspection
+disproved that assumption.
+
+### What was done
+
+Ran the current v2.3 prompt (identical to v2.2 for hi-en, since only `en.py` changed in v2.3)
+against the full benchmark hi-en slice (`benchmark/dataset/gold.jsonl`, 21 records,
+LLM-generated labels), replay-confirmed deterministic. Every disagreement between review-iq's
+output and the gold label was inspected individually — text, full extraction, gold label,
+and an honest assessment of whether review-iq or the label was wrong. See the session record for
+the complete 9-case breakdown; in summary:
+
+- 5 of 9 were a **benchmark-internal LANG-detection heuristic gap** (`_detect_lang_hint` in
+  `benchmark/systems/review_iq.py` — spelling-variant/keyword-coverage misses like "Bakwas" vs
+  "bakwaas", "Yarr" vs "yaar"), not a `hi_en.py` prompt issue. 3 of those had zero effect on
+  SENT/URG; 2 were single-loanword borderline calls.
+- 1 (`bench-hien-001`) looked like a label error matching the known LLM-labeler bias already
+  documented for v2.2 (binary positive/negative scoring of reviews with explicit mixed content).
+- 1 (`bench-hien-007`) was a genuine review-iq attribution error (misread a different/discarded
+  competitor product's failure as a defect of the reviewed product) — but this was a one-off content
+  mix-up, not a systematic Hinglish-completeness gap worth a prompt change.
+- 2 (`bench-hien-006`, `bench-hien-011`) are genuine boundary-of-judgment cases, not errors —
+  see below.
+
+### Result
+
+**Real hi-en accuracy is ~90% (19/21)** once the 2 genuinely ambiguous cases are set aside as
+neither-side-wrong. The apparent ~80% weakness recorded in spec.md's "current state" was
+substantially benchmark-label noise (LLM-generated labels, LANG-heuristic quirks, one labeler
+bias hit), not a systematic review-iq/`hi_en.py` weakness. There was no repeatable, generalizable
+extraction gap to target with a bounded prompt iteration — tuning against these specific cases
+would risk fitting noise, exactly what spec.md's measurement-discipline section warns against.
+
+**Benchmark annotations added** (gold labels NOT flipped — kept independent of review-iq's
+output, per spec.md's rule to never tune toward the labeler):
+- `bench-hien-006`: `"ambiguous": true` + note — "apni pocket money collect karke order kiya
+  tha" (I collected my own pocket money to order this) is a value-for-money glaze remark;
+  ambiguous whether it's a distinct con or a minor emotional aside already covered by the other
+  extracted cons.
+- `bench-hien-011`: `"ambiguous": true` + note — "Boat ko thoda Volume Me sudhar karna chahiye"
+  (Boat should improve the volume a little) is ambiguous between a genuine con and a mild
+  suggestion/feature-request, in an otherwise all-high-scoring (5/5, 4.5/5, 5/5) positive review.
+
+Both annotated with `adjudicated_by: human (GG, native Hinglish speaker, 2026-07-06)`, mirroring
+the human-adjudication discipline already used for the urgency rubric.
+
+### Verification
+
+`hi_en.py` byte-identical to v2.2/v2.3 (never touched this task). No cassette re-record —
+nothing in the prompt changed, so no cache keys moved. en/hi/hi-en model behavior identical to
+what shipped in v2.3 above. `tests/benchmark/` suite green (49 passed).
+
+---
+
 ## v2.3 (2026-07-06) — KEPT: fit-causes-pain must beat "poor fit" medium example
 
 **Status:** SHIPPED. Target B **iteration 2 of 2** (bounded cap, spec.md Task #2). GG reviewed
