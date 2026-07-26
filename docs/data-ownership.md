@@ -18,10 +18,22 @@ at two independent layers:
 Tables covered: `extractions`, `authenticity_audits`, `corrections`, `usage_records`,
 `api_keys`, `organizations`, `organization_members`, `batch_jobs`.
 
-The application connects via `service_role` (which bypasses RLS) but sets
-`SET LOCAL ROLE authenticated` and `SET LOCAL "app.current_org_id" = <org_id>` inside every
-transaction before issuing data queries. This means RLS acts as a defence-in-depth even if an
-application bug drops a `WHERE org_id` clause.
+The application connects as `review_iq_app` — a dedicated, non-superuser role (2026-07-26
+hardening; previously this was the `postgres` superuser, which worked but was a broader
+credential than the app actually needs). `review_iq_app` is a member of `authenticated`
+(inherits every `GRANT ... TO authenticated` and `TO authenticated` RLS policy automatically,
+already scoped to exactly this app's own tables — see `supabase/migrations/
+20260726000001_review_iq_app_role.sql`) and has `BYPASSRLS` set directly, matching how
+Supabase's own `service_role` is configured (also `BYPASSRLS`, also not superuser) — needed
+because the org-creation/deletion admin paths (`app/api/admin.py`) operate across the
+`org_id = current_org_id()` boundary the regular RLS policies enforce, so they can't go through
+the same restricted path as tenant-scoped queries. The app still sets `SET LOCAL ROLE
+authenticated` and `SET LOCAL "app.current_org_id" = <org_id>` inside every transaction before
+issuing tenant-scoped data queries — RLS is enforced for that entire code path (the connecting
+role itself no longer bypasses it by default), and acts as defence-in-depth even if an
+application bug drops a `WHERE org_id` clause. Unlike the old superuser connection, a bug that
+skips the `SET LOCAL ROLE` call now runs at `review_iq_app`'s own (still non-superuser, still
+schema-scoped) privilege level, not full cluster-wide access.
 
 Cross-tenant isolation is proven via a rollback-wrapped test in
 `tests/integration/test_rls_isolation.py` and by the corrections-specific proof run during

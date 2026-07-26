@@ -42,7 +42,7 @@ Verified live against the actual Secret Manager inventory (`gcloud secrets list
 |--------------------------|-------------------|------------|
 | `groq-api-key` | `GROQ_API_KEY` | Groq LLM API key (primary inference) |
 | `gemini-api-key` | `GEMINI_API_KEY` | Google Gemini API key (dev fallback) |
-| `supabase-database-url` | `SUPABASE_DATABASE_URL` | Supabase pooler URL, port 6543 (transaction mode) |
+| `supabase-database-url` | `SUPABASE_DATABASE_URL` | Supabase pooler URL, port 6543 (transaction mode). Connects as `review_iq_app` (non-superuser, `BYPASSRLS`, member of `authenticated`) as of 2026-07-26 — see `docs/data-ownership.md` and `supabase/migrations/20260726000001_review_iq_app_role.sql`. Rotating this secret's password also requires `ALTER ROLE review_iq_app WITH PASSWORD '...'` on the database first. |
 | `admin-password-hash` | `ADMIN_PASSWORD_HASH` | argon2id hash of admin HTTP Basic password |
 | `resend-api-key` | `RESEND_API_KEY` | Resend transactional email API key |
 | `resend-from-email` | `RESEND_FROM_EMAIL` | Verified sender address for alert/digest emails |
