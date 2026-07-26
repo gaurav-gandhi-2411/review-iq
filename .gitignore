@@ -80,3 +80,10 @@ ops/budget-killswitch/.terraform/
 ops/budget-killswitch/terraform.tfstate
 ops/budget-killswitch/terraform.tfstate.backup
 ops/budget-killswitch/.build/
+
+# Cloudflare Wrangler local cache (demo deploy tooling) — build artifact, not source
+.wrangler/
+
+# Local scratch/raw datasets for prompt-tuning work (large Kaggle downloads + derived
+# intermediates) — mirrors eval/data/.gitignore's raw/generated-candidate exclusion pattern.
+/data/

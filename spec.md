@@ -1,152 +1,103 @@
-# Project Spec: review-iq — Proactive Model, Phase 1: Multi-Source Ingestion + Alerting
+# Project Spec: review-iq — Bounded Prompt-Level Model Improvement (Task #2)
 
 ## Goal
-Flip review-iq from a passive dashboard (seller must upload + visit) to a proactive service that
-WATCHES a seller's reviews and ALERTS them (email, v1) when something needs attention. Phase 1
-delivers: (1) a pluggable multi-source ingestion layer — CSV (universal on-ramp), Shopify (own-store
-webhooks), Google Business Profile (official review-notification API) — NO scraping; and (2) an
-alerting engine that emails the seller on high-signal events (urgency spikes, fake-review clusters,
-refund demands, batch-defect patterns) using the EXISTING detection engine. Free tier, $0.
+A BOUNDED attempt to improve two known weak spots via prompt-level changes only: (1) hi-en
+(Hinglish) extraction accuracy — the differentiator and lowest score (~80%); (2) urgency
+harm-in-positive-tone detection — the en-013-style miss (harm signal buried in a positive review),
+still only half-solved. Bounded = 1-2 iterations per target, measured honestly, revert if not
+clearly better. No fine-tuning (that's data-gated, deferred). Free tier, $0.
 
-## Strategic context (why this exists)
-The value problem (#7): a dashboard a seller must feed and visit has thin felt value. Proactive
-("we'll tell you when something's wrong") is the value + stickiness. The keystone is a LIVE review
-stream. VERIFIED FACTS that shaped this design:
-- Amazon sends NO per-review notification emails to sellers (confirmed via Amazon's own seller help);
-  there is NO API for raw review text. Flipkart same pattern. So marketplace email-forward / API
-  ingestion is NOT possible.
-- Scraping marketplaces is against ToS, an arms race (proxies/CAPTCHA, breaks on page changes, costs
-  money — breaks $0), legally exposed, and would POISON review-iq's compliance/data-sovereignty moat.
-  EXPLICITLY OUT OF SCOPE — do not build scraping of any kind.
-- LEGAL live sources DO exist with official APIs: Shopify (own-store, webhooks) and Google Business
-  Profile (official review API + NEW_REVIEW notification webhook, owner-authorized). These are the
-  proactive sources. CSV remains the universal manual on-ramp.
+## Honest measurement caveats (define success correctly)
+- The benchmark's hi/hi-en gold labels are LLM-GENERATED (internal tool, not published-credible).
+  So "hi-en accuracy up" = "agreement with LLM labels up" — partly signal, partly noise. A small
+  delta (<~3pp) is WITHIN NOISE and must NOT be treated as real improvement.
+- Therefore the GATE is dual: (a) the metric improves meaningfully AND (b) a human spot-check of
+  the CHANGED cases shows genuinely better extractions by GG's judgment. The number is a hint; the
+  human read is the real gate. Neither alone is sufficient.
+- Urgency has a HUMAN-ADJUDICATED rubric (better ground truth than hi-en) — that target is more
+  trustworthy to measure. Weight its metric more; still spot-check.
+- NEVER tune toward the LLM labeler's opinions (the adjudication proved it has a medium-bias and
+  was wrong on harm cases). Tune toward the RUBRIC / GG's judgment of correct output.
 
-## Current state (do not break)
-- `Source` Protocol already exists (app/core/ingestion/) from the flywheel work — CSVSource built;
-  shopify_source/email_source were stubs. THIS is the abstraction to extend.
-- Detection engine done: extraction (sentiment/topics/urgency), authenticity (precision-first),
-  trends. Multi-tenant Postgres + RLS, BFF, web app. Free tier (Supabase pauses; Groq caps).
-- Quota enforcement on writes intact. FROZEN: API contracts, RLS, key format.
+## Current state
+- Extraction prompt v2.2 in prod. Eval: en ~86 / hi ~81 / hi-en ~80 / overall ~83.5 (agreement
+  with the internal benchmark labels). Cassette-replay eval CI (re-record when prompt changes —
+  a prompt change invalidates cassette keys).
+- Urgency rubric (adjudicated, authoritative): HIGH = harm/safety signal (regardless of star
+  rating/positive tone) OR explicit refund/return demand OR systemic/batch defect; MEDIUM =
+  fixable functional defect, no harm/escalation; LOW = no actionable defect. Known residual:
+  harm-in-positive-tone (en-013 "eyes will start paining" in a 5-star review) classified low/medium,
+  should be HIGH — positive framing masks the harm signal.
 
 ## Scope
 
-### In scope — Phase 1
-**A. Pluggable ingestion (extend the existing Source abstraction):**
-- CSV (already built) — keep as the universal on-ramp; every seller can use it with zero setup.
-- **Shopify connector:** OAuth-authorized to the seller's OWN store; ingest product reviews via
-  Shopify's API/webhooks (real-time on new review). Owner-consented, legal. (Confirm exact Shopify
-  review API/app-scope at build — reviews may come via a review app like Judge.me/Shopify's own;
-  design the connector to take a configured review source.)
-- **Google Business Profile connector:** OAuth-authorized to the seller's OWN profile; use the
-  official GBP review API + the NEW_REVIEW notification webhook
-  (developers.google.com/my-business/content/notification-setup) for real-time push on new reviews.
-  Owner-consented, legal.
-- Each connector implements the Source interface; new reviews flow into the SAME extraction →
-  authenticity → storage pipeline as CSV (one processing path, source-agnostic).
-- NO scraping. NO marketplace (Amazon/Flipkart) ingestion (impossible legally/technically).
+### In scope
+**Target A — hi-en extraction quality (bounded):**
+- 1-2 prompt iterations targeting Hinglish/code-mixed handling (the failure patterns in the hi-en
+  eval slice — inspect the actual mislabeled cases first, tune to THOSE, don't guess).
+- Re-record cassettes for the changed prompt (all fixtures, one clean pass — a prompt change
+  invalidates old cassette keys; partial = stale/mixed, forbidden). Re-run the benchmark.
+- GATE: metric up >~3pp (above noise) AND GG spot-checks the changed hi-en cases and confirms
+  genuinely better. If not clearly better → REVERT, log "no bounded gain," move on.
 
-**B. Alerting engine (email, v1):**
-- A rules layer over the existing detection output that decides when a review/event is alert-worthy:
-  - high-urgency review (per the refined urgency rubric — harm signal, refund/return demand);
-  - authenticity: a likely_fake / priority_review, especially a CLUSTER (multiple in a short window);
-  - a spike: a complaint theme rising sharply vs. its baseline (batch-defect signal);
-  - (thresholds configurable; start conservative to avoid alert fatigue).
-- Email delivery (free): send the seller a clear, plain-language alert ("⚠️ A customer is demanding
-  a refund and citing a safety issue — [view review]" / "3 reviews in 2 days mention the same defect
-  — possible batch issue"). Vernacular-aware where the review is vernacular.
-- Alert PREFERENCES: per-org settings (which event types, frequency: immediate vs daily digest, on/
-  off). Default sane + conservative.
-- DEDUPE / ANTI-FATIGUE: never alert twice on the same review/event; respect digest vs immediate.
+**Target B — urgency harm-in-positive-tone (bounded, better-measured):**
+- Prompt change so physical-harm/safety signals classify HIGH regardless of positive tone or star
+  rating (the en-013 pattern). Keep existing correct behavior (don't regress the already-correct
+  high-calls or over-flag).
+- Add regression fixtures: harm-in-positive-tone→high, positive-no-harm→low, existing high-calls
+  stay high, defect-no-escalation→medium. These PIN the behavior permanently.
+- Re-record cassettes, re-run. GATE (rubric is adjudicated, so more trustworthy): the harm-in-
+  positive cases now classify HIGH, no regression on existing correct calls (a test proves both).
 
-### Out of scope (do NOT build)
-- ANY scraping or marketplace (Amazon/Flipkart) ingestion — legally/technically impossible, off the
-  table permanently.
-- WhatsApp/SMS delivery (Phase 2 — email proves the loop first; design alert layer channel-pluggable
-  so WhatsApp slots in later, but build only email now).
-- Payments/tiers. New LLM cost patterns beyond processing ingested reviews through the existing
-  pipeline.
-- Any change to frozen API contracts, RLS, key format, or quota enforcement.
+### Out of scope
+- Fine-tuning / any model training (data-gated, deferred — Task #3, not now).
+- Changing the benchmark's labels or pretending it's publish-credible.
+- Endless iteration: HARD CAP 2 iterations per target. If not clearly better after 2, revert +
+  document, stop.
+- Frozen contract changes, RLS, quota. Any paid service.
 
-## Tech / cost notes (free tier)
-- Ingested reviews run through the existing extraction/authenticity pipeline → they consume Groq
-  quota like any processing. The alerting RULES layer is pure logic over stored results — no extra
-  LLM cost. Be mindful: a live connector could ingest many reviews → quota; respect per-org quota
-  (ingested reviews count toward it like uploads) and the small-first/cap-survival routing already
-  built.
-- Email sending: use a free-tier email path (e.g. a free transactional email tier / SMTP). NO paid
-  service without escalation. If no free email path exists, escalate before assuming a paid one.
-- Webhooks (Shopify, GBP) need a public endpoint on the deployed API — these connectors are only
-  fully live once the API is deployed; build + test against the API, note the deploy dependency.
-
-## Architecture
-```
-app/core/ingestion/
-  base.py                  # existing Source Protocol
-  csv_source.py            # existing
-  shopify_source.py        # BUILD: OAuth + review fetch/webhook → Source
-  google_business_source.py# BUILD: GBP API + NEW_REVIEW webhook → Source
-app/core/alerts/
-  rules.py                 # BUILD: pure functions — is this event alert-worthy? (testable)
-  engine.py                # BUILD: evaluate new reviews → alerts, dedupe, respect prefs
-  channels/email.py        # BUILD: email delivery (free); channel-pluggable for future WhatsApp
-app/api/
-  webhooks/shopify.py      # BUILD: receive Shopify review webhooks (verify signature)
-  webhooks/google.py       # BUILD: receive GBP NEW_REVIEW notifications (verify)
-  bff/alerts.py            # BUILD: alert preferences GET/PUT (per-org)
-supabase/migrations/
-  <new>_alerts.sql         # BUILD (ESCALATE): alert_preferences + alert_log (dedupe) tables + RLS
+## Verification
+```yaml
+- name: tests
+  cmd: uv run pytest -v
+  required: true
+- name: eval-replay
+  cmd: uv run python eval/runner.py --replay   # deterministic after cassette re-record
+  required: true
+- name: lint
+  cmd: uv run ruff check .
+  required: true
 ```
 
-## Data model (migration — escalation-gated)
-- `alert_preferences` (org_id, event_type, enabled, frequency [immediate|daily_digest], updated_at)
-- `alert_log` (org_id, review_id, event_type, sent_at) — for dedupe + digest batching. RLS, WITH
-  CHECK + anon-deny (same pattern as corrections).
-
-## Decision authority (autonomous per CHARTER.md)
-ESCALATE: the alerts migration (DDL + RLS shown, isolation proof); any email/connector service that
-costs money (find a FREE path or escalate); OAuth app registration / external credentials (Shopify
-app, Google Cloud project) — these need GG's accounts, so surface what GG must set up; any
-frozen-contract change. Connectors + rules + email logic in code = autonomous.
+## Decision authority
+ESCALATE: the eval sign-off after EACH target (GG does the human spot-check — the real gate; the
+metric alone doesn't decide); the cassette re-record (needs a clean Groq window; all-or-nothing);
+whether to KEEP or REVERT each change (GG's call based on spot-check + metric). Prompt edits +
+fixtures + re-record = autonomous up to the escalation points.
 
 ## Hard rules
-- NO scraping, NO Amazon/Flipkart ingestion — ever. Legal/consented sources only.
-- New connectors flow into the EXISTING processing pipeline — one source-agnostic path, no parallel
-  extraction logic.
-- Ingested reviews respect per-org quota (count like uploads); use existing cap-survival routing.
-- Alert rules conservative by default (avoid fatigue); dedupe so no double-alerts.
-- Webhook endpoints verify signatures/authenticity (don't trust unsigned POSTs).
-- Email via a FREE path; escalate if none exists rather than incurring cost.
-- Frozen contracts/RLS/quota intact. $0. Full suite green.
+- BOUNDED: max 2 iterations per target. Not clearly better → revert, don't keep tuning.
+- Tune to the RUBRIC / correct output, NEVER to the LLM labeler's opinions.
+- A prompt change REQUIRES a full clean cassette re-record (all fixtures, one pass) before the
+  eval is trustworthy — partial/stale cassettes forbidden.
+- Urgency: no regression on existing-correct high-calls (test-pinned).
+- Human spot-check of changed cases is the real gate; the metric is a hint. Both required to KEEP.
+- $0, free tier; frozen contracts intact; full suite + eval-replay green.
 
-## Budget
-- This is a multi-part phase. Soft target: 3-4 CC sessions. Hard cap: escalate after 25 executor
-  invocations per session. /cost at midpoints. Build in this order so value lands incrementally.
-
-## Success criteria (Phase 1)
-- [ ] Source abstraction extended: CSV (existing) + Shopify + Google Business connectors, each
-      implementing the Source interface, flowing into the existing extraction→authenticity→storage
-      pipeline. NO scraping anywhere in the codebase.
-- [ ] Shopify + GBP connectors are OAuth/owner-consented to the seller's OWN store/profile; webhook
-      endpoints verify signatures.
-- [ ] Alert rules engine flags high-urgency / fake-cluster / spike events from existing detection
-      output; pure-function rules are unit-tested; conservative defaults.
-- [ ] Email alerts deliver plain-language, vernacular-aware notifications via a FREE email path;
-      dedupe prevents double-alerts; per-org preferences (event types, immediate vs digest, on/off).
-- [ ] alerts migration applied (escalated, isolation-proven); RLS WITH CHECK + anon-deny.
-- [ ] Ingested reviews respect per-org quota; no new uncapped LLM cost.
-- [ ] Frozen contracts/RLS/quota intact; full suite green; $0 (no paid service without escalation).
+## Success criteria
+- [ ] Target A: either a KEPT hi-en improvement (metric >~3pp up AND GG spot-check confirms better,
+      cassettes re-recorded, eval green) OR an honest REVERT with "no bounded gain" documented.
+- [ ] Target B: harm-in-positive-tone classifies HIGH (regression fixtures added + green), no
+      regression on existing correct calls, GG confirms via spot-check. (More likely to yield real
+      gain since the rubric is adjudicated.)
+- [ ] Cassettes re-recorded cleanly for any kept prompt change; eval-replay deterministic + green.
+- [ ] No endless tuning: each target capped at 2 iterations; reverts documented honestly.
 
 ## Build order
-1. Extend Source abstraction + the alert RULES layer (pure functions, fully testable, no external
-   deps, no cost) FIRST — this is the logic core, builds with zero setup/quota.
-2. Alerts migration (ESCALATE: DDL + RLS + isolation proof) → alert_preferences + alert_log.
-3. Email channel (free path; escalate if none) + alert engine (evaluate → dedupe → send) +
-   /bff/alerts preferences. Test end-to-end with CSV-ingested reviews triggering alerts (no
-   connector setup needed to prove the alert loop).
-4. Shopify connector (OAuth + webhook, signature-verified). Surface to GG what to register
-   (Shopify app credentials).
-5. Google Business connector (GBP API + NEW_REVIEW webhook, signature-verified). Surface what GG
-   must set up (Google Cloud project / OAuth).
-6. Verify: full suite, isolation proof, dedupe, quota-respect; report what GG must configure
-   (OAuth apps) and the deploy dependency for webhooks.
+1. Target B FIRST (better-measured, adjudicated rubric, clear pass/fail): inspect en-013-type
+   cases → prompt change for harm-over-tone → regression fixtures → re-record → re-run → GG
+   spot-check → keep/revert.
+2. Target A SECOND (noisier): inspect the actual hi-en mislabeled cases → 1-2 targeted iterations
+   → re-record → re-run → GG spot-check the CHANGED cases → keep only if metric >3pp AND spot-check
+   confirms; else revert.
+3. Document outcomes honestly (kept/reverted per target, with the human-judgment reasoning).

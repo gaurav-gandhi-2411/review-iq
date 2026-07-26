@@ -5,12 +5,19 @@ Usage:
     uv run python benchmark/data/label_helper.py
 
 Flow per candidate:
-  1. Show review text, detected language, star rating (as a hint, not the answer)
-  2. SENT  — human assigns: positive / neutral / negative
+  1. Show review text + star rating (rating is real reviewer-provided metadata, shown
+     as a hint later for SENT only — not a model guess, so not an anchoring concern)
+  2. LANG  — human judgment, BLIND (no detected-language shown beforehand — it's a
+             regex/heuristic guess, not ground truth; revealed only after you answer,
+             as a calibration check, not an anchor)
+  3. SENT  — human assigns: positive / neutral / negative
              star rating shown as a HINT only; override freely
-  3. URG   — human assigns: low / medium / high
+  4. URG   — human assigns: low / medium / high
              rubric printed on each entry
-  4. LANG  — pre-populated from detection; human confirms or corrects
+
+No system/LLM-predicted SENT or URG label is ever shown — candidates.jsonl (built by
+benchmark/vernacular_v2/build_benchmark_candidates.py) doesn't carry v2.3's predictions
+at all, so there's nothing to anchor on for those two fields structurally.
 
 Resumable: already-labeled IDs are skipped. Labels saved after every entry.
 
@@ -71,12 +78,20 @@ SENT_RUBRIC = """\
 
 
 def _prompt(prompt_text: str, valid: tuple[str, ...], shortcuts: dict[str, str]) -> str:
-    """Prompt until a valid label is entered. Empty input → skip (return '')."""
+    """Prompt until a valid label, empty (skip), or 'q' (quit) is entered.
+
+    Bug fixed here: 'q' used to fall through to the invalid-input loop and could
+    never actually be returned, silently dead-coding every `if x == "q": quit`
+    check at the call sites (SENT, URG, and now LANG) — 'q' just reprinted
+    "Invalid" forever instead of quitting.
+    """
     shortcut_hint = "/".join(k for k in shortcuts if not k.isdigit())
     while True:
         raw = input(f"  {prompt_text} [{shortcut_hint}] or ENTER to skip: ").strip().lower()
         if raw == "":
             return ""
+        if raw == "q":
+            return "q"
         if raw in valid:
             return raw
         if raw in shortcuts:
@@ -95,9 +110,10 @@ def _display_candidate(idx: int, total: int, cand: dict[str, object]) -> None:
     rating = cand.get("rating")
     rating_str = f"{'★' * int(rating)}{'☆' * (5 - int(rating))} ({rating}/5)" if rating else "N/A"
     print(f"Rating:   {rating_str}")
-    lang = cand.get("language_detected", "?")
-    frac = cand.get("language_script_fraction", "?")
-    print(f"Language: {lang}  (Devanagari fraction: {frac})")
+    # Deliberately NOT showing detected language here (or anywhere before the LANG
+    # answer below) — it's a heuristic/regex guess, not ground truth, and showing it
+    # upfront anchors the human judgment this benchmark exists to make independent.
+    # Revealed only AFTER you answer, as a calibration check.
     print()
     print(f"REVIEW TEXT:\n{cand.get('text', '')}")
     print()
@@ -162,25 +178,21 @@ def run(candidates_path: Path, gold_path: Path) -> None:
         _display_candidate(i, len(remaining), cand)
 
         # --- LANG ---
+        # Blind: no detected-language hint shown here or in _display_candidate — it's
+        # a heuristic/regex guess, not ground truth, and showing it upfront anchors the
+        # human judgment this benchmark exists to make independent. Same _prompt() flow
+        # (skip-on-empty, validated loop) as SENT/URG below, for consistency.
         lang_detected = str(cand.get("language_detected", "en"))
-        print(f"  Detected language: {lang_detected}")
-        lang_raw = (
-            input(f"  LANG — confirm ({'/'.join(LANG_LABELS)}) or ENTER to accept detected: ")
-            .strip()
-            .lower()
-        )
-        if lang_raw == "q":
+        lang = _prompt("LANG", LANG_LABELS, LANG_SHORTCUTS)
+        if lang == "q":
             print(f"\nQuitting. Labeled {labeled_this_session} this session.")
             break
-        if lang_raw in LANG_LABELS:
-            lang = lang_raw
-        elif lang_raw in LANG_SHORTCUTS:
-            lang = LANG_SHORTCUTS[lang_raw]
-        elif lang_raw == "":
-            lang = lang_detected
-        else:
-            print(f"    Unrecognised — keeping detected: {lang_detected}")
-            lang = lang_detected
+        if lang == "":
+            print("  Skipped.")
+            skipped_this_session += 1
+            continue
+        agree = "matches" if lang == lang_detected else "DIFFERS from"
+        print(f"  (Detector had guessed: {lang_detected} — your answer {agree} it.)")
 
         # --- SENT ---
         print()

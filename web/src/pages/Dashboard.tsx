@@ -6,7 +6,7 @@ import ErrorBox from '../components/ErrorBox'
 import { useFilterContext } from '../lib/filterContext'
 
 export default function DashboardPage() {
-  const { stats, loading, loadError, setFilter, filteredReviews, hasActiveFilters } = useFilterContext()
+  const { stats, allReviews, loading, loadError, setFilter, hasActiveFilters } = useFilterContext()
   const navigate = useNavigate()
 
   const total = stats.total
@@ -52,8 +52,8 @@ export default function DashboardPage() {
               score={score}
               band={band}
               positiveCount={stats.positiveCount}
-              total={total}
               highUrgencyCount={stats.highUrgencyCount}
+              isApprox={hasActiveFilters}
               onFilterSentiment={(v) => setFilter('sentiment', v)}
               onFilterUrgency={(v) => setFilter('urgency', v)}
             />
@@ -99,8 +99,8 @@ export default function DashboardPage() {
               <div>
                 <p className="font-sans font-medium text-charcoal text-sm">Add more reviews</p>
                 <p className="font-sans text-xs text-charcoal-light mt-0.5">
-                  {filteredReviews.length !== total
-                    ? `${filteredReviews.length} of ${total} reviews showing`
+                  {hasActiveFilters
+                    ? `${total} of ${allReviews.length} reviews match filters`
                     : `${total} reviews analysed so far`}
                 </p>
               </div>
@@ -122,21 +122,19 @@ function HealthCard({
   score,
   band,
   positiveCount,
-  total,
   highUrgencyCount,
+  isApprox,
   onFilterSentiment,
   onFilterUrgency,
 }: {
   score: number
   band: 'healthy' | 'needs_attention' | 'at_risk'
   positiveCount: number
-  total: number
   highUrgencyCount: number
+  isApprox: boolean
   onFilterSentiment: (v: string) => void
   onFilterUrgency: (v: string) => void
 }) {
-  void total // used by caller for context; individual count is displayed instead
-
   const bandLabel = {
     healthy: 'Looking healthy',
     needs_attention: 'Needs attention',
@@ -167,6 +165,11 @@ function HealthCard({
           <span className={`inline-block mt-2 text-xs font-sans font-medium px-2.5 py-1 rounded-full ${bandBg} ${bandColor}`}>
             {bandLabel}
           </span>
+          {isApprox && (
+            <p className="mt-1.5 text-xs font-sans text-charcoal-light/70 italic">
+              approx · excl. authenticity signals
+            </p>
+          )}
         </div>
         <div className="text-right space-y-3">
           <MetricPill
