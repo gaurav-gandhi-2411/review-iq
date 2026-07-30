@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 from eval.consensus.build_report import (
     build_new_fixture,
     fleiss_table,
@@ -10,6 +12,18 @@ from eval.consensus.build_report import (
     validation_agreement,
 )
 from eval.consensus.voting import NO_RESPONSE
+
+
+def _json_roundtrip(records: list[dict]) -> list[dict]:
+    """Simulate reading `records` back from a JSONL file (run_consensus.py's real path).
+
+    A real bug: NO_RESPONSE comparisons using `is` passed every existing test (records
+    were constructed in-memory, same object) but crashed on a live run because
+    consensus_labels.jsonl round-trips through json.dumps/json.loads, producing a new
+    string object with the same value -- `is` silently stopped matching and leaked the
+    raw sentinel into eval.agreement's reliability matrix (KeyError on rank lookup).
+    """
+    return [json.loads(json.dumps(r, ensure_ascii=False)) for r in records]
 
 
 def _consensus(**fields):
@@ -49,6 +63,17 @@ class TestRawVotesMatrix:
         matrix = raw_votes_matrix(records, "sentiment", ["j1", "j2"])
         assert matrix == [["positive", "negative"], ["positive", None]]
 
+    def test_no_response_recognized_after_a_json_roundtrip(self):
+        # Regression test: records read back from consensus_labels.jsonl are freshly
+        # deserialized -- NO_RESPONSE must be recognized by value, not by object identity.
+        records = _json_roundtrip(
+            [
+                {"consensus": {"sentiment": {"votes": {"j1": "negative", "j2": NO_RESPONSE}}}},
+            ]
+        )
+        matrix = raw_votes_matrix(records, "sentiment", ["j1", "j2"])
+        assert matrix == [["negative"], [None]]
+
 
 class TestFleissTable:
     def test_excludes_items_with_a_non_response(self):
@@ -61,6 +86,16 @@ class TestFleissTable:
         # Only 2 of 3 items have full coverage; total rater count per row == 2.
         assert len(table) == 2
         assert all(sum(row) == 2 for row in table)
+
+    def test_no_response_recognized_after_a_json_roundtrip(self):
+        records = _json_roundtrip(
+            [
+                {"consensus": {"sentiment": {"votes": {"j1": "positive", "j2": "positive"}}}},
+                {"consensus": {"sentiment": {"votes": {"j1": "negative", "j2": NO_RESPONSE}}}},
+            ]
+        )
+        table = fleiss_table(records, "sentiment", ["j1", "j2"])
+        assert len(table) == 1  # the NO_RESPONSE item must be excluded, not counted
 
 
 class TestValidationAgreement:

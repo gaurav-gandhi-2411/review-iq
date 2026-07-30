@@ -48,13 +48,21 @@ def raw_votes_matrix(
     `matrix[r][u]` = judge `judge_ids[r]`'s vote for item `u`, or `None` if that judge
     didn't respond (`NO_RESPONSE` is translated to `None`, eval.agreement's own missing
     marker) for that item/field.
+
+    Uses `==` against `NO_RESPONSE`, not `is` -- `records` here is typically read back
+    from a JSONL file (run_consensus.py's consensus_labels.jsonl), so the sentinel has
+    been through a json.dumps/json.loads round-trip and is a distinct string object
+    with the same value, not the same object voting.py constructed in-process. `is`
+    would silently fail to match after that round-trip and leak the raw sentinel string
+    into the reliability matrix (confirmed live: caused a `KeyError` inside
+    eval.agreement's ordinal-rank lookup on a real run).
     """
     matrix: list[list[Any]] = [[] for _ in judge_ids]
     for rec in records:
         votes = rec.get("consensus", {}).get(field, {}).get("votes", {})
         for r, jid in enumerate(judge_ids):
             v = votes.get(jid, NO_RESPONSE)
-            matrix[r].append(None if v is NO_RESPONSE else v)
+            matrix[r].append(None if v == NO_RESPONSE else v)
     return matrix
 
 
@@ -75,7 +83,7 @@ def fleiss_table(
     for rec in records:
         votes = rec.get("consensus", {}).get(field, {}).get("votes", {})
         values = [votes.get(jid, NO_RESPONSE) for jid in judge_ids]
-        if any(v is NO_RESPONSE for v in values):
+        if any(v == NO_RESPONSE for v in values):
             continue
         row: dict[Any, int] = {}
         for v in values:
