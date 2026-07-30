@@ -37,6 +37,32 @@ or an undistinguishable variant of it, to judge its own output). It is also the
 smallest model on the panel (7B vs 120B/27B) -- see calibration.py, which will drop it
 from the active panel for this run if it fails the unambiguous control-set check.
 
+CALIBRATION OUTCOME (this run, see eval/consensus/results/calibration_report.json for
+the full data): `allam-2-7b` FAILED calibration reproducibly across two independent
+runs (9/33 control-set field checks wrong both times -- same items, same fields:
+missed the mixed-sentiment case cal-012, omitted the `language` key entirely on the
+Hindi case cal-004, missed the explicit-refund-demand urgency=high case cal-013's
+sibling cal-007, among others) and was DROPPED from the active panel, per the explicit
+"do not silently keep a failing judge" instruction -- not tuned around, not given a
+second chance beyond the one clean rerun needed to rule out temperature=0 run-to-run
+noise on Groq's shared infra. `qwen/qwen3.6-27b` initially also failed (10/33 misses)
+but that was traced to a real call-configuration bug, not a judgment problem: its Groq
+deployment defaults to a hybrid "thinking" mode that was exhausting the completion-
+token budget on its reasoning trace before ever emitting JSON (Groq error: "max
+completion tokens reached before generating a valid document", confirmed via a direct
+API call, not assumed) -- `reasoning_effort="none"` (see its `extra_params` below) and
+a larger `max_completion_tokens` fixed this; on rerun it passed with 0/33 misses.
+
+Net result: the ACTIVE PANEL for this labeling run is 2 judges (`openai/gpt-oss-120b`,
+`qwen/qwen3.6-27b`), not 3. With exactly 2 raters, "majority" and "unanimous" collapse
+into the same case (both must agree, or it's split) -- eval/consensus/voting.py's
+generic vote-counting logic already handles this correctly without special-casing (it
+was written against however many judges actually respond, not a hardcoded 3), but it
+is an honest, load-bearing consequence of the calibration gate actually being enforced,
+not a design flaw to paper over. Restoring a genuine 3rd independent-lineage judge
+would require either a different Groq-hosted model becoming available on the free
+tier, or spending money on a paid provider -- both out of scope for this run.
+
 Every model is called via the dedicated benchmark Groq key (`benchmark_groq_key.py`),
 never `GROQ_API_KEY` (prod). No model sees another's answer -- independent concurrent
 calls, no shared conversation context.
@@ -68,6 +94,15 @@ JUDGE_MODELS: tuple[dict[str, str], ...] = (
         "provider": "groq",
         "family": "Alibaba Qwen",
         "owner": "Alibaba Cloud",
+        # Qwen3.6's Groq deployment defaults to hybrid "thinking" mode, which was
+        # observed burning the entire completion-token budget on its reasoning
+        # trace before ever emitting the requested JSON (Groq error: "max
+        # completion tokens reached before generating a valid document" --
+        # verified interactively, not assumed). `reasoning_effort="none"` disables
+        # thinking for this model family; without it, EVERY field on an affected
+        # item registers as a miss (total parse failure, not a judgment error) --
+        # this is a call-configuration bug, not evidence the model can't judge.
+        "extra_params": {"reasoning_effort": "none"},
     },
     {"id": "allam-2-7b", "provider": "groq", "family": "SDAIA ALLaM", "owner": "SDAIA"},
 )
@@ -155,12 +190,26 @@ def parse_judge_response(raw: str) -> ReviewExtractionLLMOutput | None:
         return None
 
 
+def _extra_params_for(model_id: str) -> dict[str, Any]:
+    for m in JUDGE_MODELS:
+        if m["id"] == model_id:
+            extra = m.get("extra_params")
+            return dict(extra) if extra else {}
+    return {}
+
+
 async def call_judge(client: Any, model_id: str, text: str, timeout: int = 30) -> str:
     """Call one judge model with the review text; returns the raw response content string.
 
     Raises whatever the underlying Groq client raises on timeout/HTTP error -- callers
     are expected to catch and record per-model errors without crashing the whole run
     (see run_consensus.py), matching the existing multi_llm_labeler.py convention.
+
+    `max_completion_tokens` is set generously (2000) for every model -- some models on
+    this panel default to a hybrid "thinking" mode that can exhaust a smaller budget
+    before ever emitting the requested JSON (see `qwen/qwen3.6-27b`'s `extra_params`
+    comment in JUDGE_MODELS above). Per-model `extra_params` (e.g. `reasoning_effort`)
+    are passed through when the model config declares them.
     """
     response = await client.chat.completions.create(
         model=model_id,
@@ -170,7 +219,9 @@ async def call_judge(client: Any, model_id: str, text: str, timeout: int = 30) -
         ],
         response_format={"type": "json_object"},
         temperature=0.0,
+        max_completion_tokens=2000,
         timeout=timeout,
+        extra_body=_extra_params_for(model_id) or None,
     )
     return response.choices[0].message.content or ""
 
