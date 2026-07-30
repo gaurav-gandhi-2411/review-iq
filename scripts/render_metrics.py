@@ -234,7 +234,9 @@ def render_consensus_labeling_md(data: dict[str, Any]) -> str:
         "|---|---|---|---|---|",
     ]
     for field, info in val["per_field"].items():
-        rate = f"{info['agreement_rate'] * 100:.1f}%" if info["agreement_rate"] is not None else "n/a"
+        rate = (
+            f"{info['agreement_rate'] * 100:.1f}%" if info["agreement_rate"] is not None else "n/a"
+        )
         lines.append(
             f"| {field} | {info['n_compared']} | {info['n_agree']} | {rate} | {info['n_no_consensus']} |"
         )
