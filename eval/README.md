@@ -81,5 +81,12 @@ Gemini fallbacks needed, 0 schema-validation retries, 0 hard failures).
   full clean pass per the standing rule above) should replace these 83 entries once the
   daily TPD budget window resets. See
   `docs/architecture/adr/0003-cassette-provenance-during-groq-quota-exhaustion.md` for
-  the full incident writeup and the open judgment call on which accuracy figure is
-  currently authoritative.
+  the full incident writeup.
+- **Resolved:** these 83 fixtures are staged in `eval/fixtures/_pending_groq_cassette/`,
+  outside `eval.runner`'s scanned path (see that directory's README), so they do not
+  contribute to the CI-gating score at all right now. The gate remains the clean,
+  all-Groq figure reported in the main "Eval results" section above (rendered from
+  `eval/results/latest.json`, not restated by hand here) until a real Groq re-recording
+  promotes them. Scoring CI against a different model's output would just trade one
+  metric-integrity problem for another — see ADR 0003's Consequences section for the
+  reasoning.

@@ -102,9 +102,17 @@ reported 83.8%/49-fixture figure (a different, smaller, all-Groq fixture set).
   different, larger, partially-different-provider fixture set — but it must not be
   quietly smoothed over either. A real Groq re-recording pass is the only way to get a
   clean, comparable number for the full 132-fixture set.
-- This ADR does not resolve whether/when a clean Groq re-recording happens (gated on the
-  daily TPD window resetting) or which number is "official" in the interim — both are
-  named, open follow-ups.
+- **Resolved (orchestrator, same session):** rather than leave "which number is official"
+  open, the 83 substitute-provider fixtures were moved to
+  `eval/fixtures/_pending_groq_cassette/` — outside `eval.runner`'s scanned path
+  (`_collect_fixture_paths` only globs flat files plus `hi-en/`/`hi/`), so they
+  contribute nothing to `eval/results.json` / CI's gate. The clean, all-Groq
+  **49-fixture / 83.8%** figure is restored as the sole current gating number; the
+  83.8-vs-74.6% ambiguity does not exist in the committed state. When a real Groq
+  re-recording pass is done, `git mv` the promoted fixtures back into `eval/fixtures/`
+  and re-run `eval.runner` normally — timing of that re-recording is still an open,
+  unscheduled follow-up (gated on the daily TPD window), just no longer an ambiguity
+  about which number gates CI today.
 
 ## Alternatives considered
 
