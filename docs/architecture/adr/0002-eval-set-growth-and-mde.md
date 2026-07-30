@@ -79,8 +79,9 @@ unreachable this session:
    regression between two prompt/model versions, not anything finer. The original
    49-fixture set could only detect ~21–28 points (see per-n figures in
    `eval/results/agreement_latest.json`'s history) — a real, if partial, improvement,
-   not the order-of-magnitude tightening a 300-fixture set would have given (~7–9
-   points at that size, for context, not measured).
+   not the order-of-magnitude tightening a 300-fixture set would have given (~8–11
+   points at that size, for context via the same formula, not measured against a real
+   300-fixture set).
 4. **Validation pass: the new consensus mechanism substantially agrees with the
    original 49 fixtures' existing ground truth** — 87.8% (sentiment), 84.6% (urgency),
    91.9% (buy_again), 93.0% (language), 98.0% (stars) agreement, computed only where
