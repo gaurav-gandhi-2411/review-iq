@@ -49,3 +49,17 @@ Verified against Groq Llama 3.3 70B with current English-language system prompt:
 
 Synthetic fixtures may be modified with explicit commit notes. See plan.md §13 Step 4.
 Do not silently adjust ground truth — always document the reason in the PR description.
+
+## Growth attempt (Wave 1 Section B, 2026-07-30) — not attempted, real corpus yield too low
+
+This session introduced a multi-LLM consensus labeler (`eval/consensus/`, see the main
+`README.md`'s "How eval fixtures are labeled" section) intended to grow the eval set
+from real review corpora rather than more synthetic generation. For Hindi (Devanagari
+script) specifically: `eval/data/flipkart_candidates.jsonl`, regenerated fresh from the
+same 3 Kaggle datasets used elsewhere in this repo, classified only **2 of 14,552**
+unique candidates as `hi` (Devanagari). Two candidates is far too few to meaningfully
+grow this bucket or to matter for statistical power — no consensus labeling was
+attempted for Hindi this session. Real Devanagari-script review yield from these public
+Flipkart datasets is genuinely this low; growing this bucket meaningfully would need a
+different real Hindi review corpus, out of scope here. See
+`docs/architecture/adr/0002-eval-set-growth-and-mde.md` for the full growth accounting.
