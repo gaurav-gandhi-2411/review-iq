@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from eval.consensus.voting import (
+    NO_RESPONSE,
     consensus_for_item,
     vote_list_overlap,
     vote_scalar_exact,
@@ -27,9 +28,16 @@ class TestVoteScalarExact:
         assert level == "split"
 
     def test_insufficient_when_fewer_than_two_respond(self):
-        silver, level = vote_scalar_exact({"a": "positive", "b": None, "c": None})
+        silver, level = vote_scalar_exact({"a": "positive", "b": NO_RESPONSE, "c": NO_RESPONSE})
         assert silver is None
         assert level == "insufficient"
+
+    def test_none_is_a_legitimate_vote_not_a_non_response(self):
+        # Two judges genuinely agreeing the field is null (e.g. stars=null, "no
+        # explicit rating stated") must be unanimous agreement, not "insufficient".
+        silver, level = vote_scalar_exact({"a": None, "b": None, "c": "5"})
+        assert silver is None
+        assert level == "majority"
 
     def test_normalized_case_insensitive_match(self):
         silver, level = vote_scalar_exact(
@@ -95,7 +103,7 @@ class TestVoteListOverlap:
         assert silver == []
 
     def test_insufficient_with_one_response(self):
-        silver, level = vote_list_overlap({"a": ["x"], "b": None, "c": None})
+        silver, level = vote_list_overlap({"a": ["x"], "b": NO_RESPONSE, "c": NO_RESPONSE})
         assert level == "insufficient"
 
 

@@ -35,6 +35,16 @@ from typing import Any, Literal
 
 AgreementLevel = Literal["unanimous", "majority", "split", "insufficient"]
 
+# Sentinel for "this judge did not respond at all" (errored / unparseable output) --
+# distinct from a judge SUCCESSFULLY returning `None`/null for a field, which is a
+# legitimate vote in this schema (e.g. stars=null means "no explicit rating stated",
+# buy_again=null means "genuinely ambiguous" -- both are real answers the existing
+# fixtures already use, not missing data). Conflating the two would make every field
+# where judges correctly agree on null look like "insufficient"/"split" instead of the
+# unanimous agreement it actually is. A plain string (not `object()`) so the `votes`
+# dict this ends up inside stays JSON-serializable for the results JSONL.
+NO_RESPONSE = "\x00__NO_RESPONSE__\x00"
+
 # Fields voted by exact match (after optional normalization).
 SCALAR_EXACT_FIELDS: tuple[str, ...] = ("stars", "buy_again", "sentiment", "language")
 # stars_inferred gets a +/-1 tolerance cluster instead of exact match (see module docstring).
@@ -71,13 +81,15 @@ def _jaccard(a: set[str], b: set[str]) -> float:
 def vote_scalar_exact(
     values: dict[str, Any], normalize: bool = False
 ) -> tuple[Any, AgreementLevel]:
-    """Vote on a scalar field given `{judge_id: value_or_None}`.
+    """Vote on a scalar field given `{judge_id: value_or_NO_RESPONSE}`.
 
     Returns (silver_value_or_None, agreement_level). `normalize` lowercases/strips
     string values for the equality comparison (used for `product`); the returned
     silver value is still the ORIGINAL (non-normalized) string from an agreeing judge.
+    A value of `None` is a legitimate vote (e.g. stars=null); only `NO_RESPONSE`
+    (a judge that errored/returned unparseable output) is excluded.
     """
-    present = {jid: v for jid, v in values.items() if v is not None}
+    present = {jid: v for jid, v in values.items() if v is not NO_RESPONSE}
     if len(present) < 2:
         return None, "insufficient"
 
@@ -108,9 +120,12 @@ def vote_scalar_tolerant(
     """Vote on a numeric field where judges within `tolerance` of each other count as agreeing.
 
     Clusters responding judges' values; if the tightest cluster spans <= `tolerance`
-    and contains all/most judges, its median is the silver value.
+    and contains all/most judges, its median is the silver value. Unlike the scalar
+    exact-match vote, an actual `None` here IS treated as absent data (not a legitimate
+    vote value) -- this field's prompt instruction is "always populate", so a judge
+    returning `None` failed to comply, same as `NO_RESPONSE`.
     """
-    present = {jid: v for jid, v in values.items() if v is not None}
+    present = {jid: v for jid, v in values.items() if v is not None and v is not NO_RESPONSE}
     if len(present) < 2:
         return None, "insufficient"
 
@@ -144,8 +159,14 @@ def _median(vals: Sequence[float]) -> float:
 def vote_list_overlap(
     values: dict[str, list[str] | None], threshold: float = JACCARD_THRESHOLD
 ) -> tuple[list[str] | None, AgreementLevel]:
-    """Vote on an open-list field via pairwise Jaccard overlap (see module docstring)."""
-    present = {jid: (v or []) for jid, v in values.items() if v is not None}
+    """Vote on an open-list field via pairwise Jaccard overlap (see module docstring).
+
+    Only `NO_RESPONSE` (judge errored) is excluded -- a validated judge response always
+    has a real list here (pydantic's `default_factory=list` fills in `[]` when a judge
+    omits the field, and a judge that returned `null` for a typed list field would have
+    failed schema validation entirely, becoming `NO_RESPONSE` upstream, not `None`).
+    """
+    present = {jid: (v or []) for jid, v in values.items() if v is not NO_RESPONSE}
     if len(present) < 2:
         return None, "insufficient"
 
@@ -171,34 +192,53 @@ def vote_list_overlap(
     return None, "split"
 
 
+def _votes_for(field: str, judge_outputs: dict[str, dict[str, Any] | None]) -> dict[str, Any]:
+    """Build `{judge_id: field_value_or_NO_RESPONSE}` for one field.
+
+    `judge_outputs[jid] is None` means that judge errored/returned unparseable output
+    for the WHOLE item -> NO_RESPONSE. Otherwise `out.get(field)` is a real vote, even
+    when it's `None` (a legitimate null answer for fields like stars/buy_again).
+    """
+    return {
+        jid: (out.get(field) if out is not None else NO_RESPONSE)
+        for jid, out in judge_outputs.items()
+    }
+
+
 def consensus_for_item(
     judge_outputs: dict[str, dict[str, Any] | None],
 ) -> dict[str, dict[str, Any]]:
     """Compute per-field consensus for one item given `{judge_id: parsed_output_or_None}`.
 
+    `judge_outputs[jid]` is `None` when that judge errored/returned unparseable output
+    for the item entirely; otherwise it's the judge's parsed field dict (which may
+    legitimately have `None` values for individual fields).
+
     Returns `{field: {"silver": value_or_None, "agreement": level, "votes": {judge_id: raw_value}}}`
     for every field in SCALAR_EXACT_FIELDS + SCALAR_TOLERANT_FIELDS + SCALAR_NORMALIZED_FIELDS
-    + SCALAR_ORDINAL_FIELDS + LIST_FIELDS.
+    + SCALAR_ORDINAL_FIELDS + LIST_FIELDS. `votes` records `NO_RESPONSE` verbatim for
+    judges that didn't answer, so downstream consumers can distinguish "didn't answer"
+    from "answered null".
     """
     result: dict[str, dict[str, Any]] = {}
 
     for field in (*SCALAR_EXACT_FIELDS, *SCALAR_ORDINAL_FIELDS):
-        votes = {jid: (out.get(field) if out else None) for jid, out in judge_outputs.items()}
+        votes = _votes_for(field, judge_outputs)
         silver, level = vote_scalar_exact(votes, normalize=False)
         result[field] = {"silver": silver, "agreement": level, "votes": votes}
 
     for field in SCALAR_NORMALIZED_FIELDS:
-        votes = {jid: (out.get(field) if out else None) for jid, out in judge_outputs.items()}
+        votes = _votes_for(field, judge_outputs)
         silver, level = vote_scalar_exact(votes, normalize=True)
         result[field] = {"silver": silver, "agreement": level, "votes": votes}
 
     for field, tolerance in SCALAR_TOLERANT_FIELDS.items():
-        votes = {jid: (out.get(field) if out else None) for jid, out in judge_outputs.items()}
+        votes = _votes_for(field, judge_outputs)
         silver, level = vote_scalar_tolerant(votes, tolerance)
         result[field] = {"silver": silver, "agreement": level, "votes": votes}
 
     for field in LIST_FIELDS:
-        votes = {jid: (out.get(field) if out else None) for jid, out in judge_outputs.items()}
+        votes = _votes_for(field, judge_outputs)
         silver, level = vote_list_overlap(votes)
         result[field] = {"silver": silver, "agreement": level, "votes": votes}
 
