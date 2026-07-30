@@ -121,5 +121,13 @@
     "en": 110,
     "hi": 7,
     "hi-en": 15
+  },
+  "gating_eval_set_size": 49,
+  "staged_pending_groq_cassette": {
+    "count": 83,
+    "per_language": {
+      "en": 83
+    },
+    "reason": "cassettes recorded via OpenRouter fallback after a Groq TPD exhaustion incident (ADR 0003), not production's Groq model -- staged out of eval.runner's scanned path (eval/fixtures/_pending_groq_cassette/) until a real Groq re-recording promotes them, so CI's accuracy gate is never computed against a different model's output."
   }
 }

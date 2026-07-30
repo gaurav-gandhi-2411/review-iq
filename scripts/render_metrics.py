@@ -258,10 +258,19 @@ def render_consensus_labeling_md(data: dict[str, Any]) -> str:
         "free-tier rate-limit exhaustion on the dedicated benchmark key (both judges errored -- "
         "not a quality signal, recoverable on a fresh quota window).",
         "",
-        f"**Final eval set: {data['final_eval_set_size']} fixtures** ({lang_counts_str}).",
+        f"**{data['final_eval_set_size']} fixtures now have consensus ground truth** "
+        f"({lang_counts_str}), but **only {data['gating_eval_set_size']} currently gate CI**. "
+        f"The other {data['staged_pending_groq_cassette']['count']} "
+        f"({', '.join(f'{n} {lang}' for lang, n in data['staged_pending_groq_cassette']['per_language'].items())}) "
+        "are staged in `eval/fixtures/_pending_groq_cassette/` -- their cassettes were recorded "
+        "via an OpenRouter fallback after a Groq quota exhaustion incident (see "
+        "[ADR 0003](docs/architecture/adr/0003-cassette-provenance-during-groq-quota-exhaustion.md)), "
+        "not production's Groq model, so they are deliberately excluded from the CI-scored set "
+        "until a real Groq re-recording promotes them.",
         "",
-        f"**Minimum detectable effect** (2-proportion z-test, alpha=0.05, power=0.80) at n="
-        f"{mde['overall_n']}: **{mde['mde_worst_case_p_0.5'] * 100:.1f} points** (worst-case, p=0.5) / "
+        f"**Minimum detectable effect** (2-proportion z-test, alpha=0.05, power=0.80) once all "
+        f"{mde['overall_n']} fixtures are promoted: **{mde['mde_worst_case_p_0.5'] * 100:.1f} points** "
+        "(worst-case, p=0.5) / "
         + next(
             f"**{v * 100:.1f} points** (at current score p={k.split('_p_')[-1]})"
             for k, v in mde.items()

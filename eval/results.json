@@ -1,56 +1,56 @@
 {
-  "generated_at": "2026-07-30T17:58:13Z",
-  "git_sha": "9f069858bd22a1fc38f6c14c3b0c3430223e8fdc",
+  "generated_at": "2026-07-30T18:38:24Z",
+  "git_sha": "8c20285f5ca92c39d2b6ccdff26a5a6a4759d4a0",
   "prompt_version": "v2.3",
   "mode": "routed (tiered)",
   "tiered_routing_enabled_at_runtime": true,
-  "overall_score": 0.27322614326548283,
+  "overall_score": 0.8379758141384159,
   "overall_ci_95": {
-    "n": 132,
-    "lower": 0.20442767290752348,
-    "upper": 0.35485094146456475
+    "n": 49,
+    "lower": 0.711060252103723,
+    "upper": 0.915749492218265
   },
   "threshold": 0.83,
-  "passed": false,
+  "passed": true,
   "per_language": {
     "en": {
-      "score": 0.32162137191857937,
-      "n": 110,
+      "score": 0.8621485068961426,
+      "n": 27,
       "ci_95": {
-        "lower": 0.24162460680119496,
-        "upper": 0.4136569583040694
+        "lower": 0.6872765468860416,
+        "upper": 0.9468027282615417
       },
       "threshold": 0.8,
-      "passed": false
+      "passed": true
     },
     "hi": {
-      "score": 0.09821428571428571,
+      "score": 0.8071031746031745,
       "n": 7,
       "ci_95": {
-        "lower": 0.013312035522353188,
-        "upper": 0.4678531061541521
+        "lower": 0.43942620812704747,
+        "upper": 0.957142973953498
       },
       "threshold": 0.8,
-      "passed": false
+      "passed": true
     },
     "hi-en": {
-      "score": 0.0,
+      "score": 0.808872198957621,
       "n": 15,
       "ci_95": {
-        "lower": 0.0,
-        "upper": 0.20388926630434784
+        "lower": 0.5575170481893378,
+        "upper": 0.9342758976713444
       },
       "threshold": 0.8,
-      "passed": false
+      "passed": true
     }
   },
   "fixtures": [
     {
       "id": "001_turbo_vac",
       "language": "en",
-      "overall_score": 0.9108695652173913,
+      "overall_score": 0.822485726833553,
       "error": null,
-      "latency_ms": 1967,
+      "latency_ms": 45,
       "fields": [
         {
           "field": "product",
@@ -68,8 +68,8 @@
         },
         {
           "field": "buy_again",
-          "score": 1.0,
-          "predicted": false,
+          "score": 0.0,
+          "predicted": null,
           "expected": false,
           "method": "exact"
         },
@@ -89,13 +89,12 @@
         },
         {
           "field": "topics",
-          "score": 1.0,
+          "score": 0.888888888888889,
           "predicted": [
             "suction",
             "noise",
             "battery",
-            "build_quality",
-            "price"
+            "build_quality"
           ],
           "expected": [
             "suction",
@@ -119,11 +118,11 @@
         },
         {
           "field": "pros",
-          "score": 0.5000000000000001,
+          "score": 0.7272727272727272,
           "predicted": [
             "incredible suction",
-            "super quiet operation",
-            "picked up a penny from under the rug"
+            "quiet operation",
+            "cat appreciates quiet operation"
           ],
           "expected": [
             "incredible suction",
@@ -149,7 +148,7 @@
         {
           "field": "stars_inferred",
           "score": 1.0,
-          "predicted": 2,
+          "predicted": 3,
           "expected": 3,
           "method": "tolerance\u00b11"
         }
@@ -160,7 +159,7 @@
       "language": "en",
       "overall_score": 0.9312169312169313,
       "error": null,
-      "latency_ms": 1907,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -194,8 +193,8 @@
           "field": "topics",
           "score": 0.6666666666666666,
           "predicted": [
-            "blending_performance",
-            "cleaning",
+            "performance",
+            "cleanliness",
             "noise"
           ],
           "expected": [
@@ -246,9 +245,9 @@
     {
       "id": "003_prompt_injection",
       "language": "en",
-      "overall_score": 0.9898989898989901,
+      "overall_score": 0.9427609427609427,
       "error": null,
-      "latency_ms": 1812,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "stars",
@@ -280,9 +279,9 @@
         },
         {
           "field": "topics",
-          "score": 1.0,
+          "score": 0.6666666666666666,
           "predicted": [
-            "durability",
+            "build_quality",
             "battery",
             "price"
           ],
@@ -309,11 +308,11 @@
         },
         {
           "field": "cons",
-          "score": 0.9090909090909091,
+          "score": 0.8181818181818182,
           "predicted": [
             "breaks after one week",
             "short battery life",
-            "poor value for money"
+            "poor value for price"
           ],
           "expected": [
             "breaks after one week",
@@ -336,7 +335,7 @@
       "language": "hi",
       "overall_score": 0.6875,
       "error": null,
-      "latency_ms": 40719,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -419,9 +418,9 @@
     {
       "id": "005_all_positive",
       "language": "en",
-      "overall_score": 0.9388888888888888,
+      "overall_score": 0.9777777777777779,
       "error": null,
-      "latency_ms": 1780,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -453,12 +452,12 @@
         },
         {
           "field": "topics",
-          "score": 0.75,
+          "score": 1.0,
           "predicted": [
             "air_quality",
             "noise",
             "setup",
-            "filter_replacement"
+            "filter"
           ],
           "expected": [
             "air_quality",
@@ -477,12 +476,12 @@
         },
         {
           "field": "pros",
-          "score": 0.7000000000000001,
+          "score": 0.7999999999999999,
           "predicted": [
             "fresh and clean air",
-            "incredibly quiet",
+            "incredibly quiet operation",
             "easy setup",
-            "easy to replace HEPA filter"
+            "easy filter replacement"
           ],
           "expected": [
             "fresh clean air",
@@ -511,9 +510,9 @@
     {
       "id": "006_all_negative",
       "language": "en",
-      "overall_score": 0.9134099616858238,
+      "overall_score": 0.877665544332211,
       "error": null,
-      "latency_ms": 1875,
+      "latency_ms": 15,
       "fields": [
         {
           "field": "stars",
@@ -545,10 +544,9 @@
         },
         {
           "field": "topics",
-          "score": 0.6,
+          "score": 0.4444444444444445,
           "predicted": [
             "build_quality",
-            "customer_service",
             "leakage",
             "noise",
             "durability"
@@ -578,11 +576,9 @@
         },
         {
           "field": "cons",
-          "score": 0.6206896551724139,
+          "score": 0.45454545454545453,
           "predicted": [
-            "arrived with cracked lid",
-            "poor customer service",
-            "replacement never arrived",
+            "cracked lid",
             "leaks constantly",
             "loud motor",
             "blades rusted after 2 washes"
@@ -608,9 +604,9 @@
     {
       "id": "007_buy_again_ambiguous",
       "language": "en",
-      "overall_score": 0.7464285714285713,
+      "overall_score": 0.8710317460317459,
       "error": null,
-      "latency_ms": 1905,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -621,8 +617,8 @@
         },
         {
           "field": "sentiment",
-          "score": 0.0,
-          "predicted": "mixed",
+          "score": 1.0,
+          "predicted": "neutral",
           "expected": "neutral",
           "method": "exact"
         },
@@ -635,8 +631,9 @@
         },
         {
           "field": "topics",
-          "score": 0.8,
+          "score": 0.6666666666666666,
           "predicted": [
+            "mattress",
             "edge_support",
             "delivery"
           ],
@@ -656,10 +653,11 @@
         },
         {
           "field": "pros",
-          "score": 0.5714285714285715,
+          "score": 0.4444444444444445,
           "predicted": [
+            "works",
             "fast delivery",
-            "works for sleeping"
+            "edge support is not bad"
           ],
           "expected": [
             "fast delivery"
@@ -668,10 +666,9 @@
         },
         {
           "field": "cons",
-          "score": 0.6,
+          "score": 0.8571428571428571,
           "predicted": [
-            "soft edge support",
-            "rolls towards the side"
+            "edge support is a bit soft"
           ],
           "expected": [
             "soft edge support"
@@ -690,9 +687,9 @@
     {
       "id": "008_pii_heavy",
       "language": "en",
-      "overall_score": 0.9599723947550033,
+      "overall_score": 0.89648033126294,
       "error": null,
-      "latency_ms": 1625,
+      "latency_ms": 15,
       "fields": [
         {
           "field": "stars",
@@ -724,12 +721,12 @@
         },
         {
           "field": "topics",
-          "score": 0.8571428571428571,
+          "score": 0.28571428571428575,
           "predicted": [
-            "cooling_performance",
+            "air_cooler",
             "room_size",
-            "water_tank",
-            "filling_ease"
+            "performance",
+            "ease_of_use"
           ],
           "expected": [
             "cooling_performance",
@@ -751,7 +748,7 @@
           "predicted": [
             "works well for small rooms",
             "cools down in 10 minutes",
-            "water tank is easy to fill"
+            "easy to fill water tank"
           ],
           "expected": [
             "cools quickly",
@@ -779,9 +776,9 @@
     {
       "id": "009_competitor_heavy",
       "language": "en",
-      "overall_score": 0.8683127572016461,
+      "overall_score": 0.8447971781305115,
       "error": null,
-      "latency_ms": 1797,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -813,12 +810,13 @@
         },
         {
           "field": "topics",
-          "score": 1.0,
+          "score": 0.888888888888889,
           "predicted": [
             "suction",
             "price",
             "navigation",
-            "battery"
+            "battery",
+            "build_quality"
           ],
           "expected": [
             "suction",
@@ -847,12 +845,12 @@
         },
         {
           "field": "pros",
-          "score": 0.8148148148148148,
+          "score": 0.7142857142857142,
           "predicted": [
-            "strong suction",
+            "beats Dyson on suction",
             "costs half the price of Dyson",
             "smarter navigation than iRobot",
-            "good overall performance"
+            "wins overall compared to Shark"
           ],
           "expected": [
             "better suction than Dyson",
@@ -883,9 +881,9 @@
     {
       "id": "010_urgent_angry",
       "language": "en",
-      "overall_score": 0.9416666666666668,
+      "overall_score": 0.9142857142857143,
       "error": null,
-      "latency_ms": 2250,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "stars",
@@ -924,11 +922,12 @@
         },
         {
           "field": "topics",
-          "score": 0.6666666666666666,
+          "score": 0.5714285714285715,
           "predicted": [
+            "fire",
             "safety",
-            "durability",
-            "smoke_damage"
+            "build_quality",
+            "customer_service"
           ],
           "expected": [
             "safety",
@@ -953,10 +952,11 @@
         },
         {
           "field": "cons",
-          "score": 0.75,
+          "score": 0.5714285714285714,
           "predicted": [
-            "caught fire after 3 days",
-            "caused smoke damage"
+            "caught fire",
+            "smoke damage",
+            "dangerous"
           ],
           "expected": [
             "caught fire after 3 days",
@@ -979,7 +979,7 @@
       "language": "en",
       "overall_score": 0.7777777777777778,
       "error": null,
-      "latency_ms": 1625,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1013,7 +1013,7 @@
           "field": "topics",
           "score": 0.0,
           "predicted": [
-            "overall_quality"
+            "headphones"
           ],
           "expected": [],
           "method": "set_f1"
@@ -1029,7 +1029,7 @@
           "field": "pros",
           "score": 0.0,
           "predicted": [
-            "great quality"
+            "great"
           ],
           "expected": [
             "overall satisfaction"
@@ -1055,9 +1055,9 @@
     {
       "id": "012_sarcasm",
       "language": "en",
-      "overall_score": 0.7222222222222222,
+      "overall_score": 0.7777777777777778,
       "error": null,
-      "latency_ms": 3141,
+      "latency_ms": 15,
       "fields": [
         {
           "field": "stars",
@@ -1075,8 +1075,8 @@
         },
         {
           "field": "sentiment",
-          "score": 0.0,
-          "predicted": "mixed",
+          "score": 1.0,
+          "predicted": "negative",
           "expected": "negative",
           "method": "exact"
         },
@@ -1114,17 +1114,16 @@
           "score": 0.0,
           "predicted": [
             "incredible battery life",
-            "long battery life lasts 45 minutes"
+            "amazing build quality"
           ],
           "expected": [],
           "method": "fuzzy"
         },
         {
           "field": "cons",
-          "score": 0.5,
+          "score": 0.0,
           "predicted": [
-            "creaky plastic build",
-            "poor value for price"
+            "creaky plastic"
           ],
           "expected": [
             "poor battery life (45 minutes)",
@@ -1145,9 +1144,9 @@
     {
       "id": "013_multi_product",
       "language": "en",
-      "overall_score": 0.9324866310160427,
+      "overall_score": 0.8693553178847296,
       "error": null,
-      "latency_ms": 9890,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1172,14 +1171,12 @@
         },
         {
           "field": "topics",
-          "score": 0.7272727272727272,
+          "score": 0.22222222222222224,
           "predicted": [
             "sound_quality",
-            "anc",
-            "comfort",
+            "noise_cancellation",
             "build_quality",
-            "price",
-            "durability"
+            "price"
           ],
           "expected": [
             "audio_quality",
@@ -1237,9 +1234,9 @@
     {
       "id": "014_feature_requests",
       "language": "en",
-      "overall_score": 0.7316666666666667,
+      "overall_score": 0.8361538461538462,
       "error": null,
-      "latency_ms": 7875,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1250,8 +1247,8 @@
         },
         {
           "field": "buy_again",
-          "score": 0.0,
-          "predicted": null,
+          "score": 1.0,
+          "predicted": true,
           "expected": true,
           "method": "exact"
         },
@@ -1271,13 +1268,14 @@
         },
         {
           "field": "topics",
-          "score": 0.6666666666666665,
+          "score": 0.4,
           "predicted": [
-            "accuracy",
-            "display",
-            "battery",
+            "basic_use",
+            "trends",
             "bluetooth",
-            "companion_app"
+            "battery",
+            "weight_readings",
+            "display"
           ],
           "expected": [
             "accuracy",
@@ -1300,7 +1298,7 @@
           "predicted": [
             "good for basic use",
             "accurate weight readings",
-            "display is easy to read"
+            "easy to read display"
           ],
           "expected": [
             "accurate weight readings",
@@ -1310,8 +1308,12 @@
         },
         {
           "field": "cons",
-          "score": 0.0,
-          "predicted": [],
+          "score": 0.4615384615384615,
+          "predicted": [
+            "no companion app",
+            "no Bluetooth sync",
+            "uses AAA batteries"
+          ],
           "expected": [
             "no companion app",
             "no Bluetooth",
@@ -1321,10 +1323,10 @@
         },
         {
           "field": "feature_requests",
-          "score": 0.9,
+          "score": 0.7499999999999999,
           "predicted": [
-            "companion app for tracking trends",
-            "Bluetooth sync to phone",
+            "companion app",
+            "Bluetooth sync",
             "rechargeable battery"
           ],
           "expected": [
@@ -1346,9 +1348,9 @@
     {
       "id": "015_medium_urgency",
       "language": "en",
-      "overall_score": 0.9429824561403508,
+      "overall_score": 0.8388888888888889,
       "error": null,
-      "latency_ms": 9780,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1359,8 +1361,8 @@
         },
         {
           "field": "buy_again",
-          "score": 1.0,
-          "predicted": false,
+          "score": 0.0,
+          "predicted": null,
           "expected": false,
           "method": "exact"
         },
@@ -1383,9 +1385,9 @@
           "score": 0.75,
           "predicted": [
             "lumbar_support",
-            "durability",
+            "comfort",
             "customer_service",
-            "comfort"
+            "price"
           ],
           "expected": [
             "lumbar_support",
@@ -1415,10 +1417,10 @@
         },
         {
           "field": "cons",
-          "score": 0.7368421052631579,
+          "score": 0.8,
           "predicted": [
             "lumbar support broke after 3 months",
-            "poor customer support"
+            "poor customer service"
           ],
           "expected": [
             "lumbar support broke after 3 months",
@@ -1439,9 +1441,9 @@
     {
       "id": "016_no_product_name",
       "language": "en",
-      "overall_score": 0.9659090909090909,
+      "overall_score": 0.9583333333333334,
       "error": null,
-      "latency_ms": 8781,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1486,10 +1488,10 @@
         },
         {
           "field": "pros",
-          "score": 0.7272727272727272,
+          "score": 0.6666666666666666,
           "predicted": [
             "works as advertised",
-            "battery is fine",
+            "fine battery life",
             "charges overnight"
           ],
           "expected": [
@@ -1517,9 +1519,9 @@
     {
       "id": "017_very_long",
       "language": "en",
-      "overall_score": 0.8873522458628841,
+      "overall_score": 0.821509009009009,
       "error": null,
-      "latency_ms": 9968,
+      "latency_ms": 15,
       "fields": [
         {
           "field": "stars",
@@ -1551,15 +1553,16 @@
         },
         {
           "field": "topics",
-          "score": 0.6666666666666666,
+          "score": 0.375,
           "predicted": [
             "sound_quality",
             "build_quality",
             "features",
             "value",
-            "battery",
-            "bluetooth",
-            "price"
+            "charging_port",
+            "water_resistance",
+            "microphone",
+            "equalization"
           ],
           "expected": [
             "sound_quality",
@@ -1588,14 +1591,14 @@
         },
         {
           "field": "pros",
-          "score": 0.5957446808510638,
+          "score": 0.5833333333333334,
           "predicted": [
             "exceptional bass response",
             "clear mid-tones",
             "vocals shine through",
             "premium aluminum chassis",
             "rubber base prevents sliding",
-            "instant Bluetooth pairing",
+            "Bluetooth 5.0 pairs instantly",
             "honest battery life",
             "outstanding value"
           ],
@@ -1612,12 +1615,13 @@
         },
         {
           "field": "cons",
-          "score": 0.6111111111111112,
+          "score": 0.7567567567567567,
           "predicted": [
-            "highs are slightly harsh at maximum volume",
+            "harsh highs at maximum volume",
             "flimsy charging port cover",
-            "limited EQ presets",
-            "built-in mic is passable but not great"
+            "IPX5 rating not trusted in heavy rain",
+            "passable built-in mic",
+            "limited EQ presets"
           ],
           "expected": [
             "harsh highs at max volume",
@@ -1630,9 +1634,8 @@
         },
         {
           "field": "feature_requests",
-          "score": 1.0,
+          "score": 0.5,
           "predicted": [
-            "sturdier charging port cover",
             "more EQ presets"
           ],
           "expected": [
@@ -1653,9 +1656,9 @@
     {
       "id": "018_packaging_damage",
       "language": "en",
-      "overall_score": 0.7666666666666667,
+      "overall_score": 0.6923520923520924,
       "error": null,
-      "latency_ms": 10687,
+      "latency_ms": 15,
       "fields": [
         {
           "field": "stars",
@@ -1673,8 +1676,8 @@
         },
         {
           "field": "sentiment",
-          "score": 1.0,
-          "predicted": "mixed",
+          "score": 0.0,
+          "predicted": "positive",
           "expected": "mixed",
           "method": "exact"
         },
@@ -1687,12 +1690,11 @@
         },
         {
           "field": "topics",
-          "score": 0.5,
+          "score": 0.28571428571428575,
           "predicted": [
-            "performance",
-            "adjustability",
-            "packaging",
-            "delivery"
+            "coffee_grinder",
+            "build_quality",
+            "packaging"
           ],
           "expected": [
             "grind_quality",
@@ -1704,10 +1706,8 @@
         },
         {
           "field": "competitor_mentions",
-          "score": 0.0,
-          "predicted": [
-            "Amazon"
-          ],
+          "score": 1.0,
+          "predicted": [],
           "expected": [],
           "method": "set_f1"
         },
@@ -1726,10 +1726,10 @@
         },
         {
           "field": "cons",
-          "score": 1.0,
+          "score": 0.5454545454545454,
           "predicted": [
-            "arrived in a crushed box",
-            "poor packaging"
+            "poor packaging",
+            "anxious due to damaged box"
           ],
           "expected": [
             "arrived in crushed box",
@@ -1749,9 +1749,9 @@
     {
       "id": "019_three_stars_explicit",
       "language": "en",
-      "overall_score": 0.8154040404040404,
+      "overall_score": 0.9212962962962963,
       "error": null,
-      "latency_ms": 8125,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1776,13 +1776,11 @@
         },
         {
           "field": "topics",
-          "score": 0.6,
+          "score": 0.7499999999999999,
           "predicted": [
-            "assembly",
             "build_quality",
-            "height_adjustment",
-            "noise",
-            "motor_reliability"
+            "assembly",
+            "motor"
           ],
           "expected": [
             "assembly",
@@ -1805,8 +1803,7 @@
           "score": 0.875,
           "predicted": [
             "sturdy",
-            "smooth height adjustment",
-            "quiet operation",
+            "smooth and quiet height adjustment",
             "reliable motor"
           ],
           "expected": [
@@ -1819,10 +1816,10 @@
         },
         {
           "field": "cons",
-          "score": 0.3636363636363636,
+          "score": 0.6666666666666665,
           "predicted": [
-            "assembly was a nightmare",
-            "instructions were terrible"
+            "difficult assembly",
+            "terrible instructions"
           ],
           "expected": [
             "difficult assembly (4 hours)",
@@ -1832,9 +1829,9 @@
         },
         {
           "field": "feature_requests",
-          "score": 0.5,
+          "score": 1.0,
           "predicted": [
-            "come pre-assembled"
+            "pre-assembled option"
           ],
           "expected": [
             "pre-assembled option"
@@ -1853,9 +1850,9 @@
     {
       "id": "020_urgent_safety",
       "language": "en",
-      "overall_score": 0.9205128205128206,
+      "overall_score": 0.9010526315789473,
       "error": null,
-      "latency_ms": 9812,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "stars",
@@ -1894,10 +1891,9 @@
         },
         {
           "field": "topics",
-          "score": 0.6666666666666666,
+          "score": 0.8,
           "predicted": [
             "safety",
-            "blade",
             "customer_service"
           ],
           "expected": [
@@ -1923,11 +1919,10 @@
         },
         {
           "field": "cons",
-          "score": 0.5384615384615384,
+          "score": 0.21052631578947364,
           "predicted": [
-            "blade flew off during use",
-            "serious safety hazard",
-            "poor customer service response"
+            "safety hazard",
+            "unacceptable customer service"
           ],
           "expected": [
             "blade detaches during use (safety hazard)",
@@ -1948,9 +1943,9 @@
     {
       "id": "021_neutral_review",
       "language": "en",
-      "overall_score": 0.935,
+      "overall_score": 0.8031818181818181,
       "error": null,
-      "latency_ms": 9031,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1975,13 +1970,14 @@
         },
         {
           "field": "topics",
-          "score": 1.0,
+          "score": 0.5454545454545454,
           "predicted": [
-            "step_tracking",
+            "steps",
             "sleep_tracking",
             "heart_rate",
-            "battery",
-            "price"
+            "price",
+            "battery_life",
+            "build_quality"
           ],
           "expected": [
             "step_tracking",
@@ -2001,13 +1997,13 @@
         },
         {
           "field": "pros",
-          "score": 0.48000000000000004,
+          "score": 0.8799999999999999,
           "predicted": [
-            "counts steps",
-            "tracks sleep",
-            "heart rate works",
-            "battery lasts about 7 days",
-            "price is fair"
+            "accurate step counting",
+            "sleep tracking",
+            "heart rate monitoring",
+            "fair price",
+            "long battery life"
           ],
           "expected": [
             "accurate step counting",
@@ -2020,8 +2016,11 @@
         },
         {
           "field": "cons",
-          "score": 1.0,
-          "predicted": [],
+          "score": 0.0,
+          "predicted": [
+            "nothing wowed me",
+            "basic fitness tracker"
+          ],
           "expected": [],
           "method": "fuzzy"
         },
@@ -2037,9 +2036,9 @@
     {
       "id": "022_two_star_explicit",
       "language": "en",
-      "overall_score": 0.8566365408470671,
+      "overall_score": 0.9176767676767675,
       "error": null,
-      "latency_ms": 9108,
+      "latency_ms": 15,
       "fields": [
         {
           "field": "stars",
@@ -2071,13 +2070,12 @@
         },
         {
           "field": "topics",
-          "score": 0.6666666666666665,
+          "score": 0.75,
           "predicted": [
-            "design",
-            "arch_support",
             "sole",
-            "comfort",
-            "breathability"
+            "arch_support",
+            "breathability",
+            "comfort"
           ],
           "expected": [
             "sole",
@@ -2096,10 +2094,10 @@
         },
         {
           "field": "pros",
-          "score": 0.7272727272727272,
+          "score": 0.9090909090909091,
           "predicted": [
-            "look great in photos",
-            "breathable shoe material"
+            "breathable shoe material",
+            "looks great in photos"
           ],
           "expected": [
             "breathable material",
@@ -2109,11 +2107,11 @@
         },
         {
           "field": "cons",
-          "score": 0.3157894736842105,
+          "score": 0.6,
           "predicted": [
             "paper-thin sole",
             "zero arch support",
-            "feet hurt after 5km run"
+            "causes foot pain after 5km run"
           ],
           "expected": [
             "thin sole",
@@ -2136,7 +2134,7 @@
       "language": "en",
       "overall_score": 0.875,
       "error": null,
-      "latency_ms": 8719,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -2147,8 +2145,8 @@
         },
         {
           "field": "sentiment",
-          "score": 1.0,
-          "predicted": "positive",
+          "score": 0.0,
+          "predicted": "neutral",
           "expected": "positive",
           "method": "exact"
         },
@@ -2175,10 +2173,8 @@
         },
         {
           "field": "pros",
-          "score": 0.0,
-          "predicted": [
-            "overall satisfaction"
-          ],
+          "score": 1.0,
+          "predicted": [],
           "expected": [],
           "method": "fuzzy"
         },
@@ -2201,9 +2197,9 @@
     {
       "id": "024_return_intent",
       "language": "en",
-      "overall_score": 0.9166666666666666,
+      "overall_score": 0.8636363636363636,
       "error": null,
-      "latency_ms": 9109,
+      "latency_ms": 15,
       "fields": [
         {
           "field": "stars",
@@ -2242,11 +2238,11 @@
         },
         {
           "field": "topics",
-          "score": 0.5,
+          "score": 0.0,
           "predicted": [
-            "installation",
+            "installation_manual",
             "build_quality",
-            "durability",
+            "performance",
             "customer_service"
           ],
           "expected": [
@@ -2273,12 +2269,12 @@
         },
         {
           "field": "cons",
-          "score": 0.6666666666666666,
+          "score": 0.6363636363636365,
           "predicted": [
-            "arrived without installation manual",
-            "filter housing cracked",
-            "caused flooding",
-            "poor quality"
+            "missing installation manual",
+            "cracked filter housing",
+            "flooded sink area",
+            "required plumber's assistance"
           ],
           "expected": [
             "missing installation manual",
@@ -2300,9 +2296,9 @@
     {
       "id": "025_competitor_switch",
       "language": "en",
-      "overall_score": 0.7676190476190476,
+      "overall_score": 0.7388888888888889,
       "error": null,
-      "latency_ms": 8905,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -2334,13 +2330,13 @@
         },
         {
           "field": "topics",
-          "score": 0.20000000000000004,
+          "score": 0.0,
           "predicted": [
-            "heating_speed",
+            "heating",
             "basket_size",
-            "cleanup",
+            "cleanliness",
             "cooking_performance",
-            "app_availability"
+            "app"
           ],
           "expected": [
             "heating_speed",
@@ -2364,12 +2360,12 @@
         },
         {
           "field": "pros",
-          "score": 0.4761904761904762,
+          "score": 0.8888888888888888,
           "predicted": [
-            "heats up faster",
-            "bigger basket",
-            "cleanup takes half the time",
-            "pure cooking performance"
+            "faster heating",
+            "larger basket",
+            "easier cleanup",
+            "better cooking performance"
           ],
           "expected": [
             "faster heat-up",
@@ -2392,10 +2388,8 @@
         },
         {
           "field": "feature_requests",
-          "score": 0.5,
-          "predicted": [
-            "app availability"
-          ],
+          "score": 0.0,
+          "predicted": [],
           "expected": [
             "companion app"
           ],
@@ -2413,9 +2407,9 @@
     {
       "id": "026_defect_no_escalation_medium",
       "language": "en",
-      "overall_score": 0.9314285714285713,
+      "overall_score": 0.9085714285714286,
       "error": null,
-      "latency_ms": 9765,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -2454,12 +2448,11 @@
         },
         {
           "field": "topics",
-          "score": 0.8571428571428571,
+          "score": 1.0,
           "predicted": [
             "sound_quality",
             "battery",
-            "microphone",
-            "design"
+            "microphone"
           ],
           "expected": [
             "sound_quality",
@@ -2477,9 +2470,9 @@
         },
         {
           "field": "pros",
-          "score": 0.8571428571428571,
+          "score": 0.7999999999999999,
           "predicted": [
-            "good sound quality",
+            "surprisingly good sound quality",
             "long battery life"
           ],
           "expected": [
@@ -2490,10 +2483,9 @@
         },
         {
           "field": "cons",
-          "score": 0.6,
+          "score": 0.28571428571428575,
           "predicted": [
-            "useless microphone",
-            "poor microphone performance in calls"
+            "useless microphone"
           ],
           "expected": [
             "microphone inaudible on calls",
@@ -2513,9 +2505,9 @@
     {
       "id": "027_harm_in_positive_tone_high",
       "language": "en",
-      "overall_score": 0.7425730994152047,
+      "overall_score": 0.8680555555555557,
       "error": null,
-      "latency_ms": 9422,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -2533,8 +2525,8 @@
         },
         {
           "field": "sentiment",
-          "score": 0.0,
-          "predicted": "mixed",
+          "score": 1.0,
+          "predicted": "positive",
           "expected": "positive",
           "method": "exact"
         },
@@ -2559,8 +2551,8 @@
             "sound_quality",
             "bass",
             "bluetooth",
-            "comfort",
-            "price"
+            "price",
+            "comfort"
           ],
           "expected": [
             "sound_quality",
@@ -2579,12 +2571,12 @@
         },
         {
           "field": "pros",
-          "score": 0.8,
+          "score": 0.9166666666666666,
           "predicted": [
             "excellent sound quality",
             "punchy bass",
             "instant Bluetooth pairing",
-            "great buy for the price"
+            "great value for price"
           ],
           "expected": [
             "excellent sound quality",
@@ -2596,10 +2588,10 @@
         },
         {
           "field": "cons",
-          "score": 0.7368421052631579,
+          "score": 0.875,
           "predicted": [
-            "ear cups press really tight",
-            "ears start aching after 20 minutes of use"
+            "ear cups press tight",
+            "ear aching after 20 minutes of use"
           ],
           "expected": [
             "ear cups too tight",
@@ -2619,9 +2611,9 @@
     {
       "id": "028_fit_pain_high",
       "language": "en",
-      "overall_score": 0.8575757575757577,
+      "overall_score": 0.8300000000000001,
       "error": null,
-      "latency_ms": 8375,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "stars",
@@ -2660,13 +2652,12 @@
         },
         {
           "field": "topics",
-          "score": 0.888888888888889,
+          "score": 0.5,
           "predicted": [
             "tracking",
             "battery",
-            "button_placement",
-            "comfort",
-            "design"
+            "build_quality",
+            "ergonomics"
           ],
           "expected": [
             "tracking",
@@ -2685,11 +2676,11 @@
         },
         {
           "field": "pros",
-          "score": 0.9090909090909091,
+          "score": 0.7999999999999999,
           "predicted": [
             "smooth tracking",
             "long battery life",
-            "perfect DPI button placement for gaming"
+            "perfect DPI button placement"
           ],
           "expected": [
             "smooth tracking",
@@ -2700,9 +2691,10 @@
         },
         {
           "field": "cons",
-          "score": 0.7777777777777777,
+          "score": 1.0,
           "predicted": [
-            "narrow shape causes wrist pain after an hour of use"
+            "narrow shape for larger hands",
+            "wrist pain after an hour of use"
           ],
           "expected": [
             "narrow shape for larger hands",
@@ -2720,209 +2712,17 @@
       ]
     },
     {
-      "id": "029_consensus_grown",
-      "language": "en",
-      "overall_score": 0.9,
+      "id": "hi-en-001",
+      "language": "hi-en",
+      "overall_score": 0.8669230769230769,
       "error": null,
-      "latency_ms": 9297,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
           "score": 1.0,
-          "predicted": "product",
-          "expected": "product",
-          "method": "exact"
-        },
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "positive",
-          "expected": "positive",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 1.0,
-          "predicted": [
-            "technology",
-            "design"
-          ],
-          "expected": [
-            "technology",
-            "design"
-          ],
-          "method": "set_f1"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1"
-        },
-        {
-          "field": "pros",
-          "score": 0.0,
-          "predicted": [
-            "good product",
-            "good technology",
-            "attractive"
-          ],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 4,
-          "expected": 4,
-          "method": "tolerance\u00b11"
-        }
-      ]
-    },
-    {
-      "id": "030_consensus_grown",
-      "language": "en",
-      "overall_score": 0.6647058823529411,
-      "error": null,
-      "latency_ms": 9719,
-      "fields": [
-        {
-          "field": "product",
-          "score": 1.0,
-          "predicted": "headset",
-          "expected": "headset",
-          "method": "exact"
-        },
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 1.0,
-          "predicted": true,
-          "expected": true,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 0.0,
-          "predicted": "positive",
-          "expected": "mixed",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.0,
-          "predicted": [
-            "price",
-            "design",
-            "wire_quality",
-            "packaging",
-            "accessories",
-            "warranty",
-            "sound_quality"
-          ],
-          "expected": [],
-          "method": "set_f1"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1"
-        },
-        {
-          "field": "pros",
-          "score": 0.6470588235294117,
-          "predicted": [
-            "good for the price range",
-            "great look",
-            "tangle free wire",
-            "good packaging",
-            "extra set of ear buds provided",
-            "one year warranty"
-          ],
-          "expected": [
-            "great look",
-            "tangle-free wire",
-            "good packaging",
-            "extra ear buds included",
-            "one-year warranty",
-            "good value for price"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.0,
-          "predicted": [
-            "bass is not quite good"
-          ],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 4,
-          "expected": 4,
-          "method": "tolerance\u00b11"
-        }
-      ]
-    },
-    {
-      "id": "031_consensus_grown",
-      "language": "en",
-      "overall_score": 0.8,
-      "error": null,
-      "latency_ms": 9358,
-      "fields": [
-        {
-          "field": "product",
-          "score": 1.0,
-          "predicted": "sound machine",
-          "expected": "sound machine",
+          "predicted": "earphone",
+          "expected": "earphone",
           "method": "exact"
         },
         {
@@ -2949,135 +2749,58 @@
         {
           "field": "language",
           "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
+          "predicted": "hi-en",
+          "expected": "hi-en",
           "method": "exact"
         },
         {
           "field": "topics",
-          "score": 0.0,
+          "score": 0.4,
           "predicted": [
             "sound_quality",
-            "price",
-            "battery",
-            "bass"
+            "comparison"
           ],
-          "expected": [],
+          "expected": [
+            "sound quality",
+            "comparison",
+            "value"
+          ],
           "method": "set_f1"
         },
         {
           "field": "competitor_mentions",
           "score": 1.0,
-          "predicted": [],
-          "expected": [],
+          "predicted": [
+            "Apple"
+          ],
+          "expected": [
+            "Apple"
+          ],
           "method": "set_f1"
         },
         {
           "field": "pros",
-          "score": 0.0,
+          "score": 0.7692307692307692,
           "predicted": [
-            "amazing sound quality",
-            "good price",
-            "nice product",
-            "good sound",
-            "good bass quality",
-            "long battery backup"
+            "excellent sound quality",
+            "competitive with Apple"
           ],
-          "expected": [],
+          "expected": [
+            "superb quality",
+            "awesome sound",
+            "competitive with Apple"
+          ],
           "method": "fuzzy"
         },
         {
           "field": "cons",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 5,
-          "expected": 5,
-          "method": "tolerance\u00b11"
-        }
-      ]
-    },
-    {
-      "id": "032_consensus_grown",
-      "language": "en",
-      "overall_score": 0.7,
-      "error": null,
-      "latency_ms": 8375,
-      "fields": [
-        {
-          "field": "product",
-          "score": 1.0,
-          "predicted": "Realme Bass",
-          "expected": "Realme Bass",
-          "method": "exact"
-        },
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "positive",
-          "expected": "positive",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.0,
+          "score": 0.5,
           "predicted": [
-            "sound_quality",
-            "bass"
+            "not as good as Apple earphone"
           ],
-          "expected": [],
-          "method": "set_f1"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 0.0,
-          "predicted": [
-            "One Plus"
+          "expected": [
+            "not better than Apple"
           ],
-          "expected": [],
-          "method": "set_f1"
-        },
-        {
-          "field": "pros",
-          "score": 0.0,
-          "predicted": [
-            "better music quality than One Plus earphones",
-            "better bass than One Plus Bullets Wireless Z"
-          ],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
           "method": "fuzzy"
         },
         {
@@ -3090,299 +2813,17 @@
       ]
     },
     {
-      "id": "033_consensus_grown",
-      "language": "en",
-      "overall_score": 0.6666666666666666,
-      "error": null,
-      "latency_ms": 9109,
-      "fields": [
-        {
-          "field": "product",
-          "score": 0.0,
-          "predicted": "Super product",
-          "expected": "unknown",
-          "method": "exact"
-        },
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 0.0,
-          "predicted": true,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "positive",
-          "expected": "positive",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.6666666666666666,
-          "predicted": [
-            "comfort",
-            "music_quality",
-            "bass"
-          ],
-          "expected": [
-            "comfort",
-            "sound_quality",
-            "bass"
-          ],
-          "method": "set_f1"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1"
-        },
-        {
-          "field": "pros",
-          "score": 0.0,
-          "predicted": [
-            "comfortable to hear",
-            "good music",
-            "good bass"
-          ],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 5,
-          "expected": 5,
-          "method": "tolerance\u00b11"
-        }
-      ]
-    },
-    {
-      "id": "034_consensus_grown",
-      "language": "en",
-      "overall_score": 0.7375,
-      "error": null,
-      "latency_ms": 9500,
-      "fields": [
-        {
-          "field": "product",
-          "score": 0.0,
-          "predicted": "real me 3",
-          "expected": "unknown",
-          "method": "exact"
-        },
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "positive",
-          "expected": "positive",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.7499999999999999,
-          "predicted": [
-            "build_quality",
-            "audio_quality",
-            "bass"
-          ],
-          "expected": [
-            "build_quality",
-            "audio_quality",
-            "bass",
-            "price",
-            "gaming"
-          ],
-          "method": "set_f1"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 0.0,
-          "predicted": [],
-          "expected": [
-            "real me 3"
-          ],
-          "method": "set_f1"
-        },
-        {
-          "field": "pros",
-          "score": 0.625,
-          "predicted": [
-            "good build quality",
-            "good audio quality",
-            "good bass"
-          ],
-          "expected": [
-            "good build quality",
-            "good audio quality",
-            "good bass",
-            "suitable for music lovers",
-            "suitable for PUBG players"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 4,
-          "expected": 4,
-          "method": "tolerance\u00b11"
-        }
-      ]
-    },
-    {
-      "id": "035_consensus_grown",
-      "language": "en",
-      "overall_score": 0.78,
-      "error": null,
-      "latency_ms": 8327,
-      "fields": [
-        {
-          "field": "product",
-          "score": 0.0,
-          "predicted": "product",
-          "expected": "unknown",
-          "method": "exact"
-        },
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 1.0,
-          "predicted": true,
-          "expected": true,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "positive",
-          "expected": "positive",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.8,
-          "predicted": [
-            "sound_quality",
-            "delivery"
-          ],
-          "expected": [
-            "price",
-            "sound_quality",
-            "delivery"
-          ],
-          "method": "set_f1"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1"
-        },
-        {
-          "field": "pros",
-          "score": 0.0,
-          "predicted": [
-            "exceptionally good product",
-            "very good sound quality",
-            "delivery as scheduled"
-          ],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 5,
-          "expected": 5,
-          "method": "tolerance\u00b11"
-        }
-      ]
-    },
-    {
-      "id": "036_consensus_grown",
-      "language": "en",
+      "id": "hi-en-002",
+      "language": "hi-en",
       "overall_score": 0.7666666666666667,
       "error": null,
-      "latency_ms": 9281,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
           "score": 0.0,
-          "predicted": "unknown product",
-          "expected": "unknown",
+          "predicted": "wireless earbuds",
+          "expected": "OnePlus Bullets Wireless Z",
           "method": "exact"
         },
         {
@@ -3409,22 +2850,20 @@
         {
           "field": "language",
           "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
+          "predicted": "hi-en",
+          "expected": "hi-en",
           "method": "exact"
         },
         {
           "field": "topics",
-          "score": 0.6666666666666666,
+          "score": 0.5,
           "predicted": [
-            "price",
-            "fit",
-            "battery"
+            "product_quality",
+            "value"
           ],
           "expected": [
-            "price",
-            "fit",
-            "battery_backup"
+            "recommendation",
+            "product_quality"
           ],
           "method": "set_f1"
         },
@@ -3437,13 +2876,16 @@
         },
         {
           "field": "pros",
-          "score": 0.0,
+          "score": 0.16666666666666666,
           "predicted": [
+            "excellent product",
             "worth buying",
-            "fits well",
-            "superb battery backup"
+            "good value for money"
           ],
-          "expected": [],
+          "expected": [
+            "highly recommended",
+            "excellent quality"
+          ],
           "method": "fuzzy"
         },
         {
@@ -3463,11 +2905,11 @@
       ]
     },
     {
-      "id": "037_consensus_grown",
-      "language": "en",
-      "overall_score": 0.8666666666666668,
+      "id": "hi-en-003",
+      "language": "hi-en",
+      "overall_score": 0.8833333333333334,
       "error": null,
-      "latency_ms": 8093,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -3500,21 +2942,421 @@
         {
           "field": "language",
           "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
+          "predicted": "hi-en",
+          "expected": "hi-en",
           "method": "exact"
         },
         {
           "field": "topics",
           "score": 0.6666666666666666,
           "predicted": [
-            "audio_output",
+            "sound_quality",
             "bass",
-            "value_for_price"
+            "value"
           ],
           "expected": [
-            "audio_output",
             "bass",
+            "value",
+            "reviews"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.16666666666666666,
+          "predicted": [
+            "excellent bass quality",
+            "worth buying"
+          ],
+          "expected": [
+            "good bass",
+            "value for money",
+            "satisfying purchase"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 5,
+          "expected": 5,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "hi-en-004",
+      "language": "hi-en",
+      "overall_score": 0.8015873015873016,
+      "error": null,
+      "latency_ms": 0,
+      "fields": [
+        {
+          "field": "product",
+          "score": 0.0,
+          "predicted": "neckband",
+          "expected": "neckband earphones",
+          "method": "exact"
+        },
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": true,
+          "expected": true,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "positive",
+          "expected": "positive",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "hi-en",
+          "expected": "hi-en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.4444444444444445,
+          "predicted": [
+            "bass",
+            "battery",
+            "sound_quality",
+            "neckband"
+          ],
+          "expected": [
+            "drivers",
+            "bass",
+            "battery_backup",
+            "sound_quality",
+            "value_for_money"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [
+            "JBL"
+          ],
+          "expected": [
+            "JBL"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.5714285714285713,
+          "predicted": [
+            "excellent bass",
+            "good battery life",
+            "excellent sound quality",
+            "best neckband in this range"
+          ],
+          "expected": [
+            "11mm drivers",
+            "excellent bass",
+            "amazing battery backup",
+            "best sound quality"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 5,
+          "expected": 5,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "hi-en-005",
+      "language": "hi-en",
+      "overall_score": 0.9573529411764706,
+      "error": null,
+      "latency_ms": 0,
+      "fields": [
+        {
+          "field": "product",
+          "score": 1.0,
+          "predicted": "headphone",
+          "expected": "headphone",
+          "method": "exact"
+        },
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": true,
+          "expected": true,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "positive",
+          "expected": "positive",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "hi-en",
+          "expected": "hi-en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.75,
+          "predicted": [
+            "magnetic_effect",
+            "voice_quality",
+            "battery_backup",
+            "value"
+          ],
+          "expected": [
+            "magnetic_effect",
+            "voice_quality",
+            "battery_backup",
+            "value_for_money"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.823529411764706,
+          "predicted": [
+            "excellent magnetic effect",
+            "best voice quality",
+            "excellent battery backup"
+          ],
+          "expected": [
+            "magnetic effect",
+            "voice quality best",
+            "battery backup best",
+            "paisa vasool"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 5,
+          "expected": 5,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "hi-en-006",
+      "language": "hi-en",
+      "overall_score": 0.8688888888888888,
+      "error": null,
+      "latency_ms": 0,
+      "fields": [
+        {
+          "field": "product",
+          "score": 0.0,
+          "predicted": "earbuds",
+          "expected": "audio device",
+          "method": "exact"
+        },
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": true,
+          "expected": true,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "positive",
+          "expected": "positive",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "hi-en",
+          "expected": "hi-en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.8000000000000002,
+          "predicted": [
+            "performance",
+            "range",
+            "sound_quality",
+            "price",
+            "value"
+          ],
+          "expected": [
+            "performance",
+            "range",
+            "sound quality",
+            "price",
+            "value"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [
+            "realme"
+          ],
+          "expected": [
+            "realme"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.8888888888888888,
+          "predicted": [
+            "excellent performance",
+            "super quality",
+            "sound perfect",
+            "value for money"
+          ],
+          "expected": [
+            "excellent performance",
+            "super range",
+            "quality sound",
+            "value for money"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 5,
+          "expected": 5,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "hi-en-007",
+      "language": "hi-en",
+      "overall_score": 0.875,
+      "error": null,
+      "latency_ms": 0,
+      "fields": [
+        {
+          "field": "product",
+          "score": 1.0,
+          "predicted": "earphone",
+          "expected": "earphone",
+          "method": "exact"
+        },
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": true,
+          "expected": true,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "positive",
+          "expected": "positive",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "hi-en",
+          "expected": "hi-en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.0,
+          "predicted": [
+            "product_quality",
+            "value"
+          ],
+          "expected": [
+            "value_for_money",
+            "overall_quality",
             "price"
           ],
           "method": "set_f1"
@@ -3528,13 +3370,17 @@
         },
         {
           "field": "pros",
-          "score": 0.0,
+          "score": 0.75,
           "predicted": [
-            "great audio output",
-            "great bass",
-            "worth buying"
+            "excellent product",
+            "perfect quality",
+            "great value for money"
           ],
-          "expected": [],
+          "expected": [
+            "perfect quality",
+            "excellent value for money",
+            "highly recommended"
+          ],
           "method": "fuzzy"
         },
         {
@@ -3554,17 +3400,17 @@
       ]
     },
     {
-      "id": "038_consensus_grown",
-      "language": "en",
-      "overall_score": 0.7,
+      "id": "hi-en-008",
+      "language": "hi-en",
+      "overall_score": 0.784,
       "error": null,
-      "latency_ms": 8953,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
           "score": 0.0,
-          "predicted": "headfones",
-          "expected": "unknown",
+          "predicted": "gadget",
+          "expected": "earphones",
           "method": "exact"
         },
         {
@@ -3591,18 +3437,27 @@
         {
           "field": "language",
           "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
+          "predicted": "hi-en",
+          "expected": "hi-en",
           "method": "exact"
         },
         {
           "field": "topics",
-          "score": 0.0,
+          "score": 0.2,
           "predicted": [
-            "product_quality",
-            "accessories"
+            "sound_quality",
+            "gaming",
+            "charging_speed",
+            "value"
           ],
-          "expected": [],
+          "expected": [
+            "gaming",
+            "sound_delay",
+            "latency",
+            "charging",
+            "type_c",
+            "value_for_money"
+          ],
           "method": "set_f1"
         },
         {
@@ -3614,12 +3469,20 @@
         },
         {
           "field": "pros",
-          "score": 0.0,
+          "score": 0.64,
           "predicted": [
-            "amazing product",
-            "includes wire for use when not charged"
+            "no sound delays while playing online games",
+            "great device",
+            "fast type c charging",
+            "good value for money"
           ],
-          "expected": [],
+          "expected": [
+            "no sound delays",
+            "good for gaming",
+            "type c charging",
+            "quick charging",
+            "value for money"
+          ],
           "method": "fuzzy"
         },
         {
@@ -3639,17 +3502,17 @@
       ]
     },
     {
-      "id": "039_consensus_grown",
-      "language": "en",
-      "overall_score": 0.7,
+      "id": "hi-en-009",
+      "language": "hi-en",
+      "overall_score": 0.7988235294117647,
       "error": null,
-      "latency_ms": 9140,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
           "score": 0.0,
-          "predicted": "unknown product",
-          "expected": "earbuds",
+          "predicted": "sound quality",
+          "expected": "bluetooth earphones",
           "method": "exact"
         },
         {
@@ -3662,8 +3525,8 @@
         {
           "field": "buy_again",
           "score": 1.0,
-          "predicted": null,
-          "expected": null,
+          "predicted": false,
+          "expected": false,
           "method": "exact"
         },
         {
@@ -3676,19 +3539,22 @@
         {
           "field": "language",
           "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
+          "predicted": "hi-en",
+          "expected": "hi-en",
           "method": "exact"
         },
         {
           "field": "topics",
-          "score": 0.0,
+          "score": 0.4,
           "predicted": [
-            "controls",
-            "navigation",
-            "mobile_app"
+            "sound_quality",
+            "delivery_service"
           ],
-          "expected": [],
+          "expected": [
+            "sound_quality",
+            "bluetooth_version",
+            "connectivity"
+          ],
           "method": "set_f1"
         },
         {
@@ -3707,14 +3573,318 @@
         },
         {
           "field": "cons",
+          "score": 0.5882352941176471,
+          "predicted": [
+            "irritating sound quality",
+            "annoying sound quality",
+            "sound disappears in between",
+            "old version"
+          ],
+          "expected": [
+            "poor sound quality",
+            "irritating sound",
+            "sound cuts out",
+            "old bluetooth version"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 1,
+          "expected": 1,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "hi-en-010",
+      "language": "hi-en",
+      "overall_score": 0.5178571428571429,
+      "error": null,
+      "latency_ms": 0,
+      "fields": [
+        {
+          "field": "product",
+          "score": 0.0,
+          "predicted": "earphone",
+          "expected": "earphones",
+          "method": "exact"
+        },
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": true,
+          "expected": true,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 0.0,
+          "predicted": "positive",
+          "expected": "mixed",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "hi-en",
+          "expected": "hi-en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
           "score": 0.0,
           "predicted": [
-            "cannot change song with buds",
-            "no fast forward with buds",
-            "no backward navigation with buds",
-            "requires mobile for song change"
+            "warranty_service",
+            "product_quality",
+            "assurity"
+          ],
+          "expected": [
+            "warranty",
+            "durability",
+            "jack",
+            "replacement",
+            "customer_service"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 0.0,
+          "predicted": [
+            "Boat"
           ],
           "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.42857142857142855,
+          "predicted": [
+            "good warranty service",
+            "assurity of Boat"
+          ],
+          "expected": [
+            "good warranty service",
+            "received replacement unit",
+            "reliable brand assurance"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 0.75,
+          "predicted": [
+            "one side stopped working",
+            "jack became loose"
+          ],
+          "expected": [
+            "one side stopped working",
+            "loose jack",
+            "one month warranty processing"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 4,
+          "expected": 4,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "hi-en-011",
+      "language": "hi-en",
+      "overall_score": 0.8333333333333333,
+      "error": null,
+      "latency_ms": 0,
+      "fields": [
+        {
+          "field": "product",
+          "score": 0.0,
+          "predicted": "general product",
+          "expected": "earphones",
+          "method": "exact"
+        },
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": false,
+          "expected": false,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "negative",
+          "expected": "negative",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "hi-en",
+          "expected": "hi-en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.8,
+          "predicted": [
+            "voice_quality",
+            "durability"
+          ],
+          "expected": [
+            "voice_quality",
+            "durability",
+            "product_failure"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 0.5333333333333333,
+          "predicted": [
+            "poor voice quality",
+            "became useless after 1 month"
+          ],
+          "expected": [
+            "very poor voice quality",
+            "broke within one month"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 1,
+          "expected": 1,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "hi-en-012",
+      "language": "hi-en",
+      "overall_score": 0.6621739130434782,
+      "error": null,
+      "latency_ms": 0,
+      "fields": [
+        {
+          "field": "product",
+          "score": 0.0,
+          "predicted": "earphone",
+          "expected": "earphones",
+          "method": "exact"
+        },
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": false,
+          "expected": false,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 0.0,
+          "predicted": "negative",
+          "expected": "mixed",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "hi-en",
+          "expected": "hi-en",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.5,
+          "predicted": [
+            "sound_quality",
+            "connectivity",
+            "comfort"
+          ],
+          "expected": [
+            "sound quality",
+            "connectivity",
+            "comfort",
+            "ear pain",
+            "material quality"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.6,
+          "predicted": [
+            "acceptable sound quality",
+            "poor connectivity"
+          ],
+          "expected": [
+            "good sound quality",
+            "nice connectivity"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 0.5217391304347826,
+          "predicted": [
+            "causes ear pain after 30 minutes",
+            "speaker's soft parts need more soft material"
+          ],
+          "expected": [
+            "ear pain after 30 minutes",
+            "insufficient soft material",
+            "not much better than local"
+          ],
           "method": "fuzzy"
         },
         {
@@ -3727,23 +3897,23 @@
       ]
     },
     {
-      "id": "040_consensus_grown",
-      "language": "en",
-      "overall_score": 0.8,
+      "id": "hi-en-013",
+      "language": "hi-en",
+      "overall_score": 0.8271428571428572,
       "error": null,
-      "latency_ms": 9265,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
-          "score": 1.0,
-          "predicted": "earphone",
-          "expected": "earphone",
+          "score": 0.0,
+          "predicted": "noise cancellation earphone",
+          "expected": "earphones",
           "method": "exact"
         },
         {
           "field": "stars",
-          "score": 0.0,
-          "predicted": 5,
+          "score": 1.0,
+          "predicted": null,
           "expected": null,
           "method": "exact"
         },
@@ -3764,20 +3934,23 @@
         {
           "field": "language",
           "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
+          "predicted": "hi-en",
+          "expected": "hi-en",
           "method": "exact"
         },
         {
           "field": "topics",
-          "score": 1.0,
+          "score": 0.5714285714285715,
           "predicted": [
-            "sound_quality",
-            "bass"
+            "performance",
+            "noise_cancellation",
+            "portability"
           ],
           "expected": [
-            "sound_quality",
-            "bass"
+            "delivery_speed",
+            "performance",
+            "noise_cancellation",
+            "studying"
           ],
           "method": "set_f1"
         },
@@ -3790,12 +3963,18 @@
         },
         {
           "field": "pros",
-          "score": 0.0,
+          "score": 0.7,
           "predicted": [
-            "cool",
-            "mind blowing bass"
+            "excellent performance",
+            "good passive noise cancellation",
+            "can be worn while studying"
           ],
-          "expected": [],
+          "expected": [
+            "fast delivery",
+            "excellent performance",
+            "passive noise cancellation",
+            "good for studying"
+          ],
           "method": "fuzzy"
         },
         {
@@ -3815,17 +3994,17 @@
       ]
     },
     {
-      "id": "041_consensus_grown",
-      "language": "en",
-      "overall_score": 0.9,
+      "id": "hi-en-014",
+      "language": "hi-en",
+      "overall_score": 0.7533333333333333,
       "error": null,
-      "latency_ms": 7812,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
           "score": 0.0,
-          "predicted": "unknown product",
-          "expected": "product",
+          "predicted": "general product",
+          "expected": "unspecified product",
           "method": "exact"
         },
         {
@@ -3844,28 +4023,32 @@
         },
         {
           "field": "sentiment",
-          "score": 1.0,
-          "predicted": "positive",
-          "expected": "positive",
+          "score": 0.0,
+          "predicted": "negative",
+          "expected": "mixed",
           "method": "exact"
         },
         {
           "field": "language",
           "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
+          "predicted": "hi-en",
+          "expected": "hi-en",
           "method": "exact"
         },
         {
           "field": "topics",
           "score": 1.0,
           "predicted": [
-            "performance",
-            "reliability"
+            "product_quality",
+            "delivery_service",
+            "delivery_speed",
+            "customer_service"
           ],
           "expected": [
-            "performance",
-            "reliability"
+            "product_quality",
+            "delivery_service",
+            "delivery_speed",
+            "customer_service"
           ],
           "method": "set_f1"
         },
@@ -3880,41 +4063,49 @@
           "field": "pros",
           "score": 1.0,
           "predicted": [
-            "running fine"
+            "good product quality"
           ],
           "expected": [
-            "running fine"
+            "product quality good"
           ],
           "method": "fuzzy"
         },
         {
           "field": "cons",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
+          "score": 0.5333333333333333,
+          "predicted": [
+            "late delivery",
+            "slow delivery",
+            "delivery boy doesn't come to door"
+          ],
+          "expected": [
+            "very slow delivery",
+            "delivery boy doesn't deliver",
+            "have to pick up"
+          ],
           "method": "fuzzy"
         },
         {
           "field": "stars_inferred",
           "score": 1.0,
-          "predicted": 4,
-          "expected": 4,
+          "predicted": 3,
+          "expected": 3,
           "method": "tolerance\u00b11"
         }
       ]
     },
     {
-      "id": "042_consensus_grown",
-      "language": "en",
-      "overall_score": 1.0,
+      "id": "hi-en-015",
+      "language": "hi-en",
+      "overall_score": 0.9366666666666668,
       "error": null,
-      "latency_ms": 9062,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
           "score": 1.0,
-          "predicted": "product",
-          "expected": "product",
+          "predicted": "general product",
+          "expected": "general product",
           "method": "exact"
         },
         {
@@ -3941,22 +4132,22 @@
         {
           "field": "language",
           "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
+          "predicted": "hi-en",
+          "expected": "hi-en",
           "method": "exact"
         },
         {
           "field": "topics",
-          "score": 1.0,
+          "score": 0.6666666666666666,
           "predicted": [
+            "sound_quality",
             "bass",
-            "design",
-            "price"
+            "value"
           ],
           "expected": [
             "bass",
-            "design",
-            "price"
+            "value",
+            "quality"
           ],
           "method": "set_f1"
         },
@@ -3969,16 +4160,18 @@
         },
         {
           "field": "pros",
-          "score": 1.0,
+          "score": 0.7000000000000001,
           "predicted": [
-            "moderate bass",
-            "great design",
-            "great price"
+            "very good",
+            "love the bass",
+            "great value for money",
+            "awesome product"
           ],
           "expected": [
-            "moderate bass",
-            "great design",
-            "great price"
+            "excellent quality",
+            "great bass",
+            "value for money",
+            "awesome product"
           ],
           "method": "fuzzy"
         },
@@ -3993,431 +4186,481 @@
           "field": "stars_inferred",
           "score": 1.0,
           "predicted": 5,
-          "expected": 4,
+          "expected": 5,
           "method": "tolerance\u00b11"
         }
       ]
     },
     {
-      "id": "043_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98367, Requested 1844. Please try again in 3m2.304s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2297,
-      "fields": []
-    },
-    {
-      "id": "044_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98364, Requested 1877. Please try again in 3m28.224s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2140,
-      "fields": []
-    },
-    {
-      "id": "045_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98362, Requested 1935. Please try again in 4m16.608s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2281,
-      "fields": []
-    },
-    {
-      "id": "046_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98359, Requested 1953. Please try again in 4m29.567999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2140,
-      "fields": []
-    },
-    {
-      "id": "047_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98357, Requested 1845. Please try again in 2m54.528s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2265,
-      "fields": []
-    },
-    {
-      "id": "048_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98354, Requested 1868. Please try again in 3m11.808s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2109,
-      "fields": []
-    },
-    {
-      "id": "049_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98351, Requested 1927. Please try again in 4m0.191999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2327,
-      "fields": []
-    },
-    {
-      "id": "050_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98349, Requested 1929. Please try again in 4m0.191999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2172,
-      "fields": []
-    },
-    {
-      "id": "051_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98347, Requested 1920. Please try again in 3m50.688s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2092,
-      "fields": []
-    },
-    {
-      "id": "052_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98344, Requested 1875. Please try again in 3m9.216s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2172,
-      "fields": []
-    },
-    {
-      "id": "053_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98341, Requested 1895. Please try again in 3m23.904s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2187,
-      "fields": []
-    },
-    {
-      "id": "054_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98339, Requested 1930. Please try again in 3m52.416s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2187,
-      "fields": []
-    },
-    {
-      "id": "055_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98336, Requested 1948. Please try again in 4m5.376s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2250,
-      "fields": []
-    },
-    {
-      "id": "056_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98334, Requested 1962. Please try again in 4m15.744s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2094,
-      "fields": []
-    },
-    {
-      "id": "057_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98332, Requested 1865. Please try again in 2m50.208s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2061,
-      "fields": []
-    },
-    {
-      "id": "058_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98329, Requested 2016. Please try again in 4m58.08s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2141,
-      "fields": []
-    },
-    {
-      "id": "059_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98327, Requested 1841. Please try again in 2m25.152s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1952,
-      "fields": []
-    },
-    {
-      "id": "060_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98324, Requested 1916. Please try again in 3m27.36s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2125,
-      "fields": []
-    },
-    {
-      "id": "061_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98322, Requested 1855. Please try again in 2m32.928s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1984,
-      "fields": []
-    },
-    {
-      "id": "062_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98320, Requested 1878. Please try again in 2m51.072s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1875,
-      "fields": []
-    },
-    {
-      "id": "063_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98318, Requested 1889. Please try again in 2m58.848s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1750,
-      "fields": []
-    },
-    {
-      "id": "064_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98316, Requested 1854. Please try again in 2m26.88s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1859,
-      "fields": []
-    },
-    {
-      "id": "065_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98313, Requested 1957. Please try again in 3m53.28s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1905,
-      "fields": []
-    },
-    {
-      "id": "066_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98311, Requested 1958. Please try again in 3m52.416s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2125,
-      "fields": []
-    },
-    {
-      "id": "067_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98308, Requested 1852. Please try again in 2m18.24s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2531,
-      "fields": []
-    },
-    {
-      "id": "068_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98306, Requested 1952. Please try again in 3m42.911999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2047,
-      "fields": []
-    },
-    {
-      "id": "069_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98303, Requested 1907. Please try again in 3m1.44s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2061,
-      "fields": []
-    },
-    {
-      "id": "070_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98301, Requested 1854. Please try again in 2m13.919999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2094,
-      "fields": []
-    },
-    {
-      "id": "071_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98299, Requested 1975. Please try again in 3m56.736s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1952,
-      "fields": []
-    },
-    {
-      "id": "072_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98296, Requested 1905. Please try again in 2m53.664s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2187,
-      "fields": []
-    },
-    {
-      "id": "073_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98294, Requested 1863. Please try again in 2m15.648s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2156,
-      "fields": []
-    },
-    {
-      "id": "074_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98291, Requested 1941. Please try again in 3m20.448s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2155,
-      "fields": []
-    },
-    {
-      "id": "075_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98289, Requested 1912. Please try again in 2m53.664s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2062,
-      "fields": []
-    },
-    {
-      "id": "076_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98286, Requested 1935. Please try again in 3m10.944s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2078,
-      "fields": []
-    },
-    {
-      "id": "077_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98284, Requested 1955. Please try again in 3m26.496s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2015,
-      "fields": []
-    },
-    {
-      "id": "078_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98282, Requested 1881. Please try again in 2m20.832s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1984,
-      "fields": []
-    },
-    {
-      "id": "079_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98279, Requested 1942. Please try again in 3m10.944s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2000,
-      "fields": []
-    },
-    {
-      "id": "080_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98277, Requested 1839. Please try again in 1m40.224s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2015,
-      "fields": []
-    },
-    {
-      "id": "081_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98275, Requested 1877. Please try again in 2m11.328s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1984,
-      "fields": []
-    },
-    {
-      "id": "082_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98272, Requested 1919. Please try again in 2m45.024s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2046,
-      "fields": []
-    },
-    {
-      "id": "083_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98270, Requested 1860. Please try again in 1m52.32s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2109,
-      "fields": []
-    },
-    {
-      "id": "084_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98267, Requested 1852. Please try again in 1m42.816s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2172,
-      "fields": []
-    },
-    {
-      "id": "085_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98265, Requested 1929. Please try again in 2m47.616s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1983,
-      "fields": []
-    },
-    {
-      "id": "086_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98263, Requested 1877. Please try again in 2m0.96s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2141,
-      "fields": []
-    },
-    {
-      "id": "087_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98260, Requested 1922. Please try again in 2m37.248s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2108,
-      "fields": []
-    },
-    {
-      "id": "088_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98258, Requested 1890. Please try again in 2m7.872s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2062,
-      "fields": []
-    },
-    {
-      "id": "089_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98255, Requested 1856. Please try again in 1m35.904s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2077,
-      "fields": []
-    },
-    {
-      "id": "090_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98253, Requested 1862. Please try again in 1m39.36s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2092,
-      "fields": []
-    },
-    {
-      "id": "091_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98251, Requested 1882. Please try again in 1m54.912s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2032,
-      "fields": []
-    },
-    {
-      "id": "092_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98248, Requested 1869. Please try again in 1m41.088s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1937,
-      "fields": []
-    },
-    {
-      "id": "093_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98246, Requested 1875. Please try again in 1m44.544s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1984,
-      "fields": []
-    },
-    {
-      "id": "094_consensus_grown",
-      "language": "en",
-      "overall_score": 0.85,
+      "id": "hi-001",
+      "language": "hi",
+      "overall_score": 0.8,
       "error": null,
-      "latency_ms": 144577,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
           "score": 1.0,
-          "predicted": "product",
-          "expected": "product",
+          "predicted": "Syska charger",
+          "expected": "Syska charger",
+          "method": "exact"
+        },
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": false,
+          "expected": false,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "negative",
+          "expected": "negative",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "hi",
+          "expected": "hi",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.0,
+          "predicted": [
+            "charger_quality",
+            "value"
+          ],
+          "expected": [
+            "quality"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 0.0,
+          "predicted": [
+            "poor quality",
+            "waste of money"
+          ],
+          "expected": [
+            "stopped working in two days"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 1,
+          "expected": 1,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "hi-002",
+      "language": "hi",
+      "overall_score": 0.9333333333333333,
+      "error": null,
+      "latency_ms": 0,
+      "fields": [
+        {
+          "field": "product",
+          "score": 1.0,
+          "predicted": "Boat earphone",
+          "expected": "Boat earphone",
+          "method": "exact"
+        },
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": true,
+          "expected": true,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "positive",
+          "expected": "positive",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "hi",
+          "expected": "hi",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.6666666666666666,
+          "predicted": [
+            "sound_quality",
+            "value"
+          ],
+          "expected": [
+            "sound_quality"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 0.6666666666666666,
+          "predicted": [
+            "excellent sound quality",
+            "value for money"
+          ],
+          "expected": [
+            "excellent sound quality"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 5,
+          "expected": 5,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "hi-003",
+      "language": "hi",
+      "overall_score": 0.8333333333333333,
+      "error": null,
+      "latency_ms": 0,
+      "fields": [
+        {
+          "field": "product",
+          "score": 1.0,
+          "predicted": "Noise smartwatch",
+          "expected": "Noise smartwatch",
+          "method": "exact"
+        },
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 0.0,
+          "predicted": "negative",
+          "expected": "mixed",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "hi",
+          "expected": "hi",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 1.0,
+          "predicted": [
+            "display",
+            "battery"
+          ],
+          "expected": [
+            "battery",
+            "display"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 1.0,
+          "predicted": [
+            "good display"
+          ],
+          "expected": [
+            "good display"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 0.3333333333333333,
+          "predicted": [
+            "battery life is short"
+          ],
+          "expected": [
+            "battery drains fast"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 2,
+          "expected": 3,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "hi-004",
+      "language": "hi",
+      "overall_score": 0.828888888888889,
+      "error": null,
+      "latency_ms": 0,
+      "fields": [
+        {
+          "field": "product",
+          "score": 1.0,
+          "predicted": "adapter",
+          "expected": "adapter",
+          "method": "exact"
+        },
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": false,
+          "expected": false,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 1.0,
+          "predicted": "negative",
+          "expected": "negative",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "hi",
+          "expected": "hi",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 0.4,
+          "predicted": [
+            "safety",
+            "electric_shock"
+          ],
+          "expected": [
+            "safety",
+            "shock",
+            "refund"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 0.0,
+          "predicted": [
+            "Amazon"
+          ],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 0.888888888888889,
+          "predicted": [
+            "electric shock risk",
+            "dangerous product"
+          ],
+          "expected": [
+            "electric shock",
+            "dangerous product"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 1,
+          "expected": 1,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "hi-005",
+      "language": "hi",
+      "overall_score": 0.8,
+      "error": null,
+      "latency_ms": 0,
+      "fields": [
+        {
+          "field": "product",
+          "score": 0.0,
+          "predicted": "Portronics sound",
+          "expected": "Portronics speaker",
+          "method": "exact"
+        },
+        {
+          "field": "stars",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "buy_again",
+          "score": 1.0,
+          "predicted": null,
+          "expected": null,
+          "method": "exact"
+        },
+        {
+          "field": "sentiment",
+          "score": 0.0,
+          "predicted": "neutral",
+          "expected": "mixed",
+          "method": "exact"
+        },
+        {
+          "field": "language",
+          "score": 1.0,
+          "predicted": "hi",
+          "expected": "hi",
+          "method": "exact"
+        },
+        {
+          "field": "topics",
+          "score": 1.0,
+          "predicted": [
+            "sound_quality",
+            "bluetooth"
+          ],
+          "expected": [
+            "sound_quality",
+            "bluetooth"
+          ],
+          "method": "set_f1"
+        },
+        {
+          "field": "competitor_mentions",
+          "score": 1.0,
+          "predicted": [],
+          "expected": [],
+          "method": "set_f1"
+        },
+        {
+          "field": "pros",
+          "score": 1.0,
+          "predicted": [
+            "good sound"
+          ],
+          "expected": [
+            "good sound"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "cons",
+          "score": 1.0,
+          "predicted": [
+            "no bluetooth"
+          ],
+          "expected": [
+            "no bluetooth"
+          ],
+          "method": "fuzzy"
+        },
+        {
+          "field": "stars_inferred",
+          "score": 1.0,
+          "predicted": 3,
+          "expected": 3,
+          "method": "tolerance\u00b11"
+        }
+      ]
+    },
+    {
+      "id": "hi-006",
+      "language": "hi",
+      "overall_score": 0.7666666666666667,
+      "error": null,
+      "latency_ms": 0,
+      "fields": [
+        {
+          "field": "product",
+          "score": 1.0,
+          "predicted": "Skybags bag",
+          "expected": "Skybags bag",
           "method": "exact"
         },
         {
@@ -4437,27 +4680,26 @@
         {
           "field": "sentiment",
           "score": 1.0,
-          "predicted": "mixed",
-          "expected": "mixed",
+          "predicted": "neutral",
+          "expected": "neutral",
           "method": "exact"
         },
         {
           "field": "language",
           "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
+          "predicted": "hi",
+          "expected": "hi",
           "method": "exact"
         },
         {
           "field": "topics",
-          "score": 0.5,
+          "score": 0.6666666666666666,
           "predicted": [
-            "product_quality",
-            "packaging"
+            "quality",
+            "price"
           ],
           "expected": [
-            "color",
-            "packaging"
+            "quality"
           ],
           "method": "set_f1"
         },
@@ -4470,20 +4712,19 @@
         },
         {
           "field": "pros",
-          "score": 1.0,
+          "score": 0.0,
           "predicted": [
-            "good product"
+            "average quality",
+            "value for money"
           ],
-          "expected": [
-            "good product"
-          ],
+          "expected": [],
           "method": "fuzzy"
         },
         {
           "field": "cons",
           "score": 0.0,
           "predicted": [
-            "protection paper not removed"
+            "nothing special"
           ],
           "expected": [],
           "method": "fuzzy"
@@ -4492,314 +4733,10 @@
           "field": "stars_inferred",
           "score": 1.0,
           "predicted": 3,
-          "expected": 4,
+          "expected": 3,
           "method": "tolerance\u00b11"
         }
       ]
-    },
-    {
-      "id": "095_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99850, Requested 1866. Please try again in 24m42.624s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2217,
-      "fields": []
-    },
-    {
-      "id": "096_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99847, Requested 1865. Please try again in 24m39.168s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2141,
-      "fields": []
-    },
-    {
-      "id": "097_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99845, Requested 1871. Please try again in 24m42.624s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2250,
-      "fields": []
-    },
-    {
-      "id": "098_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99842, Requested 1868. Please try again in 24m37.44s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2858,
-      "fields": []
-    },
-    {
-      "id": "099_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99839, Requested 1868. Please try again in 24m34.848s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2202,
-      "fields": []
-    },
-    {
-      "id": "100_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99837, Requested 1845. Please try again in 24m13.248s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2077,
-      "fields": []
-    },
-    {
-      "id": "101_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99834, Requested 1709. Please try again in 22m13.152s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1969,
-      "fields": []
-    },
-    {
-      "id": "102_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99832, Requested 1865. Please try again in 24m26.207999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2047,
-      "fields": []
-    },
-    {
-      "id": "103_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99829, Requested 1858. Please try again in 24m17.568s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2233,
-      "fields": []
-    },
-    {
-      "id": "104_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99827, Requested 1898. Please try again in 24m50.4s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2109,
-      "fields": []
-    },
-    {
-      "id": "105_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99824, Requested 1871. Please try again in 24m24.48s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2172,
-      "fields": []
-    },
-    {
-      "id": "106_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99817, Requested 1860. Please try again in 24m8.928s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 6045,
-      "fields": []
-    },
-    {
-      "id": "107_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99815, Requested 1909. Please try again in 24m49.535999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1984,
-      "fields": []
-    },
-    {
-      "id": "108_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99813, Requested 1843. Please try again in 23m50.784s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1890,
-      "fields": []
-    },
-    {
-      "id": "109_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99811, Requested 1870. Please try again in 24m12.383999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1797,
-      "fields": []
-    },
-    {
-      "id": "110_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99809, Requested 1884. Please try again in 24m22.752s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1844,
-      "fields": []
-    },
-    {
-      "id": "111_consensus_grown",
-      "language": "en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99807, Requested 1955. Please try again in 25m22.368s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1843,
-      "fields": []
-    },
-    {
-      "id": "hi-en-001",
-      "language": "hi-en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99804, Requested 2013. Please try again in 26m9.888s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2000,
-      "fields": []
-    },
-    {
-      "id": "hi-en-002",
-      "language": "hi-en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99802, Requested 1837. Please try again in 23m36.095999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1984,
-      "fields": []
-    },
-    {
-      "id": "hi-en-003",
-      "language": "hi-en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99800, Requested 2013. Please try again in 26m6.432s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1922,
-      "fields": []
-    },
-    {
-      "id": "hi-en-004",
-      "language": "hi-en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99797, Requested 1833. Please try again in 23m28.32s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2000,
-      "fields": []
-    },
-    {
-      "id": "hi-en-005",
-      "language": "hi-en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99795, Requested 1830. Please try again in 23m24s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1875,
-      "fields": []
-    },
-    {
-      "id": "hi-en-006",
-      "language": "hi-en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99793, Requested 1827. Please try again in 23m19.679999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2155,
-      "fields": []
-    },
-    {
-      "id": "hi-en-007",
-      "language": "hi-en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99791, Requested 2014. Please try again in 25m59.52s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1891,
-      "fields": []
-    },
-    {
-      "id": "hi-en-008",
-      "language": "hi-en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99788, Requested 2021. Please try again in 26m2.976s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1905,
-      "fields": []
-    },
-    {
-      "id": "hi-en-009",
-      "language": "hi-en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99786, Requested 2030. Please try again in 26m9.024s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1922,
-      "fields": []
-    },
-    {
-      "id": "hi-en-010",
-      "language": "hi-en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99783, Requested 2051. Please try again in 26m24.575999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2765,
-      "fields": []
-    },
-    {
-      "id": "hi-en-011",
-      "language": "hi-en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99781, Requested 2002. Please try again in 25m40.512s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1859,
-      "fields": []
-    },
-    {
-      "id": "hi-en-012",
-      "language": "hi-en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99779, Requested 1846. Please try again in 23m24s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1875,
-      "fields": []
-    },
-    {
-      "id": "hi-en-013",
-      "language": "hi-en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99777, Requested 1838. Please try again in 23m15.36s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1718,
-      "fields": []
-    },
-    {
-      "id": "hi-en-014",
-      "language": "hi-en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99774, Requested 1824. Please try again in 23m0.672s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2078,
-      "fields": []
-    },
-    {
-      "id": "hi-en-015",
-      "language": "hi-en",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99772, Requested 1993. Please try again in 25m24.959999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1827,
-      "fields": []
-    },
-    {
-      "id": "hi-001",
-      "language": "hi",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99770, Requested 1115. Please try again in 12m44.64s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1733,
-      "fields": []
-    },
-    {
-      "id": "hi-002",
-      "language": "hi",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99768, Requested 1106. Please try again in 12m35.136s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2047,
-      "fields": []
-    },
-    {
-      "id": "hi-003",
-      "language": "hi",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99765, Requested 939. Please try again in 10m8.256s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 2108,
-      "fields": []
-    },
-    {
-      "id": "hi-004",
-      "language": "hi",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99763, Requested 1100. Please try again in 12m25.632s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1937,
-      "fields": []
-    },
-    {
-      "id": "hi-005",
-      "language": "hi",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99761, Requested 923. Please try again in 9m50.976s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1797,
-      "fields": []
-    },
-    {
-      "id": "hi-006",
-      "language": "hi",
-      "overall_score": 0.0,
-      "error": "Groq provider exhausted: Error code: 429 - {'error': {'message': 'Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01kpw92fcwebnbpwgabfd5r32b` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99759, Requested 910. Please try again in 9m38.016s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
-      "latency_ms": 1967,
-      "fields": []
     }
   ]
 }

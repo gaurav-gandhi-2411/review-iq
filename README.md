@@ -140,7 +140,7 @@ that script's output. See [ADR 0001](docs/architecture/adr/0001-eval-gate-and-pr
 for why the gate is what it is and how the prompt version history got out of sync with this
 file in the past.
 
-<!-- METRICS:START:extraction_table -->**Prompt v2.3** &middot; `d87c3e5` &middot; measured 2026-07-30T13:24:17Z &middot; mode: direct (local LLM)
+<!-- METRICS:START:extraction_table -->**Prompt v2.3** &middot; `8c20285` &middot; measured 2026-07-30T18:38:24Z &middot; mode: routed (tiered)
 
 | Language | Score | 95% CI | Gate | Status |
 |---|---|---|---|---|
@@ -396,9 +396,9 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 
 **Growth:** 233 new candidates considered, 83 became new fixtures (83 en, 0 hi-en). Of 150 excluded: 60 on genuine panel disagreement (no majority on sentiment/urgency/buy_again/language), 90 lost to Groq free-tier rate-limit exhaustion on the dedicated benchmark key (both judges errored -- not a quality signal, recoverable on a fresh quota window).
 
-**Final eval set: 132 fixtures** (110 en, 7 hi, 15 hi-en).
+**132 fixtures now have consensus ground truth** (110 en, 7 hi, 15 hi-en), but **only 49 currently gate CI**. The other 83 (83 en) are staged in `eval/fixtures/_pending_groq_cassette/` -- their cassettes were recorded via an OpenRouter fallback after a Groq quota exhaustion incident (see [ADR 0003](docs/architecture/adr/0003-cassette-provenance-during-groq-quota-exhaustion.md)), not production's Groq model, so they are deliberately excluded from the CI-scored set until a real Groq re-recording promotes them.
 
-**Minimum detectable effect** (2-proportion z-test, alpha=0.05, power=0.80) at n=132: **17.2 points** (worst-case, p=0.5) / **12.7 points** (at current score p=0.838).<!-- METRICS:END -->
+**Minimum detectable effect** (2-proportion z-test, alpha=0.05, power=0.80) once all 132 fixtures are promoted: **17.2 points** (worst-case, p=0.5) / **12.7 points** (at current score p=0.838).<!-- METRICS:END -->
 
 **Known gap — new fixtures need a cassette-recording pass before CI's eval gate will score them.** `eval.yml`'s cassette-replay gate has no recorded cassette for review text that didn't exist before this session, so it fails loudly (by design, not silently) on every newly added fixture until cassettes are re-recorded against production's live model — which requires a live call against production's `GROQ_API_KEY`, out of scope for this consensus-labeling session (constrained to the dedicated benchmark key only). Flagged here as a required follow-up, not left for CI to discover.
 

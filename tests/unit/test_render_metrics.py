@@ -63,6 +63,12 @@ CONSENSUS_DATA = {
     },
     "final_eval_set_size": 224,
     "final_per_language_counts": {"en": 177, "hi-en": 40, "hi": 7},
+    "gating_eval_set_size": 49,
+    "staged_pending_groq_cassette": {
+        "count": 175,
+        "per_language": {"en": 150, "hi-en": 25},
+        "reason": "cassettes recorded via OpenRouter fallback, test fixture placeholder reason",
+    },
 }
 
 EXTRACTION_DATA = {
@@ -208,6 +214,15 @@ class TestRenderConsensusLabelingMd:
         data = {**CONSENSUS_DATA, "dropped_judges": []}
         out = render_consensus_labeling_md(data)
         assert "Dropped by calibration" not in out
+
+    def test_distinguishes_gating_set_from_staged_pending_cassette(self):
+        # Regression test for the staging fix: a fixture with real consensus ground truth
+        # but a substitute-provider cassette must never be silently folded into "the eval
+        # set that gates CI" -- the two counts must both be visible and distinct.
+        out = render_consensus_labeling_md(CONSENSUS_DATA)
+        assert "only 49 currently gate CI" in out
+        assert "175" in out
+        assert "_pending_groq_cassette" in out
 
 
 class TestRenderFile:
