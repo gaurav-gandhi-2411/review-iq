@@ -15,17 +15,15 @@ from eval.consensus.candidates import (
 )
 
 
-def _write_fixture(path, fixture_id, text, language="en"):
-    path.write_text(
-        json.dumps(
-            {
-                "id": fixture_id,
-                "review_text": text,
-                "ground_truth": {"language": language, "sentiment": "positive"},
-            }
-        ),
-        encoding="utf-8",
-    )
+def _write_fixture(path, fixture_id, text, language="en", labeled_by=None):
+    data = {
+        "id": fixture_id,
+        "review_text": text,
+        "ground_truth": {"language": language, "sentiment": "positive"},
+    }
+    if labeled_by:
+        data["labeling_meta"] = {"labeled_by": labeled_by}
+    path.write_text(json.dumps(data), encoding="utf-8")
 
 
 class TestLoadExistingFixtures:
@@ -53,6 +51,20 @@ class TestLoadExistingFixtures:
         loaded = load_existing_fixtures(fixtures_dir)
         assert len(loaded) == 1
         assert loaded[0]["id"] == "001_a"
+
+    def test_flags_consensus_grown_fixtures(self, tmp_path):
+        fixtures_dir = tmp_path / "fixtures"
+        fixtures_dir.mkdir()
+        _write_fixture(fixtures_dir / "001_a.json", "001_a", "Great product")
+        _write_fixture(
+            fixtures_dir / "002_consensus_grown.json",
+            "002_consensus_grown",
+            "New product",
+            labeled_by="multi-llm-consensus",
+        )
+        loaded = {f["id"]: f for f in load_existing_fixtures(fixtures_dir)}
+        assert loaded["001_a"]["is_consensus_grown"] is False
+        assert loaded["002_consensus_grown"]["is_consensus_grown"] is True
 
 
 class TestExistingTextKeys:

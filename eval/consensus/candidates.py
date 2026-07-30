@@ -57,6 +57,7 @@ def load_existing_fixtures(fixtures_dir: Path = FIXTURES_DIR) -> list[dict]:
         if "review_text" not in data:
             continue
         gt = data.get("ground_truth", {})
+        labeling_meta = data.get("labeling_meta", {})
         out.append(
             {
                 "id": data["id"],
@@ -64,6 +65,16 @@ def load_existing_fixtures(fixtures_dir: Path = FIXTURES_DIR) -> list[dict]:
                 "ground_truth": gt,
                 "language": gt.get("language", "en"),
                 "path": str(p.relative_to(ROOT)) if p.is_relative_to(ROOT) else str(p),
+                # True for fixtures build_new_fixture() itself wrote (build_report.py) --
+                # see run_consensus.py's build_item_list, which must exclude these from
+                # BOTH the "validate" item list and the validation-pass comparison. A
+                # real incident (not hypothetical): a crashed mid-run left new
+                # consensus-grown fixtures on disk; the next invocation's
+                # load_existing_fixtures() picked them up as "already-committed ground
+                # truth needing validation" and re-labeled them against THEIR OWN
+                # consensus output -- circular, and burned ~166 extra live API calls for
+                # zero new information before this filter was added.
+                "is_consensus_grown": labeling_meta.get("labeled_by") == "multi-llm-consensus",
             }
         )
     return out
