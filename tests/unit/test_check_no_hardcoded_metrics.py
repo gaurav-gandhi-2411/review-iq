@@ -15,6 +15,7 @@ class TestIsExcluded:
     def test_prefix_excluded(self):
         assert _is_excluded("benchmark/results/REPORT.md") is True
         assert _is_excluded("ops/runbooks/killswitch-test.md") is True
+        assert _is_excluded("docs/architecture/adr/0001-foo.md") is True
 
     def test_eval_report_md_excluded(self):
         assert _is_excluded("eval/report.md") is True
