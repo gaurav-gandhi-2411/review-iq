@@ -55,3 +55,31 @@ GROQ_API_KEY= EVAL_CASSETTE_MODE=replay uv run python -m eval.runner
 `{raw, tokens_in, tokens_out}`. Keying on the full prompt means any prompt change produces
 new keys, so a stale cassette surfaces as a missing-cassette **failure** in CI (loud), not a
 silent stale pass — re-record to clear it.
+
+## ⚠️ Known gap — some cassette entries are substitute-provider, not Groq (2026-07-30)
+
+83 of the 132 fixture cassette entries were **not** recorded against Groq. The standing
+`record` procedure above calls production's `GROQ_API_KEY` — attempting it for these 83
+new (Section B consensus-grown) fixtures exhausted Groq's `llama-3.3-70b-versatile` daily
+token budget mid-run (99,770/100,000), on the same key Cloud Run's live service uses. With
+the user's explicit authorization, the remaining gap was filled via
+`scripts/record_cassettes_via_fallback.py` — a standalone, CI-independent script that
+calls OpenRouter (`meta-llama/llama-3.1-8b-instruct` / `meta-llama/llama-3.3-70b-instruct`,
+the same nominal Llama weights, different serving backend) as primary, with Gemini as a
+secondary fallback if OpenRouter fails. All 83 entries this run came from OpenRouter (0
+Gemini fallbacks needed, 0 schema-validation retries, 0 hard failures).
+
+- **Which keys, from where:** `eval/cassettes/cassette_provenance.json` maps every
+  substitute-recorded key to `{source, model_requested, recorded_at, reason}`. Anything
+  not in that file is a genuine Groq recording.
+- **These are NOT guaranteed bit-identical to Groq's own responses** for the same prompt
+  — same nominal model family, different hosting/serving stack. Treat any score computed
+  from the full 132-fixture set as a substitute-provider measurement, not a clean Groq
+  gate, until the entries below are re-recorded.
+- **This is a temporary state, not a permanent design choice** — a real Groq
+  re-recording pass (`EVAL_CASSETTE_MODE=record uv run python -m eval.runner --routed`,
+  full clean pass per the standing rule above) should replace these 83 entries once the
+  daily TPD budget window resets. See
+  `docs/architecture/adr/0003-cassette-provenance-during-groq-quota-exhaustion.md` for
+  the full incident writeup and the open judgment call on which accuracy figure is
+  currently authoritative.
