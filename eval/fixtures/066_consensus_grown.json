@@ -1,0 +1,69 @@
+{
+  "id": "066_consensus_grown",
+  "review_text": "I have apple Airpod too. But this 1 is good looking than that.compact , small . But no bass, if you want to talk over it then definitely go for it. If you want to listen music than this is not your cup of tea.",
+  "ground_truth": {
+    "product": "earbuds",
+    "stars": null,
+    "stars_inferred": 3,
+    "pros": [
+      "good looking",
+      "compact",
+      "small",
+      "good for talking"
+    ],
+    "cons": [],
+    "buy_again": null,
+    "sentiment": "mixed",
+    "topics": [
+      "design",
+      "size",
+      "sound_quality",
+      "voice_calls"
+    ],
+    "competitor_mentions": [
+      "Apple Airpod"
+    ],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus (Wave 1 Section B)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "unanimous",
+      "stars_inferred": "unanimous",
+      "pros": "majority",
+      "cons": "split",
+      "topics": "majority",
+      "feature_requests": "split",
+      "competitor_mentions": "majority"
+    }
+  }
+}
