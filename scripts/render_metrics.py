@@ -246,11 +246,17 @@ def render_consensus_labeling_md(data: dict[str, Any]) -> str:
     mde = data["mde"]
     lang_counts = data["final_per_language_counts"]
     lang_counts_str = ", ".join(f"{n} {lang}" for lang, n in lang_counts.items())
+    new_fixtures_str = ", ".join(
+        f"{n} {lang}" for lang, n in growth["new_fixtures_written"].items()
+    )
     lines += [
         f"**Growth:** {growth['candidates_considered']} new candidates considered, "
-        f"{sum(growth['new_fixtures_written'].values())} became new fixtures "
-        f"({growth['new_fixtures_written']}), {growth['excluded_split_or_insufficient']} excluded "
-        "(panel could not reach consensus on sentiment/urgency/buy_again/language).",
+        f"{sum(growth['new_fixtures_written'].values())} became new fixtures ({new_fixtures_str}). "
+        f"Of {growth['excluded_split_or_insufficient']} excluded: "
+        f"{growth['excluded_genuine_disagreement']} on genuine panel disagreement (no majority on "
+        f"sentiment/urgency/buy_again/language), {growth['excluded_rate_limited']} lost to Groq "
+        "free-tier rate-limit exhaustion on the dedicated benchmark key (both judges errored -- "
+        "not a quality signal, recoverable on a fresh quota window).",
         "",
         f"**Final eval set: {data['final_eval_set_size']} fixtures** ({lang_counts_str}).",
         "",

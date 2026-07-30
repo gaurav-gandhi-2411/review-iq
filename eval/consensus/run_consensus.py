@@ -263,6 +263,8 @@ def main() -> None:
     growth_records = [r for r in all_records if r["mode"] == "grow"]
     new_fixtures_written: dict[str, int] = {"en": 0, "hi-en": 0}
     split_excluded = 0
+    rate_limited_excluded = 0  # both judges NO_RESPONSE -- quota exhaustion, not disagreement
+    genuine_disagreement_excluded = 0  # at least one judge answered, but no consensus reached
 
     en_next_idx = 29  # existing top-level fixtures run 001..028
     hien_next_idx = 16  # existing eval/fixtures/hi-en/ runs 001..015
@@ -270,6 +272,10 @@ def main() -> None:
     for rec in growth_records:
         if not passes_growth_gate(rec["consensus"]):
             split_excluded += 1
+            if all(v is None for v in rec["judge_outputs"].values()):
+                rate_limited_excluded += 1
+            else:
+                genuine_disagreement_excluded += 1
             continue
         lang = rec["consensus"]["language"]["silver"]
         if lang == "en":
@@ -345,6 +351,8 @@ def main() -> None:
             "candidates_considered": len(growth_records),
             "new_fixtures_written": new_fixtures_written,
             "excluded_split_or_insufficient": split_excluded,
+            "excluded_genuine_disagreement": genuine_disagreement_excluded,
+            "excluded_rate_limited": rate_limited_excluded,
         },
         "reliability": {"krippendorff_alpha": alpha_report, "fleiss_kappa": kappa_report},
         "mde": mde_report,

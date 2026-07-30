@@ -42,6 +42,8 @@ CONSENSUS_DATA = {
         "candidates_considered": 233,
         "new_fixtures_written": {"en": 150, "hi-en": 25},
         "excluded_split_or_insufficient": 58,
+        "excluded_genuine_disagreement": 40,
+        "excluded_rate_limited": 18,
     },
     "reliability": {
         "krippendorff_alpha": {
