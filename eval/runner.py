@@ -13,6 +13,11 @@ from typing import Any
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 RESULTS_PATH = Path(__file__).parent / "results.json"
+# Canonical results file (rule: JSON is the single source of truth for README/site
+# rendering — see scripts/render_metrics.py). eval/results.json above is kept for
+# eval/report.py and eval/slack_notify.py, which already read that exact path.
+RESULTS_DIR = Path(__file__).parent / "results"
+LATEST_RESULTS_PATH = RESULTS_DIR / "latest.json"
 REPORT_PATH = Path(__file__).parent / "report.md"
 # Hard wall-clock cap per fixture's LLM call. Worst case by the code's own retry/timeout
 # config is ~210s (2 tiers x 3 attempts x 30s timeout, plus a Gemini fallback attempt) — 240s
@@ -385,15 +390,24 @@ async def run_all(
     return all_results
 
 
+def _group_scores_by_language(
+    results: list[FixtureResult],
+    fixture_lang_map: dict[str, str],
+) -> dict[str, list[float]]:
+    """Return {language: [fixture scores]} for all languages present."""
+    groups: dict[str, list[float]] = {}
+    for r in results:
+        lang = fixture_lang_map.get(r.fixture_id, "en")
+        groups.setdefault(lang, []).append(r.overall_score)
+    return groups
+
+
 def per_language_scores(
     results: list[FixtureResult],
     fixture_lang_map: dict[str, str],
 ) -> dict[str, float]:
     """Return {language: mean_score} for all languages present."""
-    groups: dict[str, list[float]] = {}
-    for r in results:
-        lang = fixture_lang_map.get(r.fixture_id, "en")
-        groups.setdefault(lang, []).append(r.overall_score)
+    groups = _group_scores_by_language(results, fixture_lang_map)
     return {lang: sum(scores) / len(scores) for lang, scores in groups.items()}
 
 
@@ -401,22 +415,61 @@ def write_results(
     results: list[FixtureResult],
     fixture_lang_map: dict[str, str],
     out_path: Path = RESULTS_PATH,
+    mode: str = "direct (local LLM)",
 ) -> None:
+    """Write eval results to `out_path` and to the canonical `eval/results/latest.json`.
+
+    Adds run provenance (prompt version, mode, timestamp, git SHA) and a 95% Wilson
+    confidence interval on the overall score and each per-language score — see
+    eval/wilson.py for the exact formula and its documented limitation (fixture scores
+    are field-averaged means, not strictly binary, so this is an approximation).
+
+    NOTE on `mode`: `enable_tiered_routing` defaults to True in app/core/config.py with no
+    override in CI, so `extract_with_llm()` (used by the "direct (local LLM)" path, i.e.
+    `run_single`) ALREADY calls the tiered router internally unless a caller explicitly
+    disables it. `run_single_routed` (the `--routed` path) exercises the same router
+    directly and additionally records tier/token attribution per fixture. As of prompt
+    v2.3, a same-cassette comparison of `python -m eval.runner` vs `--routed` produced
+    byte-identical overall/per-language scores — the two "modes" are not currently a
+    meaningfully different measurement, they differ only in whether tier/token metadata
+    is captured. `tiered_routing_enabled_at_runtime` below reports the actual config truth
+    at write-time so this isn't silently lost.
+    """
+    from app.core.config import get_settings
+    from app.core.prompts import PROMPT_VERSION
+
+    from eval.provenance import get_git_sha, now_iso
+    from eval.wilson import wilson_ci
+
     overall = aggregate_score(results)
-    lang_scores = per_language_scores(results, fixture_lang_map)
+    lang_groups = _group_scores_by_language(results, fixture_lang_map)
+    lang_scores = {lang: sum(scores) / len(scores) for lang, scores in lang_groups.items()}
     lang_pass = {lang: score >= PER_LANG_THRESHOLD for lang, score in lang_scores.items()}
+    overall_lower, overall_upper = wilson_ci(overall, len(results))
+
+    per_language: dict[str, dict[str, Any]] = {}
+    for lang, score in lang_scores.items():
+        n = len(lang_groups[lang])
+        lower, upper = wilson_ci(score, n)
+        per_language[lang] = {
+            "score": score,
+            "n": n,
+            "ci_95": {"lower": lower, "upper": upper},
+            "threshold": PER_LANG_THRESHOLD,
+            "passed": lang_pass[lang],
+        }
+
     payload = {
+        "generated_at": now_iso(),
+        "git_sha": get_git_sha(),
+        "prompt_version": PROMPT_VERSION,
+        "mode": mode,
+        "tiered_routing_enabled_at_runtime": get_settings().enable_tiered_routing,
         "overall_score": overall,
+        "overall_ci_95": {"n": len(results), "lower": overall_lower, "upper": overall_upper},
         "threshold": PASS_THRESHOLD,
         "passed": overall >= PASS_THRESHOLD,
-        "per_language": {
-            lang: {
-                "score": score,
-                "threshold": PER_LANG_THRESHOLD,
-                "passed": lang_pass[lang],
-            }
-            for lang, score in lang_scores.items()
-        },
+        "per_language": per_language,
         "fixtures": [
             {
                 "id": r.fixture_id,
@@ -439,6 +492,8 @@ def write_results(
         ],
     }
     out_path.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    LATEST_RESULTS_PATH.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
 
 
 def _build_lang_map(fixtures_dir: Path) -> dict[str, str]:
@@ -572,7 +627,7 @@ async def main() -> int:
 
     overall = aggregate_score(results)
     lang_scores = per_language_scores(results, fixture_lang_map)
-    write_results(results, fixture_lang_map)
+    write_results(results, fixture_lang_map, mode=mode)
     write_report(results, fixture_lang_map)
 
     completed = [r for r in results if not r.error]
