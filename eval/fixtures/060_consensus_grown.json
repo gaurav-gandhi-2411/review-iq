@@ -1,0 +1,65 @@
+{
+  "id": "060_consensus_grown",
+  "review_text": "I've been using this since more than 10 months now, build quality and sound quality good. Best in this range.Another plus point is it comes with a aux cable, so you can connect to your device even if there's no charging.One problem I've been facing - the sound breaks if I go from one room to another.READ MORE",
+  "ground_truth": {
+    "product": "unknown",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": [],
+    "cons": [
+      "sound breaks when moving between rooms"
+    ],
+    "buy_again": null,
+    "sentiment": "mixed",
+    "topics": [
+      "build_quality",
+      "sound_quality",
+      "price",
+      "connectivity",
+      "accessories"
+    ],
+    "competitor_mentions": [],
+    "urgency": "medium",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus (Wave 1 Section B)",
+    "source": "flipkart/kabirnagpal/flipkart-customer-review-and-rating",
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "split",
+      "stars_inferred": "unanimous",
+      "pros": "split",
+      "cons": "majority",
+      "topics": "majority",
+      "feature_requests": "split",
+      "competitor_mentions": "majority"
+    }
+  }
+}
