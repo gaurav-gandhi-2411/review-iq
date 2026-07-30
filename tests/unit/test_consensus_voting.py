@@ -64,6 +64,16 @@ class TestVoteScalarTolerant:
         assert level == "majority"
         assert silver == 4
 
+    def test_even_count_cluster_rounds_to_int_not_truncates(self):
+        # Regression test: a 2-judge cluster of [4, 5] has median 4.5. A real growth
+        # fixture shipped with stars_inferred=4.5 before this was fixed -- the schema
+        # (app/core/schemas.py) requires an int, and eval/runner.py's tolerance scorer
+        # truncates via int(), which would silently turn 4.5 into 4, not round it.
+        silver, level = vote_scalar_tolerant({"a": 4, "b": 5}, tolerance=1)
+        assert level == "unanimous"
+        assert silver == round(4.5)  # banker's rounding: round(4.5) == 4
+        assert isinstance(silver, int)
+
     def test_all_far_apart_is_split(self):
         silver, level = vote_scalar_tolerant({"a": 1, "b": 3, "c": 5}, tolerance=1)
         assert silver is None

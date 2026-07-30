@@ -245,6 +245,14 @@ def main() -> None:
         for line in CONSENSUS_LABELS_PATH.read_text(encoding="utf-8").splitlines()
         if line.strip()
     ]
+    # Recompute consensus FRESH from the raw judge_outputs rather than trusting the
+    # cached "consensus" field written at labeling time -- judge_outputs is the true
+    # raw data; consensus is a derived value that must never go stale relative to the
+    # current voting logic. This makes a voting-logic bug fix (e.g. the stars_inferred
+    # int-rounding fix) apply retroactively on a report-only rerun, with no new live
+    # API calls, instead of requiring a full expensive relabel.
+    for rec in all_records:
+        rec["consensus"] = consensus_for_item(rec["judge_outputs"])
     by_id = {r["id"]: r for r in all_records}
     judge_ids = [m["id"] for m in active_panel]
 

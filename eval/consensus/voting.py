@@ -116,11 +116,17 @@ def vote_scalar_exact(
 
 def vote_scalar_tolerant(
     values: dict[str, float | None], tolerance: int
-) -> tuple[float | None, AgreementLevel]:
+) -> tuple[int | None, AgreementLevel]:
     """Vote on a numeric field where judges within `tolerance` of each other count as agreeing.
 
     Clusters responding judges' values; if the tightest cluster spans <= `tolerance`
-    and contains all/most judges, its median is the silver value. Unlike the scalar
+    and contains all/most judges, its (rounded-to-int) median is the silver value.
+    Rounded because this voting kind's only current user, `stars_inferred`, is an
+    integer 1-5 field in the schema (`app/core/schemas.py`) -- an even-count cluster's
+    raw median can land on a half-point (e.g. 4.5 from judges [4, 5]), which would
+    otherwise silently violate that int type and get truncated (not rounded) by
+    `eval/runner.py`'s tolerance scorer (confirmed: `_tolerance_score` calls
+    `int(expected)`, which truncates 4.5 -> 4, not round-to-nearest). Unlike the scalar
     exact-match vote, an actual `None` here IS treated as absent data (not a legitimate
     vote value) -- this field's prompt instruction is "always populate", so a judge
     returning `None` failed to comply, same as `NO_RESPONSE`.
@@ -134,7 +140,7 @@ def vote_scalar_tolerant(
 
     # All judges' values fall within one `tolerance`-wide window -> unanimous.
     if vals[-1] - vals[0] <= tolerance:
-        return _median(vals), "unanimous"
+        return round(_median(vals)), "unanimous"
 
     # Look for the largest subset of values within a `tolerance`-wide window.
     best_subset: list[float] = []
@@ -144,7 +150,7 @@ def vote_scalar_tolerant(
             best_subset = window
 
     if len(best_subset) > n / 2:
-        return _median(best_subset), "majority"
+        return round(_median(best_subset)), "majority"
     return None, "split"
 
 
