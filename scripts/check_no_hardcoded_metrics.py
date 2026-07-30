@@ -50,6 +50,7 @@ EXCLUDED_PATH_PREFIXES: tuple[str, ...] = (
     "eval/fixtures/",  # per-fixture creation-time verification notes, not live claims
     "eval/data/",  # fixture sourcing documentation, no accuracy claims
     "ops/runbooks/",  # operational thresholds (billing/traffic/storage %), not model accuracy
+    "docs/architecture/adr/",  # ADRs are point-in-time decision records, immutable once accepted
 )
 EXCLUDED_EXACT_FILES: frozenset[str] = frozenset(
     {
