@@ -59,7 +59,9 @@
       "en": 83,
       "hi-en": 0
     },
-    "excluded_split_or_insufficient": 150
+    "excluded_split_or_insufficient": 150,
+    "excluded_genuine_disagreement": 60,
+    "excluded_rate_limited": 90
   },
   "reliability": {
     "krippendorff_alpha": {
