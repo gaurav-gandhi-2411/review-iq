@@ -522,6 +522,54 @@ record already does.
 
 **P5 — unchanged, still correctly blocked** on PR #33 merging.
 
+### Email routing + deploy discipline + cutover finalization (2026-07-31, seventh pass)
+
+**P0 (DMARC correction + email routing + DPDP contact) — done, folded into the final cutover
+steps + PR #51 (draft, stacked on Section E).** Correctly overridden: a Gmail `rua=` target would
+never receive reports at all (RFC 7489 §7.1 external-destination authorization — `gmail.com`
+would need to publish an authorization record for `samidhareviews.xyz` that Google doesn't offer
+a path to create). Real fix: Cloudflare Email Routing (`dmarc@`, `privacy@`, both forwarding to
+`gg5678g@gmail.com`), `_dmarc` updated to add the `rua=` tag the record has always been missing.
+`privacy@samidhareviews.xyz` also fills two real, previously-unfilled TODOs in Section E's legal
+docs (`privacy-policy.md`'s data-rights contact, `compliance-posture.md`'s DPDP Act 2023 §10
+grievance-officer email) — the officer's **name** is still an explicit placeholder, not silently
+treated as satisfied by an email alone, matching that doc's own stated discipline. MX
+reconciliation flagged explicitly: Cloudflare Email Routing's MX goes at the bare apex (for
+receiving `dmarc@`/`privacy@`); Resend's SPF/DKIM (pending GG's dashboard paste-back) belong on
+the separate `mail.samidhareviews.xyz` subdomain — structurally non-conflicting UNLESS Resend's
+shown records also ask for anything at the bare apex, which needs a direct check once pasted back.
+
+**P1 (production deploy discipline as a rule) — done, PR #49 (draft).** `.github/workflows/
+web-deploy.yml`: the only path that can reach the Cloudflare Pages production alias now,
+triggered by push to `main`. `scripts/check_prod_deploy_is_from_main.py`: queries Cloudflare's own
+Pages API for the live production commit and checks ancestry against `main`, failing closed on
+every ambiguous case — 9 new unit tests, full suite (1064) still green. Added the standing rule to
+the global `CLAUDE.md` (cross-project, not just this repo): never run a `--prod` deploy from a
+local working tree, for any provider — preview/staging deploys from local remain fine. **Requires
+GG**: a scoped Cloudflare API token (my own session can't mint one — confirmed by trying; least
+privilege means CI shouldn't run under my broad interactive token anyway) as repo secrets.
+
+**P2 (final consolidated cutover) — delivered directly to GG as one numbered block**, incorporating
+every prior pass's findings (CAA clear, api's real mechanism, app's real mechanism, the
+google-site-verification + `_dmarc` records, Email Routing + DPDP contact, Resend
+pending-paste-back) with no cross-references to earlier messages.
+
+**P3 (Vercel retirement) — correctly still gated** on the DNS cutover itself; nothing to execute
+yet. Will retire + update the probe's stale comment (already partially done) once `app.` actually
+resolves to Pages and the probe confirms it.
+
+**P4 (`plan.md` self-correction, noted for the record)** — a prior edit in this same file
+accidentally deleted this section's own header (`## 1. The product, restated`) while inserting the
+"production-alias integrity" pass; caught during this pass's own edit and restored. No content was
+lost otherwise (verified via a structural pass over every `##`/`###` header in the file) — noted
+here rather than silently fixed, per the standing "honest documentation" rule.
+
+**P5 (database cutover) — unchanged, still correctly blocked** on PR #33 merging.
+
+---
+
+## 1. The product, restated
+
 **One-line pitch:** An open-source review intelligence service that turns unstructured customer reviews — including Hinglish — into queryable, structured data, with the entire prompt, schema, and eval suite public.
 
 **The wedge against incumbents (Yotpo, Birdeye, Trustpilot Insights):**
