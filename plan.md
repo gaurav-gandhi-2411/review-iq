@@ -239,12 +239,40 @@ deliberately points at the SAME existing `supabase-database-url` secret (not a n
 `review_iq_admin` role) so the admin service works today with zero DDL/DML against prod; P3 swaps
 this once PR #33's migration lands, in the exact order that PR already specifies.
 
-**P1 (diagnose the missing Vercel project) — in progress, see below this section once resolved.**
+**P1 (diagnose the missing Vercel project) — diagnosed, neither offered explanation holds. Not
+redeploying — escalated to GG.** Ruled out "personal scope, not team scope" two independent ways:
+the Vercel MCP integration's `list_teams` returns exactly one scope
+(`gaurav-gandhi-2411's-projects`), and the `vercel` CLI, logged in as `gaurav-gandhi-2411`
+directly (not through the MCP connector), lists the identical 7 projects under the identical
+scope — no separate personal account exists to check. Ruled out "retired deliberately during
+Section C" by reading PR #19's own numbered console steps in full: **step 4 explicitly instructs
+keeping and using the `review-iq-web` Vercel project** ("Vercel dashboard → the `review-iq-web`
+project → Settings → Domains → Add → enter `app.samidhareviews.xyz`") — the only retirement this
+PR instructs anywhere is step 6, the **v1 Hugging Face Space** (a different platform entirely,
+`huggingface.co/spaces/gauravgandhi2411/review-iq`), never Vercel. Corroborating evidence: the
+live `ALLOWED_ORIGINS` env var on `review-iq` still lists `review-iq-web-umber.vercel.app` — a
+real prior deployment URL for a project literally named `review-iq-web`, which does not appear
+among the 7 projects that exist today. **Conclusion: the `review-iq-web` Vercel project was
+removed by some action outside anything recorded in this repo — most likely a manual deletion
+during or after the Section C console steps, cause unknown from repo-internal evidence alone.**
+Per instruction, not redeploying until GG confirms what happened.
 
-**P2 (extend Section F's probe to web surfaces) — pending, scheduled after P1.**
+**P2 (extend Section F's probe to web surfaces) — VERIFIED-LIVE (probe logic), PR #47 (draft).**
+`scripts/probe_web_surfaces.py` + `.github/workflows/web-surface-probe.yml`, mirroring
+`probe_failover.py`/`failover-probe.yml`'s nightly-cron + optional-Slack-notify convention. Checks
+all 4 named surfaces (marketing apex, dashboard, API health, `/try`) for HTTP 200 **and** a
+content-marker assertion — a parked domain or generic error page can return 200 too. Ran live
+against production as verification, not just against mocks: correctly caught the exact ongoing
+incident (`ConnectError` on the apex — no DNS record; `404` on dashboard and `/try`; API
+genuinely healthy) — proof it detects the real failure mode, not just a green mocked test suite.
+The *standing nightly job* activates once merged to `main` (GitHub Actions schedules don't run off
+feature branches); the probe logic itself is proven live today.
 
 **P3 (post-merge cutover: redeploy web, run PR #33's migration, re-verify BYPASSRLS gone) — not
-started, explicitly gated on the stack merging and deploying first, per instruction.**
+started, explicitly gated on the stack merging and deploying first, per instruction. Readiness:**
+P0 is merge-ready (draft PR #46, VERIFIED-LIVE). P1 is blocked on GG's answer before any redeploy
+can happen. P2 is merge-ready (draft PR #47). PR #33 (the migration itself) is unchanged, still
+holding its own 9-step apply sequence. Waiting on GG per instruction — not proceeding further.
 
 ---
 
