@@ -19,10 +19,20 @@
     "tokens_in": 1691,
     "tokens_out": 122
   },
+  "1a34e691eed4540c0b53449a019fc9548d72bca115551deb1ffe71326fcecad7": {
+    "raw": "{\n  \"product\": \"FreshBreeze air cooler\",\n   \"stars\": null,\n   \"stars_inferred\": 4,\n   \"pros\": [\"works well for small rooms\", \"cooler works well\", \"easy to fill water tank\"],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\"air_cooler\", \"room_size\", \"performance\", \"design\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.9\n}",
+    "tokens_in": 1695,
+    "tokens_out": 130
+  },
   "1b9d4aa0f087c1d0f195a309b1ee240203d8febe49694cdf0e143c6a58001d28": {
     "raw": "{\n  \"product\": \"PowerDrive Pro\",\n   \"stars\": null,\n   \"stars_inferred\": 1,\n   \"pros\": [\"incredible battery life\", \"amazing build quality\"],\n   \"cons\": [\"creaky plastic\"],\n   \"buy_again\": false,\n   \"sentiment\": \"negative\",\n   \"topics\": [\"battery\", \"build_quality\", \"price\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"high\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
     "tokens_in": 1686,
     "tokens_out": 118
+  },
+  "1c3f3470c94cd3687e2a34676bd7d84399f7cfb4a066d2703a3cfa4748360580": {
+    "raw": "{\n  \"product\": \"SleepPro mattress\",\n   \"stars\": null,\n   \"stars_inferred\": 3,\n   \"pros\": [\"works\", \"fast delivery\", \"edge support is not bad\"],\n   \"cons\": [\"edge support is a bit soft\"],\n   \"buy_again\": null,\n   \"sentiment\": \"neutral\",\n   \"topics\": [\"mattress\", \"edge_support\", \"delivery\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
+    "tokens_in": 1692,
+    "tokens_out": 125
   },
   "30394d643ccd70a6ac817007a9a3b00de25d83acf3c390537e720cd3cd115817": {
     "raw": "{\n  \"product\": \"adapter\",\n   \"stars\": null,\n   \"stars_inferred\": 1,\n   \"pros\": [],\n   \"cons\": [\"electric shock risk\", \"dangerous product\"],\n   \"buy_again\": false,\n   \"sentiment\": \"negative\",\n   \"topics\": [\"safety\", \"electric_shock\"],\n   \"competitor_mentions\": [\"Amazon\"],\n   \"urgency\": \"high\",\n   \"feature_requests\": [],\n   \"language\": \"hi\",\n   \"confidence\": 0.95\n}",
@@ -154,6 +164,11 @@
     "tokens_in": 1683,
     "tokens_out": 141
   },
+  "83aa61169fc8ccd19d9472dd057aaf4ee4ef3044099cab600e8de0101f46c67f": {
+    "raw": "{\n  \"product\": \"CoolAir AC unit\",\n   \"stars\": 0,\n   \"stars_inferred\": 1,\n   \"pros\": [],\n   \"cons\": [\"caught fire\", \"smoke damage\", \"dangerous\"],\n   \"buy_again\": false,\n   \"sentiment\": \"negative\",\n   \"topics\": [\"safety\", \"fire_hazard\", \"build_quality\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"high\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
+    "tokens_in": 1692,
+    "tokens_out": 120
+  },
   "85b8cb4c2b9ea11e339be1748c1a217f0350182c8d53e0a35ba4bef700136aaa": {
     "raw": "{\n  \"product\": \"UltraSound Pro speaker\",\n   \"stars\": 4,\n   \"stars_inferred\": 4,\n   \"pros\": [\n      \"exceptional bass response\",\n      \"clear mid-tones\",\n      \"vocals shine through\",\n      \"premium aluminum chassis\",\n      \"rubber base prevents sliding\",\n      \"Bluetooth 5.0 pairs instantly\",\n      \"honest battery life\",\n      \"outstanding value\"\n   ],\n   \"cons\": [\n      \"harsh highs at maximum volume\",\n      \"flimsy charging port cover\",\n      \"IPX5 rating not trusted in heavy rain\",\n      \"passable built-in mic\",\n      \"limited EQ presets\"\n   ],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\n      \"sound_quality\",\n      \"build_quality\",\n      \"features\",\n      \"value\",\n      \"charging_port\",\n      \"water_resistance\",\n      \"microphone\",\n      \"equalization\"\n   ],\n   \"competitor_mentions\": [\"JBL\", \"Bose\"],\n   \"urgency\": \"low\",\n   \"feature_requests\": [\"more EQ presets\"],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
     "tokens_in": 1892,
@@ -169,6 +184,11 @@
     "tokens_in": 1791,
     "tokens_out": 122
   },
+  "901be8f8206616b66e39a90bcf081302a76f682374f7a05a112e759208cca481": {
+    "raw": "{\n  \"product\": \"CoolAir AC unit\",\n   \"stars\": 0,\n   \"stars_inferred\": 1,\n   \"pros\": [],\n   \"cons\": [\"caught fire\", \"smoke damage\", \"dangerous\"],\n   \"buy_again\": false,\n   \"sentiment\": \"negative\",\n   \"topics\": [\"safety\", \"fire_hazard\", \"build_quality\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"high\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
+    "tokens_in": 1691,
+    "tokens_out": 120
+  },
   "9044e6c5cfdbddafdef1a86b3c28075c5a9dbe1c0e3e435db6cdd440be4ba12b": {
     "raw": "{\n  \"product\": \"SmartScale Pro\",\n   \"stars\": 4,\n   \"stars_inferred\": 4,\n   \"pros\": [\"good for basic use\", \"accurate weight readings\", \"easy to read display\"],\n   \"cons\": [\"no companion app\", \"no Bluetooth sync\", \"uses AAA batteries\"],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\"basic_use\", \"trends\", \"bluetooth\", \"battery\", \"weight_readings\", \"display\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [\"companion app\", \"Bluetooth sync\", \"rechargeable battery\"],\n   \"language\": \"en\",\n   \"confidence\": 0.9\n}",
     "tokens_in": 1681,
@@ -178,6 +198,11 @@
     "raw": "{\n  \"product\": \"headset\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\"worth buying\", \"good value for money\"],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\"value\", \"purchase\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.9\n}",
     "tokens_in": 1813,
     "tokens_out": 108
+  },
+  "97d436f2c366419490391cb5de992184efa1c681ed8944020026eb0e5cee5f2a": {
+    "raw": "{\n  \"product\": \"ChairMax Pro\",\n   \"stars\": null,\n   \"stars_inferred\": 1,\n   \"pros\": [\"comfortable seat\"],\n   \"cons\": [\"lumbar support broke after 3 months\", \"poor customer support\"],\n   \"buy_again\": false,\n   \"sentiment\": \"negative\",\n   \"topics\": [\"lumbar_support\", \"comfort\", \"customer_support\", \"price\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"high\",\n   \"feature_requests\": [\"fix lumbar support\"],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
+    "tokens_in": 1691,
+    "tokens_out": 132
   },
   "9f92aeb0d1d049c1a88ac2942f93cb4d045a4c290a37a9d807dc1e7aac84fc41": {
     "raw": "{\n  \"product\": \"headphones\",\n   \"stars\": null,\n   \"stars_inferred\": 1,\n   \"pros\": [],\n   \"cons\": [\"breaks after one week\", \"short battery life\", \"poor value for price\"],\n   \"buy_again\": false,\n   \"sentiment\": \"negative\",\n   \"topics\": [\"build_quality\", \"battery\", \"price\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"high\",\n   \"feature_requests\": [\"improve durability\", \"increase battery life\"],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
@@ -213,6 +238,11 @@
     "raw": "{\n  \"product\": \"headphones\",\n   \"stars\": 5,\n   \"stars_inferred\": 4,\n   \"pros\": [\n      \"excellent sound quality\",\n      \"punchy bass\",\n      \"instant Bluetooth pairing\",\n      \"great value for price\"\n   ],\n   \"cons\": [\n      \"ear cups press tight\",\n      \"ear aching after 20 minutes of use\"\n   ],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\n      \"sound_quality\",\n      \"bass\",\n      \"bluetooth\",\n      \"price\",\n      \"comfort\"\n   ],\n   \"competitor_mentions\": [],\n   \"urgency\": \"high\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.9\n}",
     "tokens_in": 1692,
     "tokens_out": 169
+  },
+  "b99c458c219e9300cd9a2ac673b609fae379363e57abf25d98b864f4eada2d64": {
+    "raw": "{\n  \"product\": \"Turbo-Vac 5000\",\n   \"stars\": null,\n   \"stars_inferred\": 3,\n   \"pros\": [\n      \"incredible suction\",\n      \"quiet operation\",\n      \"cat appreciates quiet operation\"\n   ],\n   \"cons\": [\n      \"short battery life\",\n      \"poor build quality\",\n      \"plastic handle feels flimsy\"\n   ],\n   \"buy_again\": null,\n   \"sentiment\": \"mixed\",\n   \"topics\": [\n      \"suction\",\n      \"noise\",\n      \"battery\",\n      \"build_quality\",\n      \"price\",\n      \"customer_service\"\n   ],\n   \"competitor_mentions\": [\n      \"Dyson\"\n   ],\n   \"urgency\": \"medium\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.9\n}",
+    "tokens_in": 1745,
+    "tokens_out": 181
   },
   "bdef5aa6d7283a6a1f3033eafbbe081322bc650918196ef1ef07d17a380553e8": {
     "raw": "{\n  \"product\": \"FitBand Lite\",\n   \"stars\": null,\n   \"stars_inferred\": 3,\n   \"pros\": [\n      \"accurate step counting\",\n      \"sleep tracking\",\n      \"heart rate monitoring\",\n      \"fair price\",\n      \"long battery life\"\n   ],\n   \"cons\": [\n      \"nothing wowed me\",\n      \"basic fitness tracker\"\n   ],\n   \"buy_again\": null,\n   \"sentiment\": \"neutral\",\n   \"topics\": [\n      \"steps\",\n      \"sleep_tracking\",\n      \"heart_rate\",\n      \"price\",\n      \"battery_life\",\n      \"build_quality\"\n   ],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.9\n}",
@@ -288,6 +318,11 @@
     "raw": "{\n  \"product\": \"Syska charger\",\n   \"stars\": null,\n   \"stars_inferred\": 1,\n   \"pros\": [],\n   \"cons\": [\"poor quality\", \"waste of money\"],\n   \"buy_again\": false,\n   \"sentiment\": \"negative\",\n   \"topics\": [\"charger_quality\", \"value\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"hi\",\n   \"confidence\": 0.88\n}",
     "tokens_in": 913,
     "tokens_out": 110
+  },
+  "f6d1a1da56134c27254e95b296cc16b458ef6832d6eb0dcedccfc7043c067dc4": {
+    "raw": "{\n  \"product\": \"FreshBreeze air cooler\",\n   \"stars\": null,\n   \"stars_inferred\": 4,\n   \"pros\": [\"works well for small rooms\", \"cools down in 10 minutes\", \"easy to fill water tank\"],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\"air_cooler\", \"room_size\", \"performance\", \"ease_of_use\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.9\n}",
+    "tokens_in": 1692,
+    "tokens_out": 135
   },
   "f8068d8445315dd718e2fba86d0c328bfe38d0b2fc11020fdbb80c22bee5f95c": {
     "raw": "{\n  \"product\": \"BrewMaster coffee grinder\",\n   \"stars\": null,\n   \"stars_inferred\": 4,\n   \"pros\": [\"grinds consistently\", \"easy to adjust settings\"],\n   \"cons\": [\"poor packaging\", \"anxious due to damaged box\"],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\"coffee_grinder\", \"build_quality\", \"packaging\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.9\n}",
