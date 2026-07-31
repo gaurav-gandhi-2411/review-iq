@@ -215,6 +215,39 @@ that combined branch.
 
 ---
 
+## Surface recovery + admin lockdown (2026-07-31)
+
+Triggered by the Wave 2 close-out P4 audit finding two problems beyond what was asked: the S0
+BYPASSRLS finding was never actually applied to production (task-list "done" meant dry-run only),
+and `app.samidhareviews.xyz` was returning Vercel's `DEPLOYMENT_NOT_FOUND`.
+
+**P0 (cut the live exposure without touching the DB) — VERIFIED-LIVE, PR #46 (draft).**
+Deployed a second Cloud Run service, `review-iq-admin`, `--no-allow-unauthenticated`, mounting
+only `ops_router` + `admin_router` (cherry-picked just the `SERVICE_ROLE` routing split from ADR
+0006/PR #33 — not the full S0 branch). The existing public `review-iq` service no longer mounts
+`admin_router` under any config. Verified directly: public service's `/admin/*` → **404** (fully
+unmounted, stronger than the 401 that existed before); `review-iq-admin` unauthenticated → **403**
+from Cloud Run's own IAM layer, before the app is even reached; same path via an authenticated
+`gcloud run services proxy` identity → **401** `{"detail":"Not authenticated"}` (reaches the app,
+`require_admin`'s Basic auth still demands a password underneath — both layers live). IAM policy
+on the new service has **zero explicit bindings** — my own access works only via pre-existing
+project-owner permissions, confirming no new public/service-account grant was introduced. Real
+`POST /v2/extract` against the public domain with a disposable test key still returns a correct
+200 (non-admin path unaffected); test org/key deleted after. **BYPASSRLS remains present on
+`review_iq_app`, unchanged — this is reachability mitigation, not the fix.** `ADMIN_DATABASE_URL`
+deliberately points at the SAME existing `supabase-database-url` secret (not a new
+`review_iq_admin` role) so the admin service works today with zero DDL/DML against prod; P3 swaps
+this once PR #33's migration lands, in the exact order that PR already specifies.
+
+**P1 (diagnose the missing Vercel project) — in progress, see below this section once resolved.**
+
+**P2 (extend Section F's probe to web surfaces) — pending, scheduled after P1.**
+
+**P3 (post-merge cutover: redeploy web, run PR #33's migration, re-verify BYPASSRLS gone) — not
+started, explicitly gated on the stack merging and deploying first, per instruction.**
+
+---
+
 ## 1. The product, restated
 
 **One-line pitch:** An open-source review intelligence service that turns unstructured customer reviews — including Hinglish — into queryable, structured data, with the entire prompt, schema, and eval suite public.
