@@ -45,6 +45,11 @@ jobs:
       - name: Metrics render drift check (README/site vs eval JSON)
         run: uv run python scripts/render_metrics.py --check
 
+      # Domain-consolidation gate (Wave 1 Section C) -- fails on placeholder href="#"
+      # links and on a missing/invalid site/demo-data.json (D1/D3 regression guard).
+      - name: Link health (placeholder links + demo-data fixture)
+        run: uv run python scripts/check_link_health.py
+
   pip-audit:
     runs-on: ubuntu-latest
     steps:
