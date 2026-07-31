@@ -1,0 +1,51 @@
+name: Web Surface Probe
+
+# Wave 2 close-out P2: nightly synthetic check of every customer-facing web surface
+# (marketing site, dashboard, API health, the public /try page). Mirrors
+# failover-probe.yml's nightly-cron + conditional-Slack-notify convention (the
+# established house pattern for scheduled jobs in this repo) -- no new scheduling
+# mechanism introduced. Triggered by app.samidhareviews.xyz silently going dark with
+# no alert; same class of config/infra rot as the dead-Gemini-model finding.
+#
+# Cost: 4 GET requests/night against domains this project already owns. $0.
+
+on:
+  schedule:
+    - cron: "45 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: web-surface-probe
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Run web surface probe
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            uv run python scripts/probe_web_surfaces.py
+          else
+            uv run python scripts/probe_web_surfaces.py --slack-webhook "$SLACK_WEBHOOK_URL"
+          fi
