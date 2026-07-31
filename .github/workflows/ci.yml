@@ -38,7 +38,13 @@ jobs:
         run: uv run mypy app/
 
       - name: Unit tests
-        run: uv run pytest tests/unit/ -v
+        # Was `pytest tests/unit/` only -- silently excluded ~9 flat test files directly
+        # under tests/ (test_providers.py, test_failover.py, the new test_probe_failover.py,
+        # etc.), including this Section F change's own SecondaryProvider/failover tests.
+        # Verified all 1059 tests (tests/unit/ + flat tests/, excluding integration/
+        # benchmark which need a live DB / are long-running) pass together before widening
+        # this gate (2026-07-31).
+        run: uv run pytest tests/ --ignore=tests/integration --ignore=tests/benchmark -v
 
   pip-audit:
     runs-on: ubuntu-latest

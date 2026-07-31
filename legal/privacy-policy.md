@@ -53,10 +53,13 @@ We do not collect payment information as of this drafting (no billing integratio
 2. **LLM extraction.** The (redacted) review text is sent to **Groq** (primary inference
    provider, Llama 3.3 70B / 3.1 8B models) to generate the structured extraction and authenticity
    signal. See [`sub-processors.md`](./sub-processors.md) for what Groq receives and Groq's own
-   data-handling commitments. A configurable secondary/failover provider may also process review
-   text, gated by a `trains_on_input` check that unconditionally blocks any provider that trains
-   on customer input (`assert_privacy_safe()` in `app/core/llm.py` — see `SECURITY.md` §3).
-   Google Gemini is excluded from the customer-data (`/v2`) path entirely.
+   data-handling commitments. **OpenRouter** is a secondary/failover provider that activates only
+   when Groq is unavailable, gated by the same `trains_on_input` check that unconditionally blocks
+   any provider that trains on customer input (`assert_privacy_safe()` in `app/core/llm.py` — see
+   `SECURITY.md` §3) and, since OpenRouter itself routes to multiple third-party inference
+   providers, an additional Zero-Data-Retention restriction enforced on every request — see
+   `sub-processors.md` for the per-upstream-provider verification. Google Gemini is excluded from
+   the customer-data (`/v2`) path entirely.
 3. **Storage.** Extraction output, authenticity audit records (hashed review text only, not
    plaintext — see §1 table above), account data, and usage records are stored in **Supabase
    Postgres**, isolated per organization via Row-Level Security (RLS) — see
@@ -95,6 +98,10 @@ schedule and the deletion mechanism. In summary:
   this drafting session — no live web-fetch tool was available. Verify against Groq's current
   published Privacy Policy / DPA before publishing this section — see
   [`sub-processors.md`](./sub-processors.md) for the URL to check.]`
+- **OpenRouter** (secondary/failover LLM inference) is a US-headquartered company that routes
+  requests dynamically to whichever Zero-Data-Retention-confirmed upstream infrastructure
+  provider is available — no single fixed jurisdiction can be stated (see `sub-processors.md`
+  for the live-verified upstream-provider list and how to re-check it).
 - **Supabase** (database/auth) — for this specific project, the production Postgres connection is
   hosted on AWS in the `ap-south-1` (Mumbai, India) region, confirmed from this project's own
   connection configuration (`ops/runbooks/connection-modes.md`: pooler host
@@ -187,4 +194,6 @@ updated "Effective date" above.
 
 ---
 
-_This document is version-controlled; see git history for changes. Last drafted: 2026-07-31._
+_This document is version-controlled; see git history for changes. Last drafted: 2026-07-31.
+Revised 2026-07-31 (S0/P1 remediation): named OpenRouter explicitly as the secondary/failover
+LLM provider in §2 and §4 — re-flagged REQUIRES-LEGAL-REVIEW for the new content specifically._
