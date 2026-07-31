@@ -56,8 +56,9 @@ class ProbeResult:
 
 
 # Wave 2 close-out P2's exact four surfaces. /try is the same Vite SPA as the
-# dashboard (client-side routed -- vercel.json rewrites every path to index.html,
-# see web/vercel.json), so a broken deployment fails it identically to the root.
+# dashboard (client-side routed -- web/public/_redirects rewrites every path to
+# index.html on Cloudflare Pages, matching what web/vercel.json did before the
+# Vercel-exit migration), so a broken deployment fails it identically to the root.
 _SURFACES: list[Surface] = [
     Surface("marketing", "https://samidhareviews.xyz/"),
     Surface("dashboard", "https://app.samidhareviews.xyz/"),
