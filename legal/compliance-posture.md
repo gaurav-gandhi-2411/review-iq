@@ -55,10 +55,12 @@ obligations and current posture:
 
 ### Grievance / Data Protection Officer contact (DPDP Act 2023 §10 requirement)
 
-`[TODO: GG to provide grievance officer name/email per DPDP Act 2023 §10 requirements]`
+**Email:** `privacy@samidhareviews.xyz` (Cloudflare Email Routing, forwards to GG directly).
 
-This contact is left as an explicit placeholder rather than a fabricated name or address, per
-standing instruction — do not publish this document to customers with this block unfilled.
+`[TODO: GG to provide the grievance officer's NAME — DPDP Act 2023 §10 requires publishing a
+named individual, not only a contact mailbox; the email alone does not fully satisfy this
+requirement]`. This name is left as an explicit placeholder rather than a fabricated one, per
+standing instruction — do not publish this document to customers with the name still unfilled.
 
 ---
 
