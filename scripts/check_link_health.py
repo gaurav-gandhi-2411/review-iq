@@ -20,11 +20,25 @@ What this checks:
    saw that file in a rebase. `.html` files get no such exemption: a real `href="#"` there is
    always a live broken link regardless of surrounding markup.
 2. `site/demo-data.json` exists on disk and parses as valid UTF-8 JSON.
+3. `site/index.html`'s capability gallery actually renders *something real* with
+   JavaScript disabled. The gallery is entirely JS-populated (`fetch("./demo-data.json")`
+   inside a `DOMContentLoaded` handler, writing into an initially-empty
+   `#gallery-panels` div) with no `<noscript>` fallback -- verified directly (raw HTML
+   fetched with zero JS execution, and confirmed live in a real browser with the page's
+   own JS running that `<noscript>` content is inertly parsed as text, never displayed,
+   so adding one carries no visual-regression risk when JS *is* enabled) that the page's
+   former claim "works with JS disabled" was false: with JS off, a visitor saw a
+   completely blank gallery section, not even the (also JS-gated) error-fallback message.
+   This check fails if `site/index.html` has no `<noscript>` block, or if that block's
+   content is too short / doesn't look like a real rendered example (no JSON-shaped
+   output) to be more than a placeholder satisfying the letter of "has a noscript tag."
 
 LIMITATION -- read before trusting this check: this is a static, offline check. It does not
 follow real HTTP links or verify they return 200 (no live-network check, by design -- CI
 must not depend on external hosts being reachable). It catches the exact regression classes
-named above, not a general link-rot scanner.
+named above, not a general link-rot scanner. Check 3 does not execute a real browser either
+-- it inspects the `<noscript>` markup textually, the same way a JS-disabled browser's
+initial HTML parse would see it.
 """
 
 from __future__ import annotations
@@ -37,6 +51,19 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEMO_DATA_PATH = REPO_ROOT / "site" / "demo-data.json"
+GALLERY_HTML_PATH = REPO_ROOT / "site" / "index.html"
+
+NOSCRIPT_RE = re.compile(r"<noscript>(.*?)</noscript>", re.IGNORECASE | re.DOTALL)
+_TAG_RE = re.compile(r"<[^>]+>")
+
+# A real rendered example has structured output (product/sentiment/etc as a JSON-shaped
+# object), not just a sentence. Cheap heuristic: an opening and closing curly brace with
+# at least one `"key":` pair between them, which a placeholder sentence won't have.
+_JSON_SHAPED_RE = re.compile(r'\{[^{}]*"[a-zA-Z_]+"\s*:', re.DOTALL)
+
+# Below this many characters of stripped text, treat the noscript block as a placeholder
+# rather than a genuine rendered example (e.g. just "JavaScript required." is 20 chars).
+MIN_NOSCRIPT_TEXT_LENGTH = 150
 
 # A literal bare `#` fragment -- `href="#"` or `href='#'`. Deliberately does NOT match
 # `href="#gallery"` etc: the closing quote must immediately follow the `#`.
@@ -127,6 +154,46 @@ def check_demo_data() -> str | None:
     return None
 
 
+def check_noscript_gallery_fallback() -> str | None:
+    """Return an error message if the gallery's no-JS fallback is missing or a placeholder.
+
+    Simulates what a JS-disabled browser's initial HTML parse sees: extracts the raw
+    `<noscript>...</noscript>` markup (never executing any script), strips tags, and
+    requires enough real text with JSON-shaped output to be an actual rendered example --
+    not just a `<noscript>` tag that technically exists but shows nothing meaningful.
+    """
+    if not GALLERY_HTML_PATH.exists():
+        return f"{_display_path(GALLERY_HTML_PATH)} does not exist."
+
+    html = GALLERY_HTML_PATH.read_text(encoding="utf-8")
+    match = NOSCRIPT_RE.search(html)
+    if not match:
+        return (
+            f"{_display_path(GALLERY_HTML_PATH)} has no <noscript> fallback -- the "
+            "capability gallery is entirely JS-populated with no non-JS content path."
+        )
+
+    noscript_html = match.group(1)
+    stripped_text = _TAG_RE.sub(" ", noscript_html)
+    stripped_text = re.sub(r"\s+", " ", stripped_text).strip()
+
+    if len(stripped_text) < MIN_NOSCRIPT_TEXT_LENGTH:
+        return (
+            f"{_display_path(GALLERY_HTML_PATH)}'s <noscript> block has only "
+            f"{len(stripped_text)} characters of text ({MIN_NOSCRIPT_TEXT_LENGTH} "
+            "required) -- looks like a placeholder, not a real rendered example."
+        )
+
+    if not _JSON_SHAPED_RE.search(noscript_html):
+        return (
+            f"{_display_path(GALLERY_HTML_PATH)}'s <noscript> block has no JSON-shaped "
+            'output (a `{ "key": ... }` structure) -- the page claims examples show '
+            "structured extraction output; the no-JS fallback should too."
+        )
+
+    return None
+
+
 def main() -> int:
     any_violations = False
 
@@ -146,16 +213,24 @@ def main() -> int:
         any_violations = True
         print(f"\n{demo_data_error}")
 
+    noscript_error = check_noscript_gallery_fallback()
+    if noscript_error:
+        any_violations = True
+        print(f"\n{noscript_error}")
+
     if any_violations:
         print(
             "\nFAIL: link-health check failed -- see above. Fix by either replacing the "
-            'placeholder `href="#"` with a real destination, or restoring/repairing '
-            "site/demo-data.json.",
+            'placeholder `href="#"` with a real destination, restoring/repairing '
+            "site/demo-data.json, or adding/fixing the gallery's <noscript> fallback.",
             file=sys.stderr,
         )
         return 1
 
-    print('OK: no bare href="#" placeholder links found, and site/demo-data.json is valid.')
+    print(
+        'OK: no bare href="#" placeholder links found, site/demo-data.json is valid, and '
+        "the gallery's no-JS fallback renders a real example."
+    )
     return 0
 
 
