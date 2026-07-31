@@ -68,10 +68,10 @@ Full 12-gate exit criteria in spec §5. Tracked here per rule 118 (checkpoint on
 | B — Kill hand-labeling | **done, PR #17 (draft, stacked on #16)** | Built and independently re-verified: `eval/agreement.py` (Krippendorff/Fleiss, textbook-verified), `eval/power_analysis.py` (MDE), `eval/consensus/` package (2-judge panel after calibration dropped `allam-2-7b`; `llama-3.3-70b-versatile` excluded by design as a self-judging conflict), 132 fixtures total with real consensus ground truth (not 300 — real corpus yield + Groq rate-limit wall, documented honestly), ADR 0002. **INCIDENT (resolved):** recording cassettes for the 83 new fixtures exhausted production's `GROQ_API_KEY` daily TPD budget for `llama-3.3-70b-versatile` (99,770/100,000) after 43/132 — a real quota-consumption event I ran without recognizing it as the exact escalation case my own standing rules name. No customer-impact evidence found in Cloud Run logs, not exhaustively proven either. With GG's explicit direction, filled the gap via OpenRouter (83/83, Gemini configured as unused fallback) — ADR 0003. **Then caught two more bugs in my own recovery, during independent verification, before either executor did:** (1) my own WIP commit had captured a broken partial-run snapshot (27.3%) instead of the true 83.8%/49-fixture figure — restored from the last known-good commit; (2) the 83 substitute-provider fixtures sat inside `eval/fixtures/`, which `eval.runner` scans fresh on every real CI run (not a static check) — would have silently regenerated a 74.6%/FAIL result on the next push regardless of what was committed. Moved to `eval/fixtures/_pending_groq_cassette/` (outside the runner's scan), restoring the clean 49-fixture/83.8% CI gate, verified reproducible twice. This PR adds 132 fixtures' worth of real ground truth to the repo but changes nothing about what currently gates CI. |
 | C — Domain consolidation | **code done, PR #19 (draft, stacked on #17)** | Closed a real live bug found during premise-verification: v1 HF Space's `GET /reviews`/`GET /insights` were unauthenticated (confirmed via direct curl) — now require the same API key as every other v1 endpoint; `deploy.yml` no longer auto-pushes to the Space. Fixed 3 of 4 demo-page defects (D2 leaked dev instruction, D3 dead footer link, D7 stale known-gaps banner); D1/D4 did **not** reproduce when checked live today — not fabricated a fix, added a build-time regression guard instead. New link-health CI gate. Draft not auto-merged: touches auth + deploy config, rule-70a gate 4 fails regardless of size. Registrar confirmed via RDAP = NameCheap; DNS genuinely blank. Numbered escalation steps for Cloudflare/NameCheap/Vercel/Search-Console/HF in the PR body — none done yet, needs GG. |
 | D — Logo/identity | **done, PR #21 (draft, stacked on #19)** | Replaced the generic speech-bubble-with-star mark (byte-identical in 3 places) with a "samidha" concept: crossed sticks converging into one flame. First attempt (thin radiating sparks) collapsed into a generic AI-sparkle glyph at favicon scale — rejected, rebuilt as solid crossed-log shapes before shipping. Full WCAG-AA-verified token set (`design/tokens.json`) with 2 documented failing pairs (ember+white text, ember-on-paper links) fixed via usage rules, not silently avoided; `scripts/check_contrast.py` is a real CI gate. Draft not auto-merged: 499 non-binary lines, over the reviewable guideline, no generated-artifact carve-out applies. HF model card and full page re-theming explicitly deferred (no card exists yet; re-theming is its own reviewable pass). |
-| E — Security + legal | in progress | See "E kickoff" note below. |
-| F — Reliability | not started | |
-| G — Cost telemetry | in progress (parallel to E) | See "G/H kickoff" note below. |
-| H — Corpus mining | in progress (parallel to E) | Substantial reusable groundwork in `benchmark/vernacular_v2/` — extend, don't rebuild. 2 unresolved-license Kaggle sources need a decision. |
+| E — Security + legal | **done, PR #27 (draft, branched from main)** | Legal docs (6 files + REQUIRES-LEGAL-REVIEW banners + real `DELETE /account` documented, not the spec's non-existent `DELETE /v2/data`). CVE gate live (2 real HIGH CVEs found+fixed — pyasn1, pyjwt — blocking gate now enforced, all Actions SHA-pinned). Rate limiting confirmed already shipped (audit finding #10). Adversarial cross-tenant suite: exact 4 spec vectors + RLS-disable proof (MVCC-safe technique, verified on a scratch table before ever touching real tables), 27 integration tests green. **BYPASSRLS re-verified — exists, but is an intentional, already-documented 2026-07-26 decision** (matches Supabase's `service_role` pattern); empirically confirmed `_set_tenant()` genuinely re-enforces RLS despite it; storage_pg.py audited (20/21 functions correctly scope, the 1 exception already justified); added a static-audit regression test. Secret scan (gitleaks+trufflehog): 1 real finding — a "public demo key" was live in README in this public repo for ~23 days (2026-05-15 to 2026-06-07), since removed from current code but still in git history — reported, not rotated, per standing instruction. **PII redaction rebuilt as reversible (unique per-occurrence tokens, in-memory rehydration) but the accuracy-delta gate hit its STOP condition and needs a GG decision**: 19/49 eval fixtures unmeasurable without live Groq calls (none available this session), and the measurable evidence shows the NER name-detector redacting competitor/brand names (Dyson, Shark, Bose, NovaPod) as PERSON entities — reproduced independently, not just trusted. Redaction ships ON by default (security requirement stands independent of this), but 3 options are laid out in the PR for the accuracy-mechanism question. Name-redaction recall measured honestly: 55.6% [41.2%, 69.1%] (overall 83.5% [75.8%, 89.0%], n=121). |
+| F — Reliability | **done, PR #31 (draft)** | Headline finding: org-key path had ZERO working failover (`SecondaryProvider` was a literal `NotImplementedError` stub, uncredentialed in prod; Gemini correctly banned there). Fixed: real OpenRouter-backed `SecondaryProvider`, hardcoded `zdr:true` on every request (not config-gated), live-verified 3x against the real ZDR endpoint allowlist plus one full extraction round-trip. Nightly synthetic failover probe (real live calls, both-OK and both-FAIL runs verified). SLO: real Cloud Monitoring/Logging data pulled — 99.972% non-5xx over 14d (all-endpoint, no per-route breakdown available) but only n=2 real extractions logged, honestly reported as `INSUFFICIENT DATA` rather than fabricated. Status page: UptimeRobot free-tier recommended, not built (numbered signup steps in PR). Found+fixed in review: this branch's own new workflow file was unpinned (parallel-branch gap vs. Section E's sweep, which couldn't cover a file that didn't exist yet) — pinned to the same SHAs. |
+| G — Cost telemetry | **done, PR #24 (draft)** | Per-extraction USD/INR cost recording anchored to the shared single/batch/CSV extraction path (usage_records turned out unusable — 1:1 with a request, not an extraction, and batch/CSV never populate it). All 4 prices + USD→INR rate live-verified against real provider pages (2026-07-31), not recalled. Found (not fixed, flagged for F): Gemini 2.0 Flash — the configured fallback model — was deprecated/shut down by Google on 2026-06-01. Migration not yet applied to prod (needs GG, numbered steps in PR body). |
+| H — Corpus mining | **done, PR #25 (draft)** | Extended `benchmark/vernacular_v2/`, both unclear-license Kaggle sources resolved (CC0-1.0; one wired in, one left unwired — schema unverifiable in a gitignored worktree). ADR 0004: target ≥300K corpus / ≥5,000 Indic-strata eval (MDE≈2.2pp), floor ≥2,000 (MDE≈3.5pp) — current real Indic yield is only 595 (~12% of floor), named as the real Wave 3 blocker. $0 spent (no live creds in that worktree; every LLM stage mock-tested, a bounded 72-call/~$0.05 live-run plan is ready and cost-capped). Independently rediscovered, and confirmed already-fixed, the same PII name-regex bug E's rebuild caught. |
 
 ### Stack unblock + pre-Section-E audit (2026-07-31)
 Rebased `#16→#17→#19→#21` onto current `main` (main had moved forward via tracker-only PRs
@@ -115,6 +115,66 @@ against those specific vectors. Zero `BYPASSRLS` grep hits confirmed.
 G (cost telemetry): confirmed genuinely absent — `app/api/ops.py` has no per-extraction
 token/cost recording. H (corpus mining): `benchmark/vernacular_v2/` already has ingestion +
 dedup + a multi-LLM labeler prototype from earlier work — extending, not rebuilding.
+
+### Post-E remediation (2026-07-31) — P0-P3 + Section F + Section H sourcing decision
+
+**P0 (secret exposure) — CLOSED.** The demo key (`riq_live_d6fb4d0c...`) was revoked
+(`revoked_at` set, live-verified: the key now returns 401 on the real API). Usage audit:
+exactly 1 usage record exists for this key, timestamped **~16 hours BEFORE** the key was even
+published in README — almost certainly the original setup/test call, not external use. **Zero
+unattributable usage during the actual ~23-day exposure window.** History-reachability confirmed
+precisely: present in 21 historical commits (all pre-dating removal), absent from all 7 current
+Wave 1 feature branches and all 20 version tags. Not rewriting history (the key is dead; a
+rewrite would disrupt every clone/fork of this public repo for no live-security benefit) —
+flagging that call as available if GG wants it anyway.
+
+**P1 (NER redaction bug) — CLOSED.** Confirmed the bug was exactly what was suspected:
+`_redact_names_ner()` already correctly filtered to `PERSON`-only (ORG/PRODUCT were never
+touched), but spaCy's small model misclassifies brand names as PERSON on short review text.
+Fixed with a brand gazetteer (132-entry static list + live `competitor_mentions` history, 10
+real brands already recorded including the exact Dyson/Shark/Bose that were misredacted) — a
+gazetteer hit vetoes redaction of that span regardless of spaCy's classification. ADR 0005
+(on this branch) records the "entity classes must be disjoint from the product schema"
+rationale. **Re-measured against the FIXED redactor only, 12 live Groq calls (~$0.001):
+44/49 fixtures paired (up from 30/49), paired mean delta (ON − OFF) = −0.78pp, 95% CI
+[−2.16pp, +0.35pp] — under the 1pp gate.** One honestly-documented residual gap: a
+fictional eval-fixture brand name with no real-world presence still misclassifies (can't
+enter a real gazetteer without fabricating an entry) — tested and designed to fail loudly
+once a real per-org catalog would close it, not silently accepted.
+
+**P2 (BYPASSRLS reachability) — S0 finding, reported not fixed.** Traced in code, not
+inferred: `review_iq_app` (rolbypassrls=true) IS reachable from 3 live, request-serving paths
+with zero `_set_tenant()` call — `app/api/admin.py` (every DB helper; protection is
+single-factor HTTP Basic auth with **confirmed no rate-limiting**), and
+`app/api/webhooks/{google,shopify}.py`'s org-resolution lookups (protected by a shared-secret
+token / HMAC signature, also single-factor). Ruled out by tracing, not assuming: no
+fallback-DSN chain exists (`DATABASE_URL` is an unrelated legacy v1 SQLite path); the
+migration runner uses a distinct `postgres` superuser credential over a direct (non-pooler)
+connection, not shared with the app's PgBouncer pool; every `SET ROLE` in the codebase is the
+safe transaction-scoped `SET LOCAL ROLE` form. Added an `xfail(strict=True)` assertion to the
+adversarial suite (`TestBypassrlsServingPathReachability`) — fails today on purpose, tracked,
+will loudly XPASS-fail the moment someone "fixes" it without deliberately removing the marker.
+**Not fixed in this pass, per instruction.**
+
+**P3 (dead failover) — confirmed, fix dispatched.** Fixed the stale `gemini-2.0-flash` default
+(live-verified deprecated/shut down by Google 2026-06-01 → `gemini-2.5-flash`). The real
+finding: traced `app/core/llm.py::extract_with_llm`'s full fallback chain and confirmed
+**`SecondaryProvider` — the org-key path's only non-Gemini failover option — is a literal
+unimplemented stub** (`NotImplementedError` if ever called), not even configured with
+credentials in production. Combined with Gemini being correctly banned on the org-key path
+(`trains_on_input`), **the paid path has zero working failover today** — any Groq
+degradation/outage means 100% of paying-customer traffic gets a 503. Section F work (in
+progress) implements a real `SecondaryProvider` (OpenRouter, routed to a verified no-train
+model), a nightly synthetic failover probe exercising both fallback paths end-to-end, an
+uptime probe/status page, and a measured (not asserted) SLO.
+
+**Section H corpus-sourcing decision — ADR 0005 committed to PR #25, priced not decided.**
+Live research (not memory): no public dataset combining Hindi/Hinglish + product-review domain
++ adequate volume exists (checked Kaggle, HuggingFace, AI4Bharat's IndicNLP catalog).
+Commercial vendors (Shaip, Twine) exist, no public pricing — reported as an explicitly-labeled
+rough range, not a quote. 4 options priced (public sources / licensed data / narrow to
+Hinglish-only / accept the cost-moat decision-rule branch) for yield/cost/calendar/USP-support
+each. Synthetic review generation ruled out categorically, not priced — GG decides.
 
 ---
 

@@ -330,40 +330,52 @@ def _sha256_of(text: str) -> str:
 class TestVector4DirectAppRoleConnection:
     """Direct connection using the app's own runtime database role (review_iq_app).
 
-    This vector does NOT have a simple "isolation holds" answer, and reporting it as
-    such would be dishonest. review_iq_app has BYPASSRLS=True by design (migration
-    20260726000001_review_iq_app_role.sql; matches Supabase's own service_role
-    convention; admin.py's org-create/delete paths need to operate across the org
-    boundary RLS enforces and cannot go through SET LOCAL ROLE authenticated). The
-    honest, verified finding:
+    Wave 1 S0 remediation (2026-07-31, supersedes the original 20260726000001 design):
+    review_iq_app no longer holds BYPASSRLS. The migration in
+    20260731000002_role_separation_bypassrls_remediation.sql moves the one legitimate
+    need for a bypass-holding role (admin.py's org-wide CRUD) to a new, separate
+    review_iq_admin role reachable only from a private, IAM-gated Cloud Run service
+    (ADR 0006) -- and replaces the webhook handlers' cross-tenant org-resolution lookup
+    with narrow SECURITY DEFINER functions that return org_id only, never a row.
 
-      - review_iq_app connecting WITHOUT the app's own `_set_tenant()` call (i.e. no
-        `SET LOCAL ROLE authenticated`) sees EVERY organization's data. RLS provides
-        ZERO protection at the base connection level -- this is not a bug, it is what
-        BYPASSRLS means, but it is a real fact about the blast radius of this
-        credential, not a "safe by default" story.
-      - review_iq_app WITH `_set_tenant()`'s `SET LOCAL ROLE authenticated` call DOES
-        get real RLS enforcement -- Postgres evaluates row-security using the CURRENT
-        (downgraded) role, not the original login role, verified empirically below.
-      - Protection against this vector today rests entirely on application-code
-        discipline (every tenant-scoped query in app/core/storage_pg.py calling
-        `_set_tenant()` first) -- verified by direct audit of every function in that
-        module: 20/21 call it; the 1 exception
-        (list_orgs_with_dated_extractions_pg) is an explicitly-commented, intentional,
-        low-risk cross-org sweep query (org_ids only, no per-org content, reachable
-        only from an internal cron job, never from an API-key-authenticated request).
-        There is NO database-level backstop if a future function forgets this call.
+    The honest, verified finding, now the CORRECT and intended one (empirically proven
+    via a safe, rollback-only dry-run of the full migration against production -- see
+    the migration file's own header and this PR's body for the exact verification
+    output; this is not asserted from the migration's stated intent alone):
+
+      - review_iq_app connecting WITHOUT `_set_tenant()` now sees NO organization's
+        data at all -- not an error, not a default org, zero rows. It is still a
+        member of `authenticated` (inheriting that role's table grants, per Postgres's
+        normal membership-based policy-role matching -- confirmed empirically, not
+        assumed, since this is the one subtle point that would be easy to get wrong),
+        so the `extractions_authenticated_all` policy DOES apply to it directly, and
+        with `app.current_org_id` unset, `current_org_id()` returns NULL (see
+        20260510000002_rls_policies.sql's own documented "Returns NULL if neither is
+        set -> RLS denies all access"), so the policy's `org_id = NULL` comparison is
+        UNKNOWN for every row and nothing is returned.
+      - review_iq_app WITH `_set_tenant()`'s `SET LOCAL ROLE authenticated` call
+        continues to get real RLS enforcement, unaffected by the bypass removal (this
+        was never the mechanism relying on BYPASSRLS in the first place).
+      - Protection for every OTHER tenant-scoped query still rests on application-code
+        discipline (every function in app/core/storage_pg.py calling `_set_tenant()`
+        first, verified by direct audit: 20/21 call it; the 1 exception,
+        list_orgs_with_dated_extractions_pg, is an explicitly-commented, intentional,
+        low-risk cross-org sweep query) -- but the three call sites that used to rely
+        on review_iq_app's bypass (admin.py, both webhook handlers) no longer do, and
+        there is now a database-level backstop (no bypass at all on the role they use)
+        rather than a code-discipline-only one.
     """
 
-    def test_app_role_without_set_tenant_sees_all_orgs(
+    def test_app_role_without_set_tenant_sees_no_orgs(
         self, two_orgs_with_keys: tuple[_OrgFixture, _OrgFixture]
     ) -> None:
-        """Documents the real, current blast radius: a direct review_iq_app connection
-        with no org-scoping step sees every organization's extractions. This is
-        EXPECTED given BYPASSRLS -- the test exists to make this fact explicit and
-        catch it changing silently in either direction (e.g. if BYPASSRLS were ever
-        revoked without updating admin.py's cross-org paths, this test would start
-        failing and flag the regression)."""
+        """Documents the NEW, correct blast radius: a direct review_iq_app connection
+        with no org-scoping step sees NOTHING now that BYPASSRLS has been removed.
+        This will fail against a not-yet-migrated database (the migration is applied
+        by GG out-of-band, sequenced after code deploy -- see this PR's escalation
+        steps) -- that failure is expected and correct until the migration lands, not
+        a bug in this test. The moment it passes is the signal the migration has been
+        applied for real, not merely dry-run-verified."""
         org_a, org_b = two_orgs_with_keys
         conn = _app_role_conn()
         conn.autocommit = False
@@ -378,11 +390,13 @@ class TestVector4DirectAppRoleConnection:
             conn.rollback()
             conn.close()
 
-        assert visible_orgs == {org_a["org_id"], org_b["org_id"]}, (
-            "review_iq_app without SET LOCAL ROLE is expected (by BYPASSRLS design) to "
-            "see both orgs -- if this assertion ever fails, BYPASSRLS has been revoked "
-            "and app/core/storage_pg.py's cross-org sweep functions likely need a "
-            "different mechanism (e.g. a SECURITY DEFINER function) to keep working"
+        assert visible_orgs == set(), (
+            "review_iq_app without _set_tenant() must see NO rows now that BYPASSRLS "
+            "has been removed (20260731000002_role_separation_bypassrls_remediation.sql). "
+            "If this assertion fails, either the migration has not yet been applied to "
+            "this database (expected until GG completes the escalation steps in this "
+            "PR's body), or BYPASSRLS has been re-granted to review_iq_app, which would "
+            "be a regression back to the S0 finding this migration fixes."
         )
 
     def test_app_role_with_set_tenant_enforces_real_isolation(
@@ -452,80 +466,71 @@ class TestVector4DirectAppRoleConnection:
 
 @pytest.mark.integration
 class TestBypassrlsServingPathReachability:
-    """S0 finding, reported not fixed (post-Section-E remediation pass).
+    """S0 finding, FIXED in this pass (20260731000002_role_separation_bypassrls_remediation.sql
+    + app/main.py + app/api/admin.py + app/api/webhooks/{google,shopify}.py).
 
     P2's exact question: is the BYPASSRLS-holding role reachable from ANY
     request-serving path -- not "does storage_pg.py's tenant-data layer correctly scope
     itself" (already covered by TestVector4DirectAppRoleConnection above, and it does).
-    Traced in code, not inferred from the migration's stated intent:
+    Original finding (Wave 1 Section E post-remediation pass, superseded here):
+    review_iq_app (rolbypassrls=true) was connected to, with ZERO _set_tenant() call,
+    by three live, request-serving, externally-reachable call sites: app/api/admin.py's
+    org/key CRUD, and both webhook handlers' org-resolution lookups.
 
-      review_iq_app (rolbypassrls=true) is connected to, with ZERO _set_tenant() call
-      anywhere in the file, by THREE call sites that are all live, request-serving, and
-      externally reachable:
+    Fix, in three independent parts (all required, none sufficient alone -- per the
+    standing instruction this remediation was scoped against):
 
-        1. app/api/admin.py -- every DB helper (_create_org_db, _get_org_db,
-           _create_key_db, _list_keys_db, _rotate_key_db, _revoke_key_db) connects via
-           `psycopg2.connect(settings.supabase_database_url)` with no _set_tenant() call
-           anywhere in the file. Mounted as live HTTP routes (admin_router in
-           app/main.py). The ONLY control is require_admin (app/auth/admin.py) -- HTTP
-           Basic auth, single factor, no MFA, and CONFIRMED no rate-limiting/lockout on
-           these routes (grepped app/api/admin.py for `limiter`/`rate_limit`: zero
-           matches). A leaked or brute-forced admin credential is a full cross-org
-           compromise with no RLS backstop, not a degraded-but-contained one.
+      1. ROLE SEPARATION. review_iq_app no longer holds BYPASSRLS at all (verified via
+         a safe, rollback-only dry-run of the full migration against production -- see
+         the migration file's header for the exact verification steps and this PR's
+         body for the output). The only bypass-holding role reachable from a
+         request-serving path now is review_iq_admin, and that role is reachable
+         exclusively from a NEW, separate Cloud Run service deployed
+         --no-allow-unauthenticated (ADR 0006) -- not from the public service at all.
+         review_iq_migrator (the other bypass-holding role) is reachable only from
+         out-of-band migration execution, never referenced by any application setting,
+         Cloud Run env var, or Secret Manager secret used by either deployed service.
 
-        2. app/api/webhooks/google.py and app/api/webhooks/shopify.py -- the
-           org-resolution lookup (google_location_name / shop_domain -> org_id) runs
-           via the same `psycopg2.connect(settings.supabase_database_url)` connection
-           with no SET ROLE at all (both files' own comments say "postgres role, no SET
-           ROLE" -- that comment is STALE/INACCURATE post-2026-07-26: it actually
-           connects as review_iq_app, not postgres, but the substantive behavior the
-           comment describes -- an RLS-bypassing lookup -- is correct and current).
-           These are live, externally-triggered endpoints (Google Pub/Sub push,
-           Shopify webhook delivery). Auth is a shared-secret query token
-           (hmac.compare_digest, Google) / HMAC signature (Shopify) -- single factor,
-           and a leaked token/secret (e.g. via access logs that record full query
-           strings, a common logging gotcha for the Google path specifically) has the
-           same no-RLS-backstop exposure as (1).
+      2. /admin/* removed from public reachability. app/main.py only mounts
+         admin_router when SERVICE_ROLE=admin, a mode that mounts nothing else
+         public-facing. The public review-iq service never mounts it. Every admin.py
+         operation was audited (create org, get org, create/list/rotate/revoke API
+         key) -- all five are operator-only CRUD with no legitimate public caller
+         (ADR 0006's own verification section). require_admin's HTTP Basic auth stays
+         as defense-in-depth underneath IAM, not as the only control.
 
-      Ruled out (traced, not assumed): no fallback-DSN chain exists (`DATABASE_URL` is
-      an entirely separate legacy v1 SQLite path -- app/core/storage.py,
-      app/api/ops.py -- not a Postgres fallback for SUPABASE_DATABASE_URL); the
-      migration runner uses a distinct `postgres` superuser credential over a direct
-      (non-pooler) connection, manual/out-of-band per ops/runbooks/*.md -- it does not
-      share a PgBouncer pool or any state with review_iq_app's transaction-mode pooler
-      connection; every `SET ROLE` in the codebase is the transaction-scoped `SET LOCAL
-      ROLE` form (grepped for a bare `SET ROLE` outside `SET LOCAL ROLE`: only found
-      inside comments/docstrings describing the pattern, never an executed bare
-      statement) -- so there is no PgBouncer transaction-mode role-bleed risk between
-      pooled connections either.
+      3. WEBHOOK HANDLERS now resolve tenant identity via a narrow SECURITY DEFINER
+         function (resolve_org_for_google_location / resolve_org_for_shopify_shop --
+         returns ONLY org_id, never the row, never the encrypted token) after their
+         existing signature verification (Google: shared-secret query token via
+         hmac.compare_digest; Shopify: HMAC-SHA256 via hmac.compare_digest -- both
+         re-verified present and sound in this pass, not assumed from memory; neither
+         is the "second finding" the standing instruction asked to report if absent,
+         since both ARE present), then connect as review_iq_app (no longer holding
+         bypass) and call _set_tenant(org_id) before touching any tenant data.
 
-    Per the standing instruction: reachable from a serving path means RLS is not the
-    isolation control for these three paths, and this is reported, not fixed, in this
-    pass. This test is written to CURRENTLY FAIL and stay failing until a decision is
-    made and implemented -- it is a visible, tracked regression marker, not a rubber
-    stamp. Do not "fix" this test by loosening the assertion; fix it by changing the
-    underlying connection pattern for these three call sites (e.g. a distinct,
-    narrower-privilege role for admin/webhook cross-org lookups instead of reusing the
-    full review_iq_app credential, or a SECURITY DEFINER function scoped to exactly the
-    lookup each site needs), then updating this test to assert the new, narrower state.
+    Ruled out (traced, not assumed, unchanged from the original finding's own trace):
+    no fallback-DSN chain exists (`DATABASE_URL` is an entirely separate legacy v1
+    SQLite path); the migration runner uses a distinct `postgres` credential over a
+    direct (non-pooler) connection, manual/out-of-band, sharing no PgBouncer pool state
+    with review_iq_app's transaction-mode pooler connection; every `SET ROLE` in the
+    codebase is the transaction-scoped `SET LOCAL ROLE` form (no bare `SET ROLE`
+    outside comments/docstrings) -- so there is no PgBouncer transaction-mode
+    role-bleed risk between pooled connections.
+
+    This test is no longer `xfail` -- the flip from `xfail(strict=True)` to a plain
+    assertion IS the signal the fix landed, per the original xfail's own stated
+    design. It will still FAIL against a database this migration has not yet been
+    applied to (expected and correct until GG completes the escalation steps in this
+    PR's body -- code deploy first, then the migration's final
+    `ALTER ROLE review_iq_app NOBYPASSRLS` statement, never the other order); do not
+    weaken this assertion to make it pass against an unmigrated database.
     """
 
-    @pytest.mark.xfail(
-        reason=(
-            "S0, reported not fixed (Wave 1 Section E post-remediation pass): "
-            "review_iq_app holds BYPASSRLS and IS reachable from 3 live "
-            "request-serving paths (admin.py, webhooks/google.py, webhooks/shopify.py) "
-            "with zero _set_tenant() call. strict=True so this stops being invisible "
-            "the moment someone flips it green without deliberately removing the "
-            "xfail marker -- that flip is the signal the fix landed, not a silent pass."
-        ),
-        strict=True,
-    )
     def test_admin_and_webhook_serving_paths_do_not_use_a_bypassrls_role(self) -> None:
-        """Known-failing, tracked -- see class docstring and the xfail reason above.
-        Asserts the property this repo actually wants to be true (the role backing
-        every request-serving DB connection, including admin/webhooks, does not hold
-        BYPASSRLS), not the property that happens to be true today."""
+        """Asserts the property this repo wants to be true (the role backing every
+        request-serving DB connection, including admin/webhooks, does not hold
+        BYPASSRLS) -- see class docstring for the full fix trace."""
         import os
         from pathlib import Path
 
@@ -544,9 +549,11 @@ class TestBypassrlsServingPathReachability:
 
         assert has_bypass is False, (
             "review_iq_app (the connection app/api/admin.py and "
-            "app/api/webhooks/{google,shopify}.py use for their unscoped, "
-            "request-serving cross-org lookups) holds BYPASSRLS -- S0, reported in "
-            "Wave 1 Section E's post-remediation pass, not fixed in that pass. RLS is "
-            "not an effective isolation control for these three call sites as long as "
-            "this is true. See this test's class docstring for the full trace."
+            "app/api/webhooks/{google,shopify}.py use) holds BYPASSRLS. If this "
+            "database has not yet had 20260731000002_role_separation_bypassrls_"
+            "remediation.sql applied, this failure is expected -- see this PR's "
+            "escalation steps. If the migration HAS been applied and this still "
+            "fails, BYPASSRLS has been re-granted, which is a regression back to the "
+            "S0 finding this migration fixes. See this test's class docstring for the "
+            "full trace."
         )

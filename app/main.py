@@ -38,6 +38,7 @@ from app.api.v2.reply import router as v2_reply_router
 from app.api.v2.reviews import router as v2_reviews_router
 from app.api.webhooks.google import router as google_webhook_router
 from app.api.webhooks.shopify import router as shopify_webhook_router
+from app.api.webhooks.stripe import router as stripe_webhook_router
 from app.auth.signup import router as signup_router
 from app.core.config import Settings, get_settings
 from app.core.logging import setup_logging
@@ -112,8 +113,9 @@ reached — contact support to raise it.
   request body.
 - Postgres Row-Level Security policies enforce the same isolation at the
   database layer, independent of the application code.
-- `/admin/*` endpoints are separate, HTTP Basic-authenticated, and are for
-  Samidha Reviews operators only — not part of the tenant API surface.
+- `/admin/*` endpoints are not part of this API at all — they are served by a
+  separate, IAM-gated Cloud Run service, not reachable from the public internet,
+  for Samidha Reviews operators only.
 
 ## Endpoint groups
 
@@ -205,36 +207,42 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     _app.add_middleware(PrometheusMiddleware)
     _app.add_middleware(SlowAPIMiddleware)
 
-    # Ops (health + metrics) — always mounted, unauthenticated
+    # Ops (health + metrics) — always mounted, unauthenticated (Cloud Run readiness probes
+    # need /health regardless of which service this is).
     _app.include_router(ops_router)
 
-    # v2, admin, and demo are always mounted
-    _app.include_router(v2_extract_router)
-    _app.include_router(ingest_router)
-    _app.include_router(v2_reviews_router)
-    _app.include_router(v2_authenticity_router)
-    _app.include_router(v2_insights_router)
-    _app.include_router(v2_reply_router)
-    _app.include_router(v2_corrections_router)
-    _app.include_router(v2_dataset_router)
-    _app.include_router(shopify_webhook_router)
-    _app.include_router(shopify_auth_router)
-    _app.include_router(google_webhook_router)
-    _app.include_router(google_auth_router)
-    _app.include_router(bff_router)
-    _app.include_router(admin_router)
-    _app.include_router(signup_router)
-    _app.include_router(account_router)
-    _app.include_router(demo_router)
-    _app.include_router(internal_digest_router)
-    _app.include_router(internal_ingest_tick_router)
-    _app.include_router(internal_detectors_router)
-    _app.include_router(unsubscribe_router)
+    # Wave 1 S0 remediation (ADR 0006): the admin service mounts ONLY ops + admin — no
+    # public-facing surface at all, so a misconfigured IAM binding has nothing else to
+    # expose. The public service mounts everything else and never mounts admin_router.
+    if settings.service_role == "admin":
+        _app.include_router(admin_router)
+    else:
+        _app.include_router(v2_extract_router)
+        _app.include_router(ingest_router)
+        _app.include_router(v2_reviews_router)
+        _app.include_router(v2_authenticity_router)
+        _app.include_router(v2_insights_router)
+        _app.include_router(v2_reply_router)
+        _app.include_router(v2_corrections_router)
+        _app.include_router(v2_dataset_router)
+        _app.include_router(shopify_webhook_router)
+        _app.include_router(shopify_auth_router)
+        _app.include_router(google_webhook_router)
+        _app.include_router(google_auth_router)
+        _app.include_router(stripe_webhook_router)
+        _app.include_router(bff_router)
+        _app.include_router(signup_router)
+        _app.include_router(account_router)
+        _app.include_router(demo_router)
+        _app.include_router(internal_digest_router)
+        _app.include_router(internal_ingest_tick_router)
+        _app.include_router(internal_detectors_router)
+        _app.include_router(unsubscribe_router)
 
-    if settings.deploy_target != "cloud-run":
-        _app.include_router(dashboard_router)
-        _app.include_router(extract_router)
-        _app.include_router(query_router)
+        if settings.deploy_target != "cloud-run":
+            _app.include_router(dashboard_router)
+            _app.include_router(extract_router)
+            _app.include_router(query_router)
 
     @_app.get("/metrics", tags=["ops"])
     async def metrics() -> Response:
