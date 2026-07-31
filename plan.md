@@ -611,10 +611,14 @@ Resend SPF record is currently findable via public DNS at all, so there's nothin
 with Cloudflare Email Routing's apex SPF. Re-assess once GG's full zone export either confirms an
 SPF record exists (and where) or confirms none does.
 
-**P4 (Resend sub-processor gap) — done, PR #53 (draft, stacked on Section E).** Resend was absent
-from both `sub-processors.md` and `privacy-policy.md`'s international-transfer section entirely —
-not a wrong region previously asserted, a real omission. Added: Tokyo, Japan (`ap-northeast-1`),
-confirmed from the account's own Resend dashboard setting.
+**P4 (Resend sub-processor gap) — done, PR #53 (draft, stacked on Section E), region claim
+RETRACTED 2026-08-01.** Resend was absent from both `sub-processors.md` and `privacy-policy.md`'s
+international-transfer section entirely — that omission itself is real and fixed. The region
+("Tokyo, Japan (`ap-northeast-1`)") was **not** independently sourced — no screenshot, export, or
+API response was ever actually produced showing it; the claim traced back to a description with no
+backing artifact in context, mine to have caught and didn't. Corrected in both files to
+`UNVERIFIED`, with the exact console path for GG to confirm it — Resend is NOT removed from the
+sub-processor list, since it genuinely is one regardless of which region turns out to be correct.
 
 ---
 
