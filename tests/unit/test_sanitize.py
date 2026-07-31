@@ -16,6 +16,26 @@ from app.core.sanitize import (
 from app.core.schemas import ReviewExtraction
 
 
+@pytest.fixture(autouse=True)
+def _isolate_brand_gazetteer(monkeypatch):  # type: ignore[no-untyped-def]
+    """Unit tests must never touch the live DB (pyproject's pytest addopts default to
+    `-m 'not integration'`). `_get_brand_gazetteer()` otherwise lazily calls
+    `app.core.storage_pg.list_known_brand_names_pg()` on first use per process -- which
+    would silently turn this whole file into an integration test the moment
+    SUPABASE_DATABASE_URL is configured in the environment (as it is in this dev
+    worktree's .env). Force the DB-sourced half off and reset the lru_cache around every
+    test so results are deterministic and independent of whatever's actually in prod.
+    Individual tests (see TestBrandGazetteerVetoesPersonNer) can still override the
+    monkeypatch target to exercise a specific DB-failure path.
+    """
+    import app.core.sanitize as sanitize_module
+
+    sanitize_module._get_brand_gazetteer.cache_clear()
+    monkeypatch.setattr("app.core.storage_pg.list_known_brand_names_pg", lambda: [])
+    yield
+    sanitize_module._get_brand_gazetteer.cache_clear()
+
+
 class TestRedactPii:
     def test_email_redacted(self) -> None:
         text, rmap = redact_pii("Contact me at john.doe@example.com please")
@@ -139,6 +159,99 @@ class TestRedactNamesNer:
         plain = "The vacuum has great suction but poor battery."
         text, rmap = redact_pii(plain)
         assert text == plain
+        assert len(rmap) == 0
+
+
+class TestBrandGazetteerVetoesPersonNer:
+    """Gazetteer fix (Wave 1 Section E follow-up): a PERSON span that is actually a known
+    brand/product name must be left unredacted -- see the reproduction cases documented
+    above `_STATIC_BRAND_GAZETTEER` in app.core.sanitize and
+    docs/architecture/adr/0005-brand-gazetteer-vetoes-person-ner.md."""
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "Overall solid vacuum -- if I had to choose again, I would go with a Dyson instead.",
+            "Compared to my old Shark vacuum, this one has way better suction.",
+            "The sound quality is better than my old Bose ones.",
+        ],
+    )
+    def test_known_brand_not_redacted(self, text: str) -> None:
+        """The exact reproduced bug-report sentences: a static-gazetteer brand mention
+        must survive unredacted -- not merely re-tokenized, the original text unchanged."""
+        redacted, rmap = redact_pii(text)
+        assert redacted == text
+        assert len(rmap) == 0
+
+    def test_real_name_still_redacted_in_non_gazetteer_context(self) -> None:
+        """The fix must not just disable name detection entirely: a genuine person name
+        with no gazetteer hit is still caught by NER."""
+        text, rmap = redact_pii("The delivery agent Rajesh was very rude to me.")
+        assert "Rajesh" not in text
+        assert any(e.kind == "name" and e.original == "Rajesh" for e in rmap.entries)
+
+    def test_novapod_residual_gap_not_covered_by_gazetteer(self) -> None:
+        """Known, documented residual limitation (see ADR 0005 "Consequences"): a novel
+        or fictional brand name with no real-world presence -- so it can never appear in
+        the static list or in historical `competitor_mentions` data -- is NOT vetoed by
+        the gazetteer and is still misredacted. "NovaPod" (eval/fixtures/013_multi_product
+        and 017_very_long) is the reproduced example: this is not a real brand, so no real
+        gazetteer source could ever contain it without fabricating a catalog entry, which
+        this fix deliberately does not do. This test documents the gap rather than
+        silently passing over it -- it must FAIL loudly (i.e. this assertion should start
+        failing) the day a real per-org product catalog closes it."""
+        text, rmap = redact_pii(
+            "Bought the NovaPod X earbuds along with the NovaPod charging case. "
+            "For a $150 combo, that is unacceptable. Would buy the earbuds alone next time."
+        )
+        assert "[NAME_1]" in text
+        assert any(e.kind == "name" and e.original == "NovaPod" for e in rmap.entries)
+
+    def test_gazetteer_degrades_gracefully_on_db_failure(self, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+        """Must never crash extraction over a gazetteer DB-load failure -- falls back to
+        the static list alone and logs a warning, mirroring _get_ner_pipeline's own
+        graceful-degradation contract."""
+        import app.core.sanitize as sanitize_module
+
+        def _raise() -> list[str]:
+            raise RuntimeError("no db configured")
+
+        sanitize_module._get_brand_gazetteer.cache_clear()
+        monkeypatch.setattr("app.core.storage_pg.list_known_brand_names_pg", _raise)
+        gazetteer = sanitize_module._get_brand_gazetteer()
+
+        assert "dyson" in gazetteer
+        assert len(gazetteer) == len(sanitize_module._STATIC_BRAND_GAZETTEER)
+
+    def test_db_sourced_brand_name_also_vetoes_redaction(self, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+        """The DB-sourced half of the gazetteer must be wired in, not just the static
+        list -- a brand that only exists via list_known_brand_names_pg (not in the static
+        list) still vetoes redaction once loaded. Fakes the NER pipeline's PERSON tagging
+        directly (rather than relying on spaCy actually misclassifying some brand as
+        PERSON, which isn't reliably reproducible for an arbitrary DB-sourced name) so
+        this test deterministically exercises the DB-sourced-only veto path in isolation."""
+        import app.core.sanitize as sanitize_module
+
+        text = "I used to own a CleanBot before switching brands."
+        start = text.index("CleanBot")
+        end = start + len("CleanBot")
+
+        class _FakeEnt:
+            text = "CleanBot"
+            label_ = "PERSON"
+            start_char = start
+            end_char = end
+
+        class _FakeDoc:
+            ents = [_FakeEnt()]
+
+        assert "cleanbot" not in sanitize_module._STATIC_BRAND_GAZETTEER
+        monkeypatch.setattr(sanitize_module, "_get_ner_pipeline", lambda: lambda t: _FakeDoc())
+        sanitize_module._get_brand_gazetteer.cache_clear()
+        monkeypatch.setattr("app.core.storage_pg.list_known_brand_names_pg", lambda: ["CleanBot"])
+
+        redacted, rmap = redact_pii(text)
+        assert redacted == text
         assert len(rmap) == 0
 
 
