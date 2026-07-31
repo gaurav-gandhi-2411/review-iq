@@ -4,7 +4,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from scripts.check_link_health import check_demo_data, find_bare_hash_links
+from scripts.check_link_health import (
+    check_demo_data,
+    check_noscript_gallery_fallback,
+    find_bare_hash_links,
+)
 
 
 class TestFindBareHashLinks:
@@ -107,4 +111,87 @@ class TestCheckDemoData:
         monkeypatch.setattr(mod, "DEMO_DATA_PATH", demo_path)
         error = check_demo_data()
         assert error is not None
-        assert "not valid JSON" in error
+
+
+class TestCheckNoscriptGalleryFallback:
+    """Regression suite for the D1-adjacent bug: the gallery claimed "works with JS
+    disabled" while being 100% JS-populated with zero non-JS content path. Verified live:
+    raw HTML (no JS execution) showed an empty #gallery-panels and a still-`hidden`
+    #gallery-unavailable div -- a JS-disabled visitor saw nothing at all.
+    """
+
+    _REAL_EXAMPLE_NOSCRIPT = """
+        <div>Mixed-sentiment review with competitor mention.</div>
+        <pre>So I bought the 'Turbo-Vac 5000' last week. The suction is incredible.
+        And it's quiet. But the battery life is a joke, it died after 15 minutes.</pre>
+        <pre>{
+          "product": "Turbo-Vac 5000",
+          "sentiment": "mixed",
+          "pros": ["incredible suction"]
+        }</pre>
+    """
+
+    def _write_gallery(self, tmp_path: Path, noscript_inner: str | None) -> Path:
+        path = tmp_path / "index.html"
+        body = f"<noscript>{noscript_inner}</noscript>" if noscript_inner is not None else ""
+        path.write_text(f"<html><body>{body}</body></html>", encoding="utf-8")
+        return path
+
+    def test_real_site_index_html_passes(self) -> None:
+        # The actual committed file -- proves the fix, not just the test fixtures.
+        assert check_noscript_gallery_fallback() is None
+
+    def test_missing_noscript_tag_is_flagged(self, tmp_path: Path, monkeypatch) -> None:
+        import scripts.check_link_health as mod
+
+        path = self._write_gallery(tmp_path, noscript_inner=None)
+        monkeypatch.setattr(mod, "GALLERY_HTML_PATH", path)
+        error = check_noscript_gallery_fallback()
+        assert error is not None
+        assert "no <noscript> fallback" in error
+
+    def test_empty_noscript_tag_is_flagged(self, tmp_path: Path, monkeypatch) -> None:
+        # This is the exact original bug shape: technically satisfiable by an empty tag
+        # while still showing nothing real to a JS-disabled visitor.
+        import scripts.check_link_health as mod
+
+        path = self._write_gallery(tmp_path, noscript_inner="")
+        monkeypatch.setattr(mod, "GALLERY_HTML_PATH", path)
+        error = check_noscript_gallery_fallback()
+        assert error is not None
+        assert "placeholder" in error
+
+    def test_placeholder_sentence_is_flagged(self, tmp_path: Path, monkeypatch) -> None:
+        import scripts.check_link_health as mod
+
+        path = self._write_gallery(tmp_path, noscript_inner="<p>JavaScript is required.</p>")
+        monkeypatch.setattr(mod, "GALLERY_HTML_PATH", path)
+        error = check_noscript_gallery_fallback()
+        assert error is not None
+
+    def test_long_text_without_json_output_is_flagged(self, tmp_path: Path, monkeypatch) -> None:
+        # Long enough to pass the length floor, but no structured JSON-shaped output --
+        # not what the page promises ("examples ... run from static JSON").
+        import scripts.check_link_health as mod
+
+        prose = "<p>" + ("This gallery shows example reviews and their analysis. " * 5) + "</p>"
+        path = self._write_gallery(tmp_path, noscript_inner=prose)
+        monkeypatch.setattr(mod, "GALLERY_HTML_PATH", path)
+        error = check_noscript_gallery_fallback()
+        assert error is not None
+        assert "JSON-shaped" in error
+
+    def test_real_rendered_example_passes(self, tmp_path: Path, monkeypatch) -> None:
+        import scripts.check_link_health as mod
+
+        path = self._write_gallery(tmp_path, noscript_inner=self._REAL_EXAMPLE_NOSCRIPT)
+        monkeypatch.setattr(mod, "GALLERY_HTML_PATH", path)
+        assert check_noscript_gallery_fallback() is None
+
+    def test_missing_file_is_flagged(self, tmp_path: Path, monkeypatch) -> None:
+        import scripts.check_link_health as mod
+
+        monkeypatch.setattr(mod, "GALLERY_HTML_PATH", tmp_path / "does-not-exist.html")
+        error = check_noscript_gallery_fallback()
+        assert error is not None
+        assert "does not exist" in error

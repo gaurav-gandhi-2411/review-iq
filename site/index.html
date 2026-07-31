@@ -73,7 +73,9 @@
     <section id="gallery" class="py-16">
       <h2 class="text-3xl font-bold text-white mb-2">Capability gallery</h2>
       <p class="text-gray-400 mb-8">
-        All examples below run from static JSON &mdash; no network needed, works with JS disabled.
+        All examples below run from a static JSON file bundled with this page &mdash; no live
+        API calls, no quota. The interactive tabs need JavaScript; with JavaScript disabled
+        you'll see one representative example below instead of the full set.
       </p>
 
       <!-- Category tabs -->
@@ -105,6 +107,35 @@
         The example gallery couldn&rsquo;t load right now &mdash; try refreshing, or see the
         live API docs at <a href="/docs" class="text-gray-300 underline">/docs</a>.
       </div>
+
+      <!-- No-JS fallback: a real static example, not JS-populated. Browsers render this
+           element's content ONLY when JavaScript is unavailable/disabled (native <noscript>
+           behaviour) -- everything above and below this block requires JS to appear. -->
+      <noscript>
+        <div class="mt-2 text-sm text-gray-400 italic mb-1">
+          Mixed-sentiment review with competitor mention &mdash; extracted to structured fields
+          in under a second. (JavaScript is off, so this is one static example instead of the
+          full interactive gallery &mdash; see <a href="/docs" class="text-gray-300 underline">/docs</a> for the complete API reference.)
+        </div>
+        <div class="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="bg-gray-900 border border-gray-700 rounded-xl p-5">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Customer review</p>
+            <pre class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm text-gray-200 whitespace-pre-wrap break-words font-mono leading-relaxed">So I bought the &#39;Turbo-Vac 5000&#39; last week. Honestly? It&#39;s a mixed bag. The suction is incredible&mdash;it picked up a penny from under the rug! And it&#39;s super quiet, which my cat appreciates. But oh man, the battery life is a joke. It died after 15 minutes. Also, the plastic handle feels like it&#39;s going to snap any second. For $300, I expected better build quality. I&#39;m keeping it because I hate returning things, but if I had to choose again, I&#39;d definitely go with a Dyson instead.</pre>
+          </div>
+          <div class="bg-gray-900 border border-gray-700 rounded-xl p-5">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Output</p>
+            <pre class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm overflow-x-auto whitespace-pre-wrap break-all leading-relaxed font-mono">{
+  "product": "Turbo-Vac 5000",
+  "sentiment": "mixed",
+  "pros": ["incredible suction", "very quiet operation"],
+  "cons": ["poor battery life -- dies in 15 minutes", "fragile plastic handle", "overpriced at $300 for build quality"],
+  "competitor_mentions": ["Dyson"],
+  "urgency": "low",
+  "language": "en"
+}</pre>
+          </div>
+        </div>
+      </noscript>
 
       <!-- Category panels (rendered by JS) -->
       <div id="gallery-panels"></div>
