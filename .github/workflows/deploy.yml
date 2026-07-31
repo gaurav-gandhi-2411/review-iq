@@ -5,11 +5,17 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# The push step below authenticates to Hugging Face with its own HF_TOKEN secret over
+# HTTPS (git remote add hf ...) — it never touches GITHUB_TOKEN, so contents: write on
+# the GitHub token is not required even though this workflow pushes somewhere.
+permissions:
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
           lfs: true
