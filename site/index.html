@@ -102,8 +102,8 @@
 
       <!-- Data unavailable notice (hidden by default) -->
       <div id="gallery-unavailable" class="hidden bg-gray-900 border border-gray-700 rounded-xl px-6 py-8 text-center text-gray-400">
-        Demo data unavailable &mdash; could not load <code class="text-gray-300">demo-data.json</code>.
-        Open the page via a local HTTP server (e.g. <code class="text-gray-300">python -m http.server</code>) rather than the <code>file://</code> protocol.
+        The example gallery couldn&rsquo;t load right now &mdash; try refreshing, or see the
+        live API docs at <a href="/docs" class="text-gray-300 underline">/docs</a>.
       </div>
 
       <!-- Category panels (rendered by JS) -->
@@ -202,11 +202,6 @@
         </table>
       </div>
 
-      <div class="mt-6 bg-amber-950/40 border border-amber-800 rounded-lg px-5 py-4 text-sm text-gray-300">
-        <span class="text-amber-400 font-semibold">Known gaps: </span>
-        Sarcastic Hinglish with backhanded compliments scores lower.
-        Short reviews (&lt;10 words) occasionally miss fields.
-      </div>
     </section>
 
   </main>
@@ -222,7 +217,12 @@
       </span>
       <div class="flex gap-6">
         <a href="/docs" class="text-blue-400 hover:text-blue-300 transition-colors">API docs</a>
-        <a href="#" class="text-blue-400 hover:text-blue-300 transition-colors">GitHub</a>
+        <a
+          href="https://github.com/gaurav-gandhi-2411/review-iq"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-blue-400 hover:text-blue-300 transition-colors"
+        >GitHub</a>
       </div>
     </div>
   </footer>
