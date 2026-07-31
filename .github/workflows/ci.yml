@@ -40,6 +40,12 @@ jobs:
       - name: Unit tests
         run: uv run pytest tests/unit/ -v
 
+      # Fails on placeholder href="#" links and on a missing/invalid
+      # site/demo-data.json (regression guard for the demo-page defects fixed
+      # in this branch).
+      - name: Link health (placeholder links + demo-data fixture)
+        run: uv run python scripts/check_link_health.py
+
   pip-audit:
     runs-on: ubuntu-latest
     steps:
