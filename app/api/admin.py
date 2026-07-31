@@ -97,9 +97,12 @@ class CostAggregateOut(BaseModel):
 
 def _db_connect() -> psycopg2.extensions.connection:
     settings = get_settings()
-    # Pooler (transaction mode) for app traffic. Direct URL only used by
-    # migrations and RLS tests that need session-level GUCs.
-    return psycopg2.connect(settings.supabase_database_url)
+    # Wave 1 S0 remediation (ADR 0006): this module only ever runs inside the
+    # SERVICE_ROLE=admin Cloud Run service (see app/main.py), so it authenticates as
+    # review_iq_admin (BYPASSRLS) via its own DSN — never the public service's
+    # review_iq_app connection, which no longer holds bypass after the accompanying
+    # role-separation migration.
+    return psycopg2.connect(settings.admin_database_url)
 
 
 def _create_org_db(name: str, slug: str, plan: str) -> OrgOut:

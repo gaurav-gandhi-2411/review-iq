@@ -1,13 +1,24 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Upload, AlertTriangle, Heart } from 'lucide-react'
 import Layout from '../components/Layout'
 import FilterBar from '../components/FilterBar'
 import ErrorBox from '../components/ErrorBox'
 import { useFilterContext } from '../lib/filterContext'
+import { getAccount } from '../lib/api'
+
+const USAGE_AMBER_THRESHOLD = 0.8
 
 export default function DashboardPage() {
   const { stats, allReviews, loading, loadError, setFilter, hasActiveFilters } = useFilterContext()
   const navigate = useNavigate()
+  const [usage, setUsage] = useState<{ used: number; quota: number } | null>(null)
+
+  useEffect(() => {
+    getAccount()
+      .then(acc => setUsage({ used: acc.usage_this_month, quota: acc.quota }))
+      .catch(() => { /* non-fatal — usage bar is best-effort, banner in Layout covers the warning path */ })
+  }, [])
 
   const total = stats.total
   const s_score = total > 0 ? stats.positiveCount / total : 0
@@ -21,11 +32,13 @@ export default function DashboardPage() {
     <Layout active="dashboard">
       <div className="max-w-3xl">
         <h1 className="font-display text-2xl text-charcoal mb-1">What customers are saying</h1>
-        <p className="text-sm text-charcoal-light font-sans mb-6">
+        <p className="text-sm text-charcoal-light font-sans mb-4">
           {hasActiveFilters
             ? `Showing ${total} filtered review${total !== 1 ? 's' : ''}.`
             : 'Based on your uploaded reviews.'}
         </p>
+
+        {usage && <UsageBar used={usage.used} quota={usage.quota} />}
 
         <FilterBar />
 
@@ -115,6 +128,28 @@ export default function DashboardPage() {
         )}
       </div>
     </Layout>
+  )
+}
+
+function UsageBar({ used, quota }: { used: number; quota: number }) {
+  const ratio = quota > 0 ? used / quota : 0
+  const pct = Math.min(ratio * 100, 100)
+  const isNearLimit = ratio >= USAGE_AMBER_THRESHOLD
+  const barColor = isNearLimit ? 'bg-amber' : 'bg-green'
+  const textColor = isNearLimit ? 'text-amber' : 'text-green'
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 shadow-card p-4 mb-6">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-sans text-charcoal-light uppercase tracking-wide">Monthly usage</p>
+        <p className={`text-xs font-sans font-medium ${textColor}`}>
+          {used.toLocaleString()} / {quota.toLocaleString()} reviews
+        </p>
+      </div>
+      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
   )
 }
 

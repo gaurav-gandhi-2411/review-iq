@@ -1,10 +1,11 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronRight, AlertTriangle, Upload } from 'lucide-react'
+import { ChevronRight, AlertTriangle, Upload, Download, Loader2 } from 'lucide-react'
 import Layout from '../components/Layout'
 import FilterBar from '../components/FilterBar'
 import ErrorBox from '../components/ErrorBox'
 import { useFilterContext } from '../lib/filterContext'
-import type { Review } from '../lib/api'
+import { downloadReviewsExport, type Review } from '../lib/api'
 
 const SENTIMENT_STYLE: Record<string, string> = {
   positive: 'bg-green-light text-green',
@@ -20,10 +21,26 @@ const SENTIMENT_LABEL: Record<string, string> = {
 export default function ReviewsPage() {
   const { filteredReviews, loading, loadError, hasActiveFilters, stats, setFilter } = useFilterContext()
   const navigate = useNavigate()
+  const [showExportMenu, setShowExportMenu] = useState(false)
+  const [exporting, setExporting] = useState<'csv' | 'json' | null>(null)
+  const [exportError, setExportError] = useState<string | null>(null)
 
   function openDetail(review: Review) {
     const hash = review.input_hash.replace('sha256:', '')
     navigate(`/reviews/${hash}`, { state: { review } })
+  }
+
+  async function handleExport(format: 'csv' | 'json') {
+    setShowExportMenu(false)
+    setExporting(format)
+    setExportError(null)
+    try {
+      await downloadReviewsExport(format)
+    } catch (err) {
+      setExportError(err instanceof Error ? err.message : 'Export failed')
+    } finally {
+      setExporting(null)
+    }
   }
 
   return (
@@ -38,7 +55,37 @@ export default function ReviewsPage() {
                 : 'Click any review to see its analysis and draft a reply.'}
             </p>
           </div>
+          <div className="relative shrink-0">
+            <button
+              onClick={() => setShowExportMenu(v => !v)}
+              disabled={exporting !== null}
+              className="flex items-center gap-2 bg-white border border-gray-200 hover:border-gray-300 disabled:opacity-50 text-charcoal text-sm font-sans font-medium py-2 px-4 rounded-lg transition-colors"
+            >
+              {exporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+              {exporting ? 'Exporting…' : 'Export'}
+            </button>
+            {showExportMenu && (
+              <div className="absolute right-0 mt-1 bg-white rounded-lg border border-gray-200 shadow-card-hover z-10 overflow-hidden">
+                <button
+                  onClick={() => handleExport('csv')}
+                  className="block w-full text-left px-4 py-2 text-sm font-sans text-charcoal hover:bg-gray-50 transition-colors"
+                >
+                  Export as CSV
+                </button>
+                <button
+                  onClick={() => handleExport('json')}
+                  className="block w-full text-left px-4 py-2 text-sm font-sans text-charcoal hover:bg-gray-50 transition-colors"
+                >
+                  Export as JSON
+                </button>
+              </div>
+            )}
+          </div>
         </div>
+
+        {exportError && (
+          <p className="text-xs text-amber font-sans bg-amber-light px-3 py-2 rounded-md mb-4">{exportError}</p>
+        )}
 
         {/* Quick filter chips */}
         {!loading && !loadError && stats.total > 0 && (

@@ -786,6 +786,52 @@ def save_authenticity_audit_pg(
         conn.close()
 
 
+def list_flagged_authenticity_audits_pg(
+    org_id: str,
+    limit: int = 50,
+    offset: int = 0,
+) -> list[dict[str, Any]]:
+    """Return individually flagged (non-genuine) authenticity audit rows for org_id.
+
+    Feeds GET /bff/authenticity/flagged -- the per-review counterpart to the
+    aggregate authenticity_audit_summary_pg above. Ordered newest-first so the
+    dashboard queue surfaces the most recent moderation-priority reviews.
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+        cur.execute(
+            "SELECT review_hash, score, label, flags, created_at "
+            "FROM public.authenticity_audits "
+            "WHERE org_id = %s AND label <> 'genuine' "
+            "ORDER BY created_at DESC "
+            "LIMIT %s OFFSET %s",
+            (org_id, limit, offset),
+        )
+        rows = cur.fetchall()
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+    def _load_flags(val: Any) -> list[str]:
+        return json.loads(val) if isinstance(val, str) else (val or [])
+
+    return [
+        {
+            "review_hash": str(r[0]),
+            "score": float(r[1]),
+            "label": str(r[2]),
+            "flags": _load_flags(r[3]),
+            "created_at": r[4],
+        }
+        for r in rows
+    ]
+
+
 def count_authenticity_audits_pg(org_id: str) -> int:
     """Return count of audit rows visible to org_id (used in isolation tests)."""
     conn = _db_connect()
