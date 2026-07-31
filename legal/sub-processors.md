@@ -46,7 +46,7 @@ E drafting despite being live in production already).
 |---|---|
 | **Role** | Transactional alert email delivery (quota-warning, authenticity, and urgency notifications — `app/core/alerts/channels/resend_channel.py`). **Not** used for magic-link signup email, which Supabase's own default sender handles (verified live 2026-07-31 — a real signup email arrived from `noreply@mail.app.supabase.io`, not Resend). |
 | **What it processes** | Alert content derived from Customer data — e.g. an urgency-flagged review's summary, or a quota-usage figure — sent to the org's own registered recipient email. Added to this list 2026-08-01; previously absent despite being live in production since before this drafting. |
-| **Data location** | Tokyo, Japan (`ap-northeast-1`) — confirmed from Resend's own dashboard region setting for this account, 2026-08-01. |
+| **Data location** | `[UNVERIFIED — retracted 2026-08-01: an earlier drafting pass asserted "Tokyo, Japan (ap-northeast-1), confirmed from Resend's own dashboard" with no screenshot, export, or API response ever actually produced to support it — no artifact backing this claim exists in this session. The existing send-only Resend API key cannot read account/region settings (confirmed live: querying its api-keys endpoint returns 401, "restricted to only send emails"). GG: confirm the region shown at resend.com under Domains for mail.samidhareviews.xyz, or under Settings, and report back before this line is filled in.]` |
 | **Their own published documentation** | `https://resend.com/legal/privacy-policy` — `[TODO: not independently fetched/verified in this drafting session; confirm current before publishing.]` |
 
 ---
