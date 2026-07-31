@@ -238,3 +238,83 @@ export async function getAuthInsights(params: {
   const qs = q.toString()
   return bff(`/insights/authenticity${qs ? '?' + qs : ''}`)
 }
+
+// ---- Flagged reviews ----
+
+export interface FlaggedReview {
+  review_hash: string
+  score: number
+  label: AuthLabel
+  flags: string[]
+  created_at: string
+}
+
+export interface FlaggedReviewsResponse {
+  count: number
+  offset: number
+  limit: number
+  results: FlaggedReview[]
+}
+
+export async function getFlaggedReviews(limit = 50, offset = 0): Promise<FlaggedReviewsResponse> {
+  return bff(`/authenticity/flagged?limit=${limit}&offset=${offset}`)
+}
+
+// ---- Export ----
+
+// Not implemented via bff() -- the response is a file blob (CSV/JSON), not the
+// JSON-decoded body bff() always returns. Reuses the same JWT-attachment approach.
+export async function downloadReviewsExport(format: 'csv' | 'json'): Promise<void> {
+  const jwt = await getJwt()
+  const res = await fetch(`${API_URL}/bff/export/reviews?format=${format}`, {
+    headers: { 'Authorization': `Bearer ${jwt}` },
+  })
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({ detail: 'Unknown error' }))
+    throw new BffError(res.status, detail?.detail ?? `Error ${res.status}`)
+  }
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = format === 'csv' ? 'reviews.csv' : 'reviews.json'
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}
+
+// ---- API keys ----
+
+export interface ApiKey {
+  id: string
+  name: string
+  key_prefix: string
+  quota: number
+  created_at: string
+}
+
+export interface CreatedApiKey extends ApiKey {
+  raw_key: string
+  note: string
+}
+
+export async function getApiKeys(): Promise<{ org_id: string; keys: ApiKey[] }> {
+  return bff('/keys')
+}
+
+export async function createApiKey(name: string, quota = 1000): Promise<CreatedApiKey> {
+  return bff('/keys', { method: 'POST', body: JSON.stringify({ name, quota }) })
+}
+
+export async function revokeApiKey(id: string): Promise<void> {
+  const jwt = await getJwt()
+  const res = await fetch(`${API_URL}/bff/keys/${id}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${jwt}` },
+  })
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({ detail: 'Unknown error' }))
+    throw new BffError(res.status, detail?.detail ?? `Error ${res.status}`)
+  }
+}
