@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from dataclasses import dataclass
 
 import structlog
 from fastapi import APIRouter, Header, HTTPException, status
@@ -10,6 +11,11 @@ from pydantic import BaseModel
 
 from app.auth.keygen import generate_api_key
 from app.auth.signup import _db_connect, verify_supabase_jwt
+from app.core.billing import (
+    BillingNotConfiguredError,
+    create_checkout_session,
+    create_portal_session,
+)
 
 router = APIRouter(prefix="/account", tags=["account"])
 log = structlog.get_logger(__name__)
@@ -19,16 +25,25 @@ class DeleteAccountRequest(BaseModel):
     confirm_slug: str
 
 
-async def _require_user_id(authorization: str) -> str:
-    """Extract + verify Bearer JWT; return Supabase user_id."""
+class CreateCheckoutRequest(BaseModel):
+    plan: str  # 'starter' or 'growth' -- validated against billing.PLAN_QUOTAS below
+
+
+async def _require_user(authorization: str) -> object:
+    """Extract + verify Bearer JWT; return the verified Supabase user object."""
     if not authorization.startswith("Bearer "):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authorization: Bearer <supabase_token> required.",
         )
     jwt = authorization[len("Bearer ") :]
-    user = await verify_supabase_jwt(jwt)
-    return str(user.id)
+    return await verify_supabase_jwt(jwt)
+
+
+async def _require_user_id(authorization: str) -> str:
+    """Extract + verify Bearer JWT; return Supabase user_id."""
+    user = await _require_user(authorization)
+    return str(user.id)  # type: ignore[attr-defined]
 
 
 def _fetch_account(user_id: str) -> dict[str, object]:
@@ -213,6 +228,105 @@ def _do_delete_org(user_id: str, confirm_slug: str) -> None:
         raise
     finally:
         conn.close()
+
+
+@dataclass(frozen=True)
+class _OrgBillingInfo:
+    org_id: str
+    stripe_customer_id: str | None
+
+
+def _get_org_for_billing(user_id: str) -> _OrgBillingInfo:
+    """org_id + existing stripe_customer_id (may be None) -- org_id resolved
+    server-side from the verified session's org_members row, same pattern as
+    every other helper in this module. Never accepts org_id from the request.
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT o.id, o.stripe_customer_id
+            FROM public.organization_members om
+            JOIN public.organizations o ON o.id = om.org_id
+            WHERE om.user_id = %s
+            LIMIT 1
+            """,
+            (user_id,),
+        )
+        row = cur.fetchone()
+        conn.commit()
+        if row is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No account found. Complete sign-up first via POST /auth/provision.",
+            )
+        return _OrgBillingInfo(org_id=str(row[0]), stripe_customer_id=row[1])
+    except HTTPException:
+        raise
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+@router.post("/billing/checkout")
+async def create_billing_checkout(
+    body: CreateCheckoutRequest,
+    authorization: str = Header(default="", alias="Authorization"),
+) -> dict[str, str]:
+    """Create a Stripe Checkout session for upgrading to `plan` ('starter' or
+    'growth'). UNVERIFIED against a live Stripe account -- see
+    app/core/billing.py's module docstring.
+    """
+    from app.core.billing import PLAN_QUOTAS
+
+    if body.plan not in ("starter", "growth"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"plan must be 'starter' or 'growth', got {body.plan!r}. "
+            f"(Known plans: {sorted(PLAN_QUOTAS)})",
+        )
+    user = await _require_user(authorization)
+    org = await asyncio.to_thread(_get_org_for_billing, str(user.id))  # type: ignore[attr-defined]
+
+    try:
+        session = create_checkout_session(
+            org_id=org.org_id,
+            plan=body.plan,
+            customer_email=user.email or "",  # type: ignore[attr-defined]
+            existing_stripe_customer_id=org.stripe_customer_id,
+        )
+    except BillingNotConfiguredError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)
+        ) from exc
+    return {"checkout_url": session.checkout_url}
+
+
+@router.post("/billing/portal")
+async def create_billing_portal(
+    authorization: str = Header(default="", alias="Authorization"),
+) -> dict[str, str]:
+    """Create a Stripe Customer Portal session -- self-service plan change,
+    cancellation, payment method update, invoice history. UNVERIFIED against a
+    live Stripe account -- see app/core/billing.py's module docstring.
+    """
+    user_id = await _require_user_id(authorization)
+    org = await asyncio.to_thread(_get_org_for_billing, user_id)
+    if not org.stripe_customer_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No billing history yet -- start a checkout session first (POST /account/billing/checkout).",
+        )
+    try:
+        session = create_portal_session(stripe_customer_id=org.stripe_customer_id)
+    except BillingNotConfiguredError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)
+        ) from exc
+    return {"portal_url": session.portal_url}
 
 
 @router.get("")

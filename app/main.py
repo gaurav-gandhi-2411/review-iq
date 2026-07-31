@@ -38,6 +38,7 @@ from app.api.v2.reply import router as v2_reply_router
 from app.api.v2.reviews import router as v2_reviews_router
 from app.api.webhooks.google import router as google_webhook_router
 from app.api.webhooks.shopify import router as shopify_webhook_router
+from app.api.webhooks.stripe import router as stripe_webhook_router
 from app.auth.signup import router as signup_router
 from app.core.config import Settings, get_settings
 from app.core.logging import setup_logging
@@ -228,6 +229,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         _app.include_router(shopify_auth_router)
         _app.include_router(google_webhook_router)
         _app.include_router(google_auth_router)
+        _app.include_router(stripe_webhook_router)
         _app.include_router(bff_router)
         _app.include_router(signup_router)
         _app.include_router(account_router)
