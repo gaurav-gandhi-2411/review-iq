@@ -448,3 +448,105 @@ class TestVector4DirectAppRoleConnection:
             f"cross-org justification comment: {undocumented_gaps} -- either add "
             f"_set_tenant() or document why this is an intentional exception"
         )
+
+
+@pytest.mark.integration
+class TestBypassrlsServingPathReachability:
+    """S0 finding, reported not fixed (post-Section-E remediation pass).
+
+    P2's exact question: is the BYPASSRLS-holding role reachable from ANY
+    request-serving path -- not "does storage_pg.py's tenant-data layer correctly scope
+    itself" (already covered by TestVector4DirectAppRoleConnection above, and it does).
+    Traced in code, not inferred from the migration's stated intent:
+
+      review_iq_app (rolbypassrls=true) is connected to, with ZERO _set_tenant() call
+      anywhere in the file, by THREE call sites that are all live, request-serving, and
+      externally reachable:
+
+        1. app/api/admin.py -- every DB helper (_create_org_db, _get_org_db,
+           _create_key_db, _list_keys_db, _rotate_key_db, _revoke_key_db) connects via
+           `psycopg2.connect(settings.supabase_database_url)` with no _set_tenant() call
+           anywhere in the file. Mounted as live HTTP routes (admin_router in
+           app/main.py). The ONLY control is require_admin (app/auth/admin.py) -- HTTP
+           Basic auth, single factor, no MFA, and CONFIRMED no rate-limiting/lockout on
+           these routes (grepped app/api/admin.py for `limiter`/`rate_limit`: zero
+           matches). A leaked or brute-forced admin credential is a full cross-org
+           compromise with no RLS backstop, not a degraded-but-contained one.
+
+        2. app/api/webhooks/google.py and app/api/webhooks/shopify.py -- the
+           org-resolution lookup (google_location_name / shop_domain -> org_id) runs
+           via the same `psycopg2.connect(settings.supabase_database_url)` connection
+           with no SET ROLE at all (both files' own comments say "postgres role, no SET
+           ROLE" -- that comment is STALE/INACCURATE post-2026-07-26: it actually
+           connects as review_iq_app, not postgres, but the substantive behavior the
+           comment describes -- an RLS-bypassing lookup -- is correct and current).
+           These are live, externally-triggered endpoints (Google Pub/Sub push,
+           Shopify webhook delivery). Auth is a shared-secret query token
+           (hmac.compare_digest, Google) / HMAC signature (Shopify) -- single factor,
+           and a leaked token/secret (e.g. via access logs that record full query
+           strings, a common logging gotcha for the Google path specifically) has the
+           same no-RLS-backstop exposure as (1).
+
+      Ruled out (traced, not assumed): no fallback-DSN chain exists (`DATABASE_URL` is
+      an entirely separate legacy v1 SQLite path -- app/core/storage.py,
+      app/api/ops.py -- not a Postgres fallback for SUPABASE_DATABASE_URL); the
+      migration runner uses a distinct `postgres` superuser credential over a direct
+      (non-pooler) connection, manual/out-of-band per ops/runbooks/*.md -- it does not
+      share a PgBouncer pool or any state with review_iq_app's transaction-mode pooler
+      connection; every `SET ROLE` in the codebase is the transaction-scoped `SET LOCAL
+      ROLE` form (grepped for a bare `SET ROLE` outside `SET LOCAL ROLE`: only found
+      inside comments/docstrings describing the pattern, never an executed bare
+      statement) -- so there is no PgBouncer transaction-mode role-bleed risk between
+      pooled connections either.
+
+    Per the standing instruction: reachable from a serving path means RLS is not the
+    isolation control for these three paths, and this is reported, not fixed, in this
+    pass. This test is written to CURRENTLY FAIL and stay failing until a decision is
+    made and implemented -- it is a visible, tracked regression marker, not a rubber
+    stamp. Do not "fix" this test by loosening the assertion; fix it by changing the
+    underlying connection pattern for these three call sites (e.g. a distinct,
+    narrower-privilege role for admin/webhook cross-org lookups instead of reusing the
+    full review_iq_app credential, or a SECURITY DEFINER function scoped to exactly the
+    lookup each site needs), then updating this test to assert the new, narrower state.
+    """
+
+    @pytest.mark.xfail(
+        reason=(
+            "S0, reported not fixed (Wave 1 Section E post-remediation pass): "
+            "review_iq_app holds BYPASSRLS and IS reachable from 3 live "
+            "request-serving paths (admin.py, webhooks/google.py, webhooks/shopify.py) "
+            "with zero _set_tenant() call. strict=True so this stops being invisible "
+            "the moment someone flips it green without deliberately removing the "
+            "xfail marker -- that flip is the signal the fix landed, not a silent pass."
+        ),
+        strict=True,
+    )
+    def test_admin_and_webhook_serving_paths_do_not_use_a_bypassrls_role(self) -> None:
+        """Known-failing, tracked -- see class docstring and the xfail reason above.
+        Asserts the property this repo actually wants to be true (the role backing
+        every request-serving DB connection, including admin/webhooks, does not hold
+        BYPASSRLS), not the property that happens to be true today."""
+        import os
+        from pathlib import Path
+
+        import psycopg2
+        from dotenv import load_dotenv
+
+        load_dotenv(Path(__file__).parents[2] / ".env")
+
+        conn = psycopg2.connect(os.environ["SUPABASE_DATABASE_URL"])
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT rolbypassrls FROM pg_roles WHERE rolname = current_user")
+            (has_bypass,) = cur.fetchone()
+        finally:
+            conn.close()
+
+        assert has_bypass is False, (
+            "review_iq_app (the connection app/api/admin.py and "
+            "app/api/webhooks/{google,shopify}.py use for their unscoped, "
+            "request-serving cross-org lookups) holds BYPASSRLS -- S0, reported in "
+            "Wave 1 Section E's post-remediation pass, not fixed in that pass. RLS is "
+            "not an effective isolation control for these three call sites as long as "
+            "this is true. See this test's class docstring for the full trace."
+        )
