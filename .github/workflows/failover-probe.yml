@@ -1,0 +1,57 @@
+name: Failover Probe
+
+# Wave 1 Section F ("Reliability"): nightly REAL live-call probe of both LLM
+# failover paths (Gemini fallback + the SecondaryProvider/OpenRouter ZDR-only
+# path). "A config fix without the probe is not a fix" -- see
+# docs/specs/wave1-commercialization.md Section 4.F and scripts/probe_failover.py's
+# module docstring. Mirrors eval.yml's nightly-cron + conditional-Slack-notify
+# convention (the established house pattern for scheduled jobs in this repo) --
+# no new scheduling mechanism introduced.
+#
+# Cost: 2 tiny live calls/night (~150-250 tokens total) against Gemini + OpenRouter.
+# Negligible against both providers' free/low tiers.
+
+on:
+  schedule:
+    - cron: "30 2 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: failover-probe
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      SECONDARY_PROVIDER_API_KEY: ${{ secrets.SECONDARY_PROVIDER_API_KEY }}
+      SECONDARY_PROVIDER_MODEL: ${{ vars.SECONDARY_PROVIDER_MODEL }}
+      API_KEY: ci-key
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Run failover probe
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          # Free-tier-friendly: probe still runs and fails the job (exit 1) without a
+          # webhook -- Slack notification is a bonus, not the pass/fail signal itself.
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            uv run python scripts/probe_failover.py
+          else
+            uv run python scripts/probe_failover.py --slack-webhook "$SLACK_WEBHOOK_URL"
+          fi
