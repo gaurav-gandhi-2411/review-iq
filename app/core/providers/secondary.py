@@ -44,6 +44,24 @@ class SecondaryProvider:
     Groq-direct to Groq-via-OpenRouter's ZDR endpoint is possible). The zdr=true
     request flag is sent unconditionally regardless of which model an operator
     configures -- this is enforced in code, not left to config discipline alone.
+
+    Per-upstream verification, not just an OpenRouter-API-tier claim (Wave 1 S0/P1
+    remediation, 2026-07-31): ZDR status is determined by OpenRouter per PROVIDER,
+    through direct engagement with each one (their own docs: "OpenRouter works with
+    providers to understand each of their data policies... If OpenRouter is not able
+    to establish or ascertain a clear policy for a provider or endpoint, we take a
+    conservative stance and assume that the endpoint both retains and trains on
+    data") -- not a single blanket flag covering everything they route to. Live-
+    enumerated the exact set for `meta-llama/llama-3.3-70b-instruct`: 12 providers
+    currently serve this model (GET /api/v1/models/{model}/endpoints), of which 11
+    are ZDR-confirmed for it (GET /api/v1/endpoints/zdr filtered to this model_id) --
+    Cloudflare is the one NOT confirmed. The `zdr:true` flag above is what excludes
+    Cloudflare specifically; this class never needs a hardcoded exclusion list
+    because the flag's server-side enforcement already does it, and does so
+    correctly regardless of which of the 12 providers OpenRouter happens to route to
+    on a given request, or how that set changes over time (re-run both endpoints
+    above to re-verify the current set -- see legal/sub-processors.md for the same
+    enumeration written up for the DPA).
     """
 
     trains_on_input: bool = False

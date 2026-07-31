@@ -34,7 +34,7 @@ Controller's behalf under the Terms of Service, and terminates automatically upo
 |---|---|
 | **Nature of processing** | Automated extraction (LLM-based structured data extraction), authenticity scoring, storage, and aggregate insight generation. See §"Processing operations" below for the specific operations. |
 | **Purpose of processing** | To provide the Service Controller has signed up for: turning Controller-submitted review text into structured, queryable data and authenticity signals. |
-| **Processing operations** | (1) PII redaction pass on submitted review text; (2) transmission of redacted text to the LLM sub-processor (Groq) for extraction; (3) storage of extraction output, hashed authenticity audit records, and usage records in the database sub-processor (Supabase Postgres); (4) return of structured output to Controller via the API. |
+| **Processing operations** | (1) PII redaction pass on submitted review text; (2) transmission of redacted text to the primary LLM sub-processor (Groq) for extraction, or the secondary/failover sub-processor (OpenRouter) if Groq is unavailable; (3) storage of extraction output, hashed authenticity audit records, and usage records in the database sub-processor (Supabase Postgres); (4) return of structured output to Controller via the API. |
 
 ---
 
@@ -108,6 +108,7 @@ data more broadly) on Controller's behalf:
 | Sub-processor | Role | What it processes |
 |---|---|---|
 | **Groq, Inc.** | LLM inference (primary provider — Llama 3.3 70B / 3.1 8B) | Redacted review text, for the sole purpose of generating structured extraction and authenticity signal output. Not used for model training per Groq's API terms (see [`sub-processors.md`](./sub-processors.md)). |
+| **OpenRouter, Inc.** | LLM inference (secondary/failover provider — activates only when Groq is unavailable) | Redacted review text, restricted at the request level to Zero-Data-Retention-confirmed upstream infrastructure only (enforced in code, not config-optional — see [`sub-processors.md`](./sub-processors.md) for the per-upstream-provider verification, since OpenRouter itself routes to multiple third-party inference providers). |
 | **Supabase (Supabase, Inc. / Supabase Pte. Ltd.)** | Database (Postgres) and authentication hosting | All persisted Customer/end-customer data: extraction output, hashed authenticity audit records, account data, usage records — isolated per organization via Row-Level Security. |
 
 See [`sub-processors.md`](./sub-processors.md) for the complete, currently-maintained list
@@ -216,4 +217,6 @@ any legs outside Controller's/data subjects' jurisdiction.]`
 ---
 
 _This is a template DPA drafted from the product's actual technical implementation. It is
-version-controlled; see git history for changes. Last drafted: 2026-07-31._
+version-controlled; see git history for changes. Last drafted: 2026-07-31.
+Revised 2026-07-31 (S0/P1 remediation): added OpenRouter to §6's authorized sub-processor list —
+re-flagged REQUIRES-LEGAL-REVIEW for the new entry specifically._
