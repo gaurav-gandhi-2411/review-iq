@@ -68,10 +68,53 @@ Full 12-gate exit criteria in spec §5. Tracked here per rule 118 (checkpoint on
 | B — Kill hand-labeling | **done, PR #17 (draft, stacked on #16)** | Built and independently re-verified: `eval/agreement.py` (Krippendorff/Fleiss, textbook-verified), `eval/power_analysis.py` (MDE), `eval/consensus/` package (2-judge panel after calibration dropped `allam-2-7b`; `llama-3.3-70b-versatile` excluded by design as a self-judging conflict), 132 fixtures total with real consensus ground truth (not 300 — real corpus yield + Groq rate-limit wall, documented honestly), ADR 0002. **INCIDENT (resolved):** recording cassettes for the 83 new fixtures exhausted production's `GROQ_API_KEY` daily TPD budget for `llama-3.3-70b-versatile` (99,770/100,000) after 43/132 — a real quota-consumption event I ran without recognizing it as the exact escalation case my own standing rules name. No customer-impact evidence found in Cloud Run logs, not exhaustively proven either. With GG's explicit direction, filled the gap via OpenRouter (83/83, Gemini configured as unused fallback) — ADR 0003. **Then caught two more bugs in my own recovery, during independent verification, before either executor did:** (1) my own WIP commit had captured a broken partial-run snapshot (27.3%) instead of the true 83.8%/49-fixture figure — restored from the last known-good commit; (2) the 83 substitute-provider fixtures sat inside `eval/fixtures/`, which `eval.runner` scans fresh on every real CI run (not a static check) — would have silently regenerated a 74.6%/FAIL result on the next push regardless of what was committed. Moved to `eval/fixtures/_pending_groq_cassette/` (outside the runner's scan), restoring the clean 49-fixture/83.8% CI gate, verified reproducible twice. This PR adds 132 fixtures' worth of real ground truth to the repo but changes nothing about what currently gates CI. |
 | C — Domain consolidation | **code done, PR #19 (draft, stacked on #17)** | Closed a real live bug found during premise-verification: v1 HF Space's `GET /reviews`/`GET /insights` were unauthenticated (confirmed via direct curl) — now require the same API key as every other v1 endpoint; `deploy.yml` no longer auto-pushes to the Space. Fixed 3 of 4 demo-page defects (D2 leaked dev instruction, D3 dead footer link, D7 stale known-gaps banner); D1/D4 did **not** reproduce when checked live today — not fabricated a fix, added a build-time regression guard instead. New link-health CI gate. Draft not auto-merged: touches auth + deploy config, rule-70a gate 4 fails regardless of size. Registrar confirmed via RDAP = NameCheap; DNS genuinely blank. Numbered escalation steps for Cloudflare/NameCheap/Vercel/Search-Console/HF in the PR body — none done yet, needs GG. |
 | D — Logo/identity | **done, PR #21 (draft, stacked on #19)** | Replaced the generic speech-bubble-with-star mark (byte-identical in 3 places) with a "samidha" concept: crossed sticks converging into one flame. First attempt (thin radiating sparks) collapsed into a generic AI-sparkle glyph at favicon scale — rejected, rebuilt as solid crossed-log shapes before shipping. Full WCAG-AA-verified token set (`design/tokens.json`) with 2 documented failing pairs (ember+white text, ember-on-paper links) fixed via usage rules, not silently avoided; `scripts/check_contrast.py` is a real CI gate. Draft not auto-merged: 499 non-binary lines, over the reviewable guideline, no generated-artifact carve-out applies. HF model card and full page re-theming explicitly deferred (no card exists yet; re-theming is its own reviewable pass). |
-| E — Security + legal | not started | Scope narrower than spec assumed — see premise corrections above. |
+| E — Security + legal | in progress | See "E kickoff" note below. |
 | F — Reliability | not started | |
-| G — Cost telemetry | not started | Confirmed absent, spec premise holds. |
-| H — Corpus mining | not started | Substantial reusable groundwork in `benchmark/vernacular_v2/` — extend, don't rebuild. 2 unresolved-license Kaggle sources need a decision. |
+| G — Cost telemetry | in progress (parallel to E) | See "G/H kickoff" note below. |
+| H — Corpus mining | in progress (parallel to E) | Substantial reusable groundwork in `benchmark/vernacular_v2/` — extend, don't rebuild. 2 unresolved-license Kaggle sources need a decision. |
+
+### Stack unblock + pre-Section-E audit (2026-07-31)
+Rebased `#16→#17→#19→#21` onto current `main` (main had moved forward via tracker-only PRs
+#18/#20/#22) and reconfirmed CI green on all four **against their actual current base**, not
+their original one — this surfaced two real bugs neither original build caught, both fixed at
+the layer that introduced them (not papered over one layer up), then cascaded through the rest
+of the stack:
+- `check_no_hardcoded_metrics.py` (from #16) and `check_link_health.py` (from #19) had never
+  seen `docs/specs/wave1-commercialization.md` before (it only reached `main` via #18, after
+  both scripts were written) and both flagged the spec's own historical-defect writeup /
+  backtick-quoted `href="#"` prose as live violations. Root-cause fixed (spec docs excluded
+  from the metrics scanner like ADRs already are; Markdown code-span/fence stripping added to
+  the link scanner) rather than suppressed.
+- Confirmed ADR 0001 exists and names the tiered-router cost/accuracy tradeoff (per-language
+  gates held ≥80% at ~1% overall cost from small-model routing on hi/hi-en) as the 0.85→0.83
+  rationale — satisfies the standing "must the ADR say so in those terms" bar.
+- Confirmed every customer-facing accuracy figure (README, site/index.html, site/docs/index.html)
+  renders from the same `eval/results/latest.json` via METRICS markers, and direct/routed are
+  byte-identical under the current config (ADR 0001) — no surface shows a stale/different
+  number. Found and fixed one disclosure-consistency gap: site/index.html didn't say
+  "mode: routed" the way README did (same number, just under-labeled).
+- Found and fixed a real false claim: site/index.html claimed the capability gallery "works
+  with JS disabled." Verified directly (raw HTML with zero JS execution) that this was false —
+  100% JS-populated, no `<noscript>` fallback, a JS-disabled visitor saw a blank section. Added
+  a real static example inside `<noscript>`, corrected the copy, and added a third
+  `check_link_health.py` check that fails on a missing/placeholder/non-JSON-shaped `<noscript>`
+  block (proven against 8 new tests, including the real committed file).
+All landed on PR #21 (current stack tip) — see its "Update" section for the itemized commit
+list. Full stack reconfirmed CI-green after every rebase step, verified via `gh pr checks`,
+not assumed.
+
+### E kickoff (2026-07-31)
+Confirmed before building: PII redaction (`app/core/sanitize.py`) is destructive
+(`[EMAIL]`/`[PHONE]`/`[CARD]`/name-intro-only replacement), not the reversible token map the
+spec requires; no order/invoice-ID pattern. Adversarial cross-tenant RLS test files exist
+(`tests/integration/test_rls_isolation.py` + 2 more) but depth vs. the spec's exact 4 attack
+vectors (wrong-org key / forged JWT / mismatched org_id / direct app-role) not yet audited
+against those specific vectors. Zero `BYPASSRLS` grep hits confirmed.
+
+### G/H kickoff (2026-07-31)
+G (cost telemetry): confirmed genuinely absent — `app/api/ops.py` has no per-extraction
+token/cost recording. H (corpus mining): `benchmark/vernacular_v2/` already has ingestion +
+dedup + a multi-LLM labeler prototype from earlier work — extending, not rebuilding.
 
 ---
 
