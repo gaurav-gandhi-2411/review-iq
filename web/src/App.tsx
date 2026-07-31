@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
 import { provision } from './lib/api'
