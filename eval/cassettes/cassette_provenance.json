@@ -1,0 +1,500 @@
+{
+  "08cdced5f05ab7856077c7043fc069cbff3eda6222e8db465aa37612f2e3f716": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:25:59Z",
+    "source": "openrouter"
+  },
+  "0eff516e693cb9f43885b9b7da5cbf9782507a95bb3e834421a6905897b7f4d7": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:54Z",
+    "source": "openrouter"
+  },
+  "0f7bdc80a1243d65b4a5d867a656c1e30b77840e8ce2c6f44ac0931fbbc56dd9": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:34Z",
+    "source": "openrouter"
+  },
+  "105ee6f7dd85d4552d910fad1a67b5786a2f633b32bb6e53f272b4c1b7fa4031": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:33Z",
+    "source": "openrouter"
+  },
+  "132b514a748471d8853e3c6413f4a28e11acc5f5379666d5c1dff1f7b2e4f03b": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:42Z",
+    "source": "openrouter"
+  },
+  "14e73098fb24b64d87afe8d6fc5ba7ac2e701eba2310783b0eb18384147453f4": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:25:24Z",
+    "source": "openrouter"
+  },
+  "1807e274f102c9a37709d8144fd1e04ae97e89cf0a82adff16bc244ffe32b53b": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:25:58Z",
+    "source": "openrouter"
+  },
+  "187fa1d382db3aaba645ef5cb2e6af0b5b62d63b65af54345ea9c9b011e028c1": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:29Z",
+    "source": "openrouter"
+  },
+  "1aef255efab11fa4450ade48704f961e64277fe59e5a12438edf8470eb3ea0c2": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:25:55Z",
+    "source": "openrouter"
+  },
+  "1cafd8333db942758c9fc1776a76eac7446cc5b1db8ee98b60e6baa290ca81e9": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:16Z",
+    "source": "openrouter"
+  },
+  "1e4c95ef1ec4efc41b8f2cf90ebc320ed1bb8bd7678335c1dac7058cc4417d16": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:18Z",
+    "source": "openrouter"
+  },
+  "1fb702d16fbce531d7faf8d0e35e5d595ace1f67976951efb24b6f4867f118ba": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:25:43Z",
+    "source": "openrouter"
+  },
+  "26dc128e29ce49a22eec705b42fd2c50c2c73fec99c60a8f2c6fed9be8793294": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:15Z",
+    "source": "openrouter"
+  },
+  "282c164c54745fc47d66416999045d340c9e112096c62ccd6de87efa4303761f": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:25:59Z",
+    "source": "openrouter"
+  },
+  "291f94b7da2d55590f7ae995449925dff60194814d3ddbeef321f9207f9cb732": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:25:32Z",
+    "source": "openrouter"
+  },
+  "2d78fa429241d9da458a30309d7a34350bb2ec1b4bb514d4ffd5890555d06978": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:23Z",
+    "source": "openrouter"
+  },
+  "32bb694a4b9e1791c3efb6d8da201d9df44b621129aa152fa687d7bc97f491ab": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:39Z",
+    "source": "openrouter"
+  },
+  "38fe82c0f5434da0b30b94afa2edd88148a90ef73d7e986a1f5cc7bbaa4f0f33": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:25Z",
+    "source": "openrouter"
+  },
+  "3e2b2797d9d4af282c2cc24fec2b516773180512287cbcad565fe8aabe6b1de9": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:10Z",
+    "source": "openrouter"
+  },
+  "41df9458f215fb30f054b91d4227a28f9199b47a3b6ac5f3347bf67982e90597": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:01Z",
+    "source": "openrouter"
+  },
+  "43bd554b15dbc2ef75f5379039a997abad855e0b74aadd00e7bffbf33712b333": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:25:57Z",
+    "source": "openrouter"
+  },
+  "4420eb740b6d9156c0d342e83ed0bbd78d3073f1c31465050e531d343b353fb0": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:46Z",
+    "source": "openrouter"
+  },
+  "4470b8592aa62e0bad3d29558d94fdb0e5adafc418d2a72524b10a7f86c7668d": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:28Z",
+    "source": "openrouter"
+  },
+  "4496d6face74a65e6cbdcb39be07ab460abf299eeb71beba2f04c2eb66b32d67": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:50Z",
+    "source": "openrouter"
+  },
+  "4a36e0a1473740d84aca807361be6e1bad951310238d684771d0d1fa01437b0b": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:10Z",
+    "source": "openrouter"
+  },
+  "4a37142f5480bc45329e31c435c4dde1da9ea570bf2db757ce74479b46620fd2": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:11Z",
+    "source": "openrouter"
+  },
+  "4ca27eda4257bc7cd95f6a61152ea5a0281cb1134996ff90e7cb986852f02c5d": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:40Z",
+    "source": "openrouter"
+  },
+  "4e4703d6d68a23497af2fb7a40cc99d7b611ad937e34b7e4572b3d40f12e8382": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:03Z",
+    "source": "openrouter"
+  },
+  "541bfdcc0aa7459c8b38a4a2e50acae63017c1cd6b137d025097657d550e2134": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:25:55Z",
+    "source": "openrouter"
+  },
+  "59b7a1872b90040be4c9ab603fd88609b050fbaa5edc6045a5b102879011ec47": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:18Z",
+    "source": "openrouter"
+  },
+  "5f062738093560b73c6051c42a1a3f87cf278dfc6b1823917a49dc55e978fc59": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:02Z",
+    "source": "openrouter"
+  },
+  "5f29e3b9c184893a22fcc6a92296a51caa302ef168ecec59c5f630432dc88dc8": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:53Z",
+    "source": "openrouter"
+  },
+  "6025ad3b5f7115c1bada18da3896866ad4d8c7fa3d7fab242d56a8adbedaa9fe": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:53Z",
+    "source": "openrouter"
+  },
+  "604e279a5252c84c059f07e74b32b691637812ff1027ea7d962d01adf48bb715": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:14Z",
+    "source": "openrouter"
+  },
+  "60f5af1f5f1c8da3136e3a920686a1bf51461231cf8450c0f6c8cf1a82ccd92d": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:51Z",
+    "source": "openrouter"
+  },
+  "62dc774bca4bf2a5626cec7af95972548898ef602be87723f26b7c11e0b8d321": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:48Z",
+    "source": "openrouter"
+  },
+  "65b1a6acd31c77bdf6782ddef2d96a9e481d605c3fc0675ee1c5cc89ac5f4587": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:31Z",
+    "source": "openrouter"
+  },
+  "6b32b7db53fd1b743b42135bd48d4bef28e25b1a16ee59a242c089e487d6ecbb": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:05Z",
+    "source": "openrouter"
+  },
+  "6be17f311bf30db55ff14dc8a88e356fa806482a69d73700af33f31e27598db2": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:45Z",
+    "source": "openrouter"
+  },
+  "712c70fd25b9c62c3639cfed1f187c431a61f07e5d40b6871a3662a48272460d": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:19Z",
+    "source": "openrouter"
+  },
+  "74c1e7d4e18992f8496edab96cc4a3f0b3be6d43247b1f431fff7410ada54fee": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:25:26Z",
+    "source": "openrouter"
+  },
+  "756fb89924e4aa23ba488f502fc5d3c0aea43afd07e317051290ca034dc9d0e6": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:36Z",
+    "source": "openrouter"
+  },
+  "7b89223d87fd7a5f727ca6be0c770ca9517e0bd81fee7db6e436ef8c1cbc6099": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:49Z",
+    "source": "openrouter"
+  },
+  "7fe1e0894ada0732da7c24e153c77afbd873af47727ff2499056c24a08edb0df": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:32Z",
+    "source": "openrouter"
+  },
+  "82c617ad4f1be096eef1dda48fd8a572c45ff8a7b874e64a23cb241ea0fdc4d4": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:46Z",
+    "source": "openrouter"
+  },
+  "83bd577d5673a7b6d27224e07ec85d9273f0267b47edf80d1227c138d8b9e7ad": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:40Z",
+    "source": "openrouter"
+  },
+  "86213aaa1bfd8dd89ddc2def50bdce5d0d87882e68c796d03bf85a57cb0faa95": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:26Z",
+    "source": "openrouter"
+  },
+  "8ead4d9631e4578299fffad90ec56dd660601378dcd5b2ebe5ccde98c75e09fe": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:12Z",
+    "source": "openrouter"
+  },
+  "90828cac55c55b23fb3779c0b10fe8c0fe3970f17e6cc62259f8eb8e2a7e54c3": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:05Z",
+    "source": "openrouter"
+  },
+  "97803783f96ee954c18fbbc5d2a059b318eddbd84d0b4099e53f7b84f3c63c06": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:35Z",
+    "source": "openrouter"
+  },
+  "978680e72e322ddc094c64dec7bd12869b39addcd87a0bb98a5b5137ba94a08d": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:04Z",
+    "source": "openrouter"
+  },
+  "9cbc93d0d798c38a84015fa50182070c627c5b960658d78fea8edeb52703b0e1": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:25:33Z",
+    "source": "openrouter"
+  },
+  "a1861edea7a6e7e9782576b57b3b858cc2325be9ca589935077a2a776326973e": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:55Z",
+    "source": "openrouter"
+  },
+  "a2adbbd7c4bc2f2a08df436a9aa4ad53e05e8d0cb490153fde12aa5a619e3587": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:13Z",
+    "source": "openrouter"
+  },
+  "a3b5f6738031c541a70a717e13a6c9902ceaa0c49d240b1eb55397a62cb6c80a": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:25:44Z",
+    "source": "openrouter"
+  },
+  "a42cbe4307117139fa93c054788fe5d75d9fa5ff5269e4da2d2142e7ddb6980f": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:25:46Z",
+    "source": "openrouter"
+  },
+  "a961cca8011b5d2d55e0ce29438ad54dbf24ec4edb16da7ae772931cc64077ea": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:38Z",
+    "source": "openrouter"
+  },
+  "a9c4df30b2ddf5c11f0edec47210c455328745fecef434ab3000197bf7b5fff7": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:56Z",
+    "source": "openrouter"
+  },
+  "abef82086eaf1863a9eb464052d686ccfe32c800daec0998ee42cf211cdb23d8": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:24Z",
+    "source": "openrouter"
+  },
+  "afee4ea2250e4d755858ca7ac102332d1494ba9f630cb166daaa58127d5c0411": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:00Z",
+    "source": "openrouter"
+  },
+  "b19415e5dfd2d4837e095222c8086874d2bc45842e9d893aa54bfba1e6201b92": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:22Z",
+    "source": "openrouter"
+  },
+  "b5b64220c6085fd65c27283aa82a99d33b1632eb99db6c41a6f9ddd499539fe9": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:14Z",
+    "source": "openrouter"
+  },
+  "b90fb0941cc57563ce9bfcac8dd5a090492a625d27535f2561dc76a9c8f0dc2c": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:44Z",
+    "source": "openrouter"
+  },
+  "c0c1feb79b983533e8a763bfee674ce780b2b730b027f945d63fe3ccec3853d2": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:36Z",
+    "source": "openrouter"
+  },
+  "c10696cca67724a13376929fd8a793ce8613b3fb6498729f913f32d41e21ae24": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:43Z",
+    "source": "openrouter"
+  },
+  "c12428ae5effff3626dce68357783db665a7552788e757fda60ce883f75488d6": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:52Z",
+    "source": "openrouter"
+  },
+  "c8572859b04d9ca438168e3d4534e5fe957e8ae2e2f05d6af8db7ed587b639a3": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:32Z",
+    "source": "openrouter"
+  },
+  "cc77a9139977bc65007ce60897ccacb6d5189ee854331de775e59cf28e6a62aa": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:17Z",
+    "source": "openrouter"
+  },
+  "d1609985e235bd072ee7410380047e312488cfb68532e1793b2c1887571c7939": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:09Z",
+    "source": "openrouter"
+  },
+  "d4418d21507e5cf99c68c35f67e8b771c03acd53bd90c847c4436ef4dd0116b6": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:21Z",
+    "source": "openrouter"
+  },
+  "dcee31e2c6fbb970b4927b2a09ce1faaacf5b687441a5ee7448d39af77edffa9": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:02Z",
+    "source": "openrouter"
+  },
+  "e00cbc8f9b0e851550704a6b9939b8164acbb8b760ea9dd625c65d1af045d33d": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:37Z",
+    "source": "openrouter"
+  },
+  "e34abee9131fe315c941a5f5a0f1ca27bfdcca0df92e8f53aff566f654815ecf": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:20Z",
+    "source": "openrouter"
+  },
+  "e61d9caf63345d429f9903df1e33c84ee212c8faa1437ed4ce4823030e3ceadc": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:26Z",
+    "source": "openrouter"
+  },
+  "e9c45d7c22403431651223aacd79bd6bbc2453c7fc332145c5f52822209dfc08": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:49Z",
+    "source": "openrouter"
+  },
+  "ef2a3f1c7f97832b0b2c315b41400d15caaa25e09eb32ba71576645ef15d32ed": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:41Z",
+    "source": "openrouter"
+  },
+  "f0308adf6cae8b49342cfac57e7d44d5f3997cee3369911ed2bd0ef2bfabd746": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:06Z",
+    "source": "openrouter"
+  },
+  "f624f1c47791a05ee4486c0e53dc9162fed43c539789f30f967485cbf7275aad": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:47Z",
+    "source": "openrouter"
+  },
+  "f810f215cc87aff62d46e4a064f7cc9f80b9d8b8d25a044c2a87aad567409939": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:07Z",
+    "source": "openrouter"
+  },
+  "f8eb4aef451a7ddfcdcccb6d037b5ae4dc8155aac81e1de084e27018cd9ab6d8": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:27Z",
+    "source": "openrouter"
+  },
+  "f9a28b3baea44e10b7e3e63a732143e0a55bb21b363aa321d9229a6b0e6ece28": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:30Z",
+    "source": "openrouter"
+  },
+  "fad65b74ee6282f946b41bbe55b736e22d9207f7638d6faaf550a26349b75495": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:26:08Z",
+    "source": "openrouter"
+  },
+  "fc107eb08f50a61aff76d042dc3175af538f5f81eaf4802742ba889e0d43d6c0": {
+    "model_requested": "meta-llama/llama-3.1-8b-instruct",
+    "reason": "groq TPD exhaustion during Section B fixture growth, 2026-07-30",
+    "recorded_at": "2026-07-30T18:25:30Z",
+    "source": "openrouter"
+  }
+}

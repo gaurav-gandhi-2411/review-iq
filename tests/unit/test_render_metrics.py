@@ -7,12 +7,69 @@ from pathlib import Path
 from scripts.render_metrics import (
     BLOCK_RENDERERS,
     render_authenticity_table_md,
+    render_consensus_labeling_md,
     render_extraction_table_html,
     render_extraction_table_md,
     render_file,
     render_gate_summary_md,
     render_language_table_html,
 )
+
+CONSENSUS_DATA = {
+    "active_panel": [
+        {"id": "openai/gpt-oss-120b", "family": "OpenAI GPT-OSS", "owner": "OpenAI"},
+        {"id": "qwen/qwen3.6-27b", "family": "Alibaba Qwen", "owner": "Alibaba Cloud"},
+    ],
+    "dropped_judges": [
+        {
+            "model_id": "allam-2-7b",
+            "misses": 9,
+            "reason": "9/33 control-set field checks failed (tolerance: <= 2)",
+        }
+    ],
+    "validation": {
+        "n_fixtures_scored": 49,
+        "per_field": {
+            "sentiment": {
+                "n_compared": 45,
+                "n_agree": 40,
+                "n_no_consensus": 4,
+                "agreement_rate": 0.888,
+            },
+        },
+    },
+    "growth": {
+        "candidates_considered": 233,
+        "new_fixtures_written": {"en": 150, "hi-en": 25},
+        "excluded_split_or_insufficient": 58,
+        "excluded_genuine_disagreement": 40,
+        "excluded_rate_limited": 18,
+    },
+    "reliability": {
+        "krippendorff_alpha": {
+            "sentiment": {"level": "nominal", "alpha": 0.712},
+            "urgency": {"level": "ordinal", "alpha": 0.601},
+        },
+        "fleiss_kappa": {
+            "sentiment": {"n_items": 200, "kappa": 0.65},
+        },
+    },
+    "mde": {
+        "overall_n": 224,
+        "mde_worst_case_p_0.5": 0.0925,
+        "mde_at_current_score_p_0.838": 0.0729,
+        "per_language_n": {"en": 177, "hi-en": 40, "hi": 7},
+        "per_language_mde_worst_case_p_0.5": {"en": 0.104, "hi-en": 0.219, "hi": 0.53},
+    },
+    "final_eval_set_size": 224,
+    "final_per_language_counts": {"en": 177, "hi-en": 40, "hi": 7},
+    "gating_eval_set_size": 49,
+    "staged_pending_groq_cassette": {
+        "count": 175,
+        "per_language": {"en": 150, "hi-en": 25},
+        "reason": "cassettes recorded via OpenRouter fallback, test fixture placeholder reason",
+    },
+}
 
 EXTRACTION_DATA = {
     "prompt_version": "v2.3",
@@ -125,6 +182,47 @@ class TestRenderLanguageTableHtml:
         out = render_language_table_html(EXTRACTION_DATA)
         assert out.count("<tr") == 3
         assert "Devanagari" in out
+
+
+class TestRenderConsensusLabelingMd:
+    def test_contains_active_panel_and_families(self):
+        out = render_consensus_labeling_md(CONSENSUS_DATA)
+        assert "openai/gpt-oss-120b" in out
+        assert "OpenAI GPT-OSS" in out
+        assert "Alibaba Qwen" in out
+
+    def test_contains_dropped_judge_and_reason(self):
+        out = render_consensus_labeling_md(CONSENSUS_DATA)
+        assert "allam-2-7b" in out
+        assert "9/33 control-set field checks failed" in out
+
+    def test_contains_alpha_and_kappa_values(self):
+        out = render_consensus_labeling_md(CONSENSUS_DATA)
+        assert "0.712" in out
+        assert "0.650" in out
+
+    def test_contains_validation_agreement_rate(self):
+        out = render_consensus_labeling_md(CONSENSUS_DATA)
+        assert "88.8%" in out
+
+    def test_contains_final_eval_set_size_and_mde(self):
+        out = render_consensus_labeling_md(CONSENSUS_DATA)
+        assert "224 fixtures" in out
+        assert "9.2" in out or "9.3" in out  # worst-case MDE ~9.25 points
+
+    def test_no_dropped_judges_omits_that_section(self):
+        data = {**CONSENSUS_DATA, "dropped_judges": []}
+        out = render_consensus_labeling_md(data)
+        assert "Dropped by calibration" not in out
+
+    def test_distinguishes_gating_set_from_staged_pending_cassette(self):
+        # Regression test for the staging fix: a fixture with real consensus ground truth
+        # but a substitute-provider cassette must never be silently folded into "the eval
+        # set that gates CI" -- the two counts must both be visible and distinct.
+        out = render_consensus_labeling_md(CONSENSUS_DATA)
+        assert "only 49 currently gate CI" in out
+        assert "175" in out
+        assert "_pending_groq_cassette" in out
 
 
 class TestRenderFile:

@@ -1,0 +1,69 @@
+{
+  "id": "107_consensus_grown",
+  "review_text": "I am very happy with this product. The U&I Titanic series sports neckband is just awesome. The sound and bass is too good. It has also very good battery life and I haven't charged it since 3 days and more to go. It is comfortable to wear and has perfect sound quality. I had an excellent experience of this neckband. It is also economical. A must buy for all.",
+  "ground_truth": {
+    "product": "U&I Titanic series sports neckband",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": [
+      "awesome sound and bass",
+      "very good battery life",
+      "comfortable to wear",
+      "perfect sound quality",
+      "economical"
+    ],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "positive",
+    "topics": [
+      "sound_quality",
+      "bass",
+      "battery_life",
+      "comfort",
+      "price"
+    ],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus (Wave 1 Section B)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "unanimous",
+      "stars_inferred": "unanimous",
+      "pros": "majority",
+      "cons": "majority",
+      "topics": "majority",
+      "feature_requests": "majority",
+      "competitor_mentions": "majority"
+    }
+  }
+}
