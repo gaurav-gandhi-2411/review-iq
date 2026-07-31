@@ -1,6 +1,6 @@
-import { useState, useRef, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Upload, FileText, CheckCircle, Loader2, X } from 'lucide-react'
+import { useState, useRef, useCallback, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Upload, FileText, CheckCircle, Loader2, X, Sparkles } from 'lucide-react'
 import Layout from '../components/Layout'
 import ErrorBox from '../components/ErrorBox'
 import { ingestCsv, pollJob, type IngestJob, ServiceWarmingError } from '../lib/api'
@@ -15,6 +15,7 @@ export default function UploadPage() {
   const [isDragOver, setIsDragOver] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
 
   function handleFiles(files: FileList | null) {
     if (!files?.length) return
@@ -38,17 +39,29 @@ export default function UploadPage() {
     handleFiles(e.dataTransfer.files)
   }, [])
 
-  async function startUpload() {
-    if (!file) return
+  async function startUpload(fileToUpload: File) {
     setPhase('uploading')
     setError(null)
     try {
-      const newJob = await ingestCsv(file)
+      const newJob = await ingestCsv(fileToUpload)
       setJob(newJob)
       setPhase('processing')
       await pollUntilDone(newJob.job_id)
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Upload failed'))
+      setPhase('error')
+    }
+  }
+
+  async function loadSampleData() {
+    setError(null)
+    try {
+      const res = await fetch('/sample-reviews.csv')
+      const blob = await res.blob()
+      const sampleFile = new File([blob], 'sample-reviews.csv', { type: 'text/csv' })
+      await startUpload(sampleFile)
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Could not load the sample file.'))
       setPhase('error')
     }
   }
@@ -84,6 +97,17 @@ export default function UploadPage() {
     setJob(null)
     setError(null)
   }
+
+  // One-click "try with sample data" from Dashboard's empty state --
+  // navigate('/upload?sample=1') triggers this automatically on arrival. Deferred
+  // a tick (queueMicrotask) so the state updates inside loadSampleData don't run
+  // synchronously within the effect body itself (react-hooks/set-state-in-effect).
+  useEffect(() => {
+    if (searchParams.get('sample') === '1' && phase === 'idle') {
+      queueMicrotask(() => { void loadSampleData() })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount only
+  }, [])
 
   return (
     <Layout active="upload">
@@ -151,11 +175,22 @@ export default function UploadPage() {
 
             {file && (
               <button
-                onClick={startUpload}
+                onClick={() => startUpload(file)}
                 className="mt-4 w-full flex items-center justify-center gap-2 bg-green hover:bg-green-muted text-white text-sm font-sans font-medium py-3 px-4 rounded-lg transition-colors"
               >
                 <Upload size={15} /> Process {file.name}
               </button>
+            )}
+
+            {!file && (
+              <div className="mt-4 text-center">
+                <button
+                  onClick={loadSampleData}
+                  className="inline-flex items-center gap-1.5 text-sm font-sans text-green hover:text-green-muted font-medium transition-colors"
+                >
+                  <Sparkles size={14} /> No file handy? Try our sample reviews
+                </button>
+              </div>
             )}
 
             <div className="mt-6 bg-white rounded-lg border border-gray-100 p-4 shadow-card">

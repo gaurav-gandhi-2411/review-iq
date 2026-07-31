@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { Mail, ArrowRight, Loader2 } from 'lucide-react'
+import { Mail, ArrowRight, Loader2, Sparkles } from 'lucide-react'
 import LogoMark from '../components/LogoMark'
 
 type Phase = 'idle' | 'loading' | 'sent' | 'error'
@@ -9,6 +10,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [phase, setPhase] = useState<Phase>('idle')
   const [errorMsg, setErrorMsg] = useState('')
+  const navigate = useNavigate()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -45,6 +47,20 @@ export default function LoginPage() {
           <p className="mt-2 text-charcoal-light font-sans text-sm leading-relaxed">
             Know what your customers actually think.
           </p>
+        </div>
+
+        <button
+          onClick={() => navigate('/try')}
+          className="w-full mb-4 flex items-center justify-center gap-2 bg-charcoal hover:bg-charcoal/90 text-white text-sm font-sans font-medium py-3 px-4 rounded-lg transition-colors"
+        >
+          <Sparkles size={15} /> See it work on real reviews — no signup
+        </button>
+
+        <div className="relative mb-4">
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
+          <div className="relative flex justify-center">
+            <span className="bg-cream px-3 text-xs font-sans text-charcoal-light/60">or sign up free</span>
+          </div>
         </div>
 
         <div className="bg-white rounded-xl shadow-card p-8">
