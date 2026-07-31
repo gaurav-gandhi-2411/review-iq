@@ -51,6 +51,9 @@ EXCLUDED_PATH_PREFIXES: tuple[str, ...] = (
     "eval/data/",  # fixture sourcing documentation, no accuracy claims
     "ops/runbooks/",  # operational thresholds (billing/traffic/storage %), not model accuracy
     "docs/architecture/adr/",  # ADRs are point-in-time decision records, immutable once accepted
+    "docs/specs/",  # specs are point-in-time audits/decision rules (e.g. wave1's D5 defect
+    # record, the SHIP-AS-QUALITY-MOAT decision-rule thresholds) -- historical record and
+    # forward-looking formula parameters, not live product claims. Same reasoning as ADRs.
 )
 EXCLUDED_EXACT_FILES: frozenset[str] = frozenset(
     {
@@ -154,6 +157,13 @@ def find_violations(path: Path) -> list[tuple[int, str]]:
 
 
 def main() -> int:
+    # Findings can legitimately contain non-ASCII characters (e.g. '>=' as unicode).
+    # Windows consoles default to a codepage (cp1252) that can't encode them, which would
+    # otherwise crash this script on its own PASS/FAIL report instead of showing it.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(errors="replace")
+
     any_violations = False
     for path in _tracked_md_and_html_files():
         rel = path.relative_to(REPO_ROOT).as_posix()
