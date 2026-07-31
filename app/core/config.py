@@ -102,7 +102,13 @@ class Settings(BaseSettings):
         alias="GROQ_MODEL_LARGE",
     )
 
-    # Secondary failover provider — must be a no-train provider when configured
+    # Secondary failover provider — OpenRouter, restricted to Zero-Data-Retention
+    # endpoints on every call (app/core/providers/secondary.py enforces `zdr: true`
+    # unconditionally, regardless of which model is configured here). Recommended:
+    # SECONDARY_PROVIDER_API_KEY = an OpenRouter API key
+    # SECONDARY_PROVIDER_MODEL   = "meta-llama/llama-3.3-70b-instruct" -- same nominal
+    #   family as groq_model_large, live-verified 2026-07-31 to have ZDR-flagged
+    #   endpoints from 11 upstream providers (see SecondaryProvider's docstring).
     secondary_provider_api_key: str = Field(default="", alias="SECONDARY_PROVIDER_API_KEY")
     secondary_provider_model: str = Field(default="", alias="SECONDARY_PROVIDER_MODEL")
 
