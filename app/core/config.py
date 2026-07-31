@@ -70,6 +70,14 @@ class Settings(BaseSettings):
         default="local", alias="DEPLOY_TARGET"
     )
 
+    # Wave 1 S0 remediation (ADR 0006): which Cloud Run service this process is. "public"
+    # (default) mounts everything except admin_router and authenticates to Postgres as
+    # review_iq_app (no BYPASSRLS). "admin" mounts ONLY ops_router + admin_router, is
+    # deployed --no-allow-unauthenticated (Cloud Run IAM gates all network reachability),
+    # and authenticates as review_iq_admin (BYPASSRLS) via admin_database_url below —
+    # never on the public service.
+    service_role: Literal["public", "admin"] = Field(default="public", alias="SERVICE_ROLE")
+
     # Admin HTTP Basic auth
     admin_username: str = Field(default="admin", alias="ADMIN_USERNAME")
     admin_password_hash: str = Field(default="", alias="ADMIN_PASSWORD_HASH")
@@ -235,6 +243,10 @@ class Settings(BaseSettings):
     supabase_database_url: str = Field(default="", alias="SUPABASE_DATABASE_URL")
     # Direct (port 5432) — migrations and integration tests only (session-level GUCs)
     supabase_direct_url: str = Field(default="", alias="SUPABASE_DIRECT_URL")
+    # Wave 1 S0 remediation (ADR 0006): review_iq_admin's own DSN, used ONLY by
+    # app/api/admin.py's _db_connect() when SERVICE_ROLE=admin. Distinct Secret Manager
+    # secret from supabase_database_url — never present in the public service's env.
+    admin_database_url: str = Field(default="", alias="ADMIN_DATABASE_URL")
 
 
 @lru_cache
