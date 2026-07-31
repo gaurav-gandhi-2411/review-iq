@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 
 from scripts.check_contrast import (
+    ContrastPair,
+    KnownFailingPair,
     check_contrast_pairs,
     check_known_failing_pairs,
     contrast_ratio,
@@ -38,13 +40,15 @@ class TestRealTokensFile:
     def test_current_tokens_json_passes_all_contrast_pairs(self) -> None:
         repo_root = Path(__file__).resolve().parent.parent.parent
         tokens = load_tokens(repo_root / "design" / "tokens.json")
-        failures = check_contrast_pairs(tokens["contrastPairs"])
+        contrast_pairs: list[ContrastPair] = tokens["contrastPairs"]  # type: ignore[assignment]
+        failures = check_contrast_pairs(contrast_pairs)
         assert failures == []
 
     def test_current_tokens_json_known_failing_pairs_still_fail(self) -> None:
         repo_root = Path(__file__).resolve().parent.parent.parent
         tokens = load_tokens(repo_root / "design" / "tokens.json")
-        failures = check_known_failing_pairs(tokens["knownFailingPairs"])
+        known_failing: list[KnownFailingPair] = tokens["knownFailingPairs"]  # type: ignore[assignment]
+        failures = check_known_failing_pairs(known_failing)
         assert failures == []
 
 
@@ -61,7 +65,8 @@ class TestCatchesARealViolation:
         path.write_text(json.dumps(fixture), encoding="utf-8")
 
         tokens = load_tokens(path)
-        failures = check_contrast_pairs(tokens["contrastPairs"])
+        contrast_pairs: list[ContrastPair] = tokens["contrastPairs"]  # type: ignore[assignment]
+        failures = check_contrast_pairs(contrast_pairs)
 
         assert len(failures) == 1
         assert "broken-pair" in failures[0]
@@ -86,7 +91,8 @@ class TestCatchesARealViolation:
         path.write_text(json.dumps(fixture), encoding="utf-8")
 
         tokens = load_tokens(path)
-        failures = check_known_failing_pairs(tokens["knownFailingPairs"])
+        known_failing: list[KnownFailingPair] = tokens["knownFailingPairs"]  # type: ignore[assignment]
+        failures = check_known_failing_pairs(known_failing)
 
         assert len(failures) >= 1
         assert any("stale-pair" in f for f in failures)
@@ -112,7 +118,8 @@ class TestCatchesARealViolation:
         path.write_text(json.dumps(fixture), encoding="utf-8")
 
         tokens = load_tokens(path)
-        failures = check_known_failing_pairs(tokens["knownFailingPairs"])
+        known_failing: list[KnownFailingPair] = tokens["knownFailingPairs"]  # type: ignore[assignment]
+        failures = check_known_failing_pairs(known_failing)
 
         assert len(failures) >= 1
         assert any("drifted-pair" in f for f in failures)
