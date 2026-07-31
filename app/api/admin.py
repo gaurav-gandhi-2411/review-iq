@@ -13,12 +13,13 @@ from typing import Literal
 
 import psycopg2
 import psycopg2.errors
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 
 from app.auth.admin import require_admin
 from app.auth.keygen import generate_api_key
 from app.core.config import get_settings
+from app.core.storage_pg import aggregate_extraction_costs_pg
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -69,6 +70,24 @@ class CreateKeyOut(BaseModel):
 
 class ListKeysOut(BaseModel):
     keys: list[KeyOut]
+
+
+class CostAggregateRow(BaseModel):
+    """Cost-per-1k-extractions for one (language, tier) bucket, platform-wide."""
+
+    language: str | None
+    tier: str
+    n: int
+    tokens_in: int
+    tokens_out: int
+    total_cost_usd: float
+    total_cost_inr: float
+    cost_usd_per_1k: float
+    cost_inr_per_1k: float
+
+
+class CostAggregateOut(BaseModel):
+    rows: list[CostAggregateRow]
 
 
 # ---------------------------------------------------------------------------
@@ -253,6 +272,16 @@ def _rotate_key_db(org_id: str, key_id: str) -> CreateKeyOut:
         conn.close()
 
 
+def _aggregate_costs_db(since: datetime | None) -> CostAggregateOut:
+    """Wrap aggregate_extraction_costs_pg into the admin response shape.
+
+    Platform-wide (not org-scoped) -- this is a COGS view for Wave 2 pricing
+    decisions, gated behind require_admin like every other route in this module.
+    """
+    rows = aggregate_extraction_costs_pg(since)
+    return CostAggregateOut(rows=[CostAggregateRow(**r) for r in rows])
+
+
 def _revoke_key_db(org_id: str, key_id: str) -> None:
     conn = _db_connect()
     conn.autocommit = False
@@ -337,3 +366,19 @@ async def revoke_api_key(
     _: None = Depends(require_admin),
 ) -> None:
     await asyncio.to_thread(_revoke_key_db, str(org_id), str(key_id))
+
+
+@router.get("/cost/aggregate")
+async def get_cost_aggregate(
+    since: datetime | None = Query(
+        default=None, description="Only include extractions recorded at or after this time"
+    ),
+    _: None = Depends(require_admin),
+) -> CostAggregateOut:
+    """Cost-per-1k-extractions grouped by (language, tier), platform-wide.
+
+    Feeds Wave 2 pricing (docs/specs/wave1-commercialization.md Section G) --
+    real recorded numbers only, never estimates. Empty ``rows`` means no cost
+    telemetry has been recorded yet (or none in the requested window).
+    """
+    return await asyncio.to_thread(_aggregate_costs_db, since)
