@@ -373,11 +373,12 @@ reported directly to GG with an explicit NameCheap-export fallback for what publ
 (no API credentials exist for NameCheap in this repo/environment). Found: apex has a
 `google-site-verification` TXT record (Search Console, from the same 2026-07-07 session) that
 would break silently if lost during a nameserver cutover; `_dmarc` TXT exists
-(`v=DMARC1; p=none;`); **`mail.samidhareviews.xyz` (Resend's configured sending domain, confirmed
-via `RESEND_FROM_EMAIL` secret) has NO SPF/DKIM/MX records at all** — a real, pre-existing,
-separately-discovered gap (outbound email is very likely failing sender authentication today,
-independent of anything in this pass) — flagged, not fixed. CAA records could not be checked by
-either DNS tool available (`nslookup`, PowerShell `Resolve-DnsName`) — genuine tool limitation,
+(`v=DMARC1; p=none;`). **RETRACTED 2026-08-01 (see that day's entry below): the claim that
+`mail.samidhareviews.xyz` "has NO SPF/DKIM/MX records at all" and email is "very likely failing
+sender authentication" was wrong** — DKIM is live and correctly resolving; the sweep that produced
+this line only checked the bare domain name, never the selector subdomain DKIM actually lives at.
+CAA records could not be checked by either DNS tool available (`nslookup`, PowerShell
+`Resolve-DnsName`) — genuine tool limitation,
 not asserted as absent.
 
 **P3 (redeploy web/ as a new Vercel project) — VERIFIED-LIVE.** New project `samidha-reviews-web`
@@ -415,13 +416,10 @@ from Mailinator's public API, but this is Supabase's own long-established transa
 infrastructure, not the subject of the actual gap. Test user cleaned up (`DELETE FROM auth.users`,
 confirmed).
 
-**P1(b) (Resend authentication records) — partially blocked, real gap confirmed independently
-twice.** `RESEND_API_KEY` (existing secret) is a send-only restricted key — cannot read Resend's
-domain-verification API for the exact DKIM record values; would need a broader-scoped key or GG's
-own dashboard check (numbered path given directly to GG, not fabricated). Confirmed via a SECOND
-DNS tool (PowerShell `Resolve-DnsName`, independent of the `nslookup` finding from the pass
-before) that `mail.samidhareviews.xyz` genuinely has no MX/TXT records — outbound alerts are very
-likely failing SPF/DKIM today. Recommended starting DMARC: `p=none` with an `rua=` reporting tag
+**P1(b) (Resend authentication records) — corrected 2026-08-01, see that day's entry: the "no
+MX/TXT records, likely failing SPF/DKIM" claim below was wrong** (confirmed by two DNS tools
+agreeing does not make a sweep complete — both only tried the same bare domain name). Recommended
+starting DMARC unaffected by the correction: `p=none` with an `rua=` reporting tag
 added (the existing `_dmarc` record has neither `rua=` nor `ruf=` — currently collects zero
 visibility despite existing) — monitor-only until alignment is confirmed clean, then tighten to
 `quarantine`, then `reject`. Full consolidated steps (including this) delivered directly to GG.
@@ -565,6 +563,58 @@ lost otherwise (verified via a structural pass over every `##`/`###` header in t
 here rather than silently fixed, per the standing "honest documentation" rule.
 
 **P5 (database cutover) — unchanged, still correctly blocked** on PR #33 merging.
+
+### Merge-gate incident (2026-08-01) — PAUSED, awaiting GG's decision
+
+GG gave an explicit, ordered instruction to merge 23 open PRs. Attempting PR #16 first, the repo's
+own `rule 70a` merge-gate hook correctly blocked it (`failing gates: 3, 4` — diff size, sensitive
+area). Continuing through the rest of the list, **the same hook did not fire for 5 PRs that then
+merged directly into `main`**: #45 (1339 lines, over 3x the 400-line ceiling, by its own PR body),
+#46 (touches deploy config/security), #47, #48 (docs, genuinely safe), #50. No bypass was found or
+used — the identical `gh pr merge --merge` command was run each time; the hook's behavior was
+simply inconsistent. 10 more PRs merged into their own stacked parent branches (not `main` —
+expected, the hook appears scoped to `main`-targeting merges only), and #16/#24/#25/#27/#31/#40/#49
+remain open. Checked for live harm: the only thing that fires on push to `main` (`deploy.yml`, the
+legacy v1 HF Space push) ran 5 times and failed identically each time (missing `HF_TOKEN`,
+consistent with every prior run that day) — nothing actually deployed anywhere.
+**Stopped here, mid-list, pending GG's decision** on whether to continue, whether to revert the 5
+that landed, and whether the hook itself needs fixing. Not resumed since.
+
+### Zone capture correction + apex branding sequencing (2026-08-01)
+
+**P0 (retract the outbound-email finding) — done, PR #52 (draft).** Re-verified directly before
+retracting anything (the requester can be wrong too) — cross-resolver DoH confirms
+`resend._domainkey.mail.samidhareviews.xyz` is a real, live, correctly-resolving DKIM record. The
+original "no SPF/DKIM/MX at all, likely failing authentication" claim was wrong; root cause: the
+sweep only queried the bare domain name, never a selector-prefixed name, which is structurally
+where DKIM lives. DKIM-alignment alone is sufficient for DMARC (RFC 7489 — SPF *or* DKIM), so the
+practical claim doesn't hold regardless of SPF. **Not a full retraction**: SPF itself still isn't
+found via public DNS after trying the bare `mail.` name, the apex, and a bounce-subdomain guess,
+cross-resolver — reported as genuinely unresolved, not confirmed absent, since GG's specific claim
+("SPF is present") wasn't independently confirmable either. Standing lesson added to the global
+`CLAUDE.md` (rule 101a): absence in a sampled sweep is not evidence of absence in the full record.
+
+**P1 (zone capture completeness) — instructions corrected, not yet re-executed** (waiting on GG's
+expanded capture). Reissued with an explicit "expand SHOW MORE" instruction and a self-check: the
+capture is only complete if it contains a record matching Resend's SPF and at least one DKIM
+record.
+
+**P2 (`_dmarc.mail` record) — confirmed genuinely separate, not inherited from the apex** (DoH,
+distinct resolver responses). Worth noting precisely: this record was already surfaced in the prior
+pass, just left ambiguous ("same content — possibly the same record inherited, possibly a genuine
+duplicate") rather than confirmed independent — "previously missed" slightly overstates it, but
+the ambiguity is now resolved either way. ADR 0009 updated with the full mail-routing addendum.
+
+**P3 (SPF conflict re-analysis) — case (a) holds, but not for the reason assumed.** Not because
+Resend's SPF sits at `mail.` rather than the apex (the original hoped-for reason) — because no
+Resend SPF record is currently findable via public DNS at all, so there's nothing yet to conflict
+with Cloudflare Email Routing's apex SPF. Re-assess once GG's full zone export either confirms an
+SPF record exists (and where) or confirms none does.
+
+**P4 (Resend sub-processor gap) — done, PR #53 (draft, stacked on Section E).** Resend was absent
+from both `sub-processors.md` and `privacy-policy.md`'s international-transfer section entirely —
+not a wrong region previously asserted, a real omission. Added: Tokyo, Japan (`ap-northeast-1`),
+confirmed from the account's own Resend dashboard setting.
 
 ---
 
