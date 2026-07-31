@@ -398,6 +398,38 @@ def list_orgs_with_dated_extractions_pg() -> list[str]:
         conn.close()
 
 
+def list_known_brand_names_pg() -> list[str]:
+    """Return distinct brand/product names ever recorded in `competitor_mentions` across
+    all orgs.
+
+    Feeds `app.core.sanitize`'s brand gazetteer (vetoes spaCy NER misclassifying a brand
+    name as PERSON before redaction -- see sanitize.py's `_STATIC_BRAND_GAZETTEER` comment
+    and docs/architecture/adr/0005-brand-gazetteer-vetoes-person-ner.md).
+
+    Cross-org query -- connects via _db_connect() and does NOT call _set_tenant, same
+    intentional service-role bypass pattern as list_orgs_with_dated_extractions_pg: a
+    brand name is not tenant-sensitive data -- it is not PII and not a competitive secret,
+    it is by definition a name this product has already correctly extracted once and would
+    extract again for any org -- so there is no single org_id to scope this query to. Do
+    not "fix" this by adding _set_tenant.
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT DISTINCT jsonb_array_elements_text(competitor_mentions) "
+            "FROM public.extractions WHERE competitor_mentions IS NOT NULL"
+        )
+        rows = cur.fetchall()
+        conn.commit()
+        return [str(r[0]) for r in rows]
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
 def aggregate_extractions_pg(org_id: str) -> dict[str, Any]:
     """Return aggregated insights for this org."""
     conn = _db_connect()

@@ -197,6 +197,208 @@ def _redact_order_ids(text: str, rmap: RedactionMap) -> str:
     return text
 
 
+# ---------------------------------------------------------------------------
+# Brand / product gazetteer — PERSON-vs-brand disambiguation
+# ---------------------------------------------------------------------------
+# spaCy's en_core_web_sm NER already correctly filters to PERSON-only spans (see
+# _redact_names_ner below) -- ORG/PRODUCT entity types are never touched. The actual bug
+# this gazetteer closes: on short, informal review text the model frequently
+# MISCLASSIFIES brand/product names as PERSON, reproduced directly:
+#   "...if I had to choose again, I would go with a Dyson instead." -> "...a [NAME_1] instead."
+#   "Compared to my old Shark vacuum..." -> "Compared to my old [NAME_1] vacuum..."
+#   "...better than my old Bose ones." -> "...better than my old [NAME_1] ones."
+# A PERSON span whose text matches a known brand name in this gazetteer is left
+# unredacted (treated as if NER hadn't flagged it). See
+# docs/architecture/adr/0005-brand-gazetteer-vetoes-person-ner.md for the full rationale:
+# `competitor_mentions` is a contracted schema field (app.core.schemas.ReviewExtraction),
+# so redacting a brand name is a functional regression, not merely an accuracy nuance.
+#
+# Two sources, combined case-insensitively by _get_brand_gazetteer():
+#   1. This static list -- a starting set of common consumer brands relevant to Indian
+#      e-commerce reviews (electronics, appliances, personal care, mobile, marketplaces).
+#      Deliberately NOT exhaustive -- there is no per-org product-catalog feature in this
+#      codebase today; this constant is the clean extension point for one (a future
+#      per-org catalog would simply feed another source into _get_brand_gazetteer()).
+#   2. Real historical `competitor_mentions` values already stored in production
+#      extractions (app.core.storage_pg.list_known_brand_names_pg) -- every brand the
+#      product has already correctly extracted once becomes future gazetteer coverage
+#      with zero manual curation. This is the intended organic growth mechanism; the
+#      static list only needs to catch the common case on day one.
+_STATIC_BRAND_GAZETTEER: frozenset[str] = frozenset(
+    name.lower()
+    for name in [
+        # Vacuum / home appliance
+        "Dyson",
+        "Shark",
+        "Roomba",
+        "iRobot",
+        "Eureka Forbes",
+        "Kent",
+        "Prestige",
+        "Bajaj",
+        "Havells",
+        "Philips",
+        "Whirlpool",
+        "LG",
+        "Samsung",
+        "Bosch",
+        "Panasonic",
+        "Usha",
+        "Crompton",
+        "Orient",
+        "Voltas",
+        "Godrej",
+        "Hitachi",
+        "Daikin",
+        "Blue Star",
+        "Symphony",
+        "Butterfly",
+        "Pigeon",
+        "Morphy Richards",
+        "Inalsa",
+        "Wonderchef",
+        "Preethi",
+        "Sujata",
+        "Maharaja Whiteline",
+        "IFB",
+        "Onida",
+        "Videocon",
+        "Kenstar",
+        "Kelvinator",
+        "Milton",
+        "Cello",
+        "Borosil",
+        "Hawkins",
+        "Vinod",
+        # Audio
+        "Bose",
+        "JBL",
+        "Sony",
+        "Boat",
+        "boAt",
+        "Noise",
+        "Skullcandy",
+        "Sennheiser",
+        "Beats",
+        "Anker",
+        "Soundcore",
+        "Zebronics",
+        "Portronics",
+        "pTron",
+        "Mivi",
+        "Ubon",
+        "Marshall",
+        "Harman Kardon",
+        # Mobile / electronics
+        "Apple",
+        "OnePlus",
+        "Xiaomi",
+        "Realme",
+        "Vivo",
+        "Oppo",
+        "Nothing",
+        "Google",
+        "Motorola",
+        "Nokia",
+        "Asus",
+        "Lenovo",
+        "Redmi",
+        "Poco",
+        "iQOO",
+        "Infinix",
+        "Micromax",
+        "Lava",
+        "Honor",
+        "Huawei",
+        "HP",
+        "Dell",
+        "Acer",
+        "MSI",
+        "Garmin",
+        "Fitbit",
+        "Fossil",
+        "Amazfit",
+        # Marketplaces
+        "Amazon",
+        "Flipkart",
+        "Myntra",
+        "Meesho",
+        "Snapdeal",
+        "Ajio",
+        "Nykaa",
+        "BigBasket",
+        "Tata Cliq",
+        "ShopClues",
+        "JioMart",
+        "Paytm Mall",
+        # Personal care
+        "Nivea",
+        "Dove",
+        "Lakme",
+        "LOreal",
+        "Maybelline",
+        "Gillette",
+        "Colgate",
+        "Patanjali",
+        "Himalaya",
+        "Dabur",
+        "Mamaearth",
+        "Biotique",
+        "Ponds",
+        "Garnier",
+        "Pantene",
+        "Tresemme",
+        "Head Shoulders",
+        "Sunsilk",
+        "Clinic Plus",
+        "Vaseline",
+        "Cetaphil",
+        "Neutrogena",
+        "WOW Skin Science",
+        # Fashion / footwear / watches
+        "Nike",
+        "Adidas",
+        "Puma",
+        "Reebok",
+        "Bata",
+        "Woodland",
+        "Skechers",
+        "Fastrack",
+        "Titan",
+        "Casio",
+    ]
+)
+
+
+@lru_cache(maxsize=1)
+def _get_brand_gazetteer() -> frozenset[str]:
+    """Combined case-insensitive brand/product-name lookup used by `_redact_names_ner`
+    to veto a PERSON-tagged NER span that is actually a known brand -- see the module
+    comment above `_STATIC_BRAND_GAZETTEER` for the full rationale and the reproduced
+    examples this closes.
+
+    Process-lifetime cache (`@lru_cache(maxsize=1)`, mirroring `_get_ner_pipeline`'s exact
+    pattern below): the DB-sourced half of the gazetteer is loaded once per process, not
+    live-updated. A brand mentioned for the first time after this process started is
+    simply not vetoed until the next deploy/restart -- an accepted tradeoff, since brand
+    names don't change fast.
+
+    Degrades gracefully to the static list alone if the DB call fails (no DB configured,
+    as in most unit-test contexts, or a live connectivity issue) -- mirrors
+    `_get_ner_pipeline`'s own graceful-degradation contract: this must never crash
+    extraction over a gazetteer refresh failure.
+    """
+    gazetteer = set(_STATIC_BRAND_GAZETTEER)
+    try:
+        from app.core.storage_pg import list_known_brand_names_pg
+
+        db_names = list_known_brand_names_pg()
+        gazetteer.update(name.strip().lower() for name in db_names if name.strip())
+    except Exception as exc:  # noqa: BLE001 — must never crash extraction over gazetteer load
+        log.warning("sanitize.brand_gazetteer_db_load_failed", error=str(exc))
+    return frozenset(gazetteer)
+
+
 @lru_cache(maxsize=1)
 def _get_ner_pipeline() -> Any | None:
     """Load the spaCy small-English NER pipeline once per process (lazy singleton —
@@ -226,6 +428,12 @@ def _get_ner_pipeline() -> Any | None:
 def _redact_names_ner(text: str, rmap: RedactionMap) -> str:
     """Redact PERSON-tagged spans using spaCy NER — the primary name-detection mechanism.
 
+    A PERSON span is first checked against `_get_brand_gazetteer()`: a gazetteer hit means
+    the span is a known brand/product name that the NER model misclassified as PERSON, so
+    it is left unredacted entirely (not added to the RedactionMap) -- see
+    `_STATIC_BRAND_GAZETTEER`'s module comment for the reproduced misclassification cases
+    and the rationale.
+
     See `_redact_name_intro` for the narrower self-introduction regex that runs after
     this as a fallback for whatever NER misses.
     """
@@ -233,7 +441,12 @@ def _redact_names_ner(text: str, rmap: RedactionMap) -> str:
     if nlp is None:
         return text
     doc = nlp(text)
-    person_spans = [(e.start_char, e.end_char, e.text) for e in doc.ents if e.label_ == "PERSON"]
+    gazetteer = _get_brand_gazetteer()
+    person_spans = [
+        (e.start_char, e.end_char, e.text)
+        for e in doc.ents
+        if e.label_ == "PERSON" and e.text.strip().lower() not in gazetteer
+    ]
     # Replace back-to-front so earlier character offsets stay valid.
     for start, end, original in sorted(person_spans, key=lambda s: s[0], reverse=True):
         token = rmap.add("name", original)
