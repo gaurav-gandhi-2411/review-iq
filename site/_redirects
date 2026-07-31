@@ -1,0 +1,14 @@
+# Cloudflare Pages redirect rules for Samidha Reviews.
+#
+# Once samidhareviews.xyz's DNS is on Cloudflare and the apex is added as a
+# custom domain on this Pages project (see the Wave 1 Section C PR body for
+# exact console steps), this sends anyone who still has the old
+# review-iq-demo.pages.dev URL bookmarked to the canonical domain instead of
+# serving a duplicate copy of the same site at two hostnames (spec gate #2).
+#
+# Cloudflare Pages _redirects supports an absolute URL (with hostname) on the
+# source side specifically for this pages.dev -> custom-domain case; a
+# same-host rule would not apply here since pages.dev isn't a zone this
+# account controls. Needs live verification once the domain mapping is done
+# (rule 65a: unverified until then).
+https://review-iq-demo.pages.dev/*  https://samidhareviews.xyz/:splat  301
