@@ -5,8 +5,9 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 
+from app.core.auth import require_api_key
 from app.core.schemas import Sentiment, Urgency
 from app.core.storage import get_insights, query_extractions
 
@@ -24,6 +25,7 @@ async def list_reviews(
     until: datetime | None = Query(None, description="ISO8601 datetime — latest created_at"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
+    _key: str = Depends(require_api_key),
 ) -> dict[str, Any]:
     """Query stored review extractions with optional filters.
 
@@ -44,7 +46,7 @@ async def list_reviews(
 
 
 @router.get("/insights")
-async def insights() -> dict[str, Any]:
+async def insights(_key: str = Depends(require_api_key)) -> dict[str, Any]:
     """Aggregated analytics: sentiment breakdown, top topics, competitor mentions, urgency volume.
 
     Data spans all stored extractions.
