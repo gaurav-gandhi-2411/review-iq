@@ -128,14 +128,19 @@ Wave 1 feature branches and all 20 version tags. Not rewriting history (the key 
 rewrite would disrupt every clone/fork of this public repo for no live-security benefit) —
 flagging that call as available if GG wants it anyway.
 
-**P1 (NER redaction bug) — fix dispatched, in progress.** Confirmed the bug is exactly what was
-suspected: `_redact_names_ner()` already correctly filters to `PERSON`-only (ORG/PRODUCT were
-never touched), but spaCy's small model misclassifies brand names as PERSON on short review
-text. Fix in progress: a brand gazetteer (static list + live `competitor_mentions` history
-already has 10 real brands recorded, including the exact Dyson/Shark/Bose that were
-misredacted) checked before masking any PERSON candidate; ADR recording the "entity classes
-must be disjoint from the product schema" rationale; re-measurement of the accuracy delta
-against the FIXED redactor only (not the broken one).
+**P1 (NER redaction bug) — CLOSED.** Confirmed the bug was exactly what was suspected:
+`_redact_names_ner()` already correctly filtered to `PERSON`-only (ORG/PRODUCT were never
+touched), but spaCy's small model misclassifies brand names as PERSON on short review text.
+Fixed with a brand gazetteer (132-entry static list + live `competitor_mentions` history, 10
+real brands already recorded including the exact Dyson/Shark/Bose that were misredacted) — a
+gazetteer hit vetoes redaction of that span regardless of spaCy's classification. ADR 0005
+(on this branch) records the "entity classes must be disjoint from the product schema"
+rationale. **Re-measured against the FIXED redactor only, 12 live Groq calls (~$0.001):
+44/49 fixtures paired (up from 30/49), paired mean delta (ON − OFF) = −0.78pp, 95% CI
+[−2.16pp, +0.35pp] — under the 1pp gate.** One honestly-documented residual gap: a
+fictional eval-fixture brand name with no real-world presence still misclassifies (can't
+enter a real gazetteer without fabricating an entry) — tested and designed to fail loudly
+once a real per-org catalog would close it, not silently accepted.
 
 **P2 (BYPASSRLS reachability) — S0 finding, reported not fixed.** Traced in code, not
 inferred: `review_iq_app` (rolbypassrls=true) IS reachable from 3 live, request-serving paths
