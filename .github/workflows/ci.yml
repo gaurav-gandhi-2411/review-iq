@@ -50,6 +50,12 @@ jobs:
       - name: Link health (placeholder links + demo-data fixture)
         run: uv run python scripts/check_link_health.py
 
+      # Visual-identity gate (Wave 1 Section D) -- fails if a brand colour pair in
+      # design/tokens.json drops below its documented WCAG AA minRatio, or if a
+      # documented known-failing pair silently stops failing (stale docs either way).
+      - name: WCAG AA contrast check (design tokens)
+        run: uv run python scripts/check_contrast.py
+
   pip-audit:
     runs-on: ubuntu-latest
     steps:
