@@ -12,7 +12,13 @@ instead of in front of a customer.
 What this checks:
 1. Every tracked `site/*.html`, `site/docs/*.html`, `README.md`, and `docs/**/*.md` file for
    a literal bare `href="#"` (a true placeholder). Legitimate in-page anchors like
-   `href="#gallery"` or `href="#live"` are NOT flagged -- only an empty fragment.
+   `href="#gallery"` or `href="#live"` are NOT flagged -- only an empty fragment. In `.md`
+   files, occurrences inside inline code spans (`` `href="#"` ``) or fenced code blocks are
+   also not flagged -- a spec/doc describing the defect in backtick-quoted prose (e.g.
+   docs/specs/wave1-commercialization.md's own D3 writeup and gate text) is not a live
+   anchor tag, and treating it as one is a false positive discovered when this scanner first
+   saw that file in a rebase. `.html` files get no such exemption: a real `href="#"` there is
+   always a live broken link regardless of surrounding markup.
 2. `site/demo-data.json` exists on disk and parses as valid UTF-8 JSON.
 
 LIMITATION -- read before trusting this check: this is a static, offline check. It does not
@@ -36,6 +42,33 @@ DEMO_DATA_PATH = REPO_ROOT / "site" / "demo-data.json"
 # `href="#gallery"` etc: the closing quote must immediately follow the `#`.
 BARE_HASH_RE = re.compile(r"""href\s*=\s*(["'])#\1""")
 
+# Inline code span: backtick-delimited text on a single line, e.g. `href="#"`.
+_INLINE_CODE_SPAN_RE = re.compile(r"`[^`\n]*`")
+
+FENCE_RE = re.compile(r"^\s*```")
+
+
+def _strip_markdown_code(text: str) -> str:
+    """Blank out fenced code blocks and inline code spans in Markdown source.
+
+    A spec/doc can legitimately *describe* `href="#"` in backtick-quoted prose without
+    that being a live anchor tag -- only relevant for .md files, never for .html (an
+    `href="#"` inside an HTML file is always a real, live attribute).
+    """
+    lines = text.splitlines(keepends=True)
+    out: list[str] = []
+    in_fence = False
+    for line in lines:
+        if FENCE_RE.match(line):
+            in_fence = not in_fence
+            out.append("\n")
+            continue
+        if in_fence:
+            out.append("\n")
+            continue
+        out.append(_INLINE_CODE_SPAN_RE.sub(lambda m: " " * len(m.group(0)), line))
+    return "".join(out)
+
 
 def _tracked_link_health_files() -> list[Path]:
     """Return tracked files this check scans, via `git ls-files`."""
@@ -53,13 +86,18 @@ def find_bare_hash_links(path: Path) -> list[tuple[int, str]]:
     """Return [(1-based line number, line text), ...] for bare `href="#"` placeholder links.
 
     Only flags a true empty-fragment href (`href="#"` / `href='#'`). An in-page anchor
-    target such as `href="#gallery"` is a legitimate link and is never flagged.
+    target such as `href="#gallery"` is a legitimate link and is never flagged. For `.md`
+    files, occurrences inside inline code spans or fenced code blocks are also not flagged
+    (see module docstring) -- `.html` files are scanned as-is, no exemption.
     """
     text = path.read_text(encoding="utf-8")
+    scan_text = _strip_markdown_code(text) if path.suffix == ".md" else text
+    original_lines = text.splitlines()
+    scan_lines = scan_text.splitlines()
     violations: list[tuple[int, str]] = []
-    for i, line in enumerate(text.splitlines(), start=1):
-        if BARE_HASH_RE.search(line):
-            violations.append((i, line.strip()))
+    for i, scan_line in enumerate(scan_lines, start=1):
+        if BARE_HASH_RE.search(scan_line):
+            violations.append((i, original_lines[i - 1].strip()))
     return violations
 
 
