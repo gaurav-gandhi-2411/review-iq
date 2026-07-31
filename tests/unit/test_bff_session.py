@@ -322,10 +322,23 @@ def test_bff_no_riq_live_in_module() -> None:
     assert "riq_live_" not in session_path.read_text()
 
 
-def test_bff_no_key_hash_in_module() -> None:
-    """key_hash must not appear in session.py or bff router (never retrieved/used)."""
-    for p in [pathlib.Path("app/api/bff/router.py"), pathlib.Path("app/auth/session.py")]:
-        assert "key_hash" not in p.read_text(), f"key_hash found in {p}"
+def test_bff_no_key_hash_leaked() -> None:
+    """key_hash must never appear in session.py (no key handling there at all).
+
+    In the bff router, key_hash may appear ONLY as part of the key-creation INSERT
+    (POST /bff/keys, added 2026-07-31 for self-serve key management) -- it must never
+    be read back (SELECT) or echoed as a response field. Loosened from a blanket
+    'key_hash not in file' ban (which predates self-serve key creation existing here)
+    to this precise write-only invariant.
+    """
+    assert "key_hash" not in pathlib.Path("app/auth/session.py").read_text()
+
+    router_src = pathlib.Path("app/api/bff/router.py").read_text()
+    lines_with_key_hash = [ln for ln in router_src.splitlines() if "key_hash" in ln]
+    assert lines_with_key_hash, "expected key_hash INSERT usage in key-creation helper"
+    for ln in lines_with_key_hash:
+        assert "SELECT" not in ln, f"key_hash must never be read back: {ln!r}"
+        assert '"key_hash"' not in ln, f"key_hash must never be a response field: {ln!r}"
 
 
 @pytest.mark.asyncio
