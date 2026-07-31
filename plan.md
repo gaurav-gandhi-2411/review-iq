@@ -257,6 +257,39 @@ removed by some action outside anything recorded in this repo — most likely a 
 during or after the Section C console steps, cause unknown from repo-internal evidence alone.**
 Per instruction, not redeploying until GG confirms what happened.
 
+**P1 correction (same day, later pass) — the above was wrong to call it "deleted with cause
+unknown"; better evidence exists and was found by querying Vercel's and Firebase's own APIs
+directly, not memory or repo text.** `vercel domains inspect app.samidhareviews.xyz` (an
+authoritative, timestamped Vercel control-plane record, not a memory note) shows
+`samidhareviews.xyz` was added to this Vercel account on **07 July 2026 16:08:03** — matching the
+same day as a separately-discovered, independently authoritative record: Google's Firebase
+Hosting API shows `api.samidhareviews.xyz` was attached via a Firebase Hosting rewrite-to-Cloud-Run
+(**not** the native `gcloud run domain-mappings` PR #19 describes — a genuinely different
+mechanism PR #19's own recon missed), deployed by `gaurav.gandhi2411@gmail.com`, reaching
+`DOMAIN_ACTIVE`/`CERT_ACTIVE` at **07 July 2026 12:14:15 UTC**. Both are hard, cryptographically-
+backed, cloud-provider-timestamped facts, not recollection — and they directly contradict a
+separate claim (from outside this repo) that no Samidha custom domain resolved on that date: this
+one demonstrably did, and still does (re-verified live today).
+For `app.`: the DNS-level record (a direct **A** record, `76.76.21.21`, Vercel's anycast IP — not
+a CNAME, confirmed by contrasting an explicit CNAME query, which returns nothing, against a plain
+query, which resolves) still exists and still resolves today. Vercel's domain **object** for the
+whole zone also still exists in the account. What's gone is specifically the **project** that once
+claimed that domain (`review-iq-web` — also corroborated by an untracked, pre-existing file in
+this working directory, `review-iq-product-overview.md`, which names
+`review-iq-web-umber.vercel.app` directly as "the live app," independent of any memory system).
+Vercel's own nameserver check on the domain object shows a standing mismatch (`✗`: intended
+`ns1/ns2.vercel-dns.com`, actual still NameCheap's `dns1/dns2.registrar-servers.com`) — the
+account was set up expecting full nameserver delegation to Vercel, which was never completed; the
+subdomain-level A record was added directly on NameCheap's own DNS instead, entirely independent
+of that unfinished delegation.
+**Corrected framing: the project existed, genuinely worked (at its own `.vercel.app` URL, evidenced
+independently of memory), and the custom-domain attachment was genuinely started (DNS record
+live since 2026-07-07) — what's missing is not "was this ever attempted," it's that the specific
+Vercel project which once claimed the domain no longer exists, while the DNS record and the
+domain object both survive it.** This is closer to the original "a project was deleted" framing
+than to "the attachment was never completed" — corrected here with authoritative evidence instead
+of a memory note, per instruction.
+
 **P2 (extend Section F's probe to web surfaces) — VERIFIED-LIVE (probe logic), PR #47 (draft).**
 `scripts/probe_web_surfaces.py` + `.github/workflows/web-surface-probe.yml`, mirroring
 `probe_failover.py`/`failover-probe.yml`'s nightly-cron + optional-Slack-notify convention. Checks
@@ -273,6 +306,42 @@ started, explicitly gated on the stack merging and deploying first, per instruct
 P0 is merge-ready (draft PR #46, VERIFIED-LIVE). P1 is blocked on GG's answer before any redeploy
 can happen. P2 is merge-ready (draft PR #47). PR #33 (the migration itself) is unchanged, still
 holding its own 9-step apply sequence. Waiting on GG per instruction — not proceeding further.
+
+### Decouple P3, unblock DNS (2026-07-31, later same day)
+
+**P0 (correct the P1 record) — done, see the P1-correction entry above.**
+
+**P1 (re-issue console steps as one consolidated block) — done, delivered directly to GG, not
+duplicated here** (per instruction: one block, no cross-referencing other PR bodies). Root cause
+confirmed by direct DNS query: nameservers are still NameCheap's default
+(`dns1/dns2.registrar-servers.com`) — the Cloudflare migration PR #19 recommends was genuinely
+never executed; Section C is complete in code, unexecuted in the world, exactly as instructed to
+assume. Precise current record inventory (queried directly, not assumed): apex has no A/AAAA at
+all; `api` is a CNAME to `review-iq-prod.web.app` (Firebase Hosting, working, since 2026-07-07 —
+no action needed, corrects PR #19's assumption that this still needs a native Cloud Run domain
+mapping); `app` is a direct A record to `76.76.21.21` (Vercel, DNS-side already correct, blocked
+only on which Vercel project claims it — see P1 correction above and P3 below).
+
+**P2 (DB-side cutover) — readiness reported, not executed** (explicitly does not depend on the
+Vercel question, per instruction). The exact two currently-red tests, confirmed from PR #33's own
+body: `test_app_role_without_set_tenant_sees_no_orgs` and
+`test_admin_and_webhook_serving_paths_do_not_use_a_bypassrls_role` (both in
+`tests/integration/test_adversarial_cross_tenant.py`), both correctly failing today against live,
+unmigrated production (`review_iq_app.rolbypassrls` re-confirmed `true` this same session).
+**Reconciliation note for whoever executes this**: today's P0 admin-lockdown work (PR #46)
+already partially completed PR #33's steps 3 and 5 — `review-iq-admin` already exists and is
+already `--no-allow-unauthenticated`, but wired to reuse the existing `supabase-database-url`
+secret rather than a dedicated `review_iq_admin`-scoped credential. At cutover, step 4 (create
+`admin-database-url` secret) still needs to happen, then the existing `review-iq-admin` service's
+`ADMIN_DATABASE_URL` mapping needs `--update-secrets` (not a from-scratch redeploy) to point at
+it, before step 8's `ALTER ROLE review_iq_app NOBYPASSRLS`. PR #33 itself still needs to merge —
+the webhook SECURITY DEFINER rewiring (the second of the three required fixes) is not live yet;
+only the routing/config third was cherry-picked into PR #46 today.
+
+**P3 (dashboard redeploy) — held**, per instruction, pending GG's answer on the Vercel project
+question above. When unblocked: deploy from `web/`'s current repo source only, never by
+attempting to restore whatever `review-iq-web` used to contain — the repo is the source of truth,
+not a guess at the prior project's exact configuration.
 
 ---
 
