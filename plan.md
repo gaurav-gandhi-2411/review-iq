@@ -68,10 +68,10 @@ Full 12-gate exit criteria in spec §5. Tracked here per rule 118 (checkpoint on
 | B — Kill hand-labeling | **done, PR #17 (draft, stacked on #16)** | Built and independently re-verified: `eval/agreement.py` (Krippendorff/Fleiss, textbook-verified), `eval/power_analysis.py` (MDE), `eval/consensus/` package (2-judge panel after calibration dropped `allam-2-7b`; `llama-3.3-70b-versatile` excluded by design as a self-judging conflict), 132 fixtures total with real consensus ground truth (not 300 — real corpus yield + Groq rate-limit wall, documented honestly), ADR 0002. **INCIDENT (resolved):** recording cassettes for the 83 new fixtures exhausted production's `GROQ_API_KEY` daily TPD budget for `llama-3.3-70b-versatile` (99,770/100,000) after 43/132 — a real quota-consumption event I ran without recognizing it as the exact escalation case my own standing rules name. No customer-impact evidence found in Cloud Run logs, not exhaustively proven either. With GG's explicit direction, filled the gap via OpenRouter (83/83, Gemini configured as unused fallback) — ADR 0003. **Then caught two more bugs in my own recovery, during independent verification, before either executor did:** (1) my own WIP commit had captured a broken partial-run snapshot (27.3%) instead of the true 83.8%/49-fixture figure — restored from the last known-good commit; (2) the 83 substitute-provider fixtures sat inside `eval/fixtures/`, which `eval.runner` scans fresh on every real CI run (not a static check) — would have silently regenerated a 74.6%/FAIL result on the next push regardless of what was committed. Moved to `eval/fixtures/_pending_groq_cassette/` (outside the runner's scan), restoring the clean 49-fixture/83.8% CI gate, verified reproducible twice. This PR adds 132 fixtures' worth of real ground truth to the repo but changes nothing about what currently gates CI. |
 | C — Domain consolidation | **code done, PR #19 (draft, stacked on #17)** | Closed a real live bug found during premise-verification: v1 HF Space's `GET /reviews`/`GET /insights` were unauthenticated (confirmed via direct curl) — now require the same API key as every other v1 endpoint; `deploy.yml` no longer auto-pushes to the Space. Fixed 3 of 4 demo-page defects (D2 leaked dev instruction, D3 dead footer link, D7 stale known-gaps banner); D1/D4 did **not** reproduce when checked live today — not fabricated a fix, added a build-time regression guard instead. New link-health CI gate. Draft not auto-merged: touches auth + deploy config, rule-70a gate 4 fails regardless of size. Registrar confirmed via RDAP = NameCheap; DNS genuinely blank. Numbered escalation steps for Cloudflare/NameCheap/Vercel/Search-Console/HF in the PR body — none done yet, needs GG. |
 | D — Logo/identity | **done, PR #21 (draft, stacked on #19)** | Replaced the generic speech-bubble-with-star mark (byte-identical in 3 places) with a "samidha" concept: crossed sticks converging into one flame. First attempt (thin radiating sparks) collapsed into a generic AI-sparkle glyph at favicon scale — rejected, rebuilt as solid crossed-log shapes before shipping. Full WCAG-AA-verified token set (`design/tokens.json`) with 2 documented failing pairs (ember+white text, ember-on-paper links) fixed via usage rules, not silently avoided; `scripts/check_contrast.py` is a real CI gate. Draft not auto-merged: 499 non-binary lines, over the reviewable guideline, no generated-artifact carve-out applies. HF model card and full page re-theming explicitly deferred (no card exists yet; re-theming is its own reviewable pass). |
-| E — Security + legal | in progress | See "E kickoff" note below. |
-| F — Reliability | not started | |
-| G — Cost telemetry | in progress (parallel to E) | See "G/H kickoff" note below. |
-| H — Corpus mining | in progress (parallel to E) | Substantial reusable groundwork in `benchmark/vernacular_v2/` — extend, don't rebuild. 2 unresolved-license Kaggle sources need a decision. |
+| E — Security + legal | **done, PR #27 (draft, branched from main)** | Legal docs (6 files + REQUIRES-LEGAL-REVIEW banners + real `DELETE /account` documented, not the spec's non-existent `DELETE /v2/data`). CVE gate live (2 real HIGH CVEs found+fixed — pyasn1, pyjwt — blocking gate now enforced, all Actions SHA-pinned). Rate limiting confirmed already shipped (audit finding #10). Adversarial cross-tenant suite: exact 4 spec vectors + RLS-disable proof (MVCC-safe technique, verified on a scratch table before ever touching real tables), 27 integration tests green. **BYPASSRLS re-verified — exists, but is an intentional, already-documented 2026-07-26 decision** (matches Supabase's `service_role` pattern); empirically confirmed `_set_tenant()` genuinely re-enforces RLS despite it; storage_pg.py audited (20/21 functions correctly scope, the 1 exception already justified); added a static-audit regression test. Secret scan (gitleaks+trufflehog): 1 real finding — a "public demo key" was live in README in this public repo for ~23 days (2026-05-15 to 2026-06-07), since removed from current code but still in git history — reported, not rotated, per standing instruction. **PII redaction rebuilt as reversible (unique per-occurrence tokens, in-memory rehydration) but the accuracy-delta gate hit its STOP condition and needs a GG decision**: 19/49 eval fixtures unmeasurable without live Groq calls (none available this session), and the measurable evidence shows the NER name-detector redacting competitor/brand names (Dyson, Shark, Bose, NovaPod) as PERSON entities — reproduced independently, not just trusted. Redaction ships ON by default (security requirement stands independent of this), but 3 options are laid out in the PR for the accuracy-mechanism question. Name-redaction recall measured honestly: 55.6% [41.2%, 69.1%] (overall 83.5% [75.8%, 89.0%], n=121). |
+| F — Reliability | **done, PR #31 (draft)** | Headline finding: org-key path had ZERO working failover (`SecondaryProvider` was a literal `NotImplementedError` stub, uncredentialed in prod; Gemini correctly banned there). Fixed: real OpenRouter-backed `SecondaryProvider`, hardcoded `zdr:true` on every request (not config-gated), live-verified 3x against the real ZDR endpoint allowlist plus one full extraction round-trip. Nightly synthetic failover probe (real live calls, both-OK and both-FAIL runs verified). SLO: real Cloud Monitoring/Logging data pulled — 99.972% non-5xx over 14d (all-endpoint, no per-route breakdown available) but only n=2 real extractions logged, honestly reported as `INSUFFICIENT DATA` rather than fabricated. Status page: UptimeRobot free-tier recommended, not built (numbered signup steps in PR). Found+fixed in review: this branch's own new workflow file was unpinned (parallel-branch gap vs. Section E's sweep, which couldn't cover a file that didn't exist yet) — pinned to the same SHAs. |
+| G — Cost telemetry | **done, PR #24 (draft)** | Per-extraction USD/INR cost recording anchored to the shared single/batch/CSV extraction path (usage_records turned out unusable — 1:1 with a request, not an extraction, and batch/CSV never populate it). All 4 prices + USD→INR rate live-verified against real provider pages (2026-07-31), not recalled. Found (not fixed, flagged for F): Gemini 2.0 Flash — the configured fallback model — was deprecated/shut down by Google on 2026-06-01. Migration not yet applied to prod (needs GG, numbered steps in PR body). |
+| H — Corpus mining | **done, PR #25 (draft)** | Extended `benchmark/vernacular_v2/`, both unclear-license Kaggle sources resolved (CC0-1.0; one wired in, one left unwired — schema unverifiable in a gitignored worktree). ADR 0004: target ≥300K corpus / ≥5,000 Indic-strata eval (MDE≈2.2pp), floor ≥2,000 (MDE≈3.5pp) — current real Indic yield is only 595 (~12% of floor), named as the real Wave 3 blocker. $0 spent (no live creds in that worktree; every LLM stage mock-tested, a bounded 72-call/~$0.05 live-run plan is ready and cost-capped). Independently rediscovered, and confirmed already-fixed, the same PII name-regex bug E's rebuild caught. |
 
 ### Stack unblock + pre-Section-E audit (2026-07-31)
 Rebased `#16→#17→#19→#21` onto current `main` (main had moved forward via tracker-only PRs
@@ -115,6 +115,103 @@ against those specific vectors. Zero `BYPASSRLS` grep hits confirmed.
 G (cost telemetry): confirmed genuinely absent — `app/api/ops.py` has no per-extraction
 token/cost recording. H (corpus mining): `benchmark/vernacular_v2/` already has ingestion +
 dedup + a multi-LLM labeler prototype from earlier work — extending, not rebuilding.
+
+### Post-E remediation (2026-07-31) — P0-P3 + Section F + Section H sourcing decision
+
+**P0 (secret exposure) — CLOSED.** The demo key (`riq_live_d6fb4d0c...`) was revoked
+(`revoked_at` set, live-verified: the key now returns 401 on the real API). Usage audit:
+exactly 1 usage record exists for this key, timestamped **~16 hours BEFORE** the key was even
+published in README — almost certainly the original setup/test call, not external use. **Zero
+unattributable usage during the actual ~23-day exposure window.** History-reachability confirmed
+precisely: present in 21 historical commits (all pre-dating removal), absent from all 7 current
+Wave 1 feature branches and all 20 version tags. Not rewriting history (the key is dead; a
+rewrite would disrupt every clone/fork of this public repo for no live-security benefit) —
+flagging that call as available if GG wants it anyway.
+
+**P1 (NER redaction bug) — bug fix CLOSED, accuracy-delta gate NOT cleared — corrected
+2026-07-31.** Confirmed the bug was exactly what was suspected: `_redact_names_ner()`
+already correctly filtered to `PERSON`-only (ORG/PRODUCT were never touched), but spaCy's
+small model misclassifies brand names as PERSON on short review text. Fixed with a brand
+gazetteer (132-entry static list + live `competitor_mentions` history, 10 real brands
+already recorded including the exact Dyson/Shark/Bose that were misredacted) — a gazetteer
+hit vetoes redaction of that span regardless of spaCy's classification. ADR 0005 records
+the "entity classes must be disjoint from the product schema" rationale. One
+honestly-documented residual gap: a fictional eval-fixture brand name with no real-world
+presence still misclassifies (can't enter a real gazetteer without fabricating an entry) —
+tested and designed to fail loudly once a real per-org catalog would close it, not
+silently accepted.
+
+**The accuracy-delta gate itself was previously mischaracterized as passing ("under the
+1pp gate") — that was wrong and is corrected here.** At the intermediate 44/49-paired
+measurement, the 95% CI was [−2.16pp, +0.35pp]: an interval that admits both a >1pp
+regression AND crosses zero does not clear a 1pp gate by any reasonable reading, regardless
+of the point estimate (−0.78pp) looking small. Re-measured against the now-FULL 49/49
+fixture set (the 5 previously-blocked fixtures — 001_turbo_vac, 007_buy_again_ambiguous,
+008_pii_heavy, 010_urgent_angry, 015_medium_urgency — recorded live in both arms, 10 calls,
+Groq quota headroom checked first): **paired mean delta (ON − OFF) = −0.71pp, 95% CI
+[−1.92pp, +0.35pp] — still does NOT clear the gate** (still crosses zero, still admits
+a regression exceeding 1pp). This number appears on no customer-facing surface and no
+README; the point estimate is not restated as if it had passed. Formal decision on what
+this means for shipping redaction (already ON by default as a security requirement,
+independent of this accuracy question) remains a GG call.
+
+**P2 (BYPASSRLS reachability) — S0 finding, reported not fixed.** Traced in code, not
+inferred: `review_iq_app` (rolbypassrls=true) IS reachable from 3 live, request-serving paths
+with zero `_set_tenant()` call — `app/api/admin.py` (every DB helper; protection is
+single-factor HTTP Basic auth with **confirmed no rate-limiting**), and
+`app/api/webhooks/{google,shopify}.py`'s org-resolution lookups (protected by a shared-secret
+token / HMAC signature, also single-factor). Ruled out by tracing, not assuming: no
+fallback-DSN chain exists (`DATABASE_URL` is an unrelated legacy v1 SQLite path); the
+migration runner uses a distinct `postgres` superuser credential over a direct (non-pooler)
+connection, not shared with the app's PgBouncer pool; every `SET ROLE` in the codebase is the
+safe transaction-scoped `SET LOCAL ROLE` form. Added an `xfail(strict=True)` assertion to the
+adversarial suite (`TestBypassrlsServingPathReachability`) — fails today on purpose, tracked,
+will loudly XPASS-fail the moment someone "fixes" it without deliberately removing the marker.
+**Not fixed in this pass, per instruction.**
+
+**P3 (dead failover) — confirmed, fix dispatched.** Fixed the stale `gemini-2.0-flash` default
+(live-verified deprecated/shut down by Google 2026-06-01 → `gemini-2.5-flash`). The real
+finding: traced `app/core/llm.py::extract_with_llm`'s full fallback chain and confirmed
+**`SecondaryProvider` — the org-key path's only non-Gemini failover option — is a literal
+unimplemented stub** (`NotImplementedError` if ever called), not even configured with
+credentials in production. Combined with Gemini being correctly banned on the org-key path
+(`trains_on_input`), **the paid path has zero working failover today** — any Groq
+degradation/outage means 100% of paying-customer traffic gets a 503. Section F work (in
+progress) implements a real `SecondaryProvider` (OpenRouter, routed to a verified no-train
+model), a nightly synthetic failover probe exercising both fallback paths end-to-end, an
+uptime probe/status page, and a measured (not asserted) SLO.
+
+**Section H corpus-sourcing decision — ADR 0005 committed to PR #25, priced not decided.**
+Live research (not memory): no public dataset combining Hindi/Hinglish + product-review domain
++ adequate volume exists (checked Kaggle, HuggingFace, AI4Bharat's IndicNLP catalog).
+Commercial vendors (Shaip, Twine) exist, no public pricing — reported as an explicitly-labeled
+rough range, not a quote. 4 options priced (public sources / licensed data / narrow to
+Hinglish-only / accept the cost-moat decision-rule branch) for yield/cost/calendar/USP-support
+each. Synthetic review generation ruled out categorically, not priced — GG decides.
+
+---
+
+## Wave 2 — Dashboard, pricing, billing, redaction-gate close-out (started 2026-07-31)
+
+Orchestrator + executor + verifier. Checkpoint per rule 118 (in progress; updated as each
+priority lands, not all landed yet in this pass).
+
+| Priority | Status | Notes |
+|---|---|---|
+| P0 — Redaction gate MDE | **done, PR #38 (draft, stacked on Section E)** | Did not re-run the measurement. Computed the paired-design MDE from the already-recorded 49/49 result's exact sample std dev (4.0719pp, extracted via replay-mode-only re-execution, zero live calls). Added `paired_mde`/`required_n_for_paired_mde` to `eval/power_analysis.py` (existing fn assumes independent samples — wrong model here). MDE at n=49: 1.14pp (precision-only) / 1.63pp (alpha=0.05, power=0.80, this project's own corpus-sourcing convention). Both exceed 1pp — the original gate was unachievable at max available sample, confirmed as a spec defect. **Decision recorded in ADR 0005's amendment: restate the gate at 1.63pp (the more conservative framing) rather than grow the fixture set** — growing to n≈131 for the power framing is a 2.6x lift disproportionate to a hygiene control; n≈70 (precision framing) priced as a cheap future option via the existing consensus pipeline, not executed. Also found and corrected an already-merged wrong claim: `plan.md`'s own "under the 1pp gate" line (from the Wave 1 S0 pass) was itself incorrect — fixed via a separate small PR (#35, merged) following the established docs(plan) auto-merge precedent. |
+| P1 — ACL exposure standing audit | **done, PR #39 (draft, stacked on the S0 fix)** | The Wave 1 S0 finding (SECURITY DEFINER function inheriting EXECUTE via Supabase's default ACLs) is a recurring class. `scripts/check_acl_exposure.py` queries the live schema for any table/view/SECURITY DEFINER function missing its protective revoke/anon-deny-policy, with exactly one justified allowlist entry (`current_org_id()`, which genuinely needs `authenticated` EXECUTE for RLS itself to function). Backfill-verified against live prod: clean. **Proven to catch the bug**, not just report clean: a new integration test creates a disposable, unprotected SECURITY DEFINER function mimicking the S0 bug exactly, confirms it's flagged, confirms a properly-revoked sibling is not, confirms `current_org_id()` stays allowlisted — all verified against live prod, cleanup confirmed. Wired as a new nightly + migration-triggered CI workflow reusing the existing `SUPABASE_DIRECT_URL` secret. |
+| P2 — Dashboard | **partial, PR #40 (draft)** | Recon first (this mattered): a full dashboard already exists and is deployed — CSV upload w/progress, sentiment/topics/competitor/urgency display, filters, review detail, authenticity insights. The highest-leverage gap was structural, not a missing feature: **every route required Supabase magic-link signup first**, including `/upload` — breaking "stranger sees value in under 60 seconds, no docs" at the very first step. Built a new public `/try` page (no signup): drop a real CSV or use a bundled sample in one click, client-side-parsed, runs the first 5 rows through the existing keyless `/demo/extract` endpoint (stays within its 5/min cap), same visual language as the real dashboard, ends on a sign-up CTA. **Verified live in a browser** (chrome-devtools MCP against a real local backend, not just built) — screenshots in `reports/screenshots/wave2-p2-try-demo/`. Found and fixed a real bug while building this: `App.tsx`'s auth listener force-navigated to `/` on every auth-state event including initial mount, silently stomping navigation to any public route — `/try` was unreachable until this was fixed. Also added a "try with sample data" action to the authenticated empty-dashboard/upload-idle states (runs the real ingest pipeline, not the ephemeral demo). **Still not done**: flagged-review queue with accept/reject actions (needs a new `authenticity_audits` disposition column + BFF endpoint + UI — no such disposition/action concept exists in the schema today), export (CSV/JSON) UI (`/v2/dataset/export` exists, not mirrored in the BFF, no button), API key management page (backend `app/api/account.py` exists, no UI), a dedicated usage-vs-quota page (today only a banner), and an explicit audit that any newly-added accuracy/confidence figure is sourced from `eval/results.json` (not `eval/results/latest.json`, which doesn't exist — a premise correction). |
+| P3 — Pricing from real telemetry | **not started this pass** | Recon done: Section G's cost-telemetry code (`app/core/pricing.py`, real verified constants — Groq small/large + USD/INR rate) is real and well-built but **lives on unmerged `feat/wave1-g-cost-telemetry` and was never deployed — the `extraction_costs` table does not exist in production, confirmed via a live read-only query. Real per-extraction cost sample size is 0, not just thin.** Honest framing for the eventual writeup: report n=0/INSUFFICIENT DATA per the Section F SLO precedent, fall back to the real (not fabricated) per-token pricing constants as an explicitly-labeled theoretical calculation, and flag that both Cloud Run and Supabase are currently on free tiers (no fixed-cost floor to allocate yet, but Supabase Pro's $25/mo trigger condition is documented and worth citing as the point where "volume pricing" stops being purely marginal-cost-driven). |
+| P4 — Minimum-viable billing | **not started this pass** | Stripe metered usage + checkout + customer portal + quota enforcement + dunning, scoped to whatever tiers P3 proposes. Explicitly told not to gold-plate. Will need a numbered Stripe-account-setup escalation (cannot create/configure a live Stripe account myself). |
+
+**Cross-branch note found during P0**: merging `feat/wave1-b-llm-consensus-labeling` into a
+worktree already holding the S0/Section-E branches silently changed the redaction-delta
+script's behavior (49/49 paired → 32/49, asymmetric blocking, a suspicious exact-zero delta) —
+root-caused to wave1-b's own auto-merged `eval/runner.py` changes, not the fixtures/cassettes
+(which merged cleanly). Not investigated further (out of scope for P0), but flagged in PR #38:
+**whoever eventually merges wave1-b should re-run `measure_redaction_accuracy_delta.py`
+post-merge and confirm it still reproduces 49/49** before trusting anything eval-related on
+that combined branch.
 
 ---
 
