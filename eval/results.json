@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-07-30T13:24:17Z",
-  "git_sha": "d87c3e5733712851b6ae1402d7df838fb44ffb8b",
+  "generated_at": "2026-07-30T18:38:24Z",
+  "git_sha": "8c20285f5ca92c39d2b6ccdff26a5a6a4759d4a0",
   "prompt_version": "v2.3",
-  "mode": "direct (local LLM)",
+  "mode": "routed (tiered)",
   "tiered_routing_enabled_at_runtime": true,
   "overall_score": 0.8379758141384159,
   "overall_ci_95": {
@@ -50,7 +50,7 @@
       "language": "en",
       "overall_score": 0.822485726833553,
       "error": null,
-      "latency_ms": 15,
+      "latency_ms": 45,
       "fields": [
         {
           "field": "product",
@@ -247,7 +247,7 @@
       "language": "en",
       "overall_score": 0.9427609427609427,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "stars",
@@ -420,7 +420,7 @@
       "language": "en",
       "overall_score": 0.9777777777777779,
       "error": null,
-      "latency_ms": 15,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -689,7 +689,7 @@
       "language": "en",
       "overall_score": 0.89648033126294,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 15,
       "fields": [
         {
           "field": "stars",
@@ -778,7 +778,7 @@
       "language": "en",
       "overall_score": 0.8447971781305115,
       "error": null,
-      "latency_ms": 15,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -883,7 +883,7 @@
       "language": "en",
       "overall_score": 0.9142857142857143,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "stars",
@@ -1013,7 +1013,7 @@
           "field": "topics",
           "score": 0.0,
           "predicted": [
-            "overall_quality"
+            "headphones"
           ],
           "expected": [],
           "method": "set_f1"
@@ -1029,7 +1029,7 @@
           "field": "pros",
           "score": 0.0,
           "predicted": [
-            "great quality"
+            "great"
           ],
           "expected": [
             "overall satisfaction"
@@ -1057,7 +1057,7 @@
       "language": "en",
       "overall_score": 0.7777777777777778,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 15,
       "fields": [
         {
           "field": "stars",
@@ -1236,7 +1236,7 @@
       "language": "en",
       "overall_score": 0.8361538461538462,
       "error": null,
-      "latency_ms": 16,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1443,7 +1443,7 @@
       "language": "en",
       "overall_score": 0.9583333333333334,
       "error": null,
-      "latency_ms": 15,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1658,7 +1658,7 @@
       "language": "en",
       "overall_score": 0.6923520923520924,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 15,
       "fields": [
         {
           "field": "stars",
@@ -1751,7 +1751,7 @@
       "language": "en",
       "overall_score": 0.9212962962962963,
       "error": null,
-      "latency_ms": 16,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1852,7 +1852,7 @@
       "language": "en",
       "overall_score": 0.9010526315789473,
       "error": null,
-      "latency_ms": 15,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "stars",
@@ -2507,7 +2507,7 @@
       "language": "en",
       "overall_score": 0.8680555555555557,
       "error": null,
-      "latency_ms": 16,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -2613,7 +2613,7 @@
       "language": "en",
       "overall_score": 0.8300000000000001,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "stars",
@@ -4374,7 +4374,7 @@
       "language": "hi",
       "overall_score": 0.8333333333333333,
       "error": null,
-      "latency_ms": 16,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",

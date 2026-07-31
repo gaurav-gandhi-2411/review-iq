@@ -32,6 +32,7 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parent.parent
 EXTRACTION_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "latest.json"
 AUTHENTICITY_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "authenticity_latest.json"
+CONSENSUS_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "agreement_latest.json"
 ADR_LINK = "docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md"
 
 BLOCK_RE = re.compile(
@@ -188,6 +189,98 @@ def render_language_table_html(data: dict[str, Any]) -> str:
     return "\n" + "\n".join(rows) + "\n            "
 
 
+def render_consensus_labeling_md(data: dict[str, Any]) -> str:
+    """Render the multi-LLM consensus labeling summary for README.md (Wave 1 Section B).
+
+    Source: eval/results/agreement_latest.json, written by
+    eval/consensus/run_consensus.py. See eval/consensus/panel.py's module docstring for
+    the full panel-selection rationale and calibration outcome narrative.
+    """
+    lines: list[str] = []
+
+    panel_str = ", ".join(f"`{m['id']}` ({m['family']})" for m in data["active_panel"])
+    lines.append(f"**Active judge panel:** {panel_str}")
+    lines.append("")
+    if data["dropped_judges"]:
+        for d in data["dropped_judges"]:
+            lines.append(f"- Dropped by calibration: `{d['model_id']}` -- {d['reason']}")
+        lines.append("")
+
+    lines += [
+        "**Inter-rater reliability** (Krippendorff's alpha is primary -- tolerates a judge "
+        "not responding on a given item; Fleiss' kappa is a secondary cross-check on the "
+        "fully-covered subset):",
+        "",
+    ]
+    lines += ["| Field | Level | Alpha | Kappa (n fully-covered) |", "|---|---|---|---|"]
+    kappa = data["reliability"]["fleiss_kappa"]
+    for field, info in data["reliability"]["krippendorff_alpha"].items():
+        alpha_val = info["alpha"]
+        alpha_str = f"{alpha_val:.3f}" if alpha_val is not None else "n/a"
+        if field in kappa:
+            k = kappa[field]
+            kappa_str = f"{k['kappa']:.3f} (n={k['n_items']})" if k["kappa"] is not None else "n/a"
+        else:
+            kappa_str = "-- (ordinal, no kappa)"
+        lines.append(f"| {field} | {info['level']} | {alpha_str} | {kappa_str} |")
+    lines.append("")
+
+    val = data["validation"]
+    lines += [
+        f"**Validation pass** ({val['n_fixtures_scored']} already-committed fixtures re-labeled "
+        "by the panel, compared against existing ground truth):",
+        "",
+        "| Field | Compared | Agree | Agreement rate | No-consensus |",
+        "|---|---|---|---|---|",
+    ]
+    for field, info in val["per_field"].items():
+        rate = (
+            f"{info['agreement_rate'] * 100:.1f}%" if info["agreement_rate"] is not None else "n/a"
+        )
+        lines.append(
+            f"| {field} | {info['n_compared']} | {info['n_agree']} | {rate} | {info['n_no_consensus']} |"
+        )
+    lines.append("")
+
+    growth = data["growth"]
+    mde = data["mde"]
+    lang_counts = data["final_per_language_counts"]
+    lang_counts_str = ", ".join(f"{n} {lang}" for lang, n in lang_counts.items())
+    new_fixtures_str = ", ".join(
+        f"{n} {lang}" for lang, n in growth["new_fixtures_written"].items()
+    )
+    lines += [
+        f"**Growth:** {growth['candidates_considered']} new candidates considered, "
+        f"{sum(growth['new_fixtures_written'].values())} became new fixtures ({new_fixtures_str}). "
+        f"Of {growth['excluded_split_or_insufficient']} excluded: "
+        f"{growth['excluded_genuine_disagreement']} on genuine panel disagreement (no majority on "
+        f"sentiment/urgency/buy_again/language), {growth['excluded_rate_limited']} lost to Groq "
+        "free-tier rate-limit exhaustion on the dedicated benchmark key (both judges errored -- "
+        "not a quality signal, recoverable on a fresh quota window).",
+        "",
+        f"**{data['final_eval_set_size']} fixtures now have consensus ground truth** "
+        f"({lang_counts_str}), but **only {data['gating_eval_set_size']} currently gate CI**. "
+        f"The other {data['staged_pending_groq_cassette']['count']} "
+        f"({', '.join(f'{n} {lang}' for lang, n in data['staged_pending_groq_cassette']['per_language'].items())}) "
+        "are staged in `eval/fixtures/_pending_groq_cassette/` -- their cassettes were recorded "
+        "via an OpenRouter fallback after a Groq quota exhaustion incident (see "
+        "[ADR 0003](docs/architecture/adr/0003-cassette-provenance-during-groq-quota-exhaustion.md)), "
+        "not production's Groq model, so they are deliberately excluded from the CI-scored set "
+        "until a real Groq re-recording promotes them.",
+        "",
+        f"**Minimum detectable effect** (2-proportion z-test, alpha=0.05, power=0.80) once all "
+        f"{mde['overall_n']} fixtures are promoted: **{mde['mde_worst_case_p_0.5'] * 100:.1f} points** "
+        "(worst-case, p=0.5) / "
+        + next(
+            f"**{v * 100:.1f} points** (at current score p={k.split('_p_')[-1]})"
+            for k, v in mde.items()
+            if k.startswith("mde_at_current_score")
+        )
+        + ".",
+    ]
+    return "\n".join(lines)
+
+
 BLOCK_RENDERERS: dict[str, Any] = {
     "extraction_table": lambda: render_extraction_table_md(_load_json(EXTRACTION_RESULTS_PATH)),
     "authenticity_table": lambda: render_authenticity_table_md(
@@ -198,6 +291,7 @@ BLOCK_RENDERERS: dict[str, Any] = {
         _load_json(EXTRACTION_RESULTS_PATH)
     ),
     "language_table_html": lambda: render_language_table_html(_load_json(EXTRACTION_RESULTS_PATH)),
+    "consensus_labeling": lambda: render_consensus_labeling_md(_load_json(CONSENSUS_RESULTS_PATH)),
 }
 
 TARGET_FILES: tuple[Path, ...] = (
