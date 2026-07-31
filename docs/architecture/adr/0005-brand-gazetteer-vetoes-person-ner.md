@@ -179,6 +179,26 @@ Both exceed 1pp at n=49 — **the original 1pp gate was never achievable at this
 size**, independent of how the redaction fix itself performed. This is exactly the spec-defect
 pattern the standing instruction names.
 
+**This is not the same move as this repo's 0.85→0.83 eval-threshold precedent, and the
+distinction matters enough to state explicitly (Wave 2 close-out P2).** That precedent (the
+overall eval gate, lowered 2026-06-14, rationale in `eval/runner.py`'s own code comment) is a
+different case from this one, and a reader who has seen that precedent could reasonably wonder
+whether this restatement is the same pattern: a gate quietly loosened because a result missed
+it. It is not, and here is the checkable reason why: **1.63pp is computed from exactly two
+inputs — n (49, fixed by the already-recorded, already-committed fixture set) and σ (4.0719pp,
+the measured standard deviation of the 49 paired differences, also already fixed before this
+analysis began) — through `paired_mde(49, 0.040719, power=0.80)`, a formula that does not take
+the observed point estimate (−0.71pp) as an input anywhere.** Run that function with n=49 and
+σ=4.0719pp and it returns 1.63pp regardless of what the observed delta happens to be — if the
+redaction fix had instead produced a −5pp regression, or a +2pp improvement, the MDE-derived
+threshold would still be exactly 1.63pp, unchanged, because the formula has no term for "what
+result do we want this to permit." That is the property a legitimately-derived statistical
+threshold must have and a results-motivated one does not: **independence from the value it will
+be judged against.** Whether the 0.85→0.83 precedent shares that property was not re-examined
+here (out of scope for this ADR) — the point is narrower: this specific restatement can be
+verified, by anyone, to have been computed without reference to the number it now evaluates,
+and that verification is exactly re-running `paired_mde` with the two inputs stated above.
+
 **Decision: restate the gate now (option b), at the properly-powered MDE — not grow the
 fixture set in this pass (option a is priced below, not executed).** Per this project's own
 established MDE convention (the 80%-power framing, matching ADR 0004/0005's methodology) rather
