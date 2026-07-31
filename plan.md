@@ -396,6 +396,68 @@ out of scope), named here so it isn't silently lost.
 webhook SECURITY DEFINER rewiring (required before the bypass can safely be removed) is not live.
 Readiness unchanged from the prior pass's report. Will execute the moment merge+deploy lands.
 
+### Pre-cutover blockers + email authentication (2026-07-31, fourth pass)
+
+**P0 (CAA via DoH) — cleared, no blocker.** Windows DNS tools can't query CAA; queried both Google
+(`dns.google/resolve`) and Cloudflare (`cloudflare-dns.com/dns-query`) DoH endpoints directly —
+both agree: **no CAA record exists anywhere in the zone** (apex, `api`, or `app`). Absence of a
+CAA record means no CA restriction applies — Cloudflare's cert issuance for the apex is not
+blocked. Nothing to add to the cutover steps for this.
+
+**P1(a) (what sends the magic-link) — VERIFIED-LIVE, urgent question resolved cleanly.** No
+Supabase Management API access exists in this environment to read the SMTP config directly, so
+triggered the actual live flow instead: `POST /auth/v1/otp` against production, to a disposable
+public Mailinator inbox (not a memory-system inspection — a real send, real receive). The email
+arrived from **`noreply@mail.app.supabase.io`** — Supabase's own default sender, not Resend.
+**Self-serve signup is unaffected by the Resend gap.** DKIM signature present and well-formed for
+`mail.app.supabase.io` (via Postmark's sending infra); no third-party pass/fail verdict available
+from Mailinator's public API, but this is Supabase's own long-established transactional
+infrastructure, not the subject of the actual gap. Test user cleaned up (`DELETE FROM auth.users`,
+confirmed).
+
+**P1(b) (Resend authentication records) — partially blocked, real gap confirmed independently
+twice.** `RESEND_API_KEY` (existing secret) is a send-only restricted key — cannot read Resend's
+domain-verification API for the exact DKIM record values; would need a broader-scoped key or GG's
+own dashboard check (numbered path given directly to GG, not fabricated). Confirmed via a SECOND
+DNS tool (PowerShell `Resolve-DnsName`, independent of the `nslookup` finding from the pass
+before) that `mail.samidhareviews.xyz` genuinely has no MX/TXT records — outbound alerts are very
+likely failing SPF/DKIM today. Recommended starting DMARC: `p=none` with an `rua=` reporting tag
+added (the existing `_dmarc` record has neither `rua=` nor `ruf=` — currently collects zero
+visibility despite existing) — monitor-only until alignment is confirmed clean, then tighten to
+`quarantine`, then `reject`. Full consolidated steps (including this) delivered directly to GG.
+
+**P2 (extend CVE gate to web/) — done, PR #49 (draft).** Fixed all 4 pre-existing highs
+(react-router-dom migrated to react-router@8, since react-router-dom's 7.x line never received
+the CSRF-bypass fix and has no forward path other than migrating off it; postcss + brace-expansion
+via `npm audit fix`) — `npm audit`: 4 high → 0, all severities, re-verified after the fix, not
+assumed. New `npm-audit` CI job, same blocking high/critical threshold as the Python gate, real
+SHA-pinned `actions/setup-node` (resolved via the GitHub API, not guessed). **Audited Section E's
+other two controls for the same reach question, as asked**: secret scanning (gitleaks/trufflehog)
+is **not a standing CI gate at all** — grepped every workflow on every branch, found none; the
+"1 real finding" in Section E's own entry above was a one-time manual scan, not continuous
+coverage for either `app/` or `web/`. SHA-pinning is consistently applied everywhere that exists
+today — no gap. This CVE fix is included in the already-redeployed `app.samidhareviews.xyz` (same
+deploy as the P3 pass below) — re-verified live in a real browser session post-fix: zero console
+errors on `/` and `/try`.
+
+**P3 (two-account recovery) — not fixed, three genuine walls, numbered steps given to GG.**
+- **GCP/Firebase**: blocked by GCP's own `SOLO_MUST_INVITE_OWNERS` API constraint — a personal
+  (non-org) Google Account can't be granted Owner via a direct API binding at all; GCP requires
+  the Console's invite-and-accept flow. Confirmed by attempting the real API call, not assumed.
+- **Cloudflare**: the existing `wrangler` OAuth token's scopes don't include account-member
+  management — confirmed by attempting the real Members API call (`Authentication error`).
+  Needs a Console-based invite from `gg5678g@gmail.com`'s side, accepted by
+  `gaurav.gandhi2411@gmail.com`.
+- **Vercel**: hard blocked — the account is on the **Hobby plan, which does not support team
+  members at all** (not a permissions gap, a plan-tier limitation), confirmed by attempting the
+  real invite (`Team members are not permitted on the Hobby Plan`). Fixing this requires upgrading
+  to Pro — a recurring paid charge, so escalated rather than purchased; Vercel's own purchase-quote
+  API deliberately withholds the exact price (points to `vercel.com/pricing` instead of a stale
+  training-data number). Not upgraded — GG's call.
+
+Full numbered steps for all three (exact menu paths) delivered directly to GG, not summarized
+here.
+
 ---
 
 ## 1. The product, restated
