@@ -45,7 +45,11 @@ class Settings(BaseSettings):
         alias="GROQ_MODEL",
     )
     gemini_model: str = Field(
-        default="gemini-2.0-flash",
+        # gemini-2.0-flash was deprecated and shut down by Google on 2026-06-01
+        # (live-verified 2026-07-31 against ai.google.dev/gemini-api/docs/pricing) --
+        # this fallback path was silently dead for 2 months with nothing detecting it.
+        # gemini-2.5-flash is the current stable (non-preview) replacement.
+        default="gemini-2.5-flash",
         alias="GEMINI_MODEL",
     )
 
