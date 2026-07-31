@@ -1,0 +1,169 @@
+{
+  "fixtures_path": "eval\\fixtures\\redaction\\labeled.jsonl",
+  "n_fixtures": 115,
+  "n_spans": 121,
+  "summary": {
+    "card": {
+      "tp": 15,
+      "fn": 0,
+      "n": 15,
+      "recall": 1.0,
+      "recall_ci95": [
+        0.7961107336956521,
+        1.0
+      ]
+    },
+    "email": {
+      "tp": 21,
+      "fn": 0,
+      "n": 21,
+      "recall": 1.0,
+      "recall_ci95": [
+        0.8453561767357979,
+        0.9999999999999999
+      ]
+    },
+    "name": {
+      "tp": 25,
+      "fn": 20,
+      "n": 45,
+      "recall": 0.5555555555555556,
+      "recall_ci95": [
+        0.4117588341636533,
+        0.6906129145096089
+      ]
+    },
+    "order_id": {
+      "tp": 20,
+      "fn": 0,
+      "n": 20,
+      "recall": 1.0,
+      "recall_ci95": [
+        0.8388698745050667,
+        1.0
+      ]
+    },
+    "phone": {
+      "tp": 20,
+      "fn": 0,
+      "n": 20,
+      "recall": 1.0,
+      "recall_ci95": [
+        0.8388698745050667,
+        1.0
+      ]
+    },
+    "overall": {
+      "tp": 101,
+      "fn": 20,
+      "n": 121,
+      "recall": 0.8347107438016529,
+      "recall_ci95": [
+        0.7584442250683895,
+        0.8903779624075799
+      ]
+    }
+  },
+  "leaks": [
+    {
+      "fixture_id": 88,
+      "kind": "name",
+      "span": "Ankit"
+    },
+    {
+      "fixture_id": 89,
+      "kind": "name",
+      "span": "Suresh"
+    },
+    {
+      "fixture_id": 90,
+      "kind": "name",
+      "span": "Sunil"
+    },
+    {
+      "fixture_id": 91,
+      "kind": "name",
+      "span": "Vinod"
+    },
+    {
+      "fixture_id": 92,
+      "kind": "name",
+      "span": "Anjali"
+    },
+    {
+      "fixture_id": 93,
+      "kind": "name",
+      "span": "Rakesh"
+    },
+    {
+      "fixture_id": 98,
+      "kind": "name",
+      "span": "Ramesh"
+    },
+    {
+      "fixture_id": 100,
+      "kind": "name",
+      "span": "Sanjay"
+    },
+    {
+      "fixture_id": 101,
+      "kind": "name",
+      "span": "Kunal"
+    },
+    {
+      "fixture_id": 103,
+      "kind": "name",
+      "span": "Amit"
+    },
+    {
+      "fixture_id": 104,
+      "kind": "name",
+      "span": "Nisha"
+    },
+    {
+      "fixture_id": 105,
+      "kind": "name",
+      "span": "Ramesh"
+    },
+    {
+      "fixture_id": 108,
+      "kind": "name",
+      "span": "Imran"
+    },
+    {
+      "fixture_id": 110,
+      "kind": "name",
+      "span": "Tarun"
+    },
+    {
+      "fixture_id": 111,
+      "kind": "name",
+      "span": "Rajesh"
+    },
+    {
+      "fixture_id": 111,
+      "kind": "name",
+      "span": "Priya"
+    },
+    {
+      "fixture_id": 112,
+      "kind": "name",
+      "span": "Ankit"
+    },
+    {
+      "fixture_id": 114,
+      "kind": "name",
+      "span": "Vinod"
+    },
+    {
+      "fixture_id": 114,
+      "kind": "name",
+      "span": "Anjali"
+    },
+    {
+      "fixture_id": 115,
+      "kind": "name",
+      "span": "Suresh"
+    }
+  ]
+}
