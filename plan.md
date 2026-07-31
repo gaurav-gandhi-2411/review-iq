@@ -458,9 +458,69 @@ errors on `/` and `/try`.
 Full numbered steps for all three (exact menu paths) delivered directly to GG, not summarized
 here.
 
----
+### Production-alias integrity + Vercel exit + secret-scan gate (2026-07-31, sixth pass)
 
-## 1. The product, restated
+GG confirmed the Vercel deletion was deliberate (from the prior pass's open question).
+
+**P0 (how did unmerged code reach production?) — root cause found, fixed, regression-tested.**
+Not Vercel auto-promoting branches (ruled out: this project has no GitHub integration at all,
+confirmed via the project API — no `link` object). The actual mechanism: `vercel deploy --prod`
+deploys whatever is in the local working directory at the moment it's run, completely independent
+of git/PR state — I ran it twice from local, iterated (the react-router CVE fix) directly in that
+same local checkout, and deployed again, all before ever opening PR #49. **Fix**: connected the
+Vercel project to GitHub (`vercel git connect`) — the concrete setting changed. Real caveat stated,
+not glossed over: this doesn't fully prevent a future manual `vercel deploy --prod` from an
+arbitrary local checkout; the actual guarantee is the same discipline already established for
+Cloud Run (clean checkout of the exact commit, never the working directory) — moot within hours of
+this pass anyway, since P2 retires the Vercel project entirely. **Regression-tested the migration
+itself** in a real browser: `/`, `/upload`, `/dashboard`, `/reviews`, `/reviews/:reviewHash`
+(exercises `useParams`), `/authenticity`, an unknown path (catch-all), and both browser back and
+forward — zero console errors/warnings on any of them (one pre-existing, unrelated a11y notice
+about a missing `autocomplete` attribute, nothing to do with the router).
+
+**P1 (secret scanning as a standing gate) — done, PR #50 (draft), with a real near-miss caught
+before shipping.** First attempt committed a `--baseline-path` JSON report to allowlist the 19
+pre-existing findings — **GitHub's own push protection rejected the push**: the report embeds raw
+matched secret text, and one of the 19 (a test fixture shaped like a Shopify token) re-triggered
+GitHub's scanner as a fresh "leak," and the committed report file recursively flagged itself on
+the next scan. Fixed at the root, not routed around: switched to `.gitleaksignore` (fingerprint
+only, `commit:file:rule:line`, never the matched text). Each of the 19 was individually read and
+confirmed safe before allowlisting (15 test fixtures, 1 OpenAPI docs example, 2 already-documented
+historical items) — not blanket-accepted. Proved the final mechanism in an isolated throwaway
+repo: a partial allowlist still catches a second, un-allowlisted planted secret (exit 1); both
+allowlisted passes clean (exit 0). Two triggers: PR-diff-only, and a weekly full-history scan.
+
+**P2 (exit Vercel for Cloudflare Pages) — Pages built + VERIFIED-LIVE at its own URL; DNS cutover
+correctly still held.** New project `samidha-reviews-web` on the `gg5678g@gmail.com` Cloudflare
+account (same one already running `review-iq-demo`), built from the exact same source already
+live (`main` + PR #49's CVE fixes), deployed via `wrangler pages deploy`. Added
+`web/public/_redirects` (`/* /index.html 200`) — Cloudflare Pages' equivalent of `vercel.json`'s
+SPA rewrite, which didn't exist for this project before. Verified at
+`https://samidha-reviews-web.pages.dev/`: byte-identical render to the Vercel deployment, zero
+console errors, deep-link route (`/reviews/deadbeef1234`) and `/try` both correctly served via the
+SPA fallback (not a 404). **DNS cutover NOT done yet, correctly**: Cloudflare Pages custom domains
+require the zone to actually be managed by Cloudflare (same constraint already known from the
+apex/`review-iq-demo` case) — `samidhareviews.xyz` is still on NameCheap's nameservers, so
+`app.samidhareviews.xyz` can't be attached to this Pages project until the same pending
+NameCheap→Cloudflare migration (already in the consolidated cutover steps) happens. **Vercel is
+therefore NOT retired yet** — it still serves the live custom domain; retiring it now would cause
+a real outage. Updated the probe script's stale comment (referenced `web/vercel.json`, now
+`web/public/_redirects`) — the checks themselves are unaffected, since they test the domain, not
+the specific host.
+
+**P3 (execute the two free invites) — both re-attempted for real, both confirmed still blocked by
+genuine platform constraints, not just repeated from the prior report.** GCP: retried with
+`--condition=None` to rule that variable out — same `SOLO_MUST_INVITE_OWNERS` error. Cloudflare:
+same token-scope block as before. Numbered console steps for both delivered directly to GG.
+Vercel's invite question is now moot per P2 above (once fully retired).
+
+**P4 (DMARC rua target) — needs one clarification from GG before finalizing**: "my Gmail" is
+ambiguous between the two accounts active this session (`gg5678g@gmail.com` for
+Cloudflare/Vercel, `gaurav.gandhi2411@gmail.com` for GCP/Firebase) — asked directly rather than
+guessed, since a wrong inbox means silently losing DMARC visibility exactly the way the existing
+record already does.
+
+**P5 — unchanged, still correctly blocked** on PR #33 merging.
 
 **One-line pitch:** An open-source review intelligence service that turns unstructured customer reviews — including Hinglish — into queryable, structured data, with the entire prompt, schema, and eval suite public.
 
