@@ -33,6 +33,13 @@ dependencies = [
     "resend>=2.32.2",
     "cryptography>=42.0.0",
     "python-dateutil>=2.9.0",
+    "spacy>=3.8.0",
+    # Pinned model wheel (not `spacy download` at build/deploy time) so `uv sync --frozen`
+    # alone provisions the NER model in CI *and* the Dockerfile's existing deps layer --
+    # no extra Actions step or Dockerfile RUN line needed. Version must track the spaCy
+    # compatibility matrix (https://raw.githubusercontent.com/explosion/spacy-models/master/
+    # compatibility.json) -- 3.8.0 is the en_core_web_sm release compatible with spacy 3.8.
+    "en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl",
 ]
 
 [dependency-groups]
@@ -53,6 +60,11 @@ dev = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["app"]
+
+[tool.hatch.metadata]
+# Required by hatchling because en-core-web-sm is a direct-URL (PEP 508) dependency
+# rather than a PyPI-indexed one -- see the dependency's inline comment for why.
+allow-direct-references = true
 
 [tool.ruff]
 line-length = 100

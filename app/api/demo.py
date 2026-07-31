@@ -13,7 +13,7 @@ from app.core.language import detect_language
 from app.core.llm import extract_with_llm
 from app.core.prompts import PROMPT_VERSION, build_prompt
 from app.core.rate_limit import limiter
-from app.core.sanitize import sanitize, wrap_for_llm
+from app.core.sanitize import rehydrate_output, sanitize, wrap_for_llm
 from app.core.schemas import ExtractionMeta, ReviewExtraction, ReviewRequest
 
 router = APIRouter(prefix="/demo", tags=["demo"])
@@ -118,7 +118,7 @@ async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtractio
 
     Use POST /v2/extract with a riq_live_* API key for production use.
     """
-    clean_text, _ = sanitize(body.text)
+    clean_text, _, redaction_map = sanitize(body.text)
     cache_key = _demo_cache_key(clean_text)
 
     cached = _demo_cache_get(cache_key)
@@ -154,6 +154,8 @@ async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtractio
         review_length_chars=len(body.text),
         extraction_meta=meta,
     )
+    # Rehydrate before caching/returning -- see app.core.sanitize module docstring.
+    result = rehydrate_output(result, redaction_map)
     _demo_cache_put(cache_key, result)
     log.info("demo.extract", model=model_name, lang=detected_lang, latency_ms=latency_ms)
     return result

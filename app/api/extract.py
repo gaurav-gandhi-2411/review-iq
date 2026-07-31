@@ -13,7 +13,7 @@ from app.core.llm import extract_with_llm
 from app.core.metrics import EXTRACTION_LATENCY, EXTRACTIONS_TOTAL
 from app.core.prompts import PROMPT_VERSION
 from app.core.prompts.en import build_prompt as build_user_prompt
-from app.core.sanitize import sanitize, wrap_for_llm
+from app.core.sanitize import rehydrate_output, sanitize, wrap_for_llm
 from app.core.schemas import (
     BatchJob,
     BatchReviewRequest,
@@ -44,7 +44,7 @@ async def _run_extraction(request: ReviewRequest) -> ReviewExtraction:
         EXTRACTIONS_TOTAL.labels(model="cached", cached="true").inc()
         return cached
 
-    clean_text, is_suspicious = sanitize(request.text)
+    clean_text, is_suspicious, redaction_map = sanitize(request.text)
     if is_suspicious:
         log.warning("extraction.suspicious_input", input_hash=input_hash)
 
@@ -67,6 +67,8 @@ async def _run_extraction(request: ReviewRequest) -> ReviewExtraction:
         review_length_chars=len(request.text),
         extraction_meta=meta,
     )
+    # Rehydrate before persisting -- see app.core.sanitize module docstring.
+    extraction = rehydrate_output(extraction, redaction_map)
 
     await save_extraction(input_hash, request.text, extraction)
     EXTRACTIONS_TOTAL.labels(model=model_name, cached="false").inc()

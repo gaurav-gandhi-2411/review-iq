@@ -15,7 +15,7 @@ from app.core.language import detect_language
 from app.core.llm import extract_with_llm
 from app.core.metrics import EXTRACTION_LATENCY, EXTRACTIONS_TOTAL
 from app.core.prompts import PROMPT_VERSION, build_prompt
-from app.core.sanitize import sanitize, wrap_for_llm
+from app.core.sanitize import rehydrate_output, sanitize, wrap_for_llm
 from app.core.schemas import (
     BatchReviewRequest,
     ExtractionMetaV2,
@@ -63,7 +63,7 @@ async def _run_extraction_v2(
         return cached
 
     detected_lang = detect_language(request.text)
-    clean_text, is_suspicious = sanitize(request.text)
+    clean_text, is_suspicious, redaction_map = sanitize(request.text)
     if is_suspicious:
         log.warning("extraction.suspicious_input", input_hash=input_hash)
 
@@ -93,6 +93,10 @@ async def _run_extraction_v2(
         review_date=request.review_date,
         extraction_meta=meta,
     )
+    # Rehydrate before persisting: the LLM never saw the real PII, but a placeholder
+    # token it echoed back into cons/pros/etc. is restorable here from the map built
+    # above -- see app.core.sanitize module docstring.
+    extraction = rehydrate_output(extraction, redaction_map)
 
     await asyncio.to_thread(
         save_extraction_pg,

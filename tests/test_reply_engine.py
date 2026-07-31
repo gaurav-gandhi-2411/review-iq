@@ -291,7 +291,7 @@ async def test_draft_reply_redacts_pii_before_prompt() -> None:
         await draft_reply(request)
 
     assert "customer@example.com" not in captured["user_prompt"]
-    assert "[EMAIL]" in captured["user_prompt"]
+    assert "[EMAIL_1]" in captured["user_prompt"]
 
 
 async def test_draft_reply_guardrail_violation_becomes_caveat() -> None:

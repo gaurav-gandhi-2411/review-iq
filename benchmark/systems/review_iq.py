@@ -66,7 +66,7 @@ async def predict(text: str, replay_mode: bool) -> dict[str, str | None]:
 
     from app.core.llm import extract_with_llm  # noqa: PLC0415
 
-    sanitized, _ = sanitize(text)
+    sanitized, _, _ = sanitize(text)
     wrapped = wrap_for_llm(sanitized)
     # Heuristic language hint for review-iq's prompt router (not the gold label)
     lang_hint = _detect_lang_hint(text)
