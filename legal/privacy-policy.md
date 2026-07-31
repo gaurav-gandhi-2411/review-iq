@@ -143,8 +143,9 @@ the data controller. We support Customers in fulfilling such requests as their p
 the [DPA template](./dpa-template.md).
 
 To exercise any of the above rights directly against us (e.g. as an account holder), contact:
-`[TODO: GG to provide a privacy/data-rights contact email — see also compliance-posture.md's
-DPDP grievance officer requirement, which is a related but distinct contact]`.
+`privacy@samidhareviews.xyz` — see also [`compliance-posture.md`](./compliance-posture.md)'s
+DPDP grievance officer requirement, which is a related but distinct contact (same mailbox,
+different regulatory role).
 
 ---
 
@@ -181,7 +182,7 @@ updated "Effective date" above.
 
 ## 9. Contact
 
-- **Privacy/data-rights requests:** `[TODO: GG to provide contact email]`
+- **Privacy/data-rights requests:** `privacy@samidhareviews.xyz`
 - **Security disclosures:** see `SECURITY.md` (`gaurav.gandhi2411@gmail.com`).
 - **DPDP grievance officer (India):** see [`compliance-posture.md`](./compliance-posture.md).
 
