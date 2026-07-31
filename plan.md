@@ -116,6 +116,61 @@ G (cost telemetry): confirmed genuinely absent — `app/api/ops.py` has no per-e
 token/cost recording. H (corpus mining): `benchmark/vernacular_v2/` already has ingestion +
 dedup + a multi-LLM labeler prototype from earlier work — extending, not rebuilding.
 
+### Post-E remediation (2026-07-31) — P0-P3 + Section F + Section H sourcing decision
+
+**P0 (secret exposure) — CLOSED.** The demo key (`riq_live_d6fb4d0c...`) was revoked
+(`revoked_at` set, live-verified: the key now returns 401 on the real API). Usage audit:
+exactly 1 usage record exists for this key, timestamped **~16 hours BEFORE** the key was even
+published in README — almost certainly the original setup/test call, not external use. **Zero
+unattributable usage during the actual ~23-day exposure window.** History-reachability confirmed
+precisely: present in 21 historical commits (all pre-dating removal), absent from all 7 current
+Wave 1 feature branches and all 20 version tags. Not rewriting history (the key is dead; a
+rewrite would disrupt every clone/fork of this public repo for no live-security benefit) —
+flagging that call as available if GG wants it anyway.
+
+**P1 (NER redaction bug) — fix dispatched, in progress.** Confirmed the bug is exactly what was
+suspected: `_redact_names_ner()` already correctly filters to `PERSON`-only (ORG/PRODUCT were
+never touched), but spaCy's small model misclassifies brand names as PERSON on short review
+text. Fix in progress: a brand gazetteer (static list + live `competitor_mentions` history
+already has 10 real brands recorded, including the exact Dyson/Shark/Bose that were
+misredacted) checked before masking any PERSON candidate; ADR recording the "entity classes
+must be disjoint from the product schema" rationale; re-measurement of the accuracy delta
+against the FIXED redactor only (not the broken one).
+
+**P2 (BYPASSRLS reachability) — S0 finding, reported not fixed.** Traced in code, not
+inferred: `review_iq_app` (rolbypassrls=true) IS reachable from 3 live, request-serving paths
+with zero `_set_tenant()` call — `app/api/admin.py` (every DB helper; protection is
+single-factor HTTP Basic auth with **confirmed no rate-limiting**), and
+`app/api/webhooks/{google,shopify}.py`'s org-resolution lookups (protected by a shared-secret
+token / HMAC signature, also single-factor). Ruled out by tracing, not assuming: no
+fallback-DSN chain exists (`DATABASE_URL` is an unrelated legacy v1 SQLite path); the
+migration runner uses a distinct `postgres` superuser credential over a direct (non-pooler)
+connection, not shared with the app's PgBouncer pool; every `SET ROLE` in the codebase is the
+safe transaction-scoped `SET LOCAL ROLE` form. Added an `xfail(strict=True)` assertion to the
+adversarial suite (`TestBypassrlsServingPathReachability`) — fails today on purpose, tracked,
+will loudly XPASS-fail the moment someone "fixes" it without deliberately removing the marker.
+**Not fixed in this pass, per instruction.**
+
+**P3 (dead failover) — confirmed, fix dispatched.** Fixed the stale `gemini-2.0-flash` default
+(live-verified deprecated/shut down by Google 2026-06-01 → `gemini-2.5-flash`). The real
+finding: traced `app/core/llm.py::extract_with_llm`'s full fallback chain and confirmed
+**`SecondaryProvider` — the org-key path's only non-Gemini failover option — is a literal
+unimplemented stub** (`NotImplementedError` if ever called), not even configured with
+credentials in production. Combined with Gemini being correctly banned on the org-key path
+(`trains_on_input`), **the paid path has zero working failover today** — any Groq
+degradation/outage means 100% of paying-customer traffic gets a 503. Section F work (in
+progress) implements a real `SecondaryProvider` (OpenRouter, routed to a verified no-train
+model), a nightly synthetic failover probe exercising both fallback paths end-to-end, an
+uptime probe/status page, and a measured (not asserted) SLO.
+
+**Section H corpus-sourcing decision — ADR 0005 committed to PR #25, priced not decided.**
+Live research (not memory): no public dataset combining Hindi/Hinglish + product-review domain
++ adequate volume exists (checked Kaggle, HuggingFace, AI4Bharat's IndicNLP catalog).
+Commercial vendors (Shaip, Twine) exist, no public pricing — reported as an explicitly-labeled
+rough range, not a quote. 4 options priced (public sources / licensed data / narrow to
+Hinglish-only / accept the cost-moat decision-rule branch) for yield/cost/calendar/USP-support
+each. Synthetic review generation ruled out categorically, not priced — GG decides.
+
 ---
 
 ## 1. The product, restated
