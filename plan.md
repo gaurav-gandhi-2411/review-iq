@@ -343,6 +343,59 @@ question above. When unblocked: deploy from `web/`'s current repo source only, n
 attempting to restore whatever `review-iq-web` used to contain — the repo is the source of truth,
 not a guess at the prior project's exact configuration.
 
+### Undocumented ingress tier + DNS enumeration + P3 unblock (2026-07-31, third pass)
+
+GG confirmed the `review-iq-web` Vercel project deletion was deliberate. Unblocked P3; three more
+findings surfaced in the same pass.
+
+**P0 (verify admin lockdown through every real ingress) — VERIFIED-LIVE, all three.** `/admin/*`
+→ 404 through `api.samidhareviews.xyz` (Firebase-fronted), `review-iq-prod.web.app` (Firebase's
+own default host), and the raw `*.run.app` host — all three, every sub-path checked
+(`/admin/organizations/<uuid>`, `POST /admin/organizations`, `/admin/organizations/<uuid>/keys`).
+`/health` → 200 through all three, confirming no regression. `review-iq-admin` reconfirmed
+IAM-403 unauthenticated; confirmed via the Firebase Hosting API that only one site
+(`review-iq-prod`) exists, with its rewrite hardcoded to the `review-iq` service only — no path
+reaches `review-iq-admin` through Firebase. **P0's VERIFIED-LIVE label now genuinely holds across
+every live ingress, not just the raw Cloud Run host it was originally checked against.**
+
+**P1 (document the ingress tier) — done, PR #48 (draft), ADR 0009.** `api.` turns out to be
+Firebase Hosting's Cloud Run rewrite (site `review-iq-prod`, live since 2026-07-07,
+`DOMAIN_ACTIVE`/`CERT_ACTIVE`), not the native Cloud Run domain mapping every other doc in this
+repo assumed. Firebase Hosting adds no separate authorization layer — `review-iq`'s own IAM is
+`allUsers`, so Firebase is just another public hostname on an already-public backend, which is
+exactly why P0's fix verified identically across all three ingresses. Named the two-account
+operational risk (`gaurav.gandhi2411@gmail.com` for GCP/Firebase, `gg5678g@gmail.com` for
+Cloudflare/Vercel, no shared recovery path) as a finding for GG to decide on, not fixed here.
+`ARCHITECTURE.md` and `ops/runbooks/cloud-run-deploy.md` corrected.
+
+**P2 (DNS enumeration before executing console steps) — best-effort public enumeration done,
+reported directly to GG with an explicit NameCheap-export fallback for what public DNS can't see**
+(no API credentials exist for NameCheap in this repo/environment). Found: apex has a
+`google-site-verification` TXT record (Search Console, from the same 2026-07-07 session) that
+would break silently if lost during a nameserver cutover; `_dmarc` TXT exists
+(`v=DMARC1; p=none;`); **`mail.samidhareviews.xyz` (Resend's configured sending domain, confirmed
+via `RESEND_FROM_EMAIL` secret) has NO SPF/DKIM/MX records at all** — a real, pre-existing,
+separately-discovered gap (outbound email is very likely failing sender authentication today,
+independent of anything in this pass) — flagged, not fixed. CAA records could not be checked by
+either DNS tool available (`nslookup`, PowerShell `Resolve-DnsName`) — genuine tool limitation,
+not asserted as absent.
+
+**P3 (redeploy web/ as a new Vercel project) — VERIFIED-LIVE.** New project `samidha-reviews-web`
+(account `gg5678g@gmail.com`), deployed from `web/`'s current `main` HEAD only (`npm ci` + a local
+sanity build against real production env vars before deploying — clean). `app.samidhareviews.xyz`
+attached; resolved instantly (no propagation wait — the existing A record already pointed at
+Vercel's edge). Verified three ways, not just a 200: (1) the P2 probe script
+(`scripts/probe_web_surfaces.py`) — dashboard, api, try-page all **OK**, only the still-unmigrated
+apex marketing surface fails, exactly as expected; (2) a real Chrome session against the live
+domain — zero console errors/warnings, full page render (screenshot taken); (3) `/try`'s SPA
+rewrite confirmed serving the same shell with the correct `<title>`. `npm ci` flagged 4 pre-existing
+high-severity vulnerabilities in `web/`'s dependency tree — not fixed in this pass (pre-existing,
+out of scope), named here so it isn't silently lost.
+
+**P4 (database cutover) — not executed, correctly still blocked.** PR #33 has not merged; the
+webhook SECURITY DEFINER rewiring (required before the bypass can safely be removed) is not live.
+Readiness unchanged from the prior pass's report. Will execute the moment merge+deploy lands.
+
 ---
 
 ## 1. The product, restated
