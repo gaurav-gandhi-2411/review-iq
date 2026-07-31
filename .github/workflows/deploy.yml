@@ -1,8 +1,10 @@
 name: Deploy to Hugging Face Spaces
 
+# v1 HF Space is slated for retirement (Wave 1 spec §C — unauthenticated single-tenant
+# SQLite service on the public internet is a security finding, not a demo). Auto-deploy on
+# push is disabled so we stop shipping to a surface being retired; manual-only until then.
+# Re-enable the push trigger only if retirement is reversed.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
