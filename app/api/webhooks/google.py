@@ -12,10 +12,16 @@ does NOT contain the review's text/rating. So this handler must, after resolving
 org_id from google_location_name, refresh an access_token and fetch the actual
 review content from the Business Profile API before running extraction.
 
-MULTI-TENANT ROUTING:
+MULTI-TENANT ROUTING (Wave 1 S0 remediation, 2026-07-31):
   google_business_installations.google_location_name is UNIQUE — the routing key.
-  Lookup uses a plain psycopg2 connection (postgres role, no SET ROLE) so it bypasses
-  RLS — correct for a system/webhook call, mirroring Shopify's shop_domain routing.
+  review_iq_app no longer holds BYPASSRLS (see the accompanying role-separation
+  migration) — the org_id lookup instead calls a narrow SECURITY DEFINER function,
+  public.resolve_org_for_google_location(location_name), which returns ONLY org_id
+  (never the row, never refresh_token_enc) under its owner's (review_iq_migrator)
+  bypass privilege. Once org_id is known, the connection calls _set_tenant(org_id)
+  (SET LOCAL ROLE authenticated + the org GUC) and re-queries the installation row
+  through the RLS policy proper — the function never hands back tenant data itself,
+  it only answers "which tenant."
 
   Unrecognized location_name (never installed or revoked):
     → accept with 200, log and drop — never fall back to a default org.
@@ -49,6 +55,7 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, status
 from app.auth.api_key import ApiKeyContext
 from app.core.config import get_settings
 from app.core.ingestion.google_business_source import _refresh_access_token, _review_to_review_row
+from app.core.storage_pg import _set_tenant
 
 log = structlog.get_logger(__name__)
 
@@ -92,20 +99,26 @@ def encrypt_token(refresh_token: str, encryption_key: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Installation lookup — service-role (postgres role, bypasses RLS)
+# Installation lookup — org resolved via SECURITY DEFINER, then RLS-scoped
 # ---------------------------------------------------------------------------
 
 
 def _get_google_installation_pg(google_location_name: str) -> dict[str, Any] | None:
     """Look up google_business_installations by google_location_name. None if not installed.
 
-    Uses supabase_database_url (postgres role — bypasses RLS). This is correct
-    for system/webhook calls. RLS is only active after SET ROLE authenticated.
+    Wave 1 S0 remediation (2026-07-31): review_iq_app no longer holds BYPASSRLS, so this
+    is now a two-step lookup. Step 1 asks the narrow SECURITY DEFINER function "which org
+    owns this location" (it answers that one question only, under its owner's bypass
+    privilege — it never returns the row itself). Step 2, once org_id is known, sets the
+    RLS tenant context and re-queries the row through the policy proper — this is not
+    redundant defense-in-depth for its own sake, it's the only step that actually reads
+    google_account_name/refresh_token_enc, and it can only succeed for the org the
+    function just named.
 
-    UNIQUE(google_location_name) guarantees at most one row — result is never
-    ambiguous. Returns None if the table is not yet migrated (UndefinedTable),
-    mirroring Shopify's pre-migration-safety catch for defensive consistency
-    (the table is live in prod, but this keeps the code path uniform).
+    UNIQUE(google_location_name) guarantees at most one row — result is never ambiguous.
+    Returns None if the table is not yet migrated (UndefinedTable), mirroring Shopify's
+    pre-migration-safety catch for defensive consistency (the table is live in prod, but
+    this keeps the code path uniform).
     """
     settings = get_settings()
     if not settings.supabase_database_url:
@@ -113,20 +126,25 @@ def _get_google_installation_pg(google_location_name: str) -> dict[str, Any] | N
     conn = psycopg2.connect(settings.supabase_database_url)
     try:
         cur = conn.cursor()
-        # No SET ROLE — postgres role bypasses RLS; UNIQUE(google_location_name) = no ambiguity.
+        cur.execute("SELECT public.resolve_org_for_google_location(%s)", (google_location_name,))
+        (org_id,) = cur.fetchone()
+        if org_id is None:
+            return None
+
+        _set_tenant(cur, str(org_id))
         cur.execute(
-            "SELECT org_id, google_account_name, refresh_token_enc "
+            "SELECT google_account_name, refresh_token_enc "
             "FROM public.google_business_installations "
-            "WHERE google_location_name = %s AND revoked_at IS NULL",
-            (google_location_name,),
+            "WHERE org_id = %s AND google_location_name = %s AND revoked_at IS NULL",
+            (str(org_id), google_location_name),
         )
         row = cur.fetchone()
         if row is None:
             return None
         return {
-            "org_id": str(row[0]),
-            "google_account_name": str(row[1]),
-            "refresh_token_enc": str(row[2]),
+            "org_id": str(org_id),
+            "google_account_name": str(row[0]),
+            "refresh_token_enc": str(row[1]),
         }
     except psycopg2.errors.UndefinedTable:
         # Migration not yet applied — expected during dev; webhooks dropped safely.
