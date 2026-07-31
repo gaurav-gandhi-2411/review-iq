@@ -128,19 +128,32 @@ Wave 1 feature branches and all 20 version tags. Not rewriting history (the key 
 rewrite would disrupt every clone/fork of this public repo for no live-security benefit) —
 flagging that call as available if GG wants it anyway.
 
-**P1 (NER redaction bug) — CLOSED.** Confirmed the bug was exactly what was suspected:
-`_redact_names_ner()` already correctly filtered to `PERSON`-only (ORG/PRODUCT were never
-touched), but spaCy's small model misclassifies brand names as PERSON on short review text.
-Fixed with a brand gazetteer (132-entry static list + live `competitor_mentions` history, 10
-real brands already recorded including the exact Dyson/Shark/Bose that were misredacted) — a
-gazetteer hit vetoes redaction of that span regardless of spaCy's classification. ADR 0005
-(on this branch) records the "entity classes must be disjoint from the product schema"
-rationale. **Re-measured against the FIXED redactor only, 12 live Groq calls (~$0.001):
-44/49 fixtures paired (up from 30/49), paired mean delta (ON − OFF) = −0.78pp, 95% CI
-[−2.16pp, +0.35pp] — under the 1pp gate.** One honestly-documented residual gap: a
-fictional eval-fixture brand name with no real-world presence still misclassifies (can't
-enter a real gazetteer without fabricating an entry) — tested and designed to fail loudly
-once a real per-org catalog would close it, not silently accepted.
+**P1 (NER redaction bug) — bug fix CLOSED, accuracy-delta gate NOT cleared — corrected
+2026-07-31.** Confirmed the bug was exactly what was suspected: `_redact_names_ner()`
+already correctly filtered to `PERSON`-only (ORG/PRODUCT were never touched), but spaCy's
+small model misclassifies brand names as PERSON on short review text. Fixed with a brand
+gazetteer (132-entry static list + live `competitor_mentions` history, 10 real brands
+already recorded including the exact Dyson/Shark/Bose that were misredacted) — a gazetteer
+hit vetoes redaction of that span regardless of spaCy's classification. ADR 0005 records
+the "entity classes must be disjoint from the product schema" rationale. One
+honestly-documented residual gap: a fictional eval-fixture brand name with no real-world
+presence still misclassifies (can't enter a real gazetteer without fabricating an entry) —
+tested and designed to fail loudly once a real per-org catalog would close it, not
+silently accepted.
+
+**The accuracy-delta gate itself was previously mischaracterized as passing ("under the
+1pp gate") — that was wrong and is corrected here.** At the intermediate 44/49-paired
+measurement, the 95% CI was [−2.16pp, +0.35pp]: an interval that admits both a >1pp
+regression AND crosses zero does not clear a 1pp gate by any reasonable reading, regardless
+of the point estimate (−0.78pp) looking small. Re-measured against the now-FULL 49/49
+fixture set (the 5 previously-blocked fixtures — 001_turbo_vac, 007_buy_again_ambiguous,
+008_pii_heavy, 010_urgent_angry, 015_medium_urgency — recorded live in both arms, 10 calls,
+Groq quota headroom checked first): **paired mean delta (ON − OFF) = −0.71pp, 95% CI
+[−1.92pp, +0.35pp] — still does NOT clear the gate** (still crosses zero, still admits
+a regression exceeding 1pp). This number appears on no customer-facing surface and no
+README; the point estimate is not restated as if it had passed. Formal decision on what
+this means for shipping redaction (already ON by default as a security requirement,
+independent of this accuracy question) remains a GG call.
 
 **P2 (BYPASSRLS reachability) — S0 finding, reported not fixed.** Traced in code, not
 inferred: `review_iq_app` (rolbypassrls=true) IS reachable from 3 live, request-serving paths
