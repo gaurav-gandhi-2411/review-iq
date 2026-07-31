@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Upload, BarChart2, LogOut, MessageSquare, ShieldCheck, X, ArrowUpRight, CheckCircle2 } from 'lucide-react'
+import { Upload, BarChart2, LogOut, MessageSquare, ShieldCheck, Flag, Key, X, ArrowUpRight, CheckCircle2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { getAccount, requestQuotaIncrease } from '../lib/api'
 import LogoMark from './LogoMark'
 
 const QUOTA_WARN_THRESHOLD = 0.8
 
-interface Props { children: React.ReactNode; active?: 'upload' | 'dashboard' | 'reviews' | 'authenticity' }
+interface Props { children: React.ReactNode; active?: 'upload' | 'dashboard' | 'reviews' | 'authenticity' | 'flagged' | 'keys' }
 
 export default function Layout({ children, active }: Props) {
   const navigate = useNavigate()
@@ -87,8 +87,14 @@ export default function Layout({ children, active }: Props) {
             <NavLink href="/authenticity" active={active === 'authenticity'} icon={<ShieldCheck size={15} />}>
               Authenticity
             </NavLink>
+            <NavLink href="/flagged" active={active === 'flagged'} icon={<Flag size={15} />}>
+              Flagged
+            </NavLink>
             <NavLink href="/upload" active={active === 'upload'} icon={<Upload size={15} />}>
               Upload
+            </NavLink>
+            <NavLink href="/keys" active={active === 'keys'} icon={<Key size={15} />}>
+              API keys
             </NavLink>
             <button
               onClick={signOut}

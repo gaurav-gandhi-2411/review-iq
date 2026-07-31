@@ -13,6 +13,8 @@ import DashboardPage from './pages/Dashboard'
 import ReviewsPage from './pages/Reviews'
 import ReviewDetailPage from './pages/ReviewDetail'
 import AuthenticityPage from './pages/Authenticity'
+import FlaggedReviewsPage from './pages/FlaggedReviews'
+import ApiKeysPage from './pages/ApiKeys'
 
 function AuthRouter() {
   const [session, setSession] = useState<Session | null>(null)
@@ -63,6 +65,8 @@ function AuthRouter() {
         <Route path="/reviews" element={session ? <ReviewsPage /> : <Navigate to="/" replace />} />
         <Route path="/reviews/:reviewHash" element={session ? <ReviewDetailPage /> : <Navigate to="/" replace />} />
         <Route path="/authenticity" element={session ? <AuthenticityPage /> : <Navigate to="/" replace />} />
+        <Route path="/flagged" element={session ? <FlaggedReviewsPage /> : <Navigate to="/" replace />} />
+        <Route path="/keys" element={session ? <ApiKeysPage /> : <Navigate to="/" replace />} />
         <Route path="*" element={<Navigate to={session ? '/dashboard' : '/'} replace />} />
       </Routes>
     </FilterProvider>

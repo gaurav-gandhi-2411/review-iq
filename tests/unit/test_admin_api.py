@@ -269,12 +269,14 @@ def test_create_key_generic_exception_rolls_back() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_admin_db_connect_uses_supabase_database_url() -> None:
+def test_admin_db_connect_uses_admin_database_url() -> None:
+    """Wave 1 S0 remediation: admin.py connects via its own review_iq_admin-scoped
+    DSN, never the public service's supabase_database_url (ADR 0006)."""
     with (
         patch("app.api.admin.get_settings") as mock_settings,
         patch("app.api.admin.psycopg2") as mock_psycopg2,
     ):
-        mock_settings.return_value.supabase_database_url = "postgresql://user:pw@host/db"
+        mock_settings.return_value.admin_database_url = "postgresql://user:pw@host/db"
         mock_psycopg2.connect.return_value = MagicMock()
         from app.api.admin import _db_connect
 

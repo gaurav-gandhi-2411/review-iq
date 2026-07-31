@@ -15,12 +15,15 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import csv
 import hashlib
+import io
 import json
 import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Annotated, Any
 
+import psycopg2
 import structlog
 from fastapi import (
     APIRouter,
@@ -29,6 +32,7 @@ from fastapi import (
     Form,
     HTTPException,
     Query,
+    Response,
     UploadFile,
     status,
 )
@@ -42,6 +46,7 @@ from pydantic import BaseModel, field_validator, model_validator
 # path, so a Cloud Run restart mid-job no longer silently drops BFF uploads.
 from app.api.v2.ingest import _drain_until_job_complete
 from app.auth.api_key import ApiKeyContext
+from app.auth.keygen import generate_api_key
 from app.auth.session import require_session, require_session_read
 from app.core.authenticity import engine
 from app.core.authenticity.schema import AuthenticityFlag, AuthenticityLabel, AuthenticityResult
@@ -70,6 +75,7 @@ from app.core.storage_pg import (
     health_score_pg,
     list_dated_extractions_pg,
     list_extractions_pg,
+    list_flagged_authenticity_audits_pg,
     record_quota_request_pg,
     save_authenticity_audit_pg,
     theme_trends_pg,
@@ -171,6 +177,51 @@ class CorrectionRequest(BaseModel):
         except ValueError as exc:
             raise ValueError(str(exc)) from exc
         return self
+
+
+class CreateApiKeyRequest(BaseModel):
+    name: str
+    quota: int = 1000
+
+
+# ---------------------------------------------------------------------------
+# Export (GET /bff/export/reviews)
+# ---------------------------------------------------------------------------
+
+_EXPORT_ROW_CAP = 5000
+
+# Column order for the export -- mirrors GET /bff/reviews' underlying
+# list_extractions_pg row shape (see app/core/storage_pg.py::list_extractions_pg),
+# minus internal id/input_hash which are not part of the public review shape
+# exposed by that endpoint's `results` payload.
+_EXPORT_COLUMNS = [
+    "review_text",
+    "product",
+    "stars",
+    "stars_inferred",
+    "buy_again",
+    "sentiment",
+    "urgency",
+    "language",
+    "review_length_chars",
+    "confidence",
+    "topics",
+    "competitor_mentions",
+    "pros",
+    "cons",
+    "feature_requests",
+    "created_at",
+    "review_date",
+]
+
+
+def _export_value(value: Any) -> Any:
+    """Flatten list/None values to export-friendly scalars (CSV has no nested types)."""
+    if isinstance(value, list):
+        return "; ".join(str(v) for v in value)
+    if value is None:
+        return ""
+    return value
 
 
 # ---------------------------------------------------------------------------
@@ -280,6 +331,109 @@ def _get_quota_and_usage(api_key_id: str, org_id: str) -> tuple[int, int]:  # no
 
 
 # ---------------------------------------------------------------------------
+# API key management helpers (self-serve, session-authed)
+#
+# SQL logic mirrors app/api/admin.py's _create_key_db / _list_keys_db /
+# _revoke_key_db exactly (same api_keys table, same generate_api_key() usage,
+# same org-scoped WHERE clauses) -- only the auth mechanism differs: org_id
+# here is ALWAYS ctx.org_id resolved from the verified session, never a path
+# parameter, so a caller can never operate on another org's keys. Unlike
+# admin.py (single org, path-addressed) this is multi-tenant self-serve, so
+# every query is scoped by org_id in addition to key_id.
+# ---------------------------------------------------------------------------
+
+
+def _keys_db_connect() -> psycopg2.extensions.connection:
+    return psycopg2.connect(get_settings().supabase_database_url)
+
+
+def _create_key_bff_db(org_id: str, name: str, quota: int) -> dict[str, object]:
+    """Insert a new api_keys row scoped to org_id. Returns the raw key exactly once."""
+    raw_key, key_prefix, key_hash = generate_api_key()
+
+    conn = _keys_db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO public.api_keys (org_id, key_prefix, key_hash, name, quota) "
+            "VALUES (%s, %s, %s, %s, %s) RETURNING id, created_at",
+            (org_id, key_prefix, key_hash, name, quota),
+        )
+        row = cur.fetchone()
+        conn.commit()
+        return {
+            "id": str(row[0]),
+            "raw_key": raw_key,
+            "key_prefix": key_prefix,
+            "name": name,
+            "quota": quota,
+            "created_at": row[1],
+        }
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def _list_keys_bff_db(org_id: str) -> list[dict[str, object]]:
+    """List non-revoked keys for org_id. Never returns key_hash or the raw key."""
+    conn = _keys_db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT id, name, key_prefix, quota, created_at FROM public.api_keys "
+            "WHERE org_id = %s AND revoked_at IS NULL ORDER BY created_at DESC",
+            (org_id,),
+        )
+        rows = cur.fetchall()
+        conn.commit()
+        return [
+            {
+                "id": str(r[0]),
+                "name": r[1],
+                "key_prefix": r[2],
+                "quota": r[3],
+                "created_at": r[4],
+            }
+            for r in rows
+        ]
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def _revoke_key_bff_db(org_id: str, key_id: str) -> None:
+    """Revoke a key -- WHERE clause binds BOTH id and org_id, so a caller can
+    never revoke another org's key by guessing a UUID (see test_bff_keys.py::
+    test_revoke_key_cross_org_isolation)."""
+    conn = _keys_db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "UPDATE public.api_keys SET revoked_at = now() "
+            "WHERE id = %s AND org_id = %s AND revoked_at IS NULL RETURNING id",
+            (key_id, org_id),
+        )
+        if cur.fetchone() is None:
+            conn.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Key not found or already revoked.",
+            )
+        conn.commit()
+    except HTTPException:
+        raise
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
 
@@ -317,6 +471,83 @@ async def bff_list_reviews(
         "offset": offset,
         "limit": limit,
         "results": rows,
+    }
+
+
+@router.get("/export/reviews")
+async def bff_export_reviews(
+    ctx: Annotated[ApiKeyContext, Depends(require_session_read)],
+    format: str = Query("csv", pattern="^(csv|json)$"),
+) -> Response:
+    """Export the caller's own org's review extractions as CSV or JSON.
+
+    Reuses list_extractions_pg -- the same underlying query GET /bff/reviews uses --
+    rather than a separate export-specific query. Capped at _EXPORT_ROW_CAP rows;
+    truncation is surfaced via the X-Truncated header, never silently dropped.
+    """
+    rows = await asyncio.to_thread(
+        list_extractions_pg,
+        ctx.org_id,
+        limit=_EXPORT_ROW_CAP,
+        offset=0,
+    )
+    truncated = len(rows) >= _EXPORT_ROW_CAP
+    headers = {"X-Truncated": "true"} if truncated else {}
+
+    if format == "json":
+        export_rows = [{col: row.get(col) for col in _EXPORT_COLUMNS} for row in rows]
+        return Response(
+            content=json.dumps(export_rows, default=str),
+            media_type="application/json",
+            headers=headers,
+        )
+
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(_EXPORT_COLUMNS)
+    for row in rows:
+        writer.writerow([_export_value(row.get(col)) for col in _EXPORT_COLUMNS])
+    return Response(
+        content=buf.getvalue(),
+        media_type="text/csv",
+        headers={**headers, "Content-Disposition": "attachment; filename=reviews.csv"},
+    )
+
+
+@router.get("/authenticity/flagged")
+async def bff_list_flagged_reviews(
+    ctx: Annotated[ApiKeyContext, Depends(require_session_read)],
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+) -> dict[str, Any]:
+    """List individually flagged (non-genuine) authenticity audit rows for this org.
+
+    Per-review counterpart to GET /bff/insights/authenticity's aggregate summary --
+    feeds the flagged-review queue page.
+    """
+    rows = await asyncio.to_thread(
+        list_flagged_authenticity_audits_pg,
+        ctx.org_id,
+        limit,
+        offset,
+    )
+    return {
+        "org_id": ctx.org_id,
+        "count": len(rows),
+        "offset": offset,
+        "limit": limit,
+        "results": [
+            {
+                "review_hash": r["review_hash"],
+                "score": r["score"],
+                "label": r["label"],
+                "flags": r["flags"],
+                "created_at": r["created_at"].isoformat()
+                if hasattr(r["created_at"], "isoformat")
+                else str(r["created_at"]),
+            }
+            for r in rows
+        ],
     }
 
 
@@ -908,6 +1139,62 @@ async def bff_request_quota_increase(
     )
     log.info("bff.quota_request.recorded", org_id=ctx.org_id, usage=usage_this_month, quota=quota)
     return {"recorded": True, "org_id": ctx.org_id}
+
+
+@router.get("/keys")
+async def bff_list_keys(
+    ctx: Annotated[ApiKeyContext, Depends(require_session_read)],
+) -> dict[str, Any]:
+    """List this org's non-revoked API keys. Never returns key_hash or raw key material."""
+    keys = await asyncio.to_thread(_list_keys_bff_db, ctx.org_id)
+    return {
+        "org_id": ctx.org_id,
+        "keys": [
+            {
+                "id": k["id"],
+                "name": k["name"],
+                "key_prefix": k["key_prefix"],
+                "quota": k["quota"],
+                "created_at": k["created_at"].isoformat()
+                if hasattr(k["created_at"], "isoformat")
+                else str(k["created_at"]),
+            }
+            for k in keys
+        ],
+    }
+
+
+@router.post("/keys", status_code=status.HTTP_201_CREATED)
+async def bff_create_key(
+    body: CreateApiKeyRequest,
+    ctx: Annotated[ApiKeyContext, Depends(require_session)],
+) -> dict[str, object]:
+    """Create a new API key scoped to this org. raw_key is shown exactly once."""
+    result = await asyncio.to_thread(_create_key_bff_db, ctx.org_id, body.name, body.quota)
+    log.info("bff.keys.created", org_id=ctx.org_id, key_id=result["id"])
+    created_at = result["created_at"]
+    return {
+        "id": result["id"],
+        "name": result["name"],
+        "key_prefix": result["key_prefix"],
+        "raw_key": result["raw_key"],
+        "quota": result["quota"],
+        "created_at": created_at.isoformat()
+        if hasattr(created_at, "isoformat")
+        else str(created_at),
+        "note": "Store this key securely — it will not be shown again.",
+    }
+
+
+@router.delete("/keys/{key_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def bff_revoke_key(
+    key_id: uuid.UUID,
+    ctx: Annotated[ApiKeyContext, Depends(require_session)],
+) -> None:
+    """Revoke an API key. WHERE clause is scoped to id AND org_id -- a caller can
+    never revoke another org's key by guessing a UUID."""
+    await asyncio.to_thread(_revoke_key_bff_db, ctx.org_id, str(key_id))
+    log.info("bff.keys.revoked", org_id=ctx.org_id, key_id=str(key_id))
 
 
 from app.api.bff.alerts import router as _alerts_router  # noqa: E402, I001 -- deliberately after all route handlers, not a top-level import (see module docstring's import constraints)
