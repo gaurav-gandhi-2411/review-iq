@@ -4,9 +4,74 @@
 
 **Owner:** `gaurav-gandhi-2411`
 **Status:** Phase 2.0a complete at v0.2.0. Phase 2.0b (Hinglish) next.
-**Last updated:** 2026-05-12
+**Last updated:** 2026-05-12 — NOTE: this status line and phases 2.0b+ below are stale;
+Phase 2.0a through 2.2 have all since shipped (see README Roadmap and memory). Superseded by
+the Wave 1 tracker below for anything from 2026-07-30 onward.
 **Live URL (v2, production):** https://review-iq-ajjrytb3na-el.a.run.app
 **Live URL (v1, legacy demo):** https://gauravgandhi2411-review-iq.hf.space
+
+---
+
+## Wave 1 — Commercialization (started 2026-07-30)
+
+Spec: `docs/specs/wave1-commercialization.md`. Sections A-H, stacked PRs, A gates everything.
+Full 12-gate exit criteria in spec §5. Tracked here per rule 118 (checkpoint on every milestone).
+
+### Premise corrections found before building (spec's own §0 had errors — reconciled 2026-07-30)
+- Real eval gate: **0.83 overall / 0.80 per-language** (not 0.85), lowered 2026-06-14, rationale
+  already in `eval/runner.py` code comment. Real committed number: 83.8% overall (en 86.2%,
+  hi-en 80.9%, hi 80.7%), direct-mode, last regenerated 2026-07-06 (stale 24 days vs nightly CI).
+- Real prompt version: **v2.3** (`app/core/prompts/__init__.py`). README has 3 different stale
+  version strings (v2.0 in an example, v2.1 in roadmap text) — all wrong.
+- Tiered router is **live in production right now**, undisclosed on README (README claims OFF).
+  Confirmed via a live `/demo/extract` call served by `llama-3.1-8b-instant`. No
+  `ENABLE_TIERED_ROUTING` override on Cloud Run — code default (`True`) applies. The demo page
+  (`site/index.html`) already discloses this correctly; only the README is wrong.
+- `samidhareviews.xyz` nameservers = registrar default DNS (not Cloudflare), apex has no A
+  record — domain consolidation (Section C) starts from a completely blank DNS slate.
+- v1 HF Space: `/extract` correctly requires an API key, but **`GET /reviews` and `GET
+  /insights` are unauthenticated** and return 200 (currently empty, 0 rows) — a real, live,
+  unauthenticated data-exposure endpoint. Confirms the Section C retirement call, sharper than
+  the spec's original framing.
+- **Section E is not starting from zero**: PII redaction already exists and is wired into
+  `/v2/extract` (`app/core/sanitize.py` → `redact_pii()`), but it's destructive replacement
+  (`[EMAIL]`/`[PHONE]`/`[CARD]`/name-intro-only), not the reversible token map the spec calls
+  for; no order/invoice-ID pattern; unclear if wired into batch/CSV/reply paths; no measured
+  recall. Adversarial cross-tenant RLS test files already exist
+  (`tests/integration/test_rls_isolation.py` + 2 more) — depth/coverage vs the spec's exact
+  four attack vectors (wrong-org key, forged JWT, mismatched org_id, direct app-role) not yet
+  audited. Zero `BYPASSRLS` grep hits in-repo; a Postgres superuser role was already rotated
+  off the backend connection 2026-07-26 (`fix(security): rotate backend Postgres connection
+  off the shared superuser`) — re-verify live, don't assume clean from grep alone.
+- **Section H is not starting from zero**: `benchmark/vernacular_v2/ingest_and_dedupe.py`
+  already ingests 3 license-cleared Kaggle Flipkart datasets (ODbL-1.0/DbCL-1.0, "cleared
+  2026-07-07"), deduped to ~245K rows with 595 isolated vernacular (per memory:
+  project_vernacular_corpus_isolation.md). `eval/data/README.md` already tracks per-source
+  license status, with 2 sources flagged "(check before use)" — unresolved, must be verified
+  or dropped per spec rule. `benchmark/vernacular_v2/multi_llm_labeler.py` already exists —
+  possible reusable prototype for Section B's multi-LLM consensus requirement, not yet audited
+  against the spec's exact bar (>=3 model families, none under eval, Krippendorff/Fleiss
+  reported, calibrated on a control set).
+- Section G (cost telemetry): confirmed genuinely absent — `app/api/ops.py` has no per-
+  extraction token/cost recording. Spec's premise holds here.
+- Found but not in spec: 3 Cloud Run env vars (`DIGEST_TRIGGER_TOKEN`, `INGEST_TICK_TOKEN`,
+  `DETECTOR_SWEEP_TRIGGER_TOKEN`) are plain env vars, not Secret Manager secrets, unlike every
+  other credential on that service. Low blast radius (internal cron auth) but flagged for
+  Section E's secret-hygiene sweep.
+- Cleaned up: stale worktree `.claude/worktrees/deploy-3d7d4d8` (single already-superseded CORS
+  commit) removed 2026-07-30 with explicit user confirmation.
+
+### Section status
+| Section | Status | Notes |
+|---|---|---|
+| A — Truth reconciliation | **done, PR #16 (draft)** | Implemented, independently re-verified (ruff/mypy/950 tests/scanner/drift-check all re-run myself, not just trusted). Opened as draft, not auto-merged: rule 70a gate 3's generated-artifact carve-out doesn't literally cover `eval/results/*.json`, flagged rather than self-granted. CI green on push, PR-triggered run in progress as of opening. |
+| B — Kill hand-labeling | **done, PR #17 (draft, stacked on #16)** | Built and independently re-verified: `eval/agreement.py` (Krippendorff/Fleiss, textbook-verified), `eval/power_analysis.py` (MDE), `eval/consensus/` package (2-judge panel after calibration dropped `allam-2-7b`; `llama-3.3-70b-versatile` excluded by design as a self-judging conflict), 132 fixtures total with real consensus ground truth (not 300 — real corpus yield + Groq rate-limit wall, documented honestly), ADR 0002. **INCIDENT (resolved):** recording cassettes for the 83 new fixtures exhausted production's `GROQ_API_KEY` daily TPD budget for `llama-3.3-70b-versatile` (99,770/100,000) after 43/132 — a real quota-consumption event I ran without recognizing it as the exact escalation case my own standing rules name. No customer-impact evidence found in Cloud Run logs, not exhaustively proven either. With GG's explicit direction, filled the gap via OpenRouter (83/83, Gemini configured as unused fallback) — ADR 0003. **Then caught two more bugs in my own recovery, during independent verification, before either executor did:** (1) my own WIP commit had captured a broken partial-run snapshot (27.3%) instead of the true 83.8%/49-fixture figure — restored from the last known-good commit; (2) the 83 substitute-provider fixtures sat inside `eval/fixtures/`, which `eval.runner` scans fresh on every real CI run (not a static check) — would have silently regenerated a 74.6%/FAIL result on the next push regardless of what was committed. Moved to `eval/fixtures/_pending_groq_cassette/` (outside the runner's scan), restoring the clean 49-fixture/83.8% CI gate, verified reproducible twice. This PR adds 132 fixtures' worth of real ground truth to the repo but changes nothing about what currently gates CI. |
+| C — Domain consolidation | not started | DNS is a blank slate; will need GG's registrar/Cloudflare console steps (numbered instructions in the PR body per standing rule). |
+| D — Logo/identity | not started | |
+| E — Security + legal | not started | Scope narrower than spec assumed — see premise corrections above. |
+| F — Reliability | not started | |
+| G — Cost telemetry | not started | Confirmed absent, spec premise holds. |
+| H — Corpus mining | not started | Substantial reusable groundwork in `benchmark/vernacular_v2/` — extend, don't rebuild. 2 unresolved-license Kaggle sources need a decision. |
 
 ---
 
