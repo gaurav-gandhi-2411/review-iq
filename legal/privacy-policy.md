@@ -106,6 +106,10 @@ schedule and the deletion mechanism. In summary:
 - **Google Cloud Run** (our own compute hosting, not a sub-processor of Customer data in the
   GDPR sense — see [`sub-processors.md`](./sub-processors.md) for why) runs in `asia-south1`
   (Mumbai, India), confirmed from `ops/runbooks/cloud-run-deploy.md`.
+- **Resend** (transactional alert email — quota/authenticity/urgency notifications, see
+  [`sub-processors.md`](./sub-processors.md)) processes in Tokyo, Japan (`ap-northeast-1`),
+  confirmed from Resend's own dashboard region setting for this account. This was missing from
+  this section entirely until 2026-08-01 — not a wrong region previously asserted, an omission.
 - **Backups.** Nightly encrypted database backup artifacts are stored via GitHub Actions, which
   Github's own documentation states are hosted in US data centers (per
   `ops/runbooks/db-restore.md`'s own "Geo-redundancy" note). This means an encrypted copy of

@@ -12,7 +12,8 @@ removed, or changed. `[TODO: GG-DECISION — pick and state a change-notificatio
 "check this page" vs. an email/changelog subscription, before this becomes a binding
 contractual commitment (see dpa-template.md §6).]`
 
-**Last verified against the codebase:** 2026-07-31 (commit range: Wave 1 Section E drafting).
+**Last verified against the codebase:** 2026-08-01 (added Resend, absent from the original Section
+E drafting despite being live in production already).
 
 ---
 
@@ -36,6 +37,17 @@ contractual commitment (see dpa-template.md §6).]`
 | **What it processes** | All persisted Customer/end-customer data: extraction output, authenticity audit records (hashed review text, not plaintext — see `SECURITY.md` §10), account/organization data, API key metadata (hashed), usage records. Isolated per organization via Postgres Row-Level Security — see `docs/data-ownership.md`. |
 | **Data location (this project)** | Verified from this project's own operational configuration, not guessed: the production Postgres connection pooler host is `aws-0-ap-south-1.pooler.supabase.com` (`ops/runbooks/connection-modes.md`), i.e. AWS `ap-south-1` (Mumbai, India). |
 | **Their own published documentation** | `https://supabase.com/privacy` (Privacy Policy), `https://supabase.com/security` (Security overview) — `[TODO: these URLs were not independently fetched/verified in this drafting session; confirm they are current and review Supabase's own DPA/sub-processor list before publishing this page.]` |
+
+---
+
+## Resend
+
+| | |
+|---|---|
+| **Role** | Transactional alert email delivery (quota-warning, authenticity, and urgency notifications — `app/core/alerts/channels/resend_channel.py`). **Not** used for magic-link signup email, which Supabase's own default sender handles (verified live 2026-07-31 — a real signup email arrived from `noreply@mail.app.supabase.io`, not Resend). |
+| **What it processes** | Alert content derived from Customer data — e.g. an urgency-flagged review's summary, or a quota-usage figure — sent to the org's own registered recipient email. Added to this list 2026-08-01; previously absent despite being live in production since before this drafting. |
+| **Data location** | Tokyo, Japan (`ap-northeast-1`) — confirmed from Resend's own dashboard region setting for this account, 2026-08-01. |
+| **Their own published documentation** | `https://resend.com/legal/privacy-policy` — `[TODO: not independently fetched/verified in this drafting session; confirm current before publishing.]` |
 
 ---
 
