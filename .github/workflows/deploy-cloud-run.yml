@@ -67,12 +67,24 @@ jobs:
 
       # Build from the exact checked-out commit -- never the working directory of a local
       # machine, which is the entire point of this workflow existing.
+      #
+      # --suppress-logs: the deployer SA is intentionally NOT granted a logging-viewer role
+      # (least privilege -- it has no legitimate need to read Cloud Build's log bucket, only
+      # to trigger builds and check their outcome). Without this flag, `gcloud builds submit`
+      # still creates and waits for the build correctly, but its log-streaming step then
+      # fails with "This tool can only stream logs if you are Viewer/Owner of the project" --
+      # a CLI-side permission check unrelated to whether the build itself succeeds (confirmed
+      # live 2026-08-01: `gcloud builds describe` on the affected build showed SUCCESS with
+      # the image pushed, while the calling `gcloud builds submit` process still exited 1).
+      # `--suppress-logs` skips that streaming attempt entirely; the command still blocks
+      # until the build finishes and still exits non-zero on a real build failure.
       - name: Build and push image (Cloud Build)
         run: |
           gcloud builds submit \
             --tag "${{ env.IMAGE_REPO }}:${{ steps.image.outputs.tag }}" \
             --region="${{ env.REGION }}" \
-            --project="${{ env.PROJECT }}"
+            --project="${{ env.PROJECT }}" \
+            --suppress-logs
 
       # Staged rollout, same pattern as ops/runbooks/cloud-run-deploy.md's manual sequence:
       # deploy with zero traffic, smoke-test the tagged revision directly, promote only if that
