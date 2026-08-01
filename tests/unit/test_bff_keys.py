@@ -14,10 +14,17 @@ from unittest.mock import MagicMock, patch
 
 import httpx
 import pytest
-from app.api.bff.router import _create_key_bff_db, _list_keys_bff_db, _revoke_key_bff_db
+from app.api.bff.router import (
+    PLAN_QUOTA_LIMITS,
+    _create_key_bff_db,
+    _get_org_plan_pg,
+    _list_keys_bff_db,
+    _revoke_key_bff_db,
+)
 from app.auth.api_key import ApiKeyContext
 from app.auth.session import require_session, require_session_read
 from fastapi import HTTPException
+from pydantic import ValidationError
 
 _ORG_A = str(uuid.uuid4())
 _ORG_B = str(uuid.uuid4())
@@ -58,8 +65,10 @@ def test_create_key_bff_returns_raw_key() -> None:
     assert result["quota"] == 1000
     conn.commit.assert_called_once()
 
-    # org_id is bound as an INSERT parameter (scoped to the caller's own org).
-    insert_call = cur.execute.call_args_list[0]
+    # org_id is bound as an INSERT parameter (scoped to the caller's own org). The INSERT
+    # is the LAST cur.execute call now, not the first -- _set_tenant() (rule: RLS
+    # defense-in-depth, see the section below) issues two SET LOCAL calls ahead of it.
+    insert_call = cur.execute.call_args_list[-1]
     assert _ORG_A in insert_call[0][1]
 
 
@@ -127,6 +136,102 @@ def test_revoke_key_bff_not_found_generic_rolls_back() -> None:
 
 
 # ---------------------------------------------------------------------------
+# RLS defense-in-depth -- bug fix (found in code review after PR #45 landed
+# ungated): these DB helpers connected via bare psycopg2.connect() and never
+# called _set_tenant(), unlike every other function in app/core/storage_pg.py.
+# The WHERE-clause scoping was already correct (no cross-tenant access was
+# ever actually possible), but without _set_tenant() the connection ran
+# outside the `authenticated` role RLS checks -- these confirm the second
+# layer is now genuinely wired, not just present in a comment.
+# ---------------------------------------------------------------------------
+
+
+def test_create_key_bff_calls_set_tenant() -> None:
+    conn, cur = _make_conn()
+    cur.fetchone.return_value = (uuid.UUID(_KEY_ID), _NOW)
+
+    with patch("app.api.bff.router._keys_db_connect", return_value=conn):
+        with patch("app.api.bff.router.generate_api_key", return_value=("k", "p", "h")):
+            with patch("app.api.bff.router._set_tenant") as mock_set_tenant:
+                _create_key_bff_db(_ORG_A, "default", 1000)
+
+    mock_set_tenant.assert_called_once_with(cur, _ORG_A)
+
+
+def test_list_keys_bff_calls_set_tenant() -> None:
+    conn, cur = _make_conn()
+    cur.fetchall.return_value = []
+
+    with patch("app.api.bff.router._keys_db_connect", return_value=conn):
+        with patch("app.api.bff.router._set_tenant") as mock_set_tenant:
+            _list_keys_bff_db(_ORG_A)
+
+    mock_set_tenant.assert_called_once_with(cur, _ORG_A)
+
+
+def test_revoke_key_bff_calls_set_tenant() -> None:
+    conn, cur = _make_conn()
+    cur.fetchone.return_value = (uuid.UUID(_KEY_ID),)
+
+    with patch("app.api.bff.router._keys_db_connect", return_value=conn):
+        with patch("app.api.bff.router._set_tenant") as mock_set_tenant:
+            _revoke_key_bff_db(_ORG_A, _KEY_ID)
+
+    mock_set_tenant.assert_called_once_with(cur, _ORG_A)
+
+
+# ---------------------------------------------------------------------------
+# Plan-entitlement quota bounding -- the actual incident fix. CreateApiKeyRequest.
+# quota had no bound at all and was written verbatim to the column
+# app/auth/api_key.py:99 uses as the sole gate on request admission; any
+# signed-in free-tier user could self-issue a key with an arbitrarily large
+# quota via POST /bff/keys.
+# ---------------------------------------------------------------------------
+
+
+def test_get_org_plan_bff_calls_set_tenant() -> None:
+    conn, cur = _make_conn()
+    cur.fetchone.return_value = ("pro",)
+
+    with patch("app.api.bff.router._keys_db_connect", return_value=conn):
+        with patch("app.api.bff.router._set_tenant") as mock_set_tenant:
+            plan = _get_org_plan_pg(_ORG_A)
+
+    mock_set_tenant.assert_called_once_with(cur, _ORG_A)
+    assert plan == "pro"
+
+
+def test_get_org_plan_bff_defaults_to_free_when_row_missing() -> None:
+    """An org row that can't be found (should never happen for a real caller, but the
+    query must not silently return an unbounded/None plan) fails closed to the
+    strictest tier, not to no limit at all."""
+    conn, cur = _make_conn()
+    cur.fetchone.return_value = None
+
+    with patch("app.api.bff.router._keys_db_connect", return_value=conn):
+        plan = _get_org_plan_pg(_ORG_A)
+
+    assert plan == "free"
+
+
+def test_create_api_key_request_rejects_zero_quota() -> None:
+    """quota=0 previously locked a key out permanently (monthly_count >= 0 is always
+    true) with no validation error -- a second, independent bug the same Field(ge=1)
+    fix closes."""
+    from app.api.bff.router import CreateApiKeyRequest
+
+    with pytest.raises(ValidationError):
+        CreateApiKeyRequest(name="default", quota=0)
+
+
+def test_create_api_key_request_rejects_negative_quota() -> None:
+    from app.api.bff.router import CreateApiKeyRequest
+
+    with pytest.raises(ValidationError):
+        CreateApiKeyRequest(name="default", quota=-5)
+
+
+# ---------------------------------------------------------------------------
 # HTTP routes -- session-auth wiring tests
 # ---------------------------------------------------------------------------
 
@@ -169,24 +274,114 @@ async def test_list_keys_route_happy_path(client: httpx.AsyncClient) -> None:
 
 
 async def test_create_key_route_happy_path(client: httpx.AsyncClient) -> None:
-    with patch(
-        "app.api.bff.router._create_key_bff_db",
-        return_value={
-            "id": _KEY_ID,
-            "raw_key": "riq_live_" + "a" * 32,
-            "key_prefix": "riq_live_aaaaaaaa",
-            "name": "default",
-            "quota": 1000,
-            "created_at": _NOW,
-        },
-    ) as mock_create:
-        resp = await client.post("/bff/keys", json={"name": "default", "quota": 1000})
+    with patch("app.api.bff.router._get_org_plan_pg", return_value="pro"):
+        with patch(
+            "app.api.bff.router._create_key_bff_db",
+            return_value={
+                "id": _KEY_ID,
+                "raw_key": "riq_live_" + "a" * 32,
+                "key_prefix": "riq_live_aaaaaaaa",
+                "name": "default",
+                "quota": 1000,
+                "created_at": _NOW,
+            },
+        ) as mock_create:
+            resp = await client.post("/bff/keys", json={"name": "default", "quota": 1000})
 
     assert resp.status_code == 201
     body = resp.json()
     assert body["raw_key"] == "riq_live_" + "a" * 32
     assert body["key_prefix"] == "riq_live_aaaaaaaa"
     mock_create.assert_called_once_with(_ORG_A, "default", 1000)
+
+
+async def test_create_key_route_rejects_over_limit_quota_for_free_plan(
+    client: httpx.AsyncClient,
+) -> None:
+    """The actual incident: a free-tier org must not be able to self-issue a key with
+    an arbitrarily large quota. quota=999999999 is well above PLAN_QUOTA_LIMITS['free']."""
+    with patch("app.api.bff.router._get_org_plan_pg", return_value="free"):
+        with patch("app.api.bff.router._create_key_bff_db") as mock_create:
+            resp = await client.post("/bff/keys", json={"name": "default", "quota": 999999999})
+
+    assert resp.status_code == 400
+    assert "free" in resp.json()["detail"]
+    assert str(PLAN_QUOTA_LIMITS["free"]) in resp.json()["detail"]
+    mock_create.assert_not_called()  # rejected before any DB write
+
+
+async def test_create_key_route_allows_quota_at_exact_free_plan_limit(
+    client: httpx.AsyncClient,
+) -> None:
+    """A request for exactly the plan's limit is allowed -- the check is a hard
+    ceiling (`>`), not an off-by-one that also rejects the boundary value itself."""
+    with patch("app.api.bff.router._get_org_plan_pg", return_value="free"):
+        with patch(
+            "app.api.bff.router._create_key_bff_db",
+            return_value={
+                "id": _KEY_ID,
+                "raw_key": "riq_live_" + "a" * 32,
+                "key_prefix": "riq_live_aaaaaaaa",
+                "name": "default",
+                "quota": PLAN_QUOTA_LIMITS["free"],
+                "created_at": _NOW,
+            },
+        ) as mock_create:
+            resp = await client.post(
+                "/bff/keys",
+                json={"name": "default", "quota": PLAN_QUOTA_LIMITS["free"]},
+            )
+
+    assert resp.status_code == 201
+    mock_create.assert_called_once_with(_ORG_A, "default", PLAN_QUOTA_LIMITS["free"])
+
+
+async def test_create_key_route_pro_plan_allows_above_free_limit(
+    client: httpx.AsyncClient,
+) -> None:
+    """A pro-plan org may request a quota above the free tier's limit, up to its own
+    (higher) plan limit -- confirms the bound is genuinely plan-aware, not a single
+    flat max applied to every caller regardless of tier."""
+    requested = PLAN_QUOTA_LIMITS["free"] + 1
+    assert requested <= PLAN_QUOTA_LIMITS["pro"]  # sanity: this case must be allowed
+    with patch("app.api.bff.router._get_org_plan_pg", return_value="pro"):
+        with patch(
+            "app.api.bff.router._create_key_bff_db",
+            return_value={
+                "id": _KEY_ID,
+                "raw_key": "riq_live_" + "a" * 32,
+                "key_prefix": "riq_live_aaaaaaaa",
+                "name": "default",
+                "quota": requested,
+                "created_at": _NOW,
+            },
+        ) as mock_create:
+            resp = await client.post("/bff/keys", json={"name": "default", "quota": requested})
+
+    assert resp.status_code == 201
+    mock_create.assert_called_once_with(_ORG_A, "default", requested)
+
+
+async def test_create_key_route_unrecognized_plan_falls_back_to_free_limit(
+    client: httpx.AsyncClient,
+) -> None:
+    """A plan value not in PLAN_QUOTA_LIMITS (e.g. a future tier added to the DB CHECK
+    constraint but not yet wired into this table) must fail closed to the strictest
+    limit, never default to unlimited."""
+    with patch("app.api.bff.router._get_org_plan_pg", return_value="some_future_tier"):
+        with patch("app.api.bff.router._create_key_bff_db") as mock_create:
+            resp = await client.post(
+                "/bff/keys",
+                json={"name": "default", "quota": PLAN_QUOTA_LIMITS["free"] + 1},
+            )
+
+    assert resp.status_code == 400
+    mock_create.assert_not_called()
+
+
+async def test_create_key_route_rejects_zero_quota(client: httpx.AsyncClient) -> None:
+    resp = await client.post("/bff/keys", json={"name": "default", "quota": 0})
+    assert resp.status_code == 422
 
 
 async def test_revoke_key_route_scopes_to_callers_org(client: httpx.AsyncClient) -> None:
