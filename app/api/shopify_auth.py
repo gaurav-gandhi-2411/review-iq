@@ -48,6 +48,7 @@ from pydantic import BaseModel
 from app.api.webhooks.shopify import encrypt_token
 from app.auth.signup import _get_org_for_user, verify_supabase_jwt
 from app.core.config import get_settings
+from app.core.storage_pg import _set_tenant
 
 log = structlog.get_logger(__name__)
 router = APIRouter(prefix="/auth/shopify", tags=["shopify-oauth"])
@@ -198,15 +199,17 @@ async def _register_webhook(shop_domain: str, access_token: str, settings: Any) 
 
 
 def _upsert_installation_pg(org_id: str, shop_domain: str, access_token_enc: str) -> None:
-    """Service-role (postgres, no SET ROLE) upsert into shopify_installations.
+    """RLS-scoped upsert into shopify_installations (BYPASSRLS remediation 2c).
 
     ON CONFLICT (shop_domain) handles re-installs: clears revoked_at and rotates the
     encrypted token. org_id is ALWAYS caller-resolved from the verified JWT — never
-    accepted as a user param.
+    accepted as a user param — so _set_tenant() here is safe: it scopes to the same
+    org_id that was already resolved server-side.
     """
     conn = psycopg2.connect(get_settings().supabase_database_url)
     try:
         cur = conn.cursor()
+        _set_tenant(cur, org_id)
         cur.execute(
             """
             INSERT INTO public.shopify_installations (org_id, shop_domain, access_token_enc)
