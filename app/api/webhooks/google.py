@@ -49,6 +49,7 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, status
 from app.auth.api_key import ApiKeyContext
 from app.core.config import get_settings
 from app.core.ingestion.google_business_source import _refresh_access_token, _review_to_review_row
+from app.core.storage_pg import _set_tenant
 
 log = structlog.get_logger(__name__)
 
@@ -92,20 +93,30 @@ def encrypt_token(refresh_token: str, encryption_key: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Installation lookup — service-role (postgres role, bypasses RLS)
+# Installation lookup — two-step, no bypass-holding role needed (BYPASSRLS remediation)
 # ---------------------------------------------------------------------------
 
 
 def _get_google_installation_pg(google_location_name: str) -> dict[str, Any] | None:
     """Look up google_business_installations by google_location_name. None if not installed.
 
-    Uses supabase_database_url (postgres role — bypasses RLS). This is correct
-    for system/webhook calls. RLS is only active after SET ROLE authenticated.
+    Bug fixed 2026-08-01: previously a single query relying on the connecting role
+    (review_iq_app) holding BYPASSRLS, which the comment here used to claim was
+    "postgres role" and "correct for a system/webhook call" -- neither the role name nor
+    the reasoning survives contact with the actual live grant (see
+    supabase/migrations/20260801000001_role_separation_bypassrls_remediation.sql). Now
+    two steps, NEITHER of which needs review_iq_app to hold any bypass:
 
-    UNIQUE(google_location_name) guarantees at most one row — result is never
-    ambiguous. Returns None if the table is not yet migrated (UndefinedTable),
-    mirroring Shopify's pre-migration-safety catch for defensive consistency
-    (the table is live in prod, but this keeps the code path uniform).
+    1. Resolve org_id via public.resolve_org_for_google_location(), a narrow SECURITY
+       DEFINER function that returns ONLY org_id (never the row, never the encrypted
+       token) -- review_iq_app has EXECUTE on it, nothing more.
+    2. With org_id now known, fetch the actual row via a normal, _set_tenant()-scoped
+       query -- properly RLS-protected like every other tenant-scoped read in this repo.
+
+    UNIQUE(google_location_name) still guarantees step 1 returns at most one org_id --
+    unambiguous, unchanged from before. Returns None if the table is not yet migrated
+    (UndefinedTable), mirroring Shopify's pre-migration-safety catch for defensive
+    consistency (the table is live in prod, but this keeps the code path uniform).
     """
     settings = get_settings()
     if not settings.supabase_database_url:
@@ -113,24 +124,35 @@ def _get_google_installation_pg(google_location_name: str) -> dict[str, Any] | N
     conn = psycopg2.connect(settings.supabase_database_url)
     try:
         cur = conn.cursor()
-        # No SET ROLE — postgres role bypasses RLS; UNIQUE(google_location_name) = no ambiguity.
+        cur.execute("SELECT public.resolve_org_for_google_location(%s)", (google_location_name,))
+        row = cur.fetchone()
+        org_id = row[0] if row else None
+        if org_id is None:
+            return None
+
+        _set_tenant(cur, str(org_id))
         cur.execute(
-            "SELECT org_id, google_account_name, refresh_token_enc "
+            "SELECT google_account_name, refresh_token_enc "
             "FROM public.google_business_installations "
             "WHERE google_location_name = %s AND revoked_at IS NULL",
             (google_location_name,),
         )
-        row = cur.fetchone()
-        if row is None:
+        detail = cur.fetchone()
+        if detail is None:
             return None
         return {
-            "org_id": str(row[0]),
-            "google_account_name": str(row[1]),
-            "refresh_token_enc": str(row[2]),
+            "org_id": str(org_id),
+            "google_account_name": str(detail[0]),
+            "refresh_token_enc": str(detail[1]),
         }
     except psycopg2.errors.UndefinedTable:
         # Migration not yet applied — expected during dev; webhooks dropped safely.
         log.warning("google_webhook.installations_table_missing", location=google_location_name)
+        return None
+    except psycopg2.errors.UndefinedFunction:
+        # resolve_org_for_google_location not yet created — same fail-safe as UndefinedTable,
+        # expected before the accompanying migration's cutover (see the runbook).
+        log.warning("google_webhook.resolve_function_missing", location=google_location_name)
         return None
     finally:
         conn.close()
