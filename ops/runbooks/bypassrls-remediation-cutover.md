@@ -6,6 +6,91 @@
 code path implicitly depends on — running it before the code that no longer needs it is
 deployed will break production request-serving paths, not just the ones already fixed.
 
+## CUTOVER COMPLETE — 2026-08-01
+
+Applied against production. `review_iq_app.rolbypassrls = False`, verified live. The
+one-shot "apply the whole file, then fix the admin secret" order below (steps 2-3) was
+revised at execution time into three passes to eliminate an admin-surface downtime
+window the literal step order would have caused — recorded here as what actually
+happened, since it differs from the plan above:
+
+- **Pass 1** — ran migration statements 1–3 only (create `review_iq_migrator` +
+  `review_iq_admin` roles, create the two `SECURITY DEFINER` webhook-lookup functions).
+  Zero behavior change: `review_iq_app.rolbypassrls` confirmed still `True` immediately
+  after. Both new roles' passwords generated and set out-of-band; each stored in its own
+  Secret Manager secret (`review-iq-admin-database-url`, `review-iq-migrator-database-url`
+  — the latter deliberately NOT granted to any Cloud Run service account, per the
+  migration's own "never referenced by the deployed app" design). Re-ran the full smoke
+  suite (both services) — unchanged from pre-Pass-1.
+- **Pass 2** — provisioned `review-iq-admin-database-url`, granted
+  `roles/secretmanager.secretAccessor` to `review-iq-runner@review-iq-prod.iam.gserviceaccount.com`
+  only, redeployed `review-iq-admin` staged (`--no-traffic` → smoke-test, including a
+  direct DB-level cross-org read as `review_iq_admin` proving the admin surface works on
+  its own credential, independent of the HTTP Basic auth layer this session couldn't
+  authenticate through → promote). This step happening *before* Pass 3 (not after, as the
+  original step numbering implied) is what eliminates the admin-surface downtime window:
+  by the time `review_iq_app` loses BYPASSRLS, the admin service is already running on its
+  own separate bypass-holding role and is unaffected.
+- **Pass 3** — ran migration statements 4–6 (`ALTER ROLE review_iq_app NOBYPASSRLS`, both
+  UNIQUE constraints). Verified immediately: `review_iq_app.rolbypassrls = False`, both
+  constraints present. Full `tests/integration/` suite run for real against production
+  (not simulated): **18/18 passed**, including both new `TestReviewIqAppCredentialIsolation`
+  tests — own-org read succeeds AND cross-org read is blocked, using `review_iq_app`'s raw
+  credential with no `SET ROLE` at all. This resolves the verifier's ADDITION 1 concern:
+  RLS policies scoped `TO authenticated` do correctly cover `review_iq_app` via its
+  inherited role membership, with no additional policy work required. Final smoke suite
+  (both services, including a real extraction and the BFF auth-rejection path) passed
+  clean post-cutover.
+
+**Pre-flight (step 0) executed as-is**, after re-verifying the duplicate-org data was
+unchanged and getting explicit confirmation: the two abandoned race-condition orgs
+(`e784fc49-...`, `d96ddca6-...`) deleted, `d58203be-...` (the active one) kept.
+
+**Credential note:** step 3's original `$SUPABASE_DIRECT_URL` reference assumed a shell
+env var; in practice this was `gcloud secrets versions access latest --secret=supabase-direct-url
+--project=review-iq-prod` (the secret didn't exist in Secret Manager until this cutover —
+it was added specifically to unblock this, since `review_iq_app` itself lacks
+`CREATEROLE` and cannot run statement 1).
+
+### Rollback (not needed — cutover succeeded clean on the first attempt; recorded for the
+### next person who hits a problem, since an untested rollback path is the same bug class
+### this repo has hit before)
+
+**If `review_iq_app` needs BYPASSRLS back immediately** (legitimate access broken,
+Pass 3's both-directions test would have caught this before it shipped, but if it
+surfaces later anyway):
+
+```sql
+ALTER ROLE review_iq_app BYPASSRLS;
+```
+
+One statement, takes effect immediately for new transactions (existing connections in
+`_set_tenant()`'s `SET LOCAL ROLE authenticated` path are unaffected either way, since
+that path never depended on `review_iq_app`'s own BYPASSRLS to begin with — confirmed
+during Pass 3's verification). This is the single lever: it restores the pre-cutover
+state for every code path in one statement, no code deploy required, no service restart
+required, revertible within the time it takes to run one `ALTER ROLE`.
+
+**If Pass 2's `review-iq-admin` redeploy needs rolling back** (admin surface broken on
+its own credential):
+
+```bash
+gcloud run services update-traffic review-iq-admin --region=asia-south1 --project=review-iq-prod \
+  --to-revisions=review-iq-admin-00002-hp9=100
+```
+
+Reverts to the last revision still using the shared `supabase-database-url` secret —
+functionally identical to pre-Pass-2 (admin surface shares review_iq_app's credential
+again), safe as long as Pass 3 hasn't run yet (once it has, review_iq_app no longer holds
+BYPASSRLS, so reverting the admin service to the shared secret would leave *it* also
+without BYPASSRLS — combine with the `ALTER ROLE ... BYPASSRLS` rollback above if both
+need reverting together).
+
+**The two new UNIQUE constraints (statements 5–6) were not rolled back and don't need to
+be** — the accompanying code (PR #62/#63, merged and deployed before this cutover) already
+handles both constraints gracefully (collision retry, race-handling), so they're safe to
+leave in place independent of any BYPASSRLS rollback decision.
+
 ## 0. Pre-flight data cleanup (required — the migration will fail without this)
 
 Live query (read-only, run 2026-08-01) found **one existing `organization_members.user_id`
