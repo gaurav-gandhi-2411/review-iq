@@ -51,7 +51,9 @@ def strip_provenance(payload: dict[str, Any]) -> dict[str, Any]:
     two genuinely-equivalent runs removed -- see the module-level comment for why each one is
     excluded. What remains is exactly the substantive result: scores, per-fixture verdicts,
     thresholds, pass/fail."""
-    stripped = {k: v for k, v in payload.items() if k not in TOP_LEVEL_FIELDS_EXCLUDED_FROM_COMPARISON}
+    stripped = {
+        k: v for k, v in payload.items() if k not in TOP_LEVEL_FIELDS_EXCLUDED_FROM_COMPARISON
+    }
     stripped = copy.deepcopy(stripped)
     for fixture in stripped.get("fixtures", []):
         fixture.pop("latency_ms", None)
@@ -76,11 +78,15 @@ def main() -> int:
     if result.returncode not in (0, 1):
         # eval.runner exits 1 on a genuine accuracy-gate FAIL (a valid regeneration outcome,
         # scores just aren't above threshold) -- only a non-{0,1} exit is a real crash.
-        print(f"FAIL: eval.runner did not complete cleanly (exit {result.returncode}):\n{result.stderr}")
+        print(
+            f"FAIL: eval.runner did not complete cleanly (exit {result.returncode}):\n{result.stderr}"
+        )
         return 1
 
     regenerated_latest = strip_provenance(load_json(LATEST_RESULTS_PATH))
-    regenerated_results = strip_provenance(load_json(RESULTS_PATH)) if RESULTS_PATH.exists() else None
+    regenerated_results = (
+        strip_provenance(load_json(RESULTS_PATH)) if RESULTS_PATH.exists() else None
+    )
 
     mismatches = []
     if committed_latest != regenerated_latest:

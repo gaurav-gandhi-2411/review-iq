@@ -51,7 +51,9 @@ class TestStripProvenance:
     def test_genuine_score_difference_still_detected(self):
         committed = strip_provenance(_payload())
         regenerated = strip_provenance(
-            _payload(fixtures=[{"id": "hi-001", "overall_score": 0.5, "latency_ms": 1, "error": None}])
+            _payload(
+                fixtures=[{"id": "hi-001", "overall_score": 0.5, "latency_ms": 1, "error": None}]
+            )
         )
         assert committed != regenerated
 
