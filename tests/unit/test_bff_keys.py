@@ -54,7 +54,7 @@ def test_create_key_bff_returns_raw_key() -> None:
 
     with patch("app.api.bff.router._keys_db_connect", return_value=conn):
         with patch(
-            "app.api.bff.router.generate_api_key",
+            "app.auth.keygen.generate_api_key",
             return_value=("riq_live_" + "a" * 32, "riq_live_aaaaaaaa", "hash"),
         ):
             result = _create_key_bff_db(_ORG_A, "default", 1000)
@@ -65,10 +65,14 @@ def test_create_key_bff_returns_raw_key() -> None:
     assert result["quota"] == 1000
     conn.commit.assert_called_once()
 
-    # org_id is bound as an INSERT parameter (scoped to the caller's own org). The INSERT
-    # is the LAST cur.execute call now, not the first -- _set_tenant() (rule: RLS
-    # defense-in-depth, see the section below) issues two SET LOCAL calls ahead of it.
-    insert_call = cur.execute.call_args_list[-1]
+    # org_id is bound as an INSERT parameter (scoped to the caller's own org). Found by
+    # SQL content, not position -- _set_tenant()'s two SET LOCAL calls precede it and
+    # insert_api_key_with_retry's SAVEPOINT/RELEASE SAVEPOINT calls surround it (see
+    # app/auth/keygen.py), so its exact position in call_args_list isn't a stable thing
+    # to assert on.
+    insert_call = next(
+        c for c in cur.execute.call_args_list if "INSERT INTO public.api_keys" in c[0][0]
+    )
     assert _ORG_A in insert_call[0][1]
 
 
@@ -151,7 +155,7 @@ def test_create_key_bff_calls_set_tenant() -> None:
     cur.fetchone.return_value = (uuid.UUID(_KEY_ID), _NOW)
 
     with patch("app.api.bff.router._keys_db_connect", return_value=conn):
-        with patch("app.api.bff.router.generate_api_key", return_value=("k", "p", "h")):
+        with patch("app.auth.keygen.generate_api_key", return_value=("k", "p", "h")):
             with patch("app.api.bff.router._set_tenant") as mock_set_tenant:
                 _create_key_bff_db(_ORG_A, "default", 1000)
 
