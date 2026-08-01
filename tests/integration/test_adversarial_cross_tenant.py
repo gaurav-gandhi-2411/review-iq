@@ -34,19 +34,13 @@ import psycopg2
 import pytest
 from dotenv import load_dotenv
 
+from tests.integration._superuser_db_params import superuser_db_params
+
 _OrgFixture = dict[str, str]
 
 load_dotenv(Path(__file__).parents[2] / ".env")
 
-_SUPERUSER_DB_PARAMS = {
-    "host": os.environ.get("SUPABASE_DB_HOST", "db.enqpluazgxewepchdeut.supabase.co"),
-    "port": 5432,
-    "dbname": "postgres",
-    "user": "postgres",
-    "password": os.environ.get("SUPABASE_DB_PASSWORD", ""),
-    "sslmode": "require",
-    "connect_timeout": 15,
-}
+_SUPERUSER_DB_PARAMS = superuser_db_params()
 
 
 def _superuser_conn() -> psycopg2.extensions.connection:
