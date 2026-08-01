@@ -71,11 +71,26 @@ class Settings(BaseSettings):
     )
 
     # Wave 1 S0 remediation (ADR 0006): which Cloud Run service this process is. "public"
-    # (default) mounts everything except admin_router and authenticates to Postgres as
-    # review_iq_app (no BYPASSRLS). "admin" mounts ONLY ops_router + admin_router, is
-    # deployed --no-allow-unauthenticated (Cloud Run IAM gates all network reachability),
-    # and authenticates as review_iq_admin (BYPASSRLS) via admin_database_url below —
-    # never on the public service.
+    # (default) mounts everything except admin_router; "admin" mounts ONLY ops_router +
+    # admin_router and is deployed --no-allow-unauthenticated (Cloud Run IAM gates all
+    # network reachability).
+    #
+    # Bug fixed 2026-08-01: this comment previously claimed the public service
+    # "authenticates to Postgres as review_iq_app (no BYPASSRLS)" and the admin service
+    # "authenticates as review_iq_admin (BYPASSRLS) via admin_database_url below". Neither
+    # was true at the time it was written -- verified directly against the live database
+    # and the live Cloud Run config, not assumed: review_iq_app held BYPASSRLS (RLS
+    # provided zero protection to any request-serving path that didn't explicitly call
+    # _set_tenant() first), review_iq_admin did not exist as a role at all, and
+    # admin_database_url pointed at the exact same Secret Manager secret as the public
+    # service's supabase_database_url -- there was no actual role separation between the
+    # two services. A wrong security comment is worse than none; this is why the comment
+    # is being corrected in the same change that fixes the underlying grant, not left to
+    # rot further. See supabase/migrations/20260801000001_role_separation_bypassrls_
+    # remediation.sql and ops/runbooks/bypassrls-remediation-cutover.md for the actual fix
+    # and its cutover sequence -- consult those, not this comment's prose, for the
+    # CURRENT state of which role either service authenticates as until that cutover is
+    # complete and this comment is updated again to describe it as fact rather than intent.
     service_role: Literal["public", "admin"] = Field(default="public", alias="SERVICE_ROLE")
 
     # Admin HTTP Basic auth

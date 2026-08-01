@@ -98,6 +98,35 @@ def _as_authenticated(org_id: str) -> psycopg2.extensions.connection:
     return conn
 
 
+def _as_raw_review_iq_app(org_id: str) -> psycopg2.extensions.connection:
+    """Connect using review_iq_app's OWN production credential (SUPABASE_DATABASE_URL)
+    with NO SET ROLE at all -- current_user stays review_iq_app for the whole session.
+
+    Deliberately does NOT replicate app/core/storage_pg.py's _set_tenant(), which
+    calls `SET LOCAL ROLE authenticated` before setting the org GUC. That SET ROLE
+    switches current_user away from review_iq_app to authenticated, which does NOT
+    hold BYPASSRLS -- so a _set_tenant()-covered call site is already safe today,
+    BYPASSRLS or not, and testing that path here would not be RED pre-cutover
+    (confirmed empirically before writing this test).
+
+    This connects exactly as the actually-exposed call sites do instead: admin.py's
+    helpers (which never call _set_tenant() by design -- they need cross-org access)
+    and any future call site that forgets to call it. Pre-cutover, review_iq_app
+    holds BYPASSRLS directly, so a raw connection like this sees every row regardless
+    of app.current_org_id -- that's the real S0 exposure. Post-cutover, this is the
+    proof ADDITION 1 asked for: does RLS actually cover a connection using review_iq_app's
+    identity with no explicit role switch, via its inherited membership in authenticated
+    (policies are scoped `TO authenticated`, not `TO review_iq_app` -- the verifier's
+    exact concern) -- or does removing BYPASSRLS alone leave this path either still
+    leaking cross-tenant data, or blocked from ALL data including its own.
+    """
+    conn = psycopg2.connect(os.environ["SUPABASE_DATABASE_URL"], connect_timeout=15)
+    conn.autocommit = False
+    cur = conn.cursor()
+    cur.execute('SET LOCAL "app.current_org_id" = %s', (org_id,))
+    return conn
+
+
 @pytest.mark.integration
 class TestRLSIsolation:
     def test_org_a_sees_only_own_extraction(
@@ -443,3 +472,75 @@ class TestAlertsRLSIsolation:
             conn.rollback()
             conn.close()
         assert rows == [], "anon must see no rows (denied by alert_log_anon_deny policy)"
+
+
+@pytest.mark.integration
+class TestReviewIqAppCredentialIsolation:
+    """BYPASSRLS remediation ADDITION 1: prove a cross-tenant read is blocked at the
+    database level using review_iq_app's own raw credential -- no SET ROLE, the
+    actual production DSN (SUPABASE_DATABASE_URL), current_user left as review_iq_app
+    for the whole session. See _as_raw_review_iq_app()'s docstring for why this (and
+    not a _set_tenant()-style SET ROLE authenticated connection, which is already
+    safe today regardless of BYPASSRLS) is the test that actually represents the S0
+    exposure: admin.py's helpers, and any future call site that forgets to call
+    _set_tenant(), connect exactly like this.
+
+    RED until the BYPASSRLS-removal cutover (Task 2 / role-separation migration) is
+    applied: pre-cutover, review_iq_app holds BYPASSRLS directly (no SET ROLE to lose
+    it), so RLS is bypassed entirely and every row is visible to every org.
+
+    The own-org test is not a formality -- the verifier flagged that RLS policies are
+    scoped to `TO authenticated`/`TO anon` only, so removing BYPASSRLS alone could
+    leave a raw review_iq_app connection with *no* access at all (if inherited role
+    membership in `authenticated` turns out not to be enough for policy matching
+    without an explicit SET ROLE) rather than correctly-scoped access. Both directions
+    must be tested, not just the cross-tenant block -- if only the cross-org test goes
+    green post-cutover while this one goes red, that's Task C3's signal that
+    additional RLS policy work (not just removing BYPASSRLS) is required.
+    """
+
+    def test_review_iq_app_own_org_read_succeeds(
+        self, extraction_ids: tuple[str, str], org_ids: tuple[str, str]
+    ) -> None:
+        org_a, _ = org_ids
+        ext_a, _ = extraction_ids
+
+        conn = _as_raw_review_iq_app(org_a)
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT id FROM public.extractions")
+            visible = {str(r[0]) for r in cur.fetchall()}
+        finally:
+            conn.rollback()
+            conn.close()
+
+        assert ext_a in visible, (
+            "review_iq_app's raw credential must still see its own org's data "
+            "post-cutover -- if this fails while the cross-org test below passes, the "
+            "app lost access entirely rather than being correctly scoped (exactly the "
+            "failure mode ADDITION 1 warned about: policies scoped to authenticated/"
+            "anon only, not verified to actually cover a raw review_iq_app session)."
+        )
+
+    def test_review_iq_app_cross_org_read_blocked(
+        self, extraction_ids: tuple[str, str], org_ids: tuple[str, str]
+    ) -> None:
+        org_a, _ = org_ids
+        _, ext_b = extraction_ids
+
+        conn = _as_raw_review_iq_app(org_a)
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT id FROM public.extractions")
+            visible = {str(r[0]) for r in cur.fetchall()}
+        finally:
+            conn.rollback()
+            conn.close()
+
+        assert ext_b not in visible, (
+            "review_iq_app's raw credential must NOT see another org's data. This is "
+            "the database-level proof (not application WHERE-clause logic, and not "
+            "reliant on every call site remembering to call _set_tenant()) that "
+            "BYPASSRLS removal actually closes the exposure -- fails today because "
+            "review_iq_app still holds BYPASSRLS pre-cutover with no SET ROLE to lose it."
+        )
