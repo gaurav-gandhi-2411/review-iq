@@ -153,3 +153,163 @@ COMMENT ON FUNCTION public.create_api_key_for_org IS
 ALTER FUNCTION public.create_api_key_for_org OWNER TO review_iq_migrator;
 REVOKE ALL ON FUNCTION public.create_api_key_for_org FROM PUBLIC, anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.create_api_key_for_org TO review_iq_app;
+
+-- ---------------------------------------------------------------------------
+-- 5/6. upsert_google_installation / upsert_shopify_installation --
+--    app/api/{google,shopify}_auth.py::_upsert_installation_pg. Found live 2026-08-01
+--    while building the pre-cutover ephemeral-Postgres CI job (P3): a _set_tenant()-only
+--    fix (an earlier, incomplete pass of this same remediation) is NOT sufficient here,
+--    unlike every other write in this migration. `authenticated` holds only a SELECT
+--    policy on google_business_installations/shopify_installations (see
+--    20260702000001_google_business_installations.sql / 20260622000001_shopify_
+--    installations.sql -- both name their policy "..._authenticated_select", not
+--    "_all") -- there has never been an INSERT/UPDATE policy for authenticated on
+--    either table, because the only prior writer was review_iq_app's own BYPASSRLS
+--    grant. Switching the connecting role to `authenticated` via _set_tenant() for an
+--    INSERT ... ON CONFLICT DO UPDATE therefore fails outright once BYPASSRLS is
+--    removed -- proven live: `new row violates row-level security policy for table
+--    "google_business_installations"` against a real ephemeral database with the
+--    NOBYPASSRLS migration applied. Fix: narrow SECURITY DEFINER upsert functions,
+--    same pattern as create_org_and_membership/create_api_key_for_org above, rather
+--    than widening the RLS policy surface on these two tables.
+-- ---------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION public.upsert_google_installation(
+  p_org_id uuid, p_account_name text, p_location_name text, p_refresh_token_enc text
+)
+RETURNS void
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  INSERT INTO public.google_business_installations
+    (org_id, google_account_name, google_location_name, refresh_token_enc)
+  VALUES (p_org_id, p_account_name, p_location_name, p_refresh_token_enc)
+  ON CONFLICT (google_location_name)
+  DO UPDATE SET
+    refresh_token_enc = EXCLUDED.refresh_token_enc,
+    revoked_at        = NULL,
+    installed_at      = now();
+$$;
+
+COMMENT ON FUNCTION public.upsert_google_installation IS
+  'BYPASSRLS remediation (2c, corrected): review_iq_app has no direct INSERT/UPDATE '
+  'grant on google_business_installations -- authenticated only holds a SELECT policy '
+  '(see 20260702000001_google_business_installations.sql). org_id is ALWAYS '
+  'caller-resolved from the verified JWT before this is called -- never a user param.';
+
+ALTER FUNCTION public.upsert_google_installation OWNER TO review_iq_migrator;
+REVOKE ALL ON FUNCTION public.upsert_google_installation FROM PUBLIC, anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.upsert_google_installation TO review_iq_app;
+
+CREATE OR REPLACE FUNCTION public.upsert_shopify_installation(
+  p_org_id uuid, p_shop_domain text, p_access_token_enc text
+)
+RETURNS void
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  INSERT INTO public.shopify_installations (org_id, shop_domain, access_token_enc)
+  VALUES (p_org_id, p_shop_domain, p_access_token_enc)
+  ON CONFLICT (shop_domain)
+  DO UPDATE SET
+    access_token_enc = EXCLUDED.access_token_enc,
+    revoked_at       = NULL,
+    installed_at     = now();
+$$;
+
+COMMENT ON FUNCTION public.upsert_shopify_installation IS
+  'BYPASSRLS remediation (2c, corrected): review_iq_app has no direct INSERT/UPDATE '
+  'grant on shopify_installations -- authenticated only holds a SELECT policy (see '
+  '20260622000001_shopify_installations.sql). org_id is ALWAYS caller-resolved from '
+  'the verified JWT before this is called -- never a user param.';
+
+ALTER FUNCTION public.upsert_shopify_installation OWNER TO review_iq_migrator;
+REVOKE ALL ON FUNCTION public.upsert_shopify_installation FROM PUBLIC, anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.upsert_shopify_installation TO review_iq_app;
+
+-- ---------------------------------------------------------------------------
+-- 7/8. claim_pending_batch_job_row / settle_batch_job_row --
+--    app/core/ingest_worker.py::_claim_one_row(). Found live 2026-08-01 in the same
+--    ephemeral-Postgres CI-job pass as functions 5/6 above, and structurally identical
+--    in cause: this claim query's own ALLOWLIST entry in scripts/check_undocumented_
+--    pg_connects.py already documented that it "must see all orgs" without
+--    _set_tenant() -- what it never addressed is HOW, once review_iq_app no longer
+--    holds BYPASSRLS. Proven live: a real pending row, confirmed visible via the
+--    postgres superuser, returns ZERO rows from the exact claim SQL run as
+--    review_iq_app with no SET ROLE against an ephemeral database with NOBYPASSRLS
+--    applied -- review_iq_app inherits `authenticated`'s policy automatically (it is
+--    a member, see 20260726000001_review_iq_app_role.sql), but that policy is
+--    `USING (org_id = current_org_id())`, and current_org_id() is NULL with no GUC
+--    set -- so every row's comparison is UNKNOWN and RLS filters everything out. This
+--    is not a missing-grant bug like functions 5/6 -- it is a structural gap: no
+--    combination of _set_tenant()/SET ROLE can express "every org" under this
+--    per-org RLS design. Left unfixed, this would have been a SILENT, TOTAL,
+--    cross-org failure of the entire bulk-CSV-ingest queue the moment BYPASSRLS was
+--    removed -- every drain_rows() call (both the submitting endpoint's own
+--    BackgroundTask and the scheduled /internal/ingest/tick) would claim nothing,
+--    forever, with no error raised anywhere.
+--
+--    Split into two functions (not one) because the caller holds the row's FOR
+--    UPDATE lock OPEN across an awaited LLM extraction call (a deliberate,
+--    documented design choice in _claim_one_row's own docstring -- this is what
+--    makes concurrent drain_rows() callers structurally unable to double-process a
+--    row) -- the claim and the settle are two separate statements in the SAME
+--    outer transaction/connection, not one atomic function call. A SECURITY
+--    DEFINER function's row lock is held into the CALLING transaction exactly like
+--    any other statement, so this holds correctly across the two calls as long as
+--    both run on the same connection without an intervening commit -- which
+--    _claim_one_row already guarantees (one connection per claim, one commit at
+--    the very end).
+-- ---------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION public.claim_pending_batch_job_row()
+RETURNS TABLE(job_id text, row_index integer, org_id uuid, row_text text, product text, review_date timestamptz)
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT job_id, row_index, org_id, text, product, review_date
+  FROM public.batch_job_rows
+  WHERE status = 'pending'
+  ORDER BY updated_at
+  LIMIT 1
+  FOR UPDATE SKIP LOCKED;
+$$;
+
+COMMENT ON FUNCTION public.claim_pending_batch_job_row IS
+  'BYPASSRLS remediation (2c): the durable bulk-ingest queue''s cross-org claim '
+  '(app/core/ingest_worker.py::_claim_one_row). Must see pending rows across ALL '
+  'orgs, which no per-org RLS policy expression can do -- SECURITY DEFINER bypasses '
+  'RLS for exactly this one claim query. Row lock (FOR UPDATE SKIP LOCKED) is held '
+  'into the calling transaction; caller MUST NOT commit until '
+  'settle_batch_job_row() has also run on the same connection.';
+
+ALTER FUNCTION public.claim_pending_batch_job_row OWNER TO review_iq_migrator;
+REVOKE ALL ON FUNCTION public.claim_pending_batch_job_row FROM PUBLIC, anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.claim_pending_batch_job_row TO review_iq_app;
+
+CREATE OR REPLACE FUNCTION public.settle_batch_job_row(
+  p_job_id text, p_row_index integer, p_status text, p_error text, p_input_hash text
+)
+RETURNS void
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  UPDATE public.batch_job_rows
+  SET status = p_status, error = p_error, input_hash = p_input_hash, updated_at = now()
+  WHERE job_id = p_job_id AND row_index = p_row_index;
+$$;
+
+COMMENT ON FUNCTION public.settle_batch_job_row IS
+  'BYPASSRLS remediation (2c): the settle half of claim_pending_batch_job_row() -- '
+  'must run on the SAME connection/transaction as the claim, before that '
+  'transaction commits, so the row lock from the claim is still held (preventing a '
+  'concurrent drain_rows() caller from claiming the same row before this settle '
+  'commits).';
+
+ALTER FUNCTION public.settle_batch_job_row OWNER TO review_iq_migrator;
+REVOKE ALL ON FUNCTION public.settle_batch_job_row FROM PUBLIC, anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.settle_batch_job_row TO review_iq_app;

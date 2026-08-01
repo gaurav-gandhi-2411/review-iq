@@ -68,12 +68,30 @@ ALLOWLIST: dict[tuple[str, str], str] = {
         "storage_pg.py::list_orgs_with_dated_extractions_pg."
     ),
     ("app/core/ingest_worker.py", "_claim_one_row"): (
-        "Documented cross-org queue-drain claim (batch_job_rows) -- the extraction itself "
-        "is attributed per-row via a fresh ApiKeyContext into _set_tenant()-scoped "
-        "storage_pg functions downstream; this claim query itself must see all orgs."
+        "Cross-org queue-drain claim (batch_job_rows) -- goes through public."
+        "claim_pending_batch_job_row() / public.settle_batch_job_row(), narrow SECURITY "
+        "DEFINER functions (see supabase/migrations/"
+        "20260801000002_tenant_resolvers_auth_signup.sql), since no per-org RLS policy "
+        "can express 'see pending rows across every org'. The extraction itself is "
+        "attributed per-row via a fresh ApiKeyContext into _set_tenant()-scoped "
+        "storage_pg functions downstream."
     ),
     ("app/api/ops.py", "_sync_ping"): (
         "SELECT 1 only -- no table access, RLS/tenant-scoping is not applicable."
+    ),
+    ("app/api/google_auth.py", "_upsert_installation_pg"): (
+        "authenticated holds only a SELECT policy on google_business_installations "
+        "(20260702000001_google_business_installations.sql) -- a _set_tenant()-only "
+        "fix does not work for this INSERT/UPDATE. Goes through public."
+        "upsert_google_installation(), a narrow SECURITY DEFINER function (see "
+        "supabase/migrations/20260801000002_tenant_resolvers_auth_signup.sql)."
+    ),
+    ("app/api/shopify_auth.py", "_upsert_installation_pg"): (
+        "authenticated holds only a SELECT policy on shopify_installations "
+        "(20260622000001_shopify_installations.sql) -- a _set_tenant()-only fix does "
+        "not work for this INSERT/UPDATE. Goes through public."
+        "upsert_shopify_installation(), a narrow SECURITY DEFINER function (see "
+        "supabase/migrations/20260801000002_tenant_resolvers_auth_signup.sql)."
     ),
 }
 
@@ -152,13 +170,12 @@ def _find_factory_names(tree: ast.Module) -> set[str]:
     return factories
 
 
-def check_file(path: Path) -> list[str]:
+def check_file(path: Path, factory_names: set[str]) -> list[str]:
     rel = path.relative_to(REPO_ROOT).as_posix()
     if rel in FILE_ALLOWLIST:
         return []
     source = path.read_text(encoding="utf-8")
     tree = ast.parse(source, filename=rel)
-    factory_names = _find_factory_names(tree)
 
     failures: list[str] = []
     for node in ast.walk(tree):
@@ -182,9 +199,27 @@ def check_file(path: Path) -> list[str]:
 
 
 def main() -> int:
+    paths = sorted(APP_DIR.rglob("*.py"))
+
+    # Factory names must be collected GLOBALLY, across every file, before checking any
+    # single file's call sites -- a factory function (e.g. _db_connect) can be defined
+    # in one module and imported/called from another (see app/api/account.py importing
+    # app.auth.signup._db_connect). Building this set per-file (the original design)
+    # missed exactly that case: account.py's own AST never defines _db_connect, so its
+    # calls to the imported function were invisible to a per-file factory scan --
+    # meaning account.py's real, undocumented connect sites went uncaught. Found
+    # 2026-08-01 while building the pre-cutover ephemeral-Postgres CI job (P3): a
+    # concrete instance of rule 85a's own failure class (a control that is real,
+    # passing, and green, while quietly covering less than its name implies).
+    factory_names: set[str] = set()
+    for path in paths:
+        source = path.read_text(encoding="utf-8")
+        tree = ast.parse(source, filename=path.relative_to(REPO_ROOT).as_posix())
+        factory_names |= _find_factory_names(tree)
+
     all_failures: list[str] = []
-    for path in sorted(APP_DIR.rglob("*.py")):
-        all_failures.extend(check_file(path))
+    for path in paths:
+        all_failures.extend(check_file(path, factory_names))
 
     if all_failures:
         print("FAIL: undocumented / unscoped psycopg2 connect sites found:\n", file=sys.stderr)
