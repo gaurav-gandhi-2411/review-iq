@@ -31,23 +31,31 @@ name: Pre-Cutover Verification (ephemeral Postgres)
 #   - test_adversarial_cross_tenant.py::TestVector2ForgedJWT::
 #     test_garbage_jwt_rejected_by_real_supabase_verification: calls the real, hosted
 #     Supabase Auth API (a separate service Postgres alone cannot replicate).
+#   - test_v2_multi_tenant.py::test_v2_extract_token_counts_recorded_in_db: makes a real,
+#     unmocked Groq call to assert real tokens_in/tokens_out get recorded -- deliberately
+#     not mocked like this file's other tests, since it exists specifically to prove
+#     non-mocked token accounting. No GROQ_API_KEY secret is configured for this job;
+#     same exclusion class as test_resend_e2e.py above, not an isolation concern.
 #
 # /admin/* routes only mount when SERVICE_ROLE=admin (ADR 0006) -- app.main.app is a
 # module-level singleton keyed off that env var at import time, so admin-dependent
 # tests run in a SEPARATE pytest invocation (job step) from everything else, matching
 # how production actually runs these as two distinct Cloud Run services.
 #
-# KNOWN GAP, found while building this job (2026-08-01), NOT fixed here:
-# test_v2_multi_tenant.py and test_authenticity_isolation.py both seed test orgs via
-# POST /admin/organizations, then exercise /v2/* endpoints against the SAME
-# TestClient(app) instance -- but admin_router and the v2/bff routers are mutually
-# exclusive under the SERVICE_ROLE split (see app/main.py's mounting logic), so no
-# single SERVICE_ROLE value can ever satisfy both halves of either test file. This
-# means both files have been silently unrunnable since ADR 0006 shipped (PR #46) --
-# nothing caught it because @pytest.mark.integration excludes them from default CI.
-# Excluded from both passes below pending a real fix (seed orgs via direct DB writes,
-# matching tests/integration/test_adversarial_cross_tenant.py's own two_orgs_with_keys
-# fixture, instead of going through /admin/organizations at all).
+# FIXED 2026-08-01 (P1 of the schema-fidelity/isolation-test pass): test_v2_multi_tenant.py
+# and test_authenticity_isolation.py used to seed test orgs via POST /admin/organizations
+# then exercise /v2/* endpoints against the SAME TestClient(app) instance -- but
+# admin_router and the v2/bff routers are mutually exclusive under the SERVICE_ROLE split
+# (app/main.py's mounting logic), so no single SERVICE_ROLE value could ever satisfy both
+# halves of either test file. Both files were silently unrunnable since ADR 0006 shipped
+# (PR #46) -- nothing caught it because @pytest.mark.integration excludes them from
+# default CI. Fixed by seeding orgs/keys via direct DB writes instead (matching
+# test_adversarial_cross_tenant.py's own two_orgs_with_keys fixture) -- neither file needs
+# the admin HTTP surface at all, so this tests the REAL split rather than reunifying it:
+# both files now run entirely within the public-service pass below, never touching
+# admin_router. Verified locally against this exact ephemeral setup (NOBYPASSRLS, every
+# migration applied): 6/7 pass; the 1 failure is the real-Groq-call test excluded above,
+# not an isolation defect -- org A/B read isolation, RLS USING, and WITH CHECK all held.
 
 on:
   pull_request:
@@ -158,9 +166,8 @@ jobs:
             --ignore=tests/integration/test_resend_e2e.py \
             --deselect "tests/integration/test_adversarial_cross_tenant.py::TestVector2ForgedJWT::test_garbage_jwt_rejected_by_real_supabase_verification" \
             --deselect "tests/integration/test_batch_job_rows_isolation.py::test_resume_after_partial_drain_and_zero_cost_dedup" \
+            --deselect "tests/integration/test_v2_multi_tenant.py::test_v2_extract_token_counts_recorded_in_db" \
             --ignore=tests/integration/test_admin.py \
-            --ignore=tests/integration/test_authenticity_isolation.py \
-            --ignore=tests/integration/test_v2_multi_tenant.py \
             --ignore=tests/integration/test_account_deletion.py
 
       - name: Admin-service tests (SERVICE_ROLE=admin -- /admin/* only mounts here, ADR 0006)
