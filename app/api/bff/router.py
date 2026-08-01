@@ -36,7 +36,7 @@ from fastapi import (
     UploadFile,
     status,
 )
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 # _drain_until_job_complete is defined in app.api.v2.ingest alongside the
 # durable batch_job_rows queue it drains (app/core/ingest_worker.py). It is a
@@ -67,6 +67,7 @@ from app.core.reply.engine import VernacularModelUnavailableError, draft_reply
 from app.core.reply.schema import ReplyDraft, ReplyRequest
 from app.core.schemas import Sentiment, Urgency
 from app.core.storage_pg import (
+    _set_tenant,
     authenticity_audit_summary_pg,
     create_batch_job_pg,
     enqueue_batch_job_rows_pg,
@@ -179,9 +180,38 @@ class CorrectionRequest(BaseModel):
         return self
 
 
+# Bug fix (found in code review after PR #45 landed ungated -- a merge-gate bypass incident,
+# see PLAN.md): CreateApiKeyRequest.quota had NO bound at all and was written verbatim to the
+# api_keys.quota column that app/auth/api_key.py:99 uses as the sole gate on request admission
+# (`if monthly_count >= quota: raise 429`). POST /bff/keys is reachable by any signed-in
+# session user for their own org (require_session, no plan/admin check) -- any free-tier user
+# could self-issue a key with quota=999999999 and permanently bypass the advertised free-tier
+# limit. Two layers now: Field(ge=1) rejects zero/negative outright (quota=0 previously locked
+# a key out silently with no validation error -- a second, independent bug this also fixes);
+# the real per-plan ceiling is enforced in bff_create_key() below, since it depends on the
+# caller's org (Pydantic field constraints can't see request context beyond the field itself).
+#
+# PLAN_QUOTA_LIMITS' numbers are NOT a sourced pricing decision. "free": 100 is the one figure
+# GG has actually committed to (docs/specs/wave1-commercialization.md S0#1: "Free tier is
+# asserted (100 extractions/mo)"). "pro"/"enterprise" reuse this field's pre-existing (buggy)
+# default of 1000 as a placeholder ceiling -- the real Stripe/billing work that was meant to
+# define differentiated tiers (PR #43, "minimum-viable Stripe billing") was merged into a
+# stacked branch (fix/wave1-s0-bypassrls-remediation) that never actually reached main despite
+# GitHub showing it "merged" -- see PLAN.md's stacked-PR-merge-discipline entry. Revisit these
+# two numbers once real billing tiers are decided and actually land on main.
+PLAN_QUOTA_LIMITS: dict[str, int] = {
+    "free": 100,
+    "pro": 1000,
+    "enterprise": 1000,
+}
+# Fail closed to the strictest tier for any plan value not in the table above (a future plan
+# added to the DB CHECK constraint but not yet wired here should never default to unlimited).
+_DEFAULT_PLAN_QUOTA_LIMIT = PLAN_QUOTA_LIMITS["free"]
+
+
 class CreateApiKeyRequest(BaseModel):
     name: str
-    quota: int = 1000
+    quota: int = Field(default=1000, ge=1)
 
 
 # ---------------------------------------------------------------------------
@@ -347,6 +377,35 @@ def _keys_db_connect() -> psycopg2.extensions.connection:
     return psycopg2.connect(get_settings().supabase_database_url)
 
 
+def _get_org_plan_pg(org_id: str) -> str:
+    """Return this org's plan tier (organizations.plan -- CHECK constraint limits it to
+    'free'/'pro'/'enterprise'). Used only to bound self-serve API key quota requests against
+    the caller's actual entitlement -- see PLAN_QUOTA_LIMITS above bff_create_key().
+
+    Bug fix (same pass as the RLS fix below): this and the three functions below all connect
+    via bare psycopg2.connect() and never called _set_tenant() -- every other function in
+    app/core/storage_pg.py applies it as a defense-in-depth layer on top of the WHERE-clause
+    scoping (both organizations and api_keys have RLS policies requiring
+    app.current_org_id() -- see supabase/migrations/20260510000002_rls_policies.sql). The
+    WHERE org_id = %s predicates below were already correct (no cross-tenant read/write was
+    ever possible), but without _set_tenant() the connection runs outside the `authenticated`
+    role RLS actually checks, so a bug in a future edit to the WHERE clause would have no
+    second layer catching it."""
+    conn = _keys_db_connect()
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+        cur.execute("SELECT plan FROM public.organizations WHERE id = %s", (org_id,))
+        row = cur.fetchone()
+        conn.commit()
+        return str(row[0]) if row else "free"
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
 def _create_key_bff_db(org_id: str, name: str, quota: int) -> dict[str, object]:
     """Insert a new api_keys row scoped to org_id. Returns the raw key exactly once."""
     raw_key, key_prefix, key_hash = generate_api_key()
@@ -354,6 +413,7 @@ def _create_key_bff_db(org_id: str, name: str, quota: int) -> dict[str, object]:
     conn = _keys_db_connect()
     try:
         cur = conn.cursor()
+        _set_tenant(cur, org_id)
         cur.execute(
             "INSERT INTO public.api_keys (org_id, key_prefix, key_hash, name, quota) "
             "VALUES (%s, %s, %s, %s, %s) RETURNING id, created_at",
@@ -381,6 +441,7 @@ def _list_keys_bff_db(org_id: str) -> list[dict[str, object]]:
     conn = _keys_db_connect()
     try:
         cur = conn.cursor()
+        _set_tenant(cur, org_id)
         cur.execute(
             "SELECT id, name, key_prefix, quota, created_at FROM public.api_keys "
             "WHERE org_id = %s AND revoked_at IS NULL ORDER BY created_at DESC",
@@ -412,6 +473,7 @@ def _revoke_key_bff_db(org_id: str, key_id: str) -> None:
     conn = _keys_db_connect()
     try:
         cur = conn.cursor()
+        _set_tenant(cur, org_id)
         cur.execute(
             "UPDATE public.api_keys SET revoked_at = now() "
             "WHERE id = %s AND org_id = %s AND revoked_at IS NULL RETURNING id",
@@ -1169,7 +1231,24 @@ async def bff_create_key(
     body: CreateApiKeyRequest,
     ctx: Annotated[ApiKeyContext, Depends(require_session)],
 ) -> dict[str, object]:
-    """Create a new API key scoped to this org. raw_key is shown exactly once."""
+    """Create a new API key scoped to this org. raw_key is shown exactly once.
+
+    quota is bounded to the org's plan entitlement (PLAN_QUOTA_LIMITS), not to an arbitrary
+    global max -- a free-tier org must not be able to set a value above its own tier's limit
+    regardless of what it submits (see PLAN_QUOTA_LIMITS' docstring above CreateApiKeyRequest
+    for the incident this closes and the provisional nature of the pro/enterprise numbers).
+    """
+    plan = await asyncio.to_thread(_get_org_plan_pg, ctx.org_id)
+    plan_limit = PLAN_QUOTA_LIMITS.get(plan, _DEFAULT_PLAN_QUOTA_LIMIT)
+    if body.quota > plan_limit:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                f"Requested quota ({body.quota}) exceeds the {plan} plan's limit "
+                f"({plan_limit}). Use POST /bff/quota-requests to record interest in a "
+                "higher quota."
+            ),
+        )
     result = await asyncio.to_thread(_create_key_bff_db, ctx.org_id, body.name, body.quota)
     log.info("bff.keys.created", org_id=ctx.org_id, key_id=result["id"])
     created_at = result["created_at"]
