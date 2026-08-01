@@ -1,0 +1,158 @@
+name: Deploy to Cloud Run
+
+# Fixes the 2026-08-01 untracked-image incident: every prior Cloud Run deploy was a manual
+# `gcloud builds submit`/`gcloud run deploy` run against whatever a local checkout happened to
+# be at the time, tagged with an arbitrary version string (v0-19-0) that traces to no git tag
+# and no CI run. Same failure class as rule 31a's `vercel deploy --prod` incident: production
+# deploys happen from CI, triggered by a push to main, full stop -- this workflow is that CI.
+#
+# Auth: Workload Identity Federation (rule 29 -- never a service account key). The pool/
+# provider/service-account were created 2026-08-01, scoped to this exact repo only (the OIDC
+# provider's attribute-condition is `assertion.repository=='gaurav-gandhi-2411/review-iq'`).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+      - "Dockerfile"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/deploy-cloud-run.yml"
+  workflow_dispatch:
+  schedule:
+    # Detective control independent of any deploy event: catches a future manual `gcloud run
+    # deploy` (or any other out-of-band change) within 24h even on a day nothing pushes to
+    # main. Same "won't prevent, will detect same-day" pattern as check_prod_deploy_is_from_main.
+    - cron: "0 3 * * *"
+
+permissions:
+  contents: read
+  id-token: write # required for Workload Identity Federation
+
+concurrency:
+  group: deploy-cloud-run
+  cancel-in-progress: false # never abort a deploy mid-flight
+
+env:
+  PROJECT: review-iq-prod
+  REGION: asia-south1
+  IMAGE_REPO: asia-south1-docker.pkg.dev/review-iq-prod/review-iq/api
+
+jobs:
+  build-and-deploy:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Authenticate to Google Cloud (Workload Identity Federation)
+        uses: google-github-actions/auth@ba79af03959ebeac9769e648f473a284504d9193 # v2.1.10
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOYER_SA }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@6a7c903a70c8625ed6700fa299f5ddb4ca6022e9 # v2.1.5
+
+      - uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
+        with:
+          enable-cache: true
+
+      - run: uv sync --frozen
+
+      - name: Compute image tag
+        id: image
+        run: echo "tag=sha-${{ github.sha }}" >> "$GITHUB_OUTPUT"
+
+      # Build from the exact checked-out commit -- never the working directory of a local
+      # machine, which is the entire point of this workflow existing.
+      - name: Build and push image (Cloud Build)
+        run: |
+          gcloud builds submit \
+            --tag "${{ env.IMAGE_REPO }}:${{ steps.image.outputs.tag }}" \
+            --region="${{ env.REGION }}" \
+            --project="${{ env.PROJECT }}"
+
+      # Staged rollout, same pattern as ops/runbooks/cloud-run-deploy.md's manual sequence:
+      # deploy with zero traffic, smoke-test the tagged revision directly, promote only if that
+      # passes. A bad image never receives live traffic -- the job fails instead.
+      - name: Deploy review-iq (public) -- no traffic yet
+        id: deploy_public
+        run: |
+          gcloud run deploy review-iq \
+            --image="${{ env.IMAGE_REPO }}:${{ steps.image.outputs.tag }}" \
+            --region="${{ env.REGION }}" \
+            --project="${{ env.PROJECT }}" \
+            --no-traffic \
+            --format="value(status.latestReadyRevisionName)" > revision.txt
+          echo "revision=$(cat revision.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Tag revision for direct smoke-test access
+        run: |
+          gcloud run services update-traffic review-iq \
+            --region="${{ env.REGION }}" \
+            --project="${{ env.PROJECT }}" \
+            --set-tags="smoketest=${{ steps.deploy_public.outputs.revision }}"
+
+      - name: Smoke test the tagged revision (not the live traffic split)
+        run: |
+          SERVICE_URL=$(gcloud run services describe review-iq \
+            --region="${{ env.REGION }}" --project="${{ env.PROJECT }}" \
+            --format="value(status.url)")
+          TAGGED_URL=$(echo "$SERVICE_URL" | sed "s#://#://smoketest---#")
+          for i in 1 2 3 4 5; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$TAGGED_URL/health" || echo "000")
+            if [ "$STATUS" = "200" ]; then echo "smoke test passed ($STATUS)"; exit 0; fi
+            echo "attempt $i: /health returned $STATUS, retrying..."
+            sleep 5
+          done
+          echo "SMOKE TEST FAILED -- revision never returned 200 on /health. Leaving at 0% traffic."
+          exit 1
+
+      - name: Promote review-iq to 100% traffic
+        run: |
+          gcloud run services update-traffic review-iq \
+            --region="${{ env.REGION }}" --project="${{ env.PROJECT }}" \
+            --to-latest
+
+      # review-iq-admin: same image, SERVICE_ROLE=admin already set on the service's own env
+      # (omitted here on purpose -- omitting env/secret flags reuses the existing revision
+      # template verbatim, per the runbook's own "never --set-env-vars on an incremental
+      # deploy" rule). Not IAM-reachable from outside GCP, so no smoke-test step here; going
+      # straight to 100% traffic is safe since it's a single-revision, low-traffic service.
+      - name: Deploy review-iq-admin (private) and promote
+        run: |
+          gcloud run deploy review-iq-admin \
+            --image="${{ env.IMAGE_REPO }}:${{ steps.image.outputs.tag }}" \
+            --region="${{ env.REGION }}" \
+            --project="${{ env.PROJECT }}"
+
+      - name: Verify deploy provenance (both services trace to this commit on main)
+        run: uv run python scripts/check_cloud_run_deploy_is_from_main.py
+
+  scheduled-drift-check:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+
+      - name: Authenticate to Google Cloud (Workload Identity Federation)
+        uses: google-github-actions/auth@ba79af03959ebeac9769e648f473a284504d9193 # v2.1.10
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOYER_SA }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@6a7c903a70c8625ed6700fa299f5ddb4ca6022e9 # v2.1.5
+
+      - uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
+        with:
+          enable-cache: true
+
+      - run: uv sync --frozen
+
+      - name: Verify deploy provenance
+        run: uv run python scripts/check_cloud_run_deploy_is_from_main.py
