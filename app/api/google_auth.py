@@ -55,7 +55,6 @@ from pydantic import BaseModel
 from app.api.webhooks.google import encrypt_token
 from app.auth.signup import _get_org_for_user, verify_supabase_jwt
 from app.core.config import get_settings
-from app.core.storage_pg import _set_tenant
 
 log = structlog.get_logger(__name__)
 router = APIRouter(prefix="/auth/google", tags=["google-oauth"])
@@ -211,28 +210,23 @@ async def _register_notifications(account_name: str, access_token: str, settings
 def _upsert_installation_pg(
     org_id: str, google_account_name: str, google_location_name: str, refresh_token_enc: str
 ) -> None:
-    """RLS-scoped upsert into google_business_installations (BYPASSRLS remediation 2c).
+    """Upsert into google_business_installations via a narrow SECURITY DEFINER
+    function (BYPASSRLS remediation 2c, corrected 2026-08-01).
 
-    ON CONFLICT (google_location_name) handles re-installs: clears revoked_at and
-    rotates the encrypted refresh token. org_id is ALWAYS caller-resolved from the
-    verified JWT — never accepted as a user param — so _set_tenant() here is safe:
-    it scopes to the same org_id that was already resolved server-side.
+    A _set_tenant()-only fix does NOT work here, unlike every other write in this
+    remediation: `authenticated` holds only a SELECT policy on this table (see
+    20260702000001_google_business_installations.sql), never INSERT/UPDATE -- proven
+    live against an ephemeral Postgres instance with NOBYPASSRLS applied
+    ("new row violates row-level security policy"). public.upsert_google_installation()
+    does the INSERT ... ON CONFLICT DO UPDATE under the function owner's privileges;
+    review_iq_app only needs EXECUTE on it, not a table grant. org_id is ALWAYS
+    caller-resolved from the verified JWT — never accepted as a user param.
     """
     conn = psycopg2.connect(get_settings().supabase_database_url)
     try:
         cur = conn.cursor()
-        _set_tenant(cur, org_id)
         cur.execute(
-            """
-            INSERT INTO public.google_business_installations
-                (org_id, google_account_name, google_location_name, refresh_token_enc)
-            VALUES (%s, %s, %s, %s)
-            ON CONFLICT (google_location_name)
-            DO UPDATE SET
-                refresh_token_enc = EXCLUDED.refresh_token_enc,
-                revoked_at        = NULL,
-                installed_at      = now()
-            """,
+            "SELECT public.upsert_google_installation(%s, %s, %s, %s)",
             (org_id, google_account_name, google_location_name, refresh_token_enc),
         )
         conn.commit()
