@@ -29,9 +29,11 @@ from typing import Any
 
 # review_iq_app.rolbypassrls is EXPECTED to differ until the cutover is actually
 # re-applied to production (this script runs as part of P0's schema-fidelity audit,
-# BEFORE that happens) -- compared separately, not as a hard equality check, so this
-# script stays meaningful both before and after the cutover.
-_ROLES_COMPARED_SEPARATELY = {"review_iq_app"}
+# BEFORE that happens). Rather than excluding review_iq_app from the roles diff
+# entirely -- which would also hide a genuinely missing role or an unexpected
+# rolcanlogin drift -- only rolbypassrls is stripped from its row before comparing,
+# so the rest of the role's shape still gets checked.
+_ROLES_IGNORE_FIELD = {"review_iq_app": {"rolbypassrls"}}
 
 # Supabase's own platform bootstrap grants a long, ever-growing list of default
 # privileges to postgres/supabase_admin/dashboard_user-style internal roles that
@@ -150,9 +152,15 @@ def compare(prod: dict[str, Any], eph: dict[str, Any]) -> list[str]:
         "table_grants", prod_tgrants, eph_tgrants, ["table_name", "grantee", "privilege_type"]
     )
 
-    prod_roles = [r for r in prod["roles"] if r["rolname"] not in _ROLES_COMPARED_SEPARATELY]
-    eph_roles = [r for r in eph["roles"] if r["rolname"] not in _ROLES_COMPARED_SEPARATELY]
-    diffs += _diff_section("roles", prod_roles, eph_roles, ["rolname"])
+    def _strip_ignored(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        return [
+            {k: v for k, v in r.items() if k not in _ROLES_IGNORE_FIELD.get(r["rolname"], set())}
+            for r in rows
+        ]
+
+    diffs += _diff_section(
+        "roles", _strip_ignored(prod["roles"]), _strip_ignored(eph["roles"]), ["rolname"]
+    )
 
     return diffs
 
