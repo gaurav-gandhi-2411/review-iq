@@ -1,0 +1,125 @@
+{
+  "active_panel": [
+    {
+      "id": "openai/gpt-oss-120b",
+      "family": "OpenAI GPT-OSS",
+      "owner": "OpenAI"
+    },
+    {
+      "id": "qwen/qwen3.6-27b",
+      "family": "Alibaba Qwen",
+      "owner": "Alibaba Cloud"
+    }
+  ],
+  "dropped_judges": [
+    {
+      "model_id": "allam-2-7b",
+      "misses": 9,
+      "reason": "9/33 control-set field checks failed (tolerance: <= 2) -- dropped from the active panel for this labeling run per the calibration policy."
+    }
+  ],
+  "validation": {
+    "n_fixtures_scored": 49,
+    "per_field": {
+      "sentiment": {
+        "n_compared": 41,
+        "n_agree": 36,
+        "n_no_consensus": 8,
+        "agreement_rate": 0.8780487804878049
+      },
+      "urgency": {
+        "n_compared": 39,
+        "n_agree": 33,
+        "n_no_consensus": 10,
+        "agreement_rate": 0.8461538461538461
+      },
+      "buy_again": {
+        "n_compared": 37,
+        "n_agree": 34,
+        "n_no_consensus": 12,
+        "agreement_rate": 0.918918918918919
+      },
+      "language": {
+        "n_compared": 43,
+        "n_agree": 40,
+        "n_no_consensus": 6,
+        "agreement_rate": 0.9302325581395349
+      },
+      "stars": {
+        "n_compared": 49,
+        "n_agree": 48,
+        "n_no_consensus": 0,
+        "agreement_rate": 0.9795918367346939
+      }
+    }
+  },
+  "growth": {
+    "candidates_considered": 233,
+    "new_fixtures_written": {
+      "en": 83,
+      "hi-en": 0
+    },
+    "excluded_split_or_insufficient": 150,
+    "excluded_genuine_disagreement": 60,
+    "excluded_rate_limited": 90
+  },
+  "reliability": {
+    "krippendorff_alpha": {
+      "sentiment": {
+        "level": "nominal",
+        "alpha": 0.8343602994765785
+      },
+      "buy_again": {
+        "level": "nominal",
+        "alpha": 1.0
+      },
+      "language": {
+        "level": "nominal",
+        "alpha": 0.7635395501996778
+      },
+      "urgency": {
+        "level": "ordinal",
+        "alpha": 0.8298558506917014
+      },
+      "stars_inferred": {
+        "level": "ordinal",
+        "alpha": 0.950789085935903
+      }
+    },
+    "fleiss_kappa": {
+      "sentiment": {
+        "n_items": 188,
+        "kappa": 0.8339185936085161
+      },
+      "buy_again": {
+        "n_items": 188,
+        "kappa": 0.5824743512371757
+      },
+      "language": {
+        "n_items": 188,
+        "kappa": 0.7629089890002102
+      }
+    }
+  },
+  "mde": {
+    "overall_n": 132,
+    "mde_worst_case_p_0.5": 0.17242565080159217,
+    "mde_at_current_score_p_0.838": 0.12706839240549933,
+    "per_language_n": {
+      "en": 110,
+      "hi": 7,
+      "hi-en": 15
+    },
+    "per_language_mde_worst_case_p_0.5": {
+      "en": 0.18888283687308152,
+      "hi": 0.7487551447163622,
+      "hi-en": 0.5114971402445011
+    }
+  },
+  "final_eval_set_size": 132,
+  "final_per_language_counts": {
+    "en": 110,
+    "hi": 7,
+    "hi-en": 15
+  }
+}

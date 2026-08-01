@@ -1,0 +1,64 @@
+{
+  "id": "030_consensus_grown",
+  "review_text": "I received this headset today. And I am really happy to buy it. Though bass is not quite good but in this price range I think it's really good. Look is great. Wire is tangle free, which is a big positive for me. Packaging was good too. They have provided extra set of ear buds too.  Along with you get a warranty card for one year. So what are you waiting for go and buy it now!!",
+  "ground_truth": {
+    "product": "headset",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": [
+      "great look",
+      "tangle-free wire",
+      "good packaging",
+      "extra ear buds included",
+      "one-year warranty",
+      "good value for price"
+    ],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "mixed",
+    "topics": [],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus (Wave 1 Section B)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "unanimous",
+      "stars_inferred": "unanimous",
+      "pros": "majority",
+      "cons": "split",
+      "topics": "split",
+      "feature_requests": "majority",
+      "competitor_mentions": "majority"
+    }
+  }
+}

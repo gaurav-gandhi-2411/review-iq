@@ -38,7 +38,7 @@ Want your own key with a private extraction history? Sign up at the landing page
 
 ## Why this exists
 
-Most review analytics tools are black boxes: you get a score with no methodology. Review-IQ takes the opposite approach — every prompt is in the repo, every eval fixture is versioned, and CI breaks if accuracy drops below 85%. Built with Indian DTC brands in mind: Phase 2 adds native Hinglish and Hindi support that incumbents (Yotpo, Birdeye, Trustpilot Insights) don't offer. Fully MIT — same code self-hosters run is what the hosted version runs; no feature gates.
+Most review analytics tools are black boxes: you get a score with no methodology. Review-IQ takes the opposite approach — every prompt is in the repo, every eval fixture is versioned, and CI breaks if the eval gate fails (see [Eval results](#eval-results) below for the live threshold). Built with Indian DTC brands in mind: Phase 2 adds native Hinglish and Hindi support that incumbents (Yotpo, Birdeye, Trustpilot Insights) don't offer. Fully MIT — same code self-hosters run is what the hosted version runs; no feature gates.
 
 ---
 
@@ -83,7 +83,7 @@ curl -X POST https://review-iq-ajjrytb3na-el.a.run.app/v2/extract \
   "language": "en",
   "extraction_meta": {
     "model": "llama-3.3-70b-versatile",
-    "prompt_version": "v2.0",
+    "prompt_version": "v2.3",
     "schema_version": "1.0.0",
     "latency_ms": 820
   }
@@ -134,8 +134,33 @@ curl -X POST https://gauravgandhi2411-review-iq.hf.space/extract \
 
 ## Eval results
 
-Evaluated on 46 hand-labeled and synthetic fixtures across English, Hinglish, and Hindi:
+Numbers below are generated from `eval/results/latest.json` by `scripts/render_metrics.py` —
+never hand-typed. CI fails (`scripts/check_no_hardcoded_metrics.py`) if this file drifts from
+that script's output. See [ADR 0001](docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md)
+for why the gate is what it is and how the prompt version history got out of sync with this
+file in the past.
 
+<!-- METRICS:START:extraction_table -->**Prompt v2.3** &middot; `8c20285` &middot; measured 2026-07-30T18:38:24Z &middot; mode: routed (tiered)
+
+| Language | Score | 95% CI | Gate | Status |
+|---|---|---|---|---|
+| en | 86.2% | [68.7%, 94.7%] | ≥80% | PASS |
+| hi-en | 80.9% | [55.8%, 93.4%] | ≥80% | PASS |
+| hi | 80.7% | [43.9%, 95.7%] | ≥80% | PASS |
+| **Overall** | **83.8%** | [71.1%, 91.6%] | ≥83% | PASS |
+
+n=49 fixtures (27 en, 15 hi-en, 7 hi). Tiered routing is ON by default in production and in this eval run (`ENABLE_TIERED_ROUTING` defaults `true`, unset in CI) -- a same-cassette `--routed` comparison produced byte-identical scores to the numbers above; there is currently no distinct *unrouted* measurement to report separately (see [ADR 0001](docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md)).<!-- METRICS:END -->
+
+Eval runs automatically in CI on every push touching prompts, LLM, schema, or fixture files
+(cassette-replay against `eval/cassettes/cassettes.json` — $0, deterministic, zero live LLM
+calls; see `eval/README.md`). Nightly runs post results to Slack.
+
+<details>
+<summary>Historical releases (frozen at time of measurement — each predates the current
+prompt/fixture set, so these are not a like-for-like comparison with the current numbers
+above)</summary>
+
+<!-- METRICS:HISTORICAL -->
 | Version | Environment | Overall | en | hi-en | hi | Fixtures |
 |---|---|---|---|---|---|---|
 | v0.5.0 | CI / routed (tiered) | **84.4%** ⚠️ | 86.3% | 83.2% | 80.7% | 46 — 31 small / 15 large, 0 escalated; 27.9% token reduction vs all-large |
@@ -143,18 +168,28 @@ Evaluated on 46 hand-labeled and synthetic fixtures across English, Hinglish, an
 | v0.3.0 | CI / direct LLM | **86.2%** | 88.3% | 82.0% | 87.8% | 46 (25 en + 15 hi-en + 6 hi) |
 | v0.2.0 | Cloud Run (production) | **87.9%** | 87.9% | — | — | 25 |
 | v0.1.3 | HF Spaces | 86.7% | 86.7% | — | — | 25 |
+<!-- /METRICS:HISTORICAL -->
 
-Gates: overall ≥ 85%, per-language ≥ 80%. Eval runs automatically in CI on every push touching prompts, LLM, schema, or fixture files. Nightly runs post results to Slack.
+Gate thresholds and fixture counts changed between these releases — see ADR 0001 for the
+full history instead of comparing these rows to the current table directly.
 
-> **v2.1 prompt (Phase 2.0c):** Added sarcasm/negation guidance, backhanded-compliment examples, SERVICE vs PRODUCT separation rule, and warranty/resolution-story guidance for hi-en. Known sarcasm gap from v0.3.0 is directly targeted.
+</details>
 
-### Authenticity eval (v0.6.0 — flagged class, 40 hand-labeled fixtures)
+> **v2.1 prompt (Phase 2.0c):** Added sarcasm/negation guidance, backhanded-compliment examples, SERVICE vs PRODUCT separation rule, and warranty/resolution-story guidance for hi-en. Known sarcasm gap from v0.3.0 is directly targeted. (Superseded by v2.3 — see `PROMPTS.md` for the full version history.)
 
-| Version | Environment | Precision | Recall | F1 | Fixtures |
-|---|---|---|---|---|---|
-| v0.6.0 | Groq / llama-3.3-70b-versatile | **1.000** | **1.000** | **1.000** | 40 — 19 genuine / 14 suspicious / 7 likely_fake; 32 en + 8 hi-en |
+### Authenticity eval (flagged class)
 
-Gates: precision ≥ 0.80 and recall ≥ 0.60 on the flagged class (suspicious or likely_fake). Design priority: zero false accusations. See `docs/compliance.md` for IS 19000:2022 posture.
+<!-- METRICS:START:authenticity_table -->| Metric | Value | 95% CI | n |
+|---|---|---|---|
+| Precision | 1.000 | [0.845, 1.000] | 21 |
+| Recall | 1.000 | [0.845, 1.000] | 21 |
+| F1 | 1.000 | [0.912, 1.000] | 40 |
+
+Gate: precision ≥ 0.80 (met). n=40 (tp=21, fp=0, fn=0, tn=19). Mode: historical (reconstructed, no live run this session).
+
+> **Provenance:** Reconstructed from the v0.6.0 published result (README: precision 1.000 / recall 1.000 / F1 1.000, n=40, 19 genuine / 14 suspicious / 7 likely_fake), not a fresh measurement. eval/authenticity/runner.py has no cassette-replay support (unlike eval/runner.py) -- GroqProvider calls in this path use cassette keys that were never recorded for the authenticity prompt, so a cassette-replay run fails loudly (INVALID RUN, 40/40 LLM errors, verified this session) and a live re-run was out of scope (no live LLM calls permitted). Precision=recall=F1=1.0 with n=40 and the stated genuine/suspicious/likely_fake split mathematically forces tp=21, fp=0, fn=0, tn=19 (zero errors overall). KNOWN GAP: record authenticity cassettes so this regenerates like the main eval does.<!-- METRICS:END -->
+
+Design priority: zero false accusations. See `docs/compliance.md` for IS 19000:2022 posture.
 
 ---
 
@@ -268,7 +303,7 @@ uv run python -m eval.report
 | Workflow | Trigger | Fails CI? |
 |---|---|---|
 | `ci.yml` | Every push / PR | Yes — lint, format, mypy, unit tests |
-| `eval.yml` | Push touching `app/core/prompt.py`, `app/core/prompts/**`, `app/core/llm.py`, `app/core/schemas.py`, `eval/fixtures/**`, `eval/runner.py` · Nightly 02:00 UTC · `workflow_dispatch` | Yes — overall ≥ 85% and per-language ≥ 80% |
+| `eval.yml` | Push touching `app/core/prompt.py`, `app/core/prompts/**`, `app/core/llm.py`, `app/core/schemas.py`, `eval/fixtures/**`, `eval/runner.py` · Nightly 02:00 UTC · `workflow_dispatch` | Yes — fails below the eval gate (see [Eval results](#eval-results)) |
 | `deploy.yml` | Push to `main` | No (informational) |
 
 Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refactor) don't burn the free-tier Groq quota.
@@ -288,14 +323,14 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 - Language detection — Devanagari regex + Hinglish keyword heuristics + lingua-py confidence
 - Language-branched prompts (v2.0) — en / hi-en / hi, each with explicit English-output instruction
 - 46-fixture eval suite — 25 English + 15 Hinglish (Claude Sonnet auto-labeled) + 6 Hindi (synthetic + verified)
-- Per-language CI gate — overall ≥ 85%, each language ≥ 80%
+- Per-language CI gate — <!-- METRICS:HISTORICAL -->overall ≥ 85%, each language ≥ 80%<!-- /METRICS:HISTORICAL --> as shipped (lowered to the current threshold on 2026-06-14 — see [ADR 0001](docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md) and [Eval results](#eval-results))
 - Nightly Slack drift alerts — eval results posted to channel after every scheduled run
 
 **Phase 2.0c** ✓ (shipped June 2026 — v0.4.0):
 - CSV bulk ingestion — streaming parser, ≤500 rows / ≤5 MB, async job tracking via Postgres
 - Self-serve signup — Supabase magic-link email → `riq_live_*` key provisioned in one click
 - Account management — `GET /account` (quota/usage), `POST /account/regenerate-key` (reveal-once)
-- hi-en prompt v2.1 — sarcasm/negation guidance, 4 examples, SERVICE vs PRODUCT separation rule
+- hi-en prompt v2.1 — sarcasm/negation guidance, 4 examples, SERVICE vs PRODUCT separation rule (superseded — current prompt is v2.3, see [Eval results](#eval-results) and `PROMPTS.md`)
 - Keyless demo endpoint — `POST /demo/extract` (rate-limited, nothing stored)
 - Static landing page + API docs — `site/index.html` + `site/docs/index.html` (Cloudflare Pages)
 - Test coverage hardened to ≥89% on v2 path
@@ -304,7 +339,7 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 - Provider abstraction — Python `Protocol`-based adapter layer; `GroqProvider` and `SecondaryProvider` with `assert_privacy_safe()` enforcement
 - SecondaryProvider failover — configurable fallback when Groq exhausts; `trains_on_input=True` providers rejected in code on the org-key path
 - Tiered router — small model (llama-3.1-8b-instant) for en/hi, large model (llama-3.3-70b-versatile) for hi-en and escalations; escalation triggers: schema validation failure, low confidence (<0.6), star/sentiment signal mismatch
-- Routed eval: 84.4% overall (86.3% en / 83.2% hi-en / 80.7% hi); tiered routing default remains OFF pending 85% overall gate
+- Routed eval (v0.5.0, prompt v2.1): <!-- METRICS:HISTORICAL -->84.4% overall (86.3% en / 83.2% hi-en / 80.7% hi)<!-- /METRICS:HISTORICAL -->; tiered routing was OFF by default at this point, pending that release's overall-accuracy gate. **Correction (2026-07-30):** tiered routing is now ON by default in production (`ENABLE_TIERED_ROUTING` defaults `true`, no override in CI or Cloud Run) — this bullet describes v0.5.0's ship-time state only; see [Eval results](#eval-results) for current status.
 - Prometheus metrics: tier distribution, escalation rate, per-tier token counts, failover count
 
 **Phase 2.2** ✓ (shipped June 2026 — v0.6.0):
@@ -329,9 +364,45 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 
 ---
 
-## How Hinglish fixtures are labeled
+## How eval fixtures are labeled
 
-Ground truth for Hinglish fixtures (`eval/fixtures/hi-en/`) is generated by Anthropic Claude Sonnet, an independent model from the production Groq Llama 3.3 70B being evaluated. This keeps the eval honest — a different model labels the data than the one being scored. Source reviews come from publicly available Flipkart Kaggle datasets, classified as Hinglish (Latin-script Hindi/English code-mix) via regex heuristics. All fixtures are committed and inspectable; anyone can audit the labels for quality.
+**Original 49 fixtures (historical, unchanged):** 27 English fixtures were hand-authored; 15 Hinglish fixtures (`eval/fixtures/hi-en/`) were labeled by Anthropic Claude Sonnet (single-model, independent from the production Groq model being evaluated); 6 Hindi fixtures (`eval/fixtures/hi/`) are synthetic, generated and labeled by Claude Sonnet, verified against production output. Both single-model approaches were an improvement over hand-labeling but still violate "no single-model ground truth" — see below for what replaced this for new growth.
+
+**New growth (Wave 1 Section B, this session): multi-LLM consensus, NOT human ground truth.** Ground truth for newly added fixtures is the agreement of an independent 3-judge LLM panel, not any single model's opinion — including not the production model, and not a single labeler model as before. Per-field voting only (unanimous/majority/split), never a blended confidence score; a field with no majority gets no label (`split`), not a forced tiebreak. The panel is calibrated against a 16-item unambiguous control set *before* any real labeling, and a judge that fails calibration is dropped, not silently kept.
+
+<!-- METRICS:START:consensus_labeling -->**Active judge panel:** `openai/gpt-oss-120b` (OpenAI GPT-OSS), `qwen/qwen3.6-27b` (Alibaba Qwen)
+
+- Dropped by calibration: `allam-2-7b` -- 9/33 control-set field checks failed (tolerance: <= 2) -- dropped from the active panel for this labeling run per the calibration policy.
+
+**Inter-rater reliability** (Krippendorff's alpha is primary -- tolerates a judge not responding on a given item; Fleiss' kappa is a secondary cross-check on the fully-covered subset):
+
+| Field | Level | Alpha | Kappa (n fully-covered) |
+|---|---|---|---|
+| sentiment | nominal | 0.834 | 0.834 (n=188) |
+| buy_again | nominal | 1.000 | 0.582 (n=188) |
+| language | nominal | 0.764 | 0.763 (n=188) |
+| urgency | ordinal | 0.830 | -- (ordinal, no kappa) |
+| stars_inferred | ordinal | 0.951 | -- (ordinal, no kappa) |
+
+**Validation pass** (49 already-committed fixtures re-labeled by the panel, compared against existing ground truth):
+
+| Field | Compared | Agree | Agreement rate | No-consensus |
+|---|---|---|---|---|
+| sentiment | 41 | 36 | 87.8% | 8 |
+| urgency | 39 | 33 | 84.6% | 10 |
+| buy_again | 37 | 34 | 91.9% | 12 |
+| language | 43 | 40 | 93.0% | 6 |
+| stars | 49 | 48 | 98.0% | 0 |
+
+**Growth:** 233 new candidates considered, 83 became new fixtures (83 en, 0 hi-en). Of 150 excluded: 60 on genuine panel disagreement (no majority on sentiment/urgency/buy_again/language), 90 lost to Groq free-tier rate-limit exhaustion on the dedicated benchmark key (both judges errored -- not a quality signal, recoverable on a fresh quota window).
+
+**132 fixtures now have consensus ground truth** (110 en, 7 hi, 15 hi-en), but **only 49 currently gate CI**. The other 83 (83 en) are staged in `eval/fixtures/_pending_groq_cassette/` -- their cassettes were recorded via an OpenRouter fallback after a Groq quota exhaustion incident (see [ADR 0003](docs/architecture/adr/0003-cassette-provenance-during-groq-quota-exhaustion.md)), not production's Groq model, so they are deliberately excluded from the CI-scored set until a real Groq re-recording promotes them.
+
+**Minimum detectable effect** (2-proportion z-test, alpha=0.05, power=0.80) once all 132 fixtures are promoted: **17.2 points** (worst-case, p=0.5) / **12.7 points** (at current score p=0.838).<!-- METRICS:END -->
+
+**Known gap — new fixtures need a cassette-recording pass before CI's eval gate will score them.** `eval.yml`'s cassette-replay gate has no recorded cassette for review text that didn't exist before this session, so it fails loudly (by design, not silently) on every newly added fixture until cassettes are re-recorded against production's live model — which requires a live call against production's `GROQ_API_KEY`, out of scope for this consensus-labeling session (constrained to the dedicated benchmark key only). Flagged here as a required follow-up, not left for CI to discover.
+
+Source reviews for English/Hinglish growth come from the same publicly available Flipkart Kaggle datasets as the original Hinglish fixtures (`eval/data/sample_flipkart.py`), classified by language via regex heuristics. All fixtures — original and grown — are committed and inspectable; anyone can audit the labels for quality.
 
 ---
 

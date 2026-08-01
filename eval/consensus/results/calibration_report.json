@@ -1,0 +1,72 @@
+{
+  "control_set_size": 16,
+  "total_checks_per_judge": 33,
+  "judges": {
+    "openai/gpt-oss-120b": {
+      "misses": 0,
+      "miss_details": [],
+      "passed": true
+    },
+    "qwen/qwen3.6-27b": {
+      "misses": 0,
+      "miss_details": [],
+      "passed": true
+    },
+    "allam-2-7b": {
+      "misses": 9,
+      "miss_details": [
+        {
+          "item_id": "cal-003",
+          "fields": [
+            "urgency",
+            "sentiment"
+          ]
+        },
+        {
+          "item_id": "cal-004",
+          "fields": [
+            "language",
+            "sentiment",
+            "buy_again"
+          ]
+        },
+        {
+          "item_id": "cal-007",
+          "fields": [
+            "urgency"
+          ]
+        },
+        {
+          "item_id": "cal-011",
+          "fields": [
+            "stars"
+          ]
+        },
+        {
+          "item_id": "cal-012",
+          "fields": [
+            "sentiment"
+          ]
+        },
+        {
+          "item_id": "cal-016",
+          "fields": [
+            "feature_requests"
+          ]
+        }
+      ],
+      "passed": false
+    }
+  },
+  "active_panel": [
+    "openai/gpt-oss-120b",
+    "qwen/qwen3.6-27b"
+  ],
+  "dropped": [
+    {
+      "model_id": "allam-2-7b",
+      "misses": 9,
+      "reason": "9/33 control-set field checks failed (tolerance: <= 2) -- dropped from the active panel for this labeling run per the calibration policy."
+    }
+  ]
+}

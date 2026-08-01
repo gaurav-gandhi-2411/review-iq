@@ -37,6 +37,25 @@ jobs:
       - name: Unit tests
         run: uv run pytest tests/unit/ -v
 
+      # Truth-reconciliation gates (Wave 1 Section A) -- see
+      # docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md.
+      - name: No hand-typed accuracy numbers in docs
+        run: uv run python scripts/check_no_hardcoded_metrics.py
+
+      - name: Metrics render drift check (README/site vs eval JSON)
+        run: uv run python scripts/render_metrics.py --check
+
+      # Mechanical proof that eval/results.json + eval/results/latest.json qualify for rule
+      # 70a gate 3's generated-artifact carve-out (CLAUDE.md rule 39b): regenerates both via
+      # cassette replay ($0, deterministic) and fails if the substantive content (everything
+      # except generated_at/git_sha/mode/per-fixture latency_ms, which legitimately vary run
+      # to run) differs from what's committed -- catches a hand-edit or stale commit.
+      - name: Eval results reproducibility (gate-3 carve-out proof)
+        env:
+          EVAL_CASSETTE_MODE: replay
+          API_KEY: ci-key
+        run: uv run python scripts/check_eval_results_reproducible.py
+
   pip-audit:
     runs-on: ubuntu-latest
     steps:
