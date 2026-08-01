@@ -126,3 +126,95 @@ def test_main_exits_zero_on_success(capsys: pytest.CaptureFixture[str]) -> None:
             exit_code = probe_web_surfaces.main()
     assert exit_code == 0
     assert "All web surfaces OK" in capsys.readouterr().out
+
+
+# ---------------------------------------------------------------------------
+# probe_authenticated_path -- BYPASSRLS remediation P2 (2026-08-01): catches the
+# failure class none of the four public surfaces above can see -- a 200 response
+# that is actually an RLS default-deny (empty/malformed body), not just an
+# unreachable page.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_authenticated_probe_ok_on_well_formed_results() -> None:
+    client = AsyncMock(spec=httpx.AsyncClient)
+    client.get.return_value = _response(200, '{"results": [], "count": 0}')
+    result = await probe_web_surfaces.probe_authenticated_path(client, "riq_live_fake")
+    assert result.ok is True
+    assert result.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_authenticated_probe_fails_on_non_200() -> None:
+    client = AsyncMock(spec=httpx.AsyncClient)
+    client.get.return_value = _response(401, '{"detail": "API key not found."}')
+    result = await probe_web_surfaces.probe_authenticated_path(client, "riq_live_fake")
+    assert result.ok is False
+    assert "401" in result.detail
+
+
+@pytest.mark.asyncio
+async def test_authenticated_probe_fails_on_200_with_no_results_list() -> None:
+    """The exact silent-failure shape an RLS default-deny produces if a future bug
+    ever returns 200 with a body that isn't the expected {"results": [...]} shape --
+    must be flagged, not treated as healthy just because the status code is green."""
+    client = AsyncMock(spec=httpx.AsyncClient)
+    client.get.return_value = _response(200, '{"detail": "unexpected"}')
+    result = await probe_web_surfaces.probe_authenticated_path(client, "riq_live_fake")
+    assert result.ok is False
+    assert "results" in result.detail
+
+
+@pytest.mark.asyncio
+async def test_authenticated_probe_fails_on_non_json_body() -> None:
+    client = AsyncMock(spec=httpx.AsyncClient)
+    client.get.return_value = _response(200, "<html>not json</html>")
+    result = await probe_web_surfaces.probe_authenticated_path(client, "riq_live_fake")
+    assert result.ok is False
+    assert "not valid JSON" in result.detail
+
+
+@pytest.mark.asyncio
+async def test_authenticated_probe_passes_api_key_header() -> None:
+    client = AsyncMock(spec=httpx.AsyncClient)
+    client.get.return_value = _response(200, '{"results": []}')
+    await probe_web_surfaces.probe_authenticated_path(client, "riq_live_the_real_key")
+    _args, kwargs = client.get.call_args
+    assert kwargs["headers"]["X-API-Key"] == "riq_live_the_real_key"
+
+
+@pytest.mark.asyncio
+async def test_run_probe_skips_authenticated_path_when_key_not_set(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("PROBE_API_KEY", raising=False)
+    good = probe_web_surfaces.ProbeResult("marketing", "https://x", True, 200, 10, "ok")
+    with patch("probe_web_surfaces.probe_surface", new_callable=AsyncMock, return_value=good):
+        results = await probe_web_surfaces.run_probe()
+    names = {r.name for r in results}
+    assert "authenticated-v2-reviews" not in names
+
+
+@pytest.mark.asyncio
+async def test_run_probe_includes_authenticated_path_when_key_set(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("PROBE_API_KEY", "riq_live_fake")
+    good_surface = probe_web_surfaces.ProbeResult("marketing", "https://x", True, 200, 10, "ok")
+    good_auth = probe_web_surfaces.ProbeResult(
+        "authenticated-v2-reviews", "https://x/v2/reviews", True, 200, 10, "ok"
+    )
+    with (
+        patch(
+            "probe_web_surfaces.probe_surface", new_callable=AsyncMock, return_value=good_surface
+        ),
+        patch(
+            "probe_web_surfaces.probe_authenticated_path",
+            new_callable=AsyncMock,
+            return_value=good_auth,
+        ),
+    ):
+        results = await probe_web_surfaces.run_probe()
+    names = {r.name for r in results}
+    assert "authenticated-v2-reviews" in names
