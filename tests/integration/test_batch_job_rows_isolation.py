@@ -92,7 +92,22 @@ def pause_prod_scheduler() -> Iterator[None]:
     SCHEDULER RACE" section for why this exists. Runs once for the whole module
     (not per-test) to minimize gcloud API calls and avoid repeatedly flapping a
     real production schedule.
+
+    Skipped entirely when TEST_DB_HOST is set (the pre-cutover ephemeral-Postgres CI
+    job, 2026-08-01) -- pausing the REAL production scheduler makes no sense (and is
+    actively unsafe to do from CI) when this run's own drain_rows() calls are
+    operating against a throwaway local container, not production's batch_job_rows
+    table at all.
     """
+    if os.environ.get("TEST_DB_HOST"):
+        print(
+            "\n[pause_prod_scheduler] TEST_DB_HOST is set -- skipping real "
+            "production Cloud Scheduler pause/resume (this run targets an "
+            "ephemeral database, not production)"
+        )
+        yield
+        return
+
     result = subprocess.run(
         _scheduler_cmd("pause"), shell=True, capture_output=True, text=True, check=False
     )
@@ -137,15 +152,9 @@ from app.core.storage_pg import (  # noqa: E402
     get_by_hash_pg,
 )
 
-_DB_PARAMS = {
-    "host": "db.enqpluazgxewepchdeut.supabase.co",
-    "port": 5432,
-    "dbname": "postgres",
-    "user": "postgres",
-    "password": os.environ["SUPABASE_DB_PASSWORD"],
-    "sslmode": "require",
-    "connect_timeout": 15,
-}
+from tests.integration._superuser_db_params import superuser_db_params  # noqa: E402
+
+_DB_PARAMS = superuser_db_params()
 
 
 def _conn() -> psycopg2.extensions.connection:
