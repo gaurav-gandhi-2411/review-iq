@@ -9,7 +9,7 @@ from __future__ import annotations
 import asyncio
 import uuid
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
 import psycopg2
 import psycopg2.errors
@@ -17,7 +17,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
 from app.auth.admin import require_admin
-from app.auth.keygen import generate_api_key
+from app.auth.keygen import insert_api_key_with_retry
 from app.core.config import get_settings
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -132,9 +132,8 @@ def _get_org_db(org_id: str) -> OrgOut:
 
 
 def _create_key_db(org_id: str, name: str, quota: int) -> CreateKeyOut:
-    # Generate key before opening the connection — argon2 takes ~100ms.
-    raw_key, key_prefix, key_hash = generate_api_key()
-
+    """Retries on a key_prefix collision -- see app/auth/keygen.py's
+    insert_api_key_with_retry docstring."""
     conn = _db_connect()
     conn.autocommit = False
     try:
@@ -145,12 +144,19 @@ def _create_key_db(org_id: str, name: str, quota: int) -> CreateKeyOut:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Organization not found.",
             )
-        cur.execute(
-            "INSERT INTO public.api_keys (org_id, key_prefix, key_hash, name, quota) "
-            "VALUES (%s, %s, %s, %s, %s) RETURNING id, created_at",
-            (org_id, key_prefix, key_hash, name, quota),
-        )
-        row = cur.fetchone()
+        row: tuple[Any, Any] | None = None
+
+        def _do_insert(raw_key: str, key_prefix: str, key_hash: str) -> None:
+            nonlocal row
+            cur.execute(
+                "INSERT INTO public.api_keys (org_id, key_prefix, key_hash, name, quota) "
+                "VALUES (%s, %s, %s, %s, %s) RETURNING id, created_at",
+                (org_id, key_prefix, key_hash, name, quota),
+            )
+            row = cur.fetchone()
+
+        raw_key, key_prefix, _key_hash = insert_api_key_with_retry(cur, _do_insert)
+        assert row is not None
         conn.commit()
         return CreateKeyOut(
             id=str(row[0]),
@@ -203,9 +209,8 @@ def _list_keys_db(org_id: str) -> list[KeyOut]:
 
 
 def _rotate_key_db(org_id: str, key_id: str) -> CreateKeyOut:
-    # Generate new key before opening connection.
-    raw_key, key_prefix, key_hash = generate_api_key()
-
+    """Retries on a key_prefix collision -- see app/auth/keygen.py's
+    insert_api_key_with_retry docstring."""
     conn = _db_connect()
     conn.autocommit = False
     try:
@@ -231,12 +236,19 @@ def _rotate_key_db(org_id: str, key_id: str) -> CreateKeyOut:
             (key_id,),
         )
         old_name, old_quota = cur.fetchone()
-        cur.execute(
-            "INSERT INTO public.api_keys (org_id, key_prefix, key_hash, name, quota) "
-            "VALUES (%s, %s, %s, %s, %s) RETURNING id, created_at",
-            (org_id, key_prefix, key_hash, old_name, old_quota),
-        )
-        row = cur.fetchone()
+        row: tuple[Any, Any] | None = None
+
+        def _do_insert(raw_key: str, key_prefix: str, key_hash: str) -> None:
+            nonlocal row
+            cur.execute(
+                "INSERT INTO public.api_keys (org_id, key_prefix, key_hash, name, quota) "
+                "VALUES (%s, %s, %s, %s, %s) RETURNING id, created_at",
+                (org_id, key_prefix, key_hash, old_name, old_quota),
+            )
+            row = cur.fetchone()
+
+        raw_key, key_prefix, _key_hash = insert_api_key_with_retry(cur, _do_insert)
+        assert row is not None
         conn.commit()
         return CreateKeyOut(
             id=str(row[0]),

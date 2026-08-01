@@ -8,15 +8,23 @@ import uuid
 from typing import Any
 
 import psycopg2
+import psycopg2.errors
 import structlog
 from fastapi import APIRouter, Header, HTTPException, Request, status
 
-from app.auth.keygen import generate_api_key
+from app.auth.keygen import insert_api_key_with_retry
 from app.core.config import get_settings
 from app.core.rate_limit import limiter
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 log = structlog.get_logger(__name__)
+
+
+class _ProvisionRaceLost(Exception):
+    """Raised internally when organization_members_user_id_key rejects our INSERT --
+    another concurrent first-login call for this same user_id already committed its
+    own org first. `provision()` catches this and returns the winner's org instead
+    of surfacing a 500 (see _provision_org_and_key's docstring)."""
 
 
 def _db_connect() -> psycopg2.extensions.connection:
@@ -83,9 +91,17 @@ def _provision_org_and_key(user_id: str, email: str) -> dict[str, str | int]:
     """Create org + riq_live_ key + owner membership for a first-time user.
 
     Returns raw_key exactly once — caller must relay it to the user immediately.
-    """
-    raw_key, key_prefix, key_hash = generate_api_key()
 
+    Racy by design: `provision()` does a check-then-act (_get_org_for_user, then
+    this) with no lock between them, so two concurrent first calls for the same
+    user_id can both reach here. organization_members.user_id carries a UNIQUE
+    constraint (see
+    supabase/migrations/20260801000001_role_separation_bypassrls_remediation.sql) --
+    a product decision that a user belongs to exactly one org, not a storage detail.
+    The losing call's membership INSERT raises UniqueViolation; this rolls back its
+    own (uncommitted, so never persisted) org + key and raises _ProvisionRaceLost
+    for the caller to resolve deterministically against the winner's row.
+    """
     safe = re.sub(r"[^a-z0-9]", "-", email.split("@")[0].lower())[:20]
     slug = f"{safe}-{uuid.uuid4().hex[:6]}"
 
@@ -99,19 +115,28 @@ def _provision_org_and_key(user_id: str, email: str) -> dict[str, str | int]:
         )
         (org_id,) = cur.fetchone()
 
-        cur.execute(
-            """
-            INSERT INTO public.api_keys (org_id, key_hash, key_prefix, name, quota)
-            VALUES (%s, %s, %s, 'default', 100)
-            """,
-            (str(org_id), key_hash, key_prefix),
-        )
+        def _do_insert(raw_key: str, key_prefix: str, key_hash: str) -> None:
+            cur.execute(
+                """
+                INSERT INTO public.api_keys (org_id, key_hash, key_prefix, name, quota)
+                VALUES (%s, %s, %s, 'default', 100)
+                """,
+                (str(org_id), key_hash, key_prefix),
+            )
 
-        cur.execute(
-            "INSERT INTO public.organization_members (org_id, user_id, role) "
-            "VALUES (%s, %s, 'owner')",
-            (str(org_id), user_id),
-        )
+        raw_key, key_prefix, _key_hash = insert_api_key_with_retry(cur, _do_insert)
+
+        try:
+            cur.execute(
+                "INSERT INTO public.organization_members (org_id, user_id, role) "
+                "VALUES (%s, %s, 'owner')",
+                (str(org_id), user_id),
+            )
+        except psycopg2.errors.UniqueViolation as exc:
+            diag = getattr(exc, "diag", None)
+            if getattr(diag, "constraint_name", None) != "organization_members_user_id_key":
+                raise
+            raise _ProvisionRaceLost(user_id) from exc
 
         conn.commit()
         log.info("signup.provisioned", org_id=str(org_id), user_id=user_id)
@@ -196,5 +221,22 @@ async def provision(
             "monthly_quota": existing["quota"],
         }
 
-    result = await asyncio.to_thread(_provision_org_and_key, str(user.id), user.email or "")
+    try:
+        result = await asyncio.to_thread(_provision_org_and_key, str(user.id), user.email or "")
+    except _ProvisionRaceLost:
+        existing = await asyncio.to_thread(_get_org_for_user, str(user.id))
+        if existing is None:
+            # Unreachable in practice: the UNIQUE violation means a committed row for
+            # this user_id exists by the time our rollback finishes. Surface loudly
+            # rather than silently swallow if it ever does happen.
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Concurrent signup conflict — retry.",
+            ) from None
+        return {
+            "status": "existing",
+            "org_id": existing["org_id"],
+            "key_prefix": existing["key_prefix"],
+            "monthly_quota": existing["quota"],
+        }
     return {"status": "created", **result}
