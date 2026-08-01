@@ -91,8 +91,6 @@ jobs:
       ADMIN_DATABASE_URL: postgresql://review_iq_admin:ci_admin_password@localhost:5432/postgres
       ADMIN_USERNAME: admin
       TEST_ADMIN_PASSWORD: ci_admin_test_password
-      # argon2id hash of TEST_ADMIN_PASSWORD above -- fixed, not a real credential.
-      ADMIN_PASSWORD_HASH: "$argon2id$v=19$m=65536,t=3,p=4$Ty8+Bt7MDCx5Q7mnCfJAsw$xzUnExt8n1R4arIEz2DWzdqvRxYPVQTZjph1xZj1cTA"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
@@ -108,6 +106,17 @@ jobs:
 
       - name: Install dependencies
         run: uv sync --frozen
+
+      # Generated at runtime, not embedded in YAML -- an argon2id hash string
+      # contains literal `$` segments that are a real escaping risk across
+      # YAML/shell layers (this is what actually broke the first version of this
+      # job: the embedded hash silently didn't match TEST_ADMIN_PASSWORD in real
+      # GitHub Actions, despite passing in local testing where a plain env file
+      # was sourced directly). Deriving it from TEST_ADMIN_PASSWORD in-process
+      # sidesteps the whole question.
+      - name: Generate ADMIN_PASSWORD_HASH from TEST_ADMIN_PASSWORD
+        run: |
+          echo "ADMIN_PASSWORD_HASH=$(uv run python -c "from argon2 import PasswordHasher; import os; print(PasswordHasher().hash(os.environ['TEST_ADMIN_PASSWORD']))")" >> "$GITHUB_ENV"
 
       - name: Install psql client
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends postgresql-client
