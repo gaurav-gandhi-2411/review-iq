@@ -8,9 +8,10 @@
 ## Key rules (read before rotating anything)
 
 Secret Manager free tier: **6 active (enabled) versions** across all secrets, all time.  
-Steady state: **9 secrets × 1 active version = 9 active versions** — this already exceeds the
-free tier by 3 (verified live 2026-07-11: 9 secrets, 9 versions after cleanup below). At
-$0.06/version/month, that's ~$0.18/month — trivial, but not $0, and worth knowing rather than
+Steady state: **12 secrets × 1 active version = 12 active versions** (9 as of 2026-07-11,
++3 from the 2026-08-01 BYPASSRLS remediation cutover: `review-iq-admin-database-url`,
+`review-iq-migrator-database-url`, `supabase-direct-url`) — exceeds the free tier by 6. At
+$0.06/version/month, that's ~$0.36/month — trivial, but not $0, and worth knowing rather than
 assuming free. This runbook previously only tracked 4 of the 9 secrets and its quota loop
 undercounted accordingly; both are fixed below.
 
@@ -37,18 +38,24 @@ version indefinitely until you fix it. Two concurrent rotations = 11 active vers
 Verified live against the actual Secret Manager inventory (`gcloud secrets list
 --project=review-iq-prod`) on 2026-07-11 — matches `ops/runbooks/cloud-run-deploy.md`'s
 9-secret env-var table. Re-verify the same way before trusting this if it's been a while.
+**Updated 2026-08-01** for the BYPASSRLS remediation cutover (`ops/runbooks/bypassrls-
+remediation-cutover.md`) — 3 secrets added, `supabase-database-url`'s description
+corrected (see that row).
 
 | Secret name (kebab-case) | Cloud Run env var | What it is |
 |--------------------------|-------------------|------------|
 | `groq-api-key` | `GROQ_API_KEY` | Groq LLM API key (primary inference) |
 | `gemini-api-key` | `GEMINI_API_KEY` | Google Gemini API key (dev fallback) |
-| `supabase-database-url` | `SUPABASE_DATABASE_URL` | Supabase pooler URL, port 6543 (transaction mode). Connects as `review_iq_app` (non-superuser, `BYPASSRLS`, member of `authenticated`) as of 2026-07-26 — see `docs/data-ownership.md` and `supabase/migrations/20260726000001_review_iq_app_role.sql`. Rotating this secret's password also requires `ALTER ROLE review_iq_app WITH PASSWORD '...'` on the database first. |
+| `supabase-database-url` | `SUPABASE_DATABASE_URL` | Supabase pooler URL, port 6543 (transaction mode). Connects as `review_iq_app` (non-superuser, member of `authenticated`). **As of the 2026-08-01 BYPASSRLS remediation cutover, this role no longer holds BYPASSRLS** — the 2026-07-26 description below was accurate at the time but is now stale; see `supabase/migrations/20260801000001_role_separation_bypassrls_remediation.sql` and `ops/runbooks/bypassrls-remediation-cutover.md` for the current state and why. Rotating this secret's password also requires `ALTER ROLE review_iq_app WITH PASSWORD '...'` on the database first. |
 | `admin-password-hash` | `ADMIN_PASSWORD_HASH` | argon2id hash of admin HTTP Basic password |
+| `review-iq-admin-database-url` | `ADMIN_DATABASE_URL` (review-iq-admin service only) | Added 2026-08-01. Connects as `review_iq_admin` (BYPASSRLS, member of `authenticated`) — a genuinely separate role from `review_iq_app`, used only by the private `review-iq-admin` Cloud Run service (IAM-gated, not the public service). Before this cutover, `ADMIN_DATABASE_URL` pointed at this same `supabase-database-url` secret by accident — see the cutover runbook. |
+| `review-iq-migrator-database-url` | *(none — never referenced by any deployed service)* | Added 2026-08-01. Connects as `review_iq_migrator` (BYPASSRLS, schema-scoped to `public`), for running future migrations only. Deliberately not granted to any Cloud Run service account — reachability from a request-serving path must stay impossible, not just unlikely. |
 | `resend-api-key` | `RESEND_API_KEY` | Resend transactional email API key |
 | `resend-from-email` | `RESEND_FROM_EMAIL` | Verified sender address for alert/digest emails |
 | `supabase-url` | `SUPABASE_URL` | Supabase project REST URL (used for JWT verification) |
 | `supabase-service-role-key` | `SUPABASE_SERVICE_ROLE_KEY` | Bypasses RLS — highest-sensitivity secret in this table. Rotate first if any compromise is suspected. |
 | `unsubscribe-signing-key` | `UNSUBSCRIBE_SIGNING_KEY` | HMAC key signing one-click unsubscribe tokens |
+| `supabase-direct-url` | *(none — never referenced by any deployed service)* | Added 2026-08-01, for running migrations that need `CREATEROLE` (`review_iq_app`/`review_iq_migrator` don't have it). Connects as `postgres`. Highest-sensitivity secret in this table alongside `supabase-service-role-key` — never grant any Cloud Run service account access to it. |
 
 Not tracked here (plain env vars, not Secret Manager — see `cloud-run-deploy.md` for why):
 `DIGEST_TRIGGER_TOKEN`, `INGEST_TICK_TOKEN`. Shopify/Google OAuth secrets
@@ -184,15 +191,16 @@ Then rotate (Steps 1–4 above) with a freshly generated value.
 
 ## Quota accounting after rotation
 
-The free tier is 6 versions; steady state here is 9 (see "Key rules" above — already a small
-paid overage, ~$0.18/month). After any rotation, verify each secret is back to exactly 1
+The free tier is 6 versions; steady state here is 12 (see "Key rules" above — a small
+paid overage, ~$0.36/month). After any rotation, verify each secret is back to exactly 1
 enabled version:
 
 ```bash
-# Count enabled versions across all 9 secrets
+# Count enabled versions across all 12 secrets
 for s in groq-api-key gemini-api-key supabase-database-url admin-password-hash \
          resend-api-key resend-from-email supabase-url supabase-service-role-key \
-         unsubscribe-signing-key; do
+         unsubscribe-signing-key review-iq-admin-database-url \
+         review-iq-migrator-database-url supabase-direct-url; do
   n=$(gcloud secrets versions list $s --project=review-iq-prod \
     --filter="state=enabled" --format="value(name)" | wc -l)
   echo "$s: $n"
