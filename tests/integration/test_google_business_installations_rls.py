@@ -167,13 +167,20 @@ class TestGoogleBusinessInstallationsRLS:
         assert inst_a not in visible_ids, "org_b must NOT see org_a's installation"
 
     def test_anon_cannot_select(self, installation_ids: tuple[str, str]) -> None:
-        """anon role denied by policy — SELECT returns 0 rows."""
+        """anon role denied — no table grant at all, not reached via RLS.
+
+        Fixed 2026-08-01 (P1, schema-fidelity pass): this used to assert the SELECT
+        succeeded with 0 rows (an RLS-USING(false) denial). A live schema diff against
+        production proved anon holds ZERO table-level grants on any table -- the
+        privilege check fails before RLS is ever evaluated. Isolation still holds (a
+        harder failure mode, not a weaker one); only the assertion was wrong.
+        """
         conn = _conn()
         try:
             cur = conn.cursor()
             cur.execute("SET LOCAL ROLE anon")
-            cur.execute("SELECT id FROM public.google_business_installations")
-            assert cur.fetchall() == [], "anon must see no installations"
+            with pytest.raises(psycopg2.errors.InsufficientPrivilege):
+                cur.execute("SELECT id FROM public.google_business_installations")
         finally:
             conn.close()
 

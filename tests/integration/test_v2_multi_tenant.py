@@ -1,12 +1,15 @@
 """End-to-end multi-tenancy integration test for v2 endpoints.
 
-Creates two orgs (A and B), issues keys for each, verifies that:
+Creates two orgs (A and B) via direct DB writes, issues keys for each, verifies that:
   - Org A's extraction is visible to Org A's GET /v2/reviews
   - Org B's GET /v2/reviews returns empty (RLS + app-level isolation)
   - GET /v2/insights for Org A reflects the extraction
   - GET /v2/insights for Org B shows zero total_extractions
 
-Marked 'integration' — requires live Supabase DB and valid admin/keys in .env.
+Marked 'integration' — requires live Supabase DB (SUPABASE_DIRECT_URL) in .env. Only
+exercises the public-service surface (/v2/*) against a single TestClient(app) instance —
+never /admin/*, which is mounted by a separate service under ADR 0006 and cannot coexist
+with this file's routes in one process (see the org/key fixture helpers below).
 Run: uv run pytest tests/integration/test_v2_multi_tenant.py -v -m integration
 """
 
@@ -24,35 +27,57 @@ from fastapi.testclient import TestClient
 
 load_dotenv(Path(__file__).parents[2] / ".env")
 
+from app.auth.keygen import generate_api_key  # noqa: E402
 from app.main import app  # noqa: E402
-
-_USERNAME = os.environ["ADMIN_USERNAME"]
-_PASSWORD = os.environ["TEST_ADMIN_PASSWORD"]
-_AUTH = (_USERNAME, _PASSWORD)
 
 client = TestClient(app, raise_server_exceptions=True)
 
 
 # ---------------------------------------------------------------------------
 # Helpers
+#
+# Orgs/keys are seeded via direct DB writes, never through /admin/organizations.
+# admin_router and the v2/bff routers this file actually tests are mutually
+# exclusive under the SERVICE_ROLE split (ADR 0006, app/main.py) -- app.main.app
+# is a module-level singleton built once at import time, so no single test
+# process can ever mount both. Going through the admin HTTP API here was never
+# actually exercisable; it silently 404'd since ADR 0006 shipped (PR #46) and
+# these tests never ran. Matches the fixture pattern already established in
+# test_adversarial_cross_tenant.py's two_orgs_with_keys.
 # ---------------------------------------------------------------------------
 
 
 def _create_org(suffix: str) -> dict:
+    org_id = str(uuid.uuid4())
     slug = f"v2mt-{suffix}-{uuid.uuid4().hex[:6]}"
-    r = client.post("/admin/organizations", json={"name": f"MT {suffix}", "slug": slug}, auth=_AUTH)
-    assert r.status_code == 201, r.text
-    return r.json()
+    conn = psycopg2.connect(os.environ["SUPABASE_DIRECT_URL"])
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO public.organizations (id, name, slug) VALUES (%s, %s, %s)",
+            (org_id, f"MT {suffix}", slug),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+    return {"id": org_id, "name": f"MT {suffix}", "slug": slug}
 
 
 def _create_key(org_id: str) -> dict:
-    r = client.post(
-        f"/admin/organizations/{org_id}/keys",
-        json={"name": "mt-test", "quota": 100},
-        auth=_AUTH,
-    )
-    assert r.status_code == 201, r.text
-    return r.json()
+    raw_key, key_prefix, key_hash = generate_api_key()
+    key_id = str(uuid.uuid4())
+    conn = psycopg2.connect(os.environ["SUPABASE_DIRECT_URL"])
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO public.api_keys (id, org_id, key_prefix, key_hash, name, quota) "
+            "VALUES (%s, %s, %s, %s, %s, %s)",
+            (key_id, org_id, key_prefix, key_hash, "mt-test", 100),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+    return {"id": key_id, "raw_key": raw_key}
 
 
 def _teardown_org(org_id: str) -> None:
