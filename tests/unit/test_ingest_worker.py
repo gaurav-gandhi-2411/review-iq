@@ -80,12 +80,18 @@ def _make_fake_connect(queue: list[_ClaimedRow], created: list[_FakeConn]) -> ob
 
 
 def _update_params(conn: _FakeConn) -> tuple[object, ...]:
-    """Extract the params of the (single) UPDATE batch_job_rows call on a fake conn."""
-    updates = [c for c in conn.cursor().execute_calls if "UPDATE public.batch_job_rows" in c[0]]
+    """Extract the params of the (single) settle_batch_job_row call on a fake conn.
+
+    settle_batch_job_row(job_id, row_index, status, error, input_hash) -- reorder to
+    the (status, error, input_hash, job_id, row_index) shape callers here expect,
+    matching the old raw UPDATE statement's param order this replaced.
+    """
+    updates = [c for c in conn.cursor().execute_calls if "public.settle_batch_job_row" in c[0]]
     assert len(updates) == 1
     _, params = updates[0]
     assert params is not None
-    return params
+    job_id, row_index, status, error, input_hash = params
+    return (status, error, input_hash, job_id, row_index)
 
 
 # ---------------------------------------------------------------------------

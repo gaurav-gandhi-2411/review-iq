@@ -26,7 +26,6 @@ INSERT BLOCK MECHANISM:
 
 from __future__ import annotations
 
-import os
 import uuid
 from pathlib import Path
 
@@ -35,17 +34,11 @@ import psycopg2.errors
 import pytest
 from dotenv import load_dotenv
 
+from tests.integration._superuser_db_params import superuser_db_params
+
 load_dotenv(Path(__file__).parents[2] / ".env")
 
-_DB_PARAMS = {
-    "host": "db.enqpluazgxewepchdeut.supabase.co",
-    "port": 5432,
-    "dbname": "postgres",
-    "user": "postgres",
-    "password": os.environ["SUPABASE_DB_PASSWORD"],
-    "sslmode": "require",
-    "connect_timeout": 15,
-}
+_DB_PARAMS = superuser_db_params()
 
 _FAKE_ENC_REFRESH_TOKEN = "gAAAAABfake_fernet_ciphertext_for_rls_test_only"
 
@@ -174,13 +167,20 @@ class TestGoogleBusinessInstallationsRLS:
         assert inst_a not in visible_ids, "org_b must NOT see org_a's installation"
 
     def test_anon_cannot_select(self, installation_ids: tuple[str, str]) -> None:
-        """anon role denied by policy — SELECT returns 0 rows."""
+        """anon role denied — no table grant at all, not reached via RLS.
+
+        Fixed 2026-08-01 (P1, schema-fidelity pass): this used to assert the SELECT
+        succeeded with 0 rows (an RLS-USING(false) denial). A live schema diff against
+        production proved anon holds ZERO table-level grants on any table -- the
+        privilege check fails before RLS is ever evaluated. Isolation still holds (a
+        harder failure mode, not a weaker one); only the assertion was wrong.
+        """
         conn = _conn()
         try:
             cur = conn.cursor()
             cur.execute("SET LOCAL ROLE anon")
-            cur.execute("SELECT id FROM public.google_business_installations")
-            assert cur.fetchall() == [], "anon must see no installations"
+            with pytest.raises(psycopg2.errors.InsufficientPrivilege):
+                cur.execute("SELECT id FROM public.google_business_installations")
         finally:
             conn.close()
 

@@ -12,20 +12,15 @@ import uuid
 from pathlib import Path
 
 import psycopg2
+import psycopg2.errors
 import pytest
 from dotenv import load_dotenv
 
+from tests.integration._superuser_db_params import superuser_db_params
+
 load_dotenv(Path(__file__).parents[2] / ".env")
 
-_DB_PARAMS = {
-    "host": "db.enqpluazgxewepchdeut.supabase.co",
-    "port": 5432,
-    "dbname": "postgres",
-    "user": "postgres",
-    "password": os.environ["SUPABASE_DB_PASSWORD"],
-    "sslmode": "require",
-    "connect_timeout": 15,
-}
+_DB_PARAMS = superuser_db_params()
 
 
 def _conn() -> psycopg2.extensions.connection:
@@ -340,18 +335,26 @@ class TestAlertsRLSIsolation:
         )
 
     def test_prefs_anon_select_denied(self) -> None:
-        """anon role must be denied SELECT on alert_preferences."""
+        """anon role must be denied SELECT on alert_preferences.
+
+        Fixed 2026-08-01 (P1, schema-fidelity pass): this used to assert the SELECT
+        succeeded with 0 rows, i.e. that alert_prefs_anon_deny's USING (false) was the
+        denial mechanism. A live schema diff against production proved anon holds ZERO
+        table-level grants on any table (information_schema.role_table_grants: 0 rows
+        for anon across the board) -- the RLS policy is never even reached; Postgres
+        denies the query at the privilege-check layer first. Isolation still holds (a
+        harder failure mode, not a weaker one) -- only the assertion was wrong.
+        """
         conn = _conn()
         conn.autocommit = False
         try:
             cur = conn.cursor()
             cur.execute("SET LOCAL ROLE anon")
-            cur.execute("SELECT id FROM public.alert_preferences")
-            rows = cur.fetchall()
+            with pytest.raises(psycopg2.errors.InsufficientPrivilege):
+                cur.execute("SELECT id FROM public.alert_preferences")
         finally:
             conn.rollback()
             conn.close()
-        assert rows == [], "anon must see no rows (denied by alert_prefs_anon_deny policy)"
 
     # ------------------------------------------------------------------
     # alert_log
@@ -460,18 +463,21 @@ class TestAlertsRLSIsolation:
             conn.close()
 
     def test_log_anon_select_denied(self) -> None:
-        """anon role must be denied SELECT on alert_log."""
+        """anon role must be denied SELECT on alert_log.
+
+        Fixed 2026-08-01 (P1, schema-fidelity pass) -- see test_prefs_anon_select_denied's
+        docstring above for why this is a grant-layer denial, not an RLS-policy denial.
+        """
         conn = _conn()
         conn.autocommit = False
         try:
             cur = conn.cursor()
             cur.execute("SET LOCAL ROLE anon")
-            cur.execute("SELECT id FROM public.alert_log")
-            rows = cur.fetchall()
+            with pytest.raises(psycopg2.errors.InsufficientPrivilege):
+                cur.execute("SELECT id FROM public.alert_log")
         finally:
             conn.rollback()
             conn.close()
-        assert rows == [], "anon must see no rows (denied by alert_log_anon_deny policy)"
 
 
 @pytest.mark.integration

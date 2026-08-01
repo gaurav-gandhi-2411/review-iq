@@ -34,19 +34,13 @@ import psycopg2
 import pytest
 from dotenv import load_dotenv
 
+from tests.integration._superuser_db_params import superuser_db_params
+
 _OrgFixture = dict[str, str]
 
 load_dotenv(Path(__file__).parents[2] / ".env")
 
-_SUPERUSER_DB_PARAMS = {
-    "host": "db.enqpluazgxewepchdeut.supabase.co",
-    "port": 5432,
-    "dbname": "postgres",
-    "user": "postgres",
-    "password": os.environ.get("SUPABASE_DB_PASSWORD", ""),
-    "sslmode": "require",
-    "connect_timeout": 15,
-}
+_SUPERUSER_DB_PARAMS = superuser_db_params()
 
 
 def _superuser_conn() -> psycopg2.extensions.connection:
@@ -557,3 +551,191 @@ class TestBypassrlsServingPathReachability:
             "S0 finding this migration fixes. See this test's class docstring for the "
             "full trace."
         )
+
+
+@pytest.mark.integration
+class TestBypassrlsRemediation2cResolvers:
+    """BYPASSRLS remediation, pass 2c (2026-08-01): the query shape TestVector4 and
+    TestBypassrlsServingPathReachability above did NOT cover -- org-RESOLUTION with no
+    tenant context yet, using review_iq_app's raw credential and no SET ROLE, for every
+    path an audit found still doing this without a resolver: api_key lookup, session
+    lookup (both write and read paths), signup provisioning, and both installation
+    upserts. See supabase/migrations/20260801000002_tenant_resolvers_auth_signup.sql.
+
+    Same epistemic status as TestVector4/TestBypassrlsServingPathReachability: these
+    assertions describe the CORRECT, intended state. They will fail against a database
+    that has not yet had 20260801000001 (BYPASSRLS removed from review_iq_app) AND
+    20260801000002 (these resolver functions) applied -- expected and correct until
+    then, not a bug in this suite. Do not weaken these to make them pass early.
+    """
+
+    def test_resolve_org_for_api_key_prefix_returns_correct_org_only(
+        self, two_orgs_with_keys: tuple[_OrgFixture, _OrgFixture]
+    ) -> None:
+        """The resolver called by app/auth/api_key.py before any tenant context exists
+        must resolve org A's real key_prefix to org A ONLY, and a bare, unknown prefix
+        to nothing -- called via review_iq_app's own connection, no SET ROLE."""
+        org_a, org_b = two_orgs_with_keys
+        conn = _app_role_conn()
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT public.resolve_org_for_api_key_prefix(%s)", (org_a["raw_key"][:17],)
+            )
+            (resolved_a,) = cur.fetchone()
+            cur.execute("SELECT public.resolve_org_for_api_key_prefix(%s)", ("riq_live_00000000",))
+            (resolved_unknown,) = cur.fetchone()
+        finally:
+            conn.rollback()
+            conn.close()
+
+        assert str(resolved_a) == org_a["org_id"]
+        assert str(resolved_a) != org_b["org_id"]
+        assert resolved_unknown is None
+
+    def test_resolve_org_for_user_returns_correct_org_only(
+        self, two_orgs_with_keys: tuple[_OrgFixture, _OrgFixture]
+    ) -> None:
+        """The resolver called by app/auth/session.py and app/auth/signup.py before any
+        tenant context exists must resolve a real member's user_id to their own org
+        ONLY, and an unknown user_id to nothing."""
+        org_a, _org_b = two_orgs_with_keys
+        fake_user_id = str(uuid.uuid4())
+        conn = _superuser_conn()
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                "INSERT INTO public.organization_members (org_id, user_id) VALUES (%s, %s)",
+                (org_a["org_id"], fake_user_id),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+        try:
+            conn = _app_role_conn()
+            try:
+                cur = conn.cursor()
+                cur.execute("SELECT public.resolve_org_for_user(%s)", (fake_user_id,))
+                (resolved,) = cur.fetchone()
+                cur.execute("SELECT public.resolve_org_for_user(%s)", (str(uuid.uuid4()),))
+                (resolved_unknown,) = cur.fetchone()
+            finally:
+                conn.rollback()
+                conn.close()
+
+            assert str(resolved) == org_a["org_id"]
+            assert resolved_unknown is None
+        finally:
+            conn = _superuser_conn()
+            try:
+                cur = conn.cursor()
+                cur.execute(
+                    "DELETE FROM public.organization_members WHERE user_id = %s", (fake_user_id,)
+                )
+                conn.commit()
+            finally:
+                conn.close()
+
+    def test_signup_provisioning_creates_isolated_org_via_review_iq_app(self) -> None:
+        """End-to-end: app/auth/signup.py::_provision_org_and_key, called through the
+        REAL review_iq_app connection (no test mocking of the DB layer), must create a
+        brand-new, fully isolated org -- and the resulting API key must resolve back to
+        that SAME org via resolve_org_for_api_key_prefix, never anything else."""
+        from app.auth.signup import _provision_org_and_key
+
+        user_id = str(uuid.uuid4())
+        email = f"adversarial-2c-{uuid.uuid4().hex[:8]}@example.com"
+        try:
+            result = _provision_org_and_key(user_id, email)
+            org_id = str(result["org_id"])
+
+            conn = _app_role_conn()
+            try:
+                cur = conn.cursor()
+                cur.execute(
+                    "SELECT public.resolve_org_for_api_key_prefix(%s)",
+                    (str(result["key_prefix"]),),
+                )
+                (resolved,) = cur.fetchone()
+            finally:
+                conn.rollback()
+                conn.close()
+            assert str(resolved) == org_id
+        finally:
+            conn = _superuser_conn()
+            try:
+                cur = conn.cursor()
+                cur.execute("DELETE FROM public.organizations WHERE id = %s", (org_id,))
+                conn.commit()
+            finally:
+                conn.close()
+
+    def test_installation_upserts_are_tenant_scoped_not_bypass_reliant(
+        self, two_orgs_with_keys: tuple[_OrgFixture, _OrgFixture]
+    ) -> None:
+        """app/api/google_auth.py and app/api/shopify_auth.py's _upsert_installation_pg
+        now call _set_tenant() before the upsert (BYPASSRLS remediation 2c). Proves the
+        write actually lands under org A's own context -- a plain review_iq_app
+        connection with NO _set_tenant() must not see it (same "no bypass" property
+        TestVector4 proves for extractions, now proven for these two tables)."""
+        from app.api.google_auth import _upsert_installation_pg as _upsert_google
+        from app.api.shopify_auth import _upsert_installation_pg as _upsert_shopify
+
+        org_a, org_b = two_orgs_with_keys
+        location_name = f"accounts/1/locations/{uuid.uuid4().hex[:10]}"
+        shop_domain = f"adv2c-{uuid.uuid4().hex[:8]}.myshopify.com"
+        try:
+            _upsert_google(org_a["org_id"], "accounts/1", location_name, "enc-refresh-token")
+            _upsert_shopify(org_a["org_id"], shop_domain, "enc-access-token")
+
+            # No _set_tenant(): a plain review_iq_app connection must see NOTHING.
+            conn = _app_role_conn()
+            try:
+                cur = conn.cursor()
+                cur.execute(
+                    "SELECT org_id FROM public.google_business_installations "
+                    "WHERE google_location_name = %s",
+                    (location_name,),
+                )
+                assert cur.fetchone() is None
+                cur.execute(
+                    "SELECT org_id FROM public.shopify_installations WHERE shop_domain = %s",
+                    (shop_domain,),
+                )
+                assert cur.fetchone() is None
+            finally:
+                conn.rollback()
+                conn.close()
+
+            # Via the real resolver + _set_tenant path (the webhook handlers' own
+            # pattern), org A must see exactly its own rows.
+            conn = _app_role_conn()
+            try:
+                cur = conn.cursor()
+                cur.execute("SELECT public.resolve_org_for_google_location(%s)", (location_name,))
+                (resolved_google,) = cur.fetchone()
+                cur.execute("SELECT public.resolve_org_for_shopify_shop(%s)", (shop_domain,))
+                (resolved_shopify,) = cur.fetchone()
+            finally:
+                conn.rollback()
+                conn.close()
+            assert str(resolved_google) == org_a["org_id"]
+            assert str(resolved_shopify) == org_a["org_id"]
+            assert str(resolved_google) != org_b["org_id"]
+        finally:
+            conn = _superuser_conn()
+            try:
+                cur = conn.cursor()
+                cur.execute(
+                    "DELETE FROM public.google_business_installations "
+                    "WHERE google_location_name = %s",
+                    (location_name,),
+                )
+                cur.execute(
+                    "DELETE FROM public.shopify_installations WHERE shop_domain = %s",
+                    (shop_domain,),
+                )
+                conn.commit()
+            finally:
+                conn.close()

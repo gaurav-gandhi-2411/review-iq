@@ -15,6 +15,7 @@ from fastapi import APIRouter, Header, HTTPException, Request, status
 from app.auth.keygen import insert_api_key_with_retry
 from app.core.config import get_settings
 from app.core.rate_limit import limiter
+from app.core.storage_pg import _set_tenant
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 log = structlog.get_logger(__name__)
@@ -57,28 +58,37 @@ async def verify_supabase_jwt(jwt: str) -> Any:
 
 
 def _get_org_for_user(user_id: str) -> dict[str, object] | None:
-    """Return org + key info for this Supabase user, or None if not yet provisioned."""
+    """Return org + key info for this Supabase user, or None if not yet provisioned.
+
+    Two-step, same pattern as the webhook org-resolution fix (PR #61): org_id is unknown
+    until this resolves, so review_iq_app cannot be RLS-scoped for step 1. Step 1 calls
+    public.resolve_org_for_user() (narrow SECURITY DEFINER, returns ONLY org_id), then
+    _set_tenant() before the real, RLS-protected read of key_prefix/quota.
+    """
     conn = _db_connect()
     try:
         cur = conn.cursor()
+        cur.execute("SELECT public.resolve_org_for_user(%s)", (user_id,))
+        row = cur.fetchone()
+        org_id = row[0] if row else None
+        if org_id is None:
+            conn.commit()
+            return None
+
+        _set_tenant(cur, str(org_id))
         cur.execute(
             """
-            SELECT o.id, ak.key_prefix, ak.quota
-            FROM public.organization_members om
-            JOIN public.organizations o ON o.id = om.org_id
-            LEFT JOIN public.api_keys ak
-                   ON ak.org_id = o.id AND ak.revoked_at IS NULL
-            WHERE om.user_id = %s
+            SELECT ak.key_prefix, ak.quota
+            FROM public.api_keys ak
+            WHERE ak.org_id = %s AND ak.revoked_at IS NULL
             ORDER BY ak.created_at DESC
             LIMIT 1
             """,
-            (user_id,),
+            (str(org_id),),
         )
-        row = cur.fetchone()
+        detail = cur.fetchone()
         conn.commit()
-        if row is None:
-            return None
-        org_id, key_prefix, quota = row
+        key_prefix, quota = detail if detail else (None, None)
         return {"org_id": str(org_id), "key_prefix": key_prefix, "quota": quota}
     except Exception:
         conn.rollback()
@@ -109,34 +119,32 @@ def _provision_org_and_key(user_id: str, email: str) -> dict[str, str | int]:
     try:
         cur = conn.cursor()
 
-        cur.execute(
-            "INSERT INTO public.organizations (name, slug) VALUES (%s, %s) RETURNING id",
-            (email, slug),
-        )
-        (org_id,) = cur.fetchone()
-
-        def _do_insert(raw_key: str, key_prefix: str, key_hash: str) -> None:
-            cur.execute(
-                """
-                INSERT INTO public.api_keys (org_id, key_hash, key_prefix, name, quota)
-                VALUES (%s, %s, %s, 'default', 100)
-                """,
-                (str(org_id), key_hash, key_prefix),
-            )
-
-        raw_key, key_prefix, _key_hash = insert_api_key_with_retry(cur, _do_insert)
-
+        # No org exists yet, so there's nothing to _set_tenant() to -- both writes below go
+        # through narrow SECURITY DEFINER functions instead (BYPASSRLS remediation 2c),
+        # so review_iq_app itself needs no direct INSERT grant on any of these three tables.
+        # create_org_and_membership does the organizations + organization_members inserts
+        # atomically; the UniqueViolation this used to catch on a standalone
+        # organization_members INSERT now surfaces from this call instead -- same
+        # constraint, same _ProvisionRaceLost handling, unchanged for the caller.
         try:
             cur.execute(
-                "INSERT INTO public.organization_members (org_id, user_id, role) "
-                "VALUES (%s, %s, 'owner')",
-                (str(org_id), user_id),
+                "SELECT public.create_org_and_membership(%s, %s, %s)", (user_id, email, slug)
             )
         except psycopg2.errors.UniqueViolation as exc:
             diag = getattr(exc, "diag", None)
             if getattr(diag, "constraint_name", None) != "organization_members_user_id_key":
                 raise
             raise _ProvisionRaceLost(user_id) from exc
+        (org_id,) = cur.fetchone()
+
+        def _do_insert(raw_key: str, key_prefix: str, key_hash: str) -> None:
+            cur.execute(
+                "SELECT id, created_at FROM public.create_api_key_for_org(%s, %s, %s, %s, %s)",
+                (str(org_id), key_hash, key_prefix, "default", 100),
+            )
+            cur.fetchone()
+
+        raw_key, key_prefix, _key_hash = insert_api_key_with_retry(cur, _do_insert)
 
         conn.commit()
         log.info("signup.provisioned", org_id=str(org_id), user_id=user_id)

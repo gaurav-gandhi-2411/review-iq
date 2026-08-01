@@ -159,15 +159,34 @@ def test_prefix_not_found_raises_401() -> None:
     conn.close.assert_called_once()
 
 
-def test_argon2_mismatch_raises_401() -> None:
+def test_prefix_resolves_but_locked_row_missing_raises_401() -> None:
+    """Step 1 (resolve_org_for_api_key_prefix) succeeds, but step 2's RLS-scoped
+    re-fetch finds nothing -- e.g. the key was revoked between the two queries. Must
+    still 401, never crash on unpacking None."""
     conn, cur = _make_conn()
-    cur.fetchone.return_value = _SELECT_ROW  # SELECT succeeds
+    cur.fetchone.side_effect = [(_ORG_ID,), None]
 
     with patch("app.auth.api_key._db_connect", return_value=conn):
-        with patch("app.auth.api_key._PH") as mock_ph:
-            mock_ph.verify.side_effect = VerifyMismatchError()
+        with patch("app.auth.api_key._set_tenant") as mock_set_tenant:
             with pytest.raises(HTTPException) as exc:
                 _lookup_and_record(_VALID_RAW_KEY)
+
+    assert exc.value.status_code == 401
+    mock_set_tenant.assert_called_once_with(cur, str(_ORG_ID))
+    conn.rollback.assert_called_once()
+    conn.close.assert_called_once()
+
+
+def test_argon2_mismatch_raises_401() -> None:
+    conn, cur = _make_conn()
+    cur.fetchone.side_effect = [(_ORG_ID,), _SELECT_ROW]  # resolve, then the locked row
+
+    with patch("app.auth.api_key._db_connect", return_value=conn):
+        with patch("app.auth.api_key._set_tenant"):
+            with patch("app.auth.api_key._PH") as mock_ph:
+                mock_ph.verify.side_effect = VerifyMismatchError()
+                with pytest.raises(HTTPException) as exc:
+                    _lookup_and_record(_VALID_RAW_KEY)
 
     assert exc.value.status_code == 401
     conn.rollback.assert_called_once()
@@ -175,14 +194,15 @@ def test_argon2_mismatch_raises_401() -> None:
 
 def test_quota_exceeded_raises_429() -> None:
     conn, cur = _make_conn()
-    # SELECT ok, COUNT = quota (at limit)
-    cur.fetchone.side_effect = [_SELECT_ROW, _COUNT_AT_QUOTA]
+    # resolve, locked row, COUNT = quota (at limit)
+    cur.fetchone.side_effect = [(_ORG_ID,), _SELECT_ROW, _COUNT_AT_QUOTA]
 
     with patch("app.auth.api_key._db_connect", return_value=conn):
-        with patch("app.auth.api_key._PH") as mock_ph:
-            mock_ph.verify.return_value = True
-            with pytest.raises(HTTPException) as exc:
-                _lookup_and_record(_VALID_RAW_KEY)
+        with patch("app.auth.api_key._set_tenant"):
+            with patch("app.auth.api_key._PH") as mock_ph:
+                mock_ph.verify.return_value = True
+                with pytest.raises(HTTPException) as exc:
+                    _lookup_and_record(_VALID_RAW_KEY)
 
     assert exc.value.status_code == 429
     conn.rollback.assert_called_once()
@@ -190,13 +210,14 @@ def test_quota_exceeded_raises_429() -> None:
 
 def test_valid_key_returns_context() -> None:
     conn, cur = _make_conn()
-    # SELECT ok, COUNT = 0 (well under quota), INSERT RETURNING id
-    cur.fetchone.side_effect = [_SELECT_ROW, _COUNT_ZERO, _USAGE_ROW]
+    # resolve, locked row, COUNT = 0 (well under quota), INSERT RETURNING id
+    cur.fetchone.side_effect = [(_ORG_ID,), _SELECT_ROW, _COUNT_ZERO, _USAGE_ROW]
 
     with patch("app.auth.api_key._db_connect", return_value=conn):
-        with patch("app.auth.api_key._PH") as mock_ph:
-            mock_ph.verify.return_value = True
-            ctx = _lookup_and_record(_VALID_RAW_KEY)
+        with patch("app.auth.api_key._set_tenant"):
+            with patch("app.auth.api_key._PH") as mock_ph:
+                mock_ph.verify.return_value = True
+                ctx = _lookup_and_record(_VALID_RAW_KEY)
 
     assert ctx.org_id == str(_ORG_ID)
     assert ctx.api_key_id == str(_KEY_ID)
@@ -207,36 +228,41 @@ def test_valid_key_returns_context() -> None:
 
 
 def test_execute_calls_in_correct_order() -> None:
-    """SELECT FOR UPDATE → COUNT monthly usage → UPDATE last_used_at → INSERT usage_records."""
+    """resolve_org_for_api_key_prefix -> SELECT FOR UPDATE (RLS-scoped) -> COUNT
+    monthly usage -> UPDATE last_used_at -> INSERT usage_records."""
     conn, cur = _make_conn()
-    cur.fetchone.side_effect = [_SELECT_ROW, _COUNT_ZERO, _USAGE_ROW]
+    cur.fetchone.side_effect = [(_ORG_ID,), _SELECT_ROW, _COUNT_ZERO, _USAGE_ROW]
 
     with patch("app.auth.api_key._db_connect", return_value=conn):
-        with patch("app.auth.api_key._PH") as mock_ph:
-            mock_ph.verify.return_value = True
-            _lookup_and_record(_VALID_RAW_KEY)
+        with patch("app.auth.api_key._set_tenant"):
+            with patch("app.auth.api_key._PH") as mock_ph:
+                mock_ph.verify.return_value = True
+                _lookup_and_record(_VALID_RAW_KEY)
 
     sqls = [c[0][0] for c in cur.execute.call_args_list]
-    assert len(sqls) == 4
-    assert "SELECT" in sqls[0] and "FOR UPDATE" in sqls[0]
-    assert "COUNT" in sqls[1]
-    assert "UPDATE" in sqls[2]
-    assert "INSERT" in sqls[3]
-    # Prefix is passed as parameter to the SELECT FOR UPDATE
+    assert len(sqls) == 5
+    assert "resolve_org_for_api_key_prefix" in sqls[0]
+    assert "SELECT" in sqls[1] and "FOR UPDATE" in sqls[1]
+    assert "COUNT" in sqls[2]
+    assert "UPDATE" in sqls[3]
+    assert "INSERT" in sqls[4]
+    # Prefix is passed as parameter to both the resolver and the SELECT FOR UPDATE
     assert _VALID_PREFIX in cur.execute.call_args_list[0][0][1]
+    assert _VALID_PREFIX in cur.execute.call_args_list[1][0][1]
 
 
 def test_db_error_triggers_rollback() -> None:
     conn, cur = _make_conn()
-    cur.fetchone.side_effect = [_SELECT_ROW, _COUNT_ZERO, _USAGE_ROW]
-    # SELECT, COUNT, UPDATE succeed; INSERT fails
-    cur.execute.side_effect = [None, None, None, Exception("DB down")]
+    cur.fetchone.side_effect = [(_ORG_ID,), _SELECT_ROW, _COUNT_ZERO, _USAGE_ROW]
+    # resolve, SELECT, COUNT, UPDATE succeed; INSERT fails
+    cur.execute.side_effect = [None, None, None, None, Exception("DB down")]
 
     with patch("app.auth.api_key._db_connect", return_value=conn):
-        with patch("app.auth.api_key._PH") as mock_ph:
-            mock_ph.verify.return_value = True
-            with pytest.raises(Exception, match="DB down"):
-                _lookup_and_record(_VALID_RAW_KEY)
+        with patch("app.auth.api_key._set_tenant"):
+            with patch("app.auth.api_key._PH") as mock_ph:
+                mock_ph.verify.return_value = True
+                with pytest.raises(Exception, match="DB down"):
+                    _lookup_and_record(_VALID_RAW_KEY)
 
     conn.rollback.assert_called_once()
     conn.close.assert_called_once()

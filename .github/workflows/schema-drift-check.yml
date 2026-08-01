@@ -1,0 +1,103 @@
+name: Schema Drift Check
+
+# P0, 2026-08-01: the standing control that makes pre-cutover-verification.yml's ephemeral
+# job meaningful. That job proves the committed migrations are internally consistent with
+# each other -- it does NOT prove they match what's actually live in production. They didn't:
+# public.quota_requests and public.extraction_costs both existed in production with no
+# CREATE TABLE anywhere in supabase/migrations/, found only by hand-diffing production
+# against a from-scratch migration-built database (scripts/check_schema_drift.py). This
+# workflow runs that same diff continuously so the next gap is caught here, not by hand.
+#
+# Reuses the SUPABASE_DIRECT_URL GitHub Actions secret already used by db-backup.yml --
+# despite the name, per that workflow's own comment, this is the session-mode pooler URL
+# (IPv4, port 5432), not the true direct db.<ref>.supabase.co host (that's a separate,
+# GCP-Secret-Manager-only secret named supabase-direct-url, currently broken -- see P2 of
+# the 2026-08-01 pipeline/secret report). Read-only schema introspection works identically
+# over either connection, so the working pooler secret is sufficient here.
+#
+# Ephemeral-side bootstrap mirrors pre-cutover-verification.yml exactly (same roles, same
+# migrations, same order) -- see that workflow for why a vanilla postgres:17 container is
+# feasible for this app (no auth.uid()/Supabase-Auth-schema dependency, no extensions).
+
+on:
+  schedule:
+    # 3:30 UTC -- same off-peak window as deploy-cloud-run.yml's 3:00 UTC drift check and
+    # db-backup.yml's 18:00 UTC dump, staggered 30 minutes past the former to avoid both
+    # hitting Supabase at once.
+    - cron: "30 3 * * *"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/**"
+      - "supabase/ci/**"
+      - "scripts/extract_schema_snapshot.py"
+      - "scripts/check_schema_drift.py"
+      - ".github/workflows/schema-drift-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: schema-drift-check
+  cancel-in-progress: true
+
+jobs:
+  drift-check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: ci_postgres_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Install psql client
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends postgresql-client
+
+      - name: Bootstrap Supabase-platform roles/grants
+        run: psql "postgresql://postgres:ci_postgres_password@localhost:5432/postgres" -v ON_ERROR_STOP=1 -f supabase/ci/bootstrap_supabase_roles.sql
+
+      - name: Apply every migration in order
+        run: |
+          for f in $(ls supabase/migrations/*.sql | sort); do
+            echo "=== $f ==="
+            psql "postgresql://postgres:ci_postgres_password@localhost:5432/postgres" -v ON_ERROR_STOP=1 -f "$f"
+          done
+
+      - name: Extract ephemeral (migration-built) schema snapshot
+        run: uv run python scripts/extract_schema_snapshot.py "postgresql://postgres:ci_postgres_password@localhost:5432/postgres" > ephemeral.json
+
+      - name: Extract production schema snapshot
+        env:
+          SUPABASE_DIRECT_URL: ${{ secrets.SUPABASE_DIRECT_URL }}
+        run: |
+          if [ -z "$SUPABASE_DIRECT_URL" ]; then
+            echo "::error::SUPABASE_DIRECT_URL secret is not set -- cannot compare against production. Failing closed rather than skipping the check."
+            exit 1
+          fi
+          uv run python scripts/extract_schema_snapshot.py "$SUPABASE_DIRECT_URL" > prod.json
+
+      - name: Compare
+        run: uv run python scripts/check_schema_drift.py prod.json ephemeral.json
