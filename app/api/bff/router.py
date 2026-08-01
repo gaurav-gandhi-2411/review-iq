@@ -46,7 +46,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 # path, so a Cloud Run restart mid-job no longer silently drops BFF uploads.
 from app.api.v2.ingest import _drain_until_job_complete
 from app.auth.api_key import ApiKeyContext
-from app.auth.keygen import generate_api_key
+from app.auth.keygen import insert_api_key_with_retry
 from app.auth.session import require_session, require_session_read
 from app.core.authenticity import engine
 from app.core.authenticity.schema import AuthenticityFlag, AuthenticityLabel, AuthenticityResult
@@ -331,8 +331,16 @@ def _audit_row_to_result(row: dict[str, object]) -> AuthenticityResult:
 # ---------------------------------------------------------------------------
 
 
-def _get_quota_and_usage(api_key_id: str, org_id: str) -> tuple[int, int]:  # noqa: ARG001
-    """Return (quota, monthly_usage_count) for the authenticated key."""
+def _get_quota_and_usage(api_key_id: str, org_id: str) -> tuple[int, int]:
+    """Return (quota, monthly_usage_count) for the authenticated key.
+
+    _set_tenant()'d for the same defense-in-depth reason as _get_org_plan_pg below
+    (BYPASSRLS remediation, 2c): the WHERE clauses already scope both queries to
+    this org (api_keys.org_id, usage_records via its api_key_id FK), so no
+    cross-tenant read was ever reachable here -- but without _set_tenant() the
+    connection runs outside the `authenticated` role RLS actually checks, leaving
+    no second layer if a future edit to the WHERE clause introduces a bug.
+    """
     import psycopg2 as _psycopg2
 
     from app.core.config import get_settings as _gs
@@ -340,7 +348,11 @@ def _get_quota_and_usage(api_key_id: str, org_id: str) -> tuple[int, int]:  # no
     conn = _psycopg2.connect(_gs().supabase_database_url)
     try:
         cur = conn.cursor()
-        cur.execute("SELECT quota FROM public.api_keys WHERE id = %s", (api_key_id,))
+        _set_tenant(cur, org_id)
+        cur.execute(
+            "SELECT quota FROM public.api_keys WHERE id = %s AND org_id = %s",
+            (api_key_id, org_id),
+        )
         row = cur.fetchone()
         quota: int = int(row[0]) if row else 0
 
@@ -407,19 +419,29 @@ def _get_org_plan_pg(org_id: str) -> str:
 
 
 def _create_key_bff_db(org_id: str, name: str, quota: int) -> dict[str, object]:
-    """Insert a new api_keys row scoped to org_id. Returns the raw key exactly once."""
-    raw_key, key_prefix, key_hash = generate_api_key()
+    """Insert a new api_keys row scoped to org_id. Returns the raw key exactly once.
 
+    Retries on a key_prefix collision (see app/auth/keygen.py's
+    insert_api_key_with_retry docstring) -- api_keys.key_prefix carries a real UNIQUE
+    constraint as of the BYPASSRLS remediation migration.
+    """
     conn = _keys_db_connect()
     try:
         cur = conn.cursor()
         _set_tenant(cur, org_id)
-        cur.execute(
-            "INSERT INTO public.api_keys (org_id, key_prefix, key_hash, name, quota) "
-            "VALUES (%s, %s, %s, %s, %s) RETURNING id, created_at",
-            (org_id, key_prefix, key_hash, name, quota),
-        )
-        row = cur.fetchone()
+        row: tuple[object, object] | None = None
+
+        def _do_insert(raw_key: str, key_prefix: str, key_hash: str) -> None:
+            nonlocal row
+            cur.execute(
+                "INSERT INTO public.api_keys (org_id, key_prefix, key_hash, name, quota) "
+                "VALUES (%s, %s, %s, %s, %s) RETURNING id, created_at",
+                (org_id, key_prefix, key_hash, name, quota),
+            )
+            row = cur.fetchone()
+
+        raw_key, key_prefix, _key_hash = insert_api_key_with_retry(cur, _do_insert)
+        assert row is not None
         conn.commit()
         return {
             "id": str(row[0]),
