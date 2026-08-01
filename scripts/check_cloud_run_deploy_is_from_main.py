@@ -57,9 +57,17 @@ def get_running_image_tag(service: str) -> tuple[str | None, str]:
     """Returns (tag, detail). tag is None on any failure -- never a guessed/default value."""
     code, out = run(
         [
-            GCLOUD, "run", "services", "describe", service,
-            "--project", PROJECT, "--region", REGION,
-            "--format", "value(spec.template.spec.containers[0].image)",
+            GCLOUD,
+            "run",
+            "services",
+            "describe",
+            service,
+            "--project",
+            PROJECT,
+            "--region",
+            REGION,
+            "--format",
+            "value(spec.template.spec.containers[0].image)",
         ]
     )
     if code != 0:
@@ -89,7 +97,10 @@ def resolve_commit_on_main(tag: str) -> tuple[str | None, str]:
 
     code, out = run([GIT, "cat-file", "-e", commit])
     if code != 0:
-        return None, f"commit {commit} from tag {tag!r} does not exist in this checkout's git history"
+        return (
+            None,
+            f"commit {commit} from tag {tag!r} does not exist in this checkout's git history",
+        )
 
     code, out = run([GIT, "fetch", "origin", "main"])
     if code != 0:

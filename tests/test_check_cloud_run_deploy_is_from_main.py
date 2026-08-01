@@ -104,15 +104,17 @@ class TestResolveCommitOnMain:
 class TestMain:
     def test_exits_nonzero_if_any_service_fails(self) -> None:
         with (
-            patch.object(mod, "get_running_image_tag", return_value=("v0-19-0", "running image tag: 'v0-19-0'")),
+            patch.object(
+                mod,
+                "get_running_image_tag",
+                return_value=("v0-19-0", "running image tag: 'v0-19-0'"),
+            ),
         ):
             assert mod.main() == 1
 
     def test_exits_zero_when_every_service_resolves(self) -> None:
         with (
-            patch.object(
-                mod, "get_running_image_tag", return_value=(f"sha-{_FAKE_SHA}", "detail")
-            ),
+            patch.object(mod, "get_running_image_tag", return_value=(f"sha-{_FAKE_SHA}", "detail")),
             patch.object(mod, "resolve_commit_on_main", return_value=(_FAKE_SHA, "detail")),
         ):
             assert mod.main() == 0
