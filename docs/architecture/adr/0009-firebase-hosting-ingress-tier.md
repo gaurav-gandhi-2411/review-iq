@@ -63,6 +63,15 @@ custom proxy or a separately-deployed artifact:
   (same-day P0 pass): `/admin/*` returns 404 through all three; `/health` returns 200 through all
   three.
 
+  **Scope note**: "the exact same deployed code" above means the three ingresses in this
+  ADR's title all front the same public `review-iq` Cloud Run service — it does NOT mean
+  every admin route lives there too. `app/api/admin.py`'s org/key CRUD is deliberately
+  mounted on a *separate* Cloud Run service, `review-iq-admin` (`SERVICE_ROLE=admin`,
+  `--no-allow-unauthenticated`, its own IAM-gated invoker binding — see ADR 0006), which
+  none of these three ingresses expose at all. The public service returning 404 for
+  `/admin/*` above is exactly what that split intends: it's absence of the route, not a
+  same-service authorization check.
+
 ## Two-account operational risk
 
 This project's production ingress now spans **two separate Google/personal accounts with no
