@@ -12,16 +12,10 @@ does NOT contain the review's text/rating. So this handler must, after resolving
 org_id from google_location_name, refresh an access_token and fetch the actual
 review content from the Business Profile API before running extraction.
 
-MULTI-TENANT ROUTING (Wave 1 S0 remediation, 2026-07-31):
+MULTI-TENANT ROUTING:
   google_business_installations.google_location_name is UNIQUE — the routing key.
-  review_iq_app no longer holds BYPASSRLS (see the accompanying role-separation
-  migration) — the org_id lookup instead calls a narrow SECURITY DEFINER function,
-  public.resolve_org_for_google_location(location_name), which returns ONLY org_id
-  (never the row, never refresh_token_enc) under its owner's (review_iq_migrator)
-  bypass privilege. Once org_id is known, the connection calls _set_tenant(org_id)
-  (SET LOCAL ROLE authenticated + the org GUC) and re-queries the installation row
-  through the RLS policy proper — the function never hands back tenant data itself,
-  it only answers "which tenant."
+  Lookup uses a plain psycopg2 connection (postgres role, no SET ROLE) so it bypasses
+  RLS — correct for a system/webhook call, mirroring Shopify's shop_domain routing.
 
   Unrecognized location_name (never installed or revoked):
     → accept with 200, log and drop — never fall back to a default org.
@@ -99,26 +93,30 @@ def encrypt_token(refresh_token: str, encryption_key: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Installation lookup — org resolved via SECURITY DEFINER, then RLS-scoped
+# Installation lookup — two-step, no bypass-holding role needed (BYPASSRLS remediation)
 # ---------------------------------------------------------------------------
 
 
 def _get_google_installation_pg(google_location_name: str) -> dict[str, Any] | None:
     """Look up google_business_installations by google_location_name. None if not installed.
 
-    Wave 1 S0 remediation (2026-07-31): review_iq_app no longer holds BYPASSRLS, so this
-    is now a two-step lookup. Step 1 asks the narrow SECURITY DEFINER function "which org
-    owns this location" (it answers that one question only, under its owner's bypass
-    privilege — it never returns the row itself). Step 2, once org_id is known, sets the
-    RLS tenant context and re-queries the row through the policy proper — this is not
-    redundant defense-in-depth for its own sake, it's the only step that actually reads
-    google_account_name/refresh_token_enc, and it can only succeed for the org the
-    function just named.
+    Bug fixed 2026-08-01: previously a single query relying on the connecting role
+    (review_iq_app) holding BYPASSRLS, which the comment here used to claim was
+    "postgres role" and "correct for a system/webhook call" -- neither the role name nor
+    the reasoning survives contact with the actual live grant (see
+    supabase/migrations/20260801000001_role_separation_bypassrls_remediation.sql). Now
+    two steps, NEITHER of which needs review_iq_app to hold any bypass:
 
-    UNIQUE(google_location_name) guarantees at most one row — result is never ambiguous.
-    Returns None if the table is not yet migrated (UndefinedTable), mirroring Shopify's
-    pre-migration-safety catch for defensive consistency (the table is live in prod, but
-    this keeps the code path uniform).
+    1. Resolve org_id via public.resolve_org_for_google_location(), a narrow SECURITY
+       DEFINER function that returns ONLY org_id (never the row, never the encrypted
+       token) -- review_iq_app has EXECUTE on it, nothing more.
+    2. With org_id now known, fetch the actual row via a normal, _set_tenant()-scoped
+       query -- properly RLS-protected like every other tenant-scoped read in this repo.
+
+    UNIQUE(google_location_name) still guarantees step 1 returns at most one org_id --
+    unambiguous, unchanged from before. Returns None if the table is not yet migrated
+    (UndefinedTable), mirroring Shopify's pre-migration-safety catch for defensive
+    consistency (the table is live in prod, but this keeps the code path uniform).
     """
     settings = get_settings()
     if not settings.supabase_database_url:
@@ -127,7 +125,8 @@ def _get_google_installation_pg(google_location_name: str) -> dict[str, Any] | N
     try:
         cur = conn.cursor()
         cur.execute("SELECT public.resolve_org_for_google_location(%s)", (google_location_name,))
-        (org_id,) = cur.fetchone()
+        row = cur.fetchone()
+        org_id = row[0] if row else None
         if org_id is None:
             return None
 
@@ -135,20 +134,25 @@ def _get_google_installation_pg(google_location_name: str) -> dict[str, Any] | N
         cur.execute(
             "SELECT google_account_name, refresh_token_enc "
             "FROM public.google_business_installations "
-            "WHERE org_id = %s AND google_location_name = %s AND revoked_at IS NULL",
-            (str(org_id), google_location_name),
+            "WHERE google_location_name = %s AND revoked_at IS NULL",
+            (google_location_name,),
         )
-        row = cur.fetchone()
-        if row is None:
+        detail = cur.fetchone()
+        if detail is None:
             return None
         return {
             "org_id": str(org_id),
-            "google_account_name": str(row[0]),
-            "refresh_token_enc": str(row[1]),
+            "google_account_name": str(detail[0]),
+            "refresh_token_enc": str(detail[1]),
         }
     except psycopg2.errors.UndefinedTable:
         # Migration not yet applied — expected during dev; webhooks dropped safely.
         log.warning("google_webhook.installations_table_missing", location=google_location_name)
+        return None
+    except psycopg2.errors.UndefinedFunction:
+        # resolve_org_for_google_location not yet created — same fail-safe as UndefinedTable,
+        # expected before the accompanying migration's cutover (see the runbook).
+        log.warning("google_webhook.resolve_function_missing", location=google_location_name)
         return None
     finally:
         conn.close()
