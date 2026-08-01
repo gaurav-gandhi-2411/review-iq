@@ -55,6 +55,7 @@ from pydantic import BaseModel
 from app.api.webhooks.google import encrypt_token
 from app.auth.signup import _get_org_for_user, verify_supabase_jwt
 from app.core.config import get_settings
+from app.core.storage_pg import _set_tenant
 
 log = structlog.get_logger(__name__)
 router = APIRouter(prefix="/auth/google", tags=["google-oauth"])
@@ -210,15 +211,17 @@ async def _register_notifications(account_name: str, access_token: str, settings
 def _upsert_installation_pg(
     org_id: str, google_account_name: str, google_location_name: str, refresh_token_enc: str
 ) -> None:
-    """Service-role (postgres, no SET ROLE) upsert into google_business_installations.
+    """RLS-scoped upsert into google_business_installations (BYPASSRLS remediation 2c).
 
     ON CONFLICT (google_location_name) handles re-installs: clears revoked_at and
     rotates the encrypted refresh token. org_id is ALWAYS caller-resolved from the
-    verified JWT — never accepted as a user param.
+    verified JWT — never accepted as a user param — so _set_tenant() here is safe:
+    it scopes to the same org_id that was already resolved server-side.
     """
     conn = psycopg2.connect(get_settings().supabase_database_url)
     try:
         cur = conn.cursor()
+        _set_tenant(cur, org_id)
         cur.execute(
             """
             INSERT INTO public.google_business_installations
