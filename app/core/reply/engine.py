@@ -108,7 +108,7 @@ async def draft_reply(
     if settings is None:
         settings = get_settings()
 
-    from app.core.sanitize import sanitize, wrap_for_llm
+    from app.core.sanitize import rehydrate_text, sanitize, wrap_for_llm
 
     language = detect_language(request.text)
     total_tokens_in = 0
@@ -119,7 +119,7 @@ async def draft_reply(
     # prompt itself -- mirrors the extraction pipeline's app.api.v2.extract funnel so
     # the reply-drafting LLM call gets the same PII-redaction + injection-neutralization
     # defense, not raw customer text.
-    clean_text, is_suspicious = sanitize(request.text)
+    clean_text, is_suspicious, redaction_map = sanitize(request.text)
     if is_suspicious:
         log.warning("reply_engine.suspicious_input")
     wrapped_review = wrap_for_llm(clean_text)
@@ -137,8 +137,11 @@ async def draft_reply(
             llm_output, _, _, ex_tin, ex_tout, _ = await extract_with_llm(
                 ext_prompt, allow_gemini_fallback=False
             )
-            cons = llm_output.cons
-            topics = llm_output.topics
+            # Rehydrate: this grounding extraction never went through
+            # app.api.v2.extract's own rehydrate_output pass, so a redaction
+            # placeholder could still be sitting in cons/topics here.
+            cons = [rehydrate_text(c, redaction_map) for c in llm_output.cons]
+            topics = [rehydrate_text(t, redaction_map) for t in llm_output.topics]
             total_tokens_in += ex_tin
             total_tokens_out += ex_tout
         except RuntimeError:
@@ -200,6 +203,10 @@ async def draft_reply(
             total_tokens_out += tout
         else:
             raise
+
+    # Rehydrate: the reply LLM saw only redacted review text, so a placeholder token
+    # could appear verbatim in its drafted reply -- restore it before guardrails/return.
+    reply_text = rehydrate_text(reply_text, redaction_map)
 
     # 4. Guardrail check — violations become caveats, never a hard block
     violations = run_guardrails(

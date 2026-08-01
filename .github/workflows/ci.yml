@@ -6,19 +6,22 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Python
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: "3.11"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
         with:
           enable-cache: true
 
@@ -40,23 +43,33 @@ jobs:
   pip-audit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Python
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: "3.11"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
         with:
           enable-cache: true
 
       - name: Install dependencies
         run: uv sync --frozen
 
-      # Non-blocking dependency vulnerability scan (informational only, per T1 audit policy).
-      - name: pip-audit (non-blocking)
-        continue-on-error: true
-        run: uvx pip-audit
+      # Export the resolved lockfile to requirements format rather than auditing an
+      # active venv: pip-audit's default PipSource resolves via whatever `python`/`pip`
+      # is first on PATH, which is not reliably `.venv` across shells/runners (verified
+      # locally: it silently audited an unrelated conda base env). --no-emit-project
+      # drops the local editable install, which pip-audit can't hash-verify.
+      - name: Export lockfile for audit
+        run: uv export --format requirements.txt --no-header --no-emit-project -o requirements-audit.txt
+
+      # Blocking gate: fail the build on any HIGH/CRITICAL-severity CVE. MODERATE/LOW
+      # findings remain informational only (scripts/pip_audit_gate.py exits non-zero
+      # only above that threshold) so the gate doesn't flap on low-severity noise.
+      - name: pip-audit (blocking on high/critical CVEs)
+        run: |
+          uvx pip-audit -r requirements-audit.txt -f json | uv run python scripts/pip_audit_gate.py
 

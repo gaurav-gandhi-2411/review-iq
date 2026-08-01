@@ -209,7 +209,7 @@ async def run_single(fixture: dict[str, Any]) -> FixtureResult:
     try:
         text = fixture["review_text"]
         lang = fixture.get("ground_truth", {}).get("language", "en")
-        sanitized, _ = sanitize(text)
+        sanitized, _, _ = sanitize(text)
         wrapped = wrap_for_llm(sanitized)
         user_prompt = build_prompt(wrapped, lang)
         llm_output, _model, latency_ms, _, _, _ = await asyncio.wait_for(
@@ -252,7 +252,7 @@ async def run_single_routed(fixture: dict[str, Any]) -> FixtureResult:
     try:
         text = fixture["review_text"]
         settings = get_settings()
-        sanitized, _ = sanitize(text)
+        sanitized, _, _ = sanitize(text)
         wrapped = wrap_for_llm(sanitized)
         lang = fixture.get("ground_truth", {}).get("language", "en")
         user_prompt = build_prompt(wrapped, lang)
@@ -336,7 +336,7 @@ async def run_single_http(
             return result
 
         extraction_dict = response.json()
-        sanitized, _ = sanitize(fixture["review_text"])
+        sanitized, _, _ = sanitize(fixture["review_text"])
         security_err = _check_security(fixture["id"], extraction_dict, sanitized)
         if security_err:
             result.error = security_err

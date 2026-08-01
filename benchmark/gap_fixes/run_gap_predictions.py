@@ -55,7 +55,7 @@ async def _predict_full(text: str) -> dict[str, object]:
     from app.core.sanitize import sanitize, wrap_for_llm
 
     detected_lang = detect_language(text)
-    clean_text, _is_suspicious = sanitize(text)
+    clean_text, _is_suspicious, _redaction_map = sanitize(text)
     wrapped = wrap_for_llm(clean_text)
     user_prompt = build_prompt(wrapped, detected_lang)
     try:

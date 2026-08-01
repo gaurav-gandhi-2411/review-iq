@@ -20,6 +20,7 @@ from app.core.storage_pg import (
     list_dated_extractions_pg,
     list_extractions_pg,
     list_job_row_hashes_pg,
+    list_known_brand_names_pg,
     list_orgs_with_dated_extractions_pg,
     record_quota_request_pg,
     save_extraction_pg,
@@ -497,6 +498,59 @@ def test_list_orgs_with_dated_extractions_pg_does_not_set_tenant() -> None:
 
     sqls = [c[0][0] for c in cur.execute.call_args_list]
     assert not any("SET LOCAL ROLE" in s for s in sqls)
+
+
+# ---------------------------------------------------------------------------
+# list_known_brand_names_pg
+# ---------------------------------------------------------------------------
+
+
+def test_list_known_brand_names_pg_empty_result() -> None:
+    conn, cur = _make_conn()
+    cur.fetchall.return_value = []
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        result = list_known_brand_names_pg()
+
+    assert result == []
+
+
+def test_list_known_brand_names_pg_maps_values() -> None:
+    conn, cur = _make_conn()
+    cur.fetchall.return_value = [("Dyson",), ("Shark",), ("same model",)]
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        result = list_known_brand_names_pg()
+
+    assert result == ["Dyson", "Shark", "same model"]
+
+
+def test_list_known_brand_names_pg_does_not_set_tenant() -> None:
+    """Cross-org query -- deliberately does NOT call _set_tenant (service-role bypass,
+    same pattern as list_orgs_with_dated_extractions_pg): a brand name is not
+    tenant-sensitive data. Confirms no SET LOCAL ROLE call is issued."""
+    conn, cur = _make_conn()
+    cur.fetchall.return_value = []
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        list_known_brand_names_pg()
+
+    sqls = [c[0][0] for c in cur.execute.call_args_list]
+    assert not any("SET LOCAL ROLE" in s for s in sqls)
+
+
+def test_list_known_brand_names_pg_rolls_back_on_error() -> None:
+    conn, cur = _make_conn()
+    cur.execute.side_effect = RuntimeError("boom")
+
+    with (
+        patch("app.core.storage_pg._db_connect", return_value=conn),
+        pytest.raises(RuntimeError),
+    ):
+        list_known_brand_names_pg()
+
+    conn.rollback.assert_called_once()
+    conn.close.assert_called_once()
 
 
 # ---------------------------------------------------------------------------

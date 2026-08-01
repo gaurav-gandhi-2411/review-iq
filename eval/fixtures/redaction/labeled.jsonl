@@ -1,0 +1,115 @@
+{"id": 1, "kind": "email", "text": "Please email me at priya.sharma@gmail.com if there's an issue.", "expected_spans": ["priya.sharma@gmail.com"]}
+{"id": 2, "kind": "email", "text": "You can reach the seller at support@brandstore.in for a replacement.", "expected_spans": ["support@brandstore.in"]}
+{"id": 3, "kind": "email", "text": "Contact me at rahul_verma99@yahoo.co.in about the refund.", "expected_spans": ["rahul_verma99@yahoo.co.in"]}
+{"id": 4, "kind": "email", "text": "My work email is deepa.iyer@company.org in case you need proof.", "expected_spans": ["deepa.iyer@company.org"]}
+{"id": 5, "kind": "email", "text": "Reply to ankit.k1990@outlook.com with the tracking details.", "expected_spans": ["ankit.k1990@outlook.com"]}
+{"id": 6, "kind": "email", "text": "Send the invoice to accounts@myshop.net please.", "expected_spans": ["accounts@myshop.net"]}
+{"id": 7, "kind": "email", "text": "I already emailed neha.j@hotmail.com twice with no response.", "expected_spans": ["neha.j@hotmail.com"]}
+{"id": 8, "kind": "email", "text": "Write to complaints@fastdelivery.co if the item is missing.", "expected_spans": ["complaints@fastdelivery.co"]}
+{"id": 9, "kind": "email", "text": "My alternate address is vikram.99shopping@gmail.com for updates.", "expected_spans": ["vikram.99shopping@gmail.com"]}
+{"id": 10, "kind": "email", "text": "The seller replied from noreply@amazon.in with a generic message.", "expected_spans": ["noreply@amazon.in"]}
+{"id": 11, "kind": "email", "text": "You can also email me at s.kumar@protonmail.com anytime.", "expected_spans": ["s.kumar@protonmail.com"]}
+{"id": 12, "kind": "email", "text": "Their support desk is help@electro-mart.com and never responds.", "expected_spans": ["help@electro-mart.com"]}
+{"id": 13, "kind": "email", "text": "I'll send screenshots to returns@fashionhub.in tomorrow.", "expected_spans": ["returns@fashionhub.in"]}
+{"id": 14, "kind": "email", "text": "Reach out to me directly at pooja.mehta@gmail.com for details.", "expected_spans": ["pooja.mehta@gmail.com"]}
+{"id": 15, "kind": "email", "text": "The confirmation came from orders@bigbasket.com within a minute.", "expected_spans": ["orders@bigbasket.com"]}
+{"id": 16, "kind": "email", "text": "Ping me at arjun.rao1985@yahoo.com if this happens to you too.", "expected_spans": ["arjun.rao1985@yahoo.com"]}
+{"id": 17, "kind": "email", "text": "My billing email is finance@homeoffice.co.in on the invoice.", "expected_spans": ["finance@homeoffice.co.in"]}
+{"id": 18, "kind": "email", "text": "You can email sunita.desai@rediffmail.com for the same complaint.", "expected_spans": ["sunita.desai@rediffmail.com"]}
+{"id": 19, "kind": "email", "text": "Their customer care replied from care@applianceworld.in eventually.", "expected_spans": ["care@applianceworld.in"]}
+{"id": 20, "kind": "email", "text": "I have two addresses on file: r.singh@gmail.com and r.singh@work.com.", "expected_spans": ["r.singh@gmail.com", "r.singh@work.com"]}
+{"id": 21, "kind": "phone", "text": "Call me at 9876543210 if you have questions.", "expected_spans": ["9876543210"]}
+{"id": 22, "kind": "phone", "text": "My number is 9876512345, reachable after 6pm.", "expected_spans": ["9876512345"]}
+{"id": 23, "kind": "phone", "text": "Contact support on 022-2345-6789 for the complaint.", "expected_spans": ["022-2345-6789"]}
+{"id": 24, "kind": "phone", "text": "You can WhatsApp me at 9123456780 for photos.", "expected_spans": ["9123456780"]}
+{"id": 25, "kind": "phone", "text": "The delivery boy called from 8899001122 twice.", "expected_spans": ["8899001122"]}
+{"id": 26, "kind": "phone", "text": "Reach the store at 011-4567-8901 during business hours.", "expected_spans": ["011-4567-8901"]}
+{"id": 27, "kind": "phone", "text": "My alternate contact is 7010012345.", "expected_spans": ["7010012345"]}
+{"id": 28, "kind": "phone", "text": "Their rep's direct line is 9988776655.", "expected_spans": ["9988776655"]}
+{"id": 29, "kind": "phone", "text": "Call me on 9876512399 anytime this week.", "expected_spans": ["9876512399"]}
+{"id": 30, "kind": "phone", "text": "The technician's number is 9001122334 for follow-up.", "expected_spans": ["9001122334"]}
+{"id": 31, "kind": "phone", "text": "I texted 8765432190 but got no reply.", "expected_spans": ["8765432190"]}
+{"id": 32, "kind": "phone", "text": "Customer care number 1800123456 was always busy.", "expected_spans": ["1800123456"]}
+{"id": 33, "kind": "phone", "text": "You could try calling 7896541230, that's my direct line.", "expected_spans": ["7896541230"]}
+{"id": 34, "kind": "phone", "text": "Delivery partner reached me at 9012345678 for directions.", "expected_spans": ["9012345678"]}
+{"id": 35, "kind": "phone", "text": "Reach me on 8001234567 or my landline.", "expected_spans": ["8001234567"]}
+{"id": 36, "kind": "phone", "text": "My number changed to 9345612780 last month.", "expected_spans": ["9345612780"]}
+{"id": 37, "kind": "phone", "text": "Call 9223344556 for a duplicate invoice.", "expected_spans": ["9223344556"]}
+{"id": 38, "kind": "phone", "text": "Their service center is at 8112233445, ask for the manager.", "expected_spans": ["8112233445"]}
+{"id": 39, "kind": "phone", "text": "Text me on 7012345690 with the return label.", "expected_spans": ["7012345690"]}
+{"id": 40, "kind": "phone", "text": "My secondary number is 9871122334 if the first doesn't work.", "expected_spans": ["9871122334"]}
+{"id": 41, "kind": "card", "text": "My card is 4111 1111 1111 1111, very safe apparently.", "expected_spans": ["4111 1111 1111 1111"]}
+{"id": 42, "kind": "card", "text": "Charged to 5500-0000-0000-0004 without asking.", "expected_spans": ["5500-0000-0000-0004"]}
+{"id": 43, "kind": "card", "text": "Card number 4916338506082832 was compromised.", "expected_spans": ["4916338506082832"]}
+{"id": 44, "kind": "card", "text": "They saved 4485 2751 1234 5678 on file without consent.", "expected_spans": ["4485 2751 1234 5678"]}
+{"id": 45, "kind": "card", "text": "My card ending in 6011000990139424 got double charged.", "expected_spans": ["6011000990139424"]}
+{"id": 46, "kind": "card", "text": "I entered 3530 1113 3330 0000 by mistake during checkout.", "expected_spans": ["3530 1113 3330 0000"]}
+{"id": 47, "kind": "card", "text": "Refund was issued to 5105-1051-0510-5100 after two weeks.", "expected_spans": ["5105-1051-0510-5100"]}
+{"id": 48, "kind": "card", "text": "My card 4012888888881881 was used for the auto-payment.", "expected_spans": ["4012888888881881"]}
+{"id": 49, "kind": "card", "text": "The card number 6011 1111 1111 1117 shows in my statement.", "expected_spans": ["6011 1111 1111 1117"]}
+{"id": 50, "kind": "card", "text": "Card 5425-2334-3010-9903 was declined twice at checkout.", "expected_spans": ["5425-2334-3010-9903"]}
+{"id": 51, "kind": "card", "text": "They billed 4000 0566 5566 5556 for the wrong amount.", "expected_spans": ["4000 0566 5566 5556"]}
+{"id": 52, "kind": "card", "text": "My card 4222222222222 - wait, full number is 4222222222222222 got flagged.", "expected_spans": ["4222222222222222"]}
+{"id": 53, "kind": "card", "text": "Statement shows 3714 496353 98431 was charged twice.", "expected_spans": ["3714 496353 98431"]}
+{"id": 54, "kind": "card", "text": "I gave them 6759649826438453 for the deposit.", "expected_spans": ["6759649826438453"]}
+{"id": 55, "kind": "card", "text": "Card number 4917 6100 0000 0000 was used without my OTP.", "expected_spans": ["4917 6100 0000 0000"]}
+{"id": 56, "kind": "order_id", "text": "My order ORD-123456 never arrived.", "expected_spans": ["ORD-123456"]}
+{"id": 57, "kind": "order_id", "text": "Invoice INV#98765 was overcharged.", "expected_spans": ["INV#98765"]}
+{"id": 58, "kind": "order_id", "text": "Tracking number AWB1234567890 shows delivered.", "expected_spans": ["AWB1234567890"]}
+{"id": 59, "kind": "order_id", "text": "Order #123456789 is delayed.", "expected_spans": ["#123456789"]}
+{"id": 60, "kind": "order_id", "text": "Please check my order 456789 status.", "expected_spans": ["456789"]}
+{"id": 61, "kind": "order_id", "text": "Reference number REF-778899 was quoted by support.", "expected_spans": ["REF-778899"]}
+{"id": 62, "kind": "order_id", "text": "My tracking id AWB998877665 hasn't updated in a week.", "expected_spans": ["AWB998877665"]}
+{"id": 63, "kind": "order_id", "text": "Invoice number INV-445566 has the wrong GST amount.", "expected_spans": ["INV-445566"]}
+{"id": 64, "kind": "order_id", "text": "The parcel with order id 887766 was damaged in transit.", "expected_spans": ["887766"]}
+{"id": 65, "kind": "order_id", "text": "My AWB554433221 shows out for delivery since yesterday.", "expected_spans": ["AWB554433221"]}
+{"id": 66, "kind": "order_id", "text": "Shipment tracking 665544 stuck at the hub for 4 days.", "expected_spans": ["665544"]}
+{"id": 67, "kind": "order_id", "text": "Order ORD-998877 was cancelled without my consent.", "expected_spans": ["ORD-998877"]}
+{"id": 68, "kind": "order_id", "text": "Invoice #556677889 has an incorrect billing address.", "expected_spans": ["#556677889"]}
+{"id": 69, "kind": "order_id", "text": "My package reference 334455 finally arrived today.", "expected_spans": ["334455"]}
+{"id": 70, "kind": "order_id", "text": "Order number ORD556677 was split into two shipments.", "expected_spans": ["ORD556677"]}
+{"id": 71, "kind": "order_id", "text": "Tracking AWB112233445 lists the wrong pincode.", "expected_spans": ["AWB112233445"]}
+{"id": 72, "kind": "order_id", "text": "Delivery for order 778899 is running three days late.", "expected_spans": ["778899"]}
+{"id": 73, "kind": "order_id", "text": "Invoice INV#334455 was never emailed to me.", "expected_spans": ["INV#334455"]}
+{"id": 74, "kind": "order_id", "text": "My reference number 998877 got no response from support.", "expected_spans": ["998877"]}
+{"id": 75, "kind": "order_id", "text": "Please track order #665544332 for me.", "expected_spans": ["#665544332"]}
+{"id": 76, "kind": "name", "text": "Hi, I'm Ankit and I bought this yesterday.", "expected_spans": ["Ankit"]}
+{"id": 77, "kind": "name", "text": "My name is Priya Sharma and this review is honest.", "expected_spans": ["Priya Sharma"]}
+{"id": 78, "kind": "name", "text": "My name is Rajesh Kumar and I loved the product.", "expected_spans": ["Rajesh Kumar"]}
+{"id": 79, "kind": "name", "text": "I am Deepika, a first-time buyer of this brand.", "expected_spans": ["Deepika"]}
+{"id": 80, "kind": "name", "text": "Call me Vikram if you want more details about this issue.", "expected_spans": ["Vikram"]}
+{"id": 81, "kind": "name", "text": "My name is Sunita and I ordered this for my mother.", "expected_spans": ["Sunita"]}
+{"id": 82, "kind": "name", "text": "I'm Rohit, writing this after using the product for a month.", "expected_spans": ["Rohit"]}
+{"id": 83, "kind": "name", "text": "My name is Kavya Reddy, a longtime customer of this store.", "expected_spans": ["Kavya Reddy"]}
+{"id": 84, "kind": "name", "text": "I am Suresh and I've bought three of these already.", "expected_spans": ["Suresh"]}
+{"id": 85, "kind": "name", "text": "Call me Meera, I've been using this since launch.", "expected_spans": ["Meera"]}
+{"id": 86, "kind": "name", "text": "The delivery agent Rajesh was very rude to me.", "expected_spans": ["Rajesh"]}
+{"id": 87, "kind": "name", "text": "Agent Priya was helpful during the return process.", "expected_spans": ["Priya"]}
+{"id": 88, "kind": "name", "text": "I spoke to Ankit in customer support and he resolved it.", "expected_spans": ["Ankit"]}
+{"id": 89, "kind": "name", "text": "The technician Suresh fixed the installation in ten minutes.", "expected_spans": ["Suresh"]}
+{"id": 90, "kind": "name", "text": "Delivered by Sunil, the package arrived a day early.", "expected_spans": ["Sunil"]}
+{"id": 91, "kind": "name", "text": "The courier boy Vinod was polite despite the delay.", "expected_spans": ["Vinod"]}
+{"id": 92, "kind": "name", "text": "Customer service rep Anjali handled my complaint well.", "expected_spans": ["Anjali"]}
+{"id": 93, "kind": "name", "text": "I dealt with Rakesh from the returns team.", "expected_spans": ["Rakesh"]}
+{"id": 94, "kind": "name", "text": "The store manager Kunal offered a partial refund.", "expected_spans": ["Kunal"]}
+{"id": 95, "kind": "name", "text": "Support executive Neha called back within an hour.", "expected_spans": ["Neha"]}
+{"id": 96, "kind": "name", "text": "The installation guy Manoj left without testing the unit.", "expected_spans": ["Manoj"]}
+{"id": 97, "kind": "name", "text": "I was helped by Divya at the service center.", "expected_spans": ["Divya"]}
+{"id": 98, "kind": "name", "text": "The plumber Ramesh charged extra for the visit.", "expected_spans": ["Ramesh"]}
+{"id": 99, "kind": "name", "text": "Warehouse staff member Arjun packed this carelessly.", "expected_spans": ["Arjun"]}
+{"id": 100, "kind": "name", "text": "The electrician Sanjay rewired the whole unit for free.", "expected_spans": ["Sanjay"]}
+{"id": 101, "kind": "name", "text": "Kunal's installation was smooth and quick.", "expected_spans": ["Kunal"]}
+{"id": 102, "kind": "name", "text": "My sister Sneha recommended this brand to me.", "expected_spans": ["Sneha"]}
+{"id": 103, "kind": "name", "text": "Amit's review convinced me to finally buy this.", "expected_spans": ["Amit"]}
+{"id": 104, "kind": "name", "text": "According to Nisha, the warranty covers this defect.", "expected_spans": ["Nisha"]}
+{"id": 105, "kind": "name", "text": "My father Ramesh has used this for over a year now.", "expected_spans": ["Ramesh"]}
+{"id": 106, "kind": "name", "text": "Tell Rohan the replacement unit finally arrived.", "expected_spans": ["Rohan"]}
+{"id": 107, "kind": "name", "text": "My colleague Farah bought the same model last week.", "expected_spans": ["Farah"]}
+{"id": 108, "kind": "name", "text": "Ask for Imran at the store, he handled my case.", "expected_spans": ["Imran"]}
+{"id": 109, "kind": "name", "text": "My neighbour Geeta had the exact same issue.", "expected_spans": ["Geeta"]}
+{"id": 110, "kind": "name", "text": "According to Tarun, this model was discontinued last year.", "expected_spans": ["Tarun"]}
+{"id": 111, "kind": "name", "text": "Rajesh delivered it late, and later Priya from support apologized for the delay.", "expected_spans": ["Rajesh", "Priya"]}
+{"id": 112, "kind": "name", "text": "I first spoke to Ankit, then got transferred to Meera who actually helped.", "expected_spans": ["Ankit", "Meera"]}
+{"id": 113, "kind": "name", "text": "My name is Rohit and my wife Kavya both use this product daily.", "expected_spans": ["Rohit", "Kavya"]}
+{"id": 114, "kind": "name", "text": "Vinod dropped it off, and Anjali processed my complaint afterward.", "expected_spans": ["Vinod", "Anjali"]}
+{"id": 115, "kind": "name", "text": "Suresh installed it and Neha followed up the next day to confirm.", "expected_spans": ["Suresh", "Neha"]}
