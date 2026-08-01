@@ -7,6 +7,23 @@
 
 ---
 
+## ⚠️ SUPERSEDED (2026-08-01): use `.github/workflows/deploy-cloud-run.yml` instead
+
+A manual deploy against this runbook is exactly how both services ended up running an
+untraceable image (`v0-19-0` — no git tag, no CI run, no way to audit or reproduce what was
+serving customers; same failure class as rule 31a's `vercel deploy --prod` incident). Every
+deploy now happens by pushing to `main` (or `workflow_dispatch`), building and tagging the
+image `sha-<commit>`, and staging the rollout (no-traffic → smoke test → promote) the same way
+this runbook describes manually below. `scripts/check_cloud_run_deploy_is_from_main.py` verifies
+after every deploy (and nightly) that the running image actually traces to a commit on `main`.
+
+This runbook stays as a break-glass reference (e.g. Cloud Build/Actions itself is down) — but
+if you're about to run a `gcloud run deploy` command by hand for a routine change, stop and
+push to `main` instead. Any manual deploy will be caught within 24h by the nightly drift check
+regardless, so it can't silently become the new untracked baseline again.
+
+---
+
 ## ⚠️ READ THIS BEFORE RUNNING ANY `gcloud run deploy` COMMAND
 
 `--set-env-vars` and `--set-secrets` **REPLACE the entire set** of env vars / secrets on the
