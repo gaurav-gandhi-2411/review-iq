@@ -102,7 +102,7 @@ def test_create_key_returns_raw_key() -> None:
 
     with patch("app.api.admin._db_connect", return_value=conn):
         with patch(
-            "app.api.admin.generate_api_key",
+            "app.auth.keygen.generate_api_key",
             return_value=("riq_live_" + "a" * 32, "riq_live_aaaaaaaa", "hash"),
         ):
             result = _create_key_db(_ORG_ID, "default", 1000)
@@ -118,7 +118,7 @@ def test_create_key_org_not_found_raises_404() -> None:
 
     with patch("app.api.admin._db_connect", return_value=conn):
         with patch(
-            "app.api.admin.generate_api_key",
+            "app.auth.keygen.generate_api_key",
             return_value=("riq_live_" + "a" * 32, "riq_live_aaaaaaaa", "hash"),
         ):
             with pytest.raises(HTTPException) as exc:
@@ -175,7 +175,7 @@ def test_rotate_key_revokes_old_issues_new() -> None:
 
     with patch("app.api.admin._db_connect", return_value=conn):
         with patch(
-            "app.api.admin.generate_api_key",
+            "app.auth.keygen.generate_api_key",
             return_value=("riq_live_" + "b" * 32, "riq_live_bbbbbbbb", "new_hash"),
         ):
             result = _rotate_key_db(_ORG_ID, _KEY_ID)
@@ -194,7 +194,7 @@ def test_rotate_key_not_found_raises_404() -> None:
 
     with patch("app.api.admin._db_connect", return_value=conn):
         with patch(
-            "app.api.admin.generate_api_key",
+            "app.auth.keygen.generate_api_key",
             return_value=("riq_live_" + "b" * 32, "riq_live_bbbbbbbb", "h"),
         ):
             with pytest.raises(HTTPException) as exc:
@@ -255,7 +255,7 @@ def test_create_key_generic_exception_rolls_back() -> None:
 
     with patch("app.api.admin._db_connect", return_value=conn):
         with patch(
-            "app.api.admin.generate_api_key",
+            "app.auth.keygen.generate_api_key",
             return_value=("riq_live_" + "a" * 32, "riq_live_aaaaaaaa", "hash"),
         ):
             with pytest.raises(Exception):

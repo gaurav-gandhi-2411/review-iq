@@ -51,6 +51,7 @@ from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Request, 
 from app.auth.api_key import ApiKeyContext
 from app.core.config import get_settings
 from app.core.ingestion.shopify_source import _node_to_review_row
+from app.core.storage_pg import _set_tenant
 
 log = structlog.get_logger(__name__)
 
@@ -113,19 +114,27 @@ def encrypt_token(access_token: str, encryption_key: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Installation lookup — service-role (postgres role, bypasses RLS)
+# Installation lookup — two-step, no bypass-holding role needed (BYPASSRLS remediation)
 # ---------------------------------------------------------------------------
 
 
 def _get_shopify_installation_pg(shop_domain: str) -> dict[str, Any] | None:
     """Look up shopify_installations by shop_domain. Returns None if not installed.
 
-    Uses supabase_database_url (postgres role — bypasses RLS). This is correct
-    for system/webhook calls. RLS is only active after SET ROLE authenticated.
+    Bug fixed 2026-08-01: previously a single query relying on the connecting role
+    (review_iq_app) holding BYPASSRLS -- see
+    supabase/migrations/20260801000001_role_separation_bypassrls_remediation.sql. Now two
+    steps, NEITHER of which needs review_iq_app to hold any bypass:
 
-    UNIQUE(shop_domain) guarantees at most one row — result is never ambiguous.
-    Returns None if the table is not yet migrated (UndefinedTable) so webhooks
-    are safely dropped before the migration is applied.
+    1. Resolve org_id via public.resolve_org_for_shopify_shop(), a narrow SECURITY
+       DEFINER function that returns ONLY org_id (never the row, never the encrypted
+       token) -- review_iq_app has EXECUTE on it, nothing more.
+    2. With org_id now known, fetch the actual row via a normal, _set_tenant()-scoped
+       query -- properly RLS-protected like every other tenant-scoped read in this repo.
+
+    UNIQUE(shop_domain) still guarantees step 1 returns at most one org_id --
+    unambiguous, unchanged from before. Returns None if the table is not yet migrated
+    (UndefinedTable) so webhooks are safely dropped before the migration is applied.
     """
     settings = get_settings()
     if not settings.supabase_database_url:
@@ -133,19 +142,30 @@ def _get_shopify_installation_pg(shop_domain: str) -> dict[str, Any] | None:
     conn = psycopg2.connect(settings.supabase_database_url)
     try:
         cur = conn.cursor()
-        # No SET ROLE — postgres role bypasses RLS; UNIQUE(shop_domain) = no ambiguity.
+        cur.execute("SELECT public.resolve_org_for_shopify_shop(%s)", (shop_domain,))
+        row = cur.fetchone()
+        org_id = row[0] if row else None
+        if org_id is None:
+            return None
+
+        _set_tenant(cur, str(org_id))
         cur.execute(
-            "SELECT org_id, access_token_enc FROM public.shopify_installations "
+            "SELECT access_token_enc FROM public.shopify_installations "
             "WHERE shop_domain = %s AND revoked_at IS NULL",
             (shop_domain,),
         )
-        row = cur.fetchone()
-        if row is None:
+        detail = cur.fetchone()
+        if detail is None:
             return None
-        return {"org_id": str(row[0]), "access_token_enc": str(row[1])}
+        return {"org_id": str(org_id), "access_token_enc": str(detail[0])}
     except psycopg2.errors.UndefinedTable:
         # Migration not yet applied — expected during dev; webhooks dropped safely.
         log.warning("shopify_webhook.installations_table_missing", shop=shop_domain)
+        return None
+    except psycopg2.errors.UndefinedFunction:
+        # resolve_org_for_shopify_shop not yet created — same fail-safe as UndefinedTable,
+        # expected before the accompanying migration's cutover (see the runbook).
+        log.warning("shopify_webhook.resolve_function_missing", shop=shop_domain)
         return None
     finally:
         conn.close()
