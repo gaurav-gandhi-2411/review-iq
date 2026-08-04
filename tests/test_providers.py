@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import httpx
 import pytest
 from app.core.providers.base import Provider, assert_privacy_safe
 from app.core.providers.groq import GroqProvider
@@ -141,3 +144,126 @@ async def test_secondary_provider_raises_when_unconfigured() -> None:
     provider = SecondaryProvider()
     with pytest.raises(RuntimeError, match="not configured"):
         await provider.complete("prompt", system_prompt="sys")
+
+
+# ---------------------------------------------------------------------------
+# SecondaryProvider.complete — real OpenRouter implementation
+# ---------------------------------------------------------------------------
+
+
+def _mock_openrouter_response(
+    *, content: str = '{"ok": true}', provider: str = "DeepInfra"
+) -> MagicMock:
+    resp = MagicMock()
+    resp.raise_for_status = MagicMock()
+    resp.status_code = 200
+    resp.json = MagicMock(
+        return_value={
+            "provider": provider,
+            "choices": [{"message": {"content": content}}],
+            "usage": {"prompt_tokens": 12, "completion_tokens": 4},
+        }
+    )
+    return resp
+
+
+@pytest.mark.asyncio
+async def test_secondary_provider_complete_success() -> None:
+    """A configured SecondaryProvider parses a successful OpenRouter response."""
+    provider = SecondaryProvider(api_key="or-key", model="meta-llama/llama-3.3-70b-instruct")
+
+    with patch("httpx.AsyncClient") as mock_client_cls:
+        mock_ctx = AsyncMock()
+        mock_ctx.__aenter__ = AsyncMock(return_value=mock_ctx)
+        mock_ctx.__aexit__ = AsyncMock(return_value=None)
+        mock_ctx.post = AsyncMock(return_value=_mock_openrouter_response())
+        mock_client_cls.return_value = mock_ctx
+
+        raw, tokens_in, tokens_out = await provider.complete("review text", system_prompt="sys")
+
+    assert raw == '{"ok": true}'
+    assert tokens_in == 12
+    assert tokens_out == 4
+
+
+@pytest.mark.asyncio
+async def test_secondary_provider_complete_sends_zdr_true() -> None:
+    """Every OpenRouter request must set provider.zdr=true — fail-closed privacy enforcement.
+
+    This is the single most important behavioural test in this module: it is what stops
+    a future edit from silently dropping the ZDR restriction and routing to a
+    training-eligible endpoint.
+    """
+    provider = SecondaryProvider(api_key="or-key", model="meta-llama/llama-3.3-70b-instruct")
+
+    with patch("httpx.AsyncClient") as mock_client_cls:
+        mock_ctx = AsyncMock()
+        mock_ctx.__aenter__ = AsyncMock(return_value=mock_ctx)
+        mock_ctx.__aexit__ = AsyncMock(return_value=None)
+        mock_ctx.post = AsyncMock(return_value=_mock_openrouter_response())
+        mock_client_cls.return_value = mock_ctx
+
+        await provider.complete("review text", system_prompt="sys")
+
+        _, kwargs = mock_ctx.post.call_args
+        assert kwargs["json"]["provider"] == {"zdr": True}
+
+
+@pytest.mark.asyncio
+async def test_secondary_provider_complete_http_error_propagates() -> None:
+    """An OpenRouter HTTP failure (e.g. no ZDR endpoint for the model) raises, not swallows.
+
+    The caller (app.core.llm.extract_with_llm) is responsible for catching this and
+    falling through — SecondaryProvider itself must fail loudly.
+    """
+    provider = SecondaryProvider(api_key="or-key", model="some/unrouted-model")
+
+    request = httpx.Request("POST", "https://openrouter.ai/api/v1/chat/completions")
+    error_response = httpx.Response(
+        404, request=request, json={"error": {"message": "no endpoints"}}
+    )
+
+    mock_resp = MagicMock()
+    mock_resp.status_code = 404
+    mock_resp.raise_for_status = MagicMock(
+        side_effect=httpx.HTTPStatusError("404", request=request, response=error_response)
+    )
+
+    with patch("httpx.AsyncClient") as mock_client_cls:
+        mock_ctx = AsyncMock()
+        mock_ctx.__aenter__ = AsyncMock(return_value=mock_ctx)
+        mock_ctx.__aexit__ = AsyncMock(return_value=None)
+        mock_ctx.post = AsyncMock(return_value=mock_resp)
+        mock_client_cls.return_value = mock_ctx
+
+        with pytest.raises(httpx.HTTPStatusError):
+            await provider.complete("review text", system_prompt="sys")
+
+
+@pytest.mark.asyncio
+async def test_secondary_provider_complete_trains_on_input_stays_false() -> None:
+    """trains_on_input must remain False on the real implementation, not just the stub."""
+    provider = SecondaryProvider(api_key="or-key", model="meta-llama/llama-3.3-70b-instruct")
+    assert provider.trains_on_input is False
+    assert_privacy_safe(provider)  # must not raise
+
+
+@pytest.mark.asyncio
+async def test_secondary_provider_complete_retry_appends_suffix() -> None:
+    """retry=True mirrors GroqProvider's behaviour: append the parse-retry suffix."""
+    from app.core.providers.groq import _RETRY_SUFFIX
+
+    provider = SecondaryProvider(api_key="or-key", model="meta-llama/llama-3.3-70b-instruct")
+
+    with patch("httpx.AsyncClient") as mock_client_cls:
+        mock_ctx = AsyncMock()
+        mock_ctx.__aenter__ = AsyncMock(return_value=mock_ctx)
+        mock_ctx.__aexit__ = AsyncMock(return_value=None)
+        mock_ctx.post = AsyncMock(return_value=_mock_openrouter_response())
+        mock_client_cls.return_value = mock_ctx
+
+        await provider.complete("review text", system_prompt="sys", retry=True)
+
+        _, kwargs = mock_ctx.post.call_args
+        user_message = kwargs["json"]["messages"][1]["content"]
+        assert user_message == "review text" + _RETRY_SUFFIX
