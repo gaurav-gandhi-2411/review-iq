@@ -1,0 +1,5 @@
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2 # pinned to match .github/workflows/secret-scan.yml's GITLEAKS_VERSION
+    hooks:
+      - id: gitleaks
