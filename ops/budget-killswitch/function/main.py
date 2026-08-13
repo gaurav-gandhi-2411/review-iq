@@ -13,6 +13,8 @@ from __future__ import annotations
 import base64
 import json
 import os
+import sys
+from datetime import UTC, datetime
 
 from google.cloud import billing_v1
 
@@ -49,6 +51,29 @@ def kill_billing(event: dict, context: object) -> None:  # noqa: ARG001
         print(f"[kill-switch] threshold {threshold:.1%} < {_KILL_THRESHOLD:.0%} — no action taken")
         return
 
+    # Distinct, greppable marker so a billing-disabled project can always be traced back to
+    # this automation rather than a human action — the two look identical from the project's
+    # side otherwise, which made 2026-08-12's outages harder to diagnose than they needed to be.
+    # Printed to stderr (Cloud Functions gen1 maps stderr to ERROR severity) so it surfaces in
+    # any log-based alerting policy without extra configuration.
+    alert_line = (
+        "AUTOMATED_KILLSWITCH_FIRED "
+        + json.dumps(
+            {
+                "project": _PROJECT_ID,
+                "budget_name": budget_name,
+                "cost_amount": cost_amount,
+                "budget_amount": budget_amount,
+                "currency": currency,
+                "threshold": threshold,
+                "dry_run": _DRY_RUN,
+                "action": "would_disable_billing" if _DRY_RUN else "disabled_billing",
+                "fired_at": datetime.now(UTC).isoformat(),
+            }
+        )
+    )
+    print(alert_line, file=sys.stderr)
+
     if _DRY_RUN:
         print(
             f"[kill-switch] DRY RUN — threshold {threshold:.1%} ≥ {_KILL_THRESHOLD:.0%} "
@@ -72,3 +97,15 @@ def kill_billing(event: dict, context: object) -> None:  # noqa: ARG001
         name=project_name, project_billing_info=empty_billing
     )
     print(f"[kill-switch] billing disabled — response: {result}")
+    print(
+        "AUTOMATED_KILLSWITCH_FIRED "
+        + json.dumps(
+            {
+                "project": _PROJECT_ID,
+                "action": "disabled_billing",
+                "confirmed": True,
+                "fired_at": datetime.now(UTC).isoformat(),
+            }
+        ),
+        file=sys.stderr,
+    )
