@@ -87,3 +87,5 @@ ops/budget-killswitch/.build/
 # Local scratch/raw datasets for prompt-tuning work (large Kaggle downloads + derived
 # intermediates) — mirrors eval/data/.gitignore's raw/generated-candidate exclusion pattern.
 /data/
+.vercel
+.env*

@@ -1,13 +1,13 @@
 variable "project_id" {
   description = "GCP project ID"
   type        = string
-  default     = "review-iq-prod"
+  default     = "reviewiq-prod-260813"
 }
 
 variable "project_number" {
   description = "GCP project number (numeric)"
   type        = string
-  default     = "432538168127"
+  default     = "433287338182"
 }
 
 variable "region" {

@@ -174,7 +174,7 @@ resource "google_cloudfunctions_function" "killswitch" {
 
 resource "google_billing_budget" "monthly_cap" {
   billing_account = var.billing_account_id
-  display_name    = "review-iq-prod-monthly-cap"
+  display_name    = "reviewiq-prod-260813-monthly-cap"
 
   budget_filter {
     projects               = ["projects/${var.project_number}"]
