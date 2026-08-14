@@ -13,6 +13,11 @@ on:
   schedule:
     - cron: "*/5 * * * *"
   workflow_dispatch:
+    inputs:
+      test_url_override:
+        description: "Override HEALTH_URL for this manual run only (e.g. a deliberately-bad URL, to test the alert path end to end). Leave blank for a normal check."
+        required: false
+        type: string
 
 concurrency:
   group: uptime-alert
@@ -22,7 +27,7 @@ permissions:
   issues: write
 
 env:
-  HEALTH_URL: "https://review-iq-ajjrytb3na-el.a.run.app/health"
+  HEALTH_URL: "https://api.samidhareviews.xyz/health"
   # Title must be stable so the duplicate-search logic works reliably.
   ALERT_TITLE: "prod /health is DOWN"
   CURL_TIMEOUT: "10"
@@ -37,7 +42,14 @@ jobs:
     steps:
       - name: Probe /health (with cold-start retry)
         id: probe
+        env:
+          TEST_URL_OVERRIDE: ${{ inputs.test_url_override }}
         run: |
+          if [ -n "${TEST_URL_OVERRIDE}" ]; then
+            HEALTH_URL="${TEST_URL_OVERRIDE}"
+            echo "::warning::Using test_url_override for this manual run: ${HEALTH_URL}"
+          fi
+
           probe() {
             HTTP_STATUS=$(curl -s -o /tmp/health_body.txt -w "%{http_code}" \
               --max-time "${CURL_TIMEOUT}" \
@@ -55,21 +67,33 @@ jobs:
             echo "Retry probe: HTTP ${STATUS}"
           fi
 
+          # Collapse to a single line before writing to $GITHUB_OUTPUT -- a plain
+          # `key=value` line in that file cannot contain an embedded newline. An HTML
+          # error-page body (e.g. a Cloud Run/load-balancer 503 page) reliably has
+          # newlines, which corrupted this exact line and crashed this step ("Unable to
+          # process file command 'output'"), which in turn silently skipped both
+          # downstream steps since neither had `always()` in its `if:` -- 15 consecutive
+          # failures produced zero GitHub issues before this fix (2026-08-14).
           BODY=$(cat /tmp/health_body.txt 2>/dev/null || echo "(no body)")
+          BODY_ONELINE=$(printf '%s' "${BODY:0:500}" | tr '\n\r' '  ')
           TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
           echo "status=${STATUS}" >> "$GITHUB_OUTPUT"
           echo "timestamp=${TIMESTAMP}" >> "$GITHUB_OUTPUT"
-          # Truncate body to avoid oversized env vars; max 500 chars.
-          echo "body=${BODY:0:500}" >> "$GITHUB_OUTPUT"
+          echo "health_url=${HEALTH_URL}" >> "$GITHUB_OUTPUT"
+          echo "body=${BODY_ONELINE}" >> "$GITHUB_OUTPUT"
 
       - name: Handle DOWN
-        if: steps.probe.outputs.status != '200'
+        # always() is load-bearing: without it, this step silently no-ops whenever the
+        # probe step itself errors (e.g. the malformed-output-file bug above) instead of
+        # running -- the exact failure mode that swallowed every alert for 17+ hours.
+        if: always() && steps.probe.outputs.status != '200'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HTTP_STATUS: ${{ steps.probe.outputs.status }}
           TIMESTAMP: ${{ steps.probe.outputs.timestamp }}
           HEALTH_BODY: ${{ steps.probe.outputs.body }}
+          HEALTH_URL: ${{ steps.probe.outputs.health_url }}
         run: |
           REPO="${{ github.repository }}"
 
@@ -150,7 +174,7 @@ jobs:
           exit 1
 
       - name: Handle recovery
-        if: steps.probe.outputs.status == '200'
+        if: always() && steps.probe.outputs.status == '200'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TIMESTAMP: ${{ steps.probe.outputs.timestamp }}
