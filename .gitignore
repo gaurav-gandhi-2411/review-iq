@@ -77,8 +77,11 @@ web/.env.local
 
 # Terraform — provider cache and state (state must stay local or in GCS backend)
 ops/budget-killswitch/.terraform/
-ops/budget-killswitch/terraform.tfstate
-ops/budget-killswitch/terraform.tfstate.backup
+# Glob, not the two exact filenames: per-project copies made while hand-swapping
+# state between review-iq-prod and reviewiq-prod-260813 (terraform.tfstate.review-iq-prod.bak
+# and friends) matched neither exact rule, so they sat untracked AND unignored — one
+# `git add -A` from committing infrastructure state into the repo.
+ops/budget-killswitch/*.tfstate*
 ops/budget-killswitch/.build/
 
 # Cloudflare Wrangler local cache (demo deploy tooling) — build artifact, not source
