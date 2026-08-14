@@ -22,7 +22,7 @@ permissions:
   issues: write
 
 env:
-  HEALTH_URL: "https://review-iq-ajjrytb3na-el.a.run.app/health"
+  HEALTH_URL: "https://api.samidhareviews.xyz/health"
   # Title must be stable so the duplicate-search logic works reliably.
   ALERT_TITLE: "prod /health is DOWN"
   CURL_TIMEOUT: "10"
