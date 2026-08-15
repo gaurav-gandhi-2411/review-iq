@@ -62,8 +62,17 @@ jobs:
           workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
           service_account: ${{ vars.GCP_DEPLOYER_SA }}
 
+      # install_components: beta -- required because cloudbuild.yaml sets
+      # options.logging: CLOUD_LOGGING_ONLY (Item 102/104): the standard (non-beta)
+      # `gcloud builds submit` cannot stream logs from Cloud Logging at all (only from
+      # the default GCS bucket), so without this the build step would succeed
+      # server-side but report zero log output in CI. Measured cost: ~18s/run
+      # (Item 104a) -- accepted in exchange for roles/logging.viewer (narrow, read-only)
+      # instead of the project-wide roles/viewer that default-bucket logging requires.
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@6a7c903a70c8625ed6700fa299f5ddb4ca6022e9 # v2.1.5
+        with:
+          install_components: 'beta'
 
       - uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
         with:
@@ -77,10 +86,21 @@ jobs:
 
       # Build from the exact checked-out commit -- never the working directory of a local
       # machine, which is the entire point of this workflow existing.
+      #
+      # Uses an explicit cloudbuild.yaml (Item 102) rather than --tag's auto-generated
+      # single-step config -- the auto-generated form has no way to set
+      # options.logging: CLOUD_LOGGING_ONLY, which is what lets the deployer's log-read
+      # need be satisfied by the narrow roles/logging.viewer instead of the project-wide
+      # roles/viewer that default-GCS-bucket logging requires.
+      #
+      # `gcloud beta` (not plain `gcloud`) -- Item 104: confirmed directly that the
+      # standard command cannot stream CLOUD_LOGGING_ONLY output at all, even with
+      # correct permissions; it explicitly instructs switching to the beta command.
       - name: Build and push image (Cloud Build)
         run: |
-          gcloud builds submit \
-            --tag "${{ env.IMAGE_REPO }}:${{ steps.image.outputs.tag }}" \
+          gcloud beta builds submit \
+            --config=cloudbuild.yaml \
+            --substitutions="_IMAGE_TAG=${{ env.IMAGE_REPO }}:${{ steps.image.outputs.tag }}" \
             --region="${{ env.REGION }}" \
             --project="${{ env.PROJECT }}"
 
