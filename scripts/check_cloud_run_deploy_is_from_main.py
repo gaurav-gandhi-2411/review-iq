@@ -37,7 +37,15 @@ import sys
 GCLOUD = shutil.which("gcloud") or "gcloud"
 GIT = shutil.which("git") or "git"
 
-PROJECT = "review-iq-prod"
+# Corrected 2026-08-15 (Item 109): still hardcoded review-iq-prod, the pre-cutover
+# project, decommissioned 2026-08-14 -- this script had never actually audited the live
+# project since migration. deploy-cloud-run.yml itself was fixed to target
+# reviewiq-prod-260813 in Item 67; this file, invoked by that same workflow's own
+# provenance-check step, was never touched by that fix since it's a separate .py file,
+# not YAML. Caught live: the first real end-to-end deploy since the WIF/IAM fixes
+# succeeded on both services, then this step failed with a PERMISSION_DENIED on the old
+# project's namespace -- github-actions-deployer correctly has zero access there.
+PROJECT = "reviewiq-prod-260813"
 REGION = "asia-south1"
 SERVICES = ("review-iq", "review-iq-admin")
 IMAGE_TAG_PATTERN = re.compile(r"^sha-([0-9a-f]{40})$")
