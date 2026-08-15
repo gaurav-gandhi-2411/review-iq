@@ -34,10 +34,20 @@ concurrency:
   group: deploy-cloud-run
   cancel-in-progress: false # never abort a deploy mid-flight
 
+# Corrected 2026-08-15 (Item 67): PROJECT/IMAGE_REPO still targeted review-iq-prod,
+# the pre-cutover project. It's decommissioned but not deleted (billing disabled,
+# lifecycle ACTIVE) -- its own WIF pool is still ACTIVE, so this workflow's auth
+# step never failed loud. It silently authenticated and ran against the dead
+# project every single day via the scheduled-drift-check job (8+ consecutive
+# daily runs, correctly detecting THAT project's own drift) while the real live
+# project (reviewiq-prod-260813, the api.samidhareviews.xyz cutover target) was
+# never checked at all. IMAGE_REPO repointed to the existing cloud-run-source-deploy
+# repo rather than creating a new dedicated one -- reviewiq-prod-260813 has no
+# review-iq-named AR repo, and cloud-run-source-deploy already holds the live image.
 env:
-  PROJECT: review-iq-prod
+  PROJECT: reviewiq-prod-260813
   REGION: asia-south1
-  IMAGE_REPO: asia-south1-docker.pkg.dev/review-iq-prod/review-iq/api
+  IMAGE_REPO: asia-south1-docker.pkg.dev/reviewiq-prod-260813/cloud-run-source-deploy/review-iq
 
 jobs:
   build-and-deploy:
