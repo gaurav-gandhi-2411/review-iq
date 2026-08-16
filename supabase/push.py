@@ -96,8 +96,8 @@ _EXISTENCE_SQL = {
 # <role> followed by a GRANT ... TO <role> is describing an EXACT target privilege
 # state for that (table, role) pair, not just "an object exists" -- checkable precisely
 # via information_schema.role_table_grants, not just a boolean existence check.
-_REVOKE_ALL_PATTERN = re.compile(r"REVOKE ALL ON public\.(\w+) FROM (\w+)", re.IGNORECASE)
-_GRANT_PATTERN = re.compile(r"GRANT ([\w\s,]+?) ON public\.(\w+) TO (\w+)", re.IGNORECASE)
+_REVOKE_ALL_PATTERN = re.compile(r"REVOKE ALL ON public\.(\w+)\s+FROM\s+(\w+)", re.IGNORECASE)
+_GRANT_PATTERN = re.compile(r"GRANT\s+([\w\s,]+?)\s+ON public\.(\w+)\s+TO\s+(\w+)", re.IGNORECASE)
 
 
 def _expected_grant_states(sql: str) -> list[tuple[str, str, frozenset[str]]]:
