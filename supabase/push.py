@@ -2,7 +2,10 @@
 
 Usage:
     uv run python supabase/push.py                 # apply every not-yet-applied file
-    uv run python supabase/push.py --dry-run        # print what WOULD apply, apply nothing
+    uv run python supabase/push.py --dry-run        # print what WOULD apply, whether each
+                                                      # pending file's objects already exist
+                                                      # in the target -- read-only, no writes,
+                                                      # no ledger rows -- and apply nothing
     uv run python supabase/push.py --mark-applied-all   # record every file as applied
                                                           # WITHOUT running its SQL --
                                                           # backfill for a database that
@@ -36,6 +39,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -54,11 +58,90 @@ CREATE TABLE IF NOT EXISTS public._migrations (
 );
 """
 
+# --mark-applied-all backfill verification (Item 176d): a blank "trust the flag" backfill
+# can silently and PERMANENTLY hide a migration that was never actually applied -- demonstrated
+# directly (Item 176c) by skipping 20260710235958_capture_extraction_costs.sql on a throwaway
+# container, running --mark-applied-all, and confirming it was marked applied anyway despite
+# public.extraction_costs genuinely not existing. This is deliberately NOT a general SQL-effect
+# verifier (that's real overengineering for what a handful of regexes covers) -- it extracts the
+# one or two primary named objects each file's own CREATE/ALTER statements are recognizable by,
+# and checks those specific objects exist. Catches "this file was never applied at all" (the
+# demonstrated failure mode); does not catch "this file was applied but a later statement in it
+# silently failed" or verify column-level correctness -- named explicitly as the boundary of what
+# this checks, not implied to be exhaustive.
+_OBJECT_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
+    ("table", re.compile(r"CREATE TABLE(?:\s+IF NOT EXISTS)?\s+public\.(\w+)", re.IGNORECASE)),
+    (
+        "function",
+        re.compile(r"CREATE(?:\s+OR REPLACE)?\s+FUNCTION\s+public\.(\w+)", re.IGNORECASE),
+    ),
+    ("role", re.compile(r"\bCREATE ROLE\s+(\w+)", re.IGNORECASE)),
+    ("constraint", re.compile(r"\bADD CONSTRAINT\s+(\w+)", re.IGNORECASE)),
+]
+
+_EXISTENCE_SQL = {
+    "table": "SELECT to_regclass('public.' || %s) IS NOT NULL",
+    "function": "SELECT EXISTS(SELECT 1 FROM pg_proc WHERE proname = %s)",
+    "role": "SELECT EXISTS(SELECT 1 FROM pg_roles WHERE rolname = %s)",
+    "constraint": "SELECT EXISTS(SELECT 1 FROM pg_constraint WHERE conname = %s)",
+}
+
+
+def _strip_sql_line_comments(sql: str) -> str:
+    """Strip `-- ...` line comments before object-name extraction.
+
+    Self-caught while testing (Item 176): the raw-SQL regexes below matched literal
+    English inside comments like "-- ADD CONSTRAINT does not support IF NOT EXISTS",
+    extracting `does` as a fake constraint name and refusing to mark an otherwise-fine
+    file. None of this repo's migrations put `--` inside a string literal, so a plain
+    per-line strip is sufficient here -- not a general SQL comment parser.
+    """
+    return "\n".join(line.split("--", 1)[0] for line in sql.splitlines())
+
+
+def _expected_objects(sql: str) -> list[tuple[str, str]]:
+    code = _strip_sql_line_comments(sql)
+    found: list[tuple[str, str]] = []
+    for kind, pattern in _OBJECT_PATTERNS:
+        found.extend((kind, name) for name in pattern.findall(code))
+    return found
+
+
+def _missing_objects(
+    cur: psycopg2.extensions.cursor, expected: list[tuple[str, str]]
+) -> list[tuple[str, str]]:
+    missing = []
+    for kind, name in expected:
+        cur.execute(_EXISTENCE_SQL[kind], (name,))
+        (exists,) = cur.fetchone()
+        if not exists:
+            missing.append((kind, name))
+    return missing
+
 
 def _applied_filenames(conn: psycopg2.extensions.connection) -> set[str]:
+    """Ensures the ledger table exists (CREATE TABLE IF NOT EXISTS), then reads it.
+
+    Only called from write paths (normal apply, --mark-applied-all) -- --dry-run uses
+    _applied_filenames_readonly below instead, which never touches schema."""
     with conn.cursor() as cur:
         cur.execute(_ENSURE_LEDGER_SQL)
         conn.commit()
+        cur.execute("SELECT filename FROM public._migrations")
+        return {row[0] for row in cur.fetchall()}
+
+
+def _applied_filenames_readonly(conn: psycopg2.extensions.connection) -> set[str]:
+    """Item 181: true read-only equivalent for --dry-run -- never creates the ledger table.
+
+    If the table doesn't exist yet (e.g. checking production before ever backfilling),
+    treats that as "nothing recorded" rather than creating it as a side effect of a
+    read-only command."""
+    with conn.cursor() as cur:
+        cur.execute("SELECT to_regclass('public._migrations') IS NOT NULL")
+        (table_exists,) = cur.fetchone()
+        if not table_exists:
+            return set()
         cur.execute("SELECT filename FROM public._migrations")
         return {row[0] for row in cur.fetchall()}
 
@@ -75,8 +158,16 @@ def main() -> None:
         action="store_true",
         help="Record every migration file in the ledger without running its SQL "
         "(backfill for a database whose content already matches these files, applied "
-        "out-of-band -- confirm that's actually true via direct schema inspection before "
-        "using this, never assume).",
+        "out-of-band). Refuses to mark a file whose primary CREATE TABLE/FUNCTION/ROLE or "
+        "ADD CONSTRAINT object doesn't actually exist -- pass --force to override.",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="With --mark-applied-all: mark files anyway even if their expected objects "
+        "are missing. Only use this after independently confirming why -- e.g. a file "
+        "whose statements are entirely GRANT/REVOKE with nothing this script's checks can "
+        "recognize.",
     )
     args = parser.parse_args()
 
@@ -91,29 +182,76 @@ def main() -> None:
     conn.autocommit = False
 
     try:
-        already_applied = _applied_filenames(conn)
-        pending = [p for p in migration_files if p.name not in already_applied]
-
         if args.dry_run:
+            already_applied = _applied_filenames_readonly(conn)
+            pending = [p for p in migration_files if p.name not in already_applied]
+            # Item 181: also report whether each pending file's expected objects already
+            # exist in the target -- read-only (SELECT only, no INSERT, no commit needed),
+            # so this is safe to run against production before deciding whether a file is
+            # genuinely unapplied (WOULD APPLY, objects missing) or was applied out-of-band
+            # and just needs a ledger backfill (WOULD APPLY, but objects ALREADY EXIST --
+            # a signal to use --mark-applied-all for that file, not a normal apply).
             print(f"\n{len(already_applied)} already applied, {len(pending)} would apply:")
-            for path in pending:
-                print(f"  WOULD APPLY: {path.name}")
+            with conn.cursor() as cur:
+                for path in pending:
+                    sql = path.read_text(encoding="utf-8")
+                    expected = _expected_objects(sql)
+                    missing = _missing_objects(cur, expected)
+                    if not expected:
+                        print(f"  WOULD APPLY (no recognizable objects to check): {path.name}")
+                    elif missing:
+                        print(
+                            f"  WOULD APPLY (objects missing -- genuinely unapplied): {path.name}"
+                        )
+                        for kind, name in missing:
+                            print(f"      missing {kind}: {name}")
+                    else:
+                        print(
+                            f"  WOULD APPLY, BUT OBJECTS ALREADY EXIST -- likely applied "
+                            f"out-of-band, consider --mark-applied-all instead: {path.name}"
+                        )
             for path in migration_files:
                 if path.name in already_applied:
                     print(f"  (already applied, skip): {path.name}")
             return
 
+        already_applied = _applied_filenames(conn)
+        pending = [p for p in migration_files if p.name not in already_applied]
+
         if args.mark_applied_all:
+            marked, refused = 0, 0
             with conn.cursor() as cur:
                 for path in pending:
+                    sql = path.read_text(encoding="utf-8")
+                    expected = _expected_objects(sql)
+                    missing = _missing_objects(cur, expected)
+                    if missing and not args.force:
+                        refused += 1
+                        print(f"  REFUSED (objects missing, not marked): {path.name}")
+                        for kind, name in missing:
+                            print(f"      missing {kind}: {name}")
+                        continue
+                    if not expected:
+                        print(
+                            f"  Marked applied (SQL NOT run, UNVERIFIED -- no recognizable "
+                            f"CREATE TABLE/FUNCTION/ROLE or ADD CONSTRAINT found): {path.name}"
+                        )
+                    else:
+                        print(f"  Marked applied (SQL NOT run, verified): {path.name}")
                     cur.execute(
                         "INSERT INTO public._migrations (filename) VALUES (%s) "
                         "ON CONFLICT (filename) DO NOTHING",
                         (path.name,),
                     )
-                    print(f"  Marked applied (SQL NOT run): {path.name}")
+                    marked += 1
             conn.commit()
-            print(f"\n{len(pending)} file(s) marked applied.")
+            print(f"\n{marked} file(s) marked applied, {refused} refused (missing objects).")
+            if refused:
+                print(
+                    "Re-run with --force only after confirming why those objects are "
+                    "missing -- do not use --force to silence this without checking."
+                )
+                sys.exit(1)
             return
 
         if not pending:
