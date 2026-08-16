@@ -75,10 +75,13 @@ outputs/
 # Web frontend local env — contains real Supabase/API keys
 web/.env.local
 
-# Terraform — provider cache and state (state must stay local or in GCS backend)
+# Terraform — provider cache and state (state must stay local or in GCS backend). Glob, not
+# exact filenames -- moving the killswitch between projects produces per-project copies by
+# hand (terraform.tfstate.review-iq-prod.bak etc.) that matched neither exact name and sat
+# untracked AND unignored, one `git add -A` away from committing infra state into a public
+# repo. This glob covers the live state, its .backup, and any hand-made per-project copy.
 ops/budget-killswitch/.terraform/
-ops/budget-killswitch/terraform.tfstate
-ops/budget-killswitch/terraform.tfstate.backup
+ops/budget-killswitch/*.tfstate*
 ops/budget-killswitch/.build/
 
 # Cloudflare Wrangler local cache (demo deploy tooling) — build artifact, not source
