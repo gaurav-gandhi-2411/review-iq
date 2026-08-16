@@ -189,10 +189,20 @@ class TestGoogleBusinessInstallationsRLS:
     # ------------------------------------------------------------------
 
     def test_authenticated_same_org_insert_blocked_by_rls(self, org_ids: tuple[str, str]) -> None:
-        """authenticated INSERT is blocked by RLS even for same-org rows.
+        """authenticated INSERT is blocked even for same-org rows.
 
         The OAuth callback writes as service-role (postgres, no SET ROLE). Direct
         authenticated INSERT is structurally blocked regardless of the org_id value.
+
+        Wave 1 grant narrowing (20260817000002, Item 208) revoked INSERT from
+        authenticated on this table entirely (upsert_google_installation, the only
+        writer, runs as review_iq_migrator via SECURITY DEFINER, never as
+        authenticated). Postgres checks table privileges before evaluating RLS, so
+        the block now surfaces as a grant-layer InsufficientPrivilege rather than an
+        RLS policy violation -- a strictly earlier and stronger deny, not a weaker
+        one. This test previously asserted the block came specifically from RLS
+        (no INSERT policy); that assertion is now moot since there is no INSERT
+        grant left for RLS to be reached.
         """
         org_a, _ = org_ids
 
@@ -212,18 +222,20 @@ class TestGoogleBusinessInstallationsRLS:
                         _FAKE_ENC_REFRESH_TOKEN,
                     ),
                 )
-            assert "row-level security policy" in str(exc_info.value), (
-                "Block must come from RLS (no INSERT policy), not the grant layer"
+            assert "permission denied" in str(exc_info.value), (
+                "Block must come from the grant layer -- authenticated holds no INSERT"
             )
             conn.rollback()
         finally:
             conn.close()
 
     def test_authenticated_cross_org_insert_blocked_by_rls(self, org_ids: tuple[str, str]) -> None:
-        """Cross-org INSERT (org A session, org B's org_id) is also blocked by RLS.
+        """Cross-org INSERT (org A session, org B's org_id) is also blocked.
 
         Both attacks fail structurally — the block is not contingent on the org_id
         value, so there is no way to enumerate org_ids to find an exploitable path.
+        See test_authenticated_same_org_insert_blocked_by_rls for why this is now a
+        grant-layer block rather than an RLS block (Item 208, Wave 1).
         """
         org_a, org_b = org_ids
 
@@ -243,8 +255,8 @@ class TestGoogleBusinessInstallationsRLS:
                         _FAKE_ENC_REFRESH_TOKEN,
                     ),
                 )
-            assert "row-level security policy" in str(exc_info.value), (
-                "Cross-org block must also be RLS, not grant-layer"
+            assert "permission denied" in str(exc_info.value), (
+                "Cross-org block must also be grant-layer -- authenticated holds no INSERT"
             )
             conn.rollback()
         finally:
