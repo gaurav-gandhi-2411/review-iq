@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Upload, AlertTriangle, Heart } from 'lucide-react'
+import { Upload, AlertTriangle, Heart, Sparkles } from 'lucide-react'
 import Layout from '../components/Layout'
 import FilterBar from '../components/FilterBar'
 import ErrorBox from '../components/ErrorBox'
@@ -49,7 +49,10 @@ export default function DashboardPage() {
         )}
 
         {!loading && !loadError && total === 0 && !hasActiveFilters && (
-          <EmptyState onUpload={() => navigate('/upload')} />
+          <EmptyState
+            onUpload={() => navigate('/upload')}
+            onTrySample={() => navigate('/upload?sample=1')}
+          />
         )}
 
         {!loading && !loadError && total === 0 && hasActiveFilters && (
@@ -290,7 +293,7 @@ function TopicCard({
   )
 }
 
-function EmptyState({ onUpload }: { onUpload: () => void }) {
+function EmptyState({ onUpload, onTrySample }: { onUpload: () => void; onTrySample: () => void }) {
   return (
     <div className="text-center py-16">
       <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-light mb-6">
@@ -300,12 +303,20 @@ function EmptyState({ onUpload }: { onUpload: () => void }) {
       <p className="text-sm text-charcoal-light font-sans max-w-xs mx-auto leading-relaxed mb-6">
         Upload your first batch of customer reviews to see what people actually think about your products.
       </p>
-      <button
-        onClick={onUpload}
-        className="inline-flex items-center gap-2 bg-green hover:bg-green-muted text-white text-sm font-sans font-medium py-3 px-6 rounded-lg transition-colors"
-      >
-        <Upload size={15} /> Upload your first reviews
-      </button>
+      <div className="flex items-center justify-center gap-3">
+        <button
+          onClick={onUpload}
+          className="inline-flex items-center gap-2 bg-green hover:bg-green-muted text-white text-sm font-sans font-medium py-3 px-6 rounded-lg transition-colors"
+        >
+          <Upload size={15} /> Upload your first reviews
+        </button>
+        <button
+          onClick={onTrySample}
+          className="inline-flex items-center gap-1.5 text-sm font-sans text-charcoal-light hover:text-charcoal font-medium transition-colors"
+        >
+          <Sparkles size={14} /> or try sample data
+        </button>
+      </div>
     </div>
   )
 }
