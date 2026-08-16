@@ -1,0 +1,70 @@
+name: Security — BYPASSRLS check (throwaway Postgres, no prod credential)
+
+# Item 135/136/142: supersedes security-bypassrls-check.yml -- that workflow needed a
+# production database credential (SUPABASE_DATABASE_URL) added to GitHub Actions
+# secrets, which was never done (see that workflow's own comments) and duplicates a
+# credential that already exists in GCP Secret Manager. This version applies the
+# repo's own tracked migrations to a throwaway postgres:16 service container instead --
+# no production credential anywhere in this workflow, ever.
+#
+# Confirmed feasible end-to-end (Item 135/141/142): the repo's schema lives entirely in
+# version-controlled migrations (supabase/migrations/), none of which depend on a
+# Supabase-managed extension or schema -- grepped for auth.*/pgjwt/pg_net/pgsodium/
+# realtime.* across all 26 migrations, found only two comments about *future*,
+# not-yet-wired-in auth integration. The only real gap (public.quota_requests and
+# public.extraction_costs existing in production but never captured in a migration)
+# is fixed on the branch this workflow ships alongside (Item 141).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "23 */6 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  bypassrls-check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Bootstrap Supabase-platform roles (anon, authenticated, service_role)
+        run: psql "postgresql://postgres:postgres@localhost:5432/postgres" -f supabase/bootstrap_local_roles.sql
+
+      - name: Apply all migrations
+        env:
+          SUPABASE_DIRECT_URL: postgresql://postgres:postgres@localhost:5432/postgres
+        run: uv run python supabase/push.py
+
+      - name: BYPASSRLS regression check (throwaway container, no prod credential)
+        env:
+          SUPABASE_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+        run: uv run pytest tests/integration/test_role_bypassrls.py -v -m integration --no-cov
