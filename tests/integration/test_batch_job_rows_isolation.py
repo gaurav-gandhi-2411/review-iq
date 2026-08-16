@@ -38,7 +38,7 @@ trusting exact-count assertions while unrelated pending rows exist.
 LIVE SCHEDULER RACE (found + fixed 2026-07-10): the quiescent_queue guard above
 only checks the queue is empty at test START -- it cannot protect against the
 LIVE `review-iq-ingest-tick` Cloud Scheduler job (fires every 2 minutes against
-the real deployed API, review-iq-prod project) claiming/processing one of a
+the real deployed API, reviewiq-prod-260813 project) claiming/processing one of a
 test's own rows mid-run via the SAME global drain_rows() claim query. Confirmed
 via Cloud Scheduler execution logs: firings at 15:44-15:52 UTC exactly
 overlapped a local suite run's 15:44-15:52 UTC window, producing two different
@@ -48,7 +48,7 @@ pauses the job for the whole test session and resumes it in a finally block,
 guaranteed even on test failure -- NOT guaranteed against a hard process kill
 (SIGKILL) mid-run, which would leave the job paused; if that happens, resume
 manually: `gcloud scheduler jobs resume review-iq-ingest-tick
---location=asia-south1 --project=review-iq-prod`.
+--location=asia-south1 --project=reviewiq-prod-260813`.
 """
 
 from __future__ import annotations
@@ -70,7 +70,7 @@ load_dotenv(Path(__file__).parents[2] / ".env")
 
 _SCHEDULER_JOB = "review-iq-ingest-tick"
 _SCHEDULER_LOCATION = "asia-south1"
-_SCHEDULER_PROJECT = "review-iq-prod"
+_SCHEDULER_PROJECT = "reviewiq-prod-260813"
 
 
 def _scheduler_cmd(action: str) -> str:
