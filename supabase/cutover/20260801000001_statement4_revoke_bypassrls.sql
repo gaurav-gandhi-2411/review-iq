@@ -1,0 +1,36 @@
+-- CUTOVER STATEMENT -- NOT applied by supabase/push.py. This directory is deliberately
+-- outside push.py's `supabase/migrations/*.sql` glob (Item 172/173) so this statement can
+-- never fire as a side effect of an unrelated push.py run.
+--
+-- This is statement 4 of the original
+-- supabase/migrations/20260801000001_role_separation_bypassrls_remediation.sql (split out
+-- 2026-08-16 -- see that file's own header for why). It is the single core fix for the S0
+-- BYPASSRLS finding: review_iq_app must not hold BYPASSRLS. Do NOT run this until:
+--
+--   1. Statements 1, 2, 3, 5, 6 of 20260801000001 are confirmed live (they already are as
+--      of 2026-08-16 -- re-verify with ops/runbooks/bypassrls-cutover-status.md's
+--      mandatory pre-write check before trusting that).
+--   2. The application code that no longer depends on review_iq_app holding BYPASSRLS is
+--      DEPLOYED (not just merged) to both Cloud Run services -- see
+--      scripts/check_cloud_run_deploy_is_from_main.py and
+--      ops/runbooks/bypassrls-remediation-cutover.md step 1/2 for how to confirm this.
+--      This includes PR #68's session.py/signup.py/account.py/api_key.py resolver
+--      rewrite -- without it, this statement breaks login/signup/account/API-key traffic
+--      immediately (RLS AND-combines with a query's own WHERE clause; those paths never
+--      call _set_tenant(), so every row is filtered out the moment BYPASSRLS is gone).
+--
+-- Run manually, standalone, never bundled with any other statement:
+--   psql "$SUPABASE_DIRECT_URL" -f supabase/cutover/20260801000001_statement4_revoke_bypassrls.sql
+--
+-- Immediately after, re-run tests/integration/test_role_bypassrls.py against production and
+-- watch real traffic on the six paths above. Rollback (single statement, no deploy needed):
+--   ALTER ROLE review_iq_app BYPASSRLS;
+--
+-- This statement is naturally idempotent (setting the same role attribute twice is
+-- harmless) -- the danger this file's existence guards against was never "this statement
+-- itself is unsafe to re-run," it was "this statement used to be bundled with unrelated,
+-- always-safe statements in a file push.py re-applies on every invocation, so it could fire
+-- at the wrong TIME, before its prerequisite was ready." Isolating it here makes running it
+-- a separate, explicit, deliberate act instead of a side effect.
+
+ALTER ROLE review_iq_app NOBYPASSRLS;

@@ -1,6 +1,9 @@
--- Migration: role separation to close the BYPASSRLS reachability finding (S0). NOT applied
--- by this session -- see ops/runbooks/bypassrls-remediation-cutover.md for the exact
--- sequence this must be run in; order matters (see statement 4's own comment).
+-- Migration: role separation to close the BYPASSRLS reachability finding (S0). Statements
+-- 1/2/3/5/6 below are confirmed live in production (re-verified 2026-08-16, Item 164/170)
+-- and are the only statements this file (and push.py's normal glob) still touches --
+-- statement 4, the actual bypass revocation, moved to supabase/cutover/ (Item 172/173),
+-- see that file and ops/runbooks/bypassrls-remediation-cutover.md for the full sequencing
+-- history, including a 2026-08-01 apply that was later reverted and is not yet re-applied.
 --
 -- Recovered and adapted from the original attempt at this fix (PR #33,
 -- fix/wave1-s0-bypassrls-remediation), which was merged into a stacked branch that never
@@ -162,12 +165,20 @@ REVOKE ALL ON FUNCTION public.resolve_org_for_shopify_shop FROM PUBLIC, anon, au
 GRANT EXECUTE ON FUNCTION public.resolve_org_for_shopify_shop TO review_iq_app;
 
 -- ---------------------------------------------------------------------------
--- 4. Revoke BYPASSRLS from review_iq_app -- THE core fix. Must be the LAST statement
---    applied, after the code changes that stop relying on it are already deployed (a
---    sequencing requirement, not a database-logic one) -- see the cutover runbook.
+-- 4. Revoke BYPASSRLS from review_iq_app -- THE core fix. MOVED OUT of this file
+--    2026-08-16 (Item 172/173) -- see supabase/cutover/
+--    20260801000001_statement4_revoke_bypassrls.sql. This file's migrations/ directory
+--    is fully re-applied by supabase/push.py on every invocation (no ledger existed
+--    before this pass, and even with one, this statement is sequencing-sensitive in a
+--    way none of this file's other statements are -- it must not fire until the app-code
+--    prerequisite is deployed, which push.py has no way to check). Bundling a
+--    must-not-fire-early statement in the same file as five safe, always-idempotent ones
+--    meant anyone running push.py for an unrelated reason (e.g. syncing an out-of-band
+--    capture migration) would silently flip this too. The cutover/ directory is outside
+--    push.py's supabase/migrations/*.sql glob on purpose -- applying it is now a
+--    separate, explicit, deliberate act. See the cutover runbook and
+--    ops/runbooks/bypassrls-cutover-status.md for the pre-write check to run first.
 -- ---------------------------------------------------------------------------
-
-ALTER ROLE review_iq_app NOBYPASSRLS;
 
 -- ---------------------------------------------------------------------------
 -- 5. api_keys.key_prefix -- UNIQUE constraint (found during the same remediation pass,
