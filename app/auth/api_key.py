@@ -25,6 +25,7 @@ from fastapi import HTTPException, Security, status
 from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBearer
 
 from app.core.config import get_settings
+from app.core.storage_pg import _set_tenant
 
 _BEARER = HTTPBearer(auto_error=False)
 _API_KEY_HEADER = APIKeyHeader(name="X-API-Key", auto_error=False)
@@ -52,8 +53,13 @@ def _db_connect() -> psycopg2.extensions.connection:
 def _lookup_and_record(raw_key: str) -> ApiKeyContext:
     """Sync: prefix lookup → argon2id verify → monthly quota check → usage record.
 
-    SELECT FOR UPDATE on the api_keys row serializes concurrent requests for the
-    same key, preventing over-admission without a TOCTOU race.
+    Two-step org resolution (BYPASSRLS remediation 2c), same pattern as the webhook fix
+    (PR #61): org_id is unknown from a bare key_prefix, so step 1 calls
+    public.resolve_org_for_api_key_prefix() (narrow SECURITY DEFINER, returns ONLY
+    org_id) before review_iq_app can be RLS-scoped at all. Step 2 calls _set_tenant()
+    and re-fetches the actual row -- THIS is where the FOR UPDATE row lock is taken,
+    serializing concurrent requests for the same key exactly as before; key_prefix's
+    UNIQUE constraint (api_keys_key_prefix_key) guarantees both queries see the same row.
 
     Run via asyncio.to_thread — never call directly from async code.
     """
@@ -61,12 +67,26 @@ def _lookup_and_record(raw_key: str) -> ApiKeyContext:
     conn.autocommit = False
     try:
         cur = conn.cursor()
+        key_prefix = raw_key[:_KEY_PREFIX_LEN]
 
-        # 1. Prefix lookup with row lock — serializes concurrent quota checks
+        # 1. Resolve org_id from the bare prefix — no lock, no bypass needed.
+        cur.execute("SELECT public.resolve_org_for_api_key_prefix(%s)", (key_prefix,))
+        resolved = cur.fetchone()
+        org_id = resolved[0] if resolved else None
+        if org_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="API key not found.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        # 2. RLS-scoped re-fetch, row-locked — serializes concurrent quota checks.
+        _set_tenant(cur, str(org_id))
         cur.execute(
             "SELECT id, org_id, name, key_hash, quota "
-            "FROM public.api_keys WHERE key_prefix = %s AND revoked_at IS NULL FOR UPDATE",
-            (raw_key[:_KEY_PREFIX_LEN],),
+            "FROM public.api_keys WHERE key_prefix = %s AND org_id = %s "
+            "AND revoked_at IS NULL FOR UPDATE",
+            (key_prefix, str(org_id)),
         )
         row = cur.fetchone()
         if row is None:
