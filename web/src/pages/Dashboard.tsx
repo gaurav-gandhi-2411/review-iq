@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { Upload, AlertTriangle, Heart } from 'lucide-react'
 import Layout from '../components/Layout'
 import FilterBar from '../components/FilterBar'

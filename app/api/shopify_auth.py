@@ -198,25 +198,23 @@ async def _register_webhook(shop_domain: str, access_token: str, settings: Any) 
 
 
 def _upsert_installation_pg(org_id: str, shop_domain: str, access_token_enc: str) -> None:
-    """Service-role (postgres, no SET ROLE) upsert into shopify_installations.
+    """Upsert into shopify_installations via a narrow SECURITY DEFINER function
+    (BYPASSRLS remediation 2c, corrected 2026-08-01).
 
-    ON CONFLICT (shop_domain) handles re-installs: clears revoked_at and rotates the
-    encrypted token. org_id is ALWAYS caller-resolved from the verified JWT — never
-    accepted as a user param.
+    A _set_tenant()-only fix does NOT work here, unlike every other write in this
+    remediation: `authenticated` holds only a SELECT policy on this table (see
+    20260622000001_shopify_installations.sql), never INSERT/UPDATE -- proven live
+    against an ephemeral Postgres instance with NOBYPASSRLS applied ("new row
+    violates row-level security policy"). public.upsert_shopify_installation() does
+    the INSERT ... ON CONFLICT DO UPDATE under the function owner's privileges;
+    review_iq_app only needs EXECUTE on it, not a table grant. org_id is ALWAYS
+    caller-resolved from the verified JWT — never accepted as a user param.
     """
     conn = psycopg2.connect(get_settings().supabase_database_url)
     try:
         cur = conn.cursor()
         cur.execute(
-            """
-            INSERT INTO public.shopify_installations (org_id, shop_domain, access_token_enc)
-            VALUES (%s, %s, %s)
-            ON CONFLICT (shop_domain)
-            DO UPDATE SET
-                access_token_enc = EXCLUDED.access_token_enc,
-                revoked_at       = NULL,
-                installed_at     = now()
-            """,
+            "SELECT public.upsert_shopify_installation(%s, %s, %s)",
             (org_id, shop_domain, access_token_enc),
         )
         conn.commit()

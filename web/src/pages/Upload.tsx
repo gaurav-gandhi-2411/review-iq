@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { Upload, FileText, CheckCircle, Loader2, X } from 'lucide-react'
 import Layout from '../components/Layout'
 import ErrorBox from '../components/ErrorBox'

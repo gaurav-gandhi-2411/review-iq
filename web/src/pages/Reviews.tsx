@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { ChevronRight, AlertTriangle, Upload, Download, Loader2 } from 'lucide-react'
 import Layout from '../components/Layout'
 import FilterBar from '../components/FilterBar'

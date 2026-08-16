@@ -69,6 +69,14 @@ async def _claim_one_row() -> tuple[str, str, bool] | None:
     overlapping ticks) structurally unable to double-process the same row —
     releasing the lock before processing would reopen that race.
 
+    Claim and settle both go through narrow SECURITY DEFINER functions
+    (BYPASSRLS remediation 2c) -- this claim must see pending rows across ALL
+    orgs, which no per-org RLS policy expression can do; see
+    public.claim_pending_batch_job_row()'s own migration comment for why a
+    _set_tenant()-based fix does not work here. Both calls run on this same
+    connection/transaction, so the claim's row lock is held until settle
+    commits, exactly as it was when this was a single raw SELECT ... UPDATE.
+
     Returns (org_id, job_id, ok) for the row that was claimed, or None if no
     row was pending.
     """
@@ -76,12 +84,7 @@ async def _claim_one_row() -> tuple[str, str, bool] | None:
     conn = await asyncio.to_thread(psycopg2.connect, settings.supabase_database_url)
     try:
         cur = conn.cursor()
-        await asyncio.to_thread(
-            cur.execute,
-            "SELECT job_id, row_index, org_id, text, product, review_date "
-            "FROM public.batch_job_rows "
-            "WHERE status = 'pending' ORDER BY updated_at LIMIT 1 FOR UPDATE SKIP LOCKED",
-        )
+        await asyncio.to_thread(cur.execute, "SELECT * FROM public.claim_pending_batch_job_row()")
         row = await asyncio.to_thread(cur.fetchone)
         if row is None:
             await asyncio.to_thread(conn.commit)
@@ -130,9 +133,8 @@ async def _claim_one_row() -> tuple[str, str, bool] | None:
 
         await asyncio.to_thread(
             cur.execute,
-            "UPDATE public.batch_job_rows SET status = %s, error = %s, input_hash = %s, "
-            "updated_at = now() WHERE job_id = %s AND row_index = %s",
-            ("done" if ok else "failed", error, input_hash or None, job_id, row_index),
+            "SELECT public.settle_batch_job_row(%s, %s, %s, %s, %s)",
+            (job_id, row_index, "done" if ok else "failed", error, input_hash or None),
         )
         await asyncio.to_thread(conn.commit)
         return (org_id, job_id, ok)
