@@ -10,6 +10,7 @@ from pydantic import BaseModel
 
 from app.auth.keygen import generate_api_key
 from app.auth.signup import _db_connect, verify_supabase_jwt
+from app.core.storage_pg import _set_tenant
 
 router = APIRouter(prefix="/account", tags=["account"])
 log = structlog.get_logger(__name__)
@@ -32,21 +33,34 @@ async def _require_user_id(authorization: str) -> str:
 
 
 def _fetch_account(user_id: str) -> dict[str, object]:
+    """Two-step org resolution (BYPASSRLS remediation 2c): resolve_org_for_user()
+    first (narrow SECURITY DEFINER, returns ONLY org_id) since org_id is unknown
+    from a bare user_id, then _set_tenant() before the real, RLS-scoped reads."""
     conn = _db_connect()
     try:
         cur = conn.cursor()
+        cur.execute("SELECT public.resolve_org_for_user(%s)", (user_id,))
+        resolved = cur.fetchone()
+        org_id_raw = resolved[0] if resolved else None
+        if org_id_raw is None:
+            conn.commit()
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No account found. Complete sign-up first via POST /auth/provision.",
+            )
+
+        _set_tenant(cur, str(org_id_raw))
         cur.execute(
             """
             SELECT ak.key_prefix, ak.quota, ak.id as key_id, o.id as org_id, o.slug
-            FROM public.organization_members om
-            JOIN public.organizations o ON o.id = om.org_id
+            FROM public.organizations o
             JOIN public.api_keys ak
                    ON ak.org_id = o.id AND ak.revoked_at IS NULL
-            WHERE om.user_id = %s
+            WHERE o.id = %s
             ORDER BY ak.created_at DESC
             LIMIT 1
             """,
-            (user_id,),
+            (str(org_id_raw),),
         )
         row = cur.fetchone()
         if row is None:
@@ -85,24 +99,37 @@ def _fetch_account(user_id: str) -> dict[str, object]:
 
 
 def _do_regenerate(user_id: str) -> dict[str, object]:
-    """Revoke current key; issue a new riq_live_ key. raw_key shown once."""
+    """Revoke current key; issue a new riq_live_ key. raw_key shown once.
+
+    Two-step org resolution (BYPASSRLS remediation 2c) -- same pattern as
+    _fetch_account.
+    """
     raw_key, key_prefix, key_hash = generate_api_key()
 
     conn = _db_connect()
     try:
         cur = conn.cursor()
+        cur.execute("SELECT public.resolve_org_for_user(%s)", (user_id,))
+        resolved = cur.fetchone()
+        org_id_raw = resolved[0] if resolved else None
+        if org_id_raw is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No active key to regenerate. Complete sign-up first.",
+            )
+
+        _set_tenant(cur, str(org_id_raw))
         cur.execute(
             """
             SELECT ak.id, o.id as org_id
-            FROM public.organization_members om
-            JOIN public.organizations o ON o.id = om.org_id
+            FROM public.organizations o
             JOIN public.api_keys ak
                    ON ak.org_id = o.id AND ak.revoked_at IS NULL
-            WHERE om.user_id = %s
+            WHERE o.id = %s
             ORDER BY ak.created_at DESC
             LIMIT 1
             """,
-            (user_id,),
+            (str(org_id_raw),),
         )
         row = cur.fetchone()
         if row is None:
@@ -141,26 +168,26 @@ def _get_org_id_and_slug(user_id: str) -> tuple[str, str] | None:
 
     Same membership-resolution pattern as _fetch_account -- org_id is NEVER taken
     from a request parameter, only ever resolved server-side from the verified
-    JWT's user_id via organization_members.
+    JWT's user_id via organization_members. Two-step (BYPASSRLS remediation 2c):
+    resolve_org_for_user() first, then _set_tenant() before reading the slug.
     """
     conn = _db_connect()
     try:
         cur = conn.cursor()
-        cur.execute(
-            """
-            SELECT o.id, o.slug
-            FROM public.organization_members om
-            JOIN public.organizations o ON o.id = om.org_id
-            WHERE om.user_id = %s
-            LIMIT 1
-            """,
-            (user_id,),
-        )
+        cur.execute("SELECT public.resolve_org_for_user(%s)", (user_id,))
+        resolved = cur.fetchone()
+        org_id_raw = resolved[0] if resolved else None
+        if org_id_raw is None:
+            conn.commit()
+            return None
+
+        _set_tenant(cur, str(org_id_raw))
+        cur.execute("SELECT slug FROM public.organizations WHERE id = %s", (str(org_id_raw),))
         row = cur.fetchone()
         conn.commit()
         if row is None:
             return None
-        return str(row[0]), row[1]
+        return str(org_id_raw), row[0]
     except Exception:
         conn.rollback()
         raise
@@ -198,6 +225,7 @@ def _do_delete_org(user_id: str, confirm_slug: str) -> None:
     conn = _db_connect()
     try:
         cur = conn.cursor()
+        _set_tenant(cur, org_id)
         log.warning("account.delete_requested", org_id=org_id, slug=actual_slug, user_id=user_id)
         cur.execute("DELETE FROM public.organizations WHERE id = %s", (org_id,))
         deleted = cur.rowcount

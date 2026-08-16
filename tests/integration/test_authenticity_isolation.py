@@ -1,7 +1,7 @@
 """Cross-tenant isolation tests for authenticity_audits.
 
 Tests BOTH read isolation and insert isolation (WITH CHECK enforcement).
-Requires: live Supabase DB, SUPABASE_DIRECT_URL in env, valid admin creds.
+Requires: live Supabase DB, SUPABASE_DIRECT_URL in env.
 Run: uv run pytest tests/integration/test_authenticity_isolation.py -v -m integration
 """
 
@@ -15,7 +15,6 @@ import psycopg2
 import psycopg2.errors
 import pytest
 from dotenv import load_dotenv
-from fastapi.testclient import TestClient
 
 load_dotenv(Path(__file__).parents[2] / ".env")
 
@@ -23,30 +22,34 @@ from app.core.storage_pg import (  # noqa: E402
     count_authenticity_audits_pg,
     save_authenticity_audit_pg,
 )
-from app.main import app  # noqa: E402
-
-_USERNAME = os.environ["ADMIN_USERNAME"]
-_PASSWORD = os.environ["TEST_ADMIN_PASSWORD"]
-_AUTH = (_USERNAME, _PASSWORD)
-
-client = TestClient(app, raise_server_exceptions=True)
-
 
 # ---------------------------------------------------------------------------
 # Helpers
+#
+# Orgs are seeded via a direct DB write, never through /admin/organizations --
+# that endpoint is only mounted by the separate admin service (ADR 0006) and was
+# never actually reachable from this file's own TestClient import of app.main.app
+# (a module-level singleton that mounts admin_router XOR the public routes this
+# file doesn't even use, based on SERVICE_ROLE at import time). This file never
+# hits the HTTP API at all -- it tests RLS directly via app/core/storage_pg.py
+# and raw psycopg2, so an app instance was never actually needed here.
 # ---------------------------------------------------------------------------
 
 
 def _create_org(suffix: str) -> dict:
-    """Create a fresh org via the admin API and return the JSON response."""
+    org_id = str(uuid.uuid4())
     slug = f"audit-{suffix}-{uuid.uuid4().hex[:6]}"
-    r = client.post(
-        "/admin/organizations",
-        json={"name": f"Audit {suffix}", "slug": slug},
-        auth=_AUTH,
-    )
-    assert r.status_code == 201, r.text
-    return r.json()
+    conn = psycopg2.connect(os.environ["SUPABASE_DIRECT_URL"])
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO public.organizations (id, name, slug) VALUES (%s, %s, %s)",
+            (org_id, f"Audit {suffix}", slug),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+    return {"id": org_id, "name": f"Audit {suffix}", "slug": slug}
 
 
 def _teardown_org(org_id: str) -> None:

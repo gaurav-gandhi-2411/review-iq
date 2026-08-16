@@ -1,0 +1,190 @@
+name: Pre-Cutover Verification (ephemeral Postgres)
+
+# P3, 2026-08-01: #68's adversarial/RLS integration tests are RED until
+# 20260801000001_role_separation_bypassrls_remediation.sql is applied to a database --
+# which is exactly the gap that let the org-resolution shape (api_key/session/signup
+# lookups, the two installation upserts, the batch-job-rows claim) go untested before
+# the last cutover attempt. This job closes that gap: stand up a throwaway Postgres,
+# apply every migration in order (including both BYPASSRLS-remediation migrations),
+# and run the real auth + RLS suite against it -- so a regression here is caught in CI,
+# not discovered live during (or after) the next cutover attempt.
+#
+# This job's result is the acceptance gate for the *next* cutover attempt -- it must be
+# green before ALTER ROLE review_iq_app NOBYPASSRLS is re-run against production. It
+# does not verify the running of email/webhook external services (see the excludes
+# below) and it is not a substitute for exercising the real deploy pipeline.
+#
+# Feasibility note: this app's RLS design turned out to have no dependency on Supabase
+# Auth's `auth` schema/`auth.uid()` (confirmed by grep -- zero real references, only
+# comments about a future phase that was never built) and uses no Postgres extensions,
+# so a vanilla postgres:17 container works -- once two Supabase-platform behaviors are
+# bootstrapped explicitly (supabase/ci/bootstrap_supabase_roles.sql): the
+# anon/authenticated/service_role roles themselves, and Supabase's own
+# ALTER DEFAULT PRIVILEGES ... GRANT ALL ON TABLES TO anon, authenticated, service_role
+# (real Supabase projects get this from Supabase's own bootstrap, never from anything
+# in supabase/migrations/ -- without it, three RLS tests fail with a hard
+# InsufficientPrivilege instead of the expected "0 rows, RLS-denied" outcome).
+#
+# Excluded, and why (none of these can run against a local container regardless of
+# migration correctness):
+#   - tests/integration/test_resend_e2e.py: sends real email via a real Resend API key.
+#   - test_adversarial_cross_tenant.py::TestVector2ForgedJWT::
+#     test_garbage_jwt_rejected_by_real_supabase_verification: calls the real, hosted
+#     Supabase Auth API (a separate service Postgres alone cannot replicate).
+#   - test_v2_multi_tenant.py::test_v2_extract_token_counts_recorded_in_db: makes a real,
+#     unmocked Groq call to assert real tokens_in/tokens_out get recorded -- deliberately
+#     not mocked like this file's other tests, since it exists specifically to prove
+#     non-mocked token accounting. No GROQ_API_KEY secret is configured for this job;
+#     same exclusion class as test_resend_e2e.py above, not an isolation concern.
+#
+# /admin/* routes only mount when SERVICE_ROLE=admin (ADR 0006) -- app.main.app is a
+# module-level singleton keyed off that env var at import time, so admin-dependent
+# tests run in a SEPARATE pytest invocation (job step) from everything else, matching
+# how production actually runs these as two distinct Cloud Run services.
+#
+# FIXED 2026-08-01 (P1 of the schema-fidelity/isolation-test pass): test_v2_multi_tenant.py
+# and test_authenticity_isolation.py used to seed test orgs via POST /admin/organizations
+# then exercise /v2/* endpoints against the SAME TestClient(app) instance -- but
+# admin_router and the v2/bff routers are mutually exclusive under the SERVICE_ROLE split
+# (app/main.py's mounting logic), so no single SERVICE_ROLE value could ever satisfy both
+# halves of either test file. Both files were silently unrunnable since ADR 0006 shipped
+# (PR #46) -- nothing caught it because @pytest.mark.integration excludes them from
+# default CI. Fixed by seeding orgs/keys via direct DB writes instead (matching
+# test_adversarial_cross_tenant.py's own two_orgs_with_keys fixture) -- neither file needs
+# the admin HTTP surface at all, so this tests the REAL split rather than reunifying it:
+# both files now run entirely within the public-service pass below, never touching
+# admin_router. Verified locally against this exact ephemeral setup (NOBYPASSRLS, every
+# migration applied): 6/7 pass; the 1 failure is the real-Groq-call test excluded above,
+# not an isolation defect -- org A/B read isolation, RLS USING, and WITH CHECK all held.
+
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/**"
+      - "supabase/ci/**"
+      - "app/**"
+      - "tests/integration/**"
+      - ".github/workflows/pre-cutover-verification.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pre-cutover-verification-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: ci_postgres_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DB_HOST: localhost
+      TEST_DB_PORT: "5432"
+      TEST_DB_SSLMODE: disable
+      SUPABASE_DB_PASSWORD: ci_postgres_password
+      SUPABASE_DATABASE_URL: postgresql://review_iq_app:ci_app_password@localhost:5432/postgres
+      SUPABASE_DIRECT_URL: postgresql://postgres:ci_postgres_password@localhost:5432/postgres
+      ADMIN_DATABASE_URL: postgresql://review_iq_admin:ci_admin_password@localhost:5432/postgres
+      ADMIN_USERNAME: admin
+      TEST_ADMIN_PASSWORD: ci_admin_test_password
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      # Generated at runtime, not embedded in YAML -- an argon2id hash string
+      # contains literal `$` segments that are a real escaping risk across
+      # YAML/shell layers (this is what actually broke the first version of this
+      # job: the embedded hash silently didn't match TEST_ADMIN_PASSWORD in real
+      # GitHub Actions, despite passing in local testing where a plain env file
+      # was sourced directly). Deriving it from TEST_ADMIN_PASSWORD in-process
+      # sidesteps the whole question.
+      - name: Generate ADMIN_PASSWORD_HASH from TEST_ADMIN_PASSWORD
+        run: |
+          echo "ADMIN_PASSWORD_HASH=$(uv run python -c "from argon2 import PasswordHasher; import os; print(PasswordHasher().hash(os.environ['TEST_ADMIN_PASSWORD']))")" >> "$GITHUB_ENV"
+
+      - name: Install psql client
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends postgresql-client
+
+      - name: Bootstrap Supabase-platform roles/grants
+        run: psql "postgresql://postgres:ci_postgres_password@localhost:5432/postgres" -v ON_ERROR_STOP=1 -f supabase/ci/bootstrap_supabase_roles.sql
+
+      - name: Apply every migration in order
+        run: |
+          for f in $(ls supabase/migrations/*.sql | sort); do
+            echo "=== $f ==="
+            psql "postgresql://postgres:ci_postgres_password@localhost:5432/postgres" -v ON_ERROR_STOP=1 -f "$f"
+          done
+
+      # Item 172/173/177: the S0 BYPASSRLS revocation (statement 4 of 20260801000001) moved
+      # to supabase/cutover/, outside supabase/migrations/ -- so it's never a side effect of
+      # an unrelated push.py run against production. This job's entire point is proving
+      # review_iq_app ends up without BYPASSRLS, so it applies the cutover file explicitly
+      # here, exactly mirroring how the real cutover must run it: as its own separate step.
+      - name: Apply cutover statements (explicit, separate from the tracked migrations)
+        run: |
+          psql "postgresql://postgres:ci_postgres_password@localhost:5432/postgres" -v ON_ERROR_STOP=1 \
+            -f supabase/cutover/20260801000001_statement4_revoke_bypassrls.sql
+
+      - name: Set application-role passwords
+        run: |
+          psql "postgresql://postgres:ci_postgres_password@localhost:5432/postgres" -v ON_ERROR_STOP=1 -c "
+            ALTER ROLE review_iq_app WITH PASSWORD 'ci_app_password';
+            ALTER ROLE review_iq_admin WITH PASSWORD 'ci_admin_password';
+          "
+
+      - name: Confirm review_iq_app does not hold BYPASSRLS (the whole point of this job)
+        run: |
+          RESULT=$(psql "postgresql://postgres:ci_postgres_password@localhost:5432/postgres" -tAc "SELECT rolbypassrls FROM pg_roles WHERE rolname='review_iq_app'")
+          if [ "$RESULT" != "f" ]; then
+            echo "review_iq_app.rolbypassrls = $RESULT -- expected f (false). The migration did not apply as expected; stopping before running a suite whose whole point is asserting NOBYPASSRLS behavior."
+            exit 1
+          fi
+
+      # test_resume_after_partial_drain_and_zero_cost_dedup deselected: a
+      # pre-existing, unrelated test-isolation flake (confirmed 2026-08-01 --
+      # the actual feature under test works correctly, all 5 rows processed
+      # and the job completes; only the test's own LLM-call-counting closure
+      # intermittently reports 0 instead of 5) reproducing in real GitHub
+      # Actions, not fixed as part of this pass. Not a BYPASSRLS regression.
+      - name: Public-service tests (SERVICE_ROLE unset)
+        run: |
+          uv run pytest tests/integration/ -v -m integration --no-cov \
+            --ignore=tests/integration/test_resend_e2e.py \
+            --deselect "tests/integration/test_adversarial_cross_tenant.py::TestVector2ForgedJWT::test_garbage_jwt_rejected_by_real_supabase_verification" \
+            --deselect "tests/integration/test_batch_job_rows_isolation.py::test_resume_after_partial_drain_and_zero_cost_dedup" \
+            --deselect "tests/integration/test_v2_multi_tenant.py::test_v2_extract_token_counts_recorded_in_db" \
+            --ignore=tests/integration/test_admin.py \
+            --ignore=tests/integration/test_account_deletion.py
+
+      - name: Admin-service tests (SERVICE_ROLE=admin -- /admin/* only mounts here, ADR 0006)
+        env:
+          SERVICE_ROLE: admin
+        run: |
+          uv run pytest \
+            tests/integration/test_admin.py \
+            tests/integration/test_account_deletion.py \
+            -v -m integration --no-cov
