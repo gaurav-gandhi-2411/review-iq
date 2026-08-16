@@ -86,6 +86,64 @@ _EXISTENCE_SQL = {
     "constraint": "SELECT EXISTS(SELECT 1 FROM pg_constraint WHERE conname = %s)",
 }
 
+# Item 203c/204: a file whose only statements are REVOKE ALL / GRANT (a grant-narrowing
+# migration, e.g. 20260817000001_extraction_costs_grant_narrowing.sql) has no CREATE
+# TABLE/FUNCTION/ROLE/ADD CONSTRAINT for _expected_objects above to find -- confirmed
+# directly on a container that such a file falls into the "no recognizable objects"
+# UNVERIFIED branch and --mark-applied-all marks it applied with zero verification.
+# That is a real, demonstrated gap, same failure class as Item 176c: a file that was
+# never actually run gets silently recorded as if it had been. A REVOKE ALL ... FROM
+# <role> followed by a GRANT ... TO <role> is describing an EXACT target privilege
+# state for that (table, role) pair, not just "an object exists" -- checkable precisely
+# via information_schema.role_table_grants, not just a boolean existence check.
+_REVOKE_ALL_PATTERN = re.compile(r"REVOKE ALL ON public\.(\w+) FROM (\w+)", re.IGNORECASE)
+_GRANT_PATTERN = re.compile(r"GRANT ([\w\s,]+?) ON public\.(\w+) TO (\w+)", re.IGNORECASE)
+
+
+def _expected_grant_states(sql: str) -> list[tuple[str, str, frozenset[str]]]:
+    """Return (table, grantee, expected_privileges) for every (table, grantee) pair the
+    file explicitly resets via REVOKE ALL -- expected_privileges is the union of any
+    GRANT ... TO that same grantee for that same table found afterward (empty set if
+    none -- REVOKE ALL with no matching GRANT means "expect nothing granted").
+
+    PUBLIC is skipped -- information_schema.role_table_grants keys grantee by literal
+    role name and PUBLIC-grantee semantics differ from a named role's; not the focus of
+    this check, which exists for anon/authenticated-style narrowing.
+    """
+    code = _strip_sql_line_comments(sql)
+    reset_pairs: set[tuple[str, str]] = set()
+    for table, grantee in _REVOKE_ALL_PATTERN.findall(code):
+        if grantee.upper() != "PUBLIC":
+            reset_pairs.add((table, grantee))
+
+    granted: dict[tuple[str, str], set[str]] = {}
+    for privs, table, grantee in _GRANT_PATTERN.findall(code):
+        if grantee.upper() == "PUBLIC":
+            continue
+        priv_set = {p.strip().upper() for p in privs.split(",")}
+        granted.setdefault((table, grantee), set()).update(priv_set)
+
+    return [
+        (table, grantee, frozenset(granted.get((table, grantee), set())))
+        for table, grantee in reset_pairs
+    ]
+
+
+def _grant_mismatches(
+    cur: psycopg2.extensions.cursor, expected: list[tuple[str, str, frozenset[str]]]
+) -> list[tuple[str, str, frozenset[str], frozenset[str]]]:
+    mismatches = []
+    for table, grantee, expected_privs in expected:
+        cur.execute(
+            "SELECT privilege_type FROM information_schema.role_table_grants "
+            "WHERE table_schema='public' AND table_name=%s AND grantee=%s",
+            (table, grantee),
+        )
+        actual = frozenset(row[0] for row in cur.fetchall())
+        if actual != expected_privs:
+            mismatches.append((table, grantee, expected_privs, actual))
+    return mismatches
+
 
 def _strip_sql_line_comments(sql: str) -> str:
     """Strip `-- ...` line comments before object-name extraction.
@@ -159,7 +217,8 @@ def main() -> None:
         help="Record every migration file in the ledger without running its SQL "
         "(backfill for a database whose content already matches these files, applied "
         "out-of-band). Refuses to mark a file whose primary CREATE TABLE/FUNCTION/ROLE or "
-        "ADD CONSTRAINT object doesn't actually exist -- pass --force to override.",
+        "ADD CONSTRAINT object doesn't actually exist, or whose REVOKE ALL + GRANT "
+        "target privilege state doesn't match reality -- pass --force to override.",
     )
     parser.add_argument(
         "--force",
@@ -197,14 +256,21 @@ def main() -> None:
                     sql = path.read_text(encoding="utf-8")
                     expected = _expected_objects(sql)
                     missing = _missing_objects(cur, expected)
-                    if not expected:
+                    grant_states = _expected_grant_states(sql)
+                    grant_mismatches = _grant_mismatches(cur, grant_states)
+                    if not expected and not grant_states:
                         print(f"  WOULD APPLY (no recognizable objects to check): {path.name}")
-                    elif missing:
+                    elif missing or grant_mismatches:
                         print(
                             f"  WOULD APPLY (objects missing -- genuinely unapplied): {path.name}"
                         )
                         for kind, name in missing:
                             print(f"      missing {kind}: {name}")
+                        for table, grantee, exp_privs, actual in grant_mismatches:
+                            print(
+                                f"      grant mismatch on {table} for {grantee}: "
+                                f"expected {sorted(exp_privs)}, actual {sorted(actual)}"
+                            )
                     else:
                         print(
                             f"  WOULD APPLY, BUT OBJECTS ALREADY EXIST -- likely applied "
@@ -225,16 +291,24 @@ def main() -> None:
                     sql = path.read_text(encoding="utf-8")
                     expected = _expected_objects(sql)
                     missing = _missing_objects(cur, expected)
-                    if missing and not args.force:
+                    grant_states = _expected_grant_states(sql)
+                    grant_mismatches = _grant_mismatches(cur, grant_states)
+                    if (missing or grant_mismatches) and not args.force:
                         refused += 1
                         print(f"  REFUSED (objects missing, not marked): {path.name}")
                         for kind, name in missing:
                             print(f"      missing {kind}: {name}")
+                        for table, grantee, exp_privs, actual in grant_mismatches:
+                            print(
+                                f"      grant mismatch on {table} for {grantee}: "
+                                f"expected {sorted(exp_privs)}, actual {sorted(actual)}"
+                            )
                         continue
-                    if not expected:
+                    if not expected and not grant_states:
                         print(
                             f"  Marked applied (SQL NOT run, UNVERIFIED -- no recognizable "
-                            f"CREATE TABLE/FUNCTION/ROLE or ADD CONSTRAINT found): {path.name}"
+                            f"CREATE TABLE/FUNCTION/ROLE/ADD CONSTRAINT or REVOKE ALL+GRANT "
+                            f"found): {path.name}"
                         )
                     else:
                         print(f"  Marked applied (SQL NOT run, verified): {path.name}")
