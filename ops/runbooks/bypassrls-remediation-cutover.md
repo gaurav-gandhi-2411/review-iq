@@ -6,9 +6,57 @@
 code path implicitly depends on — running it before the code that no longer needs it is
 deployed will break production request-serving paths, not just the ones already fixed.
 
-## CUTOVER COMPLETE — 2026-08-01
+## CUTOVER STATUS: NOT CURRENTLY APPLIED — re-verify live before trusting this section
 
-Applied against production. `review_iq_app.rolbypassrls = False`, verified live. The
+**Corrected 2026-08-16 (Item 170).** This section originally read "CUTOVER COMPLETE —
+2026-08-01" and is left below as an accurate *historical* record of that pass — it should
+NOT be read as describing the database's current state. Direct, repeated, rigorously
+re-verified query against production today (`SELECT rolname, rolbypassrls FROM pg_roles
+WHERE rolname = 'review_iq_app'`, run via the same `SUPABASE_DATABASE_URL` pooler
+connection this runbook itself uses, cross-checked against `current_database()` /
+`inet_server_addr()` / a live server `now()` timestamp to rule out a stale/wrong-target
+connection) shows **`review_iq_app.rolbypassrls = True`** — the S0 exposure this migration
+exists to close is live again, right now.
+
+**Best-supported explanation, not confirmed** (no audit-log trail exists for a raw `ALTER
+ROLE` statement, and this repo's migrations have no tracking table at all — confirmed by
+direct query, `information_schema.tables`/`pg_tables` show no `public.schema_migrations`
+or equivalent; only Supabase's own unrelated `auth.schema_migrations` /
+`realtime.schema_migrations` / `storage.migrations`): Pass 3 below genuinely succeeded on 2026-08-01 as documented, but at that time
+`app/auth/session.py`, `app/auth/signup.py`, `app/api/account.py`, and `app/auth/api_key.py`
+had NOT yet been rewritten to resolve org_id via a `SECURITY DEFINER` function before
+calling `_set_tenant()` (that rewrite is PR #68, merged 2026-08-16 — see
+`supabase/migrations/20260801000002_tenant_resolvers_auth_signup.sql`). Postgres RLS
+policies AND-combine with a query's own WHERE clause, not replace it — so those four
+files' `WHERE ... user_id = %s` predicates, correct as they are, would still have returned
+ZERO rows for every real login/signup/account/API-key call the moment `review_iq_app` lost
+BYPASSRLS, because `current_org_id()` was never set and the RLS policy's `USING (org_id =
+current_org_id())` clause would have evaluated to `UNKNOWN` for every row. The 18/18 passed
+integration-test claim below is very likely accurate on its own terms (those tests exercise
+RLS policies directly via fixtures that DO call `_set_tenant()`) without contradicting a
+simultaneous, silent break of the actual HTTP-facing login/signup/account/API-key paths —
+this repo had no real paying-customer traffic at the time (ADR 0011), which would explain
+why a full login outage went unnoticed rather than triggering an immediate rollback report.
+The one-line rollback this runbook itself documents below (`ALTER ROLE review_iq_app
+BYPASSRLS;`) is trivial to run and was very likely used to restore service — and because
+this PR recording the cutover was never merged to `main`, there was no durable record
+forcing a follow-up once the rollback was applied.
+
+**Before re-attempting this cutover:** #68 (the six-path rewrite) is now merged to `main`
+and deployed — confirm via `scripts/check_cloud_run_deploy_is_from_main.py` that the
+running image is built from a commit at or after #68's merge — then re-verify every
+statement's live state with the query block in `ops/runbooks/bypassrls-cutover-status.md`
+immediately before writing anything, exactly as that file's own "mandatory pre-write check"
+already instructs. Statements 1, 2, 3, 5, and 6 are independently confirmed live in
+production as of 2026-08-16 (re-created or never rolled back); only statement 4 needs to be
+re-applied.
+
+---
+
+### Historical record — Pass 1–3, as executed 2026-08-01
+
+Applied against production. `review_iq_app.rolbypassrls = False`, verified live at the
+time. The
 one-shot "apply the whole file, then fix the admin secret" order below (steps 2-3) was
 revised at execution time into three passes to eliminate an admin-surface downtime
 window the literal step order would have caused — recorded here as what actually
@@ -52,9 +100,9 @@ env var; in practice this was `gcloud secrets versions access latest --secret=su
 it was added specifically to unblock this, since `review_iq_app` itself lacks
 `CREATEROLE` and cannot run statement 1).
 
-### Rollback (not needed — cutover succeeded clean on the first attempt; recorded for the
-### next person who hits a problem, since an untested rollback path is the same bug class
-### this repo has hit before)
+### Rollback (documented at the time as "not needed" — see the correction above: the
+### current live state as of 2026-08-16 is consistent with this exact rollback having
+### been used at some point after 2026-08-01, likely for the reason explained above)
 
 **If `review_iq_app` needs BYPASSRLS back immediately** (legitimate access broken,
 Pass 3's both-directions test would have caught this before it shipped, but if it
