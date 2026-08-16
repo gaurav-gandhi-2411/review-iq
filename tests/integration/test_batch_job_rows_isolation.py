@@ -373,6 +373,16 @@ class TestBatchJobRowsRLSIsolation:
         assert job_a not in visible, "Org B must NOT see org A's batch_job_rows"
 
     def test_org_a_cannot_update_org_b_row(self, two_orgs: tuple[str, str]) -> None:
+        """authenticated UPDATE on batch_job_rows is blocked outright, cross-org or not.
+
+        Wave 1 grant narrowing (20260817000002, Item 208) revoked UPDATE from
+        authenticated on this table entirely -- settle_batch_job_row (the only
+        writer of row status) runs as review_iq_migrator via SECURITY DEFINER, never
+        as authenticated. Previously this UPDATE was grant-permitted and silently
+        RLS-filtered to 0 rows; now it fails at the grant layer before RLS is ever
+        reached, for both same-org and cross-org targets -- a strictly earlier and
+        stronger deny, not a weaker one.
+        """
         org_a, org_b = two_orgs
         _seed_job(org_a, [f"rls-proof-a-{uuid.uuid4().hex[:8]}"])
         job_b = _seed_job(org_b, [f"rls-proof-b-{uuid.uuid4().hex[:8]}"])
@@ -380,11 +390,14 @@ class TestBatchJobRowsRLSIsolation:
         conn = _as_authenticated(org_a)
         try:
             cur = conn.cursor()
-            cur.execute(
-                "UPDATE public.batch_job_rows SET status = 'failed' WHERE job_id = %s",
-                (job_b,),
+            with pytest.raises(psycopg2.errors.InsufficientPrivilege) as exc_info:
+                cur.execute(
+                    "UPDATE public.batch_job_rows SET status = 'failed' WHERE job_id = %s",
+                    (job_b,),
+                )
+            assert "permission denied" in str(exc_info.value), (
+                "Block must come from the grant layer -- authenticated holds no UPDATE"
             )
-            assert cur.rowcount == 0, "UPDATE of cross-tenant batch_job_rows must affect 0 rows"
         finally:
             conn.rollback()
             conn.close()

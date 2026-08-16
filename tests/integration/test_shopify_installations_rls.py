@@ -177,16 +177,18 @@ class TestShopifyInstallationsRLS:
             conn.close()
 
     # ------------------------------------------------------------------
-    # INSERT block — mechanism is RLS (no INSERT policy), NOT grant layer
+    # INSERT block — mechanism is the grant layer (no INSERT grant at all)
     # ------------------------------------------------------------------
 
     def test_authenticated_same_org_insert_blocked_by_rls(self, org_ids: tuple[str, str]) -> None:
-        """authenticated INSERT is blocked by RLS even for same-org rows.
+        """authenticated INSERT is blocked even for same-org rows.
 
-        Supabase DEFAULT PRIVILEGES grant INSERT to authenticated, so this is NOT
-        a grant-layer block. No INSERT policy exists for the authenticated role →
-        PostgreSQL default-deny → InsufficientPrivilege with 'row-level security
-        policy' in the message.
+        Wave 1 grant narrowing (20260817000002, Item 208) revoked INSERT from
+        authenticated on this table entirely (upsert_shopify_installation, the only
+        writer, runs as review_iq_migrator via SECURITY DEFINER, never as
+        authenticated). Postgres checks table privileges before evaluating RLS, so
+        the block now surfaces as a grant-layer InsufficientPrivilege -- a strictly
+        earlier and stronger deny than the prior RLS-mediated one, not a weaker one.
 
         The OAuth callback writes as service-role (postgres, no SET ROLE). Direct
         authenticated INSERT is structurally blocked regardless of the org_id value.
@@ -203,17 +205,17 @@ class TestShopifyInstallationsRLS:
                     "VALUES (%s, %s, %s)",
                     (org_a, "same-org-blocked.myshopify.com", _FAKE_ENC_TOKEN),
                 )
-            assert "row-level security policy" in str(exc_info.value), (
-                "Block must come from RLS (no INSERT policy), not the grant layer"
+            assert "permission denied" in str(exc_info.value), (
+                "Block must come from the grant layer -- authenticated holds no INSERT"
             )
             conn.rollback()
         finally:
             conn.close()
 
     def test_authenticated_cross_org_insert_blocked_by_rls(self, org_ids: tuple[str, str]) -> None:
-        """Cross-org INSERT (org A session, org B's org_id) is also blocked by RLS.
+        """Cross-org INSERT (org A session, org B's org_id) is also blocked.
 
-        Same mechanism as same-org block: no INSERT policy for authenticated role.
+        Same mechanism as same-org block: no INSERT grant for authenticated role.
         Both attacks fail structurally — the block is not contingent on the org_id
         value, so there is no way to enumerate org_ids to find an exploitable path.
         """
@@ -229,8 +231,8 @@ class TestShopifyInstallationsRLS:
                     "VALUES (%s, %s, %s)",
                     (org_b, "cross-org-attack.myshopify.com", _FAKE_ENC_TOKEN),  # org B's id
                 )
-            assert "row-level security policy" in str(exc_info.value), (
-                "Cross-org block must also be RLS, not grant-layer"
+            assert "permission denied" in str(exc_info.value), (
+                "Cross-org block must also be grant-layer -- authenticated holds no INSERT"
             )
             conn.rollback()
         finally:
