@@ -44,22 +44,34 @@ must be diagnosed before proceeding, never assumed away.
 
 Migration: `supabase/migrations/20260801000001_role_separation_bypassrls_remediation.sql`
 
+**Table below re-verified live 2026-08-16 (Item 164/170) — this is the actual current
+state, not the "not started" state this file originally recorded.** Statement 4 is
+confirmed to have been briefly live (2026-08-01, see
+`ops/runbooks/bypassrls-remediation-cutover.md`'s corrected header) and is NOT live now —
+treat this as re-verify-before-every-write, not as license to skip the pre-write check
+above just because this table says "Yes".
+
 | # | Statement | Done? | By whom | When | Verified via |
 |---|---|---|---|---|---|
-| 1 | `CREATE ROLE review_iq_migrator` + grants | No | — | — | `SELECT rolname FROM pg_roles WHERE rolname='review_iq_migrator'` |
-| 2 | `CREATE ROLE review_iq_admin` + grants | No | — | — | `SELECT rolname FROM pg_roles WHERE rolname='review_iq_admin'` |
-| 3 | `resolve_org_for_google_location` / `resolve_org_for_shopify_shop` | No | — | — | `SELECT proname FROM pg_proc WHERE proname IN (...)` |
-| 4 | `ALTER ROLE review_iq_app NOBYPASSRLS` | No | — | — | `SELECT rolbypassrls FROM pg_roles WHERE rolname='review_iq_app'` (expect `false`) |
-| 5 | `api_keys_key_prefix_key` UNIQUE | No | — | — | `SELECT conname FROM pg_constraint WHERE conname='api_keys_key_prefix_key'` |
-| 6 | `organization_members_user_id_key` UNIQUE | No | — | — | `SELECT conname FROM pg_constraint WHERE conname='organization_members_user_id_key'` |
+| 1 | `CREATE ROLE review_iq_migrator` + grants | **Yes** | out-of-band, exact identity/timestamp unrecorded (no tracking table exists — Item 169) | before 2026-08-16 | Re-queried live 2026-08-16: role exists, `rolbypassrls=true`, `postgres` is a member, `CREATE` on `public` confirmed |
+| 2 | `CREATE ROLE review_iq_admin` + grants | **Yes** | out-of-band, unrecorded | before 2026-08-16 | Re-queried live 2026-08-16: role exists, `rolbypassrls=true`, member of `authenticated` |
+| 3 | `resolve_org_for_google_location` / `resolve_org_for_shopify_shop` | **Yes** | out-of-band, unrecorded | before 2026-08-16 | Re-queried live 2026-08-16: both functions exist, owned by `review_iq_migrator`, `EXECUTE` granted to `review_iq_app` |
+| 4 | `ALTER ROLE review_iq_app NOBYPASSRLS` | **No — was briefly Yes on 2026-08-01, reverted since** | applied 2026-08-01 (see runbook); reversion time/identity unrecorded | 2026-08-01 (applied), unknown (reverted) | Re-queried live 2026-08-16: `rolbypassrls=true` — the exposure is live |
+| 5 | `api_keys_key_prefix_key` UNIQUE | **Yes** | out-of-band, unrecorded | before 2026-08-16 | Re-queried live 2026-08-16: constraint present on `api_keys` |
+| 6 | `organization_members_user_id_key` UNIQUE | **Yes** | out-of-band, unrecorded | before 2026-08-16 | Re-queried live 2026-08-16: constraint present on `organization_members` |
 
 ## Related prerequisite status (outside the migration file itself)
+
+**Note:** the `gcloud` commands below still say `--project=review-iq-prod` — that project
+was decommissioned 2026-08-14 in favor of `reviewiq-prod-260813` (see
+`deploy-cloud-run.yml`'s own 2026-08-15 correction note). Repoint `--project` before running
+any of these for real.
 
 | Item | Done? | By whom | When | Verified via |
 |---|---|---|---|---|
 | TOCTOU duplicate-org cleanup (runbook step 0) | **Yes** | unrecorded (found already done, 2026-08-01) | before 2026-08-01 | `SELECT user_id, count(*) FROM organization_members GROUP BY user_id HAVING count(*)>1` returns 0 rows |
-| Code-level PRs deployed to both services (runbook step 1) | Partial — deployed manually (tag `bypassrls-cutover`), not through the CI pipeline | unrecorded | 2026-08-01T04:42:24Z | `gcloud run services describe <service> --format="value(spec.template.spec.containers[0].image)"` |
-| `review-iq-admin-database-url` secret created + wired (runbook step 2) | No | — | — | `gcloud run services describe review-iq-admin --format="value(spec.template.spec.containers[0].env)"` — expect `ADMIN_DATABASE_URL` referencing `review-iq-admin-database-url`, not `supabase-database-url` |
+| Code-level PRs deployed to both services (runbook step 1) | **Yes, as of 2026-08-16** — PR #68 (session.py/signup.py/account.py/api_key.py resolver rewrite) merged and its own pre-cutover-verification.yml gate passed | unrecorded (out-of-band) for the original 2026-08-01 partial deploy; PR #68 merge is on the record | PR #68 merged 2026-08-16 | `gcloud run services describe <service> --project=reviewiq-prod-260813 --format="value(spec.template.spec.containers[0].image)"` — confirm the image SHA is a descendant of PR #68's merge commit |
+| `review-iq-admin-database-url` secret created + wired (runbook step 2) | **Yes** | out-of-band, unrecorded | before 2026-08-16 | Re-verified live 2026-08-16: `review-iq-admin` Cloud Run service's `ADMIN_DATABASE_URL` references secret `review-iq-admin-database-url`, distinct from `supabase-database-url` |
 
 ## Update discipline
 
