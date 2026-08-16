@@ -2,7 +2,10 @@
 
 Usage:
     uv run python supabase/push.py                 # apply every not-yet-applied file
-    uv run python supabase/push.py --dry-run        # print what WOULD apply, apply nothing
+    uv run python supabase/push.py --dry-run        # print what WOULD apply, whether each
+                                                      # pending file's objects already exist
+                                                      # in the target -- read-only, no writes,
+                                                      # no ledger rows -- and apply nothing
     uv run python supabase/push.py --mark-applied-all   # record every file as applied
                                                           # WITHOUT running its SQL --
                                                           # backfill for a database that
@@ -117,9 +120,28 @@ def _missing_objects(
 
 
 def _applied_filenames(conn: psycopg2.extensions.connection) -> set[str]:
+    """Ensures the ledger table exists (CREATE TABLE IF NOT EXISTS), then reads it.
+
+    Only called from write paths (normal apply, --mark-applied-all) -- --dry-run uses
+    _applied_filenames_readonly below instead, which never touches schema."""
     with conn.cursor() as cur:
         cur.execute(_ENSURE_LEDGER_SQL)
         conn.commit()
+        cur.execute("SELECT filename FROM public._migrations")
+        return {row[0] for row in cur.fetchall()}
+
+
+def _applied_filenames_readonly(conn: psycopg2.extensions.connection) -> set[str]:
+    """Item 181: true read-only equivalent for --dry-run -- never creates the ledger table.
+
+    If the table doesn't exist yet (e.g. checking production before ever backfilling),
+    treats that as "nothing recorded" rather than creating it as a side effect of a
+    read-only command."""
+    with conn.cursor() as cur:
+        cur.execute("SELECT to_regclass('public._migrations') IS NOT NULL")
+        (table_exists,) = cur.fetchone()
+        if not table_exists:
+            return set()
         cur.execute("SELECT filename FROM public._migrations")
         return {row[0] for row in cur.fetchall()}
 
@@ -160,17 +182,41 @@ def main() -> None:
     conn.autocommit = False
 
     try:
-        already_applied = _applied_filenames(conn)
-        pending = [p for p in migration_files if p.name not in already_applied]
-
         if args.dry_run:
+            already_applied = _applied_filenames_readonly(conn)
+            pending = [p for p in migration_files if p.name not in already_applied]
+            # Item 181: also report whether each pending file's expected objects already
+            # exist in the target -- read-only (SELECT only, no INSERT, no commit needed),
+            # so this is safe to run against production before deciding whether a file is
+            # genuinely unapplied (WOULD APPLY, objects missing) or was applied out-of-band
+            # and just needs a ledger backfill (WOULD APPLY, but objects ALREADY EXIST --
+            # a signal to use --mark-applied-all for that file, not a normal apply).
             print(f"\n{len(already_applied)} already applied, {len(pending)} would apply:")
-            for path in pending:
-                print(f"  WOULD APPLY: {path.name}")
+            with conn.cursor() as cur:
+                for path in pending:
+                    sql = path.read_text(encoding="utf-8")
+                    expected = _expected_objects(sql)
+                    missing = _missing_objects(cur, expected)
+                    if not expected:
+                        print(f"  WOULD APPLY (no recognizable objects to check): {path.name}")
+                    elif missing:
+                        print(
+                            f"  WOULD APPLY (objects missing -- genuinely unapplied): {path.name}"
+                        )
+                        for kind, name in missing:
+                            print(f"      missing {kind}: {name}")
+                    else:
+                        print(
+                            f"  WOULD APPLY, BUT OBJECTS ALREADY EXIST -- likely applied "
+                            f"out-of-band, consider --mark-applied-all instead: {path.name}"
+                        )
             for path in migration_files:
                 if path.name in already_applied:
                     print(f"  (already applied, skip): {path.name}")
             return
+
+        already_applied = _applied_filenames(conn)
+        pending = [p for p in migration_files if p.name not in already_applied]
 
         if args.mark_applied_all:
             marked, refused = 0, 0
