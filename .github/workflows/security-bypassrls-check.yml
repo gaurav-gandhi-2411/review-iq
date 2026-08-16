@@ -1,0 +1,57 @@
+name: Security — BYPASSRLS regression check
+
+# Item 124: tests/integration/ has 15 files, none run in any CI workflow -- confirmed via
+# grep across every workflow in this repo. This is the one exception: a read-only,
+# zero-mutation check that the S0 BYPASSRLS remediation (review_iq_app must never hold
+# BYPASSRLS; review_iq_migrator must) stays applied in production. It only SELECTs from
+# pg_roles -- no writes, no test data created or deleted -- so it is safe to run on every
+# push to main and on a schedule, unlike the other 14 integration test files (several of
+# which write real rows to the live production database and need a separate, explicit
+# risk decision before being wired into any automated run -- see the PR this workflow
+# shipped in for that discussion).
+#
+# REQUIRES a GitHub Actions secret named SUPABASE_DATABASE_URL that does not exist yet in
+# this repo (confirmed via `gh api .../environments/Production/secrets` and repo-level
+# `gh secret list` -- neither has it). This must be the SAME connection string Cloud Run
+# uses at runtime (GCP Secret Manager's `supabase-database-url`, the review_iq_app pooler
+# DSN) -- add it with:
+#   gh secret set SUPABASE_DATABASE_URL --repo gaurav-gandhi-2411/review-iq --env Production
+# This workflow will fail until that secret is added -- that failure is expected and is
+# the signal that the manual step above is still outstanding, not a bug in the workflow.
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 */6 * * *"  # every 6 hours, offset from the hour to avoid GitHub's on-the-hour pile-up
+  workflow_dispatch: {}
+
+jobs:
+  bypassrls-check:
+    runs-on: ubuntu-latest
+    environment: Production
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: BYPASSRLS regression check (read-only, production DB)
+        env:
+          SUPABASE_DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
+        # --no-cov: pyproject.toml's addopts sets --cov-fail-under=60 globally, which this
+        # 2-test, single-file security check can never reach and isn't meant to -- coverage
+        # is not a meaningful signal for a role-configuration assertion. Confirmed locally
+        # that omitting this makes the run fail on the coverage gate even when the actual
+        # BYPASSRLS check itself would pass.
+        run: uv run pytest tests/integration/test_role_bypassrls.py -v -m integration --no-cov
