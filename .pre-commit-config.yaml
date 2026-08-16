@@ -1,0 +1,17 @@
+# Run `pre-commit autoupdate` periodically to bump revs.
+# Pattern follows agentic-travel-booking-system's .pre-commit-config.yaml (the estate's
+# reference config). mypy skipped here per Item 100's known eval_harness.py ambiguity in this
+# repo -- not run locally by this config; CI's own `mypy app/` step (ci.yml) still applies.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.12
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
