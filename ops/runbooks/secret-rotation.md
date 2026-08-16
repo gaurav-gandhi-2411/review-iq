@@ -51,7 +51,15 @@ Verified live against the actual Secret Manager inventory (`gcloud secrets list
 | `unsubscribe-signing-key` | `UNSUBSCRIBE_SIGNING_KEY` | HMAC key signing one-click unsubscribe tokens |
 
 Not tracked here (plain env vars, not Secret Manager — see `cloud-run-deploy.md` for why):
-`DIGEST_TRIGGER_TOKEN`, `INGEST_TICK_TOKEN`. Shopify/Google OAuth secrets
+`DIGEST_TRIGGER_TOKEN`, `INGEST_TICK_TOKEN`, `DETECTOR_SWEEP_TRIGGER_TOKEN` (the latter was missing
+from this list until 2026-08-13 — found while rotating all three during the gandhi1129 account
+migration; the two documented here were already correctly excluded). All three are consumed by
+their matching Cloud Scheduler job (`review-iq-ingest-tick`, `review-iq-digest-daily`,
+`review-iq-detector-sweep`) — rotate by generating a new value, updating the Cloud Run env var via
+`gcloud run services update review-iq --update-env-vars=...`, then updating the corresponding
+scheduler job's header via `gcloud scheduler jobs update http JOB_NAME --update-headers=...`. Do
+both in the same pass; a scheduler job left on the old token silently 401s until someone notices
+the missed run. Shopify/Google OAuth secrets
 (`SHOPIFY_CLIENT_SECRET`, `SHOPIFY_TOKEN_ENCRYPTION_KEY`, `GOOGLE_CLIENT_SECRET`,
 `GOOGLE_TOKEN_ENCRYPTION_KEY`, `GOOGLE_PUBSUB_PUSH_TOKEN`) are not yet live on this service
 (GBP connector pending API approval per project history) — add them here when they go live.

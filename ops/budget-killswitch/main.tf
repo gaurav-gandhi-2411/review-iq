@@ -87,12 +87,19 @@ resource "google_service_account" "killswitch" {
   description  = "Disables billing when monthly spend exceeds the hard cap."
 }
 
-# Billing admin on the billing account — lets the SA call updateBillingInfo.
-# billing.resourceAssociations.delete is required to unlink a billing account.
-resource "google_billing_account_iam_member" "killswitch_billing_admin" {
-  billing_account_id = var.billing_account_id
-  role               = "roles/billing.admin"
-  member             = "serviceAccount:${google_service_account.killswitch.email}"
+# Project-level billing.projectManager (NOT account-level billing.admin) on this one
+# project only -- lets the SA call updateProjectBillingInfo to unlink THIS project's billing,
+# via resourcemanager.projects.deleteBillingAssignment (confirmed included in this role's
+# permission set). Deliberately narrower than account-level billing.admin: that role would let
+# this SA unlink billing on ALL FIVE permanent products sharing this billing account, not just
+# review-iq. Swapped from account-level to project-level 2026-08-13/14 for exactly this reason;
+# live-tested end-to-end (synthetic breach -> real deleteBillingAssignment -> relink) both then
+# and again 2026-08-15, confirmed functional both times (Cloud Audit Logs: 18s and 15.7s
+# disabled windows respectively).
+resource "google_project_iam_member" "killswitch_billing_project_manager" {
+  project = var.project_id
+  role    = "roles/billing.projectManager"
+  member  = "serviceAccount:${google_service_account.killswitch.email}"
 }
 
 # ---------------------------------------------------------------------------
@@ -174,7 +181,7 @@ resource "google_cloudfunctions_function" "killswitch" {
 
 resource "google_billing_budget" "monthly_cap" {
   billing_account = var.billing_account_id
-  display_name    = "review-iq-prod-monthly-cap"
+  display_name    = "reviewiq-prod-260813-monthly-cap"
 
   budget_filter {
     projects               = ["projects/${var.project_number}"]
