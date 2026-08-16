@@ -33,7 +33,7 @@ from app.core.storage_pg import get_by_hash_pg, save_extraction_pg  # noqa: E402
 from fastapi import HTTPException  # noqa: E402
 
 _DB_PARAMS = {
-    "host": "db.enqpluazgxewepchdeut.supabase.co",
+    "host": os.environ.get("SUPABASE_DB_HOST", "db.enqpluazgxewepchdeut.supabase.co"),
     "port": 5432,
     "dbname": "postgres",
     "user": "postgres",

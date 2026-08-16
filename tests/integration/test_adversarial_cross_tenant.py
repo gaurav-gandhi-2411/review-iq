@@ -39,7 +39,7 @@ _OrgFixture = dict[str, str]
 load_dotenv(Path(__file__).parents[2] / ".env")
 
 _SUPERUSER_DB_PARAMS = {
-    "host": "db.enqpluazgxewepchdeut.supabase.co",
+    "host": os.environ.get("SUPABASE_DB_HOST", "db.enqpluazgxewepchdeut.supabase.co"),
     "port": 5432,
     "dbname": "postgres",
     "user": "postgres",
