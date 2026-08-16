@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -53,6 +54,66 @@ CREATE TABLE IF NOT EXISTS public._migrations (
     applied_at timestamptz NOT NULL DEFAULT now()
 );
 """
+
+# --mark-applied-all backfill verification (Item 176d): a blank "trust the flag" backfill
+# can silently and PERMANENTLY hide a migration that was never actually applied -- demonstrated
+# directly (Item 176c) by skipping 20260710235958_capture_extraction_costs.sql on a throwaway
+# container, running --mark-applied-all, and confirming it was marked applied anyway despite
+# public.extraction_costs genuinely not existing. This is deliberately NOT a general SQL-effect
+# verifier (that's real overengineering for what a handful of regexes covers) -- it extracts the
+# one or two primary named objects each file's own CREATE/ALTER statements are recognizable by,
+# and checks those specific objects exist. Catches "this file was never applied at all" (the
+# demonstrated failure mode); does not catch "this file was applied but a later statement in it
+# silently failed" or verify column-level correctness -- named explicitly as the boundary of what
+# this checks, not implied to be exhaustive.
+_OBJECT_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
+    ("table", re.compile(r"CREATE TABLE(?:\s+IF NOT EXISTS)?\s+public\.(\w+)", re.IGNORECASE)),
+    (
+        "function",
+        re.compile(r"CREATE(?:\s+OR REPLACE)?\s+FUNCTION\s+public\.(\w+)", re.IGNORECASE),
+    ),
+    ("role", re.compile(r"\bCREATE ROLE\s+(\w+)", re.IGNORECASE)),
+    ("constraint", re.compile(r"\bADD CONSTRAINT\s+(\w+)", re.IGNORECASE)),
+]
+
+_EXISTENCE_SQL = {
+    "table": "SELECT to_regclass('public.' || %s) IS NOT NULL",
+    "function": "SELECT EXISTS(SELECT 1 FROM pg_proc WHERE proname = %s)",
+    "role": "SELECT EXISTS(SELECT 1 FROM pg_roles WHERE rolname = %s)",
+    "constraint": "SELECT EXISTS(SELECT 1 FROM pg_constraint WHERE conname = %s)",
+}
+
+
+def _strip_sql_line_comments(sql: str) -> str:
+    """Strip `-- ...` line comments before object-name extraction.
+
+    Self-caught while testing (Item 176): the raw-SQL regexes below matched literal
+    English inside comments like "-- ADD CONSTRAINT does not support IF NOT EXISTS",
+    extracting `does` as a fake constraint name and refusing to mark an otherwise-fine
+    file. None of this repo's migrations put `--` inside a string literal, so a plain
+    per-line strip is sufficient here -- not a general SQL comment parser.
+    """
+    return "\n".join(line.split("--", 1)[0] for line in sql.splitlines())
+
+
+def _expected_objects(sql: str) -> list[tuple[str, str]]:
+    code = _strip_sql_line_comments(sql)
+    found: list[tuple[str, str]] = []
+    for kind, pattern in _OBJECT_PATTERNS:
+        found.extend((kind, name) for name in pattern.findall(code))
+    return found
+
+
+def _missing_objects(
+    cur: psycopg2.extensions.cursor, expected: list[tuple[str, str]]
+) -> list[tuple[str, str]]:
+    missing = []
+    for kind, name in expected:
+        cur.execute(_EXISTENCE_SQL[kind], (name,))
+        (exists,) = cur.fetchone()
+        if not exists:
+            missing.append((kind, name))
+    return missing
 
 
 def _applied_filenames(conn: psycopg2.extensions.connection) -> set[str]:
@@ -75,8 +136,16 @@ def main() -> None:
         action="store_true",
         help="Record every migration file in the ledger without running its SQL "
         "(backfill for a database whose content already matches these files, applied "
-        "out-of-band -- confirm that's actually true via direct schema inspection before "
-        "using this, never assume).",
+        "out-of-band). Refuses to mark a file whose primary CREATE TABLE/FUNCTION/ROLE or "
+        "ADD CONSTRAINT object doesn't actually exist -- pass --force to override.",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="With --mark-applied-all: mark files anyway even if their expected objects "
+        "are missing. Only use this after independently confirming why -- e.g. a file "
+        "whose statements are entirely GRANT/REVOKE with nothing this script's checks can "
+        "recognize.",
     )
     args = parser.parse_args()
 
@@ -104,16 +173,39 @@ def main() -> None:
             return
 
         if args.mark_applied_all:
+            marked, refused = 0, 0
             with conn.cursor() as cur:
                 for path in pending:
+                    sql = path.read_text(encoding="utf-8")
+                    expected = _expected_objects(sql)
+                    missing = _missing_objects(cur, expected)
+                    if missing and not args.force:
+                        refused += 1
+                        print(f"  REFUSED (objects missing, not marked): {path.name}")
+                        for kind, name in missing:
+                            print(f"      missing {kind}: {name}")
+                        continue
+                    if not expected:
+                        print(
+                            f"  Marked applied (SQL NOT run, UNVERIFIED -- no recognizable "
+                            f"CREATE TABLE/FUNCTION/ROLE or ADD CONSTRAINT found): {path.name}"
+                        )
+                    else:
+                        print(f"  Marked applied (SQL NOT run, verified): {path.name}")
                     cur.execute(
                         "INSERT INTO public._migrations (filename) VALUES (%s) "
                         "ON CONFLICT (filename) DO NOTHING",
                         (path.name,),
                     )
-                    print(f"  Marked applied (SQL NOT run): {path.name}")
+                    marked += 1
             conn.commit()
-            print(f"\n{len(pending)} file(s) marked applied.")
+            print(f"\n{marked} file(s) marked applied, {refused} refused (missing objects).")
+            if refused:
+                print(
+                    "Re-run with --force only after confirming why those objects are "
+                    "missing -- do not use --force to silence this without checking."
+                )
+                sys.exit(1)
             return
 
         if not pending:
