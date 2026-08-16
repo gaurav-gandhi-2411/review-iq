@@ -64,6 +64,17 @@ jobs:
           SUPABASE_DIRECT_URL: postgresql://postgres:postgres@localhost:5432/postgres
         run: uv run python supabase/push.py
 
+      # Item 172/173: the S0 BYPASSRLS revocation (statement 4 of 20260801000001) moved
+      # to supabase/cutover/ -- outside push.py's glob on purpose, so it's never a side
+      # effect of an unrelated push.py run. This CI check's whole point is proving the
+      # FULL intended end state (review_iq_app without BYPASSRLS) is reachable, so it
+      # applies the cutover step explicitly here as its own step -- exactly mirroring how
+      # a real cutover must run it: separately, deliberately, never bundled.
+      - name: Apply cutover statements (explicit, separate from the tracked migrations)
+        run: |
+          psql "postgresql://postgres:postgres@localhost:5432/postgres" -v ON_ERROR_STOP=1 \
+            -f supabase/cutover/20260801000001_statement4_revoke_bypassrls.sql
+
       - name: BYPASSRLS regression check (throwaway container, no prod credential)
         env:
           SUPABASE_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
