@@ -228,6 +228,16 @@ def main() -> None:
         "whose statements are entirely GRANT/REVOKE with nothing this script's checks can "
         "recognize.",
     )
+    parser.add_argument(
+        "--fail-on-pending",
+        action="store_true",
+        help="With --dry-run: exit 1 if any pending file is genuinely unapplied (objects "
+        "missing or grant mismatch found) -- for a scheduled drift-detection gate. Does NOT "
+        "fail on the 'objects already exist, needs --mark-applied-all' or 'no recognizable "
+        "objects' cases -- those are ledger bookkeeping gaps, not a genuine drift between "
+        "what's merged and what's live. Item 248: a merged migration sitting unapplied "
+        "against production for 2 days, undetected, is exactly the gap this flag closes.",
+    )
     args = parser.parse_args()
 
     direct_url = os.environ["SUPABASE_DIRECT_URL"]
@@ -251,6 +261,7 @@ def main() -> None:
             # and just needs a ledger backfill (WOULD APPLY, but objects ALREADY EXIST --
             # a signal to use --mark-applied-all for that file, not a normal apply).
             print(f"\n{len(already_applied)} already applied, {len(pending)} would apply:")
+            genuinely_unapplied = 0
             with conn.cursor() as cur:
                 for path in pending:
                     sql = path.read_text(encoding="utf-8")
@@ -261,6 +272,7 @@ def main() -> None:
                     if not expected and not grant_states:
                         print(f"  WOULD APPLY (no recognizable objects to check): {path.name}")
                     elif missing or grant_mismatches:
+                        genuinely_unapplied += 1
                         print(
                             f"  WOULD APPLY (objects missing -- genuinely unapplied): {path.name}"
                         )
@@ -279,6 +291,12 @@ def main() -> None:
             for path in migration_files:
                 if path.name in already_applied:
                     print(f"  (already applied, skip): {path.name}")
+            if args.fail_on_pending and genuinely_unapplied:
+                print(
+                    f"\n{genuinely_unapplied} file(s) merged but not applied to this "
+                    "target -- failing (--fail-on-pending)."
+                )
+                sys.exit(1)
             return
 
         already_applied = _applied_filenames(conn)
