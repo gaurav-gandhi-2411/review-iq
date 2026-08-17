@@ -10,14 +10,24 @@ name: Security — BYPASSRLS regression check
 # risk decision before being wired into any automated run -- see the PR this workflow
 # shipped in for that discussion).
 #
-# REQUIRES a GitHub Actions secret named SUPABASE_DATABASE_URL that does not exist yet in
-# this repo (confirmed via `gh api .../environments/Production/secrets` and repo-level
-# `gh secret list` -- neither has it). This must be the SAME connection string Cloud Run
-# uses at runtime (GCP Secret Manager's `supabase-database-url`, the review_iq_app pooler
-# DSN) -- add it with:
+# Item 240/241: test_role_bypassrls.py grew a second test class
+# (TestCrossOrgSweepFunctionsSeeEveryOrg, Item 225) that seeds real rows across two orgs to
+# prove 20260817000003's cross-org sweep functions work -- a real, if temporary, WRITE
+# against whatever database SUPABASE_DIRECT_URL points at. That breaks this workflow's own
+# read-only promise (the paragraph above) if run here unmodified, and would additionally
+# require adding the postgres SUPERUSER connection string as a secret to a job that runs
+# unattended on a schedule + every push to main -- a materially larger production credential
+# footprint than the already-scoped-down review_iq_app DSN this workflow was designed
+# around, for a check this workflow was never meant to make. Deselected below; that class is
+# exercised safely against a throwaway container instead, by
+# bypassrls-container-check.yml and pre-cutover-verification.yml.
+#
+# REQUIRES a GitHub Actions secret named SUPABASE_DATABASE_URL, added at the Production
+# environment scope (this job declares `environment: Production` -- an environment-scoped
+# secret is invisible to a job that doesn't declare a matching environment, and vice versa):
 #   gh secret set SUPABASE_DATABASE_URL --repo gaurav-gandhi-2411/review-iq --env Production
-# This workflow will fail until that secret is added -- that failure is expected and is
-# the signal that the manual step above is still outstanding, not a bug in the workflow.
+# This must be the SAME connection string Cloud Run uses at runtime (GCP Secret Manager's
+# `supabase-database-url`, the review_iq_app pooler DSN).
 
 on:
   push:
@@ -54,4 +64,10 @@ jobs:
         # is not a meaningful signal for a role-configuration assertion. Confirmed locally
         # that omitting this makes the run fail on the coverage gate even when the actual
         # BYPASSRLS check itself would pass.
-        run: uv run pytest tests/integration/test_role_bypassrls.py -v -m integration --no-cov
+        #
+        # -k excludes TestCrossOrgSweepFunctionsSeeEveryOrg (Item 240/241): it needs a
+        # superuser connection to seed cross-org rows, which this specific job doesn't have
+        # and shouldn't be given -- see the header comment above.
+        run: |
+          uv run pytest tests/integration/test_role_bypassrls.py -v -m integration --no-cov \
+            -k "not TestCrossOrgSweepFunctionsSeeEveryOrg"
