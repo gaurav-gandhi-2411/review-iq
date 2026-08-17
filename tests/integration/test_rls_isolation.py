@@ -163,17 +163,29 @@ class TestRLSIsolation:
     def test_org_a_cannot_update_org_b_extraction(
         self, extraction_ids: tuple[str, str], org_ids: tuple[str, str]
     ) -> None:
+        """authenticated UPDATE on extractions is blocked outright, cross-org or not.
+
+        Wave 2 grant narrowing (20260817000004, Item 235) revoked UPDATE from
+        authenticated on this table entirely -- extractions are write-once from the
+        app's perspective, no UPDATE call site exists anywhere in app/. Previously this
+        UPDATE was grant-permitted and silently RLS-filtered to 0 rows; now it fails at
+        the grant layer before RLS is ever reached, for both same-org and cross-org
+        targets -- a strictly earlier and stronger deny, not a weaker one.
+        """
         org_a, org_b = org_ids
         _, ext_b = extraction_ids
 
         conn = _as_authenticated(org_a)
         try:
             cur = conn.cursor()
-            cur.execute(
-                "UPDATE public.extractions SET model = 'hacked' WHERE id = %s",
-                (ext_b,),
+            with pytest.raises(psycopg2.errors.InsufficientPrivilege) as exc_info:
+                cur.execute(
+                    "UPDATE public.extractions SET model = 'hacked' WHERE id = %s",
+                    (ext_b,),
+                )
+            assert "permission denied" in str(exc_info.value), (
+                "Block must come from the grant layer -- authenticated holds no UPDATE"
             )
-            assert cur.rowcount == 0, "UPDATE of cross-tenant row must affect 0 rows"
         finally:
             conn.rollback()
             conn.close()
@@ -181,17 +193,25 @@ class TestRLSIsolation:
     def test_org_a_cannot_delete_org_b_extraction(
         self, extraction_ids: tuple[str, str], org_ids: tuple[str, str]
     ) -> None:
+        """authenticated DELETE on extractions is blocked outright, cross-org or not.
+
+        Same mechanism and same migration as test_org_a_cannot_update_org_b_extraction
+        above -- no DELETE call site exists anywhere in app/ for this table.
+        """
         org_a, org_b = org_ids
         _, ext_b = extraction_ids
 
         conn = _as_authenticated(org_a)
         try:
             cur = conn.cursor()
-            cur.execute(
-                "DELETE FROM public.extractions WHERE id = %s",
-                (ext_b,),
+            with pytest.raises(psycopg2.errors.InsufficientPrivilege) as exc_info:
+                cur.execute(
+                    "DELETE FROM public.extractions WHERE id = %s",
+                    (ext_b,),
+                )
+            assert "permission denied" in str(exc_info.value), (
+                "Block must come from the grant layer -- authenticated holds no DELETE"
             )
-            assert cur.rowcount == 0, "DELETE of cross-tenant row must affect 0 rows"
         finally:
             conn.rollback()
             conn.close()
@@ -424,13 +444,14 @@ class TestAlertsRLSIsolation:
         )
 
     def test_log_update_blocked_by_rls(self, org_ids: tuple[str, str]) -> None:
-        """alert_log is append-only: UPDATE must be silently denied even for the owning org.
+        """alert_log is append-only: UPDATE must be denied even for the owning org.
 
-        Supabase pre-grants ALL privileges to authenticated via DEFAULT PRIVILEGES, so
-        the denial cannot come from the grant layer. It comes instead from the absence
-        of an UPDATE RLS policy: no matching policy → PostgreSQL default-deny → 0 rows
-        affected (no error). This is the same mechanism as the existing
-        test_org_a_cannot_update_org_b_extraction test on extractions.
+        Wave 2 grant narrowing (20260817000004, Item 235) revoked UPDATE from
+        authenticated on this table entirely -- alert_log is append-only, no UPDATE
+        call site exists anywhere in app/. Previously this UPDATE was grant-permitted
+        and silently RLS-filtered to 0 rows (no matching UPDATE policy); now it fails
+        at the grant layer before RLS is ever reached -- a strictly earlier and
+        stronger deny, not a weaker one.
         """
         org_a, _ = org_ids
 
@@ -451,12 +472,13 @@ class TestAlertsRLSIsolation:
         conn = _as_authenticated(org_a)
         try:
             cur = conn.cursor()
-            cur.execute(
-                "UPDATE public.alert_log SET event_type = 'tampered' WHERE id = %s",
-                (log_id,),
-            )
-            assert cur.rowcount == 0, (
-                "UPDATE on append-only alert_log must affect 0 rows (no UPDATE RLS policy)"
+            with pytest.raises(psycopg2.errors.InsufficientPrivilege) as exc_info:
+                cur.execute(
+                    "UPDATE public.alert_log SET event_type = 'tampered' WHERE id = %s",
+                    (log_id,),
+                )
+            assert "permission denied" in str(exc_info.value), (
+                "Block must come from the grant layer -- authenticated holds no UPDATE"
             )
         finally:
             conn.rollback()
