@@ -12,43 +12,43 @@ readme = "README.md"
 license = { text = "MIT" }
 
 dependencies = [
-    "fastapi>=0.115.0",
+    "fastapi>=0.141.1",
     "uvicorn[standard]>=0.32.0",
     "pydantic>=2.10.0",
-    "pydantic-settings>=2.7.0",
-    "groq>=0.13.0",
+    "pydantic-settings>=2.15.0",
+    "groq>=1.6.0",
     "structlog>=25.1.0",
-    "prometheus-client>=0.21.0",
-    "slowapi>=0.1.9",
+    "prometheus-client>=0.26.0",
+    "slowapi>=0.1.10",
     "jinja2>=3.1.0",
     "python-multipart>=0.0.19",
     "aiosqlite>=0.20.0",
     "httpx>=0.28.0",
-    "google-genai>=1.0.0",
-    "supabase>=2.10.0",
+    "google-genai>=2.18.1",
+    "supabase>=2.31.0",
     "psycopg2-binary>=2.9.12",
     "python-dotenv>=1.2.2",
     "argon2-cffi>=25.1.0",
-    "anthropic>=0.102.0",
-    "resend>=2.32.2",
+    "anthropic>=0.122.0",
+    "resend>=2.36.0",
     "cryptography>=42.0.0",
     "python-dateutil>=2.9.0",
 ]
 
 [dependency-groups]
 dev = [
-    "pytest>=8.3.0",
-    "pytest-asyncio>=0.25.0",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
     "pytest-cov>=6.0.0",
     "httpx>=0.28.0",
-    "ruff>=0.9.0",
-    "mypy>=1.14.0",
+    "ruff>=0.16.3",
+    "mypy>=2.3.0",
     "types-requests>=2.32.0",
     "psycopg2-binary>=2.9.0",
     "python-dotenv>=1.0.0",
     "lingua-language-detector>=2.1.1",
     "datasets>=4.8.5",
-    "kaggle>=1.6",
+    "kaggle>=2.2.4",
 ]
 
 [tool.hatch.build.targets.wheel]
