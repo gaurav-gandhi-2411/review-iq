@@ -7,7 +7,10 @@ name: Web Surface Probe
 # mechanism introduced. Triggered by app.samidhareviews.xyz silently going dark with
 # no alert; same class of config/infra rot as the dead-Gemini-model finding.
 #
-# Cost: 4 GET requests/night against domains this project already owns. $0.
+# Cost: 4 GET requests/night against domains this project already owns, +1
+# authenticated GET if the PROBE_API_KEY secret is configured (BYPASSRLS remediation
+# P2, 2026-08-01 -- see scripts/probe_web_surfaces.py's module docstring for why).
+# $0.
 
 on:
   schedule:
@@ -43,6 +46,7 @@ jobs:
       - name: Run web surface probe
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          PROBE_API_KEY: ${{ secrets.PROBE_API_KEY }}
         run: |
           if [ -z "$SLACK_WEBHOOK_URL" ]; then
             uv run python scripts/probe_web_surfaces.py
