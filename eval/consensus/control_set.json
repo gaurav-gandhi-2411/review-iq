@@ -1,0 +1,98 @@
+[
+  {
+    "id": "cal-001",
+    "text": "This blender is absolutely perfect. Blends everything smoothly, cleans in seconds, and the motor is powerful. I love it and would buy another one in a heartbeat.",
+    "expected": {"sentiment": "positive", "urgency": "low", "buy_again": true, "language": "en"},
+    "why_unambiguous": "Pure praise, zero complaints, explicit repurchase intent (\"buy another one in a heartbeat\"), plain English with no Hindi loanwords."
+  },
+  {
+    "id": "cal-002",
+    "text": "This is the worst purchase I have ever made. It broke on day one and I am demanding a full refund immediately. I will never buy this brand again.",
+    "expected": {"sentiment": "negative", "urgency": "high", "buy_again": false, "language": "en"},
+    "why_unambiguous": "Explicit refund demand (urgency=high by definition), explicit \"never buy again\" (buy_again=false), entirely negative tone with no redeeming statement."
+  },
+  {
+    "id": "cal-003",
+    "text": "WARNING: this space heater caught fire while I was using it and burned a hole in my carpet. This is extremely dangerous and someone could get seriously hurt.",
+    "expected": {"urgency": "high", "sentiment": "negative"},
+    "why_unambiguous": "Explicit fire/safety hazard -- urgency=high by definition regardless of any other signal in the review."
+  },
+  {
+    "id": "cal-004",
+    "text": "यह उत्पाद बहुत बढ़िया है। मुझे बहुत पसंद आया और मैं इसे फिर से खरीदूंगा।",
+    "expected": {"language": "hi", "sentiment": "positive", "buy_again": true},
+    "why_unambiguous": "Entirely Devanagari script (unambiguously language=hi), explicit repurchase intent (\"फिर से खरीदूंगा\" = will buy again), clearly praising tone (\"बहुत बढ़िया\" = very good)."
+  },
+  {
+    "id": "cal-005",
+    "text": "Yeh product bahut accha hai yaar, quality bhi mast hai aur price bhi reasonable hai. Highly recommend karta hoon sabko.",
+    "expected": {"language": "hi-en", "sentiment": "positive"},
+    "why_unambiguous": "Textbook Latin-script Hindi/English code-mix (yeh/bahut/accha/yaar/mast/karta hoon/sabko mixed with product/quality/price/reasonable/recommend) -- neither pure Devanagari nor pure English."
+  },
+  {
+    "id": "cal-006",
+    "text": "The packaging was sturdy, the item arrived in perfect condition, and setup took about ten minutes. Everything works exactly as described and I'm very happy with this purchase.",
+    "expected": {"language": "en", "sentiment": "positive"},
+    "why_unambiguous": "Plain English throughout, no Hindi words of any kind, explicit satisfaction (\"very happy with this purchase\") with no complaint."
+  },
+  {
+    "id": "cal-007",
+    "text": "It's an okay product but honestly not really what I needed. I won't be buying this again.",
+    "expected": {"buy_again": false, "urgency": "low"},
+    "why_unambiguous": "Explicit \"won't be buying this again\" (buy_again=false), and no concrete defect, harm, or escalation demand is described at all -- urgency=low by definition."
+  },
+  {
+    "id": "cal-008",
+    "text": "Solid, reliable, does exactly what it promises. Already ordered a second one as a gift for my brother.",
+    "expected": {"buy_again": true, "sentiment": "positive", "urgency": "low"},
+    "why_unambiguous": "Explicit repurchase action already taken (\"already ordered a second one\"), pure praise, no defect or complaint of any kind."
+  },
+  {
+    "id": "cal-009",
+    "text": "The package contains one unit, a charging cable, and a printed instruction manual. It ships in a plain cardboard box.",
+    "expected": {"sentiment": "neutral", "urgency": "low"},
+    "why_unambiguous": "Purely descriptive/factual listing of package contents -- zero opinion words, no praise, no complaint."
+  },
+  {
+    "id": "cal-010",
+    "text": "5 stars. Does the job perfectly, no complaints at all.",
+    "expected": {"stars": 5, "sentiment": "positive"},
+    "why_unambiguous": "Numeric rating stated verbatim (\"5 stars\") -- stars must be read off the text exactly, not inferred."
+  },
+  {
+    "id": "cal-011",
+    "text": "1 out of 5. Completely unusable, stopped working after two days.",
+    "expected": {"stars": 1, "sentiment": "negative"},
+    "why_unambiguous": "Numeric rating stated verbatim (\"1 out of 5\"), clearly negative content with an explicit failure description."
+  },
+  {
+    "id": "cal-012",
+    "text": "The camera quality is outstanding and photos look professional, but the battery barely lasts two hours which is a real letdown.",
+    "expected": {"sentiment": "mixed"},
+    "why_unambiguous": "Contains one clearly positive statement (outstanding camera quality) and one clearly negative statement (battery barely lasts two hours) in the same review -- textbook mixed case."
+  },
+  {
+    "id": "cal-013",
+    "text": "The zipper broke the first time I used the bag. I want to return this and get my money back.",
+    "expected": {"urgency": "high"},
+    "why_unambiguous": "Explicit return + refund demand -- urgency=high by definition, isolated from any physical-harm signal (there is none here) to test the escalation-only trigger specifically."
+  },
+  {
+    "id": "cal-014",
+    "text": "The Bluetooth connection keeps dropping every few minutes, which is frustrating. Otherwise the sound quality is fine.",
+    "expected": {"urgency": "medium"},
+    "why_unambiguous": "Concrete, fixable, named defect (Bluetooth dropping) with no injury/harm and no refund/return/replacement demand anywhere in the text -- textbook medium case."
+  },
+  {
+    "id": "cal-015",
+    "text": "I switched to this from the Dyson V8 and honestly this performs just as well for half the price.",
+    "expected_list_contains": {"competitor_mentions": "dyson"},
+    "why_unambiguous": "Explicitly names a competitor product (\"Dyson V8\") by name -- competitor_mentions must be non-empty and reference Dyson."
+  },
+  {
+    "id": "cal-016",
+    "text": "Great product overall, but I really wish it came with a carrying case for travel. Please add that in the next version.",
+    "expected_list_contains": {"feature_requests": "case"},
+    "why_unambiguous": "Explicit, direct feature request (\"wish it came with a carrying case\", \"please add that in the next version\") -- feature_requests must be non-empty and reference a case."
+  }
+]
