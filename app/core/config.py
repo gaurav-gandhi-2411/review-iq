@@ -45,7 +45,11 @@ class Settings(BaseSettings):
         alias="GROQ_MODEL",
     )
     gemini_model: str = Field(
-        default="gemini-2.0-flash",
+        # gemini-2.0-flash was deprecated and shut down by Google on 2026-06-01
+        # (live-verified 2026-07-31 against ai.google.dev/gemini-api/docs/pricing) --
+        # this fallback path was silently dead for 2 months with nothing detecting it.
+        # gemini-2.5-flash is the current stable (non-preview) replacement.
+        default="gemini-2.5-flash",
         alias="GEMINI_MODEL",
     )
 
@@ -121,7 +125,13 @@ class Settings(BaseSettings):
         alias="GROQ_MODEL_LARGE",
     )
 
-    # Secondary failover provider — must be a no-train provider when configured
+    # Secondary failover provider — OpenRouter, restricted to Zero-Data-Retention
+    # endpoints on every call (app/core/providers/secondary.py enforces `zdr: true`
+    # unconditionally, regardless of which model is configured here). Recommended:
+    # SECONDARY_PROVIDER_API_KEY = an OpenRouter API key
+    # SECONDARY_PROVIDER_MODEL   = "meta-llama/llama-3.3-70b-instruct" -- same nominal
+    #   family as groq_model_large, live-verified 2026-07-31 to have ZDR-flagged
+    #   endpoints from 11 upstream providers (see SecondaryProvider's docstring).
     secondary_provider_api_key: str = Field(default="", alias="SECONDARY_PROVIDER_API_KEY")
     secondary_provider_model: str = Field(default="", alias="SECONDARY_PROVIDER_MODEL")
 
