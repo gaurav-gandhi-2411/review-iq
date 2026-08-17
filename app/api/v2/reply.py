@@ -69,7 +69,7 @@ _EXAMPLE_REPLY_RESPONSE = {
     "tone": "apologetic",
     "grounded_on": ["great sound quality", "battery dies after 3 hours"],
     "caveats": [],
-    "model_used": "llama-3.3-70b-versatile",
+    "model_used": "openai/gpt-oss-120b",
     "drafted_at": "2026-07-07T12:00:00Z",
 }
 

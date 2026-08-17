@@ -101,7 +101,7 @@ _EXAMPLE_AUTHENTICITY_RESPONSE = {
     "llm_signal_ok": True,
     "review_hash": "6f2a...",
     "scored_at": "2026-07-07T12:00:00Z",
-    "model_used": "llama-3.1-8b-instant",
+    "model_used": "openai/gpt-oss-20b",
 }
 
 

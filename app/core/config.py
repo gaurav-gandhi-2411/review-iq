@@ -40,12 +40,16 @@ class Settings(BaseSettings):
     environment: str = Field(default="development", alias="ENVIRONMENT")
 
     # LLM model names
+    # Groq deprecated llama-3.3-70b-versatile on 2026-08-16 (console.groq.com/docs/
+    # deprecations); openai/gpt-oss-120b is their documented replacement, same tier.
     groq_model: str = Field(
-        default="llama-3.3-70b-versatile",
+        default="openai/gpt-oss-120b",
         alias="GROQ_MODEL",
     )
+    # gemini-2.0-flash is shut down (ai.google.dev/gemini-api/docs/models, "Previous
+    # models"); gemini-2.5-flash is the same cost/speed tier's current stable offering.
     gemini_model: str = Field(
-        default="gemini-2.0-flash",
+        default="gemini-2.5-flash",
         alias="GEMINI_MODEL",
     )
 
@@ -112,12 +116,14 @@ class Settings(BaseSettings):
     )
 
     # Tiered model names — both Groq (privacy-vetted)
+    # Both deprecated by Groq on 2026-08-16 (console.groq.com/docs/deprecations); replaced
+    # with their documented successors, same fast/cheap vs. stronger tiering intact.
     groq_model_small: str = Field(
-        default="llama-3.1-8b-instant",
+        default="openai/gpt-oss-20b",
         alias="GROQ_MODEL_SMALL",
     )
     groq_model_large: str = Field(
-        default="llama-3.3-70b-versatile",
+        default="openai/gpt-oss-120b",
         alias="GROQ_MODEL_LARGE",
     )
 

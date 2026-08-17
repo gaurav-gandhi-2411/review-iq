@@ -48,7 +48,7 @@ router = APIRouter(prefix="/v2", tags=["v2"])
                                     "pros": ["great sound quality"],
                                     "cons": ["battery dies after 3 hours"],
                                     "feature_requests": [],
-                                    "model": "llama-3.1-8b-instant",
+                                    "model": "openai/gpt-oss-20b",
                                     "prompt_version": "2.3",
                                     "schema_version": "1.0.0",
                                     "latency_ms": 480,

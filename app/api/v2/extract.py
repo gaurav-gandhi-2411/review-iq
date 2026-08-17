@@ -154,7 +154,7 @@ _EXAMPLE_EXTRACTION_RESPONSE = {
     "review_length_chars": 96,
     "confidence": 0.91,
     "extraction_meta": {
-        "model": "llama-3.1-8b-instant",
+        "model": "openai/gpt-oss-20b",
         "prompt_version": "2.3",
         "schema_version": "1.0.0",
         "extracted_at": "2026-07-07T12:00:00Z",
