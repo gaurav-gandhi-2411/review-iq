@@ -487,8 +487,10 @@ def test_list_orgs_with_dated_extractions_pg_maps_ids() -> None:
 
 
 def test_list_orgs_with_dated_extractions_pg_does_not_set_tenant() -> None:
-    """Cross-org query -- deliberately does NOT call _set_tenant (service-role bypass, same
-    pattern as list_orgs_with_daily_digest_pg). Confirms no SET LOCAL ROLE call is issued."""
+    """Cross-org query -- deliberately does NOT call _set_tenant. Sees every org via a
+    SECURITY DEFINER function (public.list_orgs_with_dated_extractions, 20260817000003),
+    same pattern as list_orgs_with_daily_digest_pg. Confirms no SET LOCAL ROLE call is
+    issued -- there's nothing to scope to a single org here."""
     conn, cur = _make_conn()
     cur.fetchall.return_value = []
 

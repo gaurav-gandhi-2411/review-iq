@@ -376,10 +376,13 @@ def list_dated_extractions_pg(org_id: str) -> list[dict[str, Any]]:
 def list_orgs_with_dated_extractions_pg() -> list[str]:
     """Return distinct org_ids that have at least one extraction with a real review_date.
 
-    Cross-org query -- connects via _db_connect() and does NOT call _set_tenant, same
-    intentional service-role bypass pattern as list_orgs_with_daily_digest_pg
-    (app/core/alerts/storage.py): there is no single org_id to scope the session to for a
-    scheduled-sweep use case that must see every org. Do not "fix" this by adding _set_tenant.
+    Cross-org query -- connects via _db_connect() (review_iq_app), which holds no direct
+    SELECT on extractions and no BYPASSRLS. Calls public.list_orgs_with_dated_extractions(),
+    a narrow SECURITY DEFINER function (20260817000003) added specifically to replace the
+    BYPASSRLS-dependent raw query this used to run -- confirmed via a real container test
+    that the raw query silently returns 0 rows post-cutover despite rows existing, since
+    review_iq_app inherits authenticated's RLS policies through role membership with no
+    org context set. Do not replace this call with a raw SELECT against extractions.
 
     Feeds app/core/alerts/detector_sweep.py -- scopes the sweep to exactly the orgs where the
     detectors could possibly find anything, reusing idx_extractions_review_date.
@@ -387,7 +390,7 @@ def list_orgs_with_dated_extractions_pg() -> list[str]:
     conn = _db_connect()
     try:
         cur = conn.cursor()
-        cur.execute("SELECT DISTINCT org_id FROM public.extractions WHERE review_date IS NOT NULL")
+        cur.execute("SELECT org_id FROM public.list_orgs_with_dated_extractions()")
         rows = cur.fetchall()
         conn.commit()
         return [str(r[0]) for r in rows]
