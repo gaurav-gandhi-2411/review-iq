@@ -31,17 +31,27 @@ load_dotenv(Path(__file__).parents[2] / ".env")
 from app.core.alerts.storage import list_orgs_with_daily_digest_pg  # noqa: E402
 from app.core.storage_pg import list_orgs_with_dated_extractions_pg  # noqa: E402
 
-from tests.integration._superuser_db_params import superuser_db_params  # noqa: E402
-
-_DB_PARAMS = superuser_db_params()
-
 
 def _conn() -> psycopg2.extensions.connection:
     return psycopg2.connect(os.environ["SUPABASE_DATABASE_URL"], connect_timeout=15)
 
 
 def _superuser_conn() -> psycopg2.extensions.connection:
-    return psycopg2.connect(**_DB_PARAMS)
+    """Seeding connection for the cross-org fixtures below.
+
+    Deliberately SUPABASE_DIRECT_URL, not tests.integration._superuser_db_params
+    (which most other integration files use) -- that helper defaults to the real
+    production host whenever TEST_DB_HOST isn't set, and bypassrls-container-check.yml
+    (one of the two workflows this file runs under) only ever sets SUPABASE_DIRECT_URL,
+    never TEST_DB_HOST/TEST_DB_PORT/SUPABASE_DB_PASSWORD. Using that helper here made
+    this file's new tests silently try to reach the real Supabase host from inside a
+    GitHub Actions runner and fail with "Network is unreachable" -- caught by this
+    workflow's own CI run, not by local testing (which had the fuller env var set
+    matching pre-cutover-verification.yml, the other workflow this file runs under).
+    SUPABASE_DIRECT_URL is guaranteed set by both workflows and always points at the
+    right target in each.
+    """
+    return psycopg2.connect(os.environ["SUPABASE_DIRECT_URL"], connect_timeout=15)
 
 
 def _rolbypassrls(rolname: str) -> bool | None:

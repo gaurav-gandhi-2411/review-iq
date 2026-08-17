@@ -75,7 +75,16 @@ jobs:
           psql "postgresql://postgres:postgres@localhost:5432/postgres" -v ON_ERROR_STOP=1 \
             -f supabase/cutover/20260801000001_statement4_revoke_bypassrls.sql
 
+      # Item 224/225: SUPABASE_DIRECT_URL added alongside SUPABASE_DATABASE_URL --
+      # test_role_bypassrls.py's cross-org sweep fixtures need a superuser connection to
+      # seed rows across two orgs, and use SUPABASE_DIRECT_URL for that (the same var
+      # both this workflow's own migration-apply step above and
+      # pre-cutover-verification.yml already use for a direct postgres-superuser
+      # connection, for exactly this purpose). Without it here, those fixtures fell back
+      # to _superuser_db_params()'s production-host default and failed with "Network is
+      # unreachable" from inside the runner -- caught by this exact workflow, not before.
       - name: BYPASSRLS regression check (throwaway container, no prod credential)
         env:
           SUPABASE_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+          SUPABASE_DIRECT_URL: postgresql://postgres:postgres@localhost:5432/postgres
         run: uv run pytest tests/integration/test_role_bypassrls.py -v -m integration --no-cov
