@@ -96,6 +96,45 @@ entirely (Cloud Run, the DB connection secrets, Firebase Hosting) with no path t
 onto one account, or add a shared/secondary owner to both) are both real changes to account-level
 access control outside what this pass should decide unilaterally; flagging for a GG decision.
 
+## Addendum (2026-08-01): mail-routing topology, and a retracted finding
+
+An earlier pass claimed outbound email from `alerts@mail.samidhareviews.xyz` (Resend, the alert
+notification channel — see `app/core/alerts/channels/resend_channel.py`) was "very likely failing
+SPF/DKIM checks," based on `nslookup`/PowerShell queries against `mail.samidhareviews.xyz` finding
+no TXT or MX records. **That finding is retracted as stated.** Direct DNS verification (Google and
+Cloudflare DoH, cross-resolver) found Resend's DKIM record live and correctly resolving at
+`resend._domainkey.mail.samidhareviews.xyz` — a real RSA key, not absent. The root cause of the
+original miss: DKIM records live at a selector-prefixed name (`<selector>._domainkey.<domain>`)
+that a guessed/sampled public sweep won't find without either the exact selector name or a full
+zone export — this session's original check queried only the bare `mail.samidhareviews.xyz` name
+directly, which was never where DKIM would be. Confirming DKIM alone (correctly aligned, since the
+selector's own name scopes it to `mail.samidhareviews.xyz`, matching the `From:` header domain)
+is sufficient for a message to pass DMARC — RFC 7489 only requires SPF-alignment *or*
+DKIM-alignment, not both — so the practical claim ("mail is likely failing authentication") does
+not hold regardless of SPF's status.
+
+**SPF's own status remains genuinely unresolved, not confirmed either way**, and this ADR does not
+claim otherwise: repeated cross-resolver DoH queries against `mail.samidhareviews.xyz`, the bare
+apex, and a plausible bounce subdomain (`send.samidhareviews.xyz`) found no SPF TXT record
+anywhere. This may mean Resend's setup for this account doesn't require one, or it may mean it
+exists at a name not yet checked — the authoritative source is the full Namecheap zone export
+(pending as part of the DNS cutover), not another round of guessed public queries.
+
+**`mail.samidhareviews.xyz` carries its own, independent DMARC policy**, distinct from the apex:
+`_dmarc.mail.samidhareviews.xyz` → `v=DMARC1; p=none;` (confirmed via DoH, a genuinely separate
+record from `_dmarc.samidhareviews.xyz`, not inherited). This means DMARC alignment/policy for
+the sending subdomain is self-contained — relaxed-alignment inheritance from the apex is not a
+live concern here, since the subdomain publishes its own explicit policy regardless. Like the
+apex record, it currently has no `rua=` tag and so collects zero aggregate reports; both are
+being updated in the same DNS cutover pass to add `rua=mailto:dmarc@samidhareviews.xyz`.
+
+**Standing lesson, not specific to this domain**: a negative result from a guessed or sampled
+public-DNS sweep only rules out the specific names tried — it is not evidence that no record
+exists anywhere in the zone. Selector-prefixed records (DKIM), non-obvious subdomains, and
+anything requiring the actual zone file are exactly what a partial sweep will systematically miss.
+Treat "found nothing" as "checked these specific names, found nothing there" — never as "confirmed
+absent" — until a full zone export (or equivalent authoritative source) is in hand.
+
 ## Decision
 
 Document the ingress tier as it actually exists rather than migrate it to match the repo's prior
