@@ -1,0 +1,138 @@
+name: Model Availability Check
+
+# Item 269/O (2026-08-18): the same silent-failure shape as TriageIQ's /triage P0 -- a
+# hardcoded LLM model default going stale on the provider's side, with nothing checking
+# for it until a real request fails. Confirmed this session that review-iq WAS running
+# broken defaults (llama-3.1-8b-instant / llama-3.3-70b-versatile / gemini-2.0-flash, all
+# deprecated by their providers) with zero env overrides in production -- fixed in #124,
+# this workflow exists so the fix doesn't silently rot the same way again.
+#
+# Reads the CURRENT default model strings out of app/core/config.py (never hardcoded here
+# a second time -- a workflow with its own copy of the model name would itself drift from
+# the source it's supposed to be checking) and confirms each is still present in its
+# provider's live model list.
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # daily 06:00 UTC
+  push:
+    branches: [main]
+    paths:
+      - 'app/core/config.py'
+  workflow_dispatch: {}
+
+concurrency:
+  group: model-availability-check
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  id-token: write  # WIF auth for gcloud (Secret Manager read)
+  issues: write    # open/update/close alert issue on failure/recovery
+
+env:
+  ALERT_LABEL: model-availability-alert
+  ALERT_TITLE: "⚠️ Configured LLM model no longer available"
+
+jobs:
+  model-availability-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract configured model names from source
+        id: models
+        run: |
+          python3 - <<'PYEOF' >> "$GITHUB_OUTPUT"
+          import re
+          text = open("app/core/config.py", encoding="utf-8").read()
+          fields = ["groq_model", "gemini_model", "groq_model_small", "groq_model_large"]
+          for field in fields:
+              m = re.search(rf'{field}: str = Field\(\s*default="([^"]+)"', text)
+              if m:
+                  print(f"{field}={m.group(1)}")
+          PYEOF
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOYER_SA }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Fetch provider API keys from Secret Manager
+        id: keys
+        run: |
+          echo "::add-mask::$(gcloud secrets versions access latest --secret=groq-api-key)"
+          echo "groq_key=$(gcloud secrets versions access latest --secret=groq-api-key)" >> "$GITHUB_OUTPUT"
+          echo "::add-mask::$(gcloud secrets versions access latest --secret=gemini-api-key)"
+          echo "gemini_key=$(gcloud secrets versions access latest --secret=gemini-api-key)" >> "$GITHUB_OUTPUT"
+
+      - name: Confirm Groq models are still live
+        env:
+          GROQ_KEY: ${{ steps.keys.outputs.groq_key }}
+          GROQ_MODEL: ${{ steps.models.outputs.groq_model }}
+          GROQ_MODEL_SMALL: ${{ steps.models.outputs.groq_model_small }}
+          GROQ_MODEL_LARGE: ${{ steps.models.outputs.groq_model_large }}
+        run: |
+          LIVE=$(curl -s -H "Authorization: Bearer $GROQ_KEY" https://api.groq.com/openai/v1/models | python3 -c "import json,sys; print('\n'.join(m['id'] for m in json.load(sys.stdin)['data']))")
+          FAIL=0
+          for m in "$GROQ_MODEL" "$GROQ_MODEL_SMALL" "$GROQ_MODEL_LARGE"; do
+            if ! echo "$LIVE" | grep -qx "$m"; then
+              echo "::error::Groq model '$m' is not in the live model list -- likely deprecated/removed"
+              FAIL=1
+            else
+              echo "  [ok] $m is live"
+            fi
+          done
+          exit $FAIL
+
+      - name: Confirm Gemini model is still live
+        env:
+          GEMINI_KEY: ${{ steps.keys.outputs.gemini_key }}
+          GEMINI_MODEL: ${{ steps.models.outputs.gemini_model }}
+        run: |
+          LIVE=$(curl -s "https://generativelanguage.googleapis.com/v1beta/models?key=$GEMINI_KEY" | python3 -c "import json,sys; print('\n'.join(m['name'].removeprefix('models/') for m in json.load(sys.stdin).get('models', [])))")
+          if ! echo "$LIVE" | grep -qx "$GEMINI_MODEL"; then
+            echo "::error::Gemini model '$GEMINI_MODEL' is not in the live model list -- likely deprecated/removed"
+            exit 1
+          fi
+          echo "  [ok] $GEMINI_MODEL is live"
+
+      - name: Open/update alert issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const label = process.env.ALERT_LABEL;
+            const title = process.env.ALERT_TITLE;
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, labels: label, state: 'open',
+            });
+            if (issues.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo, title, labels: [label],
+                body: `A configured LLM model is no longer available on its provider. See the failed run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              });
+            }
+
+      - name: Close alert issue on recovery
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const label = process.env.ALERT_LABEL;
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, labels: label, state: 'open',
+            });
+            for (const issue of issues) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo, issue_number: issue.number,
+                body: 'All configured models confirmed live again — closing.',
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner, repo: context.repo.repo, issue_number: issue.number, state: 'closed',
+              });
+            }
