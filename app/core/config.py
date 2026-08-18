@@ -193,12 +193,17 @@ class Settings(BaseSettings):
 
     # Shared-secret header token protecting POST /internal/digest/run (timing-safe
     # compare via hmac.compare_digest), mirroring GOOGLE_PUBSUB_PUSH_TOKEN's pattern.
+    # Backed by Secret Manager (digest-trigger-token) as of Item T2, 2026-08-18 -- was
+    # plaintext before that, justified by a "Secret Manager free-tier ceiling (6/6)"
+    # comment that was already false at the time it was written (the project had 12
+    # active secrets, not 6) and would have been a ~$0.06/month non-issue regardless.
+    # Reads identically either way: Cloud Run injects a secretKeyRef the same as any
+    # other env var at runtime, so this Field()'s alias-based read needed no change.
     digest_trigger_token: str = Field(default="", alias="DIGEST_TRIGGER_TOKEN")
 
     # Shared-secret header token protecting POST /internal/ingest/tick (timing-safe
-    # compare via hmac.compare_digest) — same pattern as digest_trigger_token. Plain
-    # env var, not Secret Manager: same precedent as DIGEST_TRIGGER_TOKEN, the project
-    # is already at its Secret Manager free-tier ceiling (6/6 secrets).
+    # compare via hmac.compare_digest) — same pattern as digest_trigger_token, same
+    # Secret Manager migration (ingest-tick-token), same corrected history above.
     ingest_tick_token: str | None = Field(default=None, alias="INGEST_TICK_TOKEN")
     # Rows drained per tick (Option B of the CSV-throttling fix, 2026-07-09). At
     # 3 rows/tick x 1 tick/min via Cloud Scheduler, this roughly matches the Option A
@@ -207,9 +212,8 @@ class Settings(BaseSettings):
     ingest_tick_rows: int = Field(default=3, alias="INGEST_TICK_ROWS")
 
     # Shared-secret header token protecting POST /internal/detectors/run (timing-safe compare
-    # via hmac.compare_digest) — same pattern as digest_trigger_token/ingest_tick_token. Plain
-    # env var, not Secret Manager, same reason: the project is already at its Secret Manager
-    # free-tier ceiling.
+    # via hmac.compare_digest) — same pattern as digest_trigger_token/ingest_tick_token, same
+    # Secret Manager migration (detector-sweep-trigger-token), same corrected history above.
     detector_sweep_trigger_token: str = Field(default="", alias="DETECTOR_SWEEP_TRIGGER_TOKEN")
 
     # Resend transactional email
