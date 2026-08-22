@@ -72,7 +72,10 @@ async def test_groq_success_no_failover(monkeypatch: pytest.MonkeyPatch) -> None
         )
 
     assert result.sentiment == "positive"
-    assert "llama" in model
+    # Tiered routing (default-on) selects groq_model_small for this English input,
+    # not the GROQ_MODEL override above -- was "llama" in model (matched
+    # groq_model_small's old default coincidentally, not the actual override).
+    assert model == "openai/gpt-oss-20b"
     assert not degraded
 
 
