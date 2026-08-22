@@ -40,8 +40,12 @@ class Settings(BaseSettings):
     environment: str = Field(default="development", alias="ENVIRONMENT")
 
     # LLM model names
+    # Groq deprecated llama-3.3-70b-versatile on 2026-08-16; openai/gpt-oss-120b is
+    # their own documented replacement (console.groq.com/docs/deprecations), same
+    # "large/versatile" size class. No GROQ_MODEL* env var was set on the live Cloud
+    # Run service, so this default is what actually ran in production (Item G1).
     groq_model: str = Field(
-        default="llama-3.3-70b-versatile",
+        default="openai/gpt-oss-120b",
         alias="GROQ_MODEL",
     )
     gemini_model: str = Field(
@@ -112,12 +116,16 @@ class Settings(BaseSettings):
     )
 
     # Tiered model names — both Groq (privacy-vetted)
+    # Groq deprecated llama-3.1-8b-instant on 2026-08-16; openai/gpt-oss-20b is their
+    # documented replacement, same fast/cheap tier (Item G1).
     groq_model_small: str = Field(
-        default="llama-3.1-8b-instant",
+        default="openai/gpt-oss-20b",
         alias="GROQ_MODEL_SMALL",
     )
+    # Groq deprecated llama-3.3-70b-versatile on 2026-08-16; openai/gpt-oss-120b is
+    # their documented replacement, same "large/versatile" tier (Item G1).
     groq_model_large: str = Field(
-        default="llama-3.3-70b-versatile",
+        default="openai/gpt-oss-120b",
         alias="GROQ_MODEL_LARGE",
     )
 

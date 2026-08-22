@@ -77,7 +77,7 @@ async def test_draft_reply_basic() -> None:
     assert draft.reply_text == clean_reply
     assert draft.language == "en"
     # model_used is the actual model name from settings (groq_model_large default)
-    assert draft.model_used == "llama-3.3-70b-versatile"
+    assert draft.model_used == "openai/gpt-oss-120b"
     assert draft.caveats == []
     assert "slow delivery" in draft.grounded_on
     assert "delivery" in draft.grounded_on
@@ -113,7 +113,7 @@ async def test_draft_reply_english_degrades_on_quota() -> None:
 
     assert draft.reply_text == "Sorry to hear this."
     assert any("reduced-capacity model" in c for c in draft.caveats)
-    assert draft.model_used == "llama-3.1-8b-instant"
+    assert draft.model_used == "openai/gpt-oss-20b"
 
 
 async def test_draft_reply_vernacular_raises_on_quota() -> None:
