@@ -140,14 +140,14 @@ that script's output. See [ADR 0001](docs/architecture/adr/0001-eval-gate-and-pr
 for why the gate is what it is and how the prompt version history got out of sync with this
 file in the past.
 
-<!-- METRICS:START:extraction_table -->**Prompt v2.3** &middot; `d87c3e5` &middot; measured 2026-07-30T13:24:17Z &middot; mode: direct (local LLM)
+<!-- METRICS:START:extraction_table -->**Prompt v2.3** &middot; `44231ab` &middot; measured 2026-09-05T16:23:56Z &middot; mode: routed (tiered)
 
 | Language | Score | 95% CI | Gate | Status |
 |---|---|---|---|---|
-| en | 86.2% | [83.7%, 88.7%] | ≥80% | PASS |
-| hi-en | 80.9% | [75.1%, 85.9%] | ≥80% | PASS |
-| hi | 80.7% | [75.8%, 85.7%] | ≥80% | PASS |
-| **Overall** | **83.8%** | [81.4%, 86.1%] | ≥83% | PASS |
+| en | 75.0% | [67.1%, 81.3%] | ≥80% | FAIL |
+| hi-en | 80.6% | [75.1%, 85.2%] | ≥80% | PASS |
+| hi | 81.3% | [75.7%, 86.7%] | ≥80% | PASS |
+| **Overall** | **77.6%** | [73.0%, 81.6%] | ≥83% | FAIL |
 
 n=49 fixtures (27 en, 15 hi-en, 7 hi). Tiered routing is ON by default in production and in this eval run (`ENABLE_TIERED_ROUTING` defaults `true`, unset in CI) -- a same-cassette `--routed` comparison produced byte-identical scores to the numbers above; there is currently no distinct *unrouted* measurement to report separately (see [ADR 0001](docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md)).<!-- METRICS:END -->
 
