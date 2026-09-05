@@ -37,6 +37,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
   group: schema-drift-check
@@ -100,4 +101,26 @@ jobs:
           uv run python scripts/extract_schema_snapshot.py "$SUPABASE_DIRECT_URL" > prod.json
 
       - name: Compare
+        id: compare
         run: uv run python scripts/check_schema_drift.py prod.json ephemeral.json
+
+      # This workflow's push trigger (on merges touching supabase/migrations/**) gives
+      # SOME visibility on main's own Actions tab, but it is not a PR-required check --
+      # a reviewer merging a PR sees nothing until checking main separately, which
+      # nobody had been doing: this check failed every single run (schedule AND push)
+      # for 20+ days before this alert was added (docs/audit/2026-09-06-
+      # unwatched-scheduled-jobs.md).
+      - name: Alert on failure / close alert on recovery
+        if: always()
+        uses: ./.github/actions/schedule-failure-alert
+        with:
+          status: ${{ steps.compare.outcome == 'success' && 'success' || 'failure' }}
+          title: "Schema drift check is failing"
+          label: "ci-alert,security"
+          details: |
+            `schema-drift-check.yml`'s live-vs-migrations schema diff failed
+            (triggered by `${{ github.event_name }}`). This is the standing control
+            that catches an out-of-band production schema change with no matching
+            migration file -- see this workflow's own header comment for the incident
+            that created it. A failing run here means that guarantee is not currently
+            being verified.
