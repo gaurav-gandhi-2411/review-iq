@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-07-30T13:27:40Z",
+  "git_sha": "d87c3e5733712851b6ae1402d7df838fb44ffb8b",
+  "mode": "historical (reconstructed, no live run this session)",
+  "provenance_note": "Reconstructed from the v0.6.0 published result (README: precision 1.000 / recall 1.000 / F1 1.000, n=40, 19 genuine / 14 suspicious / 7 likely_fake), not a fresh measurement. eval/authenticity/runner.py has no cassette-replay support (unlike eval/runner.py) -- GroqProvider calls in this path use cassette keys that were never recorded for the authenticity prompt, so a cassette-replay run fails loudly (INVALID RUN, 40/40 LLM errors, verified this session) and a live re-run was out of scope (no live LLM calls permitted). Precision=recall=F1=1.0 with n=40 and the stated genuine/suspicious/likely_fake split mathematically forces tp=21, fp=0, fn=0, tn=19 (zero errors overall). KNOWN GAP: record authenticity cassettes so this regenerates like the main eval does.",
+  "n": 40,
+  "confusion_matrix": {
+    "tp": 21,
+    "fp": 0,
+    "fn": 0,
+    "tn": 19
+  },
+  "precision": {
+    "value": 1.0,
+    "n": 21,
+    "ci_95": {
+      "lower": 0.8453561767357979,
+      "upper": 0.9999999999999999
+    }
+  },
+  "recall": {
+    "value": 1.0,
+    "n": 21,
+    "ci_95": {
+      "lower": 0.8453561767357979,
+      "upper": 0.9999999999999999
+    }
+  },
+  "f1": {
+    "value": 1.0,
+    "n": 40,
+    "ci_95": {
+      "lower": 0.9123754607496077,
+      "upper": 1.0
+    },
+    "note": "n=all scored fixtures (approximation) -- F1 is not a single binomial proportion."
+  },
+  "precision_gate": 0.8,
+  "recall_target": 0.6,
+  "gate_passed": true
+}
