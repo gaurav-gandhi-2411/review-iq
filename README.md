@@ -136,7 +136,7 @@ curl -X POST https://gauravgandhi2411-review-iq.hf.space/extract \
 
 Evaluated on 46 hand-labeled and synthetic fixtures across English, Hinglish, and Hindi:
 
-> **Re-measurement in progress (as of 2026-09-06):** the most recent completed measurement
+> **Re-measurement in progress (as of 2026-09-05):** the most recent completed measurement
 > (v2.3, row below) ran under `llama-3.1-8b-instant`/`llama-3.3-70b-versatile`. Groq
 > deprecated those models 2026-08-16; production has since moved to
 > `openai/gpt-oss-20b`/`openai/gpt-oss-120b` (no env override on the live Cloud Run
