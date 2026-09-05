@@ -464,12 +464,19 @@ def write_results(
             "passed": lang_pass[lang],
         }
 
+    settings = get_settings()
     payload = {
         "generated_at": now_iso(),
         "git_sha": get_git_sha(),
         "prompt_version": PROMPT_VERSION,
         "mode": mode,
-        "tiered_routing_enabled_at_runtime": get_settings().enable_tiered_routing,
+        "tiered_routing_enabled_at_runtime": settings.enable_tiered_routing,
+        # Recorded so a later CI check (scripts/check_eval_model_matches_config.py)
+        # can catch a config-only model-name change invalidating this measurement
+        # without anyone re-running the eval -- see that script's docstring for the
+        # 2026-08-16/22 Groq-deprecation incident this exists to prevent recurring.
+        "groq_model_small": settings.groq_model_small,
+        "groq_model_large": settings.groq_model_large,
         "overall_score": overall,
         "overall_ci_95": {
             "n": len(results),

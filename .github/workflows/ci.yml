@@ -48,6 +48,12 @@ jobs:
       - name: Metrics render drift check (README/site vs eval JSON)
         run: uv run python scripts/render_metrics.py --check
 
+      # Catches the exact 2026-08-16/22 incident class: a config-only model-name
+      # change silently invalidating eval/results.json's claim, undetected because
+      # nothing re-ran the eval. See scripts/check_eval_model_matches_config.py.
+      - name: Eval model config matches deployed defaults
+        run: uv run python scripts/check_eval_model_matches_config.py
+
   pip-audit:
     runs-on: ubuntu-latest
     steps:
