@@ -156,10 +156,24 @@
     =========================================================== -->
     <section id="accuracy" class="py-16 border-t border-gray-800">
       <h2 class="text-3xl font-bold text-white mb-2">Real accuracy &mdash; evaluated on held-out fixtures</h2>
-      <p class="text-gray-400 mb-8">
+      <p class="text-gray-400 mb-4">
         Field-level scoring (exact match + fuzzy + set F1) on held-out CI fixtures.
-        Prompt v2.3, Groq tiered routing (Llama 3.1 8B / 3.3 70B).
+        Prompt v2.3, measured 2026-07-06 under Groq tiered routing
+        (<code class="text-gray-300">llama-3.1-8b-instant</code> /
+        <code class="text-gray-300">llama-3.3-70b-versatile</code>).
       </p>
+
+      <div class="mb-6 bg-red-950/40 border border-red-800 rounded-lg px-5 py-4 text-sm text-gray-300">
+        <span class="text-red-400 font-semibold">Re-measurement in progress: </span>
+        Groq deprecated the models above on 2026-08-16. Production now routes to
+        <code class="text-gray-300">openai/gpt-oss-20b</code> /
+        <code class="text-gray-300">openai/gpt-oss-120b</code> instead &mdash; the
+        numbers below have not yet been re-measured against that configuration and may
+        not reflect current live accuracy. They are shown as the last real measurement
+        on record, not as a current claim. Follow
+        <a href="https://github.com/gaurav-gandhi-2411/review-iq/issues" class="underline text-red-300">this repo's issues</a>
+        for the re-measured figures.
+      </div>
 
       <div class="overflow-x-auto rounded-xl border border-gray-700">
         <table class="w-full text-sm">
