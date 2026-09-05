@@ -37,6 +37,12 @@ class Settings(BaseSettings):
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     max_review_length: int = Field(default=5000, alias="MAX_REVIEW_LENGTH")
     rate_limit_per_minute: int = Field(default=30, alias="RATE_LIMIT_PER_MINUTE")
+    # Global (cross-IP) daily cap on POST /demo/extract -- see app/api/demo.py's
+    # DEMO_DAILY_REQUEST_BUDGET docstring for the Groq free-tier math behind this
+    # default. 50/day keeps worst-case token usage (hi-en, priciest language) under
+    # half of the shared 200,000 tokens/day free-tier budget every real customer's
+    # /v2/extract call also draws from.
+    demo_daily_request_budget: int = Field(default=50, alias="DEMO_DAILY_REQUEST_BUDGET")
     environment: str = Field(default="development", alias="ENVIRONMENT")
 
     # LLM model names

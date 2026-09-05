@@ -12,6 +12,7 @@ from app.core.schemas import ExtractionMetaV2, ReviewExtractionV2, Sentiment, Ur
 from app.core.storage_pg import (
     aggregate_extraction_costs_pg,
     aggregate_extractions_pg,
+    check_and_increment_demo_request_pg,
     count_job_row_statuses_pg,
     count_pending_rows_pg,
     create_batch_job_pg,
@@ -22,6 +23,7 @@ from app.core.storage_pg import (
     list_extractions_pg,
     list_job_row_hashes_pg,
     list_orgs_with_dated_extractions_pg,
+    record_demo_extraction_cost_pg,
     record_extraction_cost_pg,
     record_quota_request_pg,
     save_extraction_pg,
@@ -624,6 +626,129 @@ def test_record_extraction_cost_pg_error_triggers_rollback() -> None:
                 500,
                 0.00009,
                 0.00861,
+            )
+
+    conn.rollback.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
+# check_and_increment_demo_request_pg
+# ---------------------------------------------------------------------------
+
+
+def test_check_and_increment_demo_request_pg_under_budget_returns_true() -> None:
+    conn, cur = _make_conn()
+    cur.fetchone.return_value = (5,)  # UPDATE ... RETURNING request_count succeeded
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        result = check_and_increment_demo_request_pg(50)
+
+    assert result is True
+    conn.commit.assert_called_once()
+
+
+def test_check_and_increment_demo_request_pg_at_budget_returns_false() -> None:
+    conn, cur = _make_conn()
+    cur.fetchone.return_value = None  # conditional UPDATE's WHERE failed -- no row returned
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        result = check_and_increment_demo_request_pg(50)
+
+    assert result is False
+    conn.commit.assert_called_once()  # still commits -- no error occurred, just no capacity
+
+
+def test_check_and_increment_demo_request_pg_passes_budget_as_param() -> None:
+    conn, cur = _make_conn()
+    cur.fetchone.return_value = (1,)
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        check_and_increment_demo_request_pg(50)
+
+    call = cur.execute.call_args_list[0]
+    assert call[0][1] == (50,)
+
+
+def test_check_and_increment_demo_request_pg_error_triggers_rollback() -> None:
+    conn, cur = _make_conn()
+    cur.execute.side_effect = Exception("DB error")
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        with pytest.raises(Exception, match="DB error"):
+            check_and_increment_demo_request_pg(50)
+
+    conn.rollback.assert_called_once()
+
+
+def test_check_and_increment_demo_request_pg_never_calls_set_tenant() -> None:
+    """No org exists on this path -- must not attempt SET LOCAL ROLE authenticated."""
+    conn, cur = _make_conn()
+    cur.fetchone.return_value = (1,)
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        check_and_increment_demo_request_pg(50)
+
+    for call in cur.execute.call_args_list:
+        assert "SET LOCAL ROLE authenticated" not in str(call)
+
+
+# ---------------------------------------------------------------------------
+# record_demo_extraction_cost_pg
+# ---------------------------------------------------------------------------
+
+
+def test_record_demo_extraction_cost_pg_returns_id() -> None:
+    conn, cur = _make_conn()
+    new_id = uuid.uuid4()
+    cur.fetchone.return_value = (new_id,)
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        result = record_demo_extraction_cost_pg(
+            "groq", "openai/gpt-oss-20b", "small", "en", 1000, 500, 0.00009, 0.00861
+        )
+
+    assert result == str(new_id)
+    conn.commit.assert_called_once()
+
+
+def test_record_demo_extraction_cost_pg_inserts_null_org_and_demo_source() -> None:
+    conn, cur = _make_conn()
+    cur.fetchone.return_value = (uuid.uuid4(),)
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        record_demo_extraction_cost_pg(
+            "groq", "openai/gpt-oss-20b", "small", "en", 1000, 500, 0.00009, 0.00861
+        )
+
+    insert_call = [c for c in cur.execute.call_args_list if "INSERT" in (c[0][0] or "")]
+    assert insert_call, "Expected an INSERT call"
+    sql = insert_call[0][0][0]
+    assert "NULL, NULL" in sql  # org_id, extraction_id
+    assert "'demo'" in sql  # source discriminator
+
+
+def test_record_demo_extraction_cost_pg_updates_daily_token_totals() -> None:
+    conn, cur = _make_conn()
+    cur.fetchone.return_value = (uuid.uuid4(),)
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        record_demo_extraction_cost_pg(
+            "groq", "openai/gpt-oss-20b", "small", "en", 1000, 500, 0.00009, 0.00861
+        )
+
+    update_calls = [c for c in cur.execute.call_args_list if "UPDATE" in (c[0][0] or "")]
+    assert update_calls, "Expected an UPDATE call against demo_daily_usage"
+    assert update_calls[0][0][1] == (1000, 500)
+
+
+def test_record_demo_extraction_cost_pg_error_triggers_rollback() -> None:
+    conn, cur = _make_conn()
+    cur.execute.side_effect = Exception("DB error")
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        with pytest.raises(Exception, match="DB error"):
+            record_demo_extraction_cost_pg(
+                "groq", "openai/gpt-oss-20b", "small", "en", 1000, 500, 0.00009, 0.00861
             )
 
     conn.rollback.assert_called_once()

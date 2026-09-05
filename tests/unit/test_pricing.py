@@ -41,6 +41,33 @@ def test_compute_cost_usd_only_input_tokens() -> None:
     assert cost == pytest.approx(0.05)
 
 
+def test_compute_cost_usd_current_small_model_gpt_oss_20b() -> None:
+    """The model actually live in production today (config.py's groq_model_small
+    default, post-2026-08-16 deprecation) — $0.075/$0.30 per 1M tokens."""
+    cost = compute_cost_usd("openai/gpt-oss-20b", tokens_in=1_000_000, tokens_out=1_000_000)
+    assert cost == pytest.approx(0.075 + 0.30)
+
+
+def test_compute_cost_usd_current_large_model_gpt_oss_120b() -> None:
+    """The model actually live in production today (config.py's groq_model_large
+    default, post-2026-08-16 deprecation) — $0.15/$0.60 per 1M tokens."""
+    cost = compute_cost_usd("openai/gpt-oss-120b", tokens_in=1_000_000, tokens_out=1_000_000)
+    assert cost == pytest.approx(0.15 + 0.60)
+
+
+def test_deprecated_and_current_models_both_present() -> None:
+    # Deprecated models are kept (not deleted) so historical rows/cassettes
+    # referencing them by name don't hit UnknownModelError; current models must
+    # also be present since they're what actually serves live traffic today.
+    for model in (
+        "llama-3.1-8b-instant",
+        "llama-3.3-70b-versatile",
+        "openai/gpt-oss-20b",
+        "openai/gpt-oss-120b",
+    ):
+        assert model in PRICING_TABLE
+
+
 # ---------------------------------------------------------------------------
 # compute_cost_inr — conversion correctness
 # ---------------------------------------------------------------------------
