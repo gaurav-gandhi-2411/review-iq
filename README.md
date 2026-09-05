@@ -144,10 +144,10 @@ file in the past.
 
 | Language | Score | 95% CI | Gate | Status |
 |---|---|---|---|---|
-| en | 86.2% | [68.7%, 94.7%] | ≥80% | PASS |
-| hi-en | 80.9% | [55.8%, 93.4%] | ≥80% | PASS |
-| hi | 80.7% | [43.9%, 95.7%] | ≥80% | PASS |
-| **Overall** | **83.8%** | [71.1%, 91.6%] | ≥83% | PASS |
+| en | 86.2% | [83.7%, 88.7%] | ≥80% | PASS |
+| hi-en | 80.9% | [75.1%, 85.9%] | ≥80% | PASS |
+| hi | 80.7% | [75.8%, 85.7%] | ≥80% | PASS |
+| **Overall** | **83.8%** | [81.4%, 86.1%] | ≥83% | PASS |
 
 n=49 fixtures (27 en, 15 hi-en, 7 hi). Tiered routing is ON by default in production and in this eval run (`ENABLE_TIERED_ROUTING` defaults `true`, unset in CI) -- a same-cassette `--routed` comparison produced byte-identical scores to the numbers above; there is currently no distinct *unrouted* measurement to report separately (see [ADR 0001](docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md)).<!-- METRICS:END -->
 
