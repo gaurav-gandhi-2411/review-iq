@@ -47,7 +47,7 @@ dev = [
     "psycopg2-binary>=2.9.0",
     "python-dotenv>=1.0.0",
     "lingua-language-detector>=2.1.1",
-    "datasets>=4.8.5",
+    "datasets>=5.0.1",
     "kaggle>=1.6",
 ]
 
