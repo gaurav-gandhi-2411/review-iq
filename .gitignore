@@ -17,6 +17,10 @@ env/
 # uv
 .uv/
 
+# Vercel CLI project link (per-machine, per-checkout -- web/.gitignore already covers
+# web/.vercel; this covers the repo-root .vercel/ that Vercel CLI also creates)
+.vercel/
+
 # Environment variables — NEVER commit
 .env
 .env.local
