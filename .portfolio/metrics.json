@@ -6,11 +6,15 @@
     {
       "id": "reviewiq:extraction-eval",
       "label": "Extraction accuracy (en/hi/hi-en)",
-      "value": "83.8% overall",
+      "value": "83.8% overall (2026-07-06 measurement; deployed model has since changed, re-measuring)",
       "source_file": "eval/report.md",
       "source_line": 5,
       "commit_sha": "13a4422e1705731e104c04b3d5c76200844b9df0",
-      "measured_at": "2026-07-06"
+      "measured_at": "2026-07-06",
+      "measured_under_model": "llama-3.1-8b-instant / llama-3.3-70b-versatile",
+      "current_deployed_model": "openai/gpt-oss-20b / openai/gpt-oss-120b",
+      "stale": true,
+      "stale_reason": "Groq deprecated the measured models 2026-08-16; production moved to the current models with no re-measurement yet. Value string carries this caveat inline in case this field is not rendered by the consumer."
     }
   ]
 }

@@ -449,6 +449,17 @@ curl https://your-instance.run.app/v2/ingest/b3f1a2d4-.../result \
           The detected code is returned in the <code class="bg-gray-800 text-blue-300 px-1.5 py-0.5 rounded text-sm">language</code> field of the response.
         </p>
 
+        <div class="mb-6 bg-red-950/40 border border-red-800 rounded-lg px-5 py-4 text-sm text-gray-300">
+          <span class="text-red-400 font-semibold">Re-measurement in progress: </span>
+          The accuracy figures below were measured 2026-07-06 under Groq tiered routing
+          (<code class="text-gray-300">llama-3.1-8b-instant</code> /
+          <code class="text-gray-300">llama-3.3-70b-versatile</code>). Groq deprecated
+          those models 2026-08-16; production now routes to
+          <code class="text-gray-300">openai/gpt-oss-20b</code> /
+          <code class="text-gray-300">openai/gpt-oss-120b</code>, which have not yet
+          been re-measured. Treat these numbers as historical, not current.
+        </div>
+
         <div class="overflow-x-auto rounded-xl border border-gray-700">
           <table class="w-full text-sm">
             <thead class="bg-gray-800 text-gray-300">
