@@ -1294,3 +1294,224 @@ def _row_to_extraction_v2(row: tuple[Any, ...], org_id: str) -> ReviewExtraction
         else datetime.fromisoformat(str(review_date)),
         extraction_meta=meta,
     )
+
+
+# ---------------------------------------------------------------------------
+# extraction_costs — per-extraction cost telemetry (Wave 1 Section G)
+# ---------------------------------------------------------------------------
+
+
+def record_extraction_cost_pg(
+    org_id: str,
+    extraction_id: str | None,
+    provider: str,
+    model: str,
+    tier: str,
+    language: str | None,
+    tokens_in: int,
+    tokens_out: int,
+    cost_usd: float,
+    cost_inr: float,
+) -> str:
+    """Persist a per-extraction cost record. Returns the row id (UUID as str).
+
+    Called once per real LLM extraction (never on a cache hit — see
+    app.api.v2.extract._run_extraction_v2) so cost-per-1k-extractions aggregates
+    reflect actual LLM spend, not cache-served responses.
+
+    ``extraction_id`` is the FK to public.extractions.id when known; None on the
+    rare ON-CONFLICT-DO-NOTHING race in save_extraction_pg (concurrent identical
+    review beat this one to the insert) — the cost was still real and must still
+    be recorded, just without a joinable extraction row.
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+        cur.execute(
+            """
+            INSERT INTO public.extraction_costs (
+                org_id, extraction_id, provider, model, tier, language,
+                tokens_in, tokens_out, cost_usd, cost_inr
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id
+            """,
+            (
+                org_id,
+                extraction_id or None,
+                provider,
+                model,
+                tier,
+                language,
+                tokens_in,
+                tokens_out,
+                cost_usd,
+                cost_inr,
+            ),
+        )
+        row = cur.fetchone()
+        conn.commit()
+        return str(row[0]) if row else ""
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def aggregate_extraction_costs_pg(since: datetime | None = None) -> list[dict[str, Any]]:
+    """Return cost-per-1k-extractions grouped by (language, tier), across all orgs.
+
+    Cross-org query -- connects via _db_connect() and does NOT call _set_tenant, same
+    intentional service-role bypass pattern as list_orgs_with_dated_extractions_pg: this
+    is a platform-wide COGS aggregate for Wave 2 pricing decisions, not a per-tenant view,
+    so there is no single org_id to scope the session to. Gated behind require_admin at
+    the API layer (see app/api/admin.py) -- never exposed on an org-scoped endpoint.
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        query = (
+            "SELECT language, tier, COUNT(*) AS n, "
+            "SUM(tokens_in) AS tokens_in, SUM(tokens_out) AS tokens_out, "
+            "SUM(cost_usd) AS total_cost_usd, SUM(cost_inr) AS total_cost_inr "
+            "FROM public.extraction_costs "
+        )
+        params: tuple[Any, ...] = ()
+        if since is not None:
+            query += "WHERE created_at >= %s "
+            params = (since,)
+        query += "GROUP BY language, tier ORDER BY language, tier"
+        cur.execute(query, params)
+        rows = cur.fetchall()
+        conn.commit()
+        result = []
+        for lang, tier, n, tin, tout, cost_usd, cost_inr in rows:
+            n = int(n)
+            cost_usd = float(cost_usd)
+            cost_inr = float(cost_inr)
+            result.append(
+                {
+                    "language": lang,
+                    "tier": tier,
+                    "n": n,
+                    "tokens_in": int(tin),
+                    "tokens_out": int(tout),
+                    "total_cost_usd": cost_usd,
+                    "total_cost_inr": cost_inr,
+                    "cost_usd_per_1k": (cost_usd / n) * 1000 if n else 0.0,
+                    "cost_inr_per_1k": (cost_inr / n) * 1000 if n else 0.0,
+                }
+            )
+        return result
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Demo-endpoint (POST /demo/extract) global daily quota + cost recording.
+#
+# Neither of the two functions below calls _set_tenant() -- there is no org on this
+# keyless path. Both connect as review_iq_app directly (the same ambient role every
+# other function in this module uses via _db_connect(), just without the
+# SET LOCAL ROLE authenticated step _set_tenant() performs) and rely on grants/RLS
+# policies scoped specifically to review_iq_app (see 20260905000001_demo_daily_usage.sql
+# and 20260905000002_extraction_costs_allow_demo_rows.sql). Both are allowlisted in
+# scripts/check_undocumented_pg_connects.py with those migrations cited as the reason.
+# ---------------------------------------------------------------------------
+
+
+def check_and_increment_demo_request_pg(daily_request_budget: int) -> bool:
+    """Atomically check + reserve one unit of today's global demo-request budget.
+
+    Returns True (and increments today's counter) if today's request count was below
+    `daily_request_budget` before this call; returns False (no increment) if the budget
+    was already reached. Race-safe under concurrent callers via a single conditional
+    UPSERT -- no explicit row lock or separate SELECT-then-UPDATE round trip needed.
+
+    This gates on REQUEST COUNT, not token count, deliberately: token cost per call is
+    only known after the LLM responds, so it cannot be checked before spending it.
+    Sizing `daily_request_budget` conservatively against the worst-case per-call token
+    cost (see app/api/demo.py's DEMO_DAILY_REQUEST_BUDGET) keeps the token side safe by
+    construction without needing a token-level reservation.
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            INSERT INTO public.demo_daily_usage (usage_date, request_count)
+            VALUES (CURRENT_DATE, 1)
+            ON CONFLICT (usage_date) DO UPDATE
+                SET request_count = demo_daily_usage.request_count + 1,
+                    updated_at = now()
+                WHERE demo_daily_usage.request_count < %s
+            RETURNING request_count
+            """,
+            (daily_request_budget,),
+        )
+        row = cur.fetchone()
+        conn.commit()
+        return row is not None
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def record_demo_extraction_cost_pg(
+    provider: str,
+    model: str,
+    tier: str,
+    language: str | None,
+    tokens_in: int,
+    tokens_out: int,
+    cost_usd: float,
+    cost_inr: float,
+) -> str:
+    """Persist a per-extraction cost record for a keyless /demo/extract call.
+
+    Same shape as record_extraction_cost_pg but with org_id=NULL, source='demo', and no
+    extraction_id (the demo path never writes to public.extractions). Also updates
+    demo_daily_usage's running token totals for observability -- the actual daily CAP is
+    enforced by check_and_increment_demo_request_pg's request-count gate above, called
+    BEFORE the LLM call; this token update happens AFTER, purely for visibility into how
+    close the shared Groq daily token budget is to being exhausted.
+
+    Returns the row id (UUID as str).
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            INSERT INTO public.extraction_costs (
+                org_id, extraction_id, provider, model, tier, language,
+                tokens_in, tokens_out, cost_usd, cost_inr, source
+            ) VALUES (NULL, NULL, %s, %s, %s, %s, %s, %s, %s, %s, 'demo')
+            RETURNING id
+            """,
+            (provider, model, tier, language, tokens_in, tokens_out, cost_usd, cost_inr),
+        )
+        cost_row = cur.fetchone()
+        cur.execute(
+            """
+            UPDATE public.demo_daily_usage
+            SET tokens_in_total = tokens_in_total + %s,
+                tokens_out_total = tokens_out_total + %s,
+                updated_at = now()
+            WHERE usage_date = CURRENT_DATE
+            """,
+            (tokens_in, tokens_out),
+        )
+        conn.commit()
+        return str(cost_row[0])
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()

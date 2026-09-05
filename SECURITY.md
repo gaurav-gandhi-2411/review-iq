@@ -69,7 +69,11 @@ Streaming parse rejects uploads exceeding 5 MB before fully loading them into me
 
 ## 7. Demo Endpoint
 
-`POST /demo/extract` requires no API key and performs no database writes. PII redaction and prompt injection defenses still apply. The endpoint is rate-limited globally (30 requests/minute across all callers) via slowapi. No review text is stored or logged beyond the standard structured log line.
+`POST /demo/extract` requires no API key. PII redaction and prompt injection defenses still apply. No review text is stored or logged beyond the standard structured log line.
+
+Two independent rate limits apply:
+- **Per-IP, 5 requests/minute** (slowapi, `get_remote_address`), enforced in-process and NOT shared across Cloud Run replicas (worst case ~15/min across all 3 instances for one IP).
+- **Global (cross-IP), 50 requests/day** (`DEMO_DAILY_REQUEST_BUDGET`, `app/core/storage_pg.py::check_and_increment_demo_request_pg`), backed by a Postgres counter shared by every caller regardless of IP. This exists because the demo endpoint shares the same Groq API key — and its same free-tier daily token budget — as every real paying customer's `/v2/extract` call; without a global cap, a multi-IP scripted abuser could exhaust that shared budget and degrade real customer traffic, not just the demo. The check fails closed: if the quota-check database call itself errors, the request is rejected rather than silently allowed through.
 
 ---
 
