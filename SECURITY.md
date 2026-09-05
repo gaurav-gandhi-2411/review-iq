@@ -69,7 +69,7 @@ Streaming parse rejects uploads exceeding 5 MB before fully loading them into me
 
 ## 7. Demo Endpoint
 
-`POST /demo/extract` requires no API key and performs no database writes. PII redaction and prompt injection defenses still apply. The endpoint is rate-limited globally (30 requests/minute across all callers) via slowapi. No review text is stored or logged beyond the standard structured log line.
+`POST /demo/extract` requires no API key and performs no database writes. PII redaction and prompt injection defenses still apply. The endpoint is rate-limited to **5 requests/minute per source IP** (slowapi, `get_remote_address`), not globally. This limit is enforced in-process, per Cloud Run instance — it is not shared across replicas, so the effective ceiling scales with instance count (currently up to 3, i.e. ~15 req/min in the worst case across all instances for a single IP). **There is no cross-IP global cap**: a scripted abuser using multiple source IPs is not bounded by this control at all today. No review text is stored or logged beyond the standard structured log line.
 
 ---
 
