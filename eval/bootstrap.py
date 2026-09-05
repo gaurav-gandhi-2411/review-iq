@@ -19,14 +19,24 @@ mean for each resample, and take empirical percentiles of the resulting distribu
 Standard reference: Efron & Tibshirani, "An Introduction to the Bootstrap" (1993),
 ch. 13 (the percentile method).
 
-LIMITATION -- read before trusting this at very small n: a resample can only ever
-contain values drawn FROM the original observed scores, so no resample mean can fall
-outside the convex hull of the input -- at n=7 (hi) the bootstrap distribution is built
-from only 7 distinct values and is itself a coarse approximation of the true sampling
-distribution. It is still the correct tool for THIS estimator (unlike Wilson, which
-assumes an estimator this isn't), but "correct tool" is not the same claim as "narrow
-interval" -- small n stays small n. See eval/power_analysis.py for how much data would
-be needed to narrow this meaningfully.
+LIMITATION -- read before trusting this at very small n, and do not repeat the mistake
+this docstring exists to correct: at n=7 (hi) or n=15 (hi-en), this is NOT a precise
+population-level estimate. A resample can only ever contain values drawn FROM the
+original observed scores, so no resample mean can fall outside the convex hull of the
+input -- the whole distribution is built from 7 (or 15) numbers. Percentile-bootstrap
+coverage is known to degrade badly below roughly n=30 (Efron & Tibshirani, ch. 13);
+correct estimator or not, an interval computed this way at n=7 tells you "these 7
+fixtures are internally consistent with each other," not "the true accuracy is known to
+within this band." A narrow interval at this n is NOT reassuring on its own -- if the
+underlying sample is synthetic and/or the prompt was tuned against it (see eval/README.md's
+D3 contamination discussion), a narrow bootstrap CI is exactly what contamination
+produces, and is a warning sign, not a comfort. This module was itself first shipped
+with a required-n-for-corpus-growth claim derived from applying this method naively to
+review-iq's contaminated `hi` set -- that claim was wrong and has been removed; see
+`required_n_for_half_width`'s docstring for the specifics. Do not compute or publish a
+required-n claim from this module's output against a small, synthetic, or prompt-tuned
+sample. See eval/power_analysis.py for the (also currently blocked) proper path to that
+number.
 """
 
 from __future__ import annotations
@@ -92,6 +102,17 @@ def required_n_for_half_width(
     This is an approximation (it assumes the new fixtures added would have the same
     score variance as the current sample, and that a normal approximation holds at the
     target n) -- treat it as a planning target for corpus growth, not a guarantee.
+
+    DO NOT call this against a sample that is (a) synthetic/generator-produced rather
+    than drawn from real held-out data, or (b) a set the prompt under test was itself
+    tuned against (see eval/README.md's D3 contamination discussion). A low observed
+    variance in either case is what contamination produces, not evidence of a small
+    required n -- a narrow estimate from a contaminated or synthetic sample is actively
+    misleading, not just imprecise. This was gotten wrong once already: an earlier draft
+    of Session 2's work applied this function to review-iq's 7 synthetic, prompt-tuned
+    `hi` fixtures and reported "~9" as if it were a real planning number. It is not
+    valid until re-derived against a genuine held-out pilot of real (non-synthetic)
+    data that the prompt was never iterated against.
 
     Args:
         scores: the current sample of per-fixture scores to estimate variance from.
