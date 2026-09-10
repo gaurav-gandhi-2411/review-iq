@@ -67,6 +67,12 @@ ALLOWLIST: dict[tuple[str, str], str] = {
         "Documented cross-org scheduled-sweep query (digest batcher) -- same pattern as "
         "storage_pg.py::list_orgs_with_dated_extractions_pg."
     ),
+    ("app/core/storage_pg.py", "aggregate_extraction_costs_pg"): (
+        "Platform-wide COGS aggregate for Wave 2 pricing decisions -- no single org_id to "
+        "scope to. Gated behind require_admin at the API layer (app/api/admin.py's "
+        "_aggregate_costs_db), never exposed on an org-scoped endpoint. Same pattern as "
+        "storage_pg.py::list_orgs_with_dated_extractions_pg."
+    ),
     ("app/core/ingest_worker.py", "_claim_one_row"): (
         "Cross-org queue-drain claim (batch_job_rows) -- goes through public."
         "claim_pending_batch_job_row() / public.settle_batch_job_row(), narrow SECURITY "
