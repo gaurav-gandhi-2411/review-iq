@@ -123,6 +123,44 @@ def test_pricing_table_all_entries_have_nonnegative_prices() -> None:
 
 def test_pricing_table_covers_production_router_models() -> None:
     """The two Groq tiers actually wired into app/core/config.py's default
-    groq_model_small/groq_model_large must always have a pricing entry."""
+    groq_model_small/groq_model_large must always have a pricing entry.
+
+    Regression test (Session 5 P7, 2026-09-10): this used to hardcode
+    "llama-3.1-8b-instant"/"llama-3.3-70b-versatile" as literal strings -- correct
+    only as long as those happened to match config.py's defaults, and silently
+    meaningless the moment Groq deprecated them and config.py moved to
+    openai/gpt-oss-20b/120b (PRICING_TABLE had no entry for either gpt-oss model
+    for weeks; this test kept passing the whole time because it was checking the
+    wrong thing). Reading the live default from Settings means this test breaks
+    the next time a model changes too, instead of silently passing on stale names.
+    """
+    from app.core.config import get_settings
+
+    settings = get_settings()
+    assert settings.groq_model_small in PRICING_TABLE, (
+        f"{settings.groq_model_small!r} (current groq_model_small default) has no "
+        "pricing entry -- every extraction call under this model would raise "
+        "UnknownModelError in production."
+    )
+    assert settings.groq_model_large in PRICING_TABLE, (
+        f"{settings.groq_model_large!r} (current groq_model_large default) has no "
+        "pricing entry -- every extraction call under this model would raise "
+        "UnknownModelError in production."
+    )
+
+
+def test_pricing_table_covers_current_gpt_oss_models() -> None:
+    result_small = price_extraction("openai/gpt-oss-20b", tokens_in=1_000_000, tokens_out=1_000_000)
+    assert result_small.cost_usd == pytest.approx(0.075 + 0.30)
+    assert result_small.tier == "small"
+
+    result_large = price_extraction("openai/gpt-oss-120b", tokens_in=1_000_000, tokens_out=1_000_000)
+    assert result_large.cost_usd == pytest.approx(0.15 + 0.60)
+    assert result_large.tier == "large"
+
+
+def test_pricing_table_retains_deprecated_llama_models_for_historical_rows() -> None:
+    """Groq deprecated both 2026-08-16; pre-deprecation extraction rows in the
+    database still reference these model strings and must still price correctly."""
     assert "llama-3.1-8b-instant" in PRICING_TABLE
     assert "llama-3.3-70b-versatile" in PRICING_TABLE

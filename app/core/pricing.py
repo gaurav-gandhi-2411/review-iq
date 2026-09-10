@@ -63,9 +63,13 @@ class ModelPricing:
 # Pricing table — one entry per model reachable on any extraction path.
 # ---------------------------------------------------------------------------
 PRICING_TABLE: dict[str, ModelPricing] = {
-    # Groq — org-path production models (app/core/config.py groq_model_small/_large).
-    # Verified live 2026-07-31 against https://groq.com/pricing (server-rendered
-    # pricing table scraped directly, not a cached figure).
+    # Groq deprecated both llama-3.1-8b-instant and llama-3.3-70b-versatile on
+    # 2026-08-16 -- production has not served either since (app/core/config.py's
+    # groq_model_small/_large defaults moved to the openai/gpt-oss-* entries below).
+    # Kept here, not deleted: any pre-2026-08-16 extraction row still references
+    # these model strings for its own recorded cost, and price_extraction() must
+    # keep pricing historical rows correctly rather than raising UnknownModelError
+    # on data that's actually fine.
     "llama-3.1-8b-instant": ModelPricing(
         provider="groq",
         tier="small",
@@ -74,6 +78,7 @@ PRICING_TABLE: dict[str, ModelPricing] = {
         source="https://groq.com/pricing",
         as_of="2026-07-31",
         verified=True,
+        note="Deprecated by Groq 2026-08-16 -- retained only for pricing pre-deprecation rows.",
     ),
     "llama-3.3-70b-versatile": ModelPricing(
         provider="groq",
@@ -82,6 +87,32 @@ PRICING_TABLE: dict[str, ModelPricing] = {
         usd_per_million_output=0.79,
         source="https://groq.com/pricing",
         as_of="2026-07-31",
+        verified=True,
+        note="Deprecated by Groq 2026-08-16 -- retained only for pricing pre-deprecation rows.",
+    ),
+    # Groq — current org-path production models (app/core/config.py's
+    # groq_model_small/_large defaults since the 2026-08-16 deprecation, commit
+    # c492e4a). Verified live 2026-09-10 against https://console.groq.com/docs/models
+    # (server-rendered model-card data fetched directly, not the client-JS-rendered
+    # /pricing page, which returns no pricing in its static HTML) -- cross-checked
+    # two independent ways: a summarizing fetch and a raw-HTML grep for the literal
+    # "$0.075"/"$0.30"/"$0.15"/"$0.60" strings next to each model's card, both agree.
+    "openai/gpt-oss-20b": ModelPricing(
+        provider="groq",
+        tier="small",
+        usd_per_million_input=0.075,
+        usd_per_million_output=0.30,
+        source="https://console.groq.com/docs/models",
+        as_of="2026-09-10",
+        verified=True,
+    ),
+    "openai/gpt-oss-120b": ModelPricing(
+        provider="groq",
+        tier="large",
+        usd_per_million_input=0.15,
+        usd_per_million_output=0.60,
+        source="https://console.groq.com/docs/models",
+        as_of="2026-09-10",
         verified=True,
     ),
     # Gemini — v1/demo-path fallback only; NEVER reachable on the org-key path
