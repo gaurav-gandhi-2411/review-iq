@@ -6,11 +6,16 @@
     {
       "id": "reviewiq:extraction-eval",
       "label": "Extraction accuracy (en/hi/hi-en)",
-      "value": "83.8% overall",
+      "value": "77.6% overall, FAILS its own 83% gate (2026-09-05 re-measurement under the models actually deployed; en 75.0% also fails its 80% gate, hi 81.3% and hi-en 80.6% pass)",
       "source_file": "eval/report.md",
       "source_line": 5,
-      "commit_sha": "13a4422e1705731e104c04b3d5c76200844b9df0",
-      "measured_at": "2026-07-06"
+      "commit_sha": "6002a7a37ddba8a567d25cba41d81c83a4789631",
+      "measured_at": "2026-09-05",
+      "measured_under_model": "openai/gpt-oss-20b / openai/gpt-oss-120b",
+      "current_deployed_model": "openai/gpt-oss-20b / openai/gpt-oss-120b",
+      "stale": false,
+      "gate_status": "overall and en FAIL their gates as of this measurement; hi and hi-en pass",
+      "stale_reason": "Superseded 2026-09-05: re-measured against the models actually deployed (previous 83.8%/86.2%/80.9%/80.7% figures were measured under llama-3.1-8b-instant/llama-3.3-70b-versatile, deprecated by Groq 2026-08-16, and no longer reflect the live system)."
     }
   ]
 }
