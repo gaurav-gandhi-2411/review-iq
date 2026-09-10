@@ -1,0 +1,65 @@
+{
+  "id": "044_consensus_grown",
+  "review_text": "Super qualityI got this blue tooth headset in rs 1000 which is awesome in this price range.Bass is Best in this price rangeREAD MORE",
+  "ground_truth": {
+    "product": "unknown",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": [
+      "super quality",
+      "awesome price",
+      "best bass"
+    ],
+    "cons": [],
+    "buy_again": null,
+    "sentiment": "positive",
+    "topics": [
+      "price",
+      "sound_quality",
+      "build_quality"
+    ],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus (Wave 1 Section B)",
+    "source": "flipkart/kabirnagpal/flipkart-customer-review-and-rating",
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "split",
+      "stars_inferred": "unanimous",
+      "pros": "majority",
+      "cons": "majority",
+      "topics": "majority",
+      "feature_requests": "majority",
+      "competitor_mentions": "majority"
+    }
+  }
+}

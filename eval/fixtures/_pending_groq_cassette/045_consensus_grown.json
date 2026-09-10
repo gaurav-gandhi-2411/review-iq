@@ -1,0 +1,63 @@
+{
+  "id": "045_consensus_grown",
+  "review_text": "Good headphone in affordable priceBut it has its own limitations1- poor bluetooth connectivity means it has hardly 7-8 meter of range2-average battery life. You have to charge after every 2-3 hours of usageOtherwise it's a good headphone in this price rangeReview written after 2-3 months of regular usage u can rely on thisAlso delivery services of flipkart is awesome they delivered the product befor time.READ MORE",
+  "ground_truth": {
+    "product": "headphone",
+    "stars": null,
+    "stars_inferred": 3,
+    "pros": [],
+    "cons": [],
+    "buy_again": null,
+    "sentiment": "mixed",
+    "topics": [
+      "price",
+      "bluetooth_connectivity",
+      "battery_life",
+      "durability",
+      "delivery"
+    ],
+    "competitor_mentions": [],
+    "urgency": "medium",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus (Wave 1 Section B)",
+    "source": "flipkart/kabirnagpal/flipkart-customer-review-and-rating",
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "unanimous",
+      "stars_inferred": "unanimous",
+      "pros": "split",
+      "cons": "split",
+      "topics": "majority",
+      "feature_requests": "majority",
+      "competitor_mentions": "split"
+    }
+  }
+}

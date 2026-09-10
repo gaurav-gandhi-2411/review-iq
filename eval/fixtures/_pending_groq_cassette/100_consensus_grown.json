@@ -1,0 +1,65 @@
+{
+  "id": "100_consensus_grown",
+  "review_text": "It's good working but noise cancellation should be improved and battery backup should be improvedREAD MORE",
+  "ground_truth": {
+    "product": "unknown",
+    "stars": null,
+    "stars_inferred": 3,
+    "pros": [
+      "good working"
+    ],
+    "cons": [
+      "noise cancellation should be improved",
+      "battery backup should be improved"
+    ],
+    "buy_again": null,
+    "sentiment": "mixed",
+    "topics": [],
+    "competitor_mentions": [],
+    "urgency": "medium",
+    "feature_requests": [
+      "improve noise cancellation",
+      "improve battery backup"
+    ],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus (Wave 1 Section B)",
+    "source": "flipkart/kabirnagpal/flipkart-customer-review-and-rating",
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "split",
+      "stars_inferred": "unanimous",
+      "pros": "majority",
+      "cons": "majority",
+      "topics": "split",
+      "feature_requests": "majority",
+      "competitor_mentions": "majority"
+    }
+  }
+}

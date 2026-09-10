@@ -1,0 +1,61 @@
+{
+  "id": "104_consensus_grown",
+  "review_text": "1.Bass is awesome. People who love bass can definitely go for it. 2.Bluetooth connectivity works fine. 3.Mic positioning creates problem in talking on calls. 4.Battery backup is good. Not so great not so worst.READ MORE",
+  "ground_truth": {
+    "product": "unknown",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": [
+      "awesome bass",
+      "good Bluetooth connectivity",
+      "good battery backup"
+    ],
+    "cons": [],
+    "buy_again": null,
+    "sentiment": "mixed",
+    "topics": [],
+    "competitor_mentions": [],
+    "urgency": "medium",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus (Wave 1 Section B)",
+    "source": "flipkart/kabirnagpal/flipkart-customer-review-and-rating",
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "split",
+      "stars_inferred": "unanimous",
+      "pros": "majority",
+      "cons": "split",
+      "topics": "split",
+      "feature_requests": "split",
+      "competitor_mentions": "majority"
+    }
+  }
+}

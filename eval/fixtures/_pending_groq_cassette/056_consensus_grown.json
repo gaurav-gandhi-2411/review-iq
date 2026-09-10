@@ -1,0 +1,57 @@
+{
+  "id": "056_consensus_grown",
+  "review_text": "Honest review:-. Have have been using for a 2 weeks now this product is not charging at all what can i say more .Dont waste your hard earned cash .Cheap products always pay you back with cheap quality.Now i have done with it.Trash and nothing else.",
+  "ground_truth": {
+    "product": "product",
+    "stars": null,
+    "stars_inferred": 1,
+    "pros": [],
+    "cons": [],
+    "buy_again": false,
+    "sentiment": "negative",
+    "topics": [],
+    "competitor_mentions": [],
+    "urgency": "medium",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus (Wave 1 Section B)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "unanimous",
+      "stars_inferred": "unanimous",
+      "pros": "majority",
+      "cons": "split",
+      "topics": "split",
+      "feature_requests": "majority",
+      "competitor_mentions": "majority"
+    }
+  }
+}
