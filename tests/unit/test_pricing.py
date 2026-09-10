@@ -154,7 +154,9 @@ def test_pricing_table_covers_current_gpt_oss_models() -> None:
     assert result_small.cost_usd == pytest.approx(0.075 + 0.30)
     assert result_small.tier == "small"
 
-    result_large = price_extraction("openai/gpt-oss-120b", tokens_in=1_000_000, tokens_out=1_000_000)
+    result_large = price_extraction(
+        "openai/gpt-oss-120b", tokens_in=1_000_000, tokens_out=1_000_000
+    )
     assert result_large.cost_usd == pytest.approx(0.15 + 0.60)
     assert result_large.tier == "large"
 
