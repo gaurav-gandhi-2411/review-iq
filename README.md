@@ -140,7 +140,7 @@ that script's output. See [ADR 0001](docs/architecture/adr/0001-eval-gate-and-pr
 for why the gate is what it is and how the prompt version history got out of sync with this
 file in the past.
 
-<!-- METRICS:START:extraction_table -->**Prompt v2.3** &middot; `44231ab` &middot; measured 2026-09-05T16:23:56Z &middot; mode: routed (tiered)
+<!-- METRICS:START:extraction_table -->**Prompt v2.3** &middot; `44231ab` &middot; measured 2026-09-05T16:42:17Z &middot; mode: routed (tiered)
 
 | Language | Score | 95% CI | Gate | Status |
 |---|---|---|---|---|
