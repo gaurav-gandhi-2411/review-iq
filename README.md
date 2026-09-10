@@ -27,7 +27,7 @@ Open-source API that turns unstructured customer reviews into structured JSON �
 No setup. Hit the live demo endpoint (no key required):
 
 ```bash
-curl -s -X POST https://review-iq-ajjrytb3na-el.a.run.app/demo/extract \
+curl -s -X POST https://api.samidhareviews.xyz/demo/extract \
   -H "Content-Type: application/json" \
   -d '{"text": "Battery dies in 20 min. Suction is excellent but $200 feels overpriced. Would not buy again."}'
 ```
@@ -46,10 +46,9 @@ Most review analytics tools are black boxes: you get a score with no methodology
 
 | Version | URL | Notes |
 |---|---|---|
-| **v2 — production** | `https://review-iq-ajjrytb3na-el.a.run.app` | Cloud Run · multi-tenant · argon2id API keys · Postgres/RLS |
-| v1 — legacy demo | `https://gauravgandhi2411-review-iq.hf.space` | HF Spaces · single-tenant · SQLite · no auth required |
+| **v2 — production** | `https://api.samidhareviews.xyz` | Cloud Run (Firebase Hosting rewrite) · multi-tenant · argon2id API keys · Postgres/RLS |
 
-v1 remains live for demo purposes. All new integrations should target v2.
+v1's Hugging Face Space has been retired (deleted). All integrations target v2.
 
 ---
 
@@ -61,7 +60,7 @@ v1 remains live for demo purposes. All new integrations should target v2.
 
 ```bash
 # Extract structured insights from a review
-curl -X POST https://review-iq-ajjrytb3na-el.a.run.app/v2/extract \
+curl -X POST https://api.samidhareviews.xyz/v2/extract \
   -H "X-API-Key: $REVIEW_IQ_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"text": "The Turbo-Vac 5000 has incredible suction but the battery dies in 15 minutes. For $300 I expected better. Would buy a Dyson next time."}'
@@ -92,70 +91,68 @@ curl -X POST https://review-iq-ajjrytb3na-el.a.run.app/v2/extract \
 
 ```bash
 # Batch — up to 100 reviews (JSON)
-curl -X POST https://review-iq-ajjrytb3na-el.a.run.app/v2/extract/batch \
+curl -X POST https://api.samidhareviews.xyz/v2/extract/batch \
   -H "X-API-Key: $REVIEW_IQ_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"reviews": [{"text": "Great product!"}, {"text": "Terrible quality, returned."}]}'
 
 # CSV bulk ingest — up to 500 rows, 5 MB (returns job_id immediately)
-curl -X POST https://review-iq-ajjrytb3na-el.a.run.app/v2/ingest/csv \
+curl -X POST https://api.samidhareviews.xyz/v2/ingest/csv \
   -H "X-API-Key: $REVIEW_IQ_API_KEY" \
   -F "file=@reviews.csv" \
   -F "text_column=review_text" \
   -F "product_column=product_name"
 
 # Poll job status
-curl "https://review-iq-ajjrytb3na-el.a.run.app/v2/ingest/{job_id}" \
+curl "https://api.samidhareviews.xyz/v2/ingest/{job_id}" \
   -H "X-API-Key: $REVIEW_IQ_API_KEY"
 
 # Download results (JSON or CSV)
-curl "https://review-iq-ajjrytb3na-el.a.run.app/v2/ingest/{job_id}/result?format=csv" \
+curl "https://api.samidhareviews.xyz/v2/ingest/{job_id}/result?format=csv" \
   -H "X-API-Key: $REVIEW_IQ_API_KEY" -o results.csv
 
 # Query stored extractions for your org
-curl "https://review-iq-ajjrytb3na-el.a.run.app/v2/reviews?sentiment=negative&urgency=high" \
+curl "https://api.samidhareviews.xyz/v2/reviews?sentiment=negative&urgency=high" \
   -H "X-API-Key: $REVIEW_IQ_API_KEY"
 
 # Aggregated insights
-curl https://review-iq-ajjrytb3na-el.a.run.app/v2/insights \
+curl https://api.samidhareviews.xyz/v2/insights \
   -H "X-API-Key: $REVIEW_IQ_API_KEY"
-```
-
-### v1 (legacy demo — HF Spaces)
-
-```bash
-curl -X POST https://gauravgandhi2411-review-iq.hf.space/extract \
-  -H "X-API-Key: $API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"text": "Great product, fast shipping!"}'
 ```
 
 ---
 
 ## Eval results
 
-Evaluated on 46 hand-labeled and synthetic fixtures across English, Hinglish, and Hindi:
+Evaluated on 49 hand-labeled and synthetic fixtures across English, Hinglish, and Hindi:
 
-> **Re-measurement in progress (as of 2026-09-05):** the most recent completed measurement
-> (v2.3, row below) ran under `llama-3.1-8b-instant`/`llama-3.3-70b-versatile`. Groq
-> deprecated those models 2026-08-16; production has since moved to
-> `openai/gpt-oss-20b`/`openai/gpt-oss-120b` (no env override on the live Cloud Run
-> service — confirmed by reading the deployed revision's config directly), which have
-> not yet been evaluated. The figures below describe the last real measurement on
-> record, not current production accuracy. `eval/cassettes/` needs re-recording against
-> the current models before a new number can be reported (blocked on an explicit
-> go-ahead for the live Groq calls that requires — see `ops/runbooks/` for the plan).
+> **Re-measured (2026-09-05), and it dropped:** the previous published figures (v2.3 row,
+> 86.2/80.9/80.7/83.8) were measured under `llama-3.1-8b-instant`/`llama-3.3-70b-versatile`.
+> Groq deprecated those models 2026-08-16; production now runs
+> `openai/gpt-oss-20b`/`openai/gpt-oss-120b` (no env override on the live Cloud Run service —
+> confirmed by reading the deployed revision's config directly). `eval/cassettes/` has now
+> been re-recorded against the current models and re-scored — see the row below. **English
+> and Overall no longer clear their own gates.** Nothing was tuned to recover the old
+> numbers; this is the current, honest state. 95% CIs are paired bootstrap over the
+> fixture set. (Independently re-verified this session: the exact model strings and full
+> 49-fixture coverage, by replaying the cassettes with zero network calls. Which specific
+> API key recorded them is not recoverable from the committed artifacts — the cassette
+> format does not capture caller identity.)
 
 | Version | Environment | Overall | en | hi-en | hi | Fixtures |
 |---|---|---|---|---|---|---|
-| **v2.3 (current gate)** | CI / direct+routed, byte-identical | **83.8%** | 86.2% | 80.9% | 80.7% | 49 — measured 2026-07-06 under `llama-3.1-8b-instant`/`llama-3.3-70b-versatile` (see notice above) |
+| **v2.3 (current, gpt-oss)** | CI / routed, byte-identical | **77.6%** ❌ [73.0, 81.6] | 75.0% ❌ [67.1, 81.3] | 80.6% ✅ [75.1, 85.2] | 81.3% ✅ [75.7, 86.7] | 49 — measured 2026-09-05 under `openai/gpt-oss-20b`/`openai/gpt-oss-120b` |
+| v2.3 (retired, llama) | CI / direct+routed, byte-identical | 83.8% | 86.2% | 80.9% | 80.7% | 49 — measured 2026-07-06 under `llama-3.1-8b-instant`/`llama-3.3-70b-versatile`, superseded above |
 | v0.5.0 | CI / routed (tiered) | **84.4%** ⚠️ | 86.3% | 83.2% | 80.7% | 46 — 31 small / 15 large, 0 escalated; 27.9% token reduction vs all-large |
 | v0.4.0 | CI / direct LLM | **85.8%** | 87.1% | 83.1% | 87.5% | 46 (prompt v2.1) |
 | v0.3.0 | CI / direct LLM | **86.2%** | 88.3% | 82.0% | 87.8% | 46 (25 en + 15 hi-en + 6 hi) |
 | v0.2.0 | Cloud Run (production) | **87.9%** | 87.9% | — | — | 25 |
 | v0.1.3 | HF Spaces | 86.7% | 86.7% | — | — | 25 |
 
-Gates: overall ≥ 85%, per-language ≥ 80%. Eval runs automatically in CI on every push touching prompts, LLM, schema, or fixture files. Nightly runs post results to Slack.
+Gates: overall ≥ 83%, per-language ≥ 80% (as configured in `eval/results.json`'s `threshold` fields —
+**pending Session 5 P4's gate-posture decision now that the measured baseline itself is below the
+target gate**; see `docs/architecture/adr/`). Eval runs automatically in CI on every push touching
+prompts, LLM, schema, or fixture files.
 
 > **v2.1 prompt (Phase 2.0c):** Added sarcasm/negation guidance, backhanded-compliment examples, SERVICE vs PRODUCT separation rule, and warranty/resolution-story guidance for hi-en. Known sarcasm gap from v0.3.0 is directly targeted.
 
@@ -342,7 +339,7 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 
 ## How Hinglish fixtures are labeled
 
-Ground truth for Hinglish fixtures (`eval/fixtures/hi-en/`) is generated by Anthropic Claude Sonnet, an independent model from the Groq model being evaluated (`llama-3.3-70b-versatile` at the time of the last completed measurement, 2026-07-06 — production has since moved to `openai/gpt-oss-120b`, deprecation-driven, not yet re-evaluated; see [Eval results](#eval-results)). This keeps the eval honest — a different model labels the data than the one being scored. Source reviews come from publicly available Flipkart Kaggle datasets, classified as Hinglish (Latin-script Hindi/English code-mix) via regex heuristics. All fixtures are committed and inspectable; anyone can audit the labels for quality.
+Ground truth for Hinglish fixtures (`eval/fixtures/hi-en/`) is generated by Anthropic Claude Sonnet, an independent model from the Groq model being evaluated (`openai/gpt-oss-120b` as of the current, re-measured row; see [Eval results](#eval-results)). This keeps the eval honest — a different model labels the data than the one being scored. Source reviews come from publicly available Flipkart Kaggle datasets, classified as Hinglish (Latin-script Hindi/English code-mix) via regex heuristics. All fixtures are committed and inspectable; anyone can audit the labels for quality.
 
 ---
 
