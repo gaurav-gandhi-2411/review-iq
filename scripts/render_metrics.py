@@ -171,7 +171,7 @@ def render_extraction_table_html(data: dict[str, Any]) -> str:
             f'<span class="text-gray-500 text-xs">({lang}, n={info["n"]})</span></td>\n'
             f'              <td class="px-6 py-4 font-mono text-blue-300">{_fmt_pct(info["score"])}</td>\n'
             f'              <td class="px-6 py-4 font-mono text-gray-400 text-xs">'
-            f'[{_fmt_pct(info["ci_95"]["lower"])}, {_fmt_pct(info["ci_95"]["upper"])}]</td>\n'
+            f"[{_fmt_pct(info['ci_95']['lower'])}, {_fmt_pct(info['ci_95']['upper'])}]</td>\n"
             f'              <td class="px-6 py-4 text-gray-400">&ge;{info["threshold"]:.0%}</td>\n'
             f"              {_status_badge_html(info['passed'])}\n"
             "            </tr>"
@@ -182,7 +182,7 @@ def render_extraction_table_html(data: dict[str, Any]) -> str:
         f'<span class="text-gray-500 text-xs">(n={data["overall_ci_95"]["n"]})</span></td>\n'
         f'              <td class="px-6 py-4 font-mono text-blue-300 font-semibold">{_fmt_pct(data["overall_score"])}</td>\n'
         f'              <td class="px-6 py-4 font-mono text-gray-400 text-xs">'
-        f'[{_fmt_pct(data["overall_ci_95"]["lower"])}, {_fmt_pct(data["overall_ci_95"]["upper"])}]</td>\n'
+        f"[{_fmt_pct(data['overall_ci_95']['lower'])}, {_fmt_pct(data['overall_ci_95']['upper'])}]</td>\n"
         f'              <td class="px-6 py-4 text-gray-400">&ge;{data["threshold"]:.0%}</td>\n'
         f"              {_status_badge_html(data['passed'])}\n"
         "            </tr>"

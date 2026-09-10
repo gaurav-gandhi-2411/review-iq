@@ -140,14 +140,14 @@ that script's output. See [ADR 0001](docs/architecture/adr/0001-eval-gate-and-pr
 for why the gate is what it is and how the prompt version history got out of sync with this
 file in the past.
 
-<!-- METRICS:START:extraction_table -->**Prompt v2.3** &middot; `3fb2c57` &middot; measured 2026-09-10T10:56:33Z &middot; mode: routed (tiered)
+<!-- METRICS:START:extraction_table -->**Prompt v2.3** &middot; `70d7424` &middot; measured 2026-09-10T13:31:35Z &middot; mode: routed (tiered)
 
 | Language | Score | 95% CI | Gate | Status |
 |---|---|---|---|---|
-| en | 75.0% | [67.1%, 81.3%] | ≥74% | PASS |
+| en | 78.1% | [73.5%, 82.2%] | ≥77% | PASS |
 | hi-en | 80.6% | [75.1%, 85.2%] | ≥80% | PASS |
 | hi | 81.3% | [75.7%, 86.7%] | ≥80% | PASS |
-| **Overall** | **77.6%** | [73.0%, 81.6%] | ≥77% | PASS |
+| **Overall** | **79.3%** | [76.3%, 82.2%] | ≥79% | PASS |
 
 n=49 fixtures (27 en, 15 hi-en, 7 hi). Tiered routing is ON by default in production and in this eval run (`ENABLE_TIERED_ROUTING` defaults `true`, unset in CI) -- a same-cassette `--routed` comparison produced byte-identical scores to the numbers above; there is currently no distinct *unrouted* measurement to report separately (see [ADR 0001](docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md)).<!-- METRICS:END -->
 

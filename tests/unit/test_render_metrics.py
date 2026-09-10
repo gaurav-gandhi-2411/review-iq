@@ -185,7 +185,12 @@ class TestRenderLanguageTableHtml:
             **EXTRACTION_DATA,
             "per_language": {
                 **EXTRACTION_DATA["per_language"],
-                "en": {**EXTRACTION_DATA["per_language"]["en"], "score": 0.750, "passed": False, "threshold": 0.74},
+                "en": {
+                    **EXTRACTION_DATA["per_language"]["en"],
+                    "score": 0.750,
+                    "passed": False,
+                    "threshold": 0.74,
+                },
             },
         }
         out = render_language_table_html(data)
