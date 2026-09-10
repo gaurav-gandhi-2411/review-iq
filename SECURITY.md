@@ -29,7 +29,7 @@ Two independent layers guard against prompt injection attacks.
 
 ## 3. LLM Data Handling
 
-**Primary provider:** Groq (Llama 3.3 70B and Llama 3.1 8B). Groq's API terms state that API customer inputs are not used for model training. Both the large and small Groq models used in tiered routing share this guarantee.
+**Primary provider:** Groq (`openai/gpt-oss-120b` and `openai/gpt-oss-20b` as of 2026-09-05; Groq deprecated the previous Llama 3.3 70B / Llama 3.1 8B models 2026-08-16). Groq's API terms state that API customer inputs are not used for model training. Both the large and small Groq models used in tiered routing share this guarantee.
 
 **Secondary failover provider:** A configurable secondary provider can be wired via `SECONDARY_PROVIDER_API_KEY` / `SECONDARY_PROVIDER_MODEL`. The code enforces a data-handling check at the call site via `assert_privacy_safe()` — any provider whose `trains_on_input` property is `True` raises `PrivacyViolation` before the prompt is sent, making it impossible to accidentally route client data to a training-on-input provider on the org-key path. This check is unconditional; it cannot be bypassed by configuration.
 
@@ -69,7 +69,7 @@ Streaming parse rejects uploads exceeding 5 MB before fully loading them into me
 
 ## 7. Demo Endpoint
 
-`POST /demo/extract` requires no API key and performs no database writes. PII redaction and prompt injection defenses still apply. The endpoint is rate-limited globally (30 requests/minute across all callers) via slowapi. No review text is stored or logged beyond the standard structured log line.
+`POST /demo/extract` requires no API key and performs no database writes. PII redaction and prompt injection defenses still apply. The endpoint is rate-limited **5 requests/minute per source IP** (`app/api/demo.py`, via slowapi) — not a global cap; the limiter is in-process memory, not shared across Cloud Run replicas, so the real ceiling scales with instance count (see `app/core/rate_limit.py`'s own assessment). No review text is stored or logged beyond the standard structured log line.
 
 ---
 
