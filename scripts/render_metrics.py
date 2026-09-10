@@ -130,16 +130,35 @@ def render_authenticity_table_md(data: dict[str, Any]) -> str:
 
 
 def render_gate_summary_md(data: dict[str, Any]) -> str:
-    """Render the one-line gate-threshold summary used by eval/README.md."""
-    per_lang_threshold = next(iter(data["per_language"].values()))["threshold"]
-    return (
-        f"every per-language bucket ≥ {per_lang_threshold:.0%} AND\n"
-        f"  overall ≥ {data['threshold']:.0%}"
-    )
+    """Render the one-line gate-threshold summary used by eval/README.md.
+
+    Bug fix (Session 5 P4, 2026-09-10): used to read a single global per-language
+    threshold via `next(iter(...))`, which silently returned whichever language
+    happened to be first once eval/runner.py's PER_LANG_THRESHOLD became a per-language
+    dict with different values for en/hi/hi-en -- this rendered a misleading single
+    number for what are now three different gates.
+    """
+    per_lang = data["per_language"]
+    langs = _ordered_languages(per_lang)
+    lang_parts = ", ".join(f"{lang} ≥ {per_lang[lang]['threshold']:.0%}" for lang in langs)
+    return f"overall ≥ {data['threshold']:.0%}, {lang_parts}"
+
+
+def _status_badge_html(passed: bool) -> str:
+    if passed:
+        return '<td class="px-6 py-4 text-green-400 font-semibold">&#10003; PASS</td>'
+    return '<td class="px-6 py-4 text-red-400 font-semibold">&#10007; FAIL</td>'
 
 
 def render_extraction_table_html(data: dict[str, Any]) -> str:
-    """Render the accuracy `<tbody>` rows for site/index.html."""
+    """Render the accuracy `<tbody>` rows for site/index.html.
+
+    Bug fix (Session 5 P4, 2026-09-10): every row previously hardcoded the green PASS
+    badge unconditionally, regardless of `info["passed"]`/`data["passed"]` -- found while
+    resetting the gate thresholds, before it ever had a chance to silently render a FAIL
+    result as PASS. Also adds the 95% CI column and per-fixture-n label to match the
+    hand-authored fix this generator would otherwise clobber on the next run.
+    """
     per_lang = data["per_language"]
     lang_labels = {"en": "English", "hi": "Hindi", "hi-en": "Hinglish"}
     rows: list[str] = []
@@ -149,25 +168,35 @@ def render_extraction_table_html(data: dict[str, Any]) -> str:
         rows.append(
             '            <tr class="bg-gray-900 hover:bg-gray-800 transition-colors">\n'
             f'              <td class="px-6 py-4 text-gray-100">{label} '
-            f'<span class="text-gray-500 text-xs">({lang})</span></td>\n'
+            f'<span class="text-gray-500 text-xs">({lang}, n={info["n"]})</span></td>\n'
             f'              <td class="px-6 py-4 font-mono text-blue-300">{_fmt_pct(info["score"])}</td>\n'
+            f'              <td class="px-6 py-4 font-mono text-gray-400 text-xs">'
+            f'[{_fmt_pct(info["ci_95"]["lower"])}, {_fmt_pct(info["ci_95"]["upper"])}]</td>\n'
             f'              <td class="px-6 py-4 text-gray-400">&ge;{info["threshold"]:.0%}</td>\n'
-            '              <td class="px-6 py-4 text-green-400 font-semibold">&#10003; PASS</td>\n'
+            f"              {_status_badge_html(info['passed'])}\n"
             "            </tr>"
         )
     rows.append(
         '            <tr class="bg-gray-900 hover:bg-gray-800 transition-colors border-t-2 border-gray-600">\n'
-        '              <td class="px-6 py-4 text-white font-semibold">Overall</td>\n'
+        f'              <td class="px-6 py-4 text-white font-semibold">Overall '
+        f'<span class="text-gray-500 text-xs">(n={data["overall_ci_95"]["n"]})</span></td>\n'
         f'              <td class="px-6 py-4 font-mono text-blue-300 font-semibold">{_fmt_pct(data["overall_score"])}</td>\n'
+        f'              <td class="px-6 py-4 font-mono text-gray-400 text-xs">'
+        f'[{_fmt_pct(data["overall_ci_95"]["lower"])}, {_fmt_pct(data["overall_ci_95"]["upper"])}]</td>\n'
         f'              <td class="px-6 py-4 text-gray-400">&ge;{data["threshold"]:.0%}</td>\n'
-        '              <td class="px-6 py-4 text-green-400 font-semibold">&#10003; PASS</td>\n'
+        f"              {_status_badge_html(data['passed'])}\n"
         "            </tr>"
     )
     return "\n" + "\n".join(rows) + "\n          "
 
 
 def render_language_table_html(data: dict[str, Any]) -> str:
-    """Render the language-support accuracy `<tbody>` rows for site/docs/index.html."""
+    """Render the language-support accuracy `<tbody>` rows for site/docs/index.html.
+
+    Bug fix (Session 5 P4, 2026-09-10): the accuracy cell previously hardcoded
+    text-green-400 unconditionally -- same class of bug as render_extraction_table_html,
+    found the same session. A failing language now renders red with its gate noted inline.
+    """
     per_lang = data["per_language"]
     rows_spec = [
         ("en", "English", "Latin"),
@@ -176,13 +205,15 @@ def render_language_table_html(data: dict[str, Any]) -> str:
     ]
     rows: list[str] = []
     for code, label, script in rows_spec:
-        score = per_lang[code]["score"]
+        info = per_lang[code]
+        color = "text-green-400" if info["passed"] else "text-red-400"
+        suffix = "" if info["passed"] else f" (below {info['threshold']:.0%} gate)"
         rows.append(
             '              <tr class="bg-gray-900">\n'
             f'                <td class="px-5 py-3 font-mono text-blue-300">{code}</td>\n'
             f'                <td class="px-5 py-3 text-gray-100">{label}</td>\n'
             f'                <td class="px-5 py-3 text-gray-400">{script}</td>\n'
-            f'                <td class="px-5 py-3 text-green-400">{_fmt_pct(score)}</td>\n'
+            f'                <td class="px-5 py-3 {color}">{_fmt_pct(info["score"])}{suffix}</td>\n'
             "              </tr>"
         )
     return "\n" + "\n".join(rows) + "\n            "

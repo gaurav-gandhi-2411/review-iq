@@ -111,6 +111,27 @@ class TestRenderGateSummaryMd:
         assert "80%" in out
         assert "83%" in out
 
+    def test_per_language_thresholds_shown_independently(self):
+        # Regression test (Session 5 P4, 2026-09-10): render_gate_summary_md used to read
+        # a single threshold via next(iter(data["per_language"].values())) -- silently
+        # correct only when every language shared one global threshold, silently WRONG
+        # (reporting one language's gate as if it applied to all three) the moment
+        # eval/runner.py's PER_LANG_THRESHOLD became per-language. With en=74%/hi=80%/
+        # hi-en=80%, a summary that only shows "74%" or only "80%" has this bug back.
+        data = {
+            **EXTRACTION_DATA,
+            "threshold": 0.77,
+            "per_language": {
+                "en": {**EXTRACTION_DATA["per_language"]["en"], "threshold": 0.74},
+                "hi": {**EXTRACTION_DATA["per_language"]["hi"], "threshold": 0.80},
+                "hi-en": {**EXTRACTION_DATA["per_language"]["hi-en"], "threshold": 0.80},
+            },
+        }
+        out = render_gate_summary_md(data)
+        assert "77%" in out
+        assert "74%" in out
+        assert "80%" in out
+
 
 class TestRenderExtractionTableHtml:
     def test_renders_a_row_per_language_plus_overall(self):
@@ -119,12 +140,59 @@ class TestRenderExtractionTableHtml:
         assert "86.2%" in out
         assert "83.8%" in out
 
+    def test_all_passing_renders_green_pass_everywhere(self):
+        out = render_extraction_table_html(EXTRACTION_DATA)
+        assert out.count("PASS") == 4
+        assert "FAIL" not in out
+        assert "text-red-400" not in out
+
+    def test_failing_language_renders_red_fail_not_green_pass(self):
+        # Regression test (Session 5 P4, 2026-09-10): every row used to hardcode the
+        # green PASS badge unconditionally, ignoring info["passed"]/data["passed"] --
+        # found on review-iq's own committed site/index.html, which was claiming PASS
+        # for English and Overall while both were actually below their gate.
+        data = {
+            **EXTRACTION_DATA,
+            "overall_score": 0.776,
+            "passed": False,
+            "per_language": {
+                **EXTRACTION_DATA["per_language"],
+                "en": {**EXTRACTION_DATA["per_language"]["en"], "score": 0.750, "passed": False},
+            },
+        }
+        out = render_extraction_table_html(data)
+        assert out.count("FAIL") == 2  # en row + overall row
+        assert out.count("PASS") == 2  # hi + hi-en rows only
+        assert "text-red-400" in out
+
 
 class TestRenderLanguageTableHtml:
     def test_renders_three_rows(self):
         out = render_language_table_html(EXTRACTION_DATA)
         assert out.count("<tr") == 3
         assert "Devanagari" in out
+
+    def test_all_passing_renders_green_everywhere(self):
+        out = render_language_table_html(EXTRACTION_DATA)
+        assert "text-red-400" not in out
+        assert "below" not in out
+
+    def test_failing_language_renders_red_with_gate_note(self):
+        # Regression test (Session 5 P4, 2026-09-10): same class of bug as
+        # render_extraction_table_html -- the accuracy cell hardcoded text-green-400
+        # unconditionally, so a failing language's score would render as if it passed.
+        data = {
+            **EXTRACTION_DATA,
+            "per_language": {
+                **EXTRACTION_DATA["per_language"],
+                "en": {**EXTRACTION_DATA["per_language"]["en"], "score": 0.750, "passed": False, "threshold": 0.74},
+            },
+        }
+        out = render_language_table_html(data)
+        assert "text-red-400" in out
+        assert "below 74% gate" in out
+        # hi/hi-en still pass and should stay green, not collateral-damaged red.
+        assert out.count("text-green-400") == 2
 
 
 class TestRenderFile:

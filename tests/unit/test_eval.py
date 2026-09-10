@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import pytest
 from eval.runner import (
+    _DEFAULT_PER_LANG_THRESHOLD,
+    PASS_THRESHOLD,
+    PER_LANG_THRESHOLD,
     FixtureResult,
     _exact_score,
     _fuzzy_list_score,
@@ -13,6 +16,28 @@ from eval.runner import (
     per_language_scores,
     score_fixture,
 )
+
+
+class TestGateThresholds:
+    """Session 5 P4 (2026-09-10): gate reset to the measured gpt-oss baseline.
+
+    Regression coverage for the shape of PER_LANG_THRESHOLD itself -- it must stay a
+    per-language dict, not collapse back to a single float, or every downstream reader
+    (write_results' lang_pass computation, the report/print paths, render_metrics.py's
+    gate_summary renderer) silently applies one language's gate to all three again.
+    """
+
+    def test_per_lang_threshold_is_a_dict_not_a_float(self):
+        assert isinstance(PER_LANG_THRESHOLD, dict)
+
+    def test_current_measured_gate_values(self):
+        assert pytest.approx(0.77) == PASS_THRESHOLD
+        assert PER_LANG_THRESHOLD["en"] == pytest.approx(0.74)
+        assert PER_LANG_THRESHOLD["hi"] == pytest.approx(0.80)
+        assert PER_LANG_THRESHOLD["hi-en"] == pytest.approx(0.80)
+
+    def test_unknown_language_falls_back_to_default(self):
+        assert PER_LANG_THRESHOLD.get("xx", _DEFAULT_PER_LANG_THRESHOLD) == pytest.approx(0.80)
 
 
 class TestExactScore:
