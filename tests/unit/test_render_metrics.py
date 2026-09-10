@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from scripts.render_metrics import (
@@ -12,6 +13,7 @@ from scripts.render_metrics import (
     render_file,
     render_gate_summary_md,
     render_language_table_html,
+    render_portfolio_metrics_json,
 )
 
 EXTRACTION_DATA = {
@@ -20,6 +22,8 @@ EXTRACTION_DATA = {
     "generated_at": "2026-07-30T00:00:00Z",
     "mode": "direct (local LLM)",
     "tiered_routing_enabled_at_runtime": True,
+    "groq_model_small": "llama-3.1-8b-instant",
+    "groq_model_large": "llama-3.3-70b-versatile",
     "overall_score": 0.838,
     "overall_ci_95": {"n": 49, "lower": 0.71, "upper": 0.92},
     "threshold": 0.83,
@@ -229,3 +233,58 @@ class TestRenderFile:
         target.write_text("plain text, no markers here\n", encoding="utf-8")
         new_content, changed = render_file(target)
         assert changed is False
+
+
+class TestRenderPortfolioMetricsJson:
+    """Session 7 P1: .portfolio/metrics.json went stale a third time because it was
+    hand-typed prose in a file type check_no_hardcoded_metrics.py never scans (.json).
+    Fixed by making it a whole-file generated target instead, drift-checked by
+    render_metrics.py --check the same way every marker-block target is."""
+
+    def test_output_is_valid_json(self):
+        out = render_portfolio_metrics_json(EXTRACTION_DATA)
+        json.loads(out)  # must not raise
+
+    def test_value_field_reflects_current_scores_not_stale_ones(self):
+        # Regression test for the actual incident: this data fixture's numbers
+        # (86.2/80.7/80.9/83.8) must appear -- not some other, stale hardcoded pair.
+        out = render_portfolio_metrics_json(EXTRACTION_DATA)
+        doc = json.loads(out)
+        value = doc["metrics"][0]["value"]
+        assert "83.8%" in value
+        assert "86.2%" in value
+        assert "80.7%" in value
+        assert "80.9%" in value
+
+    def test_gate_status_reflects_real_pass_fail_per_language(self):
+        data = {
+            **EXTRACTION_DATA,
+            "passed": False,
+            "per_language": {
+                **EXTRACTION_DATA["per_language"],
+                "en": {**EXTRACTION_DATA["per_language"]["en"], "passed": False},
+            },
+        }
+        out = render_portfolio_metrics_json(data)
+        doc = json.loads(out)
+        gate_status = doc["metrics"][0]["gate_status"]
+        assert "FAILS" in gate_status
+        assert "passes" in gate_status  # hi/hi-en still pass
+
+    def test_regenerating_twice_is_idempotent(self):
+        first = render_portfolio_metrics_json(EXTRACTION_DATA)
+        second = render_portfolio_metrics_json(EXTRACTION_DATA)
+        assert first == second
+
+    def test_stale_committed_file_would_be_caught_as_drift(self, tmp_path: Path):
+        # Simulates the actual Session 7 incident: a committed file with the OLD
+        # numbers must differ from a fresh regeneration -- this is what
+        # `render_metrics.py --check` compares to decide DRIFT vs OK.
+        stale_committed = json.dumps(
+            {
+                "version": 1,
+                "metrics": [{"id": "reviewiq:extraction-eval", "value": "77.6% overall"}],
+            }
+        )
+        fresh = render_portfolio_metrics_json(EXTRACTION_DATA)
+        assert stale_committed != fresh
