@@ -449,6 +449,17 @@ curl https://your-instance.run.app/v2/ingest/b3f1a2d4-.../result \
           The detected code is returned in the <code class="bg-gray-800 text-blue-300 px-1.5 py-0.5 rounded text-sm">language</code> field of the response.
         </p>
 
+        <div class="mb-6 bg-amber-950/40 border border-amber-800 rounded-lg px-5 py-4 text-sm text-gray-300">
+          <span class="text-amber-400 font-semibold">Re-measured against the models actually deployed: </span>
+          The accuracy figures below were measured under the models production actually
+          runs today (<code class="text-gray-300">openai/gpt-oss-20b</code> /
+          <code class="text-gray-300">openai/gpt-oss-120b</code>) after Groq deprecated the
+          previous models on 2026-08-16 &mdash; see the
+          <a href="/#accuracy" class="underline text-amber-300">full accuracy table</a> for
+          gate status, confidence intervals, and known calibration differences vs. the
+          previous models.
+        </div>
+
         <div class="overflow-x-auto rounded-xl border border-gray-700">
           <table class="w-full text-sm">
             <thead class="bg-gray-800 text-gray-300">

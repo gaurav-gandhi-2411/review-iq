@@ -156,16 +156,24 @@
     =========================================================== -->
     <section id="accuracy" class="py-16 border-t border-gray-800">
       <h2 class="text-3xl font-bold text-white mb-2">Real accuracy &mdash; evaluated on held-out fixtures</h2>
-      <p class="text-gray-400 mb-8">
+      <p class="text-gray-400 mb-4">
         Field-level scoring (exact match + fuzzy + set F1) on held-out CI fixtures.
         Prompt v2.3, measured under the models production actually runs
         (<code class="text-gray-300">openai/gpt-oss-20b</code> /
         <code class="text-gray-300">openai/gpt-oss-120b</code>). 95% CIs are paired
-        bootstrap over the fixture set. Gates were reset 2026-09-10 to the measured
+        bootstrap over the 49 fixtures. Gates were reset 2026-09-10 to the measured
         baseline after the previous Llama-era targets no longer held under these models
         — see <a href="/docs#languages" class="underline text-gray-300">the eval runbook</a>
         for the full diagnosis.
       </p>
+
+      <div class="mb-6 bg-amber-950/40 border border-amber-800 rounded-lg px-5 py-4 text-sm text-gray-300">
+        <span class="text-amber-400 font-semibold">Re-measured against the models actually deployed: </span>
+        Groq deprecated the previous models (<code class="text-gray-300">llama-3.1-8b-instant</code> /
+        <code class="text-gray-300">llama-3.3-70b-versatile</code>) on 2026-08-16. The numbers below
+        are the current, honest measurement against what's actually deployed. Nothing was tuned to
+        recover a prior number.
+      </div>
 
       <div class="overflow-x-auto rounded-xl border border-gray-700">
         <table class="w-full text-sm">
@@ -215,11 +223,12 @@
 
       <div class="mt-6 bg-amber-950/40 border border-amber-800 rounded-lg px-5 py-4 text-sm text-gray-300">
         <span class="text-amber-400 font-semibold">Known gaps: </span>
-        English `sentiment` and `buy_again` regressed under the current models — the model
-        hedges toward "mixed"/null on cases the prompt's examples (tuned against the
-        previous model) expected a committed answer; Hindi/Hinglish show the opposite
-        pattern and are unaffected. Sarcastic Hinglish with backhanded compliments scores
-        lower. Short reviews (&lt;10 words) occasionally miss fields.
+        English `sentiment` and `buy_again` hedge (return "mixed"/null) far more often under
+        the current models than the previous ones — accuracy on the answers the model DOES
+        commit to is unchanged, but it commits less often, and flat accuracy charges that the
+        same as a wrong answer. Hindi/Hinglish show the opposite pattern. Sarcastic Hinglish
+        with backhanded compliments scores lower. Short reviews (&lt;10 words) occasionally
+        miss fields.
       </div>
     </section>
 
