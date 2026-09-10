@@ -23,6 +23,18 @@ UNLESS that number sits inside one of two recognised marker blocks:
       record, not a live claim that can silently drift." Do not use this to dodge the
       real fix; use it only for numbers that are genuinely frozen-in-time.
 
+SCOPE NOTE (Session 7 P1, 2026-09-11): this scanner only globs `*.md`/`*.html` -- it never
+sees `.portfolio/metrics.json`, which went stale the same way (hand-typed 77.6%/75.0% for
+five days after the real numbers moved to 79.3%/78.1%). That file is deliberately NOT
+added to this scanner's glob: JSON has no comment syntax, so the marker convention above
+can't wrap a span without embedding literal `<!-- ... -->` text inside a JSON string value
+that an external consumer (gg-portfolio) might render as-is. Instead it's a whole-file
+generated target in scripts/render_metrics.py (see render_portfolio_metrics_json), drift-
+checked by `render_metrics.py --check` -- the same mechanism already protecting this
+scanner's own blind spot for eval/report.md. If another JSON file develops the same
+hand-typed-prose-with-live-numbers shape, give it the same whole-file treatment rather than
+trying to retrofit the HTML-comment convention into JSON.
+
 LIMITATION -- read before trusting this check: this is a regex heuristic, not a parser.
 It is tuned to this repo's actual history (verified against every existing tracked
 *.md/*.html file when written) to keep the false-positive rate low, not to be a
