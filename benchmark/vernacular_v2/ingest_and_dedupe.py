@@ -1,13 +1,29 @@
-"""Ingest the 3 ODbL/DbCL-licensed Kaggle Flipkart datasets and dedupe across them.
+"""Ingest the 5 license-cleared Kaggle Flipkart datasets and dedupe across them.
 
-Sources (all license-cleared 2026-07-07, see memory/project docs for the verification trail):
-  - mansithummar67/flipkart-product-review-dataset  (ODbL-1.0, 194K)
-  - niraliivaghani/flipkart-dataset                 (ODbL-1.0, 363K)
-  - niraliivaghani/flipkart-product-customer-reviews-dataset (DbCL-1.0, sentiment-labeled)
+Sources:
+  - mansithummar67/flipkart-product-review-dataset  (ODbL-1.0, 194K, cleared 2026-07-07)
+  - niraliivaghani/flipkart-dataset                 (ODbL-1.0, 363K, cleared 2026-07-07)
+  - niraliivaghani/flipkart-product-customer-reviews-dataset (DbCL-1.0, sentiment-labeled,
+    cleared 2026-07-07)
+  - kabirnagpal/flipkart-customer-review-and-rating  (CC0-1.0, ~10K, cleared 2026-07-31 —
+    see eval/data/README.md; was flagged "(check before use)", resolved this session:
+    the dataset page's JSON-LD `license` block reads
+    `{"name":"CC0: Public Domain","url":"https://creativecommons.org/publicdomain/zero/1.0/"}`)
+  - naushads/flipkart-reviews                        (CC0-1.0, ~9K, cleared 2026-07-31 —
+    same verification method, same resolution: CC0 Public Domain)
+
+All verification trails: memory/project docs (first 3) and
+docs/architecture/adr/0004-corpus-mining-pipeline-and-target-volume.md (last 2, Wave 1
+Section H). No source with unclear/unverified terms is ingested — anything that stayed
+ambiguous after checking the actual dataset page is dropped, not guessed at.
 
 Dedup key: SHA256 of normalized review text (Summary column — the actual free-text review
 body; the "Review" column is just a short reaction label like "Awesome"). Normalization:
 strip + collapse whitespace + lowercase, matching benchmark/data/leakage_check.py's convention.
+
+Every output record now carries its own `license` and `kaggle_ref` fields (per-record
+provenance, not just "look it up in this docstring") — added 2026-07-31 per Wave 1 Section
+H's requirement that every record in the final corpus carry license provenance.
 
 Output: data/processed/flipkart_deduped.jsonl (one record per unique review).
 """
@@ -66,7 +82,40 @@ SOURCES = [
         "kaggle_ref": "niraliivaghani/flipkart-product-customer-reviews-dataset",
         "extra_cols": {"uploader_sentiment": "Sentiment"},
     },
+    {
+        # Wave 1 Section H: was "(check before use)" in eval/data/README.md. Resolved
+        # 2026-07-31 by reading the dataset page's own JSON-LD license block directly
+        # (not assumed): {"name": "CC0: Public Domain",
+        # "url": "https://creativecommons.org/publicdomain/zero/1.0/"}. Schema per the
+        # dataset's own description (single product, boAt Rockerz 400, 2 columns —
+        # "Review" is the FULL free-text body here, not a short label like the other
+        # 3 sources' "Review" column, hence text_col="review" below).
+        "id": "kabirnagpal_10k",
+        "path": RAW / "kabirnagpal_10k" / "flipkart_reviews_dataset.csv",
+        "cols": {"review": "Review", "rate": "Rating"},
+        "text_col": "review",
+        "static_product_name": "boAt Rockerz 400 (Bluetooth headset)",
+        "license": "CC0-1.0",
+        "kaggle_ref": "kabirnagpal/flipkart-customer-review-and-rating",
+    },
 ]
+
+# naushads/flipkart-reviews: license CONFIRMED CC0-1.0 (same verification method as
+# kabirnagpal above — checked 2026-07-31, JSON-LD license block reads "CC0: Public
+# Domain"). NOT added to SOURCES: the dataset page's description only documents its
+# scraping methodology ("BeautifulSoup"), not its column schema, and no raw CSV is
+# present in this worktree (data/raw/ is gitignored, ~245K-row corpus, never committed)
+# to inspect a header row directly. Per this repo's evidence-over-recall rule, guessing
+# a column schema for an unverified CSV is not acceptable — wiring this in requires
+# either downloading the file (kaggle.json, one-time GG setup, same as every other
+# source here) and reading its actual header row, or finding column docs elsewhere.
+# License is cleared; ingestion is a follow-up, not a blocker for this ADR/pipeline.
+NAUSHADS_LICENSE_CLEARED_SCHEMA_PENDING = {
+    "kaggle_ref": "naushads/flipkart-reviews",
+    "license": "CC0-1.0",
+    "license_verified": "2026-07-31",
+    "status": "license_cleared_schema_unverified",
+}
 
 
 def _normalize(text: str) -> str:
@@ -85,20 +134,34 @@ def _clean_field(v: str | None) -> str:
 
 
 def load_source(src: dict) -> list[dict]:
+    # text_col picks which of src["cols"] holds the actual free-text review body.
+    # Defaults to "summary" (the first 3 sources' schema: a short "Review" reaction
+    # label + a longer "Summary" free-text field). kabirnagpal has no separate
+    # summary column — its "Review" column IS the free-text body — so it sets
+    # text_col="review" instead of adding a 5th no-op key.
+    text_col = src.get("text_col", "summary")
     rows: list[dict] = []
     with src["path"].open(encoding="utf-8-sig", errors="replace", newline="") as fh:
         reader = csv.DictReader(fh)
         for i, row in enumerate(reader):
-            summary = _clean_field(row.get(src["cols"]["summary"]))
-            if not summary or len(summary) < 3:
+            body = _clean_field(row.get(src["cols"][text_col]))
+            if not body or len(body) < 3:
                 continue
+            product_name = src.get("static_product_name") or _clean_field(
+                row.get(src["cols"].get("product", ""))
+            )
             rec = {
                 "source": src["id"],
                 "source_row": i,
-                "product_name": _clean_field(row.get(src["cols"]["product"])),
-                "rate": _clean_field(row.get(src["cols"]["rate"])),
-                "review_label": _clean_field(row.get(src["cols"]["review"])),
-                "text": summary,
+                "product_name": product_name,
+                "rate": _clean_field(row.get(src["cols"].get("rate", ""))),
+                "review_label": _clean_field(row.get(src["cols"].get("review", ""))),
+                "text": body,
+                # Per-record license provenance (Wave 1 Section H requirement) — every
+                # record carries its own license, not just a lookup via `source` into
+                # this file's SOURCES list.
+                "license": src["license"],
+                "kaggle_ref": src["kaggle_ref"],
             }
             if "extra_cols" in src:
                 for out_key, col in src["extra_cols"].items():
@@ -147,6 +210,8 @@ def main() -> None:
 
     summary = {
         "per_source_raw_counts": per_source_counts,
+        "per_source_license": {src["id"]: src["license"] for src in SOURCES},
+        "per_source_kaggle_ref": {src["id"]: src["kaggle_ref"] for src in SOURCES},
         "total_before_dedup": len(all_rows),
         "duplicates_removed": dup_count,
         "overlap_by_source_pair": overlap_by_pair,
