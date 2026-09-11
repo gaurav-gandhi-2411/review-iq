@@ -1427,6 +1427,11 @@ def aggregate_extraction_costs_pg(since: datetime | None = None) -> list[dict[st
 def check_and_increment_demo_request_pg(daily_request_budget: int) -> bool:
     """Atomically check + reserve one unit of today's global demo-request budget.
 
+    Cross-org query, deliberately no _set_tenant(): POST /demo/extract is keyless --
+    there is no org to scope to. Writes only public.demo_daily_usage, a single global
+    (non-tenant) counter table with no RLS, grant-scoped to review_iq_app only (see
+    supabase/migrations/20260905000001_demo_daily_usage.sql).
+
     Returns True (and increments today's counter) if today's request count was below
     `daily_request_budget` before this call; returns False (no increment) if the budget
     was already reached. Race-safe under concurrent callers via a single conditional
@@ -1474,6 +1479,11 @@ def record_demo_extraction_cost_pg(
     cost_inr: float,
 ) -> str:
     """Persist a per-extraction cost record for a keyless /demo/extract call.
+
+    Cross-org query, deliberately no _set_tenant(): POST /demo/extract is keyless --
+    there is no org to scope to. Inserts org_id=NULL, source='demo' rows into
+    extraction_costs, permitted by a policy scoped specifically to review_iq_app (see
+    supabase/migrations/20260905000002_extraction_costs_allow_demo_rows.sql).
 
     Same shape as record_extraction_cost_pg but with org_id=NULL, source='demo', and no
     extraction_id (the demo path never writes to public.extractions). Also updates
