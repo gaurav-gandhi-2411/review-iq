@@ -57,7 +57,16 @@ _WEAK_HINGLISH = re.compile(
     re.IGNORECASE,
 )
 
-_DEVANAGARI = re.compile(r"[ऀ-ॿ]")
+# Session 9 P3 (review-iq): excludes U+0964/U+0965 (DEVANAGARI DANDA / DOUBLE DANDA) from
+# the block this regex otherwise covers wholesale. Found directly, not guessed: both of the
+# corpus's only 2 "hi" candidates turned out to be pure-English text using a stray danda as a
+# period/separator ("...canbe like this । It's awesome", "...the wire। of this earphone...") --
+# discovered when the held-out corpus's own judge panel labeled both `language=en` against
+# their "hi" source tag. The danda is Devanagari-block punctuation, not a language signal --
+# same class of fix as ADR 0014's marker-list correction (a matched codepoint/token that
+# doesn't actually indicate Hindi content), verified against the two real false positives
+# above before changing, not assumed. See docs/architecture/adr/0016-*.md.
+_DEVANAGARI = re.compile(r"[ऀ-ॣ०-ॿ]")
 
 # Session 8 P3 (review-iq): weak-marker threshold and marker-list correction, both
 # verified against the actual raw corpus before changing, not guessed.
