@@ -105,6 +105,14 @@ ALLOWLIST: dict[tuple[str, str], str] = {
         "no RLS, grant-scoped to review_iq_app only (see "
         "supabase/migrations/20260905000001_demo_daily_usage.sql)."
     ),
+    ("app/core/storage_pg.py", "record_demo_extraction_cost_pg"): (
+        "POST /demo/extract is keyless -- there is no org to _set_tenant() to. Inserts "
+        "org_id=NULL, source='demo' rows into extraction_costs, permitted by a policy "
+        "scoped specifically to review_iq_app (not anon/authenticated), see "
+        "supabase/migrations/20260905000002_extraction_costs_allow_demo_rows.sql -- "
+        "authenticated tenants can never see these rows (NULL org_id never equals any "
+        "real current_org_id())."
+    ),
 }
 
 _CONNECT_ATTR = "connect"

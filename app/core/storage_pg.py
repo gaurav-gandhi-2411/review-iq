@@ -1412,14 +1412,15 @@ def aggregate_extraction_costs_pg(since: datetime | None = None) -> list[dict[st
 
 
 # ---------------------------------------------------------------------------
-# Demo-endpoint (POST /demo/extract) global daily quota.
+# Demo-endpoint (POST /demo/extract) global daily quota + cost recording.
 #
-# check_and_increment_demo_request_pg does not call _set_tenant() -- there is no org on
-# this keyless path. It connects as review_iq_app directly (the same ambient role every
+# Neither of the two functions below calls _set_tenant() -- there is no org on this
+# keyless path. Both connect as review_iq_app directly (the same ambient role every
 # other function in this module uses via _db_connect(), just without the
-# SET LOCAL ROLE authenticated step _set_tenant() performs) and relies on grants scoped
-# specifically to review_iq_app (see 20260905000001_demo_daily_usage.sql). Allowlisted
-# in scripts/check_undocumented_pg_connects.py with that migration cited as the reason.
+# SET LOCAL ROLE authenticated step _set_tenant() performs) and rely on grants/RLS
+# policies scoped specifically to review_iq_app (see 20260905000001_demo_daily_usage.sql
+# and 20260905000002_extraction_costs_allow_demo_rows.sql). Both are allowlisted in
+# scripts/check_undocumented_pg_connects.py with those migrations cited as the reason.
 # ---------------------------------------------------------------------------
 
 
@@ -1460,6 +1461,65 @@ def check_and_increment_demo_request_pg(daily_request_budget: int) -> bool:
         row = cur.fetchone()
         conn.commit()
         return row is not None
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def record_demo_extraction_cost_pg(
+    provider: str,
+    model: str,
+    tier: str,
+    language: str | None,
+    tokens_in: int,
+    tokens_out: int,
+    cost_usd: float,
+    cost_inr: float,
+) -> str:
+    """Persist a per-extraction cost record for a keyless /demo/extract call.
+
+    Cross-org query, deliberately no _set_tenant(): POST /demo/extract is keyless --
+    there is no org to scope to. Inserts org_id=NULL, source='demo' rows into
+    extraction_costs, permitted by a policy scoped specifically to review_iq_app (see
+    supabase/migrations/20260905000002_extraction_costs_allow_demo_rows.sql).
+
+    Same shape as record_extraction_cost_pg but with org_id=NULL, source='demo', and no
+    extraction_id (the demo path never writes to public.extractions). Also updates
+    demo_daily_usage's running token totals for observability -- the actual daily CAP is
+    enforced by check_and_increment_demo_request_pg's request-count gate above, called
+    BEFORE the LLM call; this token update happens AFTER, purely for visibility into how
+    close the shared Groq daily token budget is to being exhausted.
+
+    Returns the row id (UUID as str).
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            INSERT INTO public.extraction_costs (
+                org_id, extraction_id, provider, model, tier, language,
+                tokens_in, tokens_out, cost_usd, cost_inr, source
+            ) VALUES (NULL, NULL, %s, %s, %s, %s, %s, %s, %s, %s, 'demo')
+            RETURNING id
+            """,
+            (provider, model, tier, language, tokens_in, tokens_out, cost_usd, cost_inr),
+        )
+        cost_row = cur.fetchone()
+        cur.execute(
+            """
+            UPDATE public.demo_daily_usage
+            SET tokens_in_total = tokens_in_total + %s,
+                tokens_out_total = tokens_out_total + %s,
+                updated_at = now()
+            WHERE usage_date = CURRENT_DATE
+            """,
+            (tokens_in, tokens_out),
+        )
+        conn.commit()
+        return str(cost_row[0])
     except Exception:
         conn.rollback()
         raise
