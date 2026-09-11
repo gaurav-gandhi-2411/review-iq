@@ -1,0 +1,68 @@
+{
+  "id": "hien-0075",
+  "review_text": "Pros:    Good Sound Quality(not too much better than a local simple earphone)    Nice connectivity(utna bhi nahi)Cons:    My ear pains after using it  for around 30 min.(needed more soft material for the speaker's soft parts )READ MORE",
+  "ground_truth": {
+    "product": "earphone",
+    "stars": null,
+    "stars_inferred": 3,
+    "pros": [
+      "Good sound quality",
+      "Nice connectivity"
+    ],
+    "cons": [],
+    "buy_again": null,
+    "sentiment": "mixed",
+    "topics": [
+      "sound_quality",
+      "connectivity",
+      "comfort",
+      "build_quality"
+    ],
+    "competitor_mentions": [],
+    "urgency": "high",
+    "feature_requests": [
+      "Softer material for speaker parts"
+    ],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/kabirnagpal/flipkart-customer-review-and-rating",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "majority",
+      "urgency": "unanimous",
+      "product": "unanimous",
+      "stars_inferred": "unanimous",
+      "pros": "unanimous",
+      "cons": "split",
+      "topics": "unanimous",
+      "feature_requests": "majority",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}

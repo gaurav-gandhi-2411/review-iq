@@ -1,0 +1,66 @@
+{
+  "id": "hien-0062",
+  "review_text": "Mujhe bahut bekar laga I dont like sound quality the sound quality is irritating and annoying,sound beech beech me gayab ho jata h Blootootth version old h Overall i dont likeREAD MORE",
+  "ground_truth": {
+    "product": "Bluetooth speaker",
+    "stars": null,
+    "stars_inferred": 1,
+    "pros": [],
+    "cons": [
+      "irritating and annoying sound quality",
+      "sound cuts out intermittently",
+      "old Bluetooth version"
+    ],
+    "buy_again": false,
+    "sentiment": "negative",
+    "topics": [
+      "sound_quality",
+      "bluetooth_connectivity",
+      "bluetooth_version"
+    ],
+    "competitor_mentions": [],
+    "urgency": "medium",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/kabirnagpal/flipkart-customer-review-and-rating",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "majority",
+      "product": "majority",
+      "stars_inferred": "unanimous",
+      "pros": "unanimous",
+      "cons": "majority",
+      "topics": "majority",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}
