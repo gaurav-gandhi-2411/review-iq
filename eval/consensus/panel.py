@@ -375,7 +375,9 @@ async def _call_gemini_judge(model_id: str, text: str, timeout: int = 30) -> str
 
     api_key = os.environ.get("GEMINI_API_KEY", "")
     if not api_key:
-        raise RuntimeError("GEMINI_API_KEY is not set -- required for the gemini-3.5-flash-lite judge.")
+        raise RuntimeError(
+            "GEMINI_API_KEY is not set -- required for the gemini-3.5-flash-lite judge."
+        )
     client = genai.Client(api_key=api_key)
 
     last_exc: Exception | None = None
@@ -392,7 +394,9 @@ async def _call_gemini_judge(model_id: str, text: str, timeout: int = 30) -> str
     raise last_exc or RuntimeError("unreachable")
 
 
-async def _generate_gemini_content(client: Any, model_id: str, text: str, timeout: int, types: Any) -> str:
+async def _generate_gemini_content(
+    client: Any, model_id: str, text: str, timeout: int, types: Any
+) -> str:
     response = await asyncio.wait_for(
         client.aio.models.generate_content(
             model=model_id,

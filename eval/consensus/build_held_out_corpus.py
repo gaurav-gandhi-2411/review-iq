@@ -97,7 +97,9 @@ def build_candidate_queue() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]
     return pool("hi"), pool("hi-en")
 
 
-async def _label_one_judge(client: Any, model_cfg: dict[str, str], text: str) -> dict[str, Any] | None:
+async def _label_one_judge(
+    client: Any, model_cfg: dict[str, str], text: str
+) -> dict[str, Any] | None:
     try:
         raw = await panel.call_judge(client, model_cfg["id"], text)
     except Exception as exc:  # noqa: BLE001 -- record the error, don't crash the whole batch
@@ -167,8 +169,10 @@ async def run_batch(max_items: int) -> dict[str, Any]:
     print(f"Remaining unlabeled: hi={len(hindi)}  hi-en={len(hinglish)}")
 
     queue = (hindi + hinglish)[:max_items]  # Hindi-first per P3d
-    print(f"This batch: {len(queue)} items ({sum(1 for c in queue if c['language'] == 'hi')} hi, "
-          f"{sum(1 for c in queue if c['language'] == 'hi-en')} hi-en)")
+    print(
+        f"This batch: {len(queue)} items ({sum(1 for c in queue if c['language'] == 'hi')} hi, "
+        f"{sum(1 for c in queue if c['language'] == 'hi-en')} hi-en)"
+    )
 
     client = panel.make_groq_client()
     written = {"hi": 0, "hi-en": 0}
