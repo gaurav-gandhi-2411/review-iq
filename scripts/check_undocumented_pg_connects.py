@@ -93,6 +93,12 @@ ALLOWLIST: dict[tuple[str, str], str] = {
         "upsert_shopify_installation(), a narrow SECURITY DEFINER function (see "
         "supabase/migrations/20260801000002_tenant_resolvers_auth_signup.sql)."
     ),
+    ("app/core/storage_pg.py", "check_and_increment_demo_request_pg"): (
+        "POST /demo/extract is keyless -- there is no org to _set_tenant() to. Writes "
+        "only public.demo_daily_usage, a single global (non-tenant) counter table with "
+        "no RLS, grant-scoped to review_iq_app only (see "
+        "supabase/migrations/20260905000001_demo_daily_usage.sql)."
+    ),
 }
 
 _CONNECT_ATTR = "connect"

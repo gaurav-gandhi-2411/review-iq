@@ -1294,3 +1294,59 @@ def _row_to_extraction_v2(row: tuple[Any, ...], org_id: str) -> ReviewExtraction
         else datetime.fromisoformat(str(review_date)),
         extraction_meta=meta,
     )
+
+
+# ---------------------------------------------------------------------------
+# Demo-endpoint (POST /demo/extract) global daily quota.
+#
+# check_and_increment_demo_request_pg does not call _set_tenant() -- there is no org on
+# this keyless path. It connects as review_iq_app directly (the same ambient role every
+# other function in this module uses via _db_connect(), just without the
+# SET LOCAL ROLE authenticated step _set_tenant() performs) and relies on grants scoped
+# specifically to review_iq_app (see 20260905000001_demo_daily_usage.sql). Allowlisted
+# in scripts/check_undocumented_pg_connects.py with that migration cited as the reason.
+# ---------------------------------------------------------------------------
+
+
+def check_and_increment_demo_request_pg(daily_request_budget: int) -> bool:
+    """Atomically check + reserve one unit of today's global demo-request budget.
+
+    Cross-org query, deliberately no _set_tenant(): POST /demo/extract is keyless --
+    there is no org to scope to. Writes only public.demo_daily_usage, a single global
+    (non-tenant) counter table with no RLS, grant-scoped to review_iq_app only (see
+    supabase/migrations/20260905000001_demo_daily_usage.sql).
+
+    Returns True (and increments today's counter) if today's request count was below
+    `daily_request_budget` before this call; returns False (no increment) if the budget
+    was already reached. Race-safe under concurrent callers via a single conditional
+    UPSERT -- no explicit row lock or separate SELECT-then-UPDATE round trip needed.
+
+    This gates on REQUEST COUNT, not token count, deliberately: token cost per call is
+    only known after the LLM responds, so it cannot be checked before spending it.
+    Sizing `daily_request_budget` conservatively against the worst-case per-call token
+    cost (see app/api/demo.py's DEMO_DAILY_REQUEST_BUDGET) keeps the token side safe by
+    construction without needing a token-level reservation.
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            INSERT INTO public.demo_daily_usage (usage_date, request_count)
+            VALUES (CURRENT_DATE, 1)
+            ON CONFLICT (usage_date) DO UPDATE
+                SET request_count = demo_daily_usage.request_count + 1,
+                    updated_at = now()
+                WHERE demo_daily_usage.request_count < %s
+            RETURNING request_count
+            """,
+            (daily_request_budget,),
+        )
+        row = cur.fetchone()
+        conn.commit()
+        return row is not None
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
