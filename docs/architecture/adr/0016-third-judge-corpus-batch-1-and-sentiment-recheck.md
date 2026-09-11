@@ -134,6 +134,77 @@ implicit optimism in ADR 0013's framing that a second rater would likely confirm
 `buy_again`'s authorization (ADR 0012, 9/10 decidable per the single disjoint judge) is
 unaffected -- untouched by this check, no new evidence against it.
 
+## Follow-up (Session 10 P2) — the retraction above was wrong; Gemini is a degenerate hedger
+
+The retraction above treated Gemini's 9/9 hedge as legitimate independent judgment on
+genuinely ambiguous text. That was never tested against the alternative: Gemini hedging
+*specifically because the item is hard*, independent of whether it's actually ambiguous —
+the same failure class as `allam-2-7b` (dropped from the panel for a different reason,
+9/33 calibration misses) and the all-NO voter that collapsed a defect-detection ensemble in
+an earlier engagement. Calibration cannot distinguish these: a 16-item unambiguous-by-
+construction control set cannot detect a judge that only fails on hard items, because it
+contains none.
+
+**Test**: built a hard-but-decidable control from already-labeled fixtures — zero new
+sourcing, per the task's own constraint. From `eval/results.json`'s per-fixture scores +
+`eval/consensus/results/consensus_labels.jsonl`'s cached votes, selected every fixture
+where (a) `qwen/qwen3.6-27b` matches the fixture's own ground-truth sentiment exactly, and
+(b) the production model's own prediction does NOT match ground truth (wrong or hedged) —
+i.e., items empirically hard enough to trip the production model, but where a disjoint
+judge already agrees with gold on the decisive answer. 9 candidates matched; 4 were
+themselves gold-labeled `mixed` (uninformative for hedge detection — a `mixed` answer on a
+genuinely-mixed item is correctness, not evidence of hedging) and excluded, leaving 5 with
+a decisive (non-`mixed`) gold answer: `012_sarcasm` (negative), `015_medium_urgency`
+(negative), `016_no_product_name` (neutral), `022_two_star_explicit` (negative),
+`025_competitor_switch` (positive).
+
+**Result — Gemini hedged on 4/5 (80%)**, fresh calls against the exact review texts, not
+inferred: `012`→mixed, `015`→mixed, `016`→neutral (correct), `022`→mixed, `025`→mixed. The
+one item it got right (`016`) is also the least emotionally-loaded of the five (a flatly
+unremarkable review: "Works as advertised I guess... nothing special but nothing broken
+either") — consistent with Gemini committing fine on genuinely low-signal text and
+defaulting to `mixed` specifically when the text carries real directional content (sarcasm,
+frustration, an explicit competitor comparison) that a disjoint judge and the original
+label both resolve cleanly.
+
+**Cross-check: `qwen/qwen3.8-27b` (same vendor as qwen3.6, different checkpoint) run fresh
+against the same 5 items — matched gold on 4/5**, hedging on only `015_medium_urgency`
+(the one item qwen3.6 and qwen3.8 disagree on). This is genuine, if same-vendor-weaker,
+independent corroboration of qwen3.6's original finding that did not exist when ADR 0012's
+bar was written — two different Qwen checkpoints agreeing on 4 of 5 hard cases is
+meaningfully more than the single-rater status quo, even though it doesn't meet the
+"cross-vendor disjoint" bar as originally specified.
+
+**VERIFIED: reading (ii) holds for Gemini.** It is a degenerate hedger on hard-but-decidable
+sentiment cases specifically — 0/33 misses on unambiguous calibration items, 4/5 hedges on
+items a disjoint judge and gold both resolve decisively. This is not evidence the calibration
+was faked or gamed; it's evidence that **calibration on an unambiguous-by-construction set
+cannot detect a judge that fails specifically on hard items** — a generalizable point, not
+specific to this judge or this field, worth carrying into any future judge-vetting: a control
+set needs a hard-but-decidable arm, not just an easy arm, to catch this failure mode at all.
+
+**Consequence: the Session 9 retraction above is itself retracted.** Gemini's 9/9 hedge does
+not contradict qwen3.6's 4/9-decidable finding — it reflects a hedging bias that calibration
+alone couldn't surface, not independent judgment on genuine ambiguity. This restores ADR
+0013's finding to standing, un-contradicted evidence. **It does not, by itself, authorize a
+sentiment experiment** — ADR 0012's bar asks for a second genuinely disjoint judge, and
+Gemini (now shown unreliable specifically on hard sentiment calls) cannot fill that role.
+qwen3.8's 4/5 corroboration is real but same-vendor, the exact "weaker evidence" class ADR
+0015 already flagged when it was added. Whether that same-vendor corroboration is *enough*
+to authorize the experiment is a policy call for GG, not a decision this session makes
+unilaterally — reported with the evidence in hand, not decided. **`sentiment` stays
+unauthorized for prompt-level experimentation either way** until that call is made; nothing
+here changes P6's prompt freeze.
+
+Practical implication for the panel going forward, independent of the authorization
+question: Gemini's sentiment vote should be weighted with this caveat on any genuinely
+contested (near-tie) item — exactly the items where a 3rd judge's tiebreaking vote matters
+most in a 3-way majority. This does not contradict Session 9's batch-1 finding (high
+Gemini/qwen agreement, alpha ~0.94–1.0, on 23 unselected real hi-en reviews) — most real
+reviews are not hard in this specific sense; the failure surfaces on the hard tail
+specifically, which an unselected batch under-samples relative to a control set built to
+target it.
+
 ## Decision
 
 1. Panel restored to 3 calibration-passing judges (`eval/consensus/panel.py`,
@@ -145,8 +216,11 @@ unaffected -- untouched by this check, no new evidence against it.
    grows the main, prompt-visible fixture set and must never be pointed at the quarantine
    directory or vice versa.
 4. Held-out corpus grown from 0 to 23 real hi-en fixtures (0 hi -- see above).
-5. `sentiment` stays unauthorized for prompt-level intervention (ADR 0012's bar not met, for a
-   new and stronger reason than previously documented).
+5. (Session 9) `sentiment` stays unauthorized for prompt-level intervention -- **superseded by
+   Session 10 P2 below**: Gemini's contradiction is retracted, but authorization still isn't
+   granted; the reason moves from "second judge disagrees" back to "no fully cross-vendor
+   disjoint second judge exists yet", pending GG's call on whether qwen3.6+qwen3.8's same-vendor
+   corroboration clears ADR 0012's bar.
 
 ## Consequences
 
@@ -156,10 +230,14 @@ unaffected -- untouched by this check, no new evidence against it.
   does not change the main (non-quarantined) `eval/fixtures/hi/`'s existing 6 Hindi fixtures,
   which come from a different source and are untouched by this finding.
 - 83 hi-en candidates remain for future batches under the same P3c ceiling discipline.
-- `sentiment`'s prompt-freeze (P6) continues indefinitely pending either new evidence or a
-  design decision to proceed despite disjoint-judge disagreement -- that decision is GG's, not
-  this session's, per the standing STOP-and-report discipline for anything touching
-  `app/core/prompts/**`.
+- `sentiment`'s prompt-freeze (P6) continues indefinitely pending GG's decision on whether
+  qwen3.6+qwen3.8's same-vendor 4/5 corroboration (Session 10 P2) meets ADR 0012's bar, or
+  whether a genuinely cross-vendor non-degenerate second judge is still required -- that
+  decision is GG's, not this session's, per the standing STOP-and-report discipline for
+  anything touching `app/core/prompts/**`.
+- Any future judge-vetting for this project should include a hard-but-decidable calibration
+  arm, not just an unambiguous one -- Session 10 P2's central finding is that the current
+  calibration design structurally cannot catch a judge that hedges specifically on hard items.
 
 ## Alternatives considered
 
