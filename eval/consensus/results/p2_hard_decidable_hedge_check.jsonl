@@ -1,0 +1,6 @@
+{"id": "004_hinglish", "expected": "mixed", "gemini_sentiment": "mixed", "note": "excluded from hedge-rate calc: gold is mixed, so a mixed answer is correctness not hedging"}
+{"id": "012_sarcasm", "expected": "negative", "gemini_sentiment": "mixed", "qwen36_sentiment": "negative", "qwen38_sentiment": "negative"}
+{"id": "015_medium_urgency", "expected": "negative", "gemini_sentiment": "mixed", "qwen36_sentiment": "negative", "qwen38_sentiment": "mixed"}
+{"id": "016_no_product_name", "expected": "neutral", "gemini_sentiment": "neutral", "qwen36_sentiment": "neutral", "qwen38_sentiment": "neutral"}
+{"id": "022_two_star_explicit", "expected": "negative", "gemini_sentiment": "mixed", "qwen36_sentiment": "negative", "qwen38_sentiment": "negative"}
+{"id": "025_competitor_switch", "expected": "positive", "gemini_sentiment": "mixed", "qwen36_sentiment": "positive", "qwen38_sentiment": "positive"}
