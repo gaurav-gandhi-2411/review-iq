@@ -419,11 +419,23 @@ async def call_judge(client: Any, model_id: str, text: str, timeout: int = 30) -
     expected to catch and record per-model errors without crashing the whole run (see
     run_consensus.py), matching the existing multi_llm_labeler.py convention.
 
-    `max_completion_tokens` is set generously (2000) for every Groq model -- some
-    models on this panel default to a hybrid "thinking" mode that can exhaust a
-    smaller budget before ever emitting the requested JSON (see `qwen/qwen3.6-27b`'s
-    `extra_params` comment in JUDGE_MODELS above). Per-model `extra_params` (e.g.
-    `reasoning_effort`) are passed through when the model config declares them.
+    `max_completion_tokens` was originally 2000 ("generously", for models that default to a
+    hybrid "thinking" mode that can exhaust a smaller budget before ever emitting the
+    requested JSON -- see `qwen/qwen3.6-27b`'s `extra_params` comment in JUDGE_MODELS above).
+    Session 10 P5e found live evidence this was too generous in the other direction: Groq
+    enforces a separate, per-model Output Tokens Per Minute (OTPM) admission-control check --
+    "Request too large ... on output tokens per minute (OTPM): Limit 1000, Requested 1387" --
+    that rejects the call BEFORE it runs based on the requested `max_completion_tokens`, not
+    actual usage. This is a different limit from the general token-bucket headroom ADR 0015's
+    Session 10 follow-up measured (which stayed healthy throughout); 2000 tripped this
+    admission check on nearly every call during a real batch, silently degrading panel size
+    (a judge that 429s becomes NO_RESPONSE, and consensus among the survivors can still read
+    "unanimous" with only 1-2 of 3 judges actually present -- see the fixtures discarded and
+    relabeled because of this). 900 is verified (live) to clear the OTPM check for this org/
+    model combination with real headroom to spare; `reasoning_effort="none"` already disables
+    the thinking-mode overhead 2000 was originally sized for, so this is not expected to
+    truncate real responses. Per-model `extra_params` (e.g. `reasoning_effort`) are passed
+    through when the model config declares them.
 
     Gemini judges bypass `client` entirely (a Gemini client is not interchangeable
     with a Groq client) -- see _call_gemini_judge().
@@ -438,7 +450,7 @@ async def call_judge(client: Any, model_id: str, text: str, timeout: int = 30) -
         ],
         response_format={"type": "json_object"},
         temperature=0.0,
-        max_completion_tokens=2000,
+        max_completion_tokens=900,
         timeout=timeout,
         extra_body=_extra_params_for(model_id) or None,
     )

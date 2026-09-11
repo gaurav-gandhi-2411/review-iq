@@ -1,0 +1,64 @@
+{
+  "id": "hien-0088",
+  "review_text": "This is an excellent wireless earphone. I should admit that Sound quality is fabulous & also the Bass is preety good. It's a balance sound quality. When it's come to Charging quality, it has the most playback time I ever seen any earphone. This earphone totally money worthy. Thanks OnePlus for give us this well featured earphone. I'm recommending everyone to buy this OnePlus Bullets Wireless Z Bluetooth Headset. Love this earphone yaar ❤️❤️❤️❤️",
+  "ground_truth": {
+    "product": "OnePlus Bullets Wireless Z Bluetooth Headset",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": [],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "positive",
+    "topics": [
+      "sound_quality",
+      "bass",
+      "battery_life",
+      "charging",
+      "value_for_money"
+    ],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "majority",
+      "urgency": "unanimous",
+      "product": "unanimous",
+      "stars_inferred": "unanimous",
+      "pros": "split",
+      "cons": "unanimous",
+      "topics": "majority",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}
