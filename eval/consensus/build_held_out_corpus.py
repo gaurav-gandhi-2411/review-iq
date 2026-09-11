@@ -38,7 +38,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from eval.consensus import calibration, panel  # noqa: E402
+from eval.consensus import panel  # noqa: E402
 from eval.consensus.candidates import FLIPKART_CANDIDATES_PATH, load_jsonl  # noqa: E402
 from eval.consensus.voting import consensus_for_item  # noqa: E402
 
