@@ -140,3 +140,28 @@ Folded in here because it is the same yield problem as above, not a separate one
 `eval/README.md`'s coverage paragraph was corrected in this same PR to note the
 already-correct-miscounted-as-abstention effect found above, so future readers don't
 inherit the overstated hedge-rate framing.
+
+## CORRECTION (Session 8 P2, see ADR 0013) -- the panel above was contaminated
+
+The "panel-adjudicated decidability" numbers in this document (P2a's table: `buy_again`
+5/10 decidable, `sentiment` 0/9 decidable) were computed from a 2-judge panel where one
+judge, `openai/gpt-oss-120b`, turned out to be review-iq's own current production
+`groq_model_large` -- a self-judging conflict, not independent evidence. Full incident,
+measured effect, and fix: `docs/architecture/adr/0013-consensus-panel-self-judging-
+contamination.md`.
+
+**Corrected numbers, restricted to the one genuinely disjoint judge (`qwen/qwen3.6-27b`,
+single-rater -- kappa is undefined for one rater, this is weaker evidence than a validated
+panel and should be read that way):**
+
+- `buy_again`: **9/10 decidable** (was 5/10 under the contaminated panel) -- real
+  recoverable headroom was *understated* before, not overstated.
+- `sentiment`: **4/9 decidable** (was 0/9) -- **the "sentiment has zero recoverable
+  headroom" conclusion above is retracted.** In all 4 now-decidable cases the disjoint
+  judge's answer matches the fixture's original ground truth exactly, which is evidence
+  the original labels were right and the model under test under-commits on decidable
+  cases -- not evidence the labels are wrong. One case (`007_buy_again_ambiguous`) is
+  flagged as a possibly-debatable original label (mixed vs. neutral), not relabeled.
+
+The P4c/ADR-0012 "sentiment excluded from any coverage-recovery experiment" decision is
+reconsidered in ADR 0012's own follow-up note, not silently reversed here.
