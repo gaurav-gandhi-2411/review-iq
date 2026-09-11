@@ -61,11 +61,24 @@ but accuracy on the answers it DOES commit to is flat or slightly improved (`buy
 100%→100%, `sentiment` 91.3%→91.7%). Flat accuracy charges an abstention the same as a
 wrong answer; for an extraction service, an abstention is routable to a human review queue
 and a confident wrong answer is not — these are not equivalent failure modes, and this
-metric does not distinguish them. See the eval consensus/coverage writeup for the full
-per-field breakdown before attempting to close this gap with prompt changes: re-tuning the
-prompt to make gpt-oss hedge less on English would be re-fitting it to gpt-oss's specific
-calibration the same way v2.3 was fitted to Llama's — the exact mistake reason #2 above
-describes, just aimed at a different model.
+metric does not distinguish them.
+
+**Correction (Session 7 P2, `docs/specs/wave1-coverage-abstention-analysis.md`):** the raw
+coverage numbers above overstate the real hedge rate, because they count `sentiment:
+"mixed"`/`buy_again: null` as an abstention even when that hedge value IS the ground truth
+(a correct answer, not a hedge) — 43.8% of raw `sentiment` hedges and 28.6% of raw
+`buy_again` hedges fall in this bucket on the 49-fixture set. Of the *real* hedges only
+(hedge value != ground truth), a blind 2-judge consensus panel (#140) adjudicated
+decidability: `buy_again` has real, recoverable headroom (5/10 real hedges resolve to the
+panel's unanimous, ground-truth-matching answer — +11.6pp on that field's own score if
+fixed); `sentiment` has ~zero (0/9 — the panel either also hedges or splits, and in over
+half of the remainder it *agrees with the model's hedge over the original ground truth's
+directional label*, which points at a fixture-labeling question, not a model-hedging one).
+Read the full per-fixture breakdown before attempting to close this gap with prompt
+changes: re-tuning the prompt to make gpt-oss hedge less on English would be re-fitting it
+to gpt-oss's specific calibration the same way v2.3 was fitted to Llama's — the exact
+mistake reason #2 above describes, just aimed at a different model — and for `sentiment`
+specifically, the evidence above says there is no real gap to fit toward.
 
 **This gate is a CHANGE DETECTOR, not a quality bar — read before touching a threshold.**
 Under cassette replay the same 49 fixtures produce the same scores every run; there is no
