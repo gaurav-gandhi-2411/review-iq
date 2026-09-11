@@ -119,17 +119,45 @@ def _diff_section(
     return diffs
 
 
+def _without_migrations_table(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Drop rows for `_migrations` -- Supabase's own CLI-internal migration-history
+    table, created by Supabase's platform tooling, never by anything in
+    supabase/migrations/. Same category as the `postgres`-table-owner exclusion above:
+    comparing it tells us nothing about this app's own schema/permission model, only
+    about how the ephemeral job's from-scratch rebuild differs from Supabase CLI's own
+    internal bookkeeping (found live, Session 6 P5d: `_migrations` columns/constraints/
+    RLS/grants accounted for a further chunk of schema-drift-check.yml's false-positive
+    diffs, on top of the service_role table_grants gap fixed the same session)."""
+    return [r for r in rows if r.get("table_name") != "_migrations"]
+
+
 def compare(prod: dict[str, Any], eph: dict[str, Any]) -> list[str]:
     diffs: list[str] = []
 
     diffs += _diff_section(
-        "columns", prod["columns"], eph["columns"], ["table_name", "column_name"]
+        "columns",
+        _without_migrations_table(prod["columns"]),
+        _without_migrations_table(eph["columns"]),
+        ["table_name", "column_name"],
     )
     diffs += _diff_section(
-        "constraints", prod["constraints"], eph["constraints"], ["table_name", "conname"]
+        "constraints",
+        _without_migrations_table(prod["constraints"]),
+        _without_migrations_table(eph["constraints"]),
+        ["table_name", "conname"],
     )
-    diffs += _diff_section("indexes", prod["indexes"], eph["indexes"], ["table_name", "indexname"])
-    diffs += _diff_section("rls_enabled", prod["rls_enabled"], eph["rls_enabled"], ["table_name"])
+    diffs += _diff_section(
+        "indexes",
+        _without_migrations_table(prod["indexes"]),
+        _without_migrations_table(eph["indexes"]),
+        ["table_name", "indexname"],
+    )
+    diffs += _diff_section(
+        "rls_enabled",
+        _without_migrations_table(prod["rls_enabled"]),
+        _without_migrations_table(eph["rls_enabled"]),
+        ["table_name"],
+    )
     diffs += _diff_section(
         "policies", prod["policies"], eph["policies"], ["table_name", "policyname"]
     )
@@ -146,8 +174,12 @@ def compare(prod: dict[str, Any], eph: dict[str, Any]) -> list[str]:
         "function_grants", prod_fgrants, eph_fgrants, ["function_name", "grantee", "privilege_type"]
     )
 
-    prod_tgrants = [g for g in prod["table_grants"] if g["grantee"] in grant_roles]
-    eph_tgrants = [g for g in eph["table_grants"] if g["grantee"] in grant_roles]
+    prod_tgrants = _without_migrations_table(
+        [g for g in prod["table_grants"] if g["grantee"] in grant_roles]
+    )
+    eph_tgrants = _without_migrations_table(
+        [g for g in eph["table_grants"] if g["grantee"] in grant_roles]
+    )
     diffs += _diff_section(
         "table_grants", prod_tgrants, eph_tgrants, ["table_name", "grantee", "privilege_type"]
     )
