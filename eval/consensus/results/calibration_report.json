@@ -2,12 +2,12 @@
   "control_set_size": 16,
   "total_checks_per_judge": 33,
   "judges": {
-    "openai/gpt-oss-120b": {
+    "qwen/qwen3.6-27b": {
       "misses": 0,
       "miss_details": [],
       "passed": true
     },
-    "qwen/qwen3.6-27b": {
+    "qwen/qwen3.8-27b": {
       "misses": 0,
       "miss_details": [],
       "passed": true
@@ -59,8 +59,8 @@
     }
   },
   "active_panel": [
-    "openai/gpt-oss-120b",
-    "qwen/qwen3.6-27b"
+    "qwen/qwen3.6-27b",
+    "qwen/qwen3.8-27b"
   ],
   "dropped": [
     {
@@ -68,5 +68,6 @@
       "misses": 9,
       "reason": "9/33 control-set field checks failed (tolerance: <= 2) -- dropped from the active panel for this labeling run per the calibration policy."
     }
-  ]
+  ],
+  "_session8_p3_note": "openai/gpt-oss-120b's prior passing record removed from this file -- it is no longer a JUDGE_MODELS candidate at all (self-judging conflict, see docs/architecture/adr/0013-*.md), not merely dropped by calibration. qwen/qwen3.8-27b added and calibrated fresh (0/33 misses) to restore a genuine 2-judge active panel after gpt-oss-120b's removal. See docs/architecture/adr/0015-*.md."
 }

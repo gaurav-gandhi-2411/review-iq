@@ -115,6 +115,32 @@ JUDGE_MODELS: tuple[dict[str, str], ...] = (
         "extra_params": {"reasoning_effort": "none"},
     },
     {"id": "allam-2-7b", "provider": "groq", "family": "SDAIA ALLaM", "owner": "SDAIA"},
+    # Session 8 P3: candidate second judge for the held-out Hindi/Hinglish corpus (needs
+    # 2+ judges for real Krippendorff/Fleiss stats -- one calibration-passing, disjoint
+    # judge alone can't produce inter-rater agreement). Confirmed via a live, free
+    # `/v1/models` listing call (no completion cost) that Groq's current catalog has no
+    # OTHER task-appropriate, non-OpenAI-lineage text model: the only other candidates
+    # are TTS (canopylabs/orpheus-*), prompt-injection classifiers (meta-llama/llama-
+    # prompt-guard-2-*), speech-to-text (whisper-*), OpenAI-family models (excluded on
+    # principle), or Groq's own compound/compound-mini (unclear internal model lineage,
+    # not used without verifying what it's built on first). qwen/qwen3.8-27b is the
+    # same VENDOR/family as qwen/qwen3.6-27b above (Alibaba Qwen) -- not a fully
+    # cross-vendor-disjoint judge, but a genuinely different model checkpoint/version,
+    # which is materially better than zero independent variance. Disclosed plainly:
+    # agreement between qwen3.6 and qwen3.8 is weaker evidence of correctness than
+    # agreement between two unrelated vendors would be, same caution class as (but
+    # smaller in degree than) the gpt-oss-120b contamination this session already found
+    # and fixed. See docs/architecture/adr/0015-*.md.
+    {
+        "id": "qwen/qwen3.8-27b",
+        "provider": "groq",
+        "family": "Alibaba Qwen",
+        "owner": "Alibaba Cloud",
+        # Applying the same reasoning_effort fix qwen3.6-27b needed, preemptively --
+        # if qwen3.8 doesn't have the same hybrid-thinking default this is a no-op;
+        # calibration will show a real miss pattern if this assumption is wrong.
+        "extra_params": {"reasoning_effort": "none"},
+    },
 )
 
 
