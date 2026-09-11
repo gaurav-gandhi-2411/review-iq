@@ -14,6 +14,7 @@ from app.core.ingest_worker import drain_rows
 from app.core.language import detect_language
 from app.core.llm import extract_with_llm
 from app.core.metrics import EXTRACTION_LATENCY, EXTRACTIONS_TOTAL
+from app.core.pricing import UnknownModelError, price_extraction
 from app.core.prompts import PROMPT_VERSION, build_prompt
 from app.core.sanitize import sanitize, wrap_for_llm
 from app.core.schemas import (
@@ -27,6 +28,7 @@ from app.core.storage_pg import (
     create_batch_job_pg,
     enqueue_batch_job_rows_pg,
     get_by_hash_pg,
+    record_extraction_cost_pg,
     save_extraction_pg,
     update_batch_job_pg,
     update_usage_tokens,
@@ -94,7 +96,7 @@ async def _run_extraction_v2(
         extraction_meta=meta,
     )
 
-    await asyncio.to_thread(
+    extraction_id = await asyncio.to_thread(
         save_extraction_pg,
         ctx.org_id,
         ctx.api_key_id,
@@ -120,6 +122,47 @@ async def _run_extraction_v2(
             ctx.usage_record_id,
             tokens_in,
             tokens_out,
+        )
+    # Cost telemetry (Wave 1 Section G): one record per real LLM call, regardless of
+    # path (single /v2/extract, batch, CSV ingest via ingest_worker all land here) --
+    # unlike update_usage_tokens above, this always runs, since batch/CSV rows have
+    # usage_record_id="" and would otherwise never produce a cost record at all.
+    # A missing pricing entry must not fail the customer's extraction response --
+    # log loudly (pricing.py already logs at ERROR before raising) and skip the cost
+    # row rather than 500ing a request that already succeeded.
+    try:
+        cost = price_extraction(model_name, tokens_in, tokens_out)
+        await asyncio.to_thread(
+            record_extraction_cost_pg,
+            ctx.org_id,
+            extraction_id or None,
+            cost.provider,
+            cost.model,
+            cost.tier,
+            detected_lang,
+            tokens_in,
+            tokens_out,
+            cost.cost_usd,
+            cost.cost_inr,
+        )
+        log.info(
+            "extraction.cost_recorded",
+            org_id=ctx.org_id,
+            provider=cost.provider,
+            model=model_name,
+            tier=cost.tier,
+            language=detected_lang,
+            tokens_in=tokens_in,
+            tokens_out=tokens_out,
+            usd_cost=cost.cost_usd,
+            inr_cost=cost.cost_inr,
+        )
+    except UnknownModelError as exc:
+        log.error(
+            "extraction.cost_pricing_missing",
+            org_id=ctx.org_id,
+            model=model_name,
+            error=str(exc),
         )
     EXTRACTIONS_TOTAL.labels(model=model_name, cached="false").inc()
     EXTRACTION_LATENCY.labels(model=model_name).observe(latency_ms)

@@ -10,6 +10,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from app.core.schemas import ExtractionMetaV2, ReviewExtractionV2, Sentiment, Urgency
 from app.core.storage_pg import (
+    aggregate_extraction_costs_pg,
     aggregate_extractions_pg,
     count_job_row_statuses_pg,
     count_pending_rows_pg,
@@ -21,6 +22,7 @@ from app.core.storage_pg import (
     list_extractions_pg,
     list_job_row_hashes_pg,
     list_orgs_with_dated_extractions_pg,
+    record_extraction_cost_pg,
     record_quota_request_pg,
     save_extraction_pg,
     update_batch_job_pg,
@@ -528,3 +530,161 @@ def test_aggregate_extractions_pg_returns_expected_shape() -> None:
     assert result["top_topics"][0]["topic"] == "quality"
     assert result["top_competitor_mentions"][0]["competitor"] == "CompetitorX"
     conn.commit.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
+# record_extraction_cost_pg
+# ---------------------------------------------------------------------------
+
+
+def test_record_extraction_cost_pg_returns_id() -> None:
+    conn, cur = _make_conn()
+    new_id = uuid.uuid4()
+    cur.fetchone.return_value = (new_id,)
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        result = record_extraction_cost_pg(
+            _ORG_ID,
+            str(uuid.uuid4()),
+            "groq",
+            "llama-3.1-8b-instant",
+            "small",
+            "en",
+            1000,
+            500,
+            0.00009,
+            0.00861,
+        )
+
+    assert result == str(new_id)
+    conn.commit.assert_called_once()
+
+
+def test_record_extraction_cost_pg_sets_rls_context() -> None:
+    conn, cur = _make_conn()
+    cur.fetchone.return_value = (uuid.uuid4(),)
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        record_extraction_cost_pg(
+            _ORG_ID,
+            None,
+            "groq",
+            "llama-3.1-8b-instant",
+            "small",
+            "en",
+            1000,
+            500,
+            0.00009,
+            0.00861,
+        )
+
+    _assert_sets_rls_context(cur)
+
+
+def test_record_extraction_cost_pg_null_extraction_id_when_falsy() -> None:
+    """extraction_id="" (save_extraction_pg's ON-CONFLICT-DO-NOTHING race) must be
+    stored as NULL, not the literal empty string, to satisfy the uuid FK column."""
+    conn, cur = _make_conn()
+    cur.fetchone.return_value = (uuid.uuid4(),)
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        record_extraction_cost_pg(
+            _ORG_ID,
+            "",
+            "groq",
+            "llama-3.1-8b-instant",
+            "small",
+            "en",
+            1000,
+            500,
+            0.00009,
+            0.00861,
+        )
+
+    insert_call = [c for c in cur.execute.call_args_list if "INSERT" in (c[0][0] or "")]
+    assert insert_call, "Expected an INSERT call"
+    params = insert_call[0][0][1]
+    assert params[1] is None  # extraction_id
+
+
+def test_record_extraction_cost_pg_error_triggers_rollback() -> None:
+    conn, cur = _make_conn()
+    cur.execute.side_effect = [None, None, Exception("DB error")]
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        with pytest.raises(Exception, match="DB error"):
+            record_extraction_cost_pg(
+                _ORG_ID,
+                None,
+                "groq",
+                "llama-3.1-8b-instant",
+                "small",
+                "en",
+                1000,
+                500,
+                0.00009,
+                0.00861,
+            )
+
+    conn.rollback.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
+# aggregate_extraction_costs_pg
+# ---------------------------------------------------------------------------
+
+
+def test_aggregate_extraction_costs_pg_computes_per_1k() -> None:
+    conn, cur = _make_conn()
+    # (language, tier, n, tokens_in, tokens_out, total_cost_usd, total_cost_inr)
+    cur.fetchall.return_value = [
+        ("en", "small", 10, 10000, 5000, 0.0009, 0.0861),
+        ("hi-en", "large", 4, 8000, 4000, 0.0067, 0.6412),
+    ]
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        result = aggregate_extraction_costs_pg()
+
+    assert len(result) == 2
+    en_row = result[0]
+    assert en_row["language"] == "en"
+    assert en_row["tier"] == "small"
+    assert en_row["n"] == 10
+    assert en_row["cost_usd_per_1k"] == pytest.approx((0.0009 / 10) * 1000)
+    assert en_row["cost_inr_per_1k"] == pytest.approx((0.0861 / 10) * 1000)
+
+
+def test_aggregate_extraction_costs_pg_empty_result() -> None:
+    conn, cur = _make_conn()
+    cur.fetchall.return_value = []
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        result = aggregate_extraction_costs_pg()
+
+    assert result == []
+
+
+def test_aggregate_extraction_costs_pg_does_not_set_tenant() -> None:
+    """Cross-org COGS aggregate -- deliberately no _set_tenant call, same pattern as
+    list_orgs_with_dated_extractions_pg."""
+    conn, cur = _make_conn()
+    cur.fetchall.return_value = []
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        aggregate_extraction_costs_pg()
+
+    sqls = [c[0][0] for c in cur.execute.call_args_list]
+    assert not any("SET LOCAL ROLE" in s for s in sqls)
+
+
+def test_aggregate_extraction_costs_pg_applies_since_filter() -> None:
+    conn, cur = _make_conn()
+    cur.fetchall.return_value = []
+    since = datetime.now(tz=UTC)
+
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        aggregate_extraction_costs_pg(since=since)
+
+    sql, params = cur.execute.call_args_list[-1][0]
+    assert "WHERE created_at >= %s" in sql
+    assert params == (since,)
