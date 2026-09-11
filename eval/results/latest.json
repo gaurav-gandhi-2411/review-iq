@@ -1,20 +1,20 @@
 {
-  "generated_at": "2026-09-10T13:31:35Z",
-  "git_sha": "70d7424a6292e07fe3b5d86d54dd6a9c94fcbee6",
+  "generated_at": "2026-09-11T14:57:45Z",
+  "git_sha": "60eac99a5a845267ed18d5cf498345be3697c76a",
   "prompt_version": "v2.3",
-  "mode": "routed (tiered)",
+  "mode": "direct (local LLM)",
   "tiered_routing_enabled_at_runtime": true,
   "groq_model_small": "openai/gpt-oss-20b",
   "groq_model_large": "openai/gpt-oss-120b",
-  "overall_score": 0.7930978888556007,
+  "overall_score": 0.7784598907992353,
   "overall_ci_95": {
     "n": 49,
-    "lower": 0.7627317518480503,
-    "upper": 0.8224578750466128,
+    "lower": 0.7316741088996371,
+    "upper": 0.817302389537181,
     "method": "bootstrap"
   },
   "threshold": 0.79,
-  "passed": true,
+  "passed": false,
   "per_language": {
     "en": {
       "score": 0.7806404442534826,
@@ -27,23 +27,23 @@
       "threshold": 0.77,
       "passed": true
     },
-    "hi": {
-      "score": 0.8127834467120182,
-      "n": 7,
+    "hi-en": {
+      "score": 0.7559387770060179,
+      "n": 16,
       "ci_95": {
-        "lower": 0.7572278911564626,
-        "upper": 0.8666666666666668,
+        "lower": 0.6338737161531279,
+        "upper": 0.8414099196297339,
         "method": "bootstrap"
       },
       "threshold": 0.8,
-      "passed": true
+      "passed": false
     },
-    "hi-en": {
-      "score": 0.8063346954730857,
-      "n": 15,
+    "hi": {
+      "score": 0.8287037037037038,
+      "n": 6,
       "ci_95": {
-        "lower": 0.7512849600233501,
-        "upper": 0.8515756613756613,
+        "lower": 0.7703703703703704,
+        "upper": 0.8833333333333334,
         "method": "bootstrap"
       },
       "threshold": 0.8,
@@ -56,7 +56,7 @@
       "language": "en",
       "overall_score": 0.9303030303030303,
       "error": null,
-      "latency_ms": 15,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "product",
@@ -257,7 +257,7 @@
       "language": "en",
       "overall_score": 0.8357487922705313,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 14,
       "fields": [
         {
           "field": "stars",
@@ -342,96 +342,18 @@
     },
     {
       "id": "004_hinglish",
-      "language": "hi",
-      "overall_score": 0.7172619047619048,
-      "error": null,
+      "language": "hi-en",
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
       "latency_ms": 0,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 1.0,
-          "predicted": true,
-          "expected": true,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 0.0,
-          "predicted": "positive",
-          "expected": "mixed",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.5714285714285715,
-          "predicted": [
-            "suction",
-            "battery_life",
-            "price",
-            "cleaning_speed"
-          ],
-          "expected": [
-            "suction",
-            "battery",
-            "price"
-          ],
-          "method": "set_f1"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1"
-        },
-        {
-          "field": "pros",
-          "score": 0.5,
-          "predicted": [
-            "excellent suction",
-            "fast cleaning"
-          ],
-          "expected": [
-            "excellent suction",
-            "cleans quickly"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.6666666666666666,
-          "predicted": [
-            "weak battery life",
-            "high price"
-          ],
-          "expected": [
-            "poor battery life (20 minutes)",
-            "high price"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 4,
-          "expected": 3,
-          "method": "tolerance\u00b11"
-        }
-      ]
+      "fields": []
     },
     {
       "id": "005_all_positive",
       "language": "en",
       "overall_score": 0.8361391694725029,
       "error": null,
-      "latency_ms": 15,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -620,7 +542,7 @@
       "language": "en",
       "overall_score": 0.7646103896103895,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "stars",
@@ -704,7 +626,7 @@
       "language": "en",
       "overall_score": 0.9388083735909822,
       "error": null,
-      "latency_ms": 14,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -792,7 +714,7 @@
       "language": "en",
       "overall_score": 0.6812169312169313,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 15,
       "fields": [
         {
           "field": "stars",
@@ -995,7 +917,7 @@
       "language": "en",
       "overall_score": 0.6666666666666666,
       "error": null,
-      "latency_ms": 16,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1073,7 +995,7 @@
       "language": "en",
       "overall_score": 0.5555555555555556,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 14,
       "fields": [
         {
           "field": "stars",
@@ -1257,7 +1179,7 @@
       "language": "en",
       "overall_score": 0.6480701754385966,
       "error": null,
-      "latency_ms": 15,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1467,7 +1389,7 @@
       "language": "en",
       "overall_score": 0.801923076923077,
       "error": null,
-      "latency_ms": 14,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1547,7 +1469,7 @@
       "language": "en",
       "overall_score": 0.7467989756722151,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "stars",
@@ -1695,7 +1617,7 @@
       "language": "en",
       "overall_score": 0.8105413105413105,
       "error": null,
-      "latency_ms": 15,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1791,7 +1713,7 @@
       "language": "en",
       "overall_score": 0.8252645502645503,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 14,
       "fields": [
         {
           "field": "stars",
@@ -1997,7 +1919,7 @@
       "language": "en",
       "overall_score": 0.859090909090909,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "stars",
@@ -2083,7 +2005,7 @@
       "language": "en",
       "overall_score": 0.7590187590187589,
       "error": null,
-      "latency_ms": 15,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -2184,7 +2106,7 @@
       "language": "en",
       "overall_score": 0.875,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 14,
       "fields": [
         {
           "field": "stars",
@@ -2251,7 +2173,7 @@
       "language": "en",
       "overall_score": 0.8666666666666668,
       "error": null,
-      "latency_ms": 14,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -2463,7 +2385,7 @@
       "language": "en",
       "overall_score": 0.8481577246283128,
       "error": null,
-      "latency_ms": 15,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "stars",
@@ -2878,7 +2800,7 @@
       "language": "hi-en",
       "overall_score": 0.7666666666666667,
       "error": null,
-      "latency_ms": 14,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -3062,7 +2984,7 @@
       "language": "hi-en",
       "overall_score": 0.8039999999999999,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 14,
       "fields": [
         {
           "field": "product",
@@ -3666,7 +3588,7 @@
       "language": "hi-en",
       "overall_score": 0.5285714285714286,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "product",
@@ -4067,7 +3989,7 @@
       "language": "hi-en",
       "overall_score": 0.8470588235294118,
       "error": null,
-      "latency_ms": 16,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -4538,7 +4460,7 @@
       "language": "hi",
       "overall_score": 0.8555555555555557,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "product",

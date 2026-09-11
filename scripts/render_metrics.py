@@ -161,14 +161,19 @@ def render_extraction_table_html(data: dict[str, Any]) -> str:
     """
     per_lang = data["per_language"]
     lang_labels = {"en": "English", "hi": "Hindi", "hi-en": "Hinglish"}
+    # Session 10 P1: "hi" is synthetic-only (6 Claude-Sonnet-generated fixtures, zero real-world
+    # corpus behind it -- see README.md's "Corpus and language scope" section and ADR 0017) --
+    # annotated here, not hand-typed into the HTML, so it survives this generator's next run.
+    lang_scope_note = {"hi": ", synthetic only — experimental"}
     rows: list[str] = []
     for lang in sorted(per_lang):
         info = per_lang[lang]
         label = lang_labels.get(lang, lang)
+        scope_note = lang_scope_note.get(lang, "")
         rows.append(
             '            <tr class="bg-gray-900 hover:bg-gray-800 transition-colors">\n'
             f'              <td class="px-6 py-4 text-gray-100">{label} '
-            f'<span class="text-gray-500 text-xs">({lang}, n={info["n"]})</span></td>\n'
+            f'<span class="text-gray-500 text-xs">({lang}, n={info["n"]}{scope_note})</span></td>\n'
             f'              <td class="px-6 py-4 font-mono text-blue-300">{_fmt_pct(info["score"])}</td>\n'
             f'              <td class="px-6 py-4 font-mono text-gray-400 text-xs">'
             f"[{_fmt_pct(info['ci_95']['lower'])}, {_fmt_pct(info['ci_95']['upper'])}]</td>\n"
@@ -200,7 +205,7 @@ def render_language_table_html(data: dict[str, Any]) -> str:
     per_lang = data["per_language"]
     rows_spec = [
         ("en", "English", "Latin"),
-        ("hi", "Hindi", "Devanagari"),
+        ("hi", "Hindi (experimental — synthetic only)", "Devanagari"),
         ("hi-en", "Hinglish", "Roman-script code-mix"),
     ]
     rows: list[str] = []

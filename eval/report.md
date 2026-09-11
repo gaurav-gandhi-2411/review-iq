@@ -1,16 +1,16 @@
 # Eval Report
 
-Generated: 2026-09-10 13:31 UTC
+Generated: 2026-09-11 14:57 UTC
 
-## Overall: 79.3% PASS (threshold 79%)
+## Overall: 77.8% FAIL (threshold 79%)
 
 ## Per-language
 
 | Language | Score | Gate | Status |
 |----------|-------|------|--------|
 | en | 78.1% | 77% | PASS |
-| hi | 81.3% | 80% | PASS |
-| hi-en | 80.6% | 80% | PASS |
+| hi | 82.9% | 80% | PASS |
+| hi-en | 75.6% | 80% | FAIL |
 
 ## Fixtures
 
@@ -19,7 +19,7 @@ Generated: 2026-09-10 13:31 UTC
 | 001_turbo_vac | en | 93% |  |
 | 002_explicit_stars | en | 90% |  |
 | 003_prompt_injection | en | 84% |  |
-| 004_hinglish | hi | 72% |  |
+| 004_hinglish | hi-en | — | All LLM providers failed to extract the review. |
 | 005_all_positive | en | 84% |  |
 | 006_all_negative | en | 90% |  |
 | 007_buy_again_ambiguous | en | 76% |  |
