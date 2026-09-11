@@ -1,12 +1,16 @@
-"""3-judge LLM panel for eval-fixture consensus ground truth -- Groq, dedicated benchmark key.
+"""LLM judge panel for eval-fixture consensus ground truth -- Groq, dedicated benchmark key.
 
+Originally a 3-candidate panel; now 2 (Session 8 P2 -- see assert_no_self_judging() below).
 Panel composition (queried live via Groq's `/v1/models` endpoint -- `owned_by` field --
 the same technique `benchmark/vernacular_v2/multi_llm_labeler.py` already uses to confirm
 family/owner rather than assuming from naming):
 
-  1. openai/gpt-oss-120b  (owned_by: OpenAI)  -- OpenAI GPT-OSS family
-  2. qwen/qwen3.6-27b     (owned_by: Alibaba Cloud) -- Alibaba Qwen family
-  3. allam-2-7b           (owned_by: SDAIA)   -- Saudi Data & AI Authority's ALLaM family
+  1. qwen/qwen3.6-27b     (owned_by: Alibaba Cloud) -- Alibaba Qwen family
+  2. allam-2-7b           (owned_by: SDAIA)   -- Saudi Data & AI Authority's ALLaM family
+
+  (openai/gpt-oss-120b, owned_by: OpenAI -- OpenAI GPT-OSS family -- REMOVED, Session 8 P2:
+  it is review-iq's own production `groq_model_large`, a self-judging conflict. See
+  assert_no_self_judging() and docs/architecture/adr/0013-*.md.)
 
 Why NOT `llama-3.3-70b-versatile` (used by `multi_llm_labeler.py`'s original 3-judge
 panel): that model is review-iq's OWN production tiered-router large-tier extraction
@@ -83,12 +87,18 @@ from benchmark.vernacular_v2.benchmark_groq_key import load_benchmark_groq_key  
 from pydantic import ValidationError  # noqa: E402
 
 JUDGE_MODELS: tuple[dict[str, str], ...] = (
-    {
-        "id": "openai/gpt-oss-120b",
-        "provider": "groq",
-        "family": "OpenAI GPT-OSS",
-        "owner": "OpenAI",
-    },
+    # `openai/gpt-oss-120b` REMOVED (Session 8 P2, review-iq): it is review-iq's own
+    # current production `groq_model_large` -- the exact self-judging conflict this
+    # file's docstring already warned against for the model that held that role
+    # before it (`llama-3.3-70b-versatile`), which was never re-checked when
+    # production migrated. See assert_no_self_judging() below and docs/architecture/
+    # adr/0013-*.md for the full incident and its measured effect on real results.
+    # Net effect: the candidate roster below has exactly ONE judge with a clean
+    # calibration pass as of this run (`qwen/qwen3.6-27b`) -- `allam-2-7b` failed
+    # calibration independently (see the CALIBRATION OUTCOME note above), so no
+    # inter-rater kappa is computable until a genuine third, disjoint, calibration-
+    # passing judge is found. Sourcing one is a P3 prerequisite (a held-out corpus's
+    # own panel needs this too), not solved here.
     {
         "id": "qwen/qwen3.6-27b",
         "provider": "groq",
@@ -106,6 +116,54 @@ JUDGE_MODELS: tuple[dict[str, str], ...] = (
     },
     {"id": "allam-2-7b", "provider": "groq", "family": "SDAIA ALLaM", "owner": "SDAIA"},
 )
+
+
+def assert_no_self_judging(judge_models: tuple[dict[str, str], ...] = JUDGE_MODELS) -> None:
+    """Raises if any candidate judge IS review-iq's own current production model.
+
+    Session 8 P2 incident, found by direct verification (not assumed): this exact
+    exclusion rule was documented above for `llama-3.3-70b-versatile` (the production
+    large-tier model AT THE TIME this panel was built) and correctly kept off
+    JUDGE_MODELS -- but the check was a one-time, hardcoded design decision, not a
+    runtime invariant. When production migrated to openai/gpt-oss-20b/120b (Groq's
+    2026-08-16 deprecation), nothing re-checked the panel roster against the new
+    production models, and `openai/gpt-oss-120b` -- review-iq's own `groq_model_large`
+    -- had already been on JUDGE_MODELS from the start for an unrelated reason (it was
+    added as a judge candidate before that migration, when it wasn't yet a production
+    model). The result: half the "blind independent" panel was, for roughly a month of
+    real usage, review-iq's own production model judging its own output. Verified
+    effect on real data (docs/architecture/adr/0013-*.md): this judge's vote matched
+    the model-under-test's exact hedge value in 9/9 sentiment real-hedge disagreements
+    it saw -- a rate far more consistent with "same model, same reasoning pattern"
+    than independent judgment, and it single-handedly drove Session 7 P2's now-retracted
+    "sentiment has zero recoverable headroom" conclusion.
+
+    This function makes the exclusion a live check instead of institutional memory: it
+    is called from get_active_panel() (run_consensus.py) before every real labeling
+    run, and fails loudly -- not a warning, not a silent drop -- if any candidate
+    judge's id matches the CURRENT production groq_model_small/groq_model_large. A
+    future model migration will raise here immediately rather than silently
+    reintroducing the same conflict under a new model name.
+    """
+    # Imported lazily (not at module top) so this module stays importable without a
+    # full app/ settings environment for callers that only need JUDGE_MODELS/prompts,
+    # matching this file's existing lazy-import-at-use-site style (see call_judge()).
+    from app.core.config import get_settings
+
+    settings = get_settings()
+    production_models = {settings.groq_model_small, settings.groq_model_large}
+    conflicts = [m for m in judge_models if m["id"] in production_models]
+    if conflicts:
+        conflict_ids = [m["id"] for m in conflicts]
+        raise ValueError(
+            f"Self-judging conflict: judge candidate(s) {conflict_ids} are review-iq's own "
+            f"current production model(s) ({sorted(production_models)}). A judge must never "
+            "be the same model the extraction pipeline under test actually runs -- remove "
+            "the conflicting candidate(s) from JUDGE_MODELS, or replace them, before running "
+            "any consensus labeling. See this function's docstring and docs/architecture/"
+            "adr/0013-*.md for the incident this check exists to prevent from recurring."
+        )
+
 
 # Deliberately NOT app/core/prompts/en.py's field definitions/worked examples -- that
 # prompt (and its escalation heuristics like "pain beats fit") is itself part of what

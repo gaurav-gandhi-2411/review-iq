@@ -86,3 +86,19 @@ hypothesis before it touches the scored gate set.
   evidence is that the raw count is inflated by the metric-definition bug (7/16 already
   correct) and the real remainder has zero panel-confirmed headroom — including it would
   mean designing an experiment with no evidence it can succeed.
+
+## Follow-up (Session 8 P2, see ADR 0013) -- `sentiment`'s exclusion, reconsidered but not reversed
+
+The "zero panel-confirmed headroom" evidence above turned out to come from a contaminated
+2-judge panel (one judge was review-iq's own production model — full finding in ADR 0013).
+Restricted to the one genuinely disjoint judge, `sentiment` actually shows 4/9 real hedges
+decidable, matching the fixtures' original ground truth exactly in every case. This is
+**not** enough to authorize a `sentiment` experiment under this ADR's own bar: it is a
+single-rater result (kappa is undefined for one rater), strictly weaker evidence than the
+validated multi-judge consensus this ADR requires before pre-registering a hypothesis.
+`sentiment` stays excluded from experiment authorization until a second genuinely disjoint,
+calibration-passing judge validates the finding — a prerequisite P3's held-out corpus work
+may produce as a side effect (it needs its own clean panel anyway). `buy_again`'s
+authorization above is unaffected; if anything its own headroom was understated by the same
+contamination (corrected: 9/10 decidable, not 5/10) and its hypothesis/success-criterion
+stand as written.
