@@ -81,3 +81,81 @@ policy already reserves for explicit escalation.
   money-adjacent table ADR 0013/Session 7's P4 already flagged for a separate precision fix
   first) — building it to unblock a different piece of work would be scope creep into a
   decision that needs its own sign-off.
+
+## Follow-up (Session 10 P4) — the 200,000 tokens/day figure was wrong; the real limit is RPD
+
+Session 9 both (a) misread the binding constraint as a daily token budget, and (b) then, on a
+single live header observation, concluded the opposite — that the limit was per-minute, not
+per-day — and self-imposed a "one batch per day" ceiling anyway out of caution. Neither reading
+was verified against sustained, direct measurement. This session did that.
+
+**Method**: two live bursts against the dedicated benchmark key's `qwen/qwen3.6-27b` model,
+tracking `x-ratelimit-*` response headers on every call: (1) 12 calls with zero delay, (2) 60
+calls with zero delay over 515.6 seconds, zero errors in either.
+
+**Finding — two independent, differently-shaped limits, not one:**
+
+- **Tokens (`x-ratelimit-limit-tokens: 8000`)**: a genuine short rolling window. `remaining-
+  tokens` oscillated between 6857 and 7716 throughout the 515s sustained burst — it recovers
+  continuously as fast as this workload consumes it, never trending toward zero.
+  `reset-tokens` stayed bounded between ~2s and ~60s the entire time, consistent with a ~60-
+  second window. **Not the binding constraint for any realistic labeling pace.**
+- **Requests (`x-ratelimit-limit-requests: 1000`)**: a 24-hour sliding window, confirmed by an
+  exact arithmetic signature, not inferred. `remaining-requests` decreased by exactly 1 on
+  every single call with ZERO recovery across the entire 515-second sustained burst (988 → 929,
+  monotonic, no upticks) — incompatible with a short window, which would have shown at least
+  one slot free up. `reset-requests` grew by **exactly 86.4 seconds per call** (17m16.8s →
+  1h42m14.4s, call after call) — and 86400 seconds (24 hours) / 1000 requests = 86.4 seconds
+  exactly. This is the daily window's marginal per-request contribution to the reported
+  countdown, not a coincidence. **ADR 0015's original "1,000 requests/day" figure was right.
+  Its "200,000 tokens/day" figure was not measured this way and does not match what the
+  token-dimension headers actually show — retracted, not merely superseded.**
+
+**Consequence for batching**: each labeling item costs 2 Groq requests (2 active judges).
+1,000 requests/24h ÷ 2 = **500 items/day theoretical ceiling**, shared with all real production
+and demo traffic on the same org-level budget (confirmed prior finding, unchanged). Tokens
+never bind before requests do at this per-item cost (~3,800 tokens/item across 2 calls, trivial
+against an 8,000/minute continuously-renewing budget). Session 9's "one batch per day, ~25-item
+batches" ceiling was **far more conservative than the measured limit requires** — not wrong to
+be cautious with an unverified number, but the number itself doesn't survive direct
+measurement.
+
+**Revised ceiling (replaces the 100,000-token/50%-of-day figure Session 9 used)**: 50% of the
+measured 1,000 requests/24h = 500 requests/day = **250 items/day**, reserving the other half of
+the daily budget for real production/demo traffic sharing the same org quota (P4d). The
+remaining 83 hi-en held-out candidates (166 requests) fit inside this revised ceiling with
+substantial margin, in a single day — not the "multi-day batching" Session 9 anticipated.
+
+**Measurement cost of this finding**: 73 Groq requests spent on the two bursts themselves (12 +
+60 + 1 single-call probe), all against the dedicated benchmark key, none against production.
+This spend counts against today's revised 500-request/day ceiling like any other labeling
+spend, and is disclosed here rather than treated as free because it was "just measurement."
+
+## Correction (same session, P5e) — a third, narrower limit the burst test missed: OTPM
+
+The measurement above used `max_completion_tokens=400` in the burst-test probe to keep the
+measurement itself cheap. Real judge calls (`eval/consensus/panel.py::call_judge`) request
+2000. That difference hid a real, separate constraint: attempting the actual remaining-83-item
+batch at 2000 hit a wall on the very first item — `qwen/qwen3.6-27b` 429'd on nearly every
+call with `"Request too large ... on output tokens per minute (OTPM): Limit 1000, Requested
+1387"`. This is Groq's per-model Output-Tokens-Per-Minute admission control: it rejects a call
+*before running it* based on the requested `max_completion_tokens`, independent of the general
+token-bucket headroom measured above (which stayed fully healthy the entire time — this is a
+genuinely separate limit, not a restatement of the first one).
+
+**Consequence, disclosed honestly**: the "250 items/day" ceiling above is still correct for the
+*request-count* dimension, but was never actually achievable at `max_completion_tokens=2000` --
+OTPM would 429 most calls to a given model long before the request-count budget mattered.
+Fixed by lowering `max_completion_tokens` to 900 (live-verified to clear the OTPM check;
+`reasoning_effort="none"` already disables the thinking-mode overhead 2000 was sized for —
+recalibrated afterward, 0/33 misses on both qwen models, no truncation). One further wrinkle,
+caught before being wrongly reported: a sustained batch at 900 initially looked like it was
+*still* hitting occasional NO_RESPONSE gaps — turned out to be a misread of the append-only
+batch log's tail (old failed-attempt entries from before the fix, still sitting in the file,
+mixed with new clean entries) — verified properly against the log's actual entries for the new
+run specifically: zero gaps across 83 items post-fix. Recorded here so the near-miss on
+reporting a second false constraint doesn't get repeated.
+
+The remaining 83 hi-en candidates completed the same day, in two batches (13 + 70, split only
+by the mid-run stop-and-diagnose, not by any real ceiling) — the corpus is now complete at
+106/106 hi-en. See ADR 0019 for the full-corpus results.

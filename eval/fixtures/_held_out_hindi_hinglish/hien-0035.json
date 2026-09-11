@@ -1,0 +1,65 @@
+{
+  "id": "hien-0035",
+  "review_text": "Excellent sound & base qualityCalling experience bhi excellenceBattrey backup 12-15 hour depend on your volume if you listen 50-70% volume your backup 13-14 hour Over all best wireless earphone in this price range No problem facing with realme 6i..",
+  "ground_truth": {
+    "product": "wireless earphone",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": [
+      "excellent sound quality",
+      "excellent bass quality",
+      "excellent calling experience",
+      "12-15 hour battery backup",
+      "best in price range",
+      "no compatibility issues with Realme 6i"
+    ],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "positive",
+    "topics": [],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "unanimous",
+      "stars_inferred": "unanimous",
+      "pros": "majority",
+      "cons": "unanimous",
+      "topics": "split",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}

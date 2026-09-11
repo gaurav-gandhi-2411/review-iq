@@ -1,0 +1,79 @@
+{
+  "id": "hien-0030",
+  "review_text": "Everything is good at this price range.Realme brings innovation in the products, provides good quality at less price.Bass is good.Sound quality good.Simple yet good design.Comfortable around neck.Battery Backup Is good.Magnet switch saves battery.Built in mic is also good and clear.There is a thin line texture on the yellow wire of the headset.Contents -HeadsetMicro usb cable for charging2 pair of buds.User GuideOverall Best Budget Headset.PS- 6 months ki warranty ... aur...",
+  "ground_truth": {
+    "product": "Realme headset",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": [
+      "good value for money",
+      "good bass",
+      "good sound quality",
+      "simple yet good design",
+      "comfortable around neck",
+      "good battery backup",
+      "magnet switch saves battery",
+      "clear built-in mic",
+      "includes 2 pairs of buds"
+    ],
+    "cons": [
+      "thin line texture on the yellow wire"
+    ],
+    "buy_again": true,
+    "sentiment": "positive",
+    "topics": [
+      "price",
+      "sound_quality",
+      "design",
+      "comfort",
+      "battery_life",
+      "build_quality",
+      "microphone",
+      "warranty"
+    ],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "unanimous",
+      "stars_inferred": "unanimous",
+      "pros": "unanimous",
+      "cons": "majority",
+      "topics": "unanimous",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}
