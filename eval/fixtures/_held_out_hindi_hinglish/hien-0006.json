@@ -1,0 +1,71 @@
+{
+  "id": "hien-0006",
+  "review_text": "As they rightly say about Chinese Products: Chala Toh Chand Tak; Nahi Toh Raat Tak.Review after a month of using this product:Sound Quality Is good, above average I would call it.Easy to pair and connect.Like the fit, fits perfect in your ears.Issues: 1. If you are watching a video, after a while, you would notice that the video is not in sync with the sound. Theres a constant disconnect which cause the video to relay first and then u hear the audio.2. The right earbud has stopped wo...",
+  "ground_truth": {
+    "product": "earbuds",
+    "stars": null,
+    "stars_inferred": 3,
+    "pros": [
+      "good sound quality",
+      "easy to pair and connect",
+      "perfect fit"
+    ],
+    "cons": [
+      "audio-video sync issues",
+      "right earbud stopped working"
+    ],
+    "buy_again": null,
+    "sentiment": "mixed",
+    "topics": [
+      "sound_quality",
+      "connectivity",
+      "fit",
+      "durability",
+      "audio_sync"
+    ],
+    "competitor_mentions": [],
+    "urgency": "medium",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "majority",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "majority",
+      "stars_inferred": "unanimous",
+      "pros": "unanimous",
+      "cons": "majority",
+      "topics": "majority",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}

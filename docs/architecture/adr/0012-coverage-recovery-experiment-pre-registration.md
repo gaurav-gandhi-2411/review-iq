@@ -102,3 +102,14 @@ may produce as a side effect (it needs its own clean panel anyway). `buy_again`'
 authorization above is unaffected; if anything its own headroom was understated by the same
 contamination (corrected: 9/10 decidable, not 5/10) and its hypothesis/success-criterion
 stand as written.
+
+## Follow-up (Session 9 P5c, see ADR 0016) -- the second disjoint judge disagrees, bar not met
+
+P3a's Gemini judge (`gemini-3.5-flash-lite`, genuinely cross-vendor, calibration-passing, no
+self-judging conflict) was run fresh against the exact 9 fixture texts named above. It answered
+`sentiment: mixed` on all 9/9, including the 4 qwen3.6 resolved to match the original ground
+truth. This does not validate the prior finding — it contradicts it, matching the hedge pattern
+of the model-under-test and the excluded contaminated judge instead of qwen3.6's more decisive
+reads. Per this ADR's own bar, `sentiment` stays excluded from prompt-experiment authorization —
+now because the second disjoint judge actively disagrees, a stronger reason than the previous
+single-rater insufficiency. Full account and the specific per-item votes: ADR 0016.

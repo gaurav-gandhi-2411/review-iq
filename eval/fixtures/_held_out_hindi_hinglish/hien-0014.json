@@ -1,0 +1,66 @@
+{
+  "id": "hien-0014",
+  "review_text": "Bass 5/5Volume 4.5/5Quality Build 5/5Best but Boat ko thoda Volume Me sudhar karna chahiye..READ MORE",
+  "ground_truth": {
+    "product": "unknown",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": [],
+    "cons": [
+      "Volume needs improvement"
+    ],
+    "buy_again": null,
+    "sentiment": "mixed",
+    "topics": [
+      "bass",
+      "volume",
+      "build_quality"
+    ],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [
+      "improve volume"
+    ],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/kabirnagpal/flipkart-customer-review-and-rating",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "majority",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "split",
+      "stars_inferred": "unanimous",
+      "pros": "split",
+      "cons": "majority",
+      "topics": "unanimous",
+      "feature_requests": "majority",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}

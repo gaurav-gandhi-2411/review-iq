@@ -1,79 +1,87 @@
-"""LLM judge panel for eval-fixture consensus ground truth -- Groq, dedicated benchmark key.
+"""LLM judge panel for eval-fixture consensus ground truth -- multi-vendor, no prod keys.
 
-Originally a 3-candidate panel; now 2 (Session 8 P2 -- see assert_no_self_judging() below).
-Panel composition (queried live via Groq's `/v1/models` endpoint -- `owned_by` field --
-the same technique `benchmark/vernacular_v2/multi_llm_labeler.py` already uses to confirm
-family/owner rather than assuming from naming):
+History: originally 3 Groq-hosted candidates; Session 8 P2 removed openai/gpt-oss-120b
+(a self-judging conflict -- it was review-iq's own production model) leaving exactly
+one calibration-passing, disjoint judge (qwen/qwen3.6-27b) -- no inter-rater kappa/alpha
+computable with one rater. Session 8 P3 added qwen/qwen3.8-27b (same vendor, a
+different checkpoint) as a partial fix. Session 9 P3a completes it with a genuinely
+cross-vendor third judge, restoring real multi-vendor agreement.
 
-  1. qwen/qwen3.6-27b     (owned_by: Alibaba Cloud) -- Alibaba Qwen family
-  2. allam-2-7b           (owned_by: SDAIA)   -- Saudi Data & AI Authority's ALLaM family
+Current panel (4 candidates, 3 calibration-passing -- see calibration_report.json):
 
-  (openai/gpt-oss-120b, owned_by: OpenAI -- OpenAI GPT-OSS family -- REMOVED, Session 8 P2:
-  it is review-iq's own production `groq_model_large`, a self-judging conflict. See
-  assert_no_self_judging() and docs/architecture/adr/0013-*.md.)
+  1. qwen/qwen3.6-27b       (Groq, owned_by: Alibaba Cloud)
+  2. qwen/qwen3.8-27b       (Groq, owned_by: Alibaba Cloud) -- same vendor as #1
+  3. gemini-3.5-flash-lite  (Google Gemini API, owned_by: Google) -- genuinely cross-vendor
+  4. allam-2-7b             (Groq, owned_by: SDAIA) -- FAILS calibration, dropped
 
-Why NOT `llama-3.3-70b-versatile` (used by `multi_llm_labeler.py`'s original 3-judge
-panel): that model is review-iq's OWN production tiered-router large-tier extraction
-model (`app/core/config.py`). Using it to judge extraction-quality ground truth for
-THIS eval set would be the model judging itself -- a real conflict of interest for
-this specific use case (it was fine for the unrelated vernacular SENT/URG/LANG
-classification benchmark `multi_llm_labeler.py` was built for, but not here). Excluded
-entirely, not just de-weighted.
+Why NOT `llama-3.3-70b-versatile` / `openai/gpt-oss-120b`: both were, in turn, review-iq's
+own production tiered-router large-tier extraction model at different points in this
+repo's history -- using either to judge extraction quality would be the model judging
+itself. See assert_no_self_judging() below and docs/architecture/adr/0013-*.md for the
+gpt-oss-120b incident this check exists to prevent recurring under a third name.
 
-Why NOT Gemini (`GEMINI_API_KEY`): that key is wired into production as the
-SecondaryProvider failover model (`app/core/llm.py::_call_gemini`, gated by
-`ENABLE_GEMINI_FALLBACK`) -- it is used for real customer traffic, not a benchmark-only
-key. The task's constraint is explicit: no live calls against a production key. Using
-it here would risk exactly the kind of quota/traffic collision that already happened
-once with Groq's prod key on 2026-07-07 (see `benchmark_groq_key.py`'s docstring).
-`multi_llm_labeler.py` mentions Gemini returned `limit: 0` on this project's key at the
-time it was tried; regardless of whether that billing gap persists, this key is out of
-scope for this labeler on the "no prod-traffic key" constraint alone -- not re-verified
-here, since it wouldn't change the decision either way.
+Gemini (`GEMINI_API_KEY`), Session 9 P3a: this key is wired into production as the
+SecondaryProvider failover model (`app/core/llm.py::_call_gemini`), which raised the
+same self-judging-adjacent concern Groq's prod key raised on 2026-07-07 (see
+`benchmark_groq_key.py`'s docstring) -- using a key that also serves real traffic risks
+a quota/traffic collision, or evaluating against a model that could itself become part
+of the serving path. VERIFIED DIRECTLY before using it (2026-09-11, `gcloud run
+services describe`): `ENABLE_GEMINI_FALLBACK` is NOT set in production's environment,
+so the fallback path is at its code default of `False` -- genuinely dormant, not merely
+low-traffic. This is a point-in-time fact, not a permanent guarantee: if GG ever
+enables the fallback, gemini-*'s judge status must be re-examined the same way
+gpt-oss-120b's was, not left on the assumption this one check made once. No dedicated
+"benchmark-only" Gemini key exists (unlike Groq's); using the same key production would
+use if enabled is accepted here because that path is currently proven off, not because
+the distinction stopped mattering.
 
-Residual risk, documented rather than hidden: ALLaM-2-7B's own technical materials
+Two real dead ends on the way to gemini-3.5-flash-lite, found and root-caused (not
+assumed) before it worked: `gemini-2.5-flash` calibrated at 9/33 misses in a suspicious
+pattern (early items clean, later items failing near-total) -- direct inspection of one
+failing call's actual exception found a **20-requests-per-DAY** free-tier cap for that
+specific model (`GenerateRequestsPerDayPerProjectPerModel-FreeTier`), not the 5/minute
+limit `_call_gemini_judge`'s retry-on-429 already handles; a 16-item calibration run
+alone exhausts more than half that daily budget, and any real labeling volume would
+exhaust it immediately. `gemini-2.5-flash-lite` calibrated at 33/33 misses (every field,
+every item) -- direct inspection found the true cause was an HTTP 404, not a judgment
+failure: that model is "no longer available to new users" (the API's own error message
+recommends `gemini-3.5-flash-lite`, which is what JUDGE_MODELS uses now).
+
+Residual risk on ALLaM-2-7B, documented rather than hidden: its own technical materials
 describe it as initialized from a Llama-2 checkpoint with extensive continued
 pretraining on Arabic+English corpora by SDAIA (a different organization, different
 corpus emphasis, different base version -- Llama-2, not the Llama-3.3-70b-versatile
-actually used in prod). This is NOT "zero shared ancestry" with Meta Llama, but it is
-categorically different from the flagged conflict (using the literal production model,
-or an undistinguishable variant of it, to judge its own output). It is also the
-smallest model on the panel (7B vs 120B/27B) -- see calibration.py, which will drop it
-from the active panel for this run if it fails the unambiguous control-set check.
+this repo used in prod at the time this was written). This is NOT "zero shared
+ancestry" with Meta Llama, but it is categorically different from the self-judging
+conflict flagged above. Moot in practice: it fails calibration on real capability
+grounds (see CALIBRATION OUTCOME) regardless of the lineage question.
 
-CALIBRATION OUTCOME (this run, see eval/consensus/results/calibration_report.json for
-the full data): `allam-2-7b` FAILED calibration reproducibly across two independent
-runs (9/33 control-set field checks wrong both times -- same items, same fields:
-missed the mixed-sentiment case cal-012, omitted the `language` key entirely on the
-Hindi case cal-004, missed the explicit-refund-demand urgency=high case cal-013's
-sibling cal-007, among others) and was DROPPED from the active panel, per the explicit
-"do not silently keep a failing judge" instruction -- not tuned around, not given a
-second chance beyond the one clean rerun needed to rule out temperature=0 run-to-run
-noise on Groq's shared infra. `qwen/qwen3.6-27b` initially also failed (10/33 misses)
-but that was traced to a real call-configuration bug, not a judgment problem: its Groq
-deployment defaults to a hybrid "thinking" mode that was exhausting the completion-
-token budget on its reasoning trace before ever emitting JSON (Groq error: "max
-completion tokens reached before generating a valid document", confirmed via a direct
-API call, not assumed) -- `reasoning_effort="none"` (see its `extra_params` below) and
-a larger `max_completion_tokens` fixed this; on rerun it passed with 0/33 misses.
+CALIBRATION OUTCOME (eval/consensus/results/calibration_report.json has the full data):
+`allam-2-7b` FAILED calibration reproducibly across two independent runs (9/33
+control-set field checks wrong both times -- same items, same fields: missed the
+mixed-sentiment case cal-012, omitted the `language` key entirely on the Hindi case
+cal-004, missed the explicit-refund-demand urgency=high case cal-013's sibling cal-007,
+among others) and was DROPPED from the active panel, per the explicit "do not silently
+keep a failing judge" instruction. `qwen/qwen3.6-27b` initially also failed (10/33
+misses) but that traced to a real call-configuration bug (Groq's hybrid "thinking" mode
+exhausting the completion-token budget before emitting JSON), fixed via
+`reasoning_effort="none"`, not a judgment problem.
 
-Net result: the ACTIVE PANEL for this labeling run is 2 judges (`openai/gpt-oss-120b`,
-`qwen/qwen3.6-27b`), not 3. With exactly 2 raters, "majority" and "unanimous" collapse
-into the same case (both must agree, or it's split) -- eval/consensus/voting.py's
-generic vote-counting logic already handles this correctly without special-casing (it
-was written against however many judges actually respond, not a hardcoded 3), but it
-is an honest, load-bearing consequence of the calibration gate actually being enforced,
-not a design flaw to paper over. Restoring a genuine 3rd independent-lineage judge
-would require either a different Groq-hosted model becoming available on the free
-tier, or spending money on a paid provider -- both out of scope for this run.
+Net result: the ACTIVE PANEL is 3 judges (`qwen/qwen3.6-27b`, `qwen/qwen3.8-27b`,
+`gemini-3.5-flash-lite`), a genuine improvement over Session 8's 2-same-vendor-judge
+panel -- real 3-way (and per-2-judge-subset) Krippendorff's alpha / Fleiss' kappa are
+now computable, see docs/architecture/adr/0016-*.md for the numbers and what they mean
+for label trust.
 
-Every model is called via the dedicated benchmark Groq key (`benchmark_groq_key.py`),
-never `GROQ_API_KEY` (prod). No model sees another's answer -- independent concurrent
-calls, no shared conversation context.
+Groq judges are called via the dedicated benchmark key (`benchmark_groq_key.py`), never
+`GROQ_API_KEY` (prod). The Gemini judge uses `GEMINI_API_KEY` directly (see above for
+why that's currently acceptable). No model sees another's answer -- independent
+concurrent calls, no shared conversation context.
 """
 
 from __future__ import annotations
 
+import asyncio
 import json
 import sys
 from pathlib import Path
@@ -140,6 +148,38 @@ JUDGE_MODELS: tuple[dict[str, str], ...] = (
         # if qwen3.8 doesn't have the same hybrid-thinking default this is a no-op;
         # calibration will show a real miss pattern if this assumption is wrong.
         "extra_params": {"reasoning_effort": "none"},
+    },
+    # Session 9 P3a: a THIRD judge, genuinely cross-vendor (Google, not Alibaba) -- the
+    # qwen3.6/qwen3.8 pair above shares one vendor, so their agreement alone overstates
+    # independence (same caution class as the gpt-oss-120b contamination, smaller in
+    # degree). Uses the standalone Gemini call path this repo already built for exactly
+    # this "no live Groq call" constraint (scripts/record_cassettes_via_fallback.py's
+    # _call_gemini_raw, same client construction/JSON-mode config/temperature=0.0).
+    #
+    # Self-judging check, done manually since assert_no_self_judging() only compares
+    # against groq_model_small/large: this is review-iq's `gemini_model` config value,
+    # used ONLY as SecondaryProvider failover (app/core/llm.py::_call_gemini), gated by
+    # `ENABLE_GEMINI_FALLBACK`. Verified directly against live production config
+    # (2026-09-11, `gcloud run services describe`): ENABLE_GEMINI_FALLBACK is NOT set in
+    # production's environment, so it is at its code default of False -- the fallback
+    # path is genuinely dormant, not just theoretically low-traffic. This is a
+    # point-in-time fact, not a permanent guarantee: if GG ever enables the fallback,
+    # this judge becomes a real self-judging conflict the same way gpt-oss-120b was and
+    # must be re-excluded then, not left on the assumption this check made once.
+    {
+        "id": "gemini-3.5-flash-lite",
+        "provider": "gemini",
+        "family": "Google Gemini",
+        "owner": "Google",
+        # NOT review-iq's configured gemini_model default ("gemini-2.0-flash") --
+        # verified live (2026-09-11, listing the real Gemini API catalog with this
+        # exact key): gemini-2.0-flash no longer exists in the current model list,
+        # confirming Session 7's independent finding that Google deprecated it
+        # 2026-06-01. gemini-3.5-flash-lite is the current stable (non-preview) flash-tier
+        # model. Since production's Gemini fallback is verified disabled (see above),
+        # this judge does not need to match whatever review-iq would call in
+        # production even if it did fire -- it only needs to be a real, working,
+        # cross-vendor model.
     },
 )
 
@@ -282,19 +322,114 @@ def _extra_params_for(model_id: str) -> dict[str, Any]:
     return {}
 
 
+def _provider_for(model_id: str) -> str:
+    for m in JUDGE_MODELS:
+        if m["id"] == model_id:
+            return m["provider"]
+    return "groq"
+
+
+# Session 9 P3a incident: the first calibration attempt against gemini-3.5-flash-lite
+# scored 16/33 misses -- a suspicious pattern (every item after the first ~6 missed
+# almost every field). Direct inspection of one failing item's actual exception (not
+# assumed) found the true cause: Gemini's free tier caps gemini-3.5-flash-lite at 5
+# requests/MINUTE per project (google.genai.errors.ClientError 429
+# RESOURCE_EXHAUSTED, "GenerateRequestsPerMinutePerProjectPerModel-FreeTier ... limit:
+# 5"), far tighter than Groq's TPD-shaped limits this codebase's existing retry/pacing
+# logic was built around. Every call past the first ~5 in a tight loop was silently
+# swallowed by call_judge's caller (a 429 registers as "parse failure" -> a miss on
+# every field, not a fixable judgment error) -- a call-configuration bug, not evidence
+# the model can't judge, the same class as qwen3.6-27b's hybrid-thinking-mode miss
+# before its reasoning_effort fix. Retrying with backoff on 429 specifically (not a
+# blanket retry-everything, which would mask a genuine content/parse problem as a
+# transient one) is the fix -- honoring the server's own `retryDelay` naturally paces
+# subsequent calls to Gemini's real throughput ceiling, without a separate proactive
+# delay mechanism duplicating what the 429 response already tells us to do.
+_GEMINI_MAX_RETRIES = 3
+
+
+async def _call_gemini_judge(model_id: str, text: str, timeout: int = 30) -> str:
+    """Call a Gemini judge; returns the raw response text.
+
+    Mirrors scripts/record_cassettes_via_fallback.py::_call_gemini_raw exactly (same
+    client construction, same JSON-mode config, same temperature=0.0) -- that function
+    was already built and verified for this repo's "no live Groq call" constraint;
+    this reuses the identical pattern for the analogous "no live prod-key call for
+    unrelated traffic" concern (see JUDGE_MODELS' gemini-3.5-flash-lite entry for the
+    verification that this key's production fallback path is currently dormant).
+
+    Reads GEMINI_API_KEY directly from the environment rather than via
+    app.core.config.get_settings() -- deliberately not coupled to the full Settings
+    object, which requires many unrelated production env vars to construct.
+
+    Retries on 429 (rate limit) specifically, honoring the server's own `retryDelay`
+    when present -- see the incident note above _GEMINI_MAX_RETRIES for why this
+    exists. Any other error propagates immediately, unretried.
+    """
+    import os
+    import re
+
+    from google import genai
+    from google.genai import errors as genai_errors
+    from google.genai import types
+
+    api_key = os.environ.get("GEMINI_API_KEY", "")
+    if not api_key:
+        raise RuntimeError(
+            "GEMINI_API_KEY is not set -- required for the gemini-3.5-flash-lite judge."
+        )
+    client = genai.Client(api_key=api_key)
+
+    last_exc: Exception | None = None
+    for attempt in range(_GEMINI_MAX_RETRIES):
+        try:
+            return await _generate_gemini_content(client, model_id, text, timeout, types)
+        except genai_errors.ClientError as exc:
+            if getattr(exc, "code", None) != 429 or attempt == _GEMINI_MAX_RETRIES - 1:
+                raise
+            last_exc = exc
+            match = re.search(r"'retryDelay': '(\d+)", str(exc))
+            delay = float(match.group(1)) + 1.0 if match else 20.0
+            await asyncio.sleep(delay)
+    raise last_exc or RuntimeError("unreachable")
+
+
+async def _generate_gemini_content(
+    client: Any, model_id: str, text: str, timeout: int, types: Any
+) -> str:
+    response = await asyncio.wait_for(
+        client.aio.models.generate_content(
+            model=model_id,
+            contents=build_user_prompt(text),
+            config=types.GenerateContentConfig(
+                system_instruction=JUDGE_SYSTEM_PROMPT,
+                response_mime_type="application/json",
+                temperature=0.0,
+            ),
+        ),
+        timeout=timeout,
+    )
+    return response.text or ""
+
+
 async def call_judge(client: Any, model_id: str, text: str, timeout: int = 30) -> str:
     """Call one judge model with the review text; returns the raw response content string.
 
-    Raises whatever the underlying Groq client raises on timeout/HTTP error -- callers
-    are expected to catch and record per-model errors without crashing the whole run
-    (see run_consensus.py), matching the existing multi_llm_labeler.py convention.
+    Raises whatever the underlying client raises on timeout/HTTP error -- callers are
+    expected to catch and record per-model errors without crashing the whole run (see
+    run_consensus.py), matching the existing multi_llm_labeler.py convention.
 
-    `max_completion_tokens` is set generously (2000) for every model -- some models on
-    this panel default to a hybrid "thinking" mode that can exhaust a smaller budget
-    before ever emitting the requested JSON (see `qwen/qwen3.6-27b`'s `extra_params`
-    comment in JUDGE_MODELS above). Per-model `extra_params` (e.g. `reasoning_effort`)
-    are passed through when the model config declares them.
+    `max_completion_tokens` is set generously (2000) for every Groq model -- some
+    models on this panel default to a hybrid "thinking" mode that can exhaust a
+    smaller budget before ever emitting the requested JSON (see `qwen/qwen3.6-27b`'s
+    `extra_params` comment in JUDGE_MODELS above). Per-model `extra_params` (e.g.
+    `reasoning_effort`) are passed through when the model config declares them.
+
+    Gemini judges bypass `client` entirely (a Gemini client is not interchangeable
+    with a Groq client) -- see _call_gemini_judge().
     """
+    if _provider_for(model_id) == "gemini":
+        return await _call_gemini_judge(model_id, text, timeout=timeout)
     response = await client.chat.completions.create(
         model=model_id,
         messages=[
