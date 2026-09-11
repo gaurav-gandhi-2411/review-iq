@@ -102,3 +102,33 @@ may produce as a side effect (it needs its own clean panel anyway). `buy_again`'
 authorization above is unaffected; if anything its own headroom was understated by the same
 contamination (corrected: 9/10 decidable, not 5/10) and its hypothesis/success-criterion
 stand as written.
+
+## Follow-up (Session 9 P5c, see ADR 0016) -- the second disjoint judge disagrees, bar not met
+
+P3a's Gemini judge (`gemini-3.5-flash-lite`, genuinely cross-vendor, calibration-passing, no
+self-judging conflict) was run fresh against the exact 9 fixture texts named above. It answered
+`sentiment: mixed` on all 9/9, including the 4 qwen3.6 resolved to match the original ground
+truth. This does not validate the prior finding — it contradicts it, matching the hedge pattern
+of the model-under-test and the excluded contaminated judge instead of qwen3.6's more decisive
+reads. Per this ADR's own bar, `sentiment` stays excluded from prompt-experiment authorization —
+now because the second disjoint judge actively disagrees, a stronger reason than the previous
+single-rater insufficiency. Full account and the specific per-item votes: ADR 0016.
+
+## Follow-up (Session 10 P2, see ADR 0016) -- the disagreement above is retracted; bar still not met
+
+Session 9's reading of Gemini's 9/9 hedge as legitimate contradicting evidence was itself
+wrong. A hard-but-decidable control (5 items, drawn from already-labeled fixtures, zero new
+sourcing) showed Gemini hedges 4/5 on cases a disjoint judge and gold both resolve decisively
+— the same failure calibration (unambiguous by construction) cannot detect. Gemini is a
+degenerate hedger on hard sentiment calls, not an independent voice finding genuine ambiguity.
+This retracts Session 9's retraction: qwen3.6's original 4/9-decidable finding is no longer
+contradicted.
+
+It is also not, by itself, newly authorized. A fresh same-vendor cross-check
+(`qwen/qwen3.8-27b`, a different checkpoint from qwen3.6) matched gold on 4/5 of the same
+control set, hedging only on the one item qwen3.6 and qwen3.8 disagree on
+(`015_medium_urgency`) — genuine, if same-vendor-weaker, corroboration this ADR's bar did not
+have available when it was written. Whether two same-vendor, calibration-passing, genuinely
+different checkpoints agreeing 4/5 clears this ADR's "second genuinely disjoint judge" bar, or
+whether a non-degenerate cross-vendor judge is still required, is GG's call — not decided here.
+`sentiment` stays unauthorized for prompt-level experimentation until that call is made.

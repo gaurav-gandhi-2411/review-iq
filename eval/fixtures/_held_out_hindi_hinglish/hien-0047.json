@@ -1,0 +1,64 @@
+{
+  "id": "hien-0047",
+  "review_text": "I am writing this review after 10 days of use .go for it guys it was awesome product by one plus .Sound was excellent Bass was fadu Battery backup which is best 10 min charging gives 10 hours use it works I am happy with this 😊Go for it Paisa wasool h bhai",
+  "ground_truth": {
+    "product": "unknown",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": [],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "positive",
+    "topics": [
+      "sound_quality",
+      "bass",
+      "battery",
+      "charging",
+      "price"
+    ],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "split",
+      "stars_inferred": "unanimous",
+      "pros": "split",
+      "cons": "unanimous",
+      "topics": "majority",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "majority"
+    }
+  }
+}

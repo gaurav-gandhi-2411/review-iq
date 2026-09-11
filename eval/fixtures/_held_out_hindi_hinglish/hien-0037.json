@@ -1,0 +1,76 @@
+{
+  "id": "hien-0037",
+  "review_text": "For better comfort  don't look at boat 225, mi basic and other redmi earphones. It is a budjet king. The quality of sound is excellent. These are made of plastic so light in weight and easily set in u r ears. The cable is soo flexible. Mera mi basic earphones 1month me karaab ho gaya, so I had given the next chance to this one.",
+  "ground_truth": {
+    "product": "earphones",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": [
+      "excellent sound quality",
+      "light weight",
+      "comfortable fit",
+      "flexible cable",
+      "budget-friendly"
+    ],
+    "cons": [
+      "made of plastic"
+    ],
+    "buy_again": true,
+    "sentiment": "positive",
+    "topics": [
+      "sound_quality",
+      "comfort",
+      "build_quality",
+      "price",
+      "durability"
+    ],
+    "competitor_mentions": [
+      "boat 225",
+      "mi basic",
+      "redmi"
+    ],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "majority",
+      "sentiment": "unanimous",
+      "language": "majority",
+      "urgency": "unanimous",
+      "product": "majority",
+      "stars_inferred": "unanimous",
+      "pros": "majority",
+      "cons": "majority",
+      "topics": "unanimous",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "majority"
+    }
+  }
+}

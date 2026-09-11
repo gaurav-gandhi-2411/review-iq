@@ -1,0 +1,64 @@
+{
+  "id": "hien-0025",
+  "review_text": "built quality is good .. but sound and comfort is not so good its just ok kaan bahotbdard hota hai bhai 15min he use karsakte ho..READ MORE",
+  "ground_truth": {
+    "product": "headphones",
+    "stars": null,
+    "stars_inferred": 2,
+    "pros": [
+      "good build quality"
+    ],
+    "cons": [],
+    "buy_again": false,
+    "sentiment": "mixed",
+    "topics": [
+      "build_quality",
+      "sound_quality",
+      "comfort"
+    ],
+    "competitor_mentions": [],
+    "urgency": "medium",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/kabirnagpal/flipkart-customer-review-and-rating",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "majority",
+      "product": "unanimous",
+      "stars_inferred": "unanimous",
+      "pros": "unanimous",
+      "cons": "split",
+      "topics": "unanimous",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}

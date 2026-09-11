@@ -67,6 +67,12 @@ ALLOWLIST: dict[tuple[str, str], str] = {
         "Documented cross-org scheduled-sweep query (digest batcher) -- same pattern as "
         "storage_pg.py::list_orgs_with_dated_extractions_pg."
     ),
+    ("app/core/storage_pg.py", "aggregate_extraction_costs_pg"): (
+        "Platform-wide COGS aggregate for Wave 2 pricing decisions -- no single org_id to "
+        "scope to. Gated behind require_admin at the API layer (app/api/admin.py's "
+        "_aggregate_costs_db), never exposed on an org-scoped endpoint. Same pattern as "
+        "storage_pg.py::list_orgs_with_dated_extractions_pg."
+    ),
     ("app/core/ingest_worker.py", "_claim_one_row"): (
         "Cross-org queue-drain claim (batch_job_rows) -- goes through public."
         "claim_pending_batch_job_row() / public.settle_batch_job_row(), narrow SECURITY "
@@ -92,15 +98,6 @@ ALLOWLIST: dict[tuple[str, str], str] = {
         "not work for this INSERT/UPDATE. Goes through public."
         "upsert_shopify_installation(), a narrow SECURITY DEFINER function (see "
         "supabase/migrations/20260801000002_tenant_resolvers_auth_signup.sql)."
-    ),
-    ("app/core/storage_pg.py", "aggregate_extraction_costs_pg"): (
-        "Platform-wide COGS aggregate across all orgs -- same intentional cross-org "
-        "service-role bypass pattern as list_orgs_with_dated_extractions_pg above. "
-        "Cherry-picked from unmerged PR #24 alongside the cost-recording helpers this "
-        "PR wires into /demo/extract; PR #24's own require_admin-gated endpoint that "
-        "calls this function was NOT included here (out of scope for a demo-endpoint "
-        "safety PR) -- this function is currently only reachable in tests until that "
-        "endpoint lands separately."
     ),
     ("app/core/storage_pg.py", "check_and_increment_demo_request_pg"): (
         "POST /demo/extract is keyless -- there is no org to _set_tenant() to. Writes "

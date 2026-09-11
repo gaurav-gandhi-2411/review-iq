@@ -27,6 +27,22 @@ class TestDevanagariDetection:
     def test_devanagari_short(self) -> None:
         assert detect_language("अच्छा") == "hi"
 
+    def test_danda_punctuation_alone_is_not_hindi(self) -> None:
+        # Session 10 P3 regression: a stray Devanagari danda (।, U+0964) used as a period in
+        # otherwise-pure-English text must NOT classify as "hi" -- it's punctuation, not
+        # language content. Real text this exact shape appeared in the Flipkart corpus (ADR
+        # 0016) and, before this fix, this detector classified it "hi" too.
+        assert (
+            detect_language(
+                "I didn't expect that a cheap earphone canbe like this । It's awesome highly recommend"
+            )
+            == "en"
+        )
+        assert detect_language("Great product। Would buy again.") == "en"
+
+    def test_double_danda_alone_is_not_hindi(self) -> None:
+        assert detect_language("Good sound quality॥ Works fine.") == "en"
+
 
 class TestHinglishDetection:
     def test_strong_marker_bahut(self) -> None:

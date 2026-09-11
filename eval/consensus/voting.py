@@ -7,21 +7,31 @@ never collapsed into one blended confidence score:
     stars_inferred): exact-match voting (stars_inferred gets a documented +/-1
     tolerance -- it's a holistic 1-5 estimate, not a fact read off the text, and the
     existing fixture schema already treats it with the same tolerance in
-    `scoring_notes.tolerance_fields`). unanimous = all 3 responding judges agree,
-    majority = 2 of 3, split = no agreement (silver label is null, agreement level
-    recorded honestly, never resolved by a tiebreaker).
+    `scoring_notes.tolerance_fields`). unanimous = every INVITED judge (not just every
+    RESPONDING judge -- see Session 11 P2 below) agrees, majority = more than half of
+    the invited panel agrees, split = no agreement (silver label is null, agreement
+    level recorded honestly, never resolved by a tiebreaker).
 
   - Open-list fields (product's near-duplicate phrasing aside, mainly pros/cons/
     topics/feature_requests/competitor_mentions): judges essentially never produce
     byte-identical lists (paraphrasing is expected and fine), so exact-match voting
     would trivially always report "split." Instead we measure pairwise Jaccard overlap
-    on normalized (lowercased, whitespace-collapsed) items and classify unanimous (all
-    3 pairwise overlaps >= JACCARD_THRESHOLD), majority (>=1 pair meets it -- take that
-    pair), or split (no pair meets it). The reported silver value is the LONGEST list
-    among the agreeing judges (a representative pick, not a synthetic merge) -- this is
-    a fuzzier notion of "agreement" than the scalar fields get, and is documented as
-    such; it is NOT run through Krippendorff/Fleiss (see eval/agreement.py's docstring
-    for why those need a small fixed category set).
+    on normalized (lowercased, whitespace-collapsed) items and classify unanimous (every
+    invited judge present AND all pairwise overlaps >= JACCARD_THRESHOLD), majority
+    (>=1 pair meets it -- take that pair), or split (no pair meets it). The reported
+    silver value is the LONGEST list among the agreeing judges (a representative pick,
+    not a synthetic merge) -- this is a fuzzier notion of "agreement" than the scalar
+    fields get, and is documented as such; it is NOT run through Krippendorff/Fleiss
+    (see eval/agreement.py's docstring for why those need a small fixed category set).
+
+Session 11 P2 (see docs/architecture/adr/0020-*.md): "unanimous" used to mean "every judge
+that responded agreed" -- if a judge errored (NO_RESPONSE) and got silently excluded from the
+denominator, 2-of-2 agreement among survivors read identically to 3-of-3 full-panel agreement.
+~40 fixtures in the held-out corpus (Session 10) carried this shape after a real Groq OTPM
+rate-limit rejection silently dropped a judge mid-batch. Every vote_* function below now
+requires the FULL INVITED panel (`len(values)`, including NO_RESPONSE entries) to agree before
+returning "unanimous" -- a judge dropping out from infrastructure failure can produce
+"majority" or "split," never "unanimous."
 
 `product` is scalar but free-text -- voted by exact match on a normalized (lowercased,
 stripped) key, same three-way logic as the other scalar fields.
@@ -88,7 +98,17 @@ def vote_scalar_exact(
     silver value is still the ORIGINAL (non-normalized) string from an agreeing judge.
     A value of `None` is a legitimate vote (e.g. stars=null); only `NO_RESPONSE`
     (a judge that errored/returned unparseable output) is excluded.
+
+    Session 11 P2: "unanimous" requires every INVITED judge (`len(values)`, including any
+    NO_RESPONSE entries) to have responded and agreed -- not just every judge that happened
+    to respond. Session 9/10's held-out batches recorded "unanimous" on ~40 fixtures where
+    one judge had 429'd (OTPM) and was silently excluded from voting: 2-of-2 agreement among
+    survivors read identically to 3-of-3 agreement, because `n` here used to mean "responding
+    count," not "invited count." A judge dropping out from a real infrastructure failure is a
+    materially different, weaker claim than every invited judge actually agreeing, and must
+    not be reported as the same thing. See docs/architecture/adr/0020-*.md.
     """
+    total = len(values)
     present = {jid: v for jid, v in values.items() if v is not NO_RESPONSE}
     if len(present) < 2:
         return None, "insufficient"
@@ -96,7 +116,6 @@ def vote_scalar_exact(
     def key(v: Any) -> Any:
         return _normalize_text(v) if normalize and isinstance(v, str) else v
 
-    keys = [key(v) for v in present.values()]
     counts: dict[Any, int] = {}
     representative: dict[Any, Any] = {}
     for v in present.values():
@@ -106,10 +125,9 @@ def vote_scalar_exact(
 
     top_key = max(counts, key=lambda k: counts[k])
     top_count = counts[top_key]
-    n = len(keys)
-    if top_count == n:
+    if top_count == total:
         return representative[top_key], "unanimous"
-    if top_count > n / 2:
+    if top_count > total / 2:
         return representative[top_key], "majority"
     return None, "split"
 
@@ -131,25 +149,27 @@ def vote_scalar_tolerant(
     vote value) -- this field's prompt instruction is "always populate", so a judge
     returning `None` failed to comply, same as `NO_RESPONSE`.
     """
+    total = len(values)
     present = {jid: v for jid, v in values.items() if v is not None and v is not NO_RESPONSE}
     if len(present) < 2:
         return None, "insufficient"
 
     vals = sorted(present.values())
-    n = len(vals)
 
-    # All judges' values fall within one `tolerance`-wide window -> unanimous.
-    if vals[-1] - vals[0] <= tolerance:
+    # Session 11 P2: unanimous requires every INVITED judge present (see vote_scalar_exact's
+    # docstring) -- a judge that returned None or NO_RESPONSE must not silently drop out of
+    # the denominator and let the survivors' agreement read as full-panel unanimity.
+    if len(vals) == total and vals[-1] - vals[0] <= tolerance:
         return round(_median(vals)), "unanimous"
 
     # Look for the largest subset of values within a `tolerance`-wide window.
     best_subset: list[float] = []
-    for i in range(n):
+    for i in range(len(vals)):
         window = [v for v in vals if vals[i] <= v <= vals[i] + tolerance]
         if len(window) > len(best_subset):
             best_subset = window
 
-    if len(best_subset) > n / 2:
+    if len(best_subset) > total / 2:
         return round(_median(best_subset)), "majority"
     return None, "split"
 
@@ -172,6 +192,7 @@ def vote_list_overlap(
     omits the field, and a judge that returned `null` for a typed list field would have
     failed schema validation entirely, becoming `NO_RESPONSE` upstream, not `None`).
     """
+    total = len(values)
     present = {jid: (v or []) for jid, v in values.items() if v is not NO_RESPONSE}
     if len(present) < 2:
         return None, "insufficient"
@@ -187,7 +208,10 @@ def vote_list_overlap(
 
     agreeing_pairs = [(a, b) for a, b, score in pairs if score >= threshold]
 
-    if len(present) >= 3 and len(agreeing_pairs) == len(pairs):
+    # Session 11 P2: unanimous requires every INVITED judge present, not just a hardcoded ">=
+    # 3" (which silently meant "3 out of however many were invited," wrong for a 2-judge panel
+    # and wrong for a 3-judge panel missing a respondent alike). See vote_scalar_exact's docstring.
+    if len(present) == total and len(agreeing_pairs) == len(pairs):
         # every pair meets the threshold -> unanimous
         rep_id = max(present, key=lambda jid: len(present[jid]))
         return present[rep_id], "unanimous"

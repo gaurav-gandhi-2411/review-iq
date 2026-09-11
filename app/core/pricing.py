@@ -23,13 +23,13 @@ import structlog
 
 log = structlog.get_logger(__name__)
 
-# USD → INR conversion rate. Fetched live 2026-09-05 from
+# USD → INR conversion rate. Fetched live 2026-07-31 from
 # https://open.er-api.com/v6/latest/USD (provider: exchangerate-api.com),
-# reported update timestamp 2026-09-05T00:02:32Z. This is a point-in-time
+# reported update timestamp 2026-07-31T00:02:31Z. This is a point-in-time
 # market snapshot, not a live feed — FX drifts day to day. Re-fetch before
 # using this constant in any customer-facing price quote; fine as-is for
 # COGS/telemetry purposes where day-to-day drift doesn't matter.
-USD_TO_INR_RATE = 94.51761
+USD_TO_INR_RATE = 95.6943
 
 
 class UnknownModelError(ValueError):
@@ -63,36 +63,13 @@ class ModelPricing:
 # Pricing table — one entry per model reachable on any extraction path.
 # ---------------------------------------------------------------------------
 PRICING_TABLE: dict[str, ModelPricing] = {
-    # Groq — org-path production models (app/core/config.py groq_model_small/_large).
-    # Groq deprecated llama-3.1-8b-instant and llama-3.3-70b-versatile on 2026-08-16
-    # (see app/core/config.py's comments) -- current live defaults are the two
-    # openai/gpt-oss-* entries below. The two llama-* entries are kept (not deleted)
-    # only so a stray cassette or historical extraction_costs row referencing them by
-    # model name doesn't hit UnknownModelError; they can no longer serve live traffic.
-    # Verified live 2026-09-05 against https://console.groq.com/docs/model/openai/
-    # gpt-oss-20b and .../gpt-oss-120b (server-rendered per-model pricing pages).
-    "openai/gpt-oss-20b": ModelPricing(
-        provider="groq",
-        tier="small",
-        usd_per_million_input=0.075,
-        usd_per_million_output=0.30,
-        source="https://console.groq.com/docs/model/openai/gpt-oss-20b",
-        as_of="2026-09-05",
-        verified=True,
-    ),
-    "openai/gpt-oss-120b": ModelPricing(
-        provider="groq",
-        tier="large",
-        usd_per_million_input=0.15,
-        usd_per_million_output=0.60,
-        source="https://console.groq.com/docs/model/openai/gpt-oss-120b",
-        as_of="2026-09-05",
-        verified=True,
-    ),
-    # Deprecated 2026-08-16 by Groq -- can no longer serve live traffic. Kept only so
-    # historical cost rows / cassettes referencing these model names don't 404 into
-    # UnknownModelError. Prices as last verified (2026-07-31), not re-verified since --
-    # a deprecated model's price page may no longer even exist.
+    # Groq deprecated both llama-3.1-8b-instant and llama-3.3-70b-versatile on
+    # 2026-08-16 -- production has not served either since (app/core/config.py's
+    # groq_model_small/_large defaults moved to the openai/gpt-oss-* entries below).
+    # Kept here, not deleted: any pre-2026-08-16 extraction row still references
+    # these model strings for its own recorded cost, and price_extraction() must
+    # keep pricing historical rows correctly rather than raising UnknownModelError
+    # on data that's actually fine.
     "llama-3.1-8b-instant": ModelPricing(
         provider="groq",
         tier="small",
@@ -101,7 +78,7 @@ PRICING_TABLE: dict[str, ModelPricing] = {
         source="https://groq.com/pricing",
         as_of="2026-07-31",
         verified=True,
-        note="Deprecated by Groq 2026-08-16; cannot serve live traffic, kept for historical rows.",
+        note="Deprecated by Groq 2026-08-16 -- retained only for pricing pre-deprecation rows.",
     ),
     "llama-3.3-70b-versatile": ModelPricing(
         provider="groq",
@@ -111,7 +88,32 @@ PRICING_TABLE: dict[str, ModelPricing] = {
         source="https://groq.com/pricing",
         as_of="2026-07-31",
         verified=True,
-        note="Deprecated by Groq 2026-08-16; cannot serve live traffic, kept for historical rows.",
+        note="Deprecated by Groq 2026-08-16 -- retained only for pricing pre-deprecation rows.",
+    ),
+    # Groq — current org-path production models (app/core/config.py's
+    # groq_model_small/_large defaults since the 2026-08-16 deprecation, commit
+    # c492e4a). Verified live 2026-09-10 against https://console.groq.com/docs/models
+    # (server-rendered model-card data fetched directly, not the client-JS-rendered
+    # /pricing page, which returns no pricing in its static HTML) -- cross-checked
+    # two independent ways: a summarizing fetch and a raw-HTML grep for the literal
+    # "$0.075"/"$0.30"/"$0.15"/"$0.60" strings next to each model's card, both agree.
+    "openai/gpt-oss-20b": ModelPricing(
+        provider="groq",
+        tier="small",
+        usd_per_million_input=0.075,
+        usd_per_million_output=0.30,
+        source="https://console.groq.com/docs/models",
+        as_of="2026-09-10",
+        verified=True,
+    ),
+    "openai/gpt-oss-120b": ModelPricing(
+        provider="groq",
+        tier="large",
+        usd_per_million_input=0.15,
+        usd_per_million_output=0.60,
+        source="https://console.groq.com/docs/models",
+        as_of="2026-09-10",
+        verified=True,
     ),
     # Gemini — v1/demo-path fallback only; NEVER reachable on the org-key path
     # (app/core/providers/base.py assert_privacy_safe bans train-on-input

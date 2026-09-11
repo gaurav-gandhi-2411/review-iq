@@ -12,6 +12,11 @@
       "miss_details": [],
       "passed": true
     },
+    "gemini-3.5-flash-lite": {
+      "misses": 0,
+      "miss_details": [],
+      "passed": true
+    },
     "allam-2-7b": {
       "misses": 9,
       "miss_details": [
@@ -60,7 +65,8 @@
   },
   "active_panel": [
     "qwen/qwen3.6-27b",
-    "qwen/qwen3.8-27b"
+    "qwen/qwen3.8-27b",
+    "gemini-3.5-flash-lite"
   ],
   "dropped": [
     {
@@ -69,5 +75,5 @@
       "reason": "9/33 control-set field checks failed (tolerance: <= 2) -- dropped from the active panel for this labeling run per the calibration policy."
     }
   ],
-  "_session8_p3_note": "openai/gpt-oss-120b's prior passing record removed from this file -- it is no longer a JUDGE_MODELS candidate at all (self-judging conflict, see docs/architecture/adr/0013-*.md), not merely dropped by calibration. qwen/qwen3.8-27b added and calibrated fresh (0/33 misses) to restore a genuine 2-judge active panel after gpt-oss-120b's removal. See docs/architecture/adr/0015-*.md."
+  "_session9_p3a_note": "gemini-3.5-flash-lite added as a genuinely cross-vendor (Google) third judge, restoring real inter-rater capability after Session 8 P2 left only one calibration-passing, disjoint judge. Two dead ends found and discarded before this one worked, both real API-level constraints, not judgment problems: gemini-2.5-flash calibrated at 9/33 misses, root-caused to a 20-requests/DAY free-tier cap for that specific model (not the 5/min limit an earlier retry-with-backoff fix already handled); gemini-2.5-flash-lite calibrated at 33/33 misses, root-caused to the model being fully deprecated for new users (HTTP 404 on every call, the API's own error message recommending gemini-3.5-flash-lite). See docs/architecture/adr/0016-*.md."
 }
