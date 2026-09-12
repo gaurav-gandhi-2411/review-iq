@@ -11,6 +11,7 @@ from app.auth.api_key import ApiKeyContext, require_api_key
 from app.core.alerts.engine import alert_on_review_event
 from app.core.config import get_settings
 from app.core.ingest_worker import drain_rows
+from app.core.injection_guard import classify_injection_risk
 from app.core.language import detect_language
 from app.core.llm import extract_with_llm
 from app.core.metrics import EXTRACTION_LATENCY, EXTRACTIONS_TOTAL
@@ -71,9 +72,23 @@ async def _run_extraction_v2(
         return cached
 
     detected_lang = detect_language(request.text)
-    clean_text, is_suspicious = sanitize(request.text)
+    clean_text, regex_suspicious = sanitize(request.text)
+    # Session 13 P4a: a real, model-based pre-filter alongside the regex layer -- see
+    # app/core/injection_guard.py's module docstring for what it catches that the regex
+    # misses (and, honestly, what it still misses too). Runs on the ORIGINAL text, not the
+    # regex-redacted `clean_text` -- the classifier needs to see what a caller actually sent
+    # to score it, not a version the regex layer already partially neutralized.
+    guard_suspicious = await classify_injection_risk(
+        request.text, api_key=get_settings().groq_api_key
+    )
+    is_suspicious = regex_suspicious or guard_suspicious
     if is_suspicious:
-        log.warning("extraction.suspicious_input", input_hash=input_hash)
+        log.warning(
+            "extraction.suspicious_input",
+            input_hash=input_hash,
+            regex_flagged=regex_suspicious,
+            guard_flagged=guard_suspicious,
+        )
 
     wrapped = wrap_for_llm(clean_text)
     user_prompt = build_prompt(wrapped, detected_lang)
