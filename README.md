@@ -141,7 +141,7 @@ file in the past.
 > API key recorded the original re-record is not recoverable from the committed artifacts —
 > the cassette format does not capture caller identity; see `ops/runbooks/eval-cassette-rerecord.md`.)
 
-<!-- METRICS:START:extraction_table -->**Prompt v2.3** &middot; `e9606f2` &middot; measured 2026-09-12T05:37:32Z &middot; mode: direct (local LLM)
+<!-- METRICS:START:extraction_table -->**Prompt v2.3** &middot; `e9606f2` &middot; measured 2026-09-12T05:45:15Z &middot; mode: direct (local LLM)
 
 | Language | Score | 95% CI | Gate | Status |
 |---|---|---|---|---|
