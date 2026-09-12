@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 from collections import OrderedDict
-from datetime import datetime
+from datetime import UTC, datetime
 
 import structlog
 from fastapi import APIRouter, HTTPException, Request, status
@@ -100,7 +100,53 @@ def demo_cache_size() -> int:
 # even in the worst case: 50 requests/day * 1934 tokens (hi-en, the most expensive
 # language) = 96,700 tokens -- under half of the 200,000 daily ceiling, even if every
 # single demo call happened to be the most expensive kind and zero were cache hits.
-DEMO_DAILY_REQUEST_BUDGET = get_settings().demo_daily_request_budget
+_DEFAULT_DEMO_DAILY_BUDGET = 50
+
+
+def _effective_demo_daily_budget() -> int:
+    """Return the daily demo-request budget to enforce right now.
+
+    Session 12 P7a: evaluated fresh on every call (not baked into a module-level
+    constant at import time) so a TTL can actually expire within a running instance's
+    lifetime. An override away from `_DEFAULT_DEMO_DAILY_BUDGET` is only honored while
+    `DEMO_DAILY_REQUEST_BUDGET_OVERRIDE_EXPIRES_AT` names a future UTC timestamp --
+    missing, unparseable, or past, and the override is ignored and the safe default is
+    used instead. Fails toward the SAFE default (real demo traffic keeps working), not
+    toward the overridden value, on any ambiguity -- the incident this exists to prevent
+    was an override silently left in place returning 429s to real visitors, not one
+    silently expiring a moment too early.
+    """
+    settings = get_settings()
+    configured = settings.demo_daily_request_budget
+    if configured == _DEFAULT_DEMO_DAILY_BUDGET:
+        return configured
+
+    expires_at_raw = settings.demo_daily_request_budget_override_expires_at
+    if not expires_at_raw:
+        log.error(
+            "demo.budget_override_missing_ttl",
+            configured=configured,
+            default=_DEFAULT_DEMO_DAILY_BUDGET,
+        )
+        return _DEFAULT_DEMO_DAILY_BUDGET
+
+    try:
+        expires_at = datetime.fromisoformat(expires_at_raw.replace("Z", "+00:00"))
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=UTC)
+    except ValueError:
+        log.error("demo.budget_override_invalid_expiry", raw=expires_at_raw)
+        return _DEFAULT_DEMO_DAILY_BUDGET
+
+    if datetime.now(UTC) >= expires_at:
+        log.warning(
+            "demo.budget_override_expired",
+            configured=configured,
+            expired_at=expires_at_raw,
+        )
+        return _DEFAULT_DEMO_DAILY_BUDGET
+
+    return configured
 
 
 async def _check_demo_quota() -> bool:
@@ -115,7 +161,7 @@ async def _check_demo_quota() -> bool:
     """
     try:
         return await asyncio.to_thread(
-            check_and_increment_demo_request_pg, DEMO_DAILY_REQUEST_BUDGET
+            check_and_increment_demo_request_pg, _effective_demo_daily_budget()
         )
     except Exception:
         log.error("demo.quota_check_failed", exc_info=True)
@@ -177,7 +223,7 @@ async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtractio
     # Global daily quota gate -- BEFORE spending any tokens. See DEMO_DAILY_REQUEST_
     # BUDGET's docstring above for why this exists and how the number was chosen.
     if not await _check_demo_quota():
-        log.warning("demo.quota_exhausted", daily_budget=DEMO_DAILY_REQUEST_BUDGET)
+        log.warning("demo.quota_exhausted", daily_budget=_effective_demo_daily_budget())
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail=(
