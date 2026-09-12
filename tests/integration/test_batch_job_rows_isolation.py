@@ -193,9 +193,13 @@ def two_orgs() -> Iterator[tuple[str, str]]:
     conn = _conn()
     try:
         cur = conn.cursor()
+        # Session 12 P2a: retention_mode defaults to 'stateless' (D1) -- this file tests
+        # that drained rows persist and are isolated by org, so it opts into 'retained'.
         cur.execute(
-            "INSERT INTO public.organizations (id, name, slug) VALUES "
-            "(%s, 'Batch Row Org A', %s), (%s, 'Batch Row Org B', %s)",
+            "INSERT INTO public.organizations "
+            "(id, name, slug, retention_mode, retention_days) VALUES "
+            "(%s, 'Batch Row Org A', %s, 'retained', 90), "
+            "(%s, 'Batch Row Org B', %s, 'retained', 90)",
             (org_a, f"bjr-a-{org_a[:8]}", org_b, f"bjr-b-{org_b[:8]}"),
         )
         conn.commit()

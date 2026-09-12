@@ -77,8 +77,12 @@ def two_orgs_with_keys() -> Iterator[tuple[_OrgFixture, _OrgFixture]]:
             ext_id = str(uuid.uuid4())
             raw_key = f"riq_live_{uuid.uuid4().hex}"
             key_hash = ph.hash(raw_key)
+            # Session 12 P2a: retention_mode defaults to 'stateless' (D1) -- this file
+            # tests extraction persistence/isolation across orgs, so opt into 'retained'.
             cur.execute(
-                "INSERT INTO public.organizations (id, name, slug) VALUES (%s, %s, %s)",
+                "INSERT INTO public.organizations "
+                "(id, name, slug, retention_mode, retention_days) "
+                "VALUES (%s, %s, %s, 'retained', 90)",
                 (org_id, f"Adversarial {label}", f"adv-{label}-{org_id[:8]}"),
             )
             cur.execute(
