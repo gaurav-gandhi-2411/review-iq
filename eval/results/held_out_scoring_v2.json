@@ -1,4 +1,8 @@
 {
+  "generated_at": "2026-09-12T06:03:40Z",
+  "git_sha": "1a35033b8bc46c2e967e01ec4d7524c7033201a0",
+  "groq_model_small": "openai/gpt-oss-20b",
+  "groq_model_large": "openai/gpt-oss-120b",
   "n_fixtures": 106,
   "n_language_mismatched": 55,
   "language_detection_accuracy": 0.4811320754716981,

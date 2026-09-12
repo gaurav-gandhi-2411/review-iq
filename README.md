@@ -156,6 +156,25 @@ Eval runs automatically in CI on every push touching prompts, LLM, schema, or fi
 (cassette-replay against `eval/cassettes/cassettes.json` — $0, deterministic, zero live LLM
 calls; see `eval/README.md`). Nightly runs post results to Slack.
 
+### Real-world accuracy (uncontaminated, held-out corpus)
+
+The table above is a **regression detector**: it's measured against fixtures the prompt was
+developed and tuned against, so it tells you "did this change break something," not "how
+accurate is this in the real world." The table below is the honest answer to the second
+question — scored against 106 real Indian marketplace reviews mined independently of prompt
+development, never seen by anyone iterating on the prompt.
+
+<!-- METRICS:START:held_out_table -->Measured 2026-09-12T06:03:40Z &middot; `1a35033` &middot; models: openai/gpt-oss-20b / openai/gpt-oss-120b
+
+| Condition | Score | 95% CI | n |
+|---|---|---|---|
+| **As actually deployed** (real language routing) | **68.3%** | [66.3%, 70.3%] | 106 |
+| Language routing forced correct | 72.9% | [71.1%, 74.6%] | 106 |
+
+n=106 real Hinglish reviews the prompt has never seen (never used for prompt development), 0 hi (see [ADR 0016](docs/architecture/adr/0016-third-judge-corpus-batch-1-and-sentiment-recheck.md)). Production's own language detector agreed with this corpus's language label on 48.1% of fixtures. This is the number to trust for real-world accuracy; the CI-gate table above is a regression detector, not a real-world accuracy claim -- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md).<!-- METRICS:END -->
+
+Reproducible from committed cassettes: `EVAL_CASSETTE_MODE=replay uv run python eval/score_held_out_corpus_v2.py --mode replay` — $0, zero live calls, byte-identical output. See [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) for the full methodology, including the misrouting-vs-contamination decomposition of the gap between this table and the one above.
+
 <details>
 <summary>Historical releases (frozen at time of measurement — each predates the current
 prompt/fixture set, so these are not a like-for-like comparison with the current numbers
