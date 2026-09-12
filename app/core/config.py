@@ -43,6 +43,16 @@ class Settings(BaseSettings):
     # half of the shared 200,000 tokens/day free-tier budget every real customer's
     # /v2/extract call also draws from.
     demo_daily_request_budget: int = Field(default=50, alias="DEMO_DAILY_REQUEST_BUDGET")
+    # Session 12 P7a: self-expiring TTL for the override above. Incident: this override
+    # was set to 0 for an unrelated batch job (Session 11) and left set, silently
+    # 429-ing real demo traffic for an extended window until noticed by chance. Any
+    # override away from the default now REQUIRES this ISO-8601 UTC deadline
+    # (app/api/demo.py::_effective_demo_daily_budget ignores the override -- falls back
+    # to the safe default -- if this is unset, unparseable, or in the past), so an
+    # override can no longer be left set indefinitely by a forgetful session.
+    demo_daily_request_budget_override_expires_at: str = Field(
+        default="", alias="DEMO_DAILY_REQUEST_BUDGET_OVERRIDE_EXPIRES_AT"
+    )
     environment: str = Field(default="development", alias="ENVIRONMENT")
 
     # LLM model names
@@ -235,6 +245,11 @@ class Settings(BaseSettings):
     # env var, not Secret Manager, same reason: the project is already at its Secret Manager
     # free-tier ceiling.
     detector_sweep_trigger_token: str = Field(default="", alias="DETECTOR_SWEEP_TRIGGER_TOKEN")
+
+    # Shared-secret header token protecting POST /internal/retention/purge (Session 12 P2c,
+    # timing-safe compare via hmac.compare_digest) — same pattern as the three tokens above.
+    # Plain env var, not Secret Manager, same free-tier-ceiling reason.
+    retention_purge_trigger_token: str = Field(default="", alias="RETENTION_PURGE_TRIGGER_TOKEN")
 
     # Resend transactional email
     resend_api_key: str = Field(default="", alias="RESEND_API_KEY")

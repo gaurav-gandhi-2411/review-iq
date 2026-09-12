@@ -246,6 +246,7 @@ async def test_drain_rows_classifies_bulk() -> None:
         patch("app.core.ingest_worker.count_pending_rows_pg", return_value=1),
         patch("app.core.ingest_worker.count_job_row_statuses_pg", return_value=(2, 0)),
         patch("app.core.ingest_worker.update_batch_job_pg", return_value=None),
+        patch("app.core.ingest_worker.get_org_retention_pg", return_value=("retained", 90)),
         patch("app.api.v2.extract._run_extraction_v2", new=_fake_run),
     ):
         await ingest_worker_mod.drain_rows(max_rows=2)

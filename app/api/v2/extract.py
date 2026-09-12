@@ -11,6 +11,7 @@ from app.auth.api_key import ApiKeyContext, require_api_key
 from app.core.alerts.engine import alert_on_review_event
 from app.core.config import get_settings
 from app.core.ingest_worker import drain_rows
+from app.core.injection_guard import classify_injection_risk
 from app.core.language import detect_language
 from app.core.llm import extract_with_llm
 from app.core.metrics import EXTRACTION_LATENCY, EXTRACTIONS_TOTAL
@@ -51,10 +52,16 @@ async def _run_extraction_v2(
     save_extraction_pg's docstring.
     """
     input_hash = request.input_hash()
+    stateless = ctx.retention_mode != "retained"
 
     import asyncio
 
-    cached = await asyncio.to_thread(get_by_hash_pg, ctx.org_id, input_hash)
+    # Stateless orgs have nothing persisted to look up, by construction (save_extraction_pg
+    # is never called for them below) -- skip the query entirely rather than issue a lookup
+    # that can only ever miss. This also means a mode switch from retained -> stateless
+    # stops surfacing old retained-mode cache hits, which is the honest behavior: the org
+    # asked to stop retaining, a stale cache hit would quietly contradict that.
+    cached = None if stateless else await asyncio.to_thread(get_by_hash_pg, ctx.org_id, input_hash)
     if cached is not None:
         log.info("extraction.cache_hit", input_hash=input_hash, org_id=ctx.org_id)
         EXTRACTIONS_TOTAL.labels(model="cached", cached="true").inc()
@@ -65,9 +72,23 @@ async def _run_extraction_v2(
         return cached
 
     detected_lang = detect_language(request.text)
-    clean_text, is_suspicious = sanitize(request.text)
+    clean_text, regex_suspicious = sanitize(request.text)
+    # Session 13 P4a: a real, model-based pre-filter alongside the regex layer -- see
+    # app/core/injection_guard.py's module docstring for what it catches that the regex
+    # misses (and, honestly, what it still misses too). Runs on the ORIGINAL text, not the
+    # regex-redacted `clean_text` -- the classifier needs to see what a caller actually sent
+    # to score it, not a version the regex layer already partially neutralized.
+    guard_suspicious = await classify_injection_risk(
+        request.text, api_key=get_settings().groq_api_key
+    )
+    is_suspicious = regex_suspicious or guard_suspicious
     if is_suspicious:
-        log.warning("extraction.suspicious_input", input_hash=input_hash)
+        log.warning(
+            "extraction.suspicious_input",
+            input_hash=input_hash,
+            regex_flagged=regex_suspicious,
+            guard_flagged=guard_suspicious,
+        )
 
     wrapped = wrap_for_llm(clean_text)
     user_prompt = build_prompt(wrapped, detected_lang)
@@ -96,20 +117,29 @@ async def _run_extraction_v2(
         extraction_meta=meta,
     )
 
-    extraction_id = await asyncio.to_thread(
-        save_extraction_pg,
-        ctx.org_id,
-        ctx.api_key_id,
-        input_hash,
-        request.text,
-        extraction,
-        model_name,
-        PROMPT_VERSION,
-        _SCHEMA_VERSION,
-        latency_ms,
-        is_suspicious,
-        request.review_date,
-        product_override,
+    # D1/P2b: stateless is the default -- review text must not be persisted anywhere.
+    # save_extraction_pg is the single choke point every extraction path (single
+    # /v2/extract, /v2/extract/batch, CSV ingest via ingest_worker, both webhooks) already
+    # funnels through, so gating it here is sufficient -- see ADR 0025 and ADR 0024 (the
+    # data-flow audit that established this is the one persistence call to gate).
+    extraction_id = (
+        None
+        if stateless
+        else await asyncio.to_thread(
+            save_extraction_pg,
+            ctx.org_id,
+            ctx.api_key_id,
+            input_hash,
+            request.text,
+            extraction,
+            model_name,
+            PROMPT_VERSION,
+            _SCHEMA_VERSION,
+            latency_ms,
+            is_suspicious,
+            request.review_date,
+            product_override,
+        )
     )
     # Update token counts on the usage_record created during auth.
     # On LLM failure this is never reached — the record stays at 0/0
