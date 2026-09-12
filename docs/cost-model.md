@@ -124,6 +124,46 @@ quota — these are illustrative anchors, not a recommendation of a specific num
 | 1,000/month | $26.22 | $18.47 | **~$87/month** |
 | 5,000/month | $131.08 | $18.47 | **~$290/month** |
 
+## 6. Groq Developer-plan upgrade readiness (Session 13 P3c) — planning only, NOT upgraded
+
+The real free-tier capacity ceiling (~140.6 extractions/day, ~4,217/month combined across every
+customer, demo, and eval traffic — see [ADR 0015](architecture/adr/0015-panel-restoration-and-quota-safety-gap.md)'s
+Session 13 correction) is smaller than a single Starter-tier customer's monthly allotment
+(5,000/month). This makes the Developer-plan upgrade a same-day-as-first-signup necessity, not a
+someday optimization — this section exists so that decision doesn't require research at the
+moment it's urgent.
+
+**What's VERIFIED**: Groq's free-tier limits for `openai/gpt-oss-20b`/`120b` (30 RPM / 1K RPD /
+8K TPM / 200K TPD each), confirmed via a live API call's response headers plus Groq's own
+published rate-limits documentation (`console.groq.com/docs/rate-limits`), fetched directly this
+session.
+
+**What's NOT independently verified**: the exact Developer-plan numeric limits for these same two
+models. Groq's rate-limits page has a Free/Developer tab selector; the Developer tab's table
+content did not render through this session's fetch tooling (client-side tab switching, not
+captured by a static HTML→Markdown conversion) — confirmed by two separate fetch attempts,
+neither returning the Developer table's actual rows. A subsequent web search surfaced a
+third-party aggregator claim — "`openai/gpt-oss-120b`: 1K RPM / 500K TPM / 250K TPD on the
+Developer plan" — but per this session's own established standard (a prior search result falsely
+attributed an xAI-specific header to Groq, caught only by checking Groq's own docs directly), a
+blog aggregator's summary is **BELIEVED at best, not VERIFIED**, and is reported here only as a
+directional planning input, explicitly flagged as such.
+
+**What GG should verify directly before relying on this for a real upgrade decision** (Console
+login required, no credentials available to this session): `console.groq.com/docs/rate-limits`
+→ toggle to "Developer Plan" → read the exact RPM/RPD/TPM/TPD for both `gpt-oss` models, and
+`console.groq.com/settings/billing` → confirm whether the Developer plan requires a card on file
+before any usage, a minimum spend, or is genuinely pay-as-you-go from $0 (Groq's own docs
+describe it as "self-serve," which is a good sign but not the same as a confirmed $0-minimum
+figure).
+
+**Why this still makes the upgrade a one-step decision even with that gap**: the ACTION itself
+(if the BELIEVED Developer-tier numbers are directionally correct) is unambiguous regardless of
+the exact final numbers — add a payment method in Groq Console, upgrade the plan, no code change
+required (this project's `GROQ_API_KEY` config doesn't change on a plan upgrade, only the limits
+attached to it do). The only thing gated on GG's direct verification is *how much better* the new
+ceiling is, not *whether* the upgrade path exists or requires engineering work.
+
 ## Provenance
 
 - `eval/measure_token_costs.py` / `eval/results/token_cost_measurement_n106.json` — this
