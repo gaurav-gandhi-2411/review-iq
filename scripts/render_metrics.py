@@ -43,8 +43,9 @@ BLOCK_RE = re.compile(
 )
 
 
-# Display order matching the repo's existing convention (en / hi-en / hi), not alphabetical.
-LANG_DISPLAY_ORDER: tuple[str, ...] = ("en", "hi-en", "hi")
+# Display order matching the repo's existing convention, not alphabetical. "hi" retired
+# from this gate entirely (Session 11 P4d, ADR 0022) -- not listed even as a fallback.
+LANG_DISPLAY_ORDER: tuple[str, ...] = ("en", "hi-en")
 
 
 def _ordered_languages(per_lang: dict[str, Any]) -> list[str]:
@@ -204,15 +205,20 @@ def render_extraction_table_html(data: dict[str, Any]) -> str:
     hand-authored fix this generator would otherwise clobber on the next run.
     """
     per_lang = data["per_language"]
-    lang_labels = {"en": "English", "hi": "Hindi", "hi-en": "Hinglish"}
+    # Session 11 P4d: "hi" (Devanagari) retired from this gate entirely (ADR 0022) -- no
+    # longer a row here at all, not even an "experimental" one. See render_language_table_html
+    # for the matching change on the other table this same source data feeds.
+    lang_labels = {"en": "English", "hi-en": "Hinglish"}
+    lang_scope_note: dict[str, str] = {}
     rows: list[str] = []
     for lang in sorted(per_lang):
         info = per_lang[lang]
         label = lang_labels.get(lang, lang)
+        scope_note = lang_scope_note.get(lang, "")
         rows.append(
             '            <tr class="bg-gray-900 hover:bg-gray-800 transition-colors">\n'
             f'              <td class="px-6 py-4 text-gray-100">{label} '
-            f'<span class="text-gray-500 text-xs">({lang}, n={info["n"]})</span></td>\n'
+            f'<span class="text-gray-500 text-xs">({lang}, n={info["n"]}{scope_note})</span></td>\n'
             f'              <td class="px-6 py-4 font-mono text-blue-300">{_fmt_pct(info["score"])}</td>\n'
             f'              <td class="px-6 py-4 font-mono text-gray-400 text-xs">'
             f"[{_fmt_pct(info['ci_95']['lower'])}, {_fmt_pct(info['ci_95']['upper'])}]</td>\n"
@@ -242,9 +248,12 @@ def render_language_table_html(data: dict[str, Any]) -> str:
     found the same session. A failing language now renders red with its gate noted inline.
     """
     per_lang = data["per_language"]
+    # Session 11 P4d: Devanagari Hindi retired from this gate entirely (ADR 0022) -- real
+    # Devanagari-script review yield in the largest corpus available to this project is
+    # zero, not just thin. Not listed as a language row at all anymore (not even as
+    # "experimental"), matching every other public surface's claim.
     rows_spec = [
         ("en", "English", "Latin"),
-        ("hi", "Hindi", "Devanagari"),
         ("hi-en", "Hinglish", "Roman-script code-mix"),
     ]
     rows: list[str] = []

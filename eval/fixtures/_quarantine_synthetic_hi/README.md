@@ -1,6 +1,20 @@
-# eval/fixtures/hi — Hindi Eval Fixtures (Synthetic)
+# eval/fixtures/_quarantine_synthetic_hi — Hindi Eval Fixtures (RETIRED, quarantined)
 
-6 synthetic Hindi (Devanagari script) fixtures for evaluating extraction from Hindi reviews.
+6 synthetic Hindi (Devanagari script) fixtures, formerly at `eval/fixtures/hi/`. **Retired as of
+Session 11 (2026-09-12): Devanagari-script Hindi is NOT a supported language for this product.**
+This is not a downgrade from "experimental" to a lesser label — it is a removal from the gate
+entirely. The underscore prefix is a structural exclusion: `eval/runner.py::_collect_fixture_paths`
+does not walk this directory, so these fixtures cannot silently re-enter the scored set by
+accident. They are kept only as a historical record of the synthetic-generation and
+real-corpus-yield work described below.
+
+Reason: no real-world Devanagari-script review corpus exists to validate against (see "Growth
+attempt" below — the real yield from 14,552 real marketplace reviews is zero, not merely low),
+and a gate on synthetic data that has proven it cannot grow is decoration, not evaluation.
+README.md's "Corpus and language scope" section, `docs/architecture/adr/0017-hindi-devanagari-scope-narrowing.md`,
+and `docs/architecture/adr/0022-hindi-retirement.md` are the current, authoritative account; this
+file's own "Growth attempt" section below is retained for its original (2026-07-30) sourcing
+narrative but is now superseded on one specific claim, corrected inline.
 
 ## Source and methodology
 
@@ -63,3 +77,12 @@ attempted for Hindi this session. Real Devanagari-script review yield from these
 Flipkart datasets is genuinely this low; growing this bucket meaningfully would need a
 different real Hindi review corpus, out of scope here. See
 `docs/architecture/adr/0002-eval-set-growth-and-mde.md` for the full growth accounting.
+
+**Correction (Session 10, 2026-09-11): the real yield is zero, not two.** Both of the "2
+candidates" above were re-examined while building the held-out corpus and turned out to be
+pure English text using a stray Devanagari danda (`।`) as a period, not Hindi content — the
+language detector matched Devanagari-block *punctuation*, not letters. Fixed in
+`eval/data/sample_flipkart.py`; the corrected corpus has zero genuine Devanagari-script
+candidates out of 14,552. This isn't a fixable sourcing gap — it reflects that Indian
+e-commerce reviews in this corpus are written in English or romanized Hinglish, not
+Devanagari script. See `docs/architecture/adr/0017-hindi-devanagari-scope-narrowing.md`.
