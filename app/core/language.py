@@ -6,7 +6,15 @@ import re
 from functools import lru_cache
 from typing import Any, Literal
 
-_DEVANAGARI = re.compile(r"[ऀ-ॿ]")
+# Session 10 P3 (review-iq): excludes U+0964/U+0965 (DEVANAGARI DANDA / DOUBLE DANDA) from the
+# block this regex otherwise covers wholesale -- the exact fix ADR 0016 already applied to
+# eval/data/sample_flipkart.py's corpus-mining detector, found to have a live sibling here.
+# Found by measurement, not inspection: scoring current production against the held-out corpus
+# (docs/architecture/adr/0018-*.md) showed language-field accuracy of only 52% on hi-en
+# fixtures, and a live smoke test against this exact detector confirmed a pure-English review
+# using a stray danda as a period ("...canbe like this । It's awesome") gets classified "hi"
+# here too -- the same false positive, in the actual serving path, not just corpus tooling.
+_DEVANAGARI = re.compile(r"[ऀ-ॣ०-ॿ]")
 
 _STRONG_HINGLISH = re.compile(
     r"\b(nahi|nhi|nahin|bahut|bohot|bhot|mujhe|mera|meri|yaar|paisa\s+vasool|vasool|"

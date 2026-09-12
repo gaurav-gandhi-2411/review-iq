@@ -1,0 +1,70 @@
+{
+  "id": "hien-0044",
+  "review_text": "Hear lots of things about this but fact is that sound quality is really awesome and bass is excellent looks and design is perfect but yaar bass dil chu liya Pubg m v buht mast kaam kar raha hai Latency time is perfect few micro second that doesn't matter.But one thing when you play pubg then set volume moderate level otherwise due to high. Bass your ear get pain and headache too but sound quality lajawaabREAD MORE",
+  "ground_truth": {
+    "product": "headphones",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": [
+      "awesome sound quality",
+      "excellent bass",
+      "perfect looks and design",
+      "perfect latency time",
+      "good performance in PUBG"
+    ],
+    "cons": [],
+    "buy_again": null,
+    "sentiment": "mixed",
+    "topics": [
+      "sound_quality",
+      "bass",
+      "design",
+      "latency",
+      "comfort"
+    ],
+    "competitor_mentions": [],
+    "urgency": "medium",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/kabirnagpal/flipkart-customer-review-and-rating",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "majority",
+      "product": "unanimous",
+      "stars_inferred": "unanimous",
+      "pros": "unanimous",
+      "cons": "split",
+      "topics": "unanimous",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}

@@ -13,11 +13,15 @@ from fastapi import APIRouter, HTTPException, Request, status
 from app.core.config import get_settings
 from app.core.language import detect_language
 from app.core.llm import extract_with_llm
+from app.core.pricing import UnknownModelError, price_extraction
 from app.core.prompts import PROMPT_VERSION, build_prompt
 from app.core.rate_limit import limiter
 from app.core.sanitize import sanitize, wrap_for_llm
 from app.core.schemas import ExtractionMeta, ReviewExtraction, ReviewRequest
-from app.core.storage_pg import check_and_increment_demo_request_pg
+from app.core.storage_pg import (
+    check_and_increment_demo_request_pg,
+    record_demo_extraction_cost_pg,
+)
 
 router = APIRouter(prefix="/demo", tags=["demo"])
 log = structlog.get_logger(__name__)
@@ -190,7 +194,7 @@ async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtractio
     user_prompt = build_prompt(wrapped, detected_lang)
 
     try:
-        llm_output, model_name, latency_ms, _, _, _ = await extract_with_llm(
+        llm_output, model_name, latency_ms, tokens_in, tokens_out, _ = await extract_with_llm(
             user_prompt, allow_gemini_fallback=False
         )
     except RuntimeError as exc:
@@ -214,5 +218,29 @@ async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtractio
         extraction_meta=meta,
     )
     _demo_cache_put(cache_key, result)
+
+    # Cost telemetry: a missing pricing entry must not fail a response that already
+    # succeeded -- log loudly (pricing.py already logs at ERROR before raising) and
+    # skip the cost row, same tolerance as app/api/v2/extract.py's org-path recording.
+    try:
+        cost = price_extraction(model_name, tokens_in, tokens_out)
+        await asyncio.to_thread(
+            record_demo_extraction_cost_pg,
+            cost.provider,
+            cost.model,
+            cost.tier,
+            detected_lang,
+            tokens_in,
+            tokens_out,
+            cost.cost_usd,
+            cost.cost_inr,
+        )
+    except UnknownModelError as exc:
+        log.error("demo.cost_pricing_missing", model=model_name, error=str(exc))
+    except Exception:
+        # Cost recording is observability, not correctness -- never fail an already-
+        # successful demo response because the cost INSERT hit a transient DB issue.
+        log.error("demo.cost_recording_failed", exc_info=True)
+
     log.info("demo.extract", model=model_name, lang=detected_lang, latency_ms=latency_ms)
     return result
