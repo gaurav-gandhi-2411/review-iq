@@ -697,23 +697,35 @@ def test_check_and_increment_demo_request_pg_never_calls_set_tenant() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_record_demo_extraction_cost_pg_returns_id() -> None:
+def test_record_demo_extraction_cost_pg_returns_none_and_skips_returning_clause() -> None:
+    """Regression test (Session 11 hotfix, 2026-09-12): the INSERT must NOT carry a
+    RETURNING clause. Verified live against production: `review_iq_app` is a member of
+    the `authenticated` role, so `extraction_costs_authenticated_all`'s USING clause
+    (`org_id = current_org_id()`) also applies to this role for SELECT visibility, and
+    RETURNING requires the just-inserted row to pass that check. For a demo row
+    (org_id=NULL, no tenant context so current_org_id() is also NULL), `NULL = NULL`
+    is NULL, not true -- Postgres raised "new row violates row-level security policy"
+    on every real demo call despite the INSERT's own WITH CHECK policy passing cleanly.
+    A mock-based test cannot exercise real RLS enforcement (this one didn't -- it
+    asserted the mocked return value and never caught the bug); asserting the SQL
+    shape here is the mechanical proxy for the actual fix.
+    """
     conn, cur = _make_conn()
-    new_id = uuid.uuid4()
-    cur.fetchone.return_value = (new_id,)
 
     with patch("app.core.storage_pg._db_connect", return_value=conn):
         result = record_demo_extraction_cost_pg(
             "groq", "openai/gpt-oss-20b", "small", "en", 1000, 500, 0.00009, 0.00861
         )
 
-    assert result == str(new_id)
+    assert result is None
     conn.commit.assert_called_once()
+    insert_call = [c for c in cur.execute.call_args_list if "INSERT" in (c[0][0] or "")]
+    assert insert_call, "Expected an INSERT call"
+    assert "RETURNING" not in insert_call[0][0][0]
 
 
 def test_record_demo_extraction_cost_pg_inserts_null_org_and_demo_source() -> None:
     conn, cur = _make_conn()
-    cur.fetchone.return_value = (uuid.uuid4(),)
 
     with patch("app.core.storage_pg._db_connect", return_value=conn):
         record_demo_extraction_cost_pg(
@@ -729,7 +741,6 @@ def test_record_demo_extraction_cost_pg_inserts_null_org_and_demo_source() -> No
 
 def test_record_demo_extraction_cost_pg_updates_daily_token_totals() -> None:
     conn, cur = _make_conn()
-    cur.fetchone.return_value = (uuid.uuid4(),)
 
     with patch("app.core.storage_pg._db_connect", return_value=conn):
         record_demo_extraction_cost_pg(

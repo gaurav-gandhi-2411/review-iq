@@ -1477,7 +1477,7 @@ def record_demo_extraction_cost_pg(
     tokens_out: int,
     cost_usd: float,
     cost_inr: float,
-) -> str:
+) -> None:
     """Persist a per-extraction cost record for a keyless /demo/extract call.
 
     Cross-org query, deliberately no _set_tenant(): POST /demo/extract is keyless --
@@ -1492,7 +1492,16 @@ def record_demo_extraction_cost_pg(
     BEFORE the LLM call; this token update happens AFTER, purely for visibility into how
     close the shared Groq daily token budget is to being exhausted.
 
-    Returns the row id (UUID as str).
+    No RETURNING clause (verified 2026-09-12): `review_iq_app` is a member of the
+    `authenticated` role, so `extraction_costs_authenticated_all`'s USING clause
+    (`org_id = current_org_id()`) also applies to this role for SELECT visibility --
+    and RETURNING requires the just-inserted row to pass that same USING check. For a
+    demo row, org_id is NULL and current_org_id() is also NULL (no JWT/tenant context
+    on a keyless call), so `NULL = NULL` is NULL, not true, and Postgres raises "new
+    row violates row-level security policy" even though the INSERT's own WITH CHECK
+    (the review_iq_app_demo_insert policy) passes cleanly. The INSERT itself succeeds
+    without RETURNING; the row id was never used by the only caller (app/api/demo.py
+    discards it), so there is nothing to fix on the caller side.
     """
     conn = _db_connect()
     try:
@@ -1503,11 +1512,9 @@ def record_demo_extraction_cost_pg(
                 org_id, extraction_id, provider, model, tier, language,
                 tokens_in, tokens_out, cost_usd, cost_inr, source
             ) VALUES (NULL, NULL, %s, %s, %s, %s, %s, %s, %s, %s, 'demo')
-            RETURNING id
             """,
             (provider, model, tier, language, tokens_in, tokens_out, cost_usd, cost_inr),
         )
-        cost_row = cur.fetchone()
         cur.execute(
             """
             UPDATE public.demo_daily_usage
@@ -1519,7 +1526,6 @@ def record_demo_extraction_cost_pg(
             (tokens_in, tokens_out),
         )
         conn.commit()
-        return str(cost_row[0])
     except Exception:
         conn.rollback()
         raise
