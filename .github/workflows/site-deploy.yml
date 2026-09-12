@@ -1,0 +1,64 @@
+name: Site Deploy (Cloudflare Pages)
+
+# Hotfix session (2026-09-13): site/ (the static marketing page) has NEVER been
+# deployed by CI. The only existing Cloudflare Pages workflow (web-deploy.yml)
+# deploys web/dist -- a different app entirely -- to a different project
+# (samidha-reviews-web). Every site/ change since PR #180 (brand swap) and #181
+# (sales-page restructure) merged to main and simply never reached a browser.
+#
+# review-iq-demo is the CANONICAL marketing project (holds the samidhareviews.xyz
+# custom domain already -- see site/_redirects and GG's Cloudflare dashboard).
+# This workflow makes CI-on-main the only path that updates it, and verifies the
+# deployed HTML actually contains the current brand/content (scripts/
+# check_site_deploy_content.py) rather than trusting a green wrangler exit code --
+# see that script's docstring for why a successful deploy command is not evidence
+# of correct content.
+#
+# Path-filtered to site/** so unrelated backend/web changes don't trigger a rebuild.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - ".github/workflows/site-deploy.yml"
+      - "scripts/check_site_deploy_content.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: site-deploy-production
+  cancel-in-progress: false # never cancel a production deploy mid-flight
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Deploy to Cloudflare Pages (production)
+        uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: >-
+            pages deploy site --project-name=review-iq-demo
+            --branch=main --commit-hash=${{ github.sha }}
+            --commit-message=${{ toJSON(github.event.head_commit.message) }}
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
+        with:
+          enable-cache: true
+
+      - name: Verify the deployed page actually shows the current brand/content
+        run: uv run --with httpx python scripts/check_site_deploy_content.py

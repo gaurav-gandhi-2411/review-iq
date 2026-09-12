@@ -51,7 +51,7 @@ from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Request, 
 from app.auth.api_key import ApiKeyContext
 from app.core.config import get_settings
 from app.core.ingestion.shopify_source import _node_to_review_row
-from app.core.storage_pg import _set_tenant
+from app.core.storage_pg import _set_tenant, get_org_retention_pg
 
 log = structlog.get_logger(__name__)
 
@@ -257,11 +257,19 @@ async def _process_webhook_review(
         return
 
     # Synthetic context: webhook extractions don't consume quota or API key slots.
+    # retention_mode/retention_days fetched live (P2a) -- never assumed -- so a
+    # stateless-mode org's Shopify-ingested reviews correctly aren't persisted either,
+    # same as any other extraction path for that org.
+    retention_mode, retention_days = await asyncio.to_thread(
+        get_org_retention_pg, installation["org_id"]
+    )
     ctx = ApiKeyContext(
         org_id=installation["org_id"],
         api_key_id=None,  # no API key — system/webhook triggered
         key_name="shopify_webhook",
         usage_record_id="",  # "" → update_usage_tokens skipped in _run_extraction_v2
+        retention_mode=retention_mode,
+        retention_days=retention_days,
     )
 
     req = ReviewRequest(text=row["text"])

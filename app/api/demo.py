@@ -5,12 +5,13 @@ from __future__ import annotations
 import asyncio
 import hashlib
 from collections import OrderedDict
-from datetime import datetime
+from datetime import UTC, datetime
 
 import structlog
 from fastapi import APIRouter, HTTPException, Request, status
 
 from app.core.config import get_settings
+from app.core.injection_guard import classify_injection_risk
 from app.core.language import detect_language
 from app.core.llm import extract_with_llm
 from app.core.pricing import UnknownModelError, price_extraction
@@ -85,22 +86,71 @@ def demo_cache_size() -> int:
 # Global (cross-IP) daily demo quota.
 #
 # The per-IP slowapi limit (5/minute) has no cross-IP cap at all, and this endpoint
-# shares the SAME Groq API key -- and its SAME free-tier daily token/request budget --
-# as every real paying customer's /v2/extract call (app/core/config.py has exactly one
-# groq_api_key). Groq's free tier for the models this app actually runs
-# (openai/gpt-oss-20b, openai/gpt-oss-120b) is 200,000 tokens/day and 1,000
-# requests/day, shared across every call this key makes. Measured average tokens per
-# real extraction (this repo's own eval run, grouped by language): en ~1833, hi ~1019,
-# hi-en ~1934. At those rates, as few as ~103 (hi-en, worst case) to ~196 (hi, best
-# case) unauthenticated demo calls in one day could exhaust the ENTIRE shared budget --
-# after which real customers' extraction calls degrade or fail for the rest of that
-# day. This is an AVAILABILITY risk, not a billing risk (free tier has no bill).
+# shares the SAME Groq API key -- and its SAME free-tier budget -- as every real paying
+# customer's /v2/extract call (app/core/config.py has exactly one groq_api_key).
 #
-# DEMO_DAILY_REQUEST_BUDGET is sized to leave real customers most of the shared budget
-# even in the worst case: 50 requests/day * 1934 tokens (hi-en, the most expensive
-# language) = 96,700 tokens -- under half of the 200,000 daily ceiling, even if every
-# single demo call happened to be the most expensive kind and zero were cache hits.
-DEMO_DAILY_REQUEST_BUDGET = get_settings().demo_daily_request_budget
+# CORRECTED Session 13 (see docs/architecture/adr/0015-panel-restoration-and-quota-safety-gap.md's
+# Session 13 correction): the limits are PER MODEL (openai/gpt-oss-20b and
+# openai/gpt-oss-120b each independently get 30 RPM / 1,000 RPD / 8,000 TPM / 200,000
+# TPD), not one shared 200K-tokens/day org-wide pool as an earlier version of this
+# comment claimed. At the real measured tokens/extraction per tier
+# (eval/results/token_cost_measurement_n106.json), TPD binds long before RPD does --
+# the real combined ceiling across BOTH models, shared by every consumer of this key
+# (real customers, this endpoint, live eval calls), is ~140.6 extractions/day
+# (eval/capacity_model.py). This is an AVAILABILITY risk, not a billing risk (free tier
+# has no bill) -- and it is a far tighter ceiling than "1,000 requests/day" alone
+# suggests.
+#
+# DEMO_DAILY_REQUEST_BUDGET is sized to leave real customers most of that real ~140.6/day
+# ceiling: 50 demo requests/day is roughly a third of it, even before accounting for the
+# in-process LRU cache absorbing repeated identical text at zero marginal cost.
+_DEFAULT_DEMO_DAILY_BUDGET = 50
+
+
+def _effective_demo_daily_budget() -> int:
+    """Return the daily demo-request budget to enforce right now.
+
+    Session 12 P7a: evaluated fresh on every call (not baked into a module-level
+    constant at import time) so a TTL can actually expire within a running instance's
+    lifetime. An override away from `_DEFAULT_DEMO_DAILY_BUDGET` is only honored while
+    `DEMO_DAILY_REQUEST_BUDGET_OVERRIDE_EXPIRES_AT` names a future UTC timestamp --
+    missing, unparseable, or past, and the override is ignored and the safe default is
+    used instead. Fails toward the SAFE default (real demo traffic keeps working), not
+    toward the overridden value, on any ambiguity -- the incident this exists to prevent
+    was an override silently left in place returning 429s to real visitors, not one
+    silently expiring a moment too early.
+    """
+    settings = get_settings()
+    configured = settings.demo_daily_request_budget
+    if configured == _DEFAULT_DEMO_DAILY_BUDGET:
+        return configured
+
+    expires_at_raw = settings.demo_daily_request_budget_override_expires_at
+    if not expires_at_raw:
+        log.error(
+            "demo.budget_override_missing_ttl",
+            configured=configured,
+            default=_DEFAULT_DEMO_DAILY_BUDGET,
+        )
+        return _DEFAULT_DEMO_DAILY_BUDGET
+
+    try:
+        expires_at = datetime.fromisoformat(expires_at_raw.replace("Z", "+00:00"))
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=UTC)
+    except ValueError:
+        log.error("demo.budget_override_invalid_expiry", raw=expires_at_raw)
+        return _DEFAULT_DEMO_DAILY_BUDGET
+
+    if datetime.now(UTC) >= expires_at:
+        log.warning(
+            "demo.budget_override_expired",
+            configured=configured,
+            expired_at=expires_at_raw,
+        )
+        return _DEFAULT_DEMO_DAILY_BUDGET
+
+    return configured
 
 
 async def _check_demo_quota() -> bool:
@@ -115,7 +165,7 @@ async def _check_demo_quota() -> bool:
     """
     try:
         return await asyncio.to_thread(
-            check_and_increment_demo_request_pg, DEMO_DAILY_REQUEST_BUDGET
+            check_and_increment_demo_request_pg, _effective_demo_daily_budget()
         )
     except Exception:
         log.error("demo.quota_check_failed", exc_info=True)
@@ -166,7 +216,7 @@ async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtractio
 
     Use POST /v2/extract with a riq_live_* API key for production use.
     """
-    clean_text, _ = sanitize(body.text)
+    clean_text, regex_suspicious = sanitize(body.text)
     cache_key = _demo_cache_key(clean_text)
 
     cached = _demo_cache_get(cache_key)
@@ -177,7 +227,7 @@ async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtractio
     # Global daily quota gate -- BEFORE spending any tokens. See DEMO_DAILY_REQUEST_
     # BUDGET's docstring above for why this exists and how the number was chosen.
     if not await _check_demo_quota():
-        log.warning("demo.quota_exhausted", daily_budget=DEMO_DAILY_REQUEST_BUDGET)
+        log.warning("demo.quota_exhausted", daily_budget=_effective_demo_daily_budget())
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail=(
@@ -187,6 +237,17 @@ async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtractio
                 "capacity: POST /v2/extract."
             ),
             headers={"Retry-After": "3600"},
+        )
+
+    # Session 13 P4a: same second layer as /v2/extract -- see
+    # app/core/injection_guard.py's module docstring. The public, keyless demo is arguably
+    # the higher-value target for this check (no API key needed to reach it at all).
+    guard_suspicious = await classify_injection_risk(body.text, api_key=get_settings().groq_api_key)
+    if regex_suspicious or guard_suspicious:
+        log.warning(
+            "demo.suspicious_input",
+            regex_flagged=regex_suspicious,
+            guard_flagged=guard_suspicious,
         )
 
     detected_lang = detect_language(clean_text)
