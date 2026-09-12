@@ -110,6 +110,31 @@ def test_cache_hit_does_not_consume_quota() -> None:
     assert mock_quota.call_count == 1, "Quota should only be checked on the real (first) call"
 
 
+def test_guard_only_detection_runs_and_does_not_block_the_response() -> None:
+    """Session 13 P4a: the model-based guard runs on the public demo endpoint too -- text
+    the regex layer doesn't match but the guard flags must not change the response (this
+    product's design flags/logs suspicious input, it does not reject it -- see
+    app/core/injection_guard.py's module docstring for why)."""
+    client = _client()
+    with (
+        patch("app.api.demo.check_and_increment_demo_request_pg", return_value=True),
+        patch("app.api.demo.record_demo_extraction_cost_pg", return_value=None),
+        patch(
+            "app.api.demo.classify_injection_risk", new=AsyncMock(return_value=True)
+        ) as mock_guard,
+        patch(
+            "app.api.demo.extract_with_llm",
+            new=AsyncMock(return_value=(_LLM_OUTPUT, "openai/gpt-oss-20b", 10, 100, 20, False)),
+        ),
+    ):
+        resp = client.post(
+            "/demo/extract", json={"text": "unique guard-only demo suspicious review"}
+        )
+
+    assert resp.status_code == 200
+    mock_guard.assert_called_once()
+
+
 # ---------------------------------------------------------------------------
 # Cost recording
 # ---------------------------------------------------------------------------
