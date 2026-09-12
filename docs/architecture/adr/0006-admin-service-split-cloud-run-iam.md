@@ -85,6 +85,36 @@ different env vars):
   remaining legitimate use of a bypass-holding role reachable from a request-serving path) — see
   the PR body's numbered apply sequence.
 
+## Who holds access to `review-iq-admin`
+
+Updated 2026-08-01, correcting a real gap found in production: `review-iq-admin` was deployed
+2026-07-31 with `--no-allow-unauthenticated` but **zero IAM bindings at all** — not even GG's
+own identity. That's an availability defect, not a security win: nobody, including the intended
+operator, could reach `require_admin`'s Basic auth underneath without first fixing the binding.
+
+Fixed via:
+```
+gcloud run services add-iam-policy-binding review-iq-admin \
+  --project=review-iq-prod --region=asia-south1 \
+  --member=user:gaurav.gandhi2411@gmail.com --role=roles/run.invoker
+```
+
+**Access roster (the only entry, by design — single-operator, script-driven, per the
+Alternatives section above):** `user:gaurav.gandhi2411@gmail.com` (GG's own canonical Google
+account) holds `roles/run.invoker` on this service. No other user, group, or service account is
+bound. Invocation is via `gcloud auth print-identity-token` (default audience — a user account
+cannot use `--audiences` with a custom value, that flag requires a service account) piped into
+an `Authorization: Bearer` header, or equivalently `gcloud run services proxy review-iq-admin`.
+
+Verified live, both directions, 2026-08-01:
+- Without the identity token: Google's own IAM-layer 403 (`Error: Forbidden`, the platform's
+  HTML page, never reaches the app) — confirms the service is still not publicly reachable.
+- With the identity token: the *application itself* responds — `/health` returns real `200`
+  JSON; `/admin/organizations/<uuid>` returns `{"detail":"Not authenticated"}` (FastAPI's own
+  401, not Google's), since no `Authorization: Basic` header was sent. This is the two-layer
+  design working as intended: IAM gates *who can reach the app at all*, `require_admin` still
+  gates the actual operation underneath, independently.
+
 ## Verification performed
 
 - `gcloud run services get-iam-policy review-iq --region=asia-south1 --project=review-iq-prod`

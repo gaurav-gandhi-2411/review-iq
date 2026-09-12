@@ -11,6 +11,23 @@
 
 v1 endpoints remain untouched to avoid regressions. v2 is the production multi-tenant path.
 
+## Production ingress topology
+
+Three public hostnames all ultimately reach the same `review-iq` Cloud Run service
+(`asia-south1`), whose own IAM policy is `allUsers: roles/run.invoker` (fully public) — none of
+the three adds or removes authorization; a route-level gate (e.g. `/admin/*`) must be verified
+through all three to be considered actually enforced. See ADR 0009 for the full trace.
+
+| Hostname | Mechanism | Terminates TLS? | Notes |
+|---|---|---|---|
+| `api.samidhareviews.xyz` | **Firebase Hosting** rewrite (`glob: "**"` → Cloud Run `review-iq`) | Yes, Firebase-managed cert | **Not** a native `gcloud run domain-mappings` mapping — a different, correctly-working mechanism this repo previously assumed didn't exist. Live since 2026-07-07. Never caches (dynamic `run` rewrites are excluded from Firebase's CDN cache). |
+| `review-iq-<hash>.a.run.app` | Cloud Run's own default URL | Yes, Google-managed | The raw backend host; always reachable regardless of any DNS/CDN layer above it. |
+| `app.samidhareviews.xyz` | Vercel (separate project, `web/` frontend) | Yes, Vercel-managed | Reaches the SPA in `web/`, which calls `api.samidhareviews.xyz` — not the same backend process as the two rows above. |
+
+`samidhareviews.xyz` (the bare apex, marketing/demo) and `app.samidhareviews.xyz` are on
+**Vercel**, a separate account (`gg5678g@gmail.com`) from the one running Cloud Run/Firebase
+(`gaurav.gandhi2411@gmail.com`) — see ADR 0009's operational-risk note.
+
 ## Connection modes
 
 Two connection strings serve different purposes:

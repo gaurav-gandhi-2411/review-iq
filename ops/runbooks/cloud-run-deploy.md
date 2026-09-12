@@ -84,7 +84,10 @@ gcloud run services update-traffic review-iq --region=asia-south1 --project=revi
   --to-revisions=REVISION_NAME=100
 
 # 7. Re-verify on the PUBLIC domain after promotion (not just the tagged URL —
-#    confirms the domain mapping/routing itself, not only the container):
+#    confirms the routing itself, not only the container). Note: api.samidhareviews.xyz
+#    is fronted by Firebase Hosting's Cloud Run rewrite, not a native `gcloud run
+#    domain-mappings` mapping -- see ADR 0009 for the full ingress trace before
+#    assuming otherwise:
 curl -sf https://api.samidhareviews.xyz/health
 ```
 

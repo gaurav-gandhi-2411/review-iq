@@ -34,6 +34,11 @@ async def _ping_postgres(dsn: str) -> None:
 
     Raises on any connection or query error.  Uses psycopg2 via
     asyncio.to_thread so it does not block the event loop.
+
+    _set_tenant() EXEMPT (BYPASSRLS remediation, 2c): `SELECT 1` touches no table and
+    reads no tenant data -- there is no RLS-governed row for a tenant context to scope.
+    Every other public.* call site in this codebase must call _set_tenant() or carry an
+    equivalent documented exemption; this is the health-check exemption.
     """
     import psycopg2
 

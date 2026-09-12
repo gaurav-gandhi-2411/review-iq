@@ -8,6 +8,7 @@ import hmac
 import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import psycopg2.errors
 import pytest
 from app.api.webhooks.google import (
     _decrypt_refresh_token,
@@ -317,6 +318,88 @@ def test_get_google_installation_pg_no_db_configured_returns_none() -> None:
         return_value=_make_mock_settings(),
     ):
         assert _get_google_installation_pg("accounts/1/locations/2") is None
+
+
+# ---------------------------------------------------------------------------
+# _get_google_installation_pg — BYPASSRLS remediation: two-step lookup
+# (resolve_org_for_google_location -> _set_tenant -> the actual row), neither
+# step needing review_iq_app to hold BYPASSRLS.
+# ---------------------------------------------------------------------------
+
+
+def _make_conn_cur() -> tuple[MagicMock, MagicMock]:
+    cur = MagicMock()
+    conn = MagicMock()
+    conn.cursor.return_value = cur
+    return conn, cur
+
+
+def _make_db_settings() -> MagicMock:
+    s = _make_mock_settings()
+    s.supabase_database_url = "postgresql://review_iq_app@localhost/postgres"
+    return s
+
+
+def test_get_google_installation_pg_calls_resolve_function_then_set_tenant() -> None:
+    conn, cur = _make_conn_cur()
+    org_id = "5b6c1e2a-0000-0000-0000-000000000001"
+    cur.fetchone.side_effect = [
+        (org_id,),  # resolve_org_for_google_location(...)
+        ("Acme Storefront", "encrypted-token-blob"),  # the actual row
+    ]
+
+    with patch(
+        "app.api.webhooks.google.get_settings",
+        return_value=_make_db_settings(),
+    ):
+        with patch("app.api.webhooks.google.psycopg2.connect", return_value=conn):
+            with patch("app.api.webhooks.google._set_tenant") as mock_set_tenant:
+                result = _get_google_installation_pg("accounts/1/locations/2")
+
+    assert result == {
+        "org_id": org_id,
+        "google_account_name": "Acme Storefront",
+        "refresh_token_enc": "encrypted-token-blob",
+    }
+    # resolve_org_for_google_location call is first, before any tenant is set.
+    first_call_sql = cur.execute.call_args_list[0][0][0]
+    assert "resolve_org_for_google_location" in first_call_sql
+    mock_set_tenant.assert_called_once_with(cur, org_id)
+
+
+def test_get_google_installation_pg_unresolved_location_returns_none_without_set_tenant() -> None:
+    """An unrecognized location_name must never reach _set_tenant() at all -- there's no
+    org_id to scope to, and the whole point is never falling back to a default org."""
+    conn, cur = _make_conn_cur()
+    cur.fetchone.return_value = (None,)
+
+    with patch(
+        "app.api.webhooks.google.get_settings",
+        return_value=_make_db_settings(),
+    ):
+        with patch("app.api.webhooks.google.psycopg2.connect", return_value=conn):
+            with patch("app.api.webhooks.google._set_tenant") as mock_set_tenant:
+                result = _get_google_installation_pg("accounts/1/locations/nonexistent")
+
+    assert result is None
+    mock_set_tenant.assert_not_called()
+
+
+def test_get_google_installation_pg_resolve_function_missing_fails_safe() -> None:
+    """Before the accompanying migration's cutover, resolve_org_for_google_location()
+    doesn't exist yet -- must drop the webhook (return None), never crash, never fall
+    back to the old direct-table-query pattern this refactor removes."""
+    conn, cur = _make_conn_cur()
+    cur.execute.side_effect = psycopg2.errors.UndefinedFunction("function does not exist")
+
+    with patch(
+        "app.api.webhooks.google.get_settings",
+        return_value=_make_db_settings(),
+    ):
+        with patch("app.api.webhooks.google.psycopg2.connect", return_value=conn):
+            result = _get_google_installation_pg("accounts/1/locations/2")
+
+    assert result is None
 
 
 # ---------------------------------------------------------------------------

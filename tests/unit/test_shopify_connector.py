@@ -8,9 +8,11 @@ import hmac
 import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import psycopg2.errors
 import pytest
 from app.api.webhooks.shopify import (
     _decrypt_token,
+    _get_shopify_installation_pg,
     _parse_webhook_payload,
     _verify_shopify_hmac,
     encrypt_token,
@@ -316,6 +318,82 @@ def _make_mock_settings(client_secret: str = "") -> MagicMock:
     s.shopify_token_encryption_key = ""
     s.supabase_database_url = ""
     return s
+
+
+# ---------------------------------------------------------------------------
+# _get_shopify_installation_pg — BYPASSRLS remediation: two-step lookup
+# (resolve_org_for_shopify_shop -> _set_tenant -> the actual row), neither
+# step needing review_iq_app to hold BYPASSRLS.
+# ---------------------------------------------------------------------------
+
+
+def _make_conn_cur() -> tuple[MagicMock, MagicMock]:
+    cur = MagicMock()
+    conn = MagicMock()
+    conn.cursor.return_value = cur
+    return conn, cur
+
+
+def _make_db_settings() -> MagicMock:
+    s = _make_mock_settings()
+    s.supabase_database_url = "postgresql://review_iq_app@localhost/postgres"
+    return s
+
+
+def test_get_shopify_installation_pg_no_db_configured_returns_none() -> None:
+    with patch(
+        "app.api.webhooks.shopify.get_settings",
+        return_value=_make_mock_settings(),
+    ):
+        assert _get_shopify_installation_pg("teststore.myshopify.com") is None
+
+
+def test_get_shopify_installation_pg_calls_resolve_function_then_set_tenant() -> None:
+    conn, cur = _make_conn_cur()
+    org_id = "5b6c1e2a-0000-0000-0000-000000000002"
+    cur.fetchone.side_effect = [
+        (org_id,),  # resolve_org_for_shopify_shop(...)
+        ("encrypted-access-token-blob",),  # the actual row
+    ]
+
+    with patch("app.api.webhooks.shopify.get_settings", return_value=_make_db_settings()):
+        with patch("app.api.webhooks.shopify.psycopg2.connect", return_value=conn):
+            with patch("app.api.webhooks.shopify._set_tenant") as mock_set_tenant:
+                result = _get_shopify_installation_pg("teststore.myshopify.com")
+
+    assert result == {"org_id": org_id, "access_token_enc": "encrypted-access-token-blob"}
+    first_call_sql = cur.execute.call_args_list[0][0][0]
+    assert "resolve_org_for_shopify_shop" in first_call_sql
+    mock_set_tenant.assert_called_once_with(cur, org_id)
+
+
+def test_get_shopify_installation_pg_unresolved_shop_returns_none_without_set_tenant() -> None:
+    """An unrecognized shop_domain must never reach _set_tenant() -- no org_id to scope
+    to, and the whole point is never falling back to a default org."""
+    conn, cur = _make_conn_cur()
+    cur.fetchone.return_value = (None,)
+
+    with patch("app.api.webhooks.shopify.get_settings", return_value=_make_db_settings()):
+        with patch("app.api.webhooks.shopify.psycopg2.connect", return_value=conn):
+            with patch("app.api.webhooks.shopify._set_tenant") as mock_set_tenant:
+                result = _get_shopify_installation_pg("unknown-store.myshopify.com")
+
+    assert result is None
+    mock_set_tenant.assert_not_called()
+
+
+def test_get_shopify_installation_pg_resolve_function_missing_fails_safe() -> None:
+    """Before the accompanying migration's cutover, resolve_org_for_shopify_shop()
+    doesn't exist yet -- must drop the webhook (return None), never crash, never fall
+    back to the old direct-table-query pattern this refactor removes."""
+    conn, cur = _make_conn_cur()
+    cur.execute.side_effect = psycopg2.errors.UndefinedFunction("function does not exist")
+
+    with patch("app.api.webhooks.shopify.get_settings", return_value=_make_db_settings()):
+        with patch("app.api.webhooks.shopify.psycopg2.connect", return_value=conn):
+            result = _get_shopify_installation_pg("teststore.myshopify.com")
+
+    assert result is None
 
 
 def test_webhook_rejects_bad_hmac() -> None:
