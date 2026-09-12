@@ -1,0 +1,69 @@
+{
+  "n_fixtures": 106,
+  "source": "eval/fixtures/_held_out_hindi_hinglish/ (106 real reviews), cassette-replay, $0",
+  "tier_mix_observed": {
+    "small": {
+      "n": 43,
+      "fraction": 0.4056603773584906
+    },
+    "large": {
+      "n": 63,
+      "fraction": 0.5943396226415094
+    }
+  },
+  "per_tier": {
+    "small": {
+      "n": 43,
+      "model": "openai/gpt-oss-20b",
+      "tokens_in": {
+        "mean": 1750.9302325581396,
+        "median": 1776,
+        "p95": 1853
+      },
+      "tokens_out": {
+        "mean": 773.8372093023256,
+        "median": 670,
+        "p95": 1499
+      },
+      "tokens_total": {
+        "mean": 2524.767441860465,
+        "median": 2438,
+        "p95": 3265
+      },
+      "cost_usd_per_extraction": {
+        "mean": 0.00036347093023255815,
+        "median": 0.00033735,
+        "p95": 0.0005821499999999999
+      }
+    },
+    "large": {
+      "n": 63,
+      "model": "openai/gpt-oss-120b",
+      "tokens_in": {
+        "mean": 1746.3650793650793,
+        "median": 1720,
+        "p95": 1860
+      },
+      "tokens_out": {
+        "mean": 647.4920634920635,
+        "median": 645,
+        "p95": 936
+      },
+      "tokens_total": {
+        "mean": 2393.8571428571427,
+        "median": 2377,
+        "p95": 2773
+      },
+      "cost_usd_per_extraction": {
+        "mean": 0.00065045,
+        "median": 0.00064485,
+        "p95": 0.0008212499999999999
+      }
+    }
+  },
+  "blended_cost_per_extraction": {
+    "usd": 0.0005340339622641509,
+    "inr": 0.05110400619509432,
+    "note": "Mean cost across all 106 calls at the ACTUAL observed tier-routing mix -- not an assumed split. This is the number to use for per-customer cost projections, not either tier's own mean in isolation."
+  }
+}
