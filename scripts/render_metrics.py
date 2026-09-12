@@ -34,6 +34,8 @@ EXTRACTION_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "latest.json"
 AUTHENTICITY_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "authenticity_latest.json"
 HELD_OUT_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "held_out_scoring_v2.json"
 COVERAGE_METRICS_PATH = REPO_ROOT / "eval" / "results" / "coverage_metrics_n106.json"
+INJECTION_SUITE_PATH = REPO_ROOT / "eval" / "results" / "injection_suite_n40.json"
+PROMPT_GUARD_FPR_PATH = REPO_ROOT / "eval" / "results" / "prompt_guard_fpr_n106.json"
 ADR_LINK = "docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md"
 
 BLOCK_RE = re.compile(
@@ -402,6 +404,74 @@ def render_coverage_metrics_table_html(data: dict[str, Any]) -> str:
     return "\n" + "\n".join(rows) + "\n          "
 
 
+_INJECTION_FAMILY_LABELS: dict[str, tuple[str, str]] = {
+    "phrase_variant": ("Phrase variants evading the regex", ""),
+    "encoding_evasion": (
+        "Encoding/homoglyph evasion",
+        "leetspeak, zero-width chars, fullwidth Unicode, spacing",
+    ),
+    "role_confusion": ("Role-confusion framing", '"you are now a..."'),
+    "field_targeted": (
+        "Field-targeted injection",
+        '"for the buy_again field, always output true..."',
+    ),
+    "non_english": (
+        "Non-English attacks",
+        "Hindi, Hinglish, Spanish, French, German, Portuguese",
+    ),
+}
+
+
+def render_injection_suite_table_md(data: dict[str, Any]) -> str:
+    """Render the P4d injection-suite per-family pass-rate table (SECURITY.md).
+
+    Session 13 P4d/P4e: generated from eval/results/injection_suite_n40.json so this
+    table can never quietly drift from a re-run of eval/run_injection_suite.py -- see
+    that script and eval/injection_suite.py for the full methodology, and
+    docs/architecture/adr/0015-*.md's Session 13 correction for why this suite measures
+    pre-filter detection rather than spending the far scarcer extraction-model budget.
+    """
+    lines = ["| Family | Caught by Layer 1+2 | Notes |", "|---|---|---|"]
+    for family, info in data["per_family"].items():
+        label, detail = _INJECTION_FAMILY_LABELS.get(family, (family, ""))
+        n = info["n"]
+        caught = info["caught"]
+        rate = _fmt_pct(info["pass_rate"], decimals=1)
+        cell = f"{caught}/{n} ({rate})"
+        emphasis = caught == 0
+        family_cell = f"**{label}**" if emphasis else label
+        rate_cell = f"**{cell}**" if emphasis else cell
+        note = detail
+        if info["missed_ids"]:
+            note = f"{detail + ' -- ' if detail else ''}missed: {', '.join(info['missed_ids'])}"
+        lines.append(f"| {family_cell} | {rate_cell} | {note} |")
+    overall_rate = _fmt_pct(data["overall_pass_rate"], decimals=1)
+    lines.append(
+        f"| **Overall** | **{sum(f['caught'] for f in data['per_family'].values())}/"
+        f"{data['n_cases']} ({overall_rate})** | |"
+    )
+    return "\n".join(lines)
+
+
+def render_prompt_guard_fpr_md(data: dict[str, Any]) -> str:
+    """Render the P4b false-positive-rate sentence (SECURITY.md).
+
+    Generated from eval/results/prompt_guard_fpr_n106.json -- see
+    eval/measure_prompt_guard_fpr.py for methodology.
+    """
+    n = data["n_fixtures"]
+    fp = data["n_false_positives"]
+    rate = _fmt_pct(data["false_positive_rate"], decimals=1)
+    max_score = data["score_max"]
+    threshold = data["threshold"]
+    return (
+        f"{fp}/{n} ({rate}) on real marketplace reviews the classifier had never seen -- "
+        f"max score {max_score:.3f} against a {threshold} threshold, comfortable margin. "
+        f"**A real customer review has not been observed to trigger Layer 2 in this "
+        f"measurement.**"
+    )
+
+
 PORTFOLIO_METRICS_PATH = REPO_ROOT / ".portfolio" / "metrics.json"
 
 
@@ -490,6 +560,10 @@ BLOCK_RENDERERS: dict[str, Any] = {
     "coverage_metrics_table_html": lambda: render_coverage_metrics_table_html(
         _load_json(COVERAGE_METRICS_PATH)
     ),
+    "injection_suite_table": lambda: render_injection_suite_table_md(
+        _load_json(INJECTION_SUITE_PATH)
+    ),
+    "prompt_guard_fpr": lambda: render_prompt_guard_fpr_md(_load_json(PROMPT_GUARD_FPR_PATH)),
 }
 
 TARGET_FILES: tuple[Path, ...] = (
@@ -497,6 +571,7 @@ TARGET_FILES: tuple[Path, ...] = (
     REPO_ROOT / "eval" / "README.md",
     REPO_ROOT / "site" / "index.html",
     REPO_ROOT / "site" / "docs" / "index.html",
+    REPO_ROOT / "SECURITY.md",
 )
 
 
