@@ -185,6 +185,47 @@ def test_get_ingest_status_found(client: TestClient) -> None:
     assert body["processed"] == 2
     assert body["failed"] == 0
     assert body["completed_at"] is None
+    # Session 13 P3b: processing with rows remaining (5 - 2 - 0 = 3) must carry a real,
+    # positive ETA rather than an unbounded pending state.
+    assert body["estimated_seconds_remaining"] is not None
+    assert body["estimated_seconds_remaining"] > 0
+
+
+def test_get_ingest_status_done_has_no_eta(client: TestClient) -> None:
+    """A completed job reports no ETA -- there's nothing left to estimate."""
+    job_record = {
+        "job_id": _JOB_ID,
+        "status": "done",
+        "total": 5,
+        "processed": 5,
+        "failed": 0,
+        "created_at": datetime.now(tz=UTC),
+        "completed_at": datetime.now(tz=UTC),
+    }
+    with patch("app.api.v2.ingest.get_batch_job_pg", return_value=job_record):
+        resp = client.get(f"/v2/ingest/{_JOB_ID}")
+
+    assert resp.status_code == 200
+    assert resp.json()["estimated_seconds_remaining"] is None
+
+
+def test_get_ingest_status_pending_has_no_eta(client: TestClient) -> None:
+    """A job that hasn't started processing yet reports no ETA either -- only 'processing'
+    with rows actually remaining gets a real-time estimate."""
+    job_record = {
+        "job_id": _JOB_ID,
+        "status": "pending",
+        "total": 5,
+        "processed": 0,
+        "failed": 0,
+        "created_at": datetime.now(tz=UTC),
+        "completed_at": None,
+    }
+    with patch("app.api.v2.ingest.get_batch_job_pg", return_value=job_record):
+        resp = client.get(f"/v2/ingest/{_JOB_ID}")
+
+    assert resp.status_code == 200
+    assert resp.json()["estimated_seconds_remaining"] is None
 
 
 def test_get_ingest_status_not_found(client: TestClient) -> None:

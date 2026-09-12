@@ -16,6 +16,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, Up
 from fastapi.responses import StreamingResponse
 
 from app.auth.api_key import ApiKeyContext, require_api_key
+from app.core.capacity import estimate_seconds_remaining
 from app.core.config import get_settings
 from app.core.csv_ingest import (
     CsvColumnError,
@@ -219,6 +220,7 @@ async def ingest_csv(
                             "failed": 2,
                             "created_at": "2026-07-07T12:00:00Z",
                             "completed_at": None,
+                            "estimated_seconds_remaining": 747.0,
                         },
                     },
                 },
@@ -230,7 +232,14 @@ async def get_ingest_status(
     job_id: str,
     ctx: ApiKeyContext = Depends(require_api_key),
 ) -> dict[str, object]:
-    """Poll the status of a CSV ingest job. ``status`` is one of pending, processing, done, failed."""
+    """Poll the status of a CSV ingest job. ``status`` is one of pending, processing, done, failed.
+
+    Session 13 P3b: ``estimated_seconds_remaining`` replaces an unbounded "processing" state
+    with an honest, best-case ETA -- see app/core/capacity.py's docstring for the measured
+    throughput ceiling this is derived from and why it's a best case, not a guarantee (a job
+    shares the same Groq quota as real customer and demo traffic running concurrently).
+    ``None`` when the job isn't actively processing (pending/done/failed) or has no rows left.
+    """
     import asyncio
 
     job = await asyncio.to_thread(get_batch_job_pg, ctx.org_id, job_id)
@@ -239,6 +248,12 @@ async def get_ingest_status(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Job '{job_id}' not found.",
         )
+    rows_remaining = job["total"] - job["processed"] - job["failed"]
+    eta_seconds = (
+        estimate_seconds_remaining(rows_remaining)
+        if job["status"] == "processing" and rows_remaining > 0
+        else None
+    )
     return {
         "job_id": job["job_id"],
         "status": job["status"],
@@ -247,6 +262,7 @@ async def get_ingest_status(
         "failed": job["failed"],
         "created_at": str(job["created_at"]),
         "completed_at": str(job["completed_at"]) if job.get("completed_at") else None,
+        "estimated_seconds_remaining": eta_seconds,
     }
 
 
