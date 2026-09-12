@@ -105,6 +105,37 @@ not merely that persistence is broken for everyone. Runs in `pre-cutover-verific
 `bypassrls-container-check.yml`'s ephemeral, fully-migrated Postgres — the only environment where
 this migration currently exists at all.
 
+## Post-merge update: the migration landed, and running it for real found a second bug
+
+GG applied the table-ownership fix (ALTER TABLE ... OWNER TO review_iq_migrator on all
+postgres-owned tables) after this PR was first opened. Once that landed, this session applied
+`20260912000001_organizations_retention_mode.sql` for real (verified live: `retention_mode`
+defaults `'stateless'`, all 18 existing orgs stateless, `list_orgs_with_retained_mode()`
+callable) and ran `tests/integration/test_retention_modes.py` against production for real
+verification, not just the ephemeral CI container.
+
+**That real run found a second, genuine bug**: `POST /v2/purge` failed with
+`psycopg2.errors.InsufficientPrivilege: permission denied for table extractions` --
+`20260817000004_wave2_grant_narrowing.sql` deliberately scoped `authenticated` to SELECT/INSERT
+only on `extractions` (account deletion goes through `ON DELETE CASCADE`, which never needed a
+direct DELETE grant). This session's purge feature is the first code path that ever issues
+`DELETE FROM extractions` directly, and nothing caught the missing grant until the integration
+test actually ran it against a real database with real grants -- a mock-based test cannot catch
+a missing GRANT any more than it can prove a negative about persistence. Fixed via
+`20260912000002_extractions_grant_delete.sql`, applied, and the full integration suite re-run:
+**4/4 passed**, including the sentinel product-claim test -- "review text appears in NO table
+and NO log" is now empirically proven against production's real schema, not just tested against
+a mock.
+
+While P7c-checking whether GG's ownership transfer introduced a new RLS-bypass risk (a table
+owner bypasses RLS unless `FORCE ROW LEVEL SECURITY` is set, and it is not set on any table):
+verified this is **not** a new gap. `review_iq_migrator` already held the `BYPASSRLS` role
+attribute directly (independent of table ownership) before this session, by original design --
+the ownership transfer only changed DDL permission, not RLS-bypass exposure, which was already
+maximal for this role. Confirmed `review_iq_migrator` has zero references anywhere in `app/`
+(grepped) -- it is never used at application runtime, only by `supabase/push.py` and manual
+admin/investigation work.
+
 ## Consequences
 
 - This PR cannot merge to `main` until the migration lands (the integration test requires the
