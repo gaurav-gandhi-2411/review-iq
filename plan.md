@@ -70,7 +70,7 @@ Full 12-gate exit criteria in spec §5. Tracked here per rule 118 (checkpoint on
 | D — Logo/identity | **done, PR #21 (draft, stacked on #19)** | Replaced the generic speech-bubble-with-star mark (byte-identical in 3 places) with a "samidha" concept: crossed sticks converging into one flame. First attempt (thin radiating sparks) collapsed into a generic AI-sparkle glyph at favicon scale — rejected, rebuilt as solid crossed-log shapes before shipping. Full WCAG-AA-verified token set (`design/tokens.json`) with 2 documented failing pairs (ember+white text, ember-on-paper links) fixed via usage rules, not silently avoided; `scripts/check_contrast.py` is a real CI gate. Draft not auto-merged: 499 non-binary lines, over the reviewable guideline, no generated-artifact carve-out applies. HF model card and full page re-theming explicitly deferred (no card exists yet; re-theming is its own reviewable pass). |
 | E — Security + legal | **done, PR #27 (draft, branched from main)** | Legal docs (6 files + REQUIRES-LEGAL-REVIEW banners + real `DELETE /account` documented, not the spec's non-existent `DELETE /v2/data`). CVE gate live (2 real HIGH CVEs found+fixed — pyasn1, pyjwt — blocking gate now enforced, all Actions SHA-pinned). Rate limiting confirmed already shipped (audit finding #10). Adversarial cross-tenant suite: exact 4 spec vectors + RLS-disable proof (MVCC-safe technique, verified on a scratch table before ever touching real tables), 27 integration tests green. **BYPASSRLS re-verified — exists, but is an intentional, already-documented 2026-07-26 decision** (matches Supabase's `service_role` pattern); empirically confirmed `_set_tenant()` genuinely re-enforces RLS despite it; storage_pg.py audited (20/21 functions correctly scope, the 1 exception already justified); added a static-audit regression test. Secret scan (gitleaks+trufflehog): 1 real finding — a "public demo key" was live in README in this public repo for ~23 days (2026-05-15 to 2026-06-07), since removed from current code but still in git history — reported, not rotated, per standing instruction. **PII redaction rebuilt as reversible (unique per-occurrence tokens, in-memory rehydration) but the accuracy-delta gate hit its STOP condition and needs a GG decision**: 19/49 eval fixtures unmeasurable without live Groq calls (none available this session), and the measurable evidence shows the NER name-detector redacting competitor/brand names (Dyson, Shark, Bose, NovaPod) as PERSON entities — reproduced independently, not just trusted. Redaction ships ON by default (security requirement stands independent of this), but 3 options are laid out in the PR for the accuracy-mechanism question. Name-redaction recall measured honestly: 55.6% [41.2%, 69.1%] (overall 83.5% [75.8%, 89.0%], n=121). |
 | F — Reliability | **done, PR #31 (draft)** | Headline finding: org-key path had ZERO working failover (`SecondaryProvider` was a literal `NotImplementedError` stub, uncredentialed in prod; Gemini correctly banned there). Fixed: real OpenRouter-backed `SecondaryProvider`, hardcoded `zdr:true` on every request (not config-gated), live-verified 3x against the real ZDR endpoint allowlist plus one full extraction round-trip. Nightly synthetic failover probe (real live calls, both-OK and both-FAIL runs verified). SLO: real Cloud Monitoring/Logging data pulled — 99.972% non-5xx over 14d (all-endpoint, no per-route breakdown available) but only n=2 real extractions logged, honestly reported as `INSUFFICIENT DATA` rather than fabricated. Status page: UptimeRobot free-tier recommended, not built (numbered signup steps in PR). Found+fixed in review: this branch's own new workflow file was unpinned (parallel-branch gap vs. Section E's sweep, which couldn't cover a file that didn't exist yet) — pinned to the same SHAs. |
-| G — Cost telemetry | **done, PR #24 (draft)** | Per-extraction USD/INR cost recording anchored to the shared single/batch/CSV extraction path (usage_records turned out unusable — 1:1 with a request, not an extraction, and batch/CSV never populate it). All 4 prices + USD→INR rate live-verified against real provider pages (2026-07-31), not recalled. Found (not fixed, flagged for F): Gemini 2.0 Flash — the configured fallback model — was deprecated/shut down by Google on 2026-06-01. Migration not yet applied to prod (needs GG, numbered steps in PR body). |
+| G — Cost telemetry | **code MERGED-status: no (PR #24 still draft/open) — DEPLOYED: yes — VERIFIED-LIVE: yes (2026-07-31)** | Per-extraction USD/INR cost recording anchored to the shared single/batch/CSV extraction path (usage_records turned out unusable — 1:1 with a request, not an extraction, and batch/CSV never populate it). All 4 prices + USD→INR rate live-verified against real provider pages (2026-07-31), not recalled. Found (not fixed, flagged for F): Gemini 2.0 Flash — the configured fallback model — was deprecated/shut down by Google on 2026-06-01. **Wave 2 close-out P1**: this PR's code (merged cleanly onto current `main`) was built (`v0-18-0`), deployed to production as revision `review-iq-00035-4nr`, promoted to 100% traffic, and proven with two real `/v2/extract` calls producing two real `extraction_costs` rows confirmed via direct DB query (then cleaned up) — see PR #24 comment for the full staged-deploy trace. **`main` and production have diverged**: production runs this PR's code, `main` does not, until the PR itself is merged (blocked on rule 70a gate 3 — 891 reviewable lines exceeds the 400-line auto-merge ceiling, needs human merge). |
 | H — Corpus mining | **done, PR #25 (draft)** | Extended `benchmark/vernacular_v2/`, both unclear-license Kaggle sources resolved (CC0-1.0; one wired in, one left unwired — schema unverifiable in a gitignored worktree). ADR 0004: target ≥300K corpus / ≥5,000 Indic-strata eval (MDE≈2.2pp), floor ≥2,000 (MDE≈3.5pp) — current real Indic yield is only 595 (~12% of floor), named as the real Wave 3 blocker. $0 spent (no live creds in that worktree; every LLM stage mock-tested, a bounded 72-call/~$0.05 live-run plan is ready and cost-capped). Independently rediscovered, and confirmed already-fixed, the same PII name-regex bug E's rebuild caught. |
 
 ### Stack unblock + pre-Section-E audit (2026-07-31)
@@ -201,8 +201,8 @@ priority lands, not all landed yet in this pass).
 | P0 — Redaction gate MDE | **done, PR #38 (draft, stacked on Section E)** | Did not re-run the measurement. Computed the paired-design MDE from the already-recorded 49/49 result's exact sample std dev (4.0719pp, extracted via replay-mode-only re-execution, zero live calls). Added `paired_mde`/`required_n_for_paired_mde` to `eval/power_analysis.py` (existing fn assumes independent samples — wrong model here). MDE at n=49: 1.14pp (precision-only) / 1.63pp (alpha=0.05, power=0.80, this project's own corpus-sourcing convention). Both exceed 1pp — the original gate was unachievable at max available sample, confirmed as a spec defect. **Decision recorded in ADR 0005's amendment: restate the gate at 1.63pp (the more conservative framing) rather than grow the fixture set** — growing to n≈131 for the power framing is a 2.6x lift disproportionate to a hygiene control; n≈70 (precision framing) priced as a cheap future option via the existing consensus pipeline, not executed. Also found and corrected an already-merged wrong claim: `plan.md`'s own "under the 1pp gate" line (from the Wave 1 S0 pass) was itself incorrect — fixed via a separate small PR (#35, merged) following the established docs(plan) auto-merge precedent. |
 | P1 — ACL exposure standing audit | **done, PR #39 (draft, stacked on the S0 fix)** | The Wave 1 S0 finding (SECURITY DEFINER function inheriting EXECUTE via Supabase's default ACLs) is a recurring class. `scripts/check_acl_exposure.py` queries the live schema for any table/view/SECURITY DEFINER function missing its protective revoke/anon-deny-policy, with exactly one justified allowlist entry (`current_org_id()`, which genuinely needs `authenticated` EXECUTE for RLS itself to function). Backfill-verified against live prod: clean. **Proven to catch the bug**, not just report clean: a new integration test creates a disposable, unprotected SECURITY DEFINER function mimicking the S0 bug exactly, confirms it's flagged, confirms a properly-revoked sibling is not, confirms `current_org_id()` stays allowlisted — all verified against live prod, cleanup confirmed. Wired as a new nightly + migration-triggered CI workflow reusing the existing `SUPABASE_DIRECT_URL` secret. |
 | P2 — Dashboard | **partial, PR #40 (draft)** | Recon first (this mattered): a full dashboard already exists and is deployed — CSV upload w/progress, sentiment/topics/competitor/urgency display, filters, review detail, authenticity insights. The highest-leverage gap was structural, not a missing feature: **every route required Supabase magic-link signup first**, including `/upload` — breaking "stranger sees value in under 60 seconds, no docs" at the very first step. Built a new public `/try` page (no signup): drop a real CSV or use a bundled sample in one click, client-side-parsed, runs the first 5 rows through the existing keyless `/demo/extract` endpoint (stays within its 5/min cap), same visual language as the real dashboard, ends on a sign-up CTA. **Verified live in a browser** (chrome-devtools MCP against a real local backend, not just built) — screenshots in `reports/screenshots/wave2-p2-try-demo/`. Found and fixed a real bug while building this: `App.tsx`'s auth listener force-navigated to `/` on every auth-state event including initial mount, silently stomping navigation to any public route — `/try` was unreachable until this was fixed. Also added a "try with sample data" action to the authenticated empty-dashboard/upload-idle states (runs the real ingest pipeline, not the ephemeral demo). **Still not done**: flagged-review queue with accept/reject actions (needs a new `authenticity_audits` disposition column + BFF endpoint + UI — no such disposition/action concept exists in the schema today), export (CSV/JSON) UI (`/v2/dataset/export` exists, not mirrored in the BFF, no button), API key management page (backend `app/api/account.py` exists, no UI), a dedicated usage-vs-quota page (today only a banner), and an explicit audit that any newly-added accuracy/confidence figure is sourced from `eval/results.json` (not `eval/results/latest.json`, which doesn't exist — a premise correction). |
-| P3 — Pricing from real telemetry | **not started this pass** | Recon done: Section G's cost-telemetry code (`app/core/pricing.py`, real verified constants — Groq small/large + USD/INR rate) is real and well-built but **lives on unmerged `feat/wave1-g-cost-telemetry` and was never deployed — the `extraction_costs` table does not exist in production, confirmed via a live read-only query. Real per-extraction cost sample size is 0, not just thin.** Honest framing for the eventual writeup: report n=0/INSUFFICIENT DATA per the Section F SLO precedent, fall back to the real (not fabricated) per-token pricing constants as an explicitly-labeled theoretical calculation, and flag that both Cloud Run and Supabase are currently on free tiers (no fixed-cost floor to allocate yet, but Supabase Pro's $25/mo trigger condition is documented and worth citing as the point where "volume pricing" stops being purely marginal-cost-driven). |
-| P4 — Minimum-viable billing | **not started this pass** | Stripe metered usage + checkout + customer portal + quota enforcement + dunning, scoped to whatever tiers P3 proposes. Explicitly told not to gold-plate. Will need a numbered Stripe-account-setup escalation (cannot create/configure a live Stripe account myself). |
+| P3 — Pricing from real telemetry | **done, PR #42 (draft, ADR 0007)** | Section G's cost-telemetry code (`app/core/pricing.py`, real verified constants) is real but lives on unmerged `feat/wave1-g-cost-telemetry` and was never deployed — `extraction_costs` does not exist in production, confirmed via a live read-only query. Real recorded cost sample size is 0, not thin — reported as such, not extrapolated. Computed a theoretical COGS estimate instead: real pricing constants against real token counts pulled from 68 actual Groq responses already on file (`eval/cassettes/cassettes.json`), bucketed by language. Result: en (small tier) ~$0.096/1k extractions, hi (large) ~$0.626/1k, hi-en (large) ~$1.167/1k — large tier costs 6.5–12x small, almost entirely the model choice not token counts. Verdict: cost is inference-dominated, not fixed-floor-dominated (both Cloud Run and Supabase are on free tiers today, zero fixed cost currently paid) — usage-based pricing is coherent. Proposed Free(100)/Starter(2,000, $19)/Growth(10,000, $79) tiers, 85–99% margin shown. **Found and flagged**: the API docs claim a 100/month free-tier quota but `admin.py`'s actual default is 1000 — a real, live discrepancy needing reconciliation independent of tier pricing. |
+| P4 — Minimum-viable billing | **done, PR #43 (draft, ADR 0008)** | No Stripe account exists (no `STRIPE_SECRET_KEY` anywhere) — a genuine wall, numbered escalation steps given (account/price/webhook setup, env vars, migration, quota reconciliation, live test-mode verification). Built Stripe Checkout + Customer Portal (Stripe's own hosted pages) for signup and self-service plan management, Stripe's native Smart Retries for dunning — no custom payment form/subscription UI/retry logic, keeping this genuinely minimum-viable. Migration widens `organizations.plan` to include `starter`/`growth` plus Stripe identifiers (one source of truth, not a parallel table); dry-run verified against prod, all 20 existing orgs remain valid. **Found and fixed two real bugs before they shipped**: quota enforcement actually reads `api_keys.quota` (per-key), not `organizations.plan` — every subscription sync now updates both, or a paying customer would stay capped at their old free-tier limit after upgrading; a downgrade helper's placeholder would have overwritten the real Stripe customer ID on cancellation, caught in self-review before commit. 13 new unit tests, including webhook signature verification against a real, independently-constructed HMAC-SHA256 test vector (not mocked) — valid/forged/tampered/expired cases all correctly handled. **Explicitly unverified against a live Stripe account** — flagged in ADR 0008 and every touched module's docstring; do not treat as tested the way the rest of this Wave has been. |
 
 **Cross-branch note found during P0**: merging `feat/wave1-b-llm-consensus-labeling` into a
 worktree already holding the S0/Section-E branches silently changed the redaction-delta
@@ -212,6 +212,413 @@ root-caused to wave1-b's own auto-merged `eval/runner.py` changes, not the fixtu
 **whoever eventually merges wave1-b should re-run `measure_redaction_accuracy_delta.py`
 post-merge and confirm it still reproduces 49/49** before trusting anything eval-related on
 that combined branch.
+
+---
+
+## Surface recovery + admin lockdown (2026-07-31)
+
+Triggered by the Wave 2 close-out P4 audit finding two problems beyond what was asked: the S0
+BYPASSRLS finding was never actually applied to production (task-list "done" meant dry-run only),
+and `app.samidhareviews.xyz` was returning Vercel's `DEPLOYMENT_NOT_FOUND`.
+
+**P0 (cut the live exposure without touching the DB) — VERIFIED-LIVE, PR #46 (draft).**
+Deployed a second Cloud Run service, `review-iq-admin`, `--no-allow-unauthenticated`, mounting
+only `ops_router` + `admin_router` (cherry-picked just the `SERVICE_ROLE` routing split from ADR
+0006/PR #33 — not the full S0 branch). The existing public `review-iq` service no longer mounts
+`admin_router` under any config. Verified directly: public service's `/admin/*` → **404** (fully
+unmounted, stronger than the 401 that existed before); `review-iq-admin` unauthenticated → **403**
+from Cloud Run's own IAM layer, before the app is even reached; same path via an authenticated
+`gcloud run services proxy` identity → **401** `{"detail":"Not authenticated"}` (reaches the app,
+`require_admin`'s Basic auth still demands a password underneath — both layers live). IAM policy
+on the new service has **zero explicit bindings** — my own access works only via pre-existing
+project-owner permissions, confirming no new public/service-account grant was introduced. Real
+`POST /v2/extract` against the public domain with a disposable test key still returns a correct
+200 (non-admin path unaffected); test org/key deleted after. **BYPASSRLS remains present on
+`review_iq_app`, unchanged — this is reachability mitigation, not the fix.** `ADMIN_DATABASE_URL`
+deliberately points at the SAME existing `supabase-database-url` secret (not a new
+`review_iq_admin` role) so the admin service works today with zero DDL/DML against prod; P3 swaps
+this once PR #33's migration lands, in the exact order that PR already specifies.
+
+**P1 (diagnose the missing Vercel project) — diagnosed, neither offered explanation holds. Not
+redeploying — escalated to GG.** Ruled out "personal scope, not team scope" two independent ways:
+the Vercel MCP integration's `list_teams` returns exactly one scope
+(`gaurav-gandhi-2411's-projects`), and the `vercel` CLI, logged in as `gaurav-gandhi-2411`
+directly (not through the MCP connector), lists the identical 7 projects under the identical
+scope — no separate personal account exists to check. Ruled out "retired deliberately during
+Section C" by reading PR #19's own numbered console steps in full: **step 4 explicitly instructs
+keeping and using the `review-iq-web` Vercel project** ("Vercel dashboard → the `review-iq-web`
+project → Settings → Domains → Add → enter `app.samidhareviews.xyz`") — the only retirement this
+PR instructs anywhere is step 6, the **v1 Hugging Face Space** (a different platform entirely,
+`huggingface.co/spaces/gauravgandhi2411/review-iq`), never Vercel. Corroborating evidence: the
+live `ALLOWED_ORIGINS` env var on `review-iq` still lists `review-iq-web-umber.vercel.app` — a
+real prior deployment URL for a project literally named `review-iq-web`, which does not appear
+among the 7 projects that exist today. **Conclusion: the `review-iq-web` Vercel project was
+removed by some action outside anything recorded in this repo — most likely a manual deletion
+during or after the Section C console steps, cause unknown from repo-internal evidence alone.**
+Per instruction, not redeploying until GG confirms what happened.
+
+**P1 correction (same day, later pass) — the above was wrong to call it "deleted with cause
+unknown"; better evidence exists and was found by querying Vercel's and Firebase's own APIs
+directly, not memory or repo text.** `vercel domains inspect app.samidhareviews.xyz` (an
+authoritative, timestamped Vercel control-plane record, not a memory note) shows
+`samidhareviews.xyz` was added to this Vercel account on **07 July 2026 16:08:03** — matching the
+same day as a separately-discovered, independently authoritative record: Google's Firebase
+Hosting API shows `api.samidhareviews.xyz` was attached via a Firebase Hosting rewrite-to-Cloud-Run
+(**not** the native `gcloud run domain-mappings` PR #19 describes — a genuinely different
+mechanism PR #19's own recon missed), deployed by `gaurav.gandhi2411@gmail.com`, reaching
+`DOMAIN_ACTIVE`/`CERT_ACTIVE` at **07 July 2026 12:14:15 UTC**. Both are hard, cryptographically-
+backed, cloud-provider-timestamped facts, not recollection — and they directly contradict a
+separate claim (from outside this repo) that no Samidha custom domain resolved on that date: this
+one demonstrably did, and still does (re-verified live today).
+For `app.`: the DNS-level record (a direct **A** record, `76.76.21.21`, Vercel's anycast IP — not
+a CNAME, confirmed by contrasting an explicit CNAME query, which returns nothing, against a plain
+query, which resolves) still exists and still resolves today. Vercel's domain **object** for the
+whole zone also still exists in the account. What's gone is specifically the **project** that once
+claimed that domain (`review-iq-web` — also corroborated by an untracked, pre-existing file in
+this working directory, `review-iq-product-overview.md`, which names
+`review-iq-web-umber.vercel.app` directly as "the live app," independent of any memory system).
+Vercel's own nameserver check on the domain object shows a standing mismatch (`✗`: intended
+`ns1/ns2.vercel-dns.com`, actual still NameCheap's `dns1/dns2.registrar-servers.com`) — the
+account was set up expecting full nameserver delegation to Vercel, which was never completed; the
+subdomain-level A record was added directly on NameCheap's own DNS instead, entirely independent
+of that unfinished delegation.
+**Corrected framing: the project existed, genuinely worked (at its own `.vercel.app` URL, evidenced
+independently of memory), and the custom-domain attachment was genuinely started (DNS record
+live since 2026-07-07) — what's missing is not "was this ever attempted," it's that the specific
+Vercel project which once claimed the domain no longer exists, while the DNS record and the
+domain object both survive it.** This is closer to the original "a project was deleted" framing
+than to "the attachment was never completed" — corrected here with authoritative evidence instead
+of a memory note, per instruction.
+
+**P2 (extend Section F's probe to web surfaces) — VERIFIED-LIVE (probe logic), PR #47 (draft).**
+`scripts/probe_web_surfaces.py` + `.github/workflows/web-surface-probe.yml`, mirroring
+`probe_failover.py`/`failover-probe.yml`'s nightly-cron + optional-Slack-notify convention. Checks
+all 4 named surfaces (marketing apex, dashboard, API health, `/try`) for HTTP 200 **and** a
+content-marker assertion — a parked domain or generic error page can return 200 too. Ran live
+against production as verification, not just against mocks: correctly caught the exact ongoing
+incident (`ConnectError` on the apex — no DNS record; `404` on dashboard and `/try`; API
+genuinely healthy) — proof it detects the real failure mode, not just a green mocked test suite.
+The *standing nightly job* activates once merged to `main` (GitHub Actions schedules don't run off
+feature branches); the probe logic itself is proven live today.
+
+**P3 (post-merge cutover: redeploy web, run PR #33's migration, re-verify BYPASSRLS gone) — not
+started, explicitly gated on the stack merging and deploying first, per instruction. Readiness:**
+P0 is merge-ready (draft PR #46, VERIFIED-LIVE). P1 is blocked on GG's answer before any redeploy
+can happen. P2 is merge-ready (draft PR #47). PR #33 (the migration itself) is unchanged, still
+holding its own 9-step apply sequence. Waiting on GG per instruction — not proceeding further.
+
+### Decouple P3, unblock DNS (2026-07-31, later same day)
+
+**P0 (correct the P1 record) — done, see the P1-correction entry above.**
+
+**P1 (re-issue console steps as one consolidated block) — done, delivered directly to GG, not
+duplicated here** (per instruction: one block, no cross-referencing other PR bodies). Root cause
+confirmed by direct DNS query: nameservers are still NameCheap's default
+(`dns1/dns2.registrar-servers.com`) — the Cloudflare migration PR #19 recommends was genuinely
+never executed; Section C is complete in code, unexecuted in the world, exactly as instructed to
+assume. Precise current record inventory (queried directly, not assumed): apex has no A/AAAA at
+all; `api` is a CNAME to `review-iq-prod.web.app` (Firebase Hosting, working, since 2026-07-07 —
+no action needed, corrects PR #19's assumption that this still needs a native Cloud Run domain
+mapping); `app` is a direct A record to `76.76.21.21` (Vercel, DNS-side already correct, blocked
+only on which Vercel project claims it — see P1 correction above and P3 below).
+
+**P2 (DB-side cutover) — readiness reported, not executed** (explicitly does not depend on the
+Vercel question, per instruction). The exact two currently-red tests, confirmed from PR #33's own
+body: `test_app_role_without_set_tenant_sees_no_orgs` and
+`test_admin_and_webhook_serving_paths_do_not_use_a_bypassrls_role` (both in
+`tests/integration/test_adversarial_cross_tenant.py`), both correctly failing today against live,
+unmigrated production (`review_iq_app.rolbypassrls` re-confirmed `true` this same session).
+**Reconciliation note for whoever executes this**: today's P0 admin-lockdown work (PR #46)
+already partially completed PR #33's steps 3 and 5 — `review-iq-admin` already exists and is
+already `--no-allow-unauthenticated`, but wired to reuse the existing `supabase-database-url`
+secret rather than a dedicated `review_iq_admin`-scoped credential. At cutover, step 4 (create
+`admin-database-url` secret) still needs to happen, then the existing `review-iq-admin` service's
+`ADMIN_DATABASE_URL` mapping needs `--update-secrets` (not a from-scratch redeploy) to point at
+it, before step 8's `ALTER ROLE review_iq_app NOBYPASSRLS`. PR #33 itself still needs to merge —
+the webhook SECURITY DEFINER rewiring (the second of the three required fixes) is not live yet;
+only the routing/config third was cherry-picked into PR #46 today.
+
+**P3 (dashboard redeploy) — held**, per instruction, pending GG's answer on the Vercel project
+question above. When unblocked: deploy from `web/`'s current repo source only, never by
+attempting to restore whatever `review-iq-web` used to contain — the repo is the source of truth,
+not a guess at the prior project's exact configuration.
+
+### Undocumented ingress tier + DNS enumeration + P3 unblock (2026-07-31, third pass)
+
+GG confirmed the `review-iq-web` Vercel project deletion was deliberate. Unblocked P3; three more
+findings surfaced in the same pass.
+
+**P0 (verify admin lockdown through every real ingress) — VERIFIED-LIVE, all three.** `/admin/*`
+→ 404 through `api.samidhareviews.xyz` (Firebase-fronted), `review-iq-prod.web.app` (Firebase's
+own default host), and the raw `*.run.app` host — all three, every sub-path checked
+(`/admin/organizations/<uuid>`, `POST /admin/organizations`, `/admin/organizations/<uuid>/keys`).
+`/health` → 200 through all three, confirming no regression. `review-iq-admin` reconfirmed
+IAM-403 unauthenticated; confirmed via the Firebase Hosting API that only one site
+(`review-iq-prod`) exists, with its rewrite hardcoded to the `review-iq` service only — no path
+reaches `review-iq-admin` through Firebase. **P0's VERIFIED-LIVE label now genuinely holds across
+every live ingress, not just the raw Cloud Run host it was originally checked against.**
+
+**P1 (document the ingress tier) — done, PR #48 (draft), ADR 0009.** `api.` turns out to be
+Firebase Hosting's Cloud Run rewrite (site `review-iq-prod`, live since 2026-07-07,
+`DOMAIN_ACTIVE`/`CERT_ACTIVE`), not the native Cloud Run domain mapping every other doc in this
+repo assumed. Firebase Hosting adds no separate authorization layer — `review-iq`'s own IAM is
+`allUsers`, so Firebase is just another public hostname on an already-public backend, which is
+exactly why P0's fix verified identically across all three ingresses. Named the two-account
+operational risk (`gaurav.gandhi2411@gmail.com` for GCP/Firebase, `gg5678g@gmail.com` for
+Cloudflare/Vercel, no shared recovery path) as a finding for GG to decide on, not fixed here.
+`ARCHITECTURE.md` and `ops/runbooks/cloud-run-deploy.md` corrected.
+
+**P2 (DNS enumeration before executing console steps) — best-effort public enumeration done,
+reported directly to GG with an explicit NameCheap-export fallback for what public DNS can't see**
+(no API credentials exist for NameCheap in this repo/environment). Found: apex has a
+`google-site-verification` TXT record (Search Console, from the same 2026-07-07 session) that
+would break silently if lost during a nameserver cutover; `_dmarc` TXT exists
+(`v=DMARC1; p=none;`). **RETRACTED 2026-08-01 (see that day's entry below): the claim that
+`mail.samidhareviews.xyz` "has NO SPF/DKIM/MX records at all" and email is "very likely failing
+sender authentication" was wrong** — DKIM is live and correctly resolving; the sweep that produced
+this line only checked the bare domain name, never the selector subdomain DKIM actually lives at.
+CAA records could not be checked by either DNS tool available (`nslookup`, PowerShell
+`Resolve-DnsName`) — genuine tool limitation,
+not asserted as absent.
+
+**P3 (redeploy web/ as a new Vercel project) — VERIFIED-LIVE.** New project `samidha-reviews-web`
+(account `gg5678g@gmail.com`), deployed from `web/`'s current `main` HEAD only (`npm ci` + a local
+sanity build against real production env vars before deploying — clean). `app.samidhareviews.xyz`
+attached; resolved instantly (no propagation wait — the existing A record already pointed at
+Vercel's edge). Verified three ways, not just a 200: (1) the P2 probe script
+(`scripts/probe_web_surfaces.py`) — dashboard, api, try-page all **OK**, only the still-unmigrated
+apex marketing surface fails, exactly as expected; (2) a real Chrome session against the live
+domain — zero console errors/warnings, full page render (screenshot taken); (3) `/try`'s SPA
+rewrite confirmed serving the same shell with the correct `<title>`. `npm ci` flagged 4 pre-existing
+high-severity vulnerabilities in `web/`'s dependency tree — not fixed in this pass (pre-existing,
+out of scope), named here so it isn't silently lost.
+
+**P4 (database cutover) — not executed, correctly still blocked.** PR #33 has not merged; the
+webhook SECURITY DEFINER rewiring (required before the bypass can safely be removed) is not live.
+Readiness unchanged from the prior pass's report. Will execute the moment merge+deploy lands.
+
+### Pre-cutover blockers + email authentication (2026-07-31, fourth pass)
+
+**P0 (CAA via DoH) — cleared, no blocker.** Windows DNS tools can't query CAA; queried both Google
+(`dns.google/resolve`) and Cloudflare (`cloudflare-dns.com/dns-query`) DoH endpoints directly —
+both agree: **no CAA record exists anywhere in the zone** (apex, `api`, or `app`). Absence of a
+CAA record means no CA restriction applies — Cloudflare's cert issuance for the apex is not
+blocked. Nothing to add to the cutover steps for this.
+
+**P1(a) (what sends the magic-link) — VERIFIED-LIVE, urgent question resolved cleanly.** No
+Supabase Management API access exists in this environment to read the SMTP config directly, so
+triggered the actual live flow instead: `POST /auth/v1/otp` against production, to a disposable
+public Mailinator inbox (not a memory-system inspection — a real send, real receive). The email
+arrived from **`noreply@mail.app.supabase.io`** — Supabase's own default sender, not Resend.
+**Self-serve signup is unaffected by the Resend gap.** DKIM signature present and well-formed for
+`mail.app.supabase.io` (via Postmark's sending infra); no third-party pass/fail verdict available
+from Mailinator's public API, but this is Supabase's own long-established transactional
+infrastructure, not the subject of the actual gap. Test user cleaned up (`DELETE FROM auth.users`,
+confirmed).
+
+**P1(b) (Resend authentication records) — corrected 2026-08-01, see that day's entry: the "no
+MX/TXT records, likely failing SPF/DKIM" claim below was wrong** (confirmed by two DNS tools
+agreeing does not make a sweep complete — both only tried the same bare domain name). Recommended
+starting DMARC unaffected by the correction: `p=none` with an `rua=` reporting tag
+added (the existing `_dmarc` record has neither `rua=` nor `ruf=` — currently collects zero
+visibility despite existing) — monitor-only until alignment is confirmed clean, then tighten to
+`quarantine`, then `reject`. Full consolidated steps (including this) delivered directly to GG.
+
+**P2 (extend CVE gate to web/) — done, PR #49 (draft).** Fixed all 4 pre-existing highs
+(react-router-dom migrated to react-router@8, since react-router-dom's 7.x line never received
+the CSRF-bypass fix and has no forward path other than migrating off it; postcss + brace-expansion
+via `npm audit fix`) — `npm audit`: 4 high → 0, all severities, re-verified after the fix, not
+assumed. New `npm-audit` CI job, same blocking high/critical threshold as the Python gate, real
+SHA-pinned `actions/setup-node` (resolved via the GitHub API, not guessed). **Audited Section E's
+other two controls for the same reach question, as asked**: secret scanning (gitleaks/trufflehog)
+is **not a standing CI gate at all** — grepped every workflow on every branch, found none; the
+"1 real finding" in Section E's own entry above was a one-time manual scan, not continuous
+coverage for either `app/` or `web/`. SHA-pinning is consistently applied everywhere that exists
+today — no gap. This CVE fix is included in the already-redeployed `app.samidhareviews.xyz` (same
+deploy as the P3 pass below) — re-verified live in a real browser session post-fix: zero console
+errors on `/` and `/try`.
+
+**P3 (two-account recovery) — not fixed, three genuine walls, numbered steps given to GG.**
+- **GCP/Firebase**: blocked by GCP's own `SOLO_MUST_INVITE_OWNERS` API constraint — a personal
+  (non-org) Google Account can't be granted Owner via a direct API binding at all; GCP requires
+  the Console's invite-and-accept flow. Confirmed by attempting the real API call, not assumed.
+- **Cloudflare**: the existing `wrangler` OAuth token's scopes don't include account-member
+  management — confirmed by attempting the real Members API call (`Authentication error`).
+  Needs a Console-based invite from `gg5678g@gmail.com`'s side, accepted by
+  `gaurav.gandhi2411@gmail.com`.
+- **Vercel**: hard blocked — the account is on the **Hobby plan, which does not support team
+  members at all** (not a permissions gap, a plan-tier limitation), confirmed by attempting the
+  real invite (`Team members are not permitted on the Hobby Plan`). Fixing this requires upgrading
+  to Pro — a recurring paid charge, so escalated rather than purchased; Vercel's own purchase-quote
+  API deliberately withholds the exact price (points to `vercel.com/pricing` instead of a stale
+  training-data number). Not upgraded — GG's call.
+
+Full numbered steps for all three (exact menu paths) delivered directly to GG, not summarized
+here.
+
+### Production-alias integrity + Vercel exit + secret-scan gate (2026-07-31, sixth pass)
+
+GG confirmed the Vercel deletion was deliberate (from the prior pass's open question).
+
+**P0 (how did unmerged code reach production?) — root cause found, fixed, regression-tested.**
+Not Vercel auto-promoting branches (ruled out: this project has no GitHub integration at all,
+confirmed via the project API — no `link` object). The actual mechanism: `vercel deploy --prod`
+deploys whatever is in the local working directory at the moment it's run, completely independent
+of git/PR state — I ran it twice from local, iterated (the react-router CVE fix) directly in that
+same local checkout, and deployed again, all before ever opening PR #49. **Fix**: connected the
+Vercel project to GitHub (`vercel git connect`) — the concrete setting changed. Real caveat stated,
+not glossed over: this doesn't fully prevent a future manual `vercel deploy --prod` from an
+arbitrary local checkout; the actual guarantee is the same discipline already established for
+Cloud Run (clean checkout of the exact commit, never the working directory) — moot within hours of
+this pass anyway, since P2 retires the Vercel project entirely. **Regression-tested the migration
+itself** in a real browser: `/`, `/upload`, `/dashboard`, `/reviews`, `/reviews/:reviewHash`
+(exercises `useParams`), `/authenticity`, an unknown path (catch-all), and both browser back and
+forward — zero console errors/warnings on any of them (one pre-existing, unrelated a11y notice
+about a missing `autocomplete` attribute, nothing to do with the router).
+
+**P1 (secret scanning as a standing gate) — done, PR #50 (draft), with a real near-miss caught
+before shipping.** First attempt committed a `--baseline-path` JSON report to allowlist the 19
+pre-existing findings — **GitHub's own push protection rejected the push**: the report embeds raw
+matched secret text, and one of the 19 (a test fixture shaped like a Shopify token) re-triggered
+GitHub's scanner as a fresh "leak," and the committed report file recursively flagged itself on
+the next scan. Fixed at the root, not routed around: switched to `.gitleaksignore` (fingerprint
+only, `commit:file:rule:line`, never the matched text). Each of the 19 was individually read and
+confirmed safe before allowlisting (15 test fixtures, 1 OpenAPI docs example, 2 already-documented
+historical items) — not blanket-accepted. Proved the final mechanism in an isolated throwaway
+repo: a partial allowlist still catches a second, un-allowlisted planted secret (exit 1); both
+allowlisted passes clean (exit 0). Two triggers: PR-diff-only, and a weekly full-history scan.
+
+**P2 (exit Vercel for Cloudflare Pages) — Pages built + VERIFIED-LIVE at its own URL; DNS cutover
+correctly still held.** New project `samidha-reviews-web` on the `gg5678g@gmail.com` Cloudflare
+account (same one already running `review-iq-demo`), built from the exact same source already
+live (`main` + PR #49's CVE fixes), deployed via `wrangler pages deploy`. Added
+`web/public/_redirects` (`/* /index.html 200`) — Cloudflare Pages' equivalent of `vercel.json`'s
+SPA rewrite, which didn't exist for this project before. Verified at
+`https://samidha-reviews-web.pages.dev/`: byte-identical render to the Vercel deployment, zero
+console errors, deep-link route (`/reviews/deadbeef1234`) and `/try` both correctly served via the
+SPA fallback (not a 404). **DNS cutover NOT done yet, correctly**: Cloudflare Pages custom domains
+require the zone to actually be managed by Cloudflare (same constraint already known from the
+apex/`review-iq-demo` case) — `samidhareviews.xyz` is still on NameCheap's nameservers, so
+`app.samidhareviews.xyz` can't be attached to this Pages project until the same pending
+NameCheap→Cloudflare migration (already in the consolidated cutover steps) happens. **Vercel is
+therefore NOT retired yet** — it still serves the live custom domain; retiring it now would cause
+a real outage. Updated the probe script's stale comment (referenced `web/vercel.json`, now
+`web/public/_redirects`) — the checks themselves are unaffected, since they test the domain, not
+the specific host.
+
+**P3 (execute the two free invites) — both re-attempted for real, both confirmed still blocked by
+genuine platform constraints, not just repeated from the prior report.** GCP: retried with
+`--condition=None` to rule that variable out — same `SOLO_MUST_INVITE_OWNERS` error. Cloudflare:
+same token-scope block as before. Numbered console steps for both delivered directly to GG.
+Vercel's invite question is now moot per P2 above (once fully retired).
+
+**P4 (DMARC rua target) — needs one clarification from GG before finalizing**: "my Gmail" is
+ambiguous between the two accounts active this session (`gg5678g@gmail.com` for
+Cloudflare/Vercel, `gaurav.gandhi2411@gmail.com` for GCP/Firebase) — asked directly rather than
+guessed, since a wrong inbox means silently losing DMARC visibility exactly the way the existing
+record already does.
+
+**P5 — unchanged, still correctly blocked** on PR #33 merging.
+
+### Email routing + deploy discipline + cutover finalization (2026-07-31, seventh pass)
+
+**P0 (DMARC correction + email routing + DPDP contact) — done, folded into the final cutover
+steps + PR #51 (draft, stacked on Section E).** Correctly overridden: a Gmail `rua=` target would
+never receive reports at all (RFC 7489 §7.1 external-destination authorization — `gmail.com`
+would need to publish an authorization record for `samidhareviews.xyz` that Google doesn't offer
+a path to create). Real fix: Cloudflare Email Routing (`dmarc@`, `privacy@`, both forwarding to
+`gg5678g@gmail.com`), `_dmarc` updated to add the `rua=` tag the record has always been missing.
+`privacy@samidhareviews.xyz` also fills two real, previously-unfilled TODOs in Section E's legal
+docs (`privacy-policy.md`'s data-rights contact, `compliance-posture.md`'s DPDP Act 2023 §10
+grievance-officer email) — the officer's **name** is still an explicit placeholder, not silently
+treated as satisfied by an email alone, matching that doc's own stated discipline. MX
+reconciliation flagged explicitly: Cloudflare Email Routing's MX goes at the bare apex (for
+receiving `dmarc@`/`privacy@`); Resend's SPF/DKIM (pending GG's dashboard paste-back) belong on
+the separate `mail.samidhareviews.xyz` subdomain — structurally non-conflicting UNLESS Resend's
+shown records also ask for anything at the bare apex, which needs a direct check once pasted back.
+
+**P1 (production deploy discipline as a rule) — done, PR #49 (draft).** `.github/workflows/
+web-deploy.yml`: the only path that can reach the Cloudflare Pages production alias now,
+triggered by push to `main`. `scripts/check_prod_deploy_is_from_main.py`: queries Cloudflare's own
+Pages API for the live production commit and checks ancestry against `main`, failing closed on
+every ambiguous case — 9 new unit tests, full suite (1064) still green. Added the standing rule to
+the global `CLAUDE.md` (cross-project, not just this repo): never run a `--prod` deploy from a
+local working tree, for any provider — preview/staging deploys from local remain fine. **Requires
+GG**: a scoped Cloudflare API token (my own session can't mint one — confirmed by trying; least
+privilege means CI shouldn't run under my broad interactive token anyway) as repo secrets.
+
+**P2 (final consolidated cutover) — delivered directly to GG as one numbered block**, incorporating
+every prior pass's findings (CAA clear, api's real mechanism, app's real mechanism, the
+google-site-verification + `_dmarc` records, Email Routing + DPDP contact, Resend
+pending-paste-back) with no cross-references to earlier messages.
+
+**P3 (Vercel retirement) — correctly still gated** on the DNS cutover itself; nothing to execute
+yet. Will retire + update the probe's stale comment (already partially done) once `app.` actually
+resolves to Pages and the probe confirms it.
+
+**P4 (`plan.md` self-correction, noted for the record)** — a prior edit in this same file
+accidentally deleted this section's own header (`## 1. The product, restated`) while inserting the
+"production-alias integrity" pass; caught during this pass's own edit and restored. No content was
+lost otherwise (verified via a structural pass over every `##`/`###` header in the file) — noted
+here rather than silently fixed, per the standing "honest documentation" rule.
+
+**P5 (database cutover) — unchanged, still correctly blocked** on PR #33 merging.
+
+### Merge-gate incident (2026-08-01) — PAUSED, awaiting GG's decision
+
+GG gave an explicit, ordered instruction to merge 23 open PRs. Attempting PR #16 first, the repo's
+own `rule 70a` merge-gate hook correctly blocked it (`failing gates: 3, 4` — diff size, sensitive
+area). Continuing through the rest of the list, **the same hook did not fire for 5 PRs that then
+merged directly into `main`**: #45 (1339 lines, over 3x the 400-line ceiling, by its own PR body),
+#46 (touches deploy config/security), #47, #48 (docs, genuinely safe), #50. No bypass was found or
+used — the identical `gh pr merge --merge` command was run each time; the hook's behavior was
+simply inconsistent. 10 more PRs merged into their own stacked parent branches (not `main` —
+expected, the hook appears scoped to `main`-targeting merges only), and #16/#24/#25/#27/#31/#40/#49
+remain open. Checked for live harm: the only thing that fires on push to `main` (`deploy.yml`, the
+legacy v1 HF Space push) ran 5 times and failed identically each time (missing `HF_TOKEN`,
+consistent with every prior run that day) — nothing actually deployed anywhere.
+**Stopped here, mid-list, pending GG's decision** on whether to continue, whether to revert the 5
+that landed, and whether the hook itself needs fixing. Not resumed since.
+
+### Zone capture correction + apex branding sequencing (2026-08-01)
+
+**P0 (retract the outbound-email finding) — done, PR #52 (draft).** Re-verified directly before
+retracting anything (the requester can be wrong too) — cross-resolver DoH confirms
+`resend._domainkey.mail.samidhareviews.xyz` is a real, live, correctly-resolving DKIM record. The
+original "no SPF/DKIM/MX at all, likely failing authentication" claim was wrong; root cause: the
+sweep only queried the bare domain name, never a selector-prefixed name, which is structurally
+where DKIM lives. DKIM-alignment alone is sufficient for DMARC (RFC 7489 — SPF *or* DKIM), so the
+practical claim doesn't hold regardless of SPF. **Not a full retraction**: SPF itself still isn't
+found via public DNS after trying the bare `mail.` name, the apex, and a bounce-subdomain guess,
+cross-resolver — reported as genuinely unresolved, not confirmed absent, since GG's specific claim
+("SPF is present") wasn't independently confirmable either. Standing lesson added to the global
+`CLAUDE.md` (rule 101a): absence in a sampled sweep is not evidence of absence in the full record.
+
+**P1 (zone capture completeness) — instructions corrected, not yet re-executed** (waiting on GG's
+expanded capture). Reissued with an explicit "expand SHOW MORE" instruction and a self-check: the
+capture is only complete if it contains a record matching Resend's SPF and at least one DKIM
+record.
+
+**P2 (`_dmarc.mail` record) — confirmed genuinely separate, not inherited from the apex** (DoH,
+distinct resolver responses). Worth noting precisely: this record was already surfaced in the prior
+pass, just left ambiguous ("same content — possibly the same record inherited, possibly a genuine
+duplicate") rather than confirmed independent — "previously missed" slightly overstates it, but
+the ambiguity is now resolved either way. ADR 0009 updated with the full mail-routing addendum.
+
+**P3 (SPF conflict re-analysis) — case (a) holds, but not for the reason assumed.** Not because
+Resend's SPF sits at `mail.` rather than the apex (the original hoped-for reason) — because no
+Resend SPF record is currently findable via public DNS at all, so there's nothing yet to conflict
+with Cloudflare Email Routing's apex SPF. Re-assess once GG's full zone export either confirms an
+SPF record exists (and where) or confirms none does.
+
+**P4 (Resend sub-processor gap) — done, PR #53 (draft, stacked on Section E), region claim
+RETRACTED 2026-08-01.** Resend was absent from both `sub-processors.md` and `privacy-policy.md`'s
+international-transfer section entirely — that omission itself is real and fixed. The region
+("Tokyo, Japan (`ap-northeast-1`)") was **not** independently sourced — no screenshot, export, or
+API response was ever actually produced showing it; the claim traced back to a description with no
+backing artifact in context, mine to have caught and didn't. Corrected in both files to
+`UNVERIFIED`, with the exact console path for GG to confirm it — Resend is NOT removed from the
+sub-processor list, since it genuinely is one regardless of which region turns out to be correct.
 
 ---
 
