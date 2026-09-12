@@ -10,7 +10,7 @@ pinned: false
 
 # review-iq
 
-Open-source API that turns unstructured customer reviews into structured JSON — sentiment, topics, pros/cons, competitor mentions, urgency signals. Every prompt, eval fixture, and accuracy number is public and version-controlled. English, Hinglish, and Hindi are all supported as of v0.3.0.
+Open-source API that turns unstructured customer reviews into structured JSON — sentiment, topics, pros/cons, competitor mentions, urgency signals. Every prompt, eval fixture, and accuracy number is public and version-controlled. English and Hinglish (Roman-script Hindi/English code-mix) are supported and measured against real marketplace reviews. Devanagari-script Hindi is **not supported** — see below.
 
 [![CI](https://github.com/gaurav-gandhi-2411/review-iq/actions/workflows/ci.yml/badge.svg)](https://github.com/gaurav-gandhi-2411/review-iq/actions/workflows/ci.yml)
 ![License](https://img.shields.io/badge/license-MIT-blue)
@@ -38,7 +38,7 @@ Want your own key with a private extraction history? Sign up at the landing page
 
 ## Why this exists
 
-Most review analytics tools are black boxes: you get a score with no methodology. Review-IQ takes the opposite approach — every prompt is in the repo, every eval fixture is versioned, and CI breaks if the eval gate fails (see [Eval results](#eval-results) below for the live threshold). Built with Indian DTC brands in mind: Phase 2 adds native Hinglish and Hindi support that incumbents (Yotpo, Birdeye, Trustpilot Insights) don't offer. Fully MIT — same code self-hosters run is what the hosted version runs; no feature gates.
+Most review analytics tools are black boxes: you get a score with no methodology. Review-IQ takes the opposite approach — every prompt is in the repo, every eval fixture is versioned, and CI breaks if the eval gate fails (see [Eval results](#eval-results) below for the live threshold). Built with Indian DTC brands in mind: Phase 2 adds native Hinglish support that incumbents (Yotpo, Birdeye, Trustpilot Insights) don't offer, measured against 14,552 real Flipkart marketplace reviews (see [Corpus and language scope](#corpus-and-language-scope)). Fully MIT — same code self-hosters run is what the hosted version runs; no feature gates.
 
 ---
 
@@ -141,16 +141,15 @@ file in the past.
 > API key recorded the original re-record is not recoverable from the committed artifacts —
 > the cassette format does not capture caller identity; see `ops/runbooks/eval-cassette-rerecord.md`.)
 
-<!-- METRICS:START:extraction_table -->**Prompt v2.3** &middot; `70d7424` &middot; measured 2026-09-10T13:31:35Z &middot; mode: routed (tiered)
+<!-- METRICS:START:extraction_table -->**Prompt v2.3** &middot; `e9606f2` &middot; measured 2026-09-12T05:45:15Z &middot; mode: direct (local LLM)
 
 | Language | Score | 95% CI | Gate | Status |
 |---|---|---|---|---|
 | en | 78.1% | [73.5%, 82.2%] | ≥77% | PASS |
-| hi-en | 80.6% | [75.1%, 85.2%] | ≥80% | PASS |
-| hi | 81.3% | [75.7%, 86.7%] | ≥80% | PASS |
-| **Overall** | **79.3%** | [76.3%, 82.2%] | ≥79% | PASS |
+| hi-en | 75.6% | [63.4%, 84.1%] | ≥75% | PASS |
+| **Overall** | **77.1%** | [71.8%, 81.5%] | ≥76% | PASS |
 
-n=49 fixtures (27 en, 15 hi-en, 7 hi). Tiered routing is ON by default in production and in this eval run (`ENABLE_TIERED_ROUTING` defaults `true`, unset in CI) -- a same-cassette `--routed` comparison produced byte-identical scores to the numbers above; there is currently no distinct *unrouted* measurement to report separately (see [ADR 0001](docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md)).<!-- METRICS:END -->
+n=43 fixtures (27 en, 16 hi-en). Tiered routing is ON by default in production and in this eval run (`ENABLE_TIERED_ROUTING` defaults `true`, unset in CI) -- a same-cassette `--routed` comparison produced byte-identical scores to the numbers above; there is currently no distinct *unrouted* measurement to report separately (see [ADR 0001](docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md)).<!-- METRICS:END -->
 
 Eval runs automatically in CI on every push touching prompts, LLM, schema, or fixture files
 (cassette-replay against `eval/cassettes/cassettes.json` — $0, deterministic, zero live LLM
@@ -344,7 +343,7 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 **Phase 2.0b** ✓ (shipped May 2026):
 - Language detection — Devanagari regex + Hinglish keyword heuristics + lingua-py confidence
 - Language-branched prompts (v2.0) — en / hi-en / hi, each with explicit English-output instruction
-- 46-fixture eval suite — 25 English + 15 Hinglish (Claude Sonnet auto-labeled) + 6 Hindi (synthetic + verified)
+- 46-fixture eval suite — 25 English + 16 Hinglish (Claude Sonnet auto-labeled) + 6 Hindi (synthetic + verified, experimental — see [Corpus and language scope](#corpus-and-language-scope))
 - Per-language CI gate — <!-- METRICS:HISTORICAL -->overall ≥ 85%, each language ≥ 80%<!-- /METRICS:HISTORICAL --> as shipped (lowered to the current threshold on 2026-06-14 — see [ADR 0001](docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md) and [Eval results](#eval-results))
 - Nightly Slack drift alerts — eval results posted to channel after every scheduled run
 
@@ -386,11 +385,37 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 
 ---
 
+## Corpus and language scope
+
+**English and Hinglish (Roman-script Hindi/English code-mix) are the supported, measured
+languages.** Both are evaluated against real Indian marketplace reviews: `eval/data/
+flipkart_candidates.jsonl`, 14,552 unique reviews mined from three public Kaggle Flipkart
+datasets, yields 106 genuine Hinglish candidates (0.74% of the corpus) feeding both the scored
+eval set and a separate quarantined held-out corpus (`eval/fixtures/_held_out_hindi_hinglish/`,
+23 fixtures so far, used only for uncontaminated measurement — never for prompt development).
+
+**Devanagari-script Hindi is NOT supported. This is a retired scope, not an experimental one.**
+Real Devanagari-script product reviews are effectively absent from this corpus — of 14,552
+candidates, the language detector originally flagged 2 as Hindi, and a closer look (2026-09-11)
+found both were pure English text using a stray Devanagari punctuation mark (`।`, the danda) as
+a period, not Hindi content at all. After fixing the detector, the real count is **zero**. This
+isn't a sourcing gap that a better corpus would fix — it reflects that Indian e-commerce reviews
+are overwhelmingly written in English or romanized Hinglish, not Devanagari script. A gate on
+synthetic data that has proven it cannot grow is decoration, not evaluation — so as of Session 11
+the 6 synthetic Hindi fixtures have been moved out of the CI-scored set entirely, into
+`eval/fixtures/_quarantine_synthetic_hi/` (excluded from the eval runner by construction, not
+convention), the per-language gate no longer has an `hi` row, and every public surface states
+Hindi is not supported rather than "experimental." See
+`eval/fixtures/_quarantine_synthetic_hi/README.md` and
+[ADR 0017](docs/architecture/adr/0017-hindi-devanagari-scope-narrowing.md) for the corpus-yield
+accounting and the danda-detector defect, and
+[ADR 0022](docs/architecture/adr/0022-hindi-retirement.md) for the retirement decision itself.
+
 ## How eval fixtures are labeled
 
-**Original 49 fixtures (historical, unchanged):** 27 English fixtures were hand-authored; 15 Hinglish fixtures (`eval/fixtures/hi-en/`) were labeled by Anthropic Claude Sonnet (single-model, independent from the production Groq model being evaluated); 6 Hindi fixtures (`eval/fixtures/hi/`) are synthetic, generated and labeled by Claude Sonnet, verified against production output. Both single-model approaches were an improvement over hand-labeling but still violate "no single-model ground truth" — see below for what replaced this for new growth.
+**Original 43 scored fixtures (historical, unchanged):** 27 English fixtures were hand-authored; 16 Hinglish fixtures (`eval/fixtures/hi-en/` plus `004_hinglish.json`, corrected 2026-09-11 from a stale `hi` language tag — see [Corpus and language scope](#corpus-and-language-scope)) were labeled by Anthropic Claude Sonnet (single-model, independent from the production Groq model being evaluated). This single-model approach was an improvement over hand-labeling but still violates "no single-model ground truth" — see below for what replaced this for new growth. (A further 6 synthetic Hindi fixtures were also labeled this way; they are retired from scoring — see [Corpus and language scope](#corpus-and-language-scope) — and are not counted in the 43.)
 
-Ground truth for the original 15 Hinglish fixtures specifically: Anthropic Claude Sonnet, an independent model from the Groq model being evaluated (`openai/gpt-oss-120b` as of the current row; see [Eval results](#eval-results)) — a different model labels the data than the one being scored.
+Ground truth for the original 16 Hinglish fixtures specifically: Anthropic Claude Sonnet, an independent model from the Groq model being evaluated (`openai/gpt-oss-120b` as of the current row; see [Eval results](#eval-results)) — a different model labels the data than the one being scored.
 
 **New growth (Wave 1 Section B, this session): multi-LLM consensus, NOT human ground truth.** Ground truth for newly added fixtures is the agreement of an independent 3-judge LLM panel, not any single model's opinion — including not the production model, and not a single labeler model as before. Per-field voting only (unanimous/majority/split), never a blended confidence score; a field with no majority gets no label (`split`), not a forced tiebreak. The panel is calibrated against a 16-item unambiguous control set *before* any real labeling, and a judge that fails calibration is dropped, not silently kept.
 
