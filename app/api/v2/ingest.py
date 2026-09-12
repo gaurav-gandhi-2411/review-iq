@@ -107,7 +107,24 @@ async def ingest_csv(
     absent, reflected in the returned `date_ambiguous` flag when the whole column's day/month
     convention couldn't be determined. `date_format`: optional "DMY"/"MDY" hint to skip
     auto-detection.
+
+    Session 12 P2e: CSV ingest requires retained mode. Bulk rows are staged durably in
+    public.batch_job_rows before extraction (surviving a Cloud Run restart mid-drain is
+    the entire point of that table -- see app/core/ingest_worker.py's module docstring),
+    so there is no honest way to make this path stateless without either losing that
+    durability guarantee or building a second, more complex staging mechanism. Reported,
+    not silently worked around: ADR 0024/0025.
     """
+    if ctx.retention_mode != "retained":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "CSV ingest requires retained mode. Bulk rows are staged durably before "
+                "extraction, so this endpoint cannot honor stateless mode. Switch this "
+                "org to retained mode (with a chosen retention window) to use CSV ingest, "
+                "or use POST /v2/extract for one review at a time in stateless mode."
+            ),
+        )
     try:
         (
             rows,

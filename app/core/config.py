@@ -226,6 +226,11 @@ class Settings(BaseSettings):
     # free-tier ceiling.
     detector_sweep_trigger_token: str = Field(default="", alias="DETECTOR_SWEEP_TRIGGER_TOKEN")
 
+    # Shared-secret header token protecting POST /internal/retention/purge (Session 12 P2c,
+    # timing-safe compare via hmac.compare_digest) — same pattern as the three tokens above.
+    # Plain env var, not Secret Manager, same free-tier-ceiling reason.
+    retention_purge_trigger_token: str = Field(default="", alias="RETENTION_PURGE_TRIGGER_TOKEN")
+
     # Resend transactional email
     resend_api_key: str = Field(default="", alias="RESEND_API_KEY")
     resend_from_email: str = Field(default="", alias="RESEND_FROM_EMAIL")

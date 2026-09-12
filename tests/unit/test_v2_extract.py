@@ -20,6 +20,12 @@ _CTX = ApiKeyContext(
     api_key_id=_KEY_ID,
     key_name="test-key",
     usage_record_id=_USAGE_ID,
+    # Explicit "retained" -- this is the pre-Session-12 default behavior every test below
+    # was written against (always persist). Session 12 P2's new stateless-mode behavior
+    # gets its own dedicated tests (TestRetentionModes) rather than silently changing what
+    # every pre-existing test in this file exercises.
+    retention_mode="retained",
+    retention_days=90,
 )
 
 _LLM_OUTPUT = ReviewExtractionLLMOutput(
@@ -356,3 +362,95 @@ def test_extract_batch_returns_202_accepted() -> None:
         assert "job_id" in body
     finally:
         app.dependency_overrides.pop(require_api_key, None)
+
+
+class TestRetentionModes:
+    """Session 12 P2b: stateless (default) mode must never call save_extraction_pg or
+    hit the cache lookup; retained mode must do both, unchanged from prior behavior.
+    Real cross-table/cross-log proof lives in tests/integration/test_retention_modes.py
+    (mock-based tests can't prove a negative against real persistence) -- these are the
+    fast, always-run unit-level checks of the branching logic itself.
+    """
+
+    @pytest.mark.asyncio
+    async def test_stateless_never_calls_save_extraction(self) -> None:
+        from app.api.v2.extract import _run_extraction_v2
+
+        stateless_ctx = ApiKeyContext(
+            org_id=_ORG_ID,
+            api_key_id=_KEY_ID,
+            key_name="test-key",
+            usage_record_id=_USAGE_ID,
+            retention_mode="stateless",
+            retention_days=None,
+        )
+        req = ReviewRequest(text=_REVIEW_TEXT)
+
+        with (
+            patch("app.api.v2.extract.get_by_hash_pg") as mock_get_by_hash,
+            patch("app.api.v2.extract.save_extraction_pg") as mock_save,
+            patch(
+                "app.api.v2.extract.extract_with_llm",
+                new=AsyncMock(return_value=(_LLM_OUTPUT, "mock-model", 42, 150, 80, False)),
+            ),
+            patch("app.api.v2.extract.update_usage_tokens"),
+        ):
+            result = await _run_extraction_v2(req, stateless_ctx)
+
+        mock_get_by_hash.assert_not_called()
+        mock_save.assert_not_called()
+        assert result.product == "Test Widget"  # extraction still returned to the caller
+
+    @pytest.mark.asyncio
+    async def test_retained_calls_save_extraction(self) -> None:
+        from app.api.v2.extract import _run_extraction_v2
+
+        req = ReviewRequest(text=_REVIEW_TEXT)
+
+        with (
+            patch("app.api.v2.extract.get_by_hash_pg", return_value=None) as mock_get_by_hash,
+            patch(
+                "app.api.v2.extract.save_extraction_pg", return_value=str(uuid.uuid4())
+            ) as mock_save,
+            patch(
+                "app.api.v2.extract.extract_with_llm",
+                new=AsyncMock(return_value=(_LLM_OUTPUT, "mock-model", 42, 150, 80, False)),
+            ),
+            patch("app.api.v2.extract.update_usage_tokens"),
+        ):
+            await _run_extraction_v2(req, _CTX)  # _CTX is retention_mode="retained"
+
+        mock_get_by_hash.assert_called_once()
+        mock_save.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_stateless_cost_row_has_no_extraction_id(self) -> None:
+        """Cost telemetry still records for stateless orgs (it contains no customer
+        content, see ADR 0024) -- but extraction_id must be None since there's no
+        extractions row to reference."""
+        from app.api.v2.extract import _run_extraction_v2
+
+        stateless_ctx = ApiKeyContext(
+            org_id=_ORG_ID,
+            api_key_id=_KEY_ID,
+            key_name="test-key",
+            usage_record_id=_USAGE_ID,
+            retention_mode="stateless",
+            retention_days=None,
+        )
+        req = ReviewRequest(text=_REVIEW_TEXT)
+
+        with (
+            patch("app.api.v2.extract.save_extraction_pg") as mock_save,
+            patch(
+                "app.api.v2.extract.extract_with_llm",
+                new=AsyncMock(return_value=(_LLM_OUTPUT, "openai/gpt-oss-20b", 42, 150, 80, False)),
+            ),
+            patch("app.api.v2.extract.update_usage_tokens"),
+            patch("app.api.v2.extract.record_extraction_cost_pg") as mock_cost,
+        ):
+            await _run_extraction_v2(req, stateless_ctx)
+
+        mock_save.assert_not_called()
+        mock_cost.assert_called_once()
+        assert mock_cost.call_args.args[1] is None  # extraction_id positional arg

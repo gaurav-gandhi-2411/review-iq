@@ -75,6 +75,89 @@ def _set_tenant(cur: Any, org_id: str) -> None:
     cur.execute('SET LOCAL "app.current_org_id" = %s', (org_id,))
 
 
+def get_org_retention_pg(org_id: str) -> tuple[str, int | None]:
+    """Return (retention_mode, retention_days) for an org -- for system/webhook-triggered
+    extraction contexts (Shopify, Google Business, the CSV-ingest drain worker), which build
+    their own ApiKeyContext directly rather than going through require_api_key's join (see
+    app/auth/api_key.py). Defaults to ("stateless", None) if the org row is somehow missing
+    (should never happen for a real org_id -- fails safe toward NOT persisting rather than
+    toward assuming retention was intended).
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+        cur.execute(
+            "SELECT retention_mode, retention_days FROM public.organizations WHERE id = %s",
+            (org_id,),
+        )
+        row = cur.fetchone()
+        conn.commit()
+        if row is None:
+            return "stateless", None
+        return row[0], row[1]
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def list_orgs_with_retained_mode_pg() -> list[tuple[str, int]]:
+    """Return [(org_id, retention_days), ...] for every org in retained mode.
+
+    Cross-org query via public.list_orgs_with_retained_mode(), a narrow SECURITY DEFINER
+    function (20260912000001) -- same BYPASSRLS-remediation pattern as
+    list_orgs_with_daily_digest_pg. review_iq_app holds no direct cross-org SELECT on
+    organizations and must not; this returns ONLY org_id + retention_days, never any other
+    column (name, slug, plan).
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT org_id, retention_days FROM public.list_orgs_with_retained_mode()")
+        rows = cur.fetchall()
+        conn.commit()
+        return [(str(r[0]), int(r[1])) for r in rows]
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def purge_org_extractions_pg(org_id: str, older_than: datetime | None = None) -> int:
+    """Delete extraction rows for one org. Returns the number of rows deleted.
+
+    `older_than`: when given, only rows with created_at strictly before this timestamp are
+    deleted (the scheduled retention-window purge, app/core/retention.py). When None, every
+    row for the org is deleted (the on-demand purge endpoint, POST /v2/purge) -- an org may
+    purge its own retained data at any time regardless of the window it chose.
+
+    Org-scoped via _set_tenant(), same as every other write in this module -- no BYPASSRLS,
+    no cross-tenant risk: this can only ever delete the org_id it's given.
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+        if older_than is None:
+            cur.execute("DELETE FROM public.extractions WHERE org_id = %s", (org_id,))
+        else:
+            cur.execute(
+                "DELETE FROM public.extractions WHERE org_id = %s AND created_at < %s",
+                (org_id, older_than),
+            )
+        deleted = cur.rowcount
+        conn.commit()
+        return deleted
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
 def get_by_hash_pg(org_id: str, input_hash: str) -> ReviewExtractionV2 | None:
     """Return cached extraction for this org if input_hash already exists."""
     conn = _db_connect()

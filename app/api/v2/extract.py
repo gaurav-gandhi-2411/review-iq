@@ -51,10 +51,16 @@ async def _run_extraction_v2(
     save_extraction_pg's docstring.
     """
     input_hash = request.input_hash()
+    stateless = ctx.retention_mode != "retained"
 
     import asyncio
 
-    cached = await asyncio.to_thread(get_by_hash_pg, ctx.org_id, input_hash)
+    # Stateless orgs have nothing persisted to look up, by construction (save_extraction_pg
+    # is never called for them below) -- skip the query entirely rather than issue a lookup
+    # that can only ever miss. This also means a mode switch from retained -> stateless
+    # stops surfacing old retained-mode cache hits, which is the honest behavior: the org
+    # asked to stop retaining, a stale cache hit would quietly contradict that.
+    cached = None if stateless else await asyncio.to_thread(get_by_hash_pg, ctx.org_id, input_hash)
     if cached is not None:
         log.info("extraction.cache_hit", input_hash=input_hash, org_id=ctx.org_id)
         EXTRACTIONS_TOTAL.labels(model="cached", cached="true").inc()
@@ -96,20 +102,29 @@ async def _run_extraction_v2(
         extraction_meta=meta,
     )
 
-    extraction_id = await asyncio.to_thread(
-        save_extraction_pg,
-        ctx.org_id,
-        ctx.api_key_id,
-        input_hash,
-        request.text,
-        extraction,
-        model_name,
-        PROMPT_VERSION,
-        _SCHEMA_VERSION,
-        latency_ms,
-        is_suspicious,
-        request.review_date,
-        product_override,
+    # D1/P2b: stateless is the default -- review text must not be persisted anywhere.
+    # save_extraction_pg is the single choke point every extraction path (single
+    # /v2/extract, /v2/extract/batch, CSV ingest via ingest_worker, both webhooks) already
+    # funnels through, so gating it here is sufficient -- see ADR 0025 and ADR 0024 (the
+    # data-flow audit that established this is the one persistence call to gate).
+    extraction_id = (
+        None
+        if stateless
+        else await asyncio.to_thread(
+            save_extraction_pg,
+            ctx.org_id,
+            ctx.api_key_id,
+            input_hash,
+            request.text,
+            extraction,
+            model_name,
+            PROMPT_VERSION,
+            _SCHEMA_VERSION,
+            latency_ms,
+            is_suspicious,
+            request.review_date,
+            product_override,
+        )
     )
     # Update token counts on the usage_record created during auth.
     # On LLM failure this is never reached — the record stays at 0/0
