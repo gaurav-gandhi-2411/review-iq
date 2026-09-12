@@ -12,9 +12,12 @@ removed, or changed. `[TODO: GG-DECISION — pick and state a change-notificatio
 "check this page" vs. an email/changelog subscription, before this becomes a binding
 contractual commitment (see dpa-template.md §6).]`
 
-**Last verified against the codebase:** 2026-09-12 (Session 12, adding OpenRouter and
-independently verifying Groq's data-use commitment against its own Services Agreement).
-Originally drafted 2026-07-31 (Wave 1 Section E).
+**Last verified against the codebase:** 2026-09-12 (Session 13, resolving the Groq ZDR TODO and
+auditing every LLM-provider call site for Batch API usage — see
+[ADR 0028](../docs/architecture/adr/0028-groq-zdr-verification-and-batch-api-audit.md)).
+Previously updated 2026-09-12 (Session 12, adding OpenRouter and independently verifying Groq's
+data-use commitment against its own Services Agreement). Originally drafted 2026-07-31
+(Wave 1 Section E).
 
 ---
 
@@ -27,7 +30,7 @@ Originally drafted 2026-07-31 (Wave 1 Section E).
 | **Data use commitment — independently verified against Groq's own primary legal document** (2026-09-12, `console.groq.com/docs/legal/services-agreement` §4.2): *"Groq is not permitted to use Inputs or Outputs for training or fine-tuning any AI Model Services or other models, unless explicitly granted permission or instructed by Customer."* Groq additionally does not retain Inputs/Outputs beyond what's needed to serve the request, except temporary logs (up to 30 days) for reliability/abuse monitoring, with a self-serve Zero Data Retention opt-out available in Console Data Controls. **This Services Agreement applies to free-tier/self-serve API use** — it is accepted by "using the Cloud Services," no Order Form or paid plan required, and a Data Processing Addendum is automatically incorporated into it. This supersedes the earlier (2026-07-31) unverified TODO on this row. | |
 | **Their own published documentation** | `https://console.groq.com/docs/legal/services-agreement` (Services Agreement, §4.2 quoted above), `https://console.groq.com/docs/your-data` (Your Data in GroqCloud), `https://console.groq.com/docs/legal/customer-data-processing-addendum` (DPA) — all fetched and read directly, 2026-09-12. |
 | **Data location** | `[TODO: the specific data-center region(s) Groq uses to physically serve inference were not independently verified — only the contractual no-training/limited-retention commitment above is confirmed. Verify before publishing if region-specific transfer language is needed.]` |
-| **Zero Data Retention eligibility for this account** | `[TODO: GG must check Console Data Controls directly (console.groq.com/settings/data-controls) and enable ZDR if eligible on the free tier — this could not be verified by an automated session, which has no login credentials for this account. Report back VERIFIED once checked, either way.]` |
+| **Zero Data Retention for this account** | **Inference APIs ZDR: enabled** (2026-09-12, Console Data Controls — reported by the account holder; not independently verifiable via API, see below). Global ZDR (which would also disable Batch/fine-tuning storage) is not yet enabled — safe to enable at any time: an independent code audit (2026-09-12) confirmed this codebase never calls Groq's Batch or fine-tuning APIs anywhere, only `chat.completions.create` and `models.list`, so Global ZDR's Batch/fine-tuning shutoff has zero functional impact. **Verification method note:** Groq's API exposes no response header or endpoint that reports ZDR status (confirmed by inspecting a real, live API response's full header set and Groq's own current API-reference and your-data docs directly — a search result claiming an `x-zero-data-retention` header exists for Groq was found to have conflated xAI's API, a different provider, and was discarded). The only way to check or change this setting is the Console UI; this row is therefore stated as the account holder's report, not an independent API verification. See [ADR 0028](../docs/architecture/adr/0028-groq-zdr-verification-and-batch-api-audit.md). |
 
 ---
 
@@ -91,8 +94,13 @@ live-verified twice, most recently via a real end-to-end call through this exact
    statements.
 2. Groq's physical data-center region(s) for inference specifically (the no-training/limited-
    retention *commitment* is confirmed; *where* the compute runs is not).
-3. Whether Groq's Zero Data Retention setting is actually enabled for this project's account —
-   requires GG to check Console Data Controls directly (no automated session has login access).
+3. Whether Groq's *Global* Zero Data Retention setting gets enabled (Inference-APIs ZDR is
+   already enabled per the account holder, 2026-09-12 — see the Groq row above; Global ZDR is
+   confirmed safe to enable, pending the account holder's action, since this codebase never uses
+   Groq's Batch or fine-tuning APIs). Note this project has no way to independently re-verify
+   *either* ZDR scope via the API going forward — Groq exposes no header or endpoint for this
+   (see [ADR 0028](../docs/architecture/adr/0028-groq-zdr-verification-and-batch-api-audit.md)) —
+   so this row will always be the account holder's report, not an automated check.
 4. Whether either Groq or Supabase has published its own DPA that review-iq should reference or
    attach.
 
