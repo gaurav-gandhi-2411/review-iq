@@ -14,11 +14,22 @@ appear on any of those failure modes (this repo's own product name), not a check
 the page is fully functional -- proving that requires a browser, this is a cheap,
 frequent, $0 tripwire.
 
+Session 14 P1d finding: the marker check above is NOT sufficient for `dashboard` and
+`try-page` -- both are the same client-side-rendered Vite SPA, and `_BRAND_MARKER`
+("Samidha Reviews") lives in the static `<title>`/`og:title`/`twitter:title` tags of
+`index.html`, present whether or not React ever executes. Verified directly: the exact
+HTML shell that shipped blank on the Cloudflare copy of this app (missing VITE_* env
+vars, module-load throw, permanently empty #root) contains that string 3 times --
+this probe would have reported that failure as a PASS. `spa_mount_check` adds a real
+headless-browser check (scripts/check_app_mounted.py's logic, inlined here to share
+this module's async client/alerting plumbing) for exactly those two surfaces.
+
 Usage:
     uv run python scripts/probe_web_surfaces.py
     uv run python scripts/probe_web_surfaces.py --slack-webhook "$SLACK_WEBHOOK_URL"
 
-Cost: 4 GET requests/night against domains this project already owns. $0.
+Cost: 4 GET requests/night against domains this project already owns, plus 2 headless
+browser page loads for the SPA surfaces. $0.
 """
 
 from __future__ import annotations
@@ -29,6 +40,9 @@ import time
 from dataclasses import dataclass
 
 import httpx
+from playwright.async_api import Error as PlaywrightError
+from playwright.async_api import TimeoutError as PlaywrightTimeoutError
+from playwright.async_api import async_playwright
 
 _TIMEOUT_SECONDS = 15.0
 _BRAND_MARKER = "Samidha Reviews"
@@ -41,6 +55,9 @@ class Surface:
     name: str
     url: str
     content_marker: str = _BRAND_MARKER
+    # Set for client-side-rendered surfaces where content_marker alone cannot prove
+    # React mounted (see the P1d note above). Value is the text a real render must show.
+    spa_mount_marker: str | None = None
 
 
 @dataclass
@@ -61,9 +78,17 @@ class ProbeResult:
 # Vercel-exit migration), so a broken deployment fails it identically to the root.
 _SURFACES: list[Surface] = [
     Surface("marketing", "https://samidhareviews.xyz/"),
-    Surface("dashboard", "https://app.samidhareviews.xyz/"),
+    Surface(
+        "dashboard",
+        "https://app.samidhareviews.xyz/",
+        spa_mount_marker="Samidha Reviews",  # web/src/pages/Login.tsx <h1>
+    ),
     Surface("api", "https://api.samidhareviews.xyz/health", content_marker='"status":"ok"'),
-    Surface("try-page", "https://app.samidhareviews.xyz/try"),
+    Surface(
+        "try-page",
+        "https://app.samidhareviews.xyz/try",
+        spa_mount_marker="See it work",  # web/src/pages/Try.tsx <h1>
+    ),
 ]
 
 
@@ -103,7 +128,42 @@ async def probe_surface(client: httpx.AsyncClient, surface: Surface) -> ProbeRes
             f"(first 200 chars: {body[:200]!r})",
         )
 
+    if surface.spa_mount_marker is not None:
+        mount_error = await _check_spa_mounted(surface.url, surface.spa_mount_marker)
+        latency_ms = int((time.monotonic() - t0) * 1000)
+        if mount_error is not None:
+            return ProbeResult(
+                surface.name, surface.url, False, resp.status_code, latency_ms, mount_error
+            )
+
     return ProbeResult(surface.name, surface.url, True, resp.status_code, latency_ms, "ok")
+
+
+async def _check_spa_mounted(url: str, mount_marker: str) -> str | None:
+    """Return None if a real headless browser mounts `mount_marker`, else a failure detail.
+
+    See scripts/check_app_mounted.py for the standalone version of this same check --
+    duplicated here (not imported) because that script is invoked directly by
+    app-mount-check.yml and this module already owns its own async browser lifecycle;
+    the two call sites are small enough that sharing a browser instance isn't worth the
+    coupling.
+    """
+    try:
+        async with async_playwright() as p:
+            browser = await p.chromium.launch()
+            page = await browser.new_page()
+            await page.goto(url, wait_until="networkidle", timeout=_TIMEOUT_SECONDS * 1000)
+            root_html = await page.eval_on_selector("#root", "el => el.innerHTML")
+            heading_count = await page.locator("h1", has_text=mount_marker).count()
+            await browser.close()
+    except (PlaywrightError, PlaywrightTimeoutError) as exc:
+        return f"could not verify React mounted: {exc}"
+
+    if not root_html or not root_html.strip():
+        return "HTTP 200 but #root is empty after networkidle -- React never mounted"
+    if heading_count == 0:
+        return f"React mounted but expected heading {mount_marker!r} not found"
+    return None
 
 
 async def run_probe() -> list[ProbeResult]:
