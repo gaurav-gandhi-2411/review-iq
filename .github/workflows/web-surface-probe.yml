@@ -16,6 +16,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
   group: web-surface-probe
@@ -41,11 +42,33 @@ jobs:
         run: uv sync --frozen
 
       - name: Run web surface probe
+        id: run_probe
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
+          # NOTE: SLACK_WEBHOOK_URL has never actually been configured as a repo
+          # secret (see docs/audit/2026-09-06-unwatched-scheduled-jobs.md) -- this
+          # workflow has never sent a real Slack notification, success or failure,
+          # since it was created. The GitHub-issue alert step below is the actual
+          # safety net and does not depend on this secret.
           if [ -z "$SLACK_WEBHOOK_URL" ]; then
             uv run python scripts/probe_web_surfaces.py
           else
             uv run python scripts/probe_web_surfaces.py --slack-webhook "$SLACK_WEBHOOK_URL"
           fi
+
+      # This workflow has NO push/PR trigger at all (schedule + workflow_dispatch
+      # only) -- without this, a failure here is invisible everywhere except the
+      # Actions tab. Confirmed: every single scheduled run since creation
+      # (2026-08-01) had failed silently until this alert was added.
+      - name: Alert on failure / close alert on recovery
+        if: always()
+        uses: ./.github/actions/schedule-failure-alert
+        with:
+          status: ${{ steps.run_probe.outcome == 'success' && 'success' || 'failure' }}
+          title: "Web surface probe is failing"
+          details: |
+            `web-surface-probe.yml`'s nightly synthetic check of customer-facing web
+            surfaces (marketing site, dashboard, API health, the public /try page)
+            failed. This workflow has no push/PR trigger -- this issue is the only
+            place its health is visible.

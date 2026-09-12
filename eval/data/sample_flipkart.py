@@ -53,12 +53,42 @@ _STRONG_HINGLISH = re.compile(
 )
 
 _WEAK_HINGLISH = re.compile(
-    r"\b(hai|hain|mast|sahi|toh|yeh|ye\b(?!\s+another)|aur|bhi|"
-    r"superb|paisa|paise|value\s+for\s+money)\b",
+    r"\b(hai|hain|mast|sahi|toh|yeh|ye\b(?!\s+another)|aur|bhi|paisa|paise)\b",
     re.IGNORECASE,
 )
 
-_DEVANAGARI = re.compile(r"[ऀ-ॿ]")
+# Session 9 P3 (review-iq): excludes U+0964/U+0965 (DEVANAGARI DANDA / DOUBLE DANDA) from
+# the block this regex otherwise covers wholesale. Found directly, not guessed: both of the
+# corpus's only 2 "hi" candidates turned out to be pure-English text using a stray danda as a
+# period/separator ("...canbe like this । It's awesome", "...the wire। of this earphone...") --
+# discovered when the held-out corpus's own judge panel labeled both `language=en` against
+# their "hi" source tag. The danda is Devanagari-block punctuation, not a language signal --
+# same class of fix as ADR 0014's marker-list correction (a matched codepoint/token that
+# doesn't actually indicate Hindi content), verified against the two real false positives
+# above before changing, not assumed. See docs/architecture/adr/0016-*.md.
+_DEVANAGARI = re.compile(r"[ऀ-ॣ०-ॿ]")
+
+# Session 8 P3 (review-iq): weak-marker threshold and marker-list correction, both
+# verified against the actual raw corpus before changing, not guessed.
+#
+# Marker-list bug: "superb" and "value for money" were in _WEAK_HINGLISH -- both are
+# pure standard English (an idiom and a common adjective), not Hindi/Hinglish markers
+# at all. Sampling texts they alone triggered (weak_threshold=1, unfixed list) found
+# 100% false positives in a 15-item manual check -- e.g. "it's awesome product, well
+# deaigned superb sound quality", "Nice product Value for money" -- ordinary English
+# reviews with zero code-mixing. Removed both; every remaining weak marker
+# (hai/hain/mast/sahi/toh/yeh/aur/bhi/paisa/paise) is a real Hindi-origin token with no
+# comparable false-positive class found in sampling.
+#
+# Threshold: with the corrected list, `weak_threshold=3` (the original setting) yields
+# only 41/14552 (0.28%) hi-en+hi on this corpus -- far below what a 15-item sample of
+# `weak_threshold=1` output showed to be genuine code-mixed Hinglish (10/10 real, e.g.
+# "mujhe bhot accha lga", "yaar bass dil chu liya... buht mast kaam kar raha hai",
+# "Paisa wasul bhai"). `weak_threshold=1` was the real detector-sensitivity ceiling,
+# not the marker-list bug -- both had to be fixed to recover the real yield (108/14552,
+# 0.74%, roughly 2x the original 53/14552 the unfixed pipeline reported). See
+# docs/architecture/adr/0014-*.md for the full before/after and sample verification.
+WEAK_HINGLISH_THRESHOLD = 1
 
 
 def _detect_language(text: str) -> str:
@@ -70,14 +100,11 @@ def _detect_language(text: str) -> str:
     if _DEVANAGARI.search(text):
         return "hi"
 
-    words = set(re.sub(r"[^a-zA-Z\s]", " ", text.lower()).split())
-
     if _STRONG_HINGLISH.search(text):
         return "hi-en"
 
-    # Require multiple weak markers to reduce false positives
-    weak_hits = len([m for m in _WEAK_HINGLISH.findall(text)])
-    if weak_hits >= 3:
+    weak_hits = len(_WEAK_HINGLISH.findall(text))
+    if weak_hits >= WEAK_HINGLISH_THRESHOLD:
         return "hi-en"
 
     return "en"

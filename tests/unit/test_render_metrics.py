@@ -171,10 +171,13 @@ class TestRenderExtractionTableHtml:
 
 
 class TestRenderLanguageTableHtml:
-    def test_renders_three_rows(self):
+    def test_renders_two_rows(self):
+        # Session 11 (ADR 0022): Devanagari `hi` retired from rows_spec -- EXTRACTION_DATA
+        # still carries a "hi" key in per_language (harmless, unused by this renderer) so
+        # other tests exercising per_language generically don't need to change too.
         out = render_language_table_html(EXTRACTION_DATA)
-        assert out.count("<tr") == 3
-        assert "Devanagari" in out
+        assert out.count("<tr") == 2
+        assert "Devanagari" not in out
 
     def test_all_passing_renders_green_everywhere(self):
         out = render_language_table_html(EXTRACTION_DATA)
@@ -200,8 +203,9 @@ class TestRenderLanguageTableHtml:
         out = render_language_table_html(data)
         assert "text-red-400" in out
         assert "below 74% gate" in out
-        # hi/hi-en still pass and should stay green, not collateral-damaged red.
-        assert out.count("text-green-400") == 2
+        # hi-en still passes and should stay green, not collateral-damaged red. (hi is no
+        # longer rendered at all -- see test_renders_two_rows.)
+        assert out.count("text-green-400") == 1
 
 
 class TestRenderFile:

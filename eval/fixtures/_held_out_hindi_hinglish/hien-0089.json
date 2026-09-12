@@ -1,0 +1,69 @@
+{
+  "id": "hien-0089",
+  "review_text": "U&i Bluetooth device 3days charge  rakh ta he or voice clarity must he but bass itna nehi he fir bi achhha he Paisa ke hisab se good",
+  "ground_truth": {
+    "product": "U&i Bluetooth device",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": [
+      "3 days battery life",
+      "good voice clarity",
+      "good value for money"
+    ],
+    "cons": [
+      "low bass"
+    ],
+    "buy_again": null,
+    "sentiment": "mixed",
+    "topics": [
+      "battery",
+      "sound_quality",
+      "bass",
+      "price"
+    ],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "majority",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "unanimous",
+      "stars_inferred": "unanimous",
+      "pros": "majority",
+      "cons": "majority",
+      "topics": "majority",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}

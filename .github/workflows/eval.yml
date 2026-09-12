@@ -4,15 +4,29 @@ on:
   push:
     branches: [main]
     paths:
-      - app/core/prompt.py
-      - "app/core/prompts/**"
-      - app/core/llm.py
-      - app/core/schemas.py
+      # Deliberately the WHOLE app/core package, not an enumerated list of "the
+      # files we think matter" -- that list already went stale once. c492e4a
+      # changed app/core/config.py's default Groq model names, invalidated every
+      # eval cassette (a cassette's lookup key incorporates the model name), and
+      # never ran this workflow as a blocking check because config.py wasn't in
+      # the old enumerated list (app/core/prompt.py, app/core/prompts/**,
+      # app/core/llm.py, app/core/schemas.py, eval/fixtures/**, eval/runner.py).
+      # Anything that changes how a review gets turned into a prompt, which
+      # model/tier handles it, or how the response is parsed can invalidate a
+      # cassette -- that is most of app/core/, not a hand-picked subset of it.
+      # Eval CI is a $0, deterministic cassette replay, so running it on a false
+      # positive (an unrelated app/core/ change) costs a few seconds; missing a
+      # true positive cost 14 nights of a broken gate nobody noticed.
+      - "app/core/**"
       - "eval/fixtures/**"
       - eval/runner.py
   schedule:
     - cron: "0 2 * * *"
   workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
 
 jobs:
   eval:
@@ -42,6 +56,7 @@ jobs:
         run: uv sync --frozen
 
       - name: Run eval
+        id: run_eval
         run: uv run python -m eval.runner
 
       - name: Generate report
@@ -55,6 +70,11 @@ jobs:
         run: |
           # Free-tier-friendly: skip cleanly when no webhook is configured, so a
           # missing Slack secret never reds an otherwise-passing eval (dispatch/nightly).
+          # NOTE: as of 2026-09, SLACK_WEBHOOK_URL has never actually been configured
+          # (see docs/audit/2026-09-06-unwatched-scheduled-jobs.md) -- this step has
+          # never sent a real notification. The GitHub-issue alert below does not
+          # depend on this secret and is the actual safety net; this step is kept as
+          # a no-op-safe path in case the webhook is added later, not relied upon.
           if [ -z "$SLACK_WEBHOOK_URL" ]; then
             echo "SLACK_WEBHOOK_URL not configured — skipping eval notification."
             exit 0
@@ -62,6 +82,23 @@ jobs:
           uv run python -m eval.slack_notify \
             --webhook "$SLACK_WEBHOOK_URL" \
             --run-url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      # Fires a GitHub issue on failure regardless of Slack config -- see
+      # .github/actions/schedule-failure-alert. This is what would have caught the
+      # 14-night silent Eval-CI-broken incident on night 2 instead of night 14.
+      - name: Alert on failure / close alert on recovery
+        if: always()
+        uses: ./.github/actions/schedule-failure-alert
+        with:
+          status: ${{ steps.run_eval.outcome == 'success' && 'success' || 'failure' }}
+          title: "Eval CI is failing"
+          details: |
+            `eval.yml`'s eval step failed (triggered by `${{ github.event_name }}`).
+            This gates the accuracy numbers this product is sold on -- see
+            `eval/report.md` in the run's uploaded artifact for detail, and
+            `docs/architecture/adr/` for prior incidents of this shape (a model/config
+            change silently invalidating the eval, see the 2026-08-16 Groq deprecation
+            incident).
 
       - name: Upload eval artifacts
         if: always()

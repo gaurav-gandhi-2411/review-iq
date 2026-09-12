@@ -32,6 +32,8 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parent.parent
 EXTRACTION_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "latest.json"
 AUTHENTICITY_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "authenticity_latest.json"
+HELD_OUT_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "held_out_scoring_v2.json"
+COVERAGE_METRICS_PATH = REPO_ROOT / "eval" / "results" / "coverage_metrics_n106.json"
 ADR_LINK = "docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md"
 
 BLOCK_RE = re.compile(
@@ -42,8 +44,9 @@ BLOCK_RE = re.compile(
 )
 
 
-# Display order matching the repo's existing convention (en / hi-en / hi), not alphabetical.
-LANG_DISPLAY_ORDER: tuple[str, ...] = ("en", "hi-en", "hi")
+# Display order matching the repo's existing convention, not alphabetical. "hi" retired
+# from this gate entirely (Session 11 P4d, ADR 0022) -- not listed even as a fallback.
+LANG_DISPLAY_ORDER: tuple[str, ...] = ("en", "hi-en")
 
 
 def _ordered_languages(per_lang: dict[str, Any]) -> list[str]:
@@ -129,6 +132,87 @@ def render_authenticity_table_md(data: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def render_held_out_table_md(data: dict[str, Any]) -> str:
+    """Render the real-world, uncontaminated held-out measurement (README.md).
+
+    Session 11 P4b: this is a DIFFERENT number from `extraction_table` above, and
+    deliberately not blended with it. `extraction_table` (the CI-gate set) is a change
+    detector measured against fixtures the prompt was developed against -- see
+    ADR 0021/0022. This block is the honest real-world figure: scored against a
+    quarantined held-out corpus (`eval/fixtures/_held_out_hindi_hinglish/`) the prompt has
+    never seen, via `eval/score_held_out_corpus_v2.py`, cassette-replay reproducible.
+    """
+    as_dep = data["as_deployed"]
+    forced = data["language_forced"]
+    models = f"{data['groq_model_small']} / {data['groq_model_large']}"
+    sha = data.get("git_sha")
+    lines = [
+        f"Measured {data['generated_at']}"
+        + (f" &middot; `{sha[:7]}`" if sha else "")
+        + f" &middot; models: {models}",
+        "",
+        "| Condition | Score | 95% CI | n |",
+        "|---|---|---|---|",
+        f"| **As actually deployed** (real language routing) | **{_fmt_pct(as_dep['overall_score'])}** "
+        f"| [{_fmt_pct(as_dep['ci_95']['lower'])}, {_fmt_pct(as_dep['ci_95']['upper'])}] "
+        f"| {as_dep['n']} |",
+        f"| Language routing forced correct | {_fmt_pct(forced['overall_score'])} "
+        f"| [{_fmt_pct(forced['ci_95']['lower'])}, {_fmt_pct(forced['ci_95']['upper'])}] "
+        f"| {forced['n']} |",
+    ]
+    n_total = data["n_fixtures"]
+    lang_acc = data.get("language_detection_accuracy")
+    lang_acc_str = _fmt_pct(lang_acc) if lang_acc is not None else "n/a"
+    lines += [
+        "",
+        f"n={n_total} real Hinglish reviews the prompt has never seen (never used for "
+        f"prompt development), 0 hi (see [ADR 0016](docs/architecture/adr/0016-third-judge-corpus-batch-1-and-sentiment-recheck.md)). "
+        f"Production's own language detector agreed with this corpus's language label on "
+        f"{lang_acc_str} of fixtures. This is the number to trust for real-world accuracy; "
+        f"the CI-gate table above is a regression detector, not a real-world accuracy claim "
+        f"-- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md).",
+    ]
+    return "\n".join(lines)
+
+
+def render_coverage_metrics_table_md(data: dict[str, Any]) -> str:
+    """Render the coverage/accuracy-on-answered/wrong-committed breakdown (README.md).
+
+    Session 12 P3d: flat accuracy is the weakest possible framing of an abstaining
+    extractor -- this decomposes it for the two hedge-capable fields (sentiment,
+    buy_again). See ADR 0026 for the full analysis and why a single blended
+    "rarely wrong when it commits" claim is not supported across both fields.
+    """
+    lines = [
+        "| Field | Coverage | Accuracy-on-answered | Wrong-committed |",
+        "|---|---|---|---|",
+    ]
+    for field, info in data["per_field"].items():
+        cov = info["coverage"]
+        cov_ci = info["coverage_ci_95"]
+        acc = info["accuracy_on_answered"]
+        acc_ci = info["accuracy_on_answered_ci_95"]
+        wrong = info["wrong_committed_of_answered"]
+        wrong_rate = info["wrong_committed_rate"]
+        wrong_ci = info["wrong_committed_rate_ci_95"]
+        lines.append(
+            f"| {field} "
+            f"| {_fmt_pct(cov)} [{_fmt_pct(cov_ci['lower'])}, {_fmt_pct(cov_ci['upper'])}] "
+            f"| {_fmt_pct(acc)} [{_fmt_pct(acc_ci['lower'])}, {_fmt_pct(acc_ci['upper'])}] "
+            f"| {wrong} = {_fmt_pct(wrong_rate)} "
+            f"[{_fmt_pct(wrong_ci['lower'])}, {_fmt_pct(wrong_ci['upper'])}] |"
+        )
+    lines += [
+        "",
+        f"n={data['n_fixtures']}, `{data['condition']}` condition (real language routing). "
+        '**"Rarely wrong when it commits" does not hold as a single claim across both '
+        "fields** -- buy_again's committed-answer error rate is materially higher than "
+        "sentiment's; see [ADR 0026](docs/architecture/adr/0026-coverage-accuracy-on-answered-wrong-committed-n106.md) "
+        "for the full analysis, including why a blended claim would misrepresent buy_again.",
+    ]
+    return "\n".join(lines)
+
+
 def render_gate_summary_md(data: dict[str, Any]) -> str:
     """Render the one-line gate-threshold summary used by eval/README.md.
 
@@ -160,15 +244,20 @@ def render_extraction_table_html(data: dict[str, Any]) -> str:
     hand-authored fix this generator would otherwise clobber on the next run.
     """
     per_lang = data["per_language"]
-    lang_labels = {"en": "English", "hi": "Hindi", "hi-en": "Hinglish"}
+    # Session 11 P4d: "hi" (Devanagari) retired from this gate entirely (ADR 0022) -- no
+    # longer a row here at all, not even an "experimental" one. See render_language_table_html
+    # for the matching change on the other table this same source data feeds.
+    lang_labels = {"en": "English", "hi-en": "Hinglish"}
+    lang_scope_note: dict[str, str] = {}
     rows: list[str] = []
     for lang in sorted(per_lang):
         info = per_lang[lang]
         label = lang_labels.get(lang, lang)
+        scope_note = lang_scope_note.get(lang, "")
         rows.append(
             '            <tr class="bg-gray-900 hover:bg-gray-800 transition-colors">\n'
             f'              <td class="px-6 py-4 text-gray-100">{label} '
-            f'<span class="text-gray-500 text-xs">({lang}, n={info["n"]})</span></td>\n'
+            f'<span class="text-gray-500 text-xs">({lang}, n={info["n"]}{scope_note})</span></td>\n'
             f'              <td class="px-6 py-4 font-mono text-blue-300">{_fmt_pct(info["score"])}</td>\n'
             f'              <td class="px-6 py-4 font-mono text-gray-400 text-xs">'
             f"[{_fmt_pct(info['ci_95']['lower'])}, {_fmt_pct(info['ci_95']['upper'])}]</td>\n"
@@ -198,9 +287,12 @@ def render_language_table_html(data: dict[str, Any]) -> str:
     found the same session. A failing language now renders red with its gate noted inline.
     """
     per_lang = data["per_language"]
+    # Session 11 P4d: Devanagari Hindi retired from this gate entirely (ADR 0022) -- real
+    # Devanagari-script review yield in the largest corpus available to this project is
+    # zero, not just thin. Not listed as a language row at all anymore (not even as
+    # "experimental"), matching every other public surface's claim.
     rows_spec = [
         ("en", "English", "Latin"),
-        ("hi", "Hindi", "Devanagari"),
         ("hi-en", "Hinglish", "Roman-script code-mix"),
     ]
     rows: list[str] = []
@@ -290,6 +382,10 @@ BLOCK_RENDERERS: dict[str, Any] = {
         _load_json(AUTHENTICITY_RESULTS_PATH)
     ),
     "gate_summary": lambda: render_gate_summary_md(_load_json(EXTRACTION_RESULTS_PATH)),
+    "held_out_table": lambda: render_held_out_table_md(_load_json(HELD_OUT_RESULTS_PATH)),
+    "coverage_metrics_table": lambda: render_coverage_metrics_table_md(
+        _load_json(COVERAGE_METRICS_PATH)
+    ),
     "extraction_table_html": lambda: render_extraction_table_html(
         _load_json(EXTRACTION_RESULTS_PATH)
     ),

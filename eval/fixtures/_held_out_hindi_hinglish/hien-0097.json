@@ -1,0 +1,64 @@
+{
+  "id": "hien-0097",
+  "review_text": "Very good product, sound quality is also good. while using headphone 🎧 my ear hurts so bad, I have to remove them in an hour😔 koi sense hai iss baat kiREAD MORE",
+  "ground_truth": {
+    "product": "headphone",
+    "stars": null,
+    "stars_inferred": 3,
+    "pros": [
+      "good sound quality"
+    ],
+    "cons": [],
+    "buy_again": null,
+    "sentiment": "mixed",
+    "topics": [
+      "sound_quality",
+      "comfort",
+      "ergonomics"
+    ],
+    "competitor_mentions": [],
+    "urgency": "high",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/kabirnagpal/flipkart-customer-review-and-rating",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "majority",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "unanimous",
+      "stars_inferred": "unanimous",
+      "pros": "unanimous",
+      "cons": "split",
+      "topics": "unanimous",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}

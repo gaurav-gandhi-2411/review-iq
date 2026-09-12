@@ -1,0 +1,68 @@
+{
+  "id": "hien-0069",
+  "review_text": "One of the best blue tooth headset from real me just loved it and must buy. The bass is awesome and battery backup also good totally worth for every paisa.",
+  "ground_truth": {
+    "product": "unknown",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": [
+      "awesome bass",
+      "good battery backup",
+      "worth the price"
+    ],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "positive",
+    "topics": [
+      "sound_quality",
+      "battery_life",
+      "price"
+    ],
+    "competitor_mentions": [
+      "real me"
+    ],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "majority",
+      "urgency": "unanimous",
+      "product": "split",
+      "stars_inferred": "unanimous",
+      "pros": "unanimous",
+      "cons": "unanimous",
+      "topics": "unanimous",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "majority"
+    }
+  }
+}

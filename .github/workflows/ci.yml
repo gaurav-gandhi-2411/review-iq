@@ -54,6 +54,12 @@ jobs:
       - name: Metrics render drift check (README/site vs eval JSON)
         run: uv run python scripts/render_metrics.py --check
 
+      # Session 8 P3: eval/fixtures/_held_out_hindi_hinglish/'s entire value depends on
+      # nobody having seen its content while developing app/core/prompts/**. See that
+      # directory's own README.md for the full quarantine mechanism.
+      - name: Held-out corpus leakage check
+        run: uv run python scripts/check_no_heldout_leakage.py
+
       # Catches the exact 2026-08-16/22 incident class: a config-only model-name
       # change silently invalidating eval/results.json's claim, undetected because
       # nothing re-ran the eval. See scripts/check_eval_model_matches_config.py.

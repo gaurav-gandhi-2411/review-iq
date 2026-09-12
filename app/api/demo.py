@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 from collections import OrderedDict
 from datetime import datetime
@@ -9,12 +10,18 @@ from datetime import datetime
 import structlog
 from fastapi import APIRouter, HTTPException, Request, status
 
+from app.core.config import get_settings
 from app.core.language import detect_language
 from app.core.llm import extract_with_llm
+from app.core.pricing import UnknownModelError, price_extraction
 from app.core.prompts import PROMPT_VERSION, build_prompt
 from app.core.rate_limit import limiter
 from app.core.sanitize import sanitize, wrap_for_llm
 from app.core.schemas import ExtractionMeta, ReviewExtraction, ReviewRequest
+from app.core.storage_pg import (
+    check_and_increment_demo_request_pg,
+    record_demo_extraction_cost_pg,
+)
 
 router = APIRouter(prefix="/demo", tags=["demo"])
 log = structlog.get_logger(__name__)
@@ -74,6 +81,47 @@ def demo_cache_size() -> int:
     return len(_demo_cache)
 
 
+# ---------------------------------------------------------------------------
+# Global (cross-IP) daily demo quota.
+#
+# The per-IP slowapi limit (5/minute) has no cross-IP cap at all, and this endpoint
+# shares the SAME Groq API key -- and its SAME free-tier daily token/request budget --
+# as every real paying customer's /v2/extract call (app/core/config.py has exactly one
+# groq_api_key). Groq's free tier for the models this app actually runs
+# (openai/gpt-oss-20b, openai/gpt-oss-120b) is 200,000 tokens/day and 1,000
+# requests/day, shared across every call this key makes. Measured average tokens per
+# real extraction (this repo's own eval run, grouped by language): en ~1833, hi ~1019,
+# hi-en ~1934. At those rates, as few as ~103 (hi-en, worst case) to ~196 (hi, best
+# case) unauthenticated demo calls in one day could exhaust the ENTIRE shared budget --
+# after which real customers' extraction calls degrade or fail for the rest of that
+# day. This is an AVAILABILITY risk, not a billing risk (free tier has no bill).
+#
+# DEMO_DAILY_REQUEST_BUDGET is sized to leave real customers most of the shared budget
+# even in the worst case: 50 requests/day * 1934 tokens (hi-en, the most expensive
+# language) = 96,700 tokens -- under half of the 200,000 daily ceiling, even if every
+# single demo call happened to be the most expensive kind and zero were cache hits.
+DEMO_DAILY_REQUEST_BUDGET = get_settings().demo_daily_request_budget
+
+
+async def _check_demo_quota() -> bool:
+    """Return True if today's global demo budget has room for one more real call.
+
+    Fails CLOSED, not open: if the quota-check DB call itself errors (e.g. transient
+    connection issue), this returns False -- treating "couldn't verify" as "budget
+    exhausted" rather than silently letting unlimited demo traffic through, since the
+    entire point of this check is protecting a resource real paying customers depend
+    on. A demo-endpoint 429 is a much smaller cost than a real customer's extraction
+    failing because the shared Groq quota was burned by unauthenticated demo traffic.
+    """
+    try:
+        return await asyncio.to_thread(
+            check_and_increment_demo_request_pg, DEMO_DAILY_REQUEST_BUDGET
+        )
+    except Exception:
+        log.error("demo.quota_check_failed", exc_info=True)
+        return False
+
+
 @router.post(
     "/extract",
     response_model=ReviewExtraction,
@@ -126,12 +174,27 @@ async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtractio
         log.info("demo.cache_hit", cache_key=cache_key[:16])
         return cached
 
+    # Global daily quota gate -- BEFORE spending any tokens. See DEMO_DAILY_REQUEST_
+    # BUDGET's docstring above for why this exists and how the number was chosen.
+    if not await _check_demo_quota():
+        log.warning("demo.quota_exhausted", daily_budget=DEMO_DAILY_REQUEST_BUDGET)
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=(
+                "The free public demo has reached its shared daily capacity and will "
+                "reset at midnight UTC. This limit protects the same LLM quota real "
+                "customers' API keys use. Sign up for an API key for guaranteed "
+                "capacity: POST /v2/extract."
+            ),
+            headers={"Retry-After": "3600"},
+        )
+
     detected_lang = detect_language(clean_text)
     wrapped = wrap_for_llm(clean_text)
     user_prompt = build_prompt(wrapped, detected_lang)
 
     try:
-        llm_output, model_name, latency_ms, _, _, _ = await extract_with_llm(
+        llm_output, model_name, latency_ms, tokens_in, tokens_out, _ = await extract_with_llm(
             user_prompt, allow_gemini_fallback=False
         )
     except RuntimeError as exc:
@@ -155,5 +218,29 @@ async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtractio
         extraction_meta=meta,
     )
     _demo_cache_put(cache_key, result)
+
+    # Cost telemetry: a missing pricing entry must not fail a response that already
+    # succeeded -- log loudly (pricing.py already logs at ERROR before raising) and
+    # skip the cost row, same tolerance as app/api/v2/extract.py's org-path recording.
+    try:
+        cost = price_extraction(model_name, tokens_in, tokens_out)
+        await asyncio.to_thread(
+            record_demo_extraction_cost_pg,
+            cost.provider,
+            cost.model,
+            cost.tier,
+            detected_lang,
+            tokens_in,
+            tokens_out,
+            cost.cost_usd,
+            cost.cost_inr,
+        )
+    except UnknownModelError as exc:
+        log.error("demo.cost_pricing_missing", model=model_name, error=str(exc))
+    except Exception:
+        # Cost recording is observability, not correctness -- never fail an already-
+        # successful demo response because the cost INSERT hit a transient DB issue.
+        log.error("demo.cost_recording_failed", exc_info=True)
+
     log.info("demo.extract", model=model_name, lang=detected_lang, latency_ms=latency_ms)
     return result

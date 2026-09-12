@@ -4,7 +4,10 @@ import type { Session } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
 import { provision } from './lib/api'
 import { FilterProvider } from './lib/filterContext'
+
+const PUBLIC_PATHS = ['/', '/try']
 import LoginPage from './pages/Login'
+import TryPage from './pages/Try'
 import UploadPage from './pages/Upload'
 import DashboardPage from './pages/Dashboard'
 import ReviewsPage from './pages/Reviews'
@@ -32,7 +35,12 @@ function AuthRouter() {
         // New sign-in → go to upload so they can add data.
         // Guard against session-restore on refresh (SIGNED_IN fires for both).
         if (_event === 'SIGNED_IN' && window.location.pathname === '/') navigate('/upload')
-      } else {
+      } else if (!PUBLIC_PATHS.includes(window.location.pathname)) {
+        // Only force back to "/" from a protected route (e.g. after sign-out or an
+        // expired session). Public routes like /try must stay reachable without a
+        // session -- this listener fires on initial mount too (Supabase's
+        // INITIAL_SESSION event), so without this guard it stomped every
+        // client-side navigation to a public route back to "/".
         navigate('/')
       }
     })
@@ -51,6 +59,7 @@ function AuthRouter() {
     <FilterProvider key={session?.user?.id ?? 'no-session'}>
       <Routes>
         <Route path="/" element={session ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
+        <Route path="/try" element={<TryPage />} />
         <Route path="/upload" element={session ? <UploadPage /> : <Navigate to="/" replace />} />
         <Route path="/dashboard" element={session ? <DashboardPage /> : <Navigate to="/" replace />} />
         <Route path="/reviews" element={session ? <ReviewsPage /> : <Navigate to="/" replace />} />

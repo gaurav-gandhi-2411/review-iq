@@ -89,6 +89,7 @@ ORDINAL_FIELDS: dict[str, list[Any]] = {
 
 def get_active_panel() -> list[dict[str, str]]:
     """Load (or run fresh) calibration; return the JUDGE_MODELS configs that passed."""
+    panel.assert_no_self_judging()
     if CALIBRATION_REPORT_PATH.exists():
         report = json.loads(CALIBRATION_REPORT_PATH.read_text(encoding="utf-8"))
         print(f"Using existing calibration report: {CALIBRATION_REPORT_PATH}")
