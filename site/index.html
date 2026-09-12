@@ -3,24 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Samidha Reviews — Customer Review Intelligence API</title>
+  <title>Samidha Reviews — Know What Every Customer Actually Said</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
-  <meta name="description" content="Turn customer reviews into structured intelligence — English and Hinglish, measured against real marketplace reviews. Devanagari Hindi is not supported." />
+  <meta name="description" content="Turn a flood of customer reviews across every brand you manage into one queryable signal — sentiment, urgency, and authenticity, in English and Hinglish. Stateless by default. Early access pricing." />
   <!-- Absolute URLs required for OG/Twitter card scrapers (Session 12 P6e) -- relative paths
        don't resolve when a crawler fetches only the meta tag, not the page itself. Live URL
        today is the Cloudflare Pages default host; site/_redirects already 301s it to the apex
        once samidhareviews.xyz's DNS is live (P6d) -- update these three URLs to the apex at
        that point, not before (an absolute URL to a domain that doesn't resolve yet is worse
        than one to the domain that's actually live). -->
-  <meta property="og:title" content="Samidha Reviews — Customer Review Intelligence API" />
-  <meta property="og:description" content="Turn customer reviews into structured intelligence — English and Hinglish, measured against real marketplace reviews." />
+  <meta property="og:title" content="Samidha Reviews — Know What Every Customer Actually Said" />
+  <meta property="og:description" content="Turn a flood of customer reviews across every brand you manage into one queryable signal — sentiment, urgency, and authenticity, in English and Hinglish." />
   <meta property="og:image" content="https://review-iq-demo.pages.dev/og-image.png" />
   <meta property="og:url" content="https://review-iq-demo.pages.dev/" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Samidha Reviews — Customer Review Intelligence API" />
-  <meta name="twitter:description" content="Turn customer reviews into structured intelligence — English and Hinglish, measured against real marketplace reviews." />
+  <meta name="twitter:title" content="Samidha Reviews — Know What Every Customer Actually Said" />
+  <meta name="twitter:description" content="Turn a flood of customer reviews across every brand you manage into one queryable signal — sentiment, urgency, and authenticity, in English and Hinglish." />
   <meta name="twitter:image" content="https://review-iq-demo.pages.dev/og-image.png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -45,40 +45,88 @@
 
     /* Disable category tab when data unavailable */
     .cat-tab-disabled { background-color: #111827; color: #4b5563; cursor: not-allowed; }
+
+    /* Session 13 P6: brand accent colors (design/tokens.json), used sparingly against the
+       existing dark gray-950/blue theme rather than a full page re-theme -- see the PR body
+       for why a full re-theme was scoped out of P6. */
+    .accent-saffron { color: #F6C042; }
+    .accent-ember { color: #E8823A; }
+    .badge-saffron { background-color: #F6C042; color: #1C1A17; }
+    .pricing-card-featured { border-color: #E8823A; box-shadow: 0 0 0 1px #E8823A; }
   </style>
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans antialiased">
 
   <!-- ===========================================================
+       NAV
+  =========================================================== -->
+  <nav class="sticky top-0 z-10 bg-gray-950/90 backdrop-blur border-b border-gray-800">
+    <div class="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between text-sm">
+      <a href="#top" class="flex items-center gap-2 font-semibold text-white">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 110" width="22" height="22" aria-hidden="true">
+          <rect width="110" height="110" rx="26" fill="#FAF4EA"/>
+          <g transform="rotate(-14 42 58)"><path d="M42 26 C53 42 58 52 58 61 C58 73 51 80 42 80 C33 80 26 73 26 61 C26 52 31 42 42 26 Z" fill="#F6C042"/></g>
+          <g transform="rotate(14 70 58)"><path d="M70 26 C81 42 86 52 86 61 C86 73 79 80 70 80 C61 80 54 73 54 61 C54 52 59 42 70 26 Z" fill="#E8823A"/></g>
+        </svg>
+        Samidha Reviews
+      </a>
+      <div class="hidden sm:flex items-center gap-6 text-gray-400">
+        <a href="#demo" class="hover:text-white transition-colors">Demo</a>
+        <a href="#how-it-works" class="hover:text-white transition-colors">How it works</a>
+        <a href="#trust" class="hover:text-white transition-colors">Trust</a>
+        <a href="#pricing" class="hover:text-white transition-colors">Pricing</a>
+        <a href="#contact" class="hover:text-white transition-colors">Contact</a>
+      </div>
+      <a href="#pricing" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4 py-2 rounded-lg transition-colors">Get started</a>
+    </div>
+  </nav>
+
+  <!-- ===========================================================
        HERO
   =========================================================== -->
-  <header class="bg-gradient-to-br from-blue-950 via-gray-950 to-gray-900 border-b border-gray-800">
+  <header id="top" class="bg-gradient-to-br from-blue-950 via-gray-950 to-gray-900 border-b border-gray-800">
     <div class="max-w-5xl mx-auto px-6 py-20 text-center">
       <div class="flex justify-center mb-5">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="64" height="64" aria-hidden="true">
-          <rect width="32" height="32" rx="7" fill="#1E6D3D"/>
-          <path d="M16,6 L18.5,13.5 L26,16 L18.5,18.5 L16,26 L13.5,18.5 L6,16 L13.5,13.5 Z" fill="white"/>
+        <!-- Session 13 P5b: animated mark reserved for the site/ header + loading states
+             only -- everything else (web/ dashboard chrome) uses the static variant. -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 110" width="64" height="64" aria-hidden="true">
+          <style>
+            @keyframes swL{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(-9deg) translateY(-1.5px)}}
+            @keyframes swR{0%,100%{transform:rotate(14deg)}50%{transform:rotate(19deg) translateY(1.5px)}}
+            .dL{transform-origin:42px 58px;animation:swL 4.4s ease-in-out infinite}
+            .dR{transform-origin:70px 58px;animation:swR 4.4s ease-in-out infinite;animation-delay:-1.7s}
+            @media (prefers-reduced-motion:reduce){.dL,.dR{animation:none}}
+          </style>
+          <rect width="110" height="110" rx="26" fill="#FAF4EA"/>
+          <g class="dL">
+            <path d="M42 26 C53 42 58 52 58 61 C58 73 51 80 42 80 C33 80 26 73 26 61 C26 52 31 42 42 26 Z" fill="#F6C042"/>
+          </g>
+          <g class="dR">
+            <path d="M70 26 C81 42 86 52 86 61 C86 73 79 80 70 80 C61 80 54 73 54 61 C54 52 59 42 70 26 Z" fill="#E8823A"/>
+          </g>
         </svg>
       </div>
-      <p class="text-blue-400 text-xs font-semibold tracking-widest uppercase mb-4">
-        MIT Licensed &middot; Evaluation-driven &middot; India-vernacular ready
+      <p class="accent-saffron text-xs font-semibold tracking-widest uppercase mb-4">
+        Built for Indian e-commerce &middot; English &amp; Hinglish &middot; Early access
       </p>
       <h1 class="text-5xl md:text-7xl font-extrabold text-white mb-4 leading-tight tracking-tight">
-        Samidha Reviews
+        Know what every<br class="hidden md:block"> customer actually said
       </h1>
       <p class="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed">
-        Turn customer reviews into structured intelligence &mdash; English and Hinglish, measured
-        against real marketplace reviews. Devanagari Hindi is not supported.
+        You manage reviews across a dozen brand storefronts, in a mix of English and Hinglish.
+        Samidha reads every one and hands you back sentiment, urgency, and a fake-review flag
+        &mdash; so your team spends its time on the two reviews that actually need a human, not
+        the two thousand that don't.
       </p>
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
         <a
-          href="#gallery"
+          href="#demo"
           class="inline-block bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-semibold px-10 py-3.5 rounded-lg transition-colors text-lg shadow-lg shadow-blue-900/40"
-        >See it in action &darr;</a>
+        >See it work on a real review &darr;</a>
         <a
-          href="#live"
+          href="#pricing"
           class="inline-block bg-transparent border border-gray-500 hover:border-gray-300 text-gray-300 hover:text-white font-semibold px-8 py-3.5 rounded-lg transition-colors text-lg"
-        >Try it free &rarr;</a>
+        >See pricing &rarr;</a>
       </div>
     </div>
   </header>
@@ -86,12 +134,49 @@
   <main class="max-w-5xl mx-auto px-6">
 
     <!-- ===========================================================
-         CAPABILITY GALLERY
+         PROBLEM
     =========================================================== -->
-    <section id="gallery" class="py-16">
-      <h2 class="text-3xl font-bold text-white mb-2">Capability gallery</h2>
+    <section id="problem" class="py-16 border-b border-gray-800">
+      <h2 class="text-3xl font-bold text-white mb-8 text-center">Managing reviews for one brand is manageable. For twelve, it isn't.</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
+          <p class="text-2xl mb-3">🌐</p>
+          <h3 class="font-semibold text-white mb-2">Half your reviews aren't in English</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            Real Indian marketplace reviews mix English and romanized Hindi in the same
+            sentence &mdash; Hinglish. Off-the-shelf sentiment tools built for English miss
+            the actual complaint buried in the Hinglish half.
+          </p>
+        </div>
+        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
+          <p class="text-2xl mb-3">🚨</p>
+          <h3 class="font-semibold text-white mb-2">The urgent one is buried in the pile</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            A safety complaint or a "caught fire" review looks identical to a routine
+            three-star gripe until someone reads it &mdash; by which point a day has usually
+            already passed.
+          </p>
+        </div>
+        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
+          <p class="text-2xl mb-3">🎭</p>
+          <h3 class="font-semibold text-white mb-2">Some of it isn't even real</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            Coordinated fake-review campaigns are a live problem for Indian D2C brands.
+            Spotting one manually across a dozen storefronts, in two languages, doesn't scale.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========================================================
+         LIVE DEMO
+    =========================================================== -->
+    <section id="demo" class="py-16">
+      <h2 class="text-3xl font-bold text-white mb-2">See it work, on real reviews</h2>
       <p class="text-gray-400 mb-8">
-        All examples below run from static JSON &mdash; no network needed, works with JS disabled.
+        Every example below is a real, unmodified API response &mdash; extraction, fake-review
+        detection, cross-review trends, and bulk CSV upload. No network needed, works with JS
+        disabled.
       </p>
 
       <!-- Category tabs -->
@@ -132,9 +217,10 @@
          LIVE INPUT
     =========================================================== -->
     <section id="live" class="py-16 border-t border-gray-800">
-      <h2 class="text-3xl font-bold text-white mb-2">Try it live &mdash; no signup needed</h2>
+      <h2 class="text-3xl font-bold text-white mb-2">Or paste your own &mdash; no signup needed</h2>
       <p class="text-gray-400 mb-6">
-        Paste any product review (any language). Calls the live API with no key required.
+        Paste a real review from one of your own storefronts (English or Hinglish). Calls the
+        live API with no key required.
       </p>
 
       <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
@@ -170,10 +256,42 @@
     </section>
 
     <!-- ===========================================================
-         ACCURACY TABLE
+         HOW IT WORKS
     =========================================================== -->
-    <section id="accuracy" class="py-16 border-t border-gray-800">
-      <h2 class="text-3xl font-bold text-white mb-2">Real accuracy &mdash; evaluated on held-out fixtures</h2>
+    <section id="how-it-works" class="py-16 border-t border-gray-800">
+      <h2 class="text-3xl font-bold text-white mb-2">How it works</h2>
+      <p class="text-gray-400 mb-8">
+        Three steps, no ML team required on your side.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
+          <p class="text-3xl font-bold accent-ember mb-2">1</p>
+          <h3 class="font-semibold text-white mb-2">Send us a review</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            One API call, a CSV upload, or connect Shopify/Google directly. English or
+            Hinglish, no pre-translation needed.
+          </p>
+        </div>
+        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
+          <p class="text-3xl font-bold accent-ember mb-2">2</p>
+          <h3 class="font-semibold text-white mb-2">We extract the signal</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            Sentiment, urgency, topics, pros/cons, competitor mentions, and an authenticity
+            flag &mdash; structured JSON back in under a second per review.
+          </p>
+        </div>
+        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
+          <p class="text-3xl font-bold accent-ember mb-2">3</p>
+          <h3 class="font-semibold text-white mb-2">You see what matters</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            Query the dashboard, pull trends across every brand you manage, or wire an
+            alert for anything flagged urgent or inauthentic.
+          </p>
+        </div>
+      </div>
+
+      <h3 class="text-2xl font-bold text-white mb-2">The honest accuracy story</h3>
       <p class="text-gray-400 mb-4">
         Field-level scoring (exact match + fuzzy + set F1) on held-out CI fixtures.
         Prompt v2.3, measured under the models production actually runs
@@ -237,9 +355,200 @@
         English `sentiment` and `buy_again` hedge (return "mixed"/null) far more often under
         the current models than the previous ones — accuracy on the answers the model DOES
         commit to is unchanged, but it commits less often, and flat accuracy charges that the
-        same as a wrong answer. Hindi/Hinglish show the opposite pattern. Sarcastic Hinglish
-        with backhanded compliments scores lower. Short reviews (&lt;10 words) occasionally
-        miss fields.
+        same as a wrong answer. Hinglish shows the opposite pattern. Sarcastic Hinglish with
+        backhanded compliments scores lower. Short reviews (&lt;10 words) occasionally miss
+        fields.
+      </div>
+
+      <h3 class="text-2xl font-bold text-white mt-12 mb-2">It doesn't guess when it's unsure</h3>
+      <p class="text-gray-400 mb-6">
+        Two fields (sentiment, buy-again) are allowed to say "unclear" rather than commit to a
+        wrong answer. Measured on 106 real, never-prompt-tuned marketplace reviews:
+      </p>
+      <div class="overflow-x-auto rounded-xl border border-gray-700 mb-6">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-800 text-gray-300">
+            <tr>
+              <th class="px-6 py-3 text-left font-semibold">Field</th>
+              <th class="px-6 py-3 text-left font-semibold">Coverage</th>
+              <th class="px-6 py-3 text-left font-semibold">Accuracy-on-answered</th>
+              <th class="px-6 py-3 text-left font-semibold">Wrong-committed</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-700">
+            <!-- METRICS:START:coverage_metrics_table_html -->
+            <tr class="bg-gray-900 hover:bg-gray-800 transition-colors">
+              <td class="px-6 py-4 text-gray-100 capitalize">sentiment</td>
+              <td class="px-6 py-4 font-mono text-blue-300">77.4% <span class="text-gray-500 text-xs">[68.9%, 84.9%]</span></td>
+              <td class="px-6 py-4 font-mono text-blue-300">87.8% <span class="text-gray-500 text-xs">[80.5%, 93.9%]</span></td>
+              <td class="px-6 py-4 font-mono text-gray-300">10/82 = 12.2%</td>
+            </tr>
+            <tr class="bg-gray-900 hover:bg-gray-800 transition-colors">
+              <td class="px-6 py-4 text-gray-100 capitalize">buy again</td>
+              <td class="px-6 py-4 font-mono text-blue-300">43.4% <span class="text-gray-500 text-xs">[34.0%, 52.8%]</span></td>
+              <td class="px-6 py-4 font-mono text-blue-300">76.1% <span class="text-gray-500 text-xs">[63.0%, 87.0%]</span></td>
+              <td class="px-6 py-4 font-mono text-gray-300">11/46 = 23.9%</td>
+            </tr>
+          <!-- METRICS:END -->
+          </tbody>
+        </table>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- METRICS:START:committed_accuracy_headline_html -->
+            <div class="bg-gray-900 rounded-lg p-6 border border-gray-700">
+              <div class="text-3xl font-bold text-blue-300">87.8%</div>
+              <div class="text-gray-100 font-semibold mt-1">accurate when it commits to a sentiment call</div>
+              <div class="text-gray-500 text-xs mt-2">95% CI [80.5%, 93.9%], n=106. Separately, it abstains (&ldquo;unclear&rdquo;) on 15.1%&ndash;31.1% of all reviews rather than commit to any answer.</div>
+            </div>
+            <div class="bg-gray-900 rounded-lg p-6 border border-gray-700">
+              <div class="text-3xl font-bold text-blue-300">76.1%</div>
+              <div class="text-gray-100 font-semibold mt-1">accurate when it commits to a buy-again call</div>
+              <div class="text-gray-500 text-xs mt-2">95% CI [63.0%, 87.0%], n=106. Separately, it abstains (&ldquo;unclear&rdquo;) on 47.2%&ndash;66.0% of all reviews rather than commit to any answer.</div>
+            </div>
+          <!-- METRICS:END -->
+      </div>
+    </section>
+
+    <!-- ===========================================================
+         TRUST
+    =========================================================== -->
+    <section id="trust" class="py-16 border-t border-gray-800">
+      <h2 class="text-3xl font-bold text-white mb-2">Your customers' words, handled carefully</h2>
+      <p class="text-gray-400 mb-8">
+        Every claim below is verified against the running system or a provider's own primary
+        legal document &mdash; not marketing copy. See the full trace in our public repo.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
+          <h3 class="font-semibold text-white mb-2">
+            <span class="badge-saffron text-xs font-bold px-2 py-0.5 rounded mr-2">DEFAULT</span>
+            Stateless by default
+          </h3>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            On the default plan, submitted review text and extraction output are never written
+            to our database or application logs &mdash; the response you get back is the only
+            copy. Proven, not asserted: verified by sending a distinctive sentinel string
+            through the live API and confirming it appears in zero tables and zero logs.
+          </p>
+          <a href="https://github.com/gaurav-gandhi-2411/review-iq/blob/main/docs/architecture/adr/0024-data-flow-audit-and-stateless-mode-requirements.md" class="text-blue-400 hover:text-blue-300 text-xs underline mt-3 inline-block">Read the verification &rarr;</a>
+        </div>
+
+        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
+          <h3 class="font-semibold text-white mb-2">No training on your data</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            Quoted directly from our LLM provider's own Services Agreement: <em>"Groq is not
+            permitted to use Inputs or Outputs for training or fine-tuning any AI Model
+            Services or other models, unless explicitly granted permission or instructed by
+            Customer."</em> Independently verified against their primary legal document, not
+            a summary page.
+          </p>
+        </div>
+
+        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
+          <h3 class="font-semibold text-white mb-2">Zero data retention on inference</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            Inference-APIs Zero Data Retention is enabled on our LLM provider account. In the
+            interest of the same honesty standard we hold every claim on this page to: our
+            provider exposes no API-level way to independently re-verify this setting (no
+            header, no endpoint) &mdash; this is our account holder's own Console
+            confirmation, not something we can prove from outside.
+          </p>
+        </div>
+
+        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
+          <h3 class="font-semibold text-white mb-2">Full sub-processor list, published</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            Every third party that touches review data, what it receives, and its own
+            verified data-handling commitments &mdash; kept current in our public repo, not a
+            static PDF.
+          </p>
+          <a href="https://github.com/gaurav-gandhi-2411/review-iq/blob/main/legal/sub-processors.md" class="text-blue-400 hover:text-blue-300 text-xs underline mt-3 inline-block">View sub-processors &rarr;</a>
+        </div>
+      </div>
+
+      <div class="mt-6 bg-gray-900 border border-gray-700 rounded-xl p-6">
+        <h3 class="font-semibold text-white mb-2">Want the data to live somewhere?</h3>
+        <p class="text-gray-400 text-sm leading-relaxed">
+          Opt into <strong class="text-gray-200">retained mode</strong> per organization &mdash;
+          pick a 30 or 90-day window, get the dashboard, review search, and trend insights.
+          Purge on demand at any time, no waiting for the window. Bulk CSV upload requires
+          retained mode (rows are staged durably so an interrupted upload can resume).
+        </p>
+      </div>
+    </section>
+
+    <!-- ===========================================================
+         PRICING
+    =========================================================== -->
+    <section id="pricing" class="py-16 border-t border-gray-800">
+      <div class="text-center mb-10">
+        <span class="badge-saffron text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">Early access pricing</span>
+        <h2 class="text-3xl font-bold text-white mt-4 mb-2">Simple, per-review pricing</h2>
+        <p class="text-gray-400">USD and INR shown side by side. Annual billing = 2 months free on every paid tier.</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="bg-gray-900 border border-gray-700 rounded-xl p-5 flex flex-col">
+          <h3 class="font-semibold text-white mb-1">Free</h3>
+          <p class="text-gray-500 text-xs mb-4">1,000 reviews/mo</p>
+          <p class="text-2xl font-bold text-white">$0<span class="text-sm text-gray-500 font-normal"> /mo</span></p>
+          <p class="text-gray-500 text-xs mb-4">&#8377;0/mo</p>
+          <a href="#contact" class="mt-auto text-center bg-gray-800 hover:bg-gray-700 text-gray-100 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">Get started</a>
+        </div>
+        <div class="bg-gray-900 border border-gray-700 rounded-xl p-5 flex flex-col">
+          <h3 class="font-semibold text-white mb-1">Starter</h3>
+          <p class="text-gray-500 text-xs mb-4">5,000 reviews/mo</p>
+          <p class="text-2xl font-bold text-white">$29<span class="text-sm text-gray-500 font-normal"> /mo</span></p>
+          <p class="text-gray-500 text-xs mb-4">&#8377;1,499/mo</p>
+          <a href="#contact" class="mt-auto text-center bg-gray-800 hover:bg-gray-700 text-gray-100 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">Talk to us</a>
+        </div>
+        <div class="bg-gray-900 pricing-card-featured border rounded-xl p-5 flex flex-col relative">
+          <span class="badge-saffron text-xs font-bold px-2 py-0.5 rounded-full absolute -top-3 left-1/2 -translate-x-1/2">Most popular</span>
+          <h3 class="font-semibold text-white mb-1 mt-2">Growth</h3>
+          <p class="text-gray-500 text-xs mb-4">25,000 reviews/mo</p>
+          <p class="text-2xl font-bold text-white">$79<span class="text-sm text-gray-500 font-normal"> /mo</span></p>
+          <p class="text-gray-500 text-xs mb-4">&#8377;4,999/mo</p>
+          <a href="#contact" class="mt-auto text-center bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">Talk to us</a>
+        </div>
+        <div class="bg-gray-900 border border-gray-700 rounded-xl p-5 flex flex-col">
+          <h3 class="font-semibold text-white mb-1">Scale</h3>
+          <p class="text-gray-500 text-xs mb-4">100,000 reviews/mo</p>
+          <p class="text-2xl font-bold text-white">$199<span class="text-sm text-gray-500 font-normal"> /mo</span></p>
+          <p class="text-gray-500 text-xs mb-4">&#8377;12,999/mo</p>
+          <a href="#contact" class="mt-auto text-center bg-gray-800 hover:bg-gray-700 text-gray-100 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">Talk to us</a>
+        </div>
+        <div class="bg-gray-900 border border-gray-700 rounded-xl p-5 flex flex-col">
+          <h3 class="font-semibold text-white mb-1">Agency</h3>
+          <p class="text-gray-500 text-xs mb-4">200,000+ reviews/mo</p>
+          <p class="text-2xl font-bold text-white">Talk to us</p>
+          <p class="text-gray-500 text-xs mb-4">Custom, multi-brand billing</p>
+          <a href="#contact" class="mt-auto text-center bg-gray-800 hover:bg-gray-700 text-gray-100 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">Talk to us</a>
+        </div>
+      </div>
+      <p class="text-gray-500 text-xs text-center mt-8">
+        First customers are invoiced manually while we're in early access &mdash; no card required to talk to us.
+      </p>
+    </section>
+
+    <!-- ===========================================================
+         CONTACT
+    =========================================================== -->
+    <section id="contact" class="py-16 border-t border-gray-800">
+      <div class="bg-gray-900 border border-gray-700 rounded-xl p-10 text-center max-w-2xl mx-auto">
+        <h2 class="text-3xl font-bold text-white mb-3">Talk to us</h2>
+        <p class="text-gray-400 mb-8">
+          Tell us how many brands you manage and roughly how many reviews a month &mdash;
+          we'll reply with a plan and a real API key, not a sales deck.
+        </p>
+        <a
+          href="mailto:hello@samidhareviews.xyz?subject=Samidha%20Reviews%20-%20pricing%20question"
+          class="inline-block bg-blue-600 hover:bg-blue-500 text-white font-semibold px-10 py-3.5 rounded-lg transition-colors text-lg"
+        >hello@samidhareviews.xyz</a>
+        <p class="text-gray-500 text-xs mt-6">
+          Prefer to just try it first? <a href="#demo" class="underline hover:text-gray-300">See it work</a> or
+          <a href="#live" class="underline hover:text-gray-300">paste your own review</a> above &mdash; no signup needed.
+        </p>
       </div>
     </section>
 
@@ -252,11 +561,15 @@
     <div class="max-w-5xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
       <span>
         <strong class="text-gray-300">Samidha Reviews</strong>
-        &mdash; MIT License &middot; evaluation-driven &middot; built for India-vernacular product data
+        &mdash; MIT License &middot; evaluation-driven &middot; built for Indian e-commerce
       </span>
-      <div class="flex gap-6">
+      <div class="flex flex-wrap justify-center gap-x-6 gap-y-2">
+        <a href="#trust" class="text-blue-400 hover:text-blue-300 transition-colors">Trust</a>
+        <a href="#pricing" class="text-blue-400 hover:text-blue-300 transition-colors">Pricing</a>
         <a href="/docs" class="text-blue-400 hover:text-blue-300 transition-colors">API docs</a>
-        <a href="#" class="text-blue-400 hover:text-blue-300 transition-colors">GitHub</a>
+        <a href="https://github.com/gaurav-gandhi-2411/review-iq/blob/main/legal/privacy-policy.md" class="text-blue-400 hover:text-blue-300 transition-colors">Privacy</a>
+        <a href="https://github.com/gaurav-gandhi-2411/review-iq/blob/main/legal/terms-of-service.md" class="text-blue-400 hover:text-blue-300 transition-colors">Terms</a>
+        <a href="https://github.com/gaurav-gandhi-2411/review-iq" class="text-blue-400 hover:text-blue-300 transition-colors">GitHub</a>
       </div>
     </div>
   </footer>
