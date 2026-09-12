@@ -168,7 +168,7 @@ async def _run_extraction_v2(
     EXTRACTION_LATENCY.labels(model=model_name).observe(latency_ms)
     log.info(
         "extraction.completed",
-        product=extraction.product,
+        input_hash=input_hash,
         model=model_name,
         latency_ms=latency_ms,
         org_id=ctx.org_id,
