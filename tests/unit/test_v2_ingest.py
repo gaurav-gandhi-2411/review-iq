@@ -27,6 +27,10 @@ _CTX = ApiKeyContext(
     api_key_id=_KEY_ID,
     key_name="test-key",
     usage_record_id=_USAGE_ID,
+    # CSV ingest requires retained mode (Session 12 P2e) -- this whole file tests CSV
+    # ingest's own behavior, which is only reachable at all in retained mode.
+    retention_mode="retained",
+    retention_days=90,
 )
 
 

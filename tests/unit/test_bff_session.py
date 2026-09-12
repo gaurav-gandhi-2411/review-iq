@@ -386,11 +386,23 @@ def _make_bff_app() -> object:
 
 
 def test_existing_require_api_key_unchanged() -> None:
-    """require_api_key is still importable and ApiKeyContext shape unchanged."""
+    """require_api_key is still importable; ApiKeyContext extended, not broken.
+
+    Session 12 P2a added retention_mode/retention_days (both with safe defaults, so
+    every pre-existing construction site keeps working unmodified) -- updated here
+    deliberately, not a silent drift.
+    """
     from app.auth.api_key import ApiKeyContext, require_api_key  # noqa: F401
 
     fields = {f.name for f in dataclasses.fields(ApiKeyContext)}
-    assert fields == {"org_id", "api_key_id", "key_name", "usage_record_id"}
+    assert fields == {
+        "org_id",
+        "api_key_id",
+        "key_name",
+        "usage_record_id",
+        "retention_mode",
+        "retention_days",
+    }
 
 
 def test_v2_routers_importable() -> None:

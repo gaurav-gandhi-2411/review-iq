@@ -27,7 +27,7 @@ _VALID_HASH = _PH.hash(_VALID_RAW_KEY)
 
 # (id, org_id, name, key_hash, quota) — returned by the SELECT FOR UPDATE
 _QUOTA = 1000
-_SELECT_ROW = (_KEY_ID, _ORG_ID, "test-key", _VALID_HASH, _QUOTA)
+_SELECT_ROW = (_KEY_ID, _ORG_ID, "test-key", _VALID_HASH, _QUOTA, "retained", 90)
 # (count,) — returned by the monthly COUNT query
 _COUNT_ZERO = (0,)
 _COUNT_AT_QUOTA = (_QUOTA,)
@@ -223,6 +223,8 @@ def test_valid_key_returns_context() -> None:
     assert ctx.api_key_id == str(_KEY_ID)
     assert ctx.key_name == "test-key"
     assert ctx.usage_record_id == str(_USAGE_ID)
+    assert ctx.retention_mode == "retained"
+    assert ctx.retention_days == 90
     conn.commit.assert_called_once()
     conn.rollback.assert_not_called()
 

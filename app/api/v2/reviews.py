@@ -10,7 +10,11 @@ from fastapi import APIRouter, Depends, Query
 
 from app.auth.api_key import ApiKeyContext, require_api_key
 from app.core.schemas import Sentiment, Urgency
-from app.core.storage_pg import aggregate_extractions_pg, list_extractions_pg
+from app.core.storage_pg import (
+    aggregate_extractions_pg,
+    list_extractions_pg,
+    purge_org_extractions_pg,
+)
 
 router = APIRouter(prefix="/v2", tags=["v2"])
 
@@ -131,3 +135,33 @@ async def insights(
     """Aggregated analytics for the authenticated org."""
     data = await asyncio.to_thread(aggregate_extractions_pg, ctx.org_id)
     return {"org_id": ctx.org_id, **data}
+
+
+@router.post(
+    "/purge",
+    summary="Delete all retained review data for the authenticated org",
+    openapi_extra={
+        "responses": {
+            "200": {
+                "content": {
+                    "application/json": {
+                        "example": {"org_id": "5b6c1e2a-....", "rows_deleted": 128}
+                    }
+                }
+            },
+        },
+    },
+)
+async def purge_reviews(
+    ctx: ApiKeyContext = Depends(require_api_key),
+) -> dict[str, object]:
+    """On-demand purge (Session 12 P2c): delete every stored extraction for this org, now.
+
+    Available regardless of the org's current retention_mode -- a retained-mode org may
+    purge its history at any time without waiting for the retention window to elapse, and
+    a stateless-mode org that switched modes recently may still have old retained-mode rows
+    to clear. Irreversible; no confirmation step (this is an API, not a UI) -- clients
+    should implement their own confirmation before calling this.
+    """
+    deleted = await asyncio.to_thread(purge_org_extractions_pg, ctx.org_id, None)
+    return {"org_id": ctx.org_id, "rows_deleted": deleted}

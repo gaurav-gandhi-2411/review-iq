@@ -45,6 +45,7 @@ from app.core.storage_pg import (
     count_job_row_statuses_pg,
     count_pending_rows_pg,
     get_batch_job_pg,
+    get_org_retention_pg,
     list_job_row_hashes_pg,
     update_batch_job_pg,
 )
@@ -104,8 +105,18 @@ async def _claim_one_row() -> tuple[str, str, bool] | None:
         # never the caller's org, never a default. api_key_id=None +
         # usage_record_id="" mirrors the existing system-triggered-extraction
         # convention used by the Shopify/Google webhook handlers.
+        # retention_mode/retention_days fetched live (P2a) -- CSV ingest is enforced
+        # retained-mode-only at upload time (POST /v2/ingest/csv rejects stateless orgs,
+        # see app/api/v2/ingest.py), but this queue can outlive an org's mode change
+        # between upload and drain, so it is re-checked here rather than assumed.
+        retention_mode, retention_days = await asyncio.to_thread(get_org_retention_pg, org_id)
         ctx = ApiKeyContext(
-            org_id=org_id, api_key_id=None, key_name=_SYSTEM_KEY_NAME, usage_record_id=""
+            org_id=org_id,
+            api_key_id=None,
+            key_name=_SYSTEM_KEY_NAME,
+            usage_record_id="",
+            retention_mode=retention_mode,
+            retention_days=retention_days,
         )
 
         from app.api.v2.extract import _run_extraction_v2  # late import — avoid circular
