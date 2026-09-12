@@ -8,6 +8,8 @@ API key -- and its SAME free-tier daily budget -- as every real paying customer'
 
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 from app.core.schemas import ReviewExtractionLLMOutput, Sentiment, Urgency
@@ -108,6 +110,31 @@ def test_cache_hit_does_not_consume_quota() -> None:
     assert mock_quota.call_count == 1, "Quota should only be checked on the real (first) call"
 
 
+def test_guard_only_detection_runs_and_does_not_block_the_response() -> None:
+    """Session 13 P4a: the model-based guard runs on the public demo endpoint too -- text
+    the regex layer doesn't match but the guard flags must not change the response (this
+    product's design flags/logs suspicious input, it does not reject it -- see
+    app/core/injection_guard.py's module docstring for why)."""
+    client = _client()
+    with (
+        patch("app.api.demo.check_and_increment_demo_request_pg", return_value=True),
+        patch("app.api.demo.record_demo_extraction_cost_pg", return_value=None),
+        patch(
+            "app.api.demo.classify_injection_risk", new=AsyncMock(return_value=True)
+        ) as mock_guard,
+        patch(
+            "app.api.demo.extract_with_llm",
+            new=AsyncMock(return_value=(_LLM_OUTPUT, "openai/gpt-oss-20b", 10, 100, 20, False)),
+        ),
+    ):
+        resp = client.post(
+            "/demo/extract", json={"text": "unique guard-only demo suspicious review"}
+        )
+
+    assert resp.status_code == 200
+    mock_guard.assert_called_once()
+
+
 # ---------------------------------------------------------------------------
 # Cost recording
 # ---------------------------------------------------------------------------
@@ -153,6 +180,72 @@ def test_unknown_model_pricing_does_not_fail_the_response() -> None:
 
     assert resp.status_code == 200
     mock_cost.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# Self-expiring budget override (Session 12 P7a)
+# ---------------------------------------------------------------------------
+
+
+def _settings(*, budget: int, expires_at: str = "") -> SimpleNamespace:
+    return SimpleNamespace(
+        demo_daily_request_budget=budget,
+        demo_daily_request_budget_override_expires_at=expires_at,
+    )
+
+
+def test_default_budget_returned_unconditionally() -> None:
+    from app.api.demo import _effective_demo_daily_budget
+
+    with patch("app.api.demo.get_settings", return_value=_settings(budget=50)):
+        assert _effective_demo_daily_budget() == 50
+
+
+def test_override_honored_before_expiry() -> None:
+    from app.api.demo import _effective_demo_daily_budget
+
+    future = (datetime.now(UTC) + timedelta(hours=1)).isoformat()
+    with patch("app.api.demo.get_settings", return_value=_settings(budget=0, expires_at=future)):
+        assert _effective_demo_daily_budget() == 0
+
+
+def test_override_falls_back_to_default_once_expired() -> None:
+    """The whole point of the TTL: an override left in place past its expiry must not
+    keep suppressing real demo traffic -- it silently reverts to the safe default."""
+    from app.api.demo import _effective_demo_daily_budget
+
+    past = (datetime.now(UTC) - timedelta(hours=1)).isoformat()
+    with patch("app.api.demo.get_settings", return_value=_settings(budget=0, expires_at=past)):
+        assert _effective_demo_daily_budget() == 50
+
+
+def test_override_without_ttl_falls_back_to_default() -> None:
+    """A non-default budget with no expiry set at all is ignored, not honored forever --
+    fails toward the safe default, not toward the override, on any ambiguity."""
+    from app.api.demo import _effective_demo_daily_budget
+
+    with patch("app.api.demo.get_settings", return_value=_settings(budget=0, expires_at="")):
+        assert _effective_demo_daily_budget() == 50
+
+
+def test_override_with_unparseable_ttl_falls_back_to_default() -> None:
+    from app.api.demo import _effective_demo_daily_budget
+
+    with patch(
+        "app.api.demo.get_settings",
+        return_value=_settings(budget=0, expires_at="not-a-timestamp"),
+    ):
+        assert _effective_demo_daily_budget() == 50
+
+
+def test_override_accepts_z_suffix_utc_timestamp() -> None:
+    """DEMO_DAILY_REQUEST_BUDGET_OVERRIDE_EXPIRES_AT is meant to be set by hand (env var,
+    runbook), so a bare 'Z' suffix (not offset-qualified isoformat) must parse."""
+    from app.api.demo import _effective_demo_daily_budget
+
+    future_z = (datetime.now(UTC) + timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    with patch("app.api.demo.get_settings", return_value=_settings(budget=0, expires_at=future_z)):
+        assert _effective_demo_daily_budget() == 0
 
 
 def test_cost_recording_db_error_does_not_fail_the_response() -> None:

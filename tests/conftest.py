@@ -45,3 +45,24 @@ def _demo_quota_allows_by_default():  # type: ignore[return]
         patch("app.api.demo.record_demo_extraction_cost_pg", return_value="mock-cost-id"),
     ):
         yield
+
+
+@pytest.fixture(autouse=True)
+def _injection_guard_defaults_to_not_suspicious():  # type: ignore[return]
+    """Default the Session 13 P4a model-based injection classifier to "not suspicious" for
+    every unit test.
+
+    `classify_injection_risk` (app/core/injection_guard.py) makes a real Groq API call --
+    without this, every existing /v2/extract and /demo/extract test would either hit the
+    real network (slow, flaky, and burns the classifier's real quota for no reason) or,
+    with no reachable key/network in the unit test environment, fail CLOSED (return True)
+    by design -- silently making every extraction test's `is_suspicious`/logging
+    assertions exercise the fail-closed path instead of the behavior actually being
+    tested. Tests that specifically exercise the injection-guard's own behavior
+    (tests/unit/test_injection_guard.py) patch this per-test instead.
+    """
+    with (
+        patch("app.api.v2.extract.classify_injection_risk", return_value=False),
+        patch("app.api.demo.classify_injection_risk", return_value=False),
+    ):
+        yield

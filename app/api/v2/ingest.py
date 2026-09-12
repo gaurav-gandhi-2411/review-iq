@@ -16,6 +16,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, Up
 from fastapi.responses import StreamingResponse
 
 from app.auth.api_key import ApiKeyContext, require_api_key
+from app.core.capacity import estimate_seconds_remaining
 from app.core.config import get_settings
 from app.core.csv_ingest import (
     CsvColumnError,
@@ -107,7 +108,24 @@ async def ingest_csv(
     absent, reflected in the returned `date_ambiguous` flag when the whole column's day/month
     convention couldn't be determined. `date_format`: optional "DMY"/"MDY" hint to skip
     auto-detection.
+
+    Session 12 P2e: CSV ingest requires retained mode. Bulk rows are staged durably in
+    public.batch_job_rows before extraction (surviving a Cloud Run restart mid-drain is
+    the entire point of that table -- see app/core/ingest_worker.py's module docstring),
+    so there is no honest way to make this path stateless without either losing that
+    durability guarantee or building a second, more complex staging mechanism. Reported,
+    not silently worked around: ADR 0024/0025.
     """
+    if ctx.retention_mode != "retained":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "CSV ingest requires retained mode. Bulk rows are staged durably before "
+                "extraction, so this endpoint cannot honor stateless mode. Switch this "
+                "org to retained mode (with a chosen retention window) to use CSV ingest, "
+                "or use POST /v2/extract for one review at a time in stateless mode."
+            ),
+        )
     try:
         (
             rows,
@@ -202,6 +220,7 @@ async def ingest_csv(
                             "failed": 2,
                             "created_at": "2026-07-07T12:00:00Z",
                             "completed_at": None,
+                            "estimated_seconds_remaining": 747.0,
                         },
                     },
                 },
@@ -213,7 +232,14 @@ async def get_ingest_status(
     job_id: str,
     ctx: ApiKeyContext = Depends(require_api_key),
 ) -> dict[str, object]:
-    """Poll the status of a CSV ingest job. ``status`` is one of pending, processing, done, failed."""
+    """Poll the status of a CSV ingest job. ``status`` is one of pending, processing, done, failed.
+
+    Session 13 P3b: ``estimated_seconds_remaining`` replaces an unbounded "processing" state
+    with an honest, best-case ETA -- see app/core/capacity.py's docstring for the measured
+    throughput ceiling this is derived from and why it's a best case, not a guarantee (a job
+    shares the same Groq quota as real customer and demo traffic running concurrently).
+    ``None`` when the job isn't actively processing (pending/done/failed) or has no rows left.
+    """
     import asyncio
 
     job = await asyncio.to_thread(get_batch_job_pg, ctx.org_id, job_id)
@@ -222,6 +248,12 @@ async def get_ingest_status(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Job '{job_id}' not found.",
         )
+    rows_remaining = job["total"] - job["processed"] - job["failed"]
+    eta_seconds = (
+        estimate_seconds_remaining(rows_remaining)
+        if job["status"] == "processing" and rows_remaining > 0
+        else None
+    )
     return {
         "job_id": job["job_id"],
         "status": job["status"],
@@ -230,6 +262,7 @@ async def get_ingest_status(
         "failed": job["failed"],
         "created_at": str(job["created_at"]),
         "completed_at": str(job["completed_at"]) if job.get("completed_at") else None,
+        "estimated_seconds_remaining": eta_seconds,
     }
 
 
