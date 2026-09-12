@@ -32,6 +32,7 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parent.parent
 EXTRACTION_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "latest.json"
 AUTHENTICITY_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "authenticity_latest.json"
+HELD_OUT_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "held_out_scoring_v2.json"
 ADR_LINK = "docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md"
 
 BLOCK_RE = re.compile(
@@ -126,6 +127,49 @@ def render_authenticity_table_md(data: dict[str, Any]) -> str:
     ]
     if data.get("provenance_note"):
         lines += ["", f"> **Provenance:** {data['provenance_note']}"]
+    return "\n".join(lines)
+
+
+def render_held_out_table_md(data: dict[str, Any]) -> str:
+    """Render the real-world, uncontaminated held-out measurement (README.md).
+
+    Session 11 P4b: this is a DIFFERENT number from `extraction_table` above, and
+    deliberately not blended with it. `extraction_table` (the CI-gate set) is a change
+    detector measured against fixtures the prompt was developed against -- see
+    ADR 0021/0022. This block is the honest real-world figure: scored against a
+    quarantined held-out corpus (`eval/fixtures/_held_out_hindi_hinglish/`) the prompt has
+    never seen, via `eval/score_held_out_corpus_v2.py`, cassette-replay reproducible.
+    """
+    as_dep = data["as_deployed"]
+    forced = data["language_forced"]
+    models = f"{data['groq_model_small']} / {data['groq_model_large']}"
+    sha = data.get("git_sha")
+    lines = [
+        f"Measured {data['generated_at']}"
+        + (f" &middot; `{sha[:7]}`" if sha else "")
+        + f" &middot; models: {models}",
+        "",
+        "| Condition | Score | 95% CI | n |",
+        "|---|---|---|---|",
+        f"| **As actually deployed** (real language routing) | **{_fmt_pct(as_dep['overall_score'])}** "
+        f"| [{_fmt_pct(as_dep['ci_95']['lower'])}, {_fmt_pct(as_dep['ci_95']['upper'])}] "
+        f"| {as_dep['n']} |",
+        f"| Language routing forced correct | {_fmt_pct(forced['overall_score'])} "
+        f"| [{_fmt_pct(forced['ci_95']['lower'])}, {_fmt_pct(forced['ci_95']['upper'])}] "
+        f"| {forced['n']} |",
+    ]
+    n_total = data["n_fixtures"]
+    lang_acc = data.get("language_detection_accuracy")
+    lang_acc_str = _fmt_pct(lang_acc) if lang_acc is not None else "n/a"
+    lines += [
+        "",
+        f"n={n_total} real Hinglish reviews the prompt has never seen (never used for "
+        f"prompt development), 0 hi (see [ADR 0016](docs/architecture/adr/0016-third-judge-corpus-batch-1-and-sentiment-recheck.md)). "
+        f"Production's own language detector agreed with this corpus's language label on "
+        f"{lang_acc_str} of fixtures. This is the number to trust for real-world accuracy; "
+        f"the CI-gate table above is a regression detector, not a real-world accuracy claim "
+        f"-- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md).",
+    ]
     return "\n".join(lines)
 
 
@@ -290,6 +334,7 @@ BLOCK_RENDERERS: dict[str, Any] = {
         _load_json(AUTHENTICITY_RESULTS_PATH)
     ),
     "gate_summary": lambda: render_gate_summary_md(_load_json(EXTRACTION_RESULTS_PATH)),
+    "held_out_table": lambda: render_held_out_table_md(_load_json(HELD_OUT_RESULTS_PATH)),
     "extraction_table_html": lambda: render_extraction_table_html(
         _load_json(EXTRACTION_RESULTS_PATH)
     ),

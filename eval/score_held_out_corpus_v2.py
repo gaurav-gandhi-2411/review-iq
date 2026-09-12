@@ -50,6 +50,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from eval.bootstrap import bootstrap_ci  # noqa: E402
+from eval.provenance import get_git_sha, now_iso  # noqa: E402
 from eval.runner import score_fixture  # noqa: E402
 
 QUARANTINE_DIR = ROOT / "eval" / "fixtures" / "_held_out_hindi_hinglish"
@@ -141,8 +142,15 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
             "ci_95": {"lower": ci[0], "upper": ci[1]},
         }
 
+    from app.core.config import get_settings
+
+    settings = get_settings()
     n_mismatched = sum(1 for r in records if r["detected_language"] != r["gt_language"])
     return {
+        "generated_at": now_iso(),
+        "git_sha": get_git_sha(),
+        "groq_model_small": settings.groq_model_small,
+        "groq_model_large": settings.groq_model_large,
         "n_fixtures": len(records),
         "n_language_mismatched": n_mismatched,
         "language_detection_accuracy": 1 - (n_mismatched / len(records)) if records else None,
