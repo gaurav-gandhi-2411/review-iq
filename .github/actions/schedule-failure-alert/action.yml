@@ -1,0 +1,110 @@
+name: "Scheduled job failure alert (GitHub issue)"
+description: >
+  On failure: opens (or comments on, if already open) a GitHub issue titled
+  `title`, deduplicated by exact title match. On success: closes that issue if
+  one is open, with a recovery comment. No external secret, no new billable
+  service -- uses the workflow's own `issues: write` permission and
+  `GITHUB_TOKEN`. Same mechanism as .github/workflows/uptime-alert.yml, which
+  self-corrected an identical silent-failure incident on 2026-08-14; factored
+  out here so every scheduled job in this repo shares one proven alert path
+  instead of each depending on a secret (SLACK_WEBHOOK_URL) that has never
+  actually been configured (see docs/audit/2026-09-06-unwatched-scheduled-jobs.md).
+
+inputs:
+  status:
+    description: "'success' or 'failure' for this run."
+    required: true
+  title:
+    description: "Stable alert title, used to find/dedupe the tracking issue. Never changes between runs of the same job."
+    required: true
+  details:
+    description: "Markdown body describing the failure (only used when status=failure)."
+    required: false
+    default: ""
+  label:
+    description: "Label to apply when creating a new alert issue."
+    required: false
+    default: "ci-alert"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Handle failure
+      if: inputs.status == 'failure'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        ALERT_TITLE: ${{ inputs.title }}
+        DETAILS: ${{ inputs.details }}
+        ALERT_LABEL: ${{ inputs.label }}
+      run: |
+        REPO="${{ github.repository }}"
+        RUN_URL="https://github.com/${REPO}/actions/runs/${{ github.run_id }}"
+        TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+        EXISTING_ISSUE=$(gh issue list \
+          --repo "${REPO}" \
+          --state open \
+          --search "\"${ALERT_TITLE}\" in:title" \
+          --json number \
+          --jq '.[0].number // empty')
+
+        if [ -n "${EXISTING_ISSUE}" ]; then
+          echo "Existing alert issue #${EXISTING_ISSUE} found. Adding comment."
+          gh issue comment "${EXISTING_ISSUE}" --repo "${REPO}" --body "$(cat <<EOF
+        Still failing at ${TIMESTAMP}.
+
+        ${DETAILS}
+
+        [Workflow run](${RUN_URL})
+        EOF
+        )"
+        else
+          echo "No existing alert issue found. Creating new issue."
+          gh issue create \
+            --repo "${REPO}" \
+            --title "${ALERT_TITLE}" \
+            --label "${ALERT_LABEL}" \
+            --body "$(cat <<EOF
+        ## ${ALERT_TITLE}
+
+        **First detected at:** ${TIMESTAMP}
+
+        ${DETAILS}
+
+        [Workflow run that detected this](${RUN_URL})
+
+        ---
+
+        *This issue is managed automatically by this workflow's schedule-failure-alert
+        step. Do not rename it -- the title is used to deduplicate alerts. It will be
+        closed automatically the next time this job succeeds.*
+        EOF
+        )"
+        fi
+
+    - name: Handle recovery
+      if: inputs.status == 'success'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        ALERT_TITLE: ${{ inputs.title }}
+      run: |
+        REPO="${{ github.repository }}"
+        TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+        EXISTING_ISSUE=$(gh issue list \
+          --repo "${REPO}" \
+          --state open \
+          --search "\"${ALERT_TITLE}\" in:title" \
+          --json number \
+          --jq '.[0].number // empty')
+
+        if [ -n "${EXISTING_ISSUE}" ]; then
+          echo "Recovery detected. Closing alert issue #${EXISTING_ISSUE}."
+          gh issue comment "${EXISTING_ISSUE}" --repo "${REPO}" \
+            --body "**Recovered** at ${TIMESTAMP} -- this job succeeded again."
+          gh issue close "${EXISTING_ISSUE}" --repo "${REPO}" --reason "completed"
+        else
+          echo "Job succeeded. No open alert issue to close."
+        fi

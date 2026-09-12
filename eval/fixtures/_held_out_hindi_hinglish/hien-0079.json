@@ -1,0 +1,74 @@
+{
+  "id": "hien-0079",
+  "review_text": "Sound quality is not so good.i received I speaker damge..base is low as I accept it.. degin was good, battery backup is good..if you want low volume sound lover must buy it...it's very nice for slow songs lover..not for Gym class aur exercise volume is very low..READ MORE",
+  "ground_truth": {
+    "product": "speaker",
+    "stars": null,
+    "stars_inferred": 3,
+    "pros": [
+      "good design",
+      "good battery backup",
+      "nice for slow songs"
+    ],
+    "cons": [
+      "sound quality is not so good",
+      "received damaged speaker",
+      "low bass",
+      "volume is very low",
+      "not suitable for gym or exercise"
+    ],
+    "buy_again": null,
+    "sentiment": "mixed",
+    "topics": [
+      "sound_quality",
+      "build_quality",
+      "battery",
+      "volume",
+      "design"
+    ],
+    "competitor_mentions": [],
+    "urgency": "medium",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/kabirnagpal/flipkart-customer-review-and-rating",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "majority",
+      "sentiment": "unanimous",
+      "language": "majority",
+      "urgency": "unanimous",
+      "product": "unanimous",
+      "stars_inferred": "unanimous",
+      "pros": "unanimous",
+      "cons": "majority",
+      "topics": "majority",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}

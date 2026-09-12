@@ -1,0 +1,1357 @@
+{
+  "generated_at": "2026-09-11T19:06:41Z",
+  "corpus": "eval/fixtures/_held_out_hindi_hinglish/ (quarantined, LLM-consensus silver, never human ground truth)",
+  "measurement_target": "live deployed demo endpoint (POST /demo/extract), which calls the identical extract_with_llm() as /v2/extract",
+  "n_fixtures": 23,
+  "n_scored": 23,
+  "n_errors": 0,
+  "overall_score": 0.6794125718023676,
+  "overall_ci_95": {
+    "lower": 0.6355786680527561,
+    "upper": 0.7225250631757286,
+    "method": "bootstrap",
+    "n": 23
+  },
+  "per_field": {
+    "buy_again": {
+      "n": 23,
+      "accuracy": 0.6521739130434783,
+      "coverage": 0.43478260869565216,
+      "accuracy_on_answered": 0.7,
+      "accuracy_on_answered_ci_95": [
+        0.4,
+        1.0
+      ]
+    },
+    "competitor_mentions": {
+      "n": 23,
+      "accuracy": 0.8260869565217391
+    },
+    "cons": {
+      "n": 23,
+      "accuracy": 0.5842995169082126
+    },
+    "language": {
+      "n": 23,
+      "accuracy": 0.5217391304347826
+    },
+    "product": {
+      "n": 23,
+      "accuracy": 0.08695652173913043
+    },
+    "pros": {
+      "n": 23,
+      "accuracy": 0.6903519555542615
+    },
+    "sentiment": {
+      "n": 23,
+      "accuracy": 0.9130434782608695,
+      "coverage": 0.8260869565217391,
+      "accuracy_on_answered": 0.8947368421052632,
+      "accuracy_on_answered_ci_95": [
+        0.7368421052631579,
+        1.0
+      ]
+    },
+    "stars": {
+      "n": 23,
+      "accuracy": 1.0
+    },
+    "stars_inferred": {
+      "n": 23,
+      "accuracy": 1.0
+    },
+    "topics": {
+      "n": 23,
+      "accuracy": 0.519474245561202
+    }
+  },
+  "per_fixture": [
+    {
+      "id": "hien-0001",
+      "overall_score": 0.67,
+      "latency_ms": 3905,
+      "field_scores": {
+        "product": 0.0,
+        "stars": 1.0,
+        "buy_again": 1.0,
+        "sentiment": 1.0,
+        "language": 0.0,
+        "topics": 0.5,
+        "competitor_mentions": 1.0,
+        "pros": 0.4,
+        "cons": 0.8,
+        "stars_inferred": 1.0
+      },
+      "predicted": {
+        "product": "unknown product",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "mixed",
+        "language": "en",
+        "topics": [
+          "overall",
+          "comfort"
+        ],
+        "competitor_mentions": [],
+        "pros": [
+          "overall great"
+        ],
+        "cons": [
+          "bit uncomfortable on ears"
+        ],
+        "stars_inferred": 4
+      },
+      "expected": {
+        "product": "headphones",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "mixed",
+        "language": "hi-en",
+        "topics": [
+          "comfort",
+          "overall_quality"
+        ],
+        "competitor_mentions": [],
+        "pros": [
+          "overall good quality"
+        ],
+        "cons": [
+          "uncomfortable on ears"
+        ],
+        "stars_inferred": 4
+      }
+    },
+    {
+      "id": "hien-0002",
+      "overall_score": 0.6222222222222222,
+      "latency_ms": 3796,
+      "field_scores": {
+        "product": 0.0,
+        "stars": 1.0,
+        "buy_again": 1.0,
+        "sentiment": 1.0,
+        "language": 0.0,
+        "topics": 0.4444444444444445,
+        "competitor_mentions": 1.0,
+        "pros": 0.7777777777777778,
+        "cons": 0.0,
+        "stars_inferred": 1.0
+      },
+      "predicted": {
+        "product": "unknown product",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "mixed",
+        "language": "en",
+        "topics": [
+          "sound_quality",
+          "balance",
+          "value",
+          "design",
+          "cable_management"
+        ],
+        "competitor_mentions": [],
+        "pros": [
+          "very good sound quality",
+          "very balanced sound",
+          "superb",
+          "money satisfaction in its first song"
+        ],
+        "cons": [
+          "issue with its design",
+          "not properly cable management"
+        ],
+        "stars_inferred": 4
+      },
+      "expected": {
+        "product": "headphones",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "mixed",
+        "language": "hi-en",
+        "topics": [
+          "sound_quality",
+          "build_quality",
+          "cable_management",
+          "price"
+        ],
+        "competitor_mentions": [],
+        "pros": [
+          "very good sound quality",
+          "balanced sound",
+          "money satisfaction"
+        ],
+        "cons": [],
+        "stars_inferred": 4
+      }
+    },
+    {
+      "id": "hien-0003",
+      "overall_score": 0.58,
+      "latency_ms": 3187,
+      "field_scores": {
+        "product": 0.0,
+        "stars": 1.0,
+        "buy_again": 0.0,
+        "sentiment": 1.0,
+        "language": 0.0,
+        "topics": 0.8,
+        "competitor_mentions": 1.0,
+        "pros": 1.0,
+        "cons": 0.0,
+        "stars_inferred": 1.0
+      },
+      "predicted": {
+        "product": "unknown product",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "negative",
+        "language": "en",
+        "topics": [
+          "sound_quality",
+          "price"
+        ],
+        "competitor_mentions": [],
+        "pros": [],
+        "cons": [
+          "sound quality deteriorated after 20 days",
+          "money wasted"
+        ],
+        "stars_inferred": 1
+      },
+      "expected": {
+        "product": "audio device",
+        "stars": null,
+        "buy_again": false,
+        "sentiment": "negative",
+        "language": "hi-en",
+        "topics": [
+          "sound_quality",
+          "durability",
+          "price"
+        ],
+        "competitor_mentions": [],
+        "pros": [],
+        "cons": [],
+        "stars_inferred": 1
+      }
+    },
+    {
+      "id": "hien-0004",
+      "overall_score": 0.7333333333333333,
+      "latency_ms": 3453,
+      "field_scores": {
+        "product": 0.0,
+        "stars": 1.0,
+        "buy_again": 1.0,
+        "sentiment": 1.0,
+        "language": 1.0,
+        "topics": 0.3333333333333333,
+        "competitor_mentions": 1.0,
+        "pros": 1.0,
+        "cons": 0.0,
+        "stars_inferred": 1.0
+      },
+      "predicted": {
+        "product": "general product",
+        "stars": null,
+        "buy_again": false,
+        "sentiment": "negative",
+        "language": "hi-en",
+        "topics": [
+          "voice_quality",
+          "durability",
+          "product_quality"
+        ],
+        "competitor_mentions": [],
+        "pros": [],
+        "cons": [
+          "poor voice quality",
+          "product ruined after one month"
+        ],
+        "stars_inferred": 2
+      },
+      "expected": {
+        "product": "unknown",
+        "stars": null,
+        "buy_again": false,
+        "sentiment": "negative",
+        "language": "hi-en",
+        "topics": [
+          "sound_quality",
+          "durability",
+          "lifespan"
+        ],
+        "competitor_mentions": [],
+        "pros": [],
+        "cons": [],
+        "stars_inferred": 1
+      }
+    },
+    {
+      "id": "hien-0005",
+      "overall_score": 0.6,
+      "latency_ms": 4139,
+      "field_scores": {
+        "product": 0.0,
+        "stars": 1.0,
+        "buy_again": 1.0,
+        "sentiment": 1.0,
+        "language": 0.0,
+        "topics": 0.5,
+        "competitor_mentions": 1.0,
+        "pros": 0.5,
+        "cons": 0.0,
+        "stars_inferred": 1.0
+      },
+      "predicted": {
+        "product": "unknown product",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "mixed",
+        "language": "en",
+        "topics": [
+          "performance",
+          "battery"
+        ],
+        "competitor_mentions": [],
+        "pros": [
+          "overall good"
+        ],
+        "cons": [
+          "worst battery",
+          "short battery life"
+        ],
+        "stars_inferred": 3
+      },
+      "expected": {
+        "product": "unknown",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "mixed",
+        "language": "hi-en",
+        "topics": [
+          "battery",
+          "durability"
+        ],
+        "competitor_mentions": [],
+        "pros": [
+          "all is good"
+        ],
+        "cons": [],
+        "stars_inferred": 2
+      }
+    },
+    {
+      "id": "hien-0006",
+      "overall_score": 0.7982174688057041,
+      "latency_ms": 3656,
+      "field_scores": {
+        "product": 0.0,
+        "stars": 1.0,
+        "buy_again": 1.0,
+        "sentiment": 1.0,
+        "language": 1.0,
+        "topics": 0.7272727272727272,
+        "competitor_mentions": 1.0,
+        "pros": 0.5882352941176471,
+        "cons": 0.6666666666666666,
+        "stars_inferred": 1.0
+      },
+      "predicted": {
+        "product": "earbud",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "mixed",
+        "language": "hi-en",
+        "topics": [
+          "sound_quality",
+          "connectivity",
+          "fit",
+          "audio_sync",
+          "product_defect",
+          "earbud"
+        ],
+        "competitor_mentions": [],
+        "pros": [
+          "good sound quality",
+          "above average sound",
+          "easy pairing",
+          "good fit"
+        ],
+        "cons": [
+          "video audio sync lag",
+          "right earbud stopped working"
+        ],
+        "stars_inferred": 2
+      },
+      "expected": {
+        "product": "earbuds",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "mixed",
+        "language": "hi-en",
+        "topics": [
+          "sound_quality",
+          "connectivity",
+          "fit",
+          "durability",
+          "audio_sync"
+        ],
+        "competitor_mentions": [],
+        "pros": [
+          "good sound quality",
+          "easy to pair and connect",
+          "perfect fit"
+        ],
+        "cons": [
+          "audio-video sync issues",
+          "right earbud stopped working"
+        ],
+        "stars_inferred": 3
+      }
+    },
+    {
+      "id": "hien-0007",
+      "overall_score": 0.7909090909090909,
+      "latency_ms": 3328,
+      "field_scores": {
+        "product": 0.0,
+        "stars": 1.0,
+        "buy_again": 1.0,
+        "sentiment": 1.0,
+        "language": 0.0,
+        "topics": 1.0,
+        "competitor_mentions": 1.0,
+        "pros": 0.9090909090909091,
+        "cons": 1.0,
+        "stars_inferred": 1.0
+      },
+      "predicted": {
+        "product": "unknown product",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "positive",
+        "language": "en",
+        "topics": [
+          "bass",
+          "sound_quality"
+        ],
+        "competitor_mentions": [],
+        "pros": [
+          "awesome bass",
+          "super sound",
+          "good sound"
+        ],
+        "cons": [],
+        "stars_inferred": 5
+      },
+      "expected": {
+        "product": "unknown",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "positive",
+        "language": "hi-en",
+        "topics": [
+          "sound_quality",
+          "bass"
+        ],
+        "competitor_mentions": [],
+        "pros": [
+          "awesome bass",
+          "super sound",
+          "good sound quality"
+        ],
+        "cons": [],
+        "stars_inferred": 5
+      }
+    },
+    {
+      "id": "hien-0008",
+      "overall_score": 0.6571428571428571,
+      "latency_ms": 3375,
+      "field_scores": {
+        "product": 0.0,
+        "stars": 1.0,
+        "buy_again": 0.0,
+        "sentiment": 1.0,
+        "language": 1.0,
+        "topics": 0.5714285714285715,
+        "competitor_mentions": 1.0,
+        "pros": 0.0,
+        "cons": 1.0,
+        "stars_inferred": 1.0
+      },
+      "predicted": {
+        "product": "general product",
+        "stars": null,
+        "buy_again": true,
+        "sentiment": "positive",
+        "language": "hi-en",
+        "topics": [
+          "sound_quality",
+          "bass",
+          "price",
+          "value"
+        ],
+        "competitor_mentions": [],
+        "pros": [
+          "excellent product",
+          "great bass",
+          "good sound quality",
+          "value for money"
+        ],
+        "cons": [],
+        "stars_inferred": 5
+      },
+      "expected": {
+        "product": "unknown",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "positive",
+        "language": "hi-en",
+        "topics": [
+          "sound_quality",
+          "bass",
+          "value_for_money"
+        ],
+        "competitor_mentions": [],
+        "pros": [],
+        "cons": [],
+        "stars_inferred": 5
+      }
+    },
+    {
+      "id": "hien-0009",
+      "overall_score": 0.6842105263157895,
+      "latency_ms": 3280,
+      "field_scores": {
+        "product": 0.0,
+        "stars": 1.0,
+        "buy_again": 0.0,
+        "sentiment": 1.0,
+        "language": 0.0,
+        "topics": 1.0,
+        "competitor_mentions": 1.0,
+        "pros": 0.8421052631578948,
+        "cons": 1.0,
+        "stars_inferred": 1.0
+      },
+      "predicted": {
+        "product": "unknown product",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "positive",
+        "language": "en",
+        "topics": [
+          "sound_quality",
+          "bass",
+          "price"
+        ],
+        "competitor_mentions": [],
+        "pros": [
+          "awesome sound quality",
+          "beautiful bass",
+          "best in price range"
+        ],
+        "cons": [],
+        "stars_inferred": 5
+      },
+      "expected": {
+        "product": "headphones",
+        "stars": null,
+        "buy_again": true,
+        "sentiment": "positive",
+        "language": "hi-en",
+        "topics": [
+          "sound_quality",
+          "bass",
+          "price"
+        ],
+        "competitor_mentions": [],
+        "pros": [
+          "awesome sound quality",
+          "beautiful bass",
+          "immersive music experience",
+          "best in price range"
+        ],
+        "cons": [],
+        "stars_inferred": 5
+      }
+    },
+    {
+      "id": "hien-0010",
+      "overall_score": 0.5,
+      "latency_ms": 3032,
+      "field_scores": {
+        "product": 0.0,
+        "stars": 1.0,
+        "buy_again": 0.0,
+        "sentiment": 1.0,
+        "language": 1.0,
+        "topics": 0.0,
+        "competitor_mentions": 0.0,
+        "pros": 0.0,
+        "cons": 1.0,
+        "stars_inferred": 1.0
+      },
+      "predicted": {
+        "product": "Bluetooth oneplus",
+        "stars": null,
+        "buy_again": true,
+        "sentiment": "positive",
+        "language": "hi-en",
+        "topics": [
+          "product_quality"
+        ],
+        "competitor_mentions": [],
+        "pros": [
+          "very good"
+        ],
+        "cons": [],
+        "stars_inferred": 5
+      },
+      "expected": {
+        "product": "OnePlus Bluetooth",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "positive",
+        "language": "hi-en",
+        "topics": [
+          "bluetooth",
+          "build_quality"
+        ],
+        "competitor_mentions": [
+          "OnePlus"
+        ],
+        "pros": [],
+        "cons": [],
+        "stars_inferred": 5
+      }
+    },
+    {
+      "id": "hien-0011",
+      "overall_score": 0.8,
+      "latency_ms": 3625,
+      "field_scores": {
+        "product": 1.0,
+        "stars": 1.0,
+        "buy_again": 1.0,
+        "sentiment": 1.0,
+        "language": 1.0,
+        "topics": 0.0,
+        "competitor_mentions": 1.0,
+        "pros": 1.0,
+        "cons": 0.0,
+        "stars_inferred": 1.0
+      },
+      "predicted": {
+        "product": "product",
+        "stars": null,
+        "buy_again": false,
+        "sentiment": "negative",
+        "language": "hi-en",
+        "topics": [
+          "product_quality"
+        ],
+        "competitor_mentions": [],
+        "pros": [],
+        "cons": [
+          "product is nonsense"
+        ],
+        "stars_inferred": 1
+      },
+      "expected": {
+        "product": "product",
+        "stars": null,
+        "buy_again": false,
+        "sentiment": "negative",
+        "language": "hi-en",
+        "topics": [
+          "quality"
+        ],
+        "competitor_mentions": [],
+        "pros": [],
+        "cons": [
+          "poor quality",
+          "useless"
+        ],
+        "stars_inferred": 1
+      }
+    },
+    {
+      "id": "hien-0012",
+      "overall_score": 0.7,
+      "latency_ms": 3155,
+      "field_scores": {
+        "product": 0.0,
+        "stars": 1.0,
+        "buy_again": 1.0,
+        "sentiment": 1.0,
+        "language": 1.0,
+        "topics": 0.0,
+        "competitor_mentions": 1.0,
+        "pros": 1.0,
+        "cons": 0.0,
+        "stars_inferred": 1.0
+      },
+      "predicted": {
+        "product": "general product",
+        "stars": null,
+        "buy_again": false,
+        "sentiment": "negative",
+        "language": "hi-en",
+        "topics": [
+          "product_quality"
+        ],
+        "competitor_mentions": [],
+        "pros": [],
+        "cons": [
+          "worthless",
+          "use regular product instead"
+        ],
+        "stars_inferred": 1
+      },
+      "expected": {
+        "product": "product",
+        "stars": null,
+        "buy_again": false,
+        "sentiment": "negative",
+        "language": "hi-en",
+        "topics": [
+          "quality"
+        ],
+        "competitor_mentions": [],
+        "pros": [],
+        "cons": [
+          "poor quality",
+          "not recommended"
+        ],
+        "stars_inferred": 1
+      }
+    },
+    {
+      "id": "hien-0013",
+      "overall_score": 0.7222222222222222,
+      "latency_ms": 3187,
+      "field_scores": {
+        "product": 0.0,
+        "stars": 1.0,
+        "buy_again": 1.0,
+        "sentiment": 1.0,
+        "language": 1.0,
+        "topics": 0.0,
+        "competitor_mentions": 1.0,
+        "pros": 1.0,
+        "cons": 0.22222222222222224,
+        "stars_inferred": 1.0
+      },
+      "predicted": {
+        "product": "general product",
+        "stars": null,
+        "buy_again": false,
+        "sentiment": "negative",
+        "language": "hi-en",
+        "topics": [
+          "product_quality"
+        ],
+        "competitor_mentions": [],
+        "pros": [],
+        "cons": [
+          "rubbish product",
+          "not worth buying"
+        ],
+        "stars_inferred": 1
+      },
+      "expected": {
+        "product": "product",
+        "stars": null,
+        "buy_again": false,
+        "sentiment": "negative",
+        "language": "hi-en",
+        "topics": [],
+        "competitor_mentions": [],
+        "pros": [],
+        "cons": [
+          "poor quality",
+          "not recommended"
+        ],
+        "stars_inferred": 1
+      }
+    },
+    {
+      "id": "hien-0014",
+      "overall_score": 0.6,
+      "latency_ms": 17266,
+      "field_scores": {
+        "product": 0.0,
+        "stars": 1.0,
+        "buy_again": 0.0,
+        "sentiment": 0.0,
+        "language": 1.0,
+        "topics": 1.0,
+        "competitor_mentions": 1.0,
+        "pros": 0.0,
+        "cons": 1.0,
+        "stars_inferred": 1.0
+      },
+      "predicted": {
+        "product": "Boat",
+        "stars": null,
+        "buy_again": true,
+        "sentiment": "positive",
+        "language": "hi-en",
+        "topics": [
+          "bass",
+          "volume",
+          "build_quality"
+        ],
+        "competitor_mentions": [],
+        "pros": [
+          "excellent bass",
+          "good volume",
+          "excellent build quality",
+          "overall best"
+        ],
+        "cons": [
+          "needs volume improvement"
+        ],
+        "stars_inferred": 5
+      },
+      "expected": {
+        "product": "unknown",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "mixed",
+        "language": "hi-en",
+        "topics": [
+          "bass",
+          "volume",
+          "build_quality"
+        ],
+        "competitor_mentions": [],
+        "pros": [],
+        "cons": [
+          "Volume needs improvement"
+        ],
+        "stars_inferred": 4
+      }
+    },
+    {
+      "id": "hien-0015",
+      "overall_score": 0.8416666666666668,
+      "latency_ms": 11344,
+      "field_scores": {
+        "product": 0.0,
+        "stars": 1.0,
+        "buy_again": 1.0,
+        "sentiment": 1.0,
+        "language": 1.0,
+        "topics": 0.6666666666666666,
+        "competitor_mentions": 1.0,
+        "pros": 1.0,
+        "cons": 0.75,
+        "stars_inferred": 1.0
+      },
+      "predicted": {
+        "product": "general product",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "negative",
+        "language": "hi-en",
+        "topics": [
+          "bass"
+        ],
+        "competitor_mentions": [],
+        "pros": [],
+        "cons": [
+          "bass lower than expected"
+        ],
+        "stars_inferred": 2
+      },
+      "expected": {
+        "product": "unknown",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "negative",
+        "language": "hi-en",
+        "topics": [
+          "sound_quality",
+          "bass"
+        ],
+        "competitor_mentions": [],
+        "pros": [],
+        "cons": [
+          "bass is less than expected"
+        ],
+        "stars_inferred": 3
+      }
+    },
+    {
+      "id": "hien-0016",
+      "overall_score": 0.788888888888889,
+      "latency_ms": 3217,
+      "field_scores": {
+        "product": 0.0,
+        "stars": 1.0,
+        "buy_again": 1.0,
+        "sentiment": 1.0,
+        "language": 0.0,
+        "topics": 1.0,
+        "competitor_mentions": 1.0,
+        "pros": 0.888888888888889,
+        "cons": 1.0,
+        "stars_inferred": 1.0
+      },
+      "predicted": {
+        "product": "BassDesignSound",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "positive",
+        "language": "en",
+        "topics": [
+          "sound_quality",
+          "battery"
+        ],
+        "competitor_mentions": [],
+        "pros": [
+          "sound quality",
+          "battery backup"
+        ],
+        "cons": [],
+        "stars_inferred": 5
+      },
+      "expected": {
+        "product": "BassDesign",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "positive",
+        "language": "hi-en",
+        "topics": [
+          "sound_quality",
+          "battery"
+        ],
+        "competitor_mentions": [],
+        "pros": [
+          "good sound quality",
+          "good battery backup"
+        ],
+        "cons": [],
+        "stars_inferred": 5
+      }
+    },
+    {
+      "id": "hien-0017",
+      "overall_score": 0.5666666666666667,
+      "latency_ms": 4359,
+      "field_scores": {
+        "product": 1.0,
+        "stars": 1.0,
+        "buy_again": 0.0,
+        "sentiment": 1.0,
+        "language": 0.0,
+        "topics": 0.6666666666666665,
+        "competitor_mentions": 0.0,
+        "pros": 0.0,
+        "cons": 1.0,
+        "stars_inferred": 1.0
+      },
+      "predicted": {
+        "product": "earphone",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "positive",
+        "language": "en",
+        "topics": [
+          "bass",
+          "sound_quality",
+          "build_quality",
+          "realme",
+          "flipcart"
+        ],
+        "competitor_mentions": [],
+        "pros": [
+          "awesome bass",
+          "clear sound at high volume",
+          "nice build quality",
+          "love realme",
+          "love flipcart"
+        ],
+        "cons": [],
+        "stars_inferred": 5
+      },
+      "expected": {
+        "product": "earphone",
+        "stars": null,
+        "buy_again": true,
+        "sentiment": "positive",
+        "language": "hi-en",
+        "topics": [
+          "sound_quality",
+          "bass",
+          "build_quality",
+          "price"
+        ],
+        "competitor_mentions": [
+          "realme",
+          "flipcart"
+        ],
+        "pros": [],
+        "cons": [],
+        "stars_inferred": 5
+      }
+    },
+    {
+      "id": "hien-0018",
+      "overall_score": 0.525,
+      "latency_ms": 3766,
+      "field_scores": {
+        "product": 0.0,
+        "stars": 1.0,
+        "buy_again": 1.0,
+        "sentiment": 0.0,
+        "language": 0.0,
+        "topics": 0.5,
+        "competitor_mentions": 1.0,
+        "pros": 0.7499999999999999,
+        "cons": 0.0,
+        "stars_inferred": 1.0
+      },
+      "predicted": {
+        "product": "unknown product",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "positive",
+        "language": "en",
+        "topics": [
+          "battery",
+          "battery_life"
+        ],
+        "competitor_mentions": [],
+        "pros": [
+          "battery backup is good"
+        ],
+        "cons": [
+          "battery drops from 100% to 80% immediately",
+          "battery drains quickly after 30%"
+        ],
+        "stars_inferred": 4
+      },
+      "expected": {
+        "product": "unknown",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "mixed",
+        "language": "hi-en",
+        "topics": [
+          "battery",
+          "build_quality"
+        ],
+        "competitor_mentions": [],
+        "pros": [
+          "good battery backup",
+          "good product overall"
+        ],
+        "cons": [],
+        "stars_inferred": 3
+      }
+    },
+    {
+      "id": "hien-0019",
+      "overall_score": 0.85,
+      "latency_ms": 9171,
+      "field_scores": {
+        "product": 0.0,
+        "stars": 1.0,
+        "buy_again": 1.0,
+        "sentiment": 1.0,
+        "language": 1.0,
+        "topics": 0.5,
+        "competitor_mentions": 1.0,
+        "pros": 1.0,
+        "cons": 1.0,
+        "stars_inferred": 1.0
+      },
+      "predicted": {
+        "product": "general product",
+        "stars": null,
+        "buy_again": false,
+        "sentiment": "negative",
+        "language": "hi-en",
+        "topics": [
+          "connectivity",
+          "auto_disconnect"
+        ],
+        "competitor_mentions": [],
+        "pros": [],
+        "cons": [
+          "auto disconnected"
+        ],
+        "stars_inferred": 1
+      },
+      "expected": {
+        "product": "unknown",
+        "stars": null,
+        "buy_again": false,
+        "sentiment": "negative",
+        "language": "hi-en",
+        "topics": [
+          "reliability",
+          "connectivity"
+        ],
+        "competitor_mentions": [],
+        "pros": [],
+        "cons": [
+          "auto disconnected"
+        ],
+        "stars_inferred": 1
+      }
+    },
+    {
+      "id": "hien-0020",
+      "overall_score": 0.534920634920635,
+      "latency_ms": 10733,
+      "field_scores": {
+        "product": 0.0,
+        "stars": 1.0,
+        "buy_again": 0.0,
+        "sentiment": 1.0,
+        "language": 0.0,
+        "topics": 0.5714285714285715,
+        "competitor_mentions": 0.0,
+        "pros": 0.7777777777777778,
+        "cons": 1.0,
+        "stars_inferred": 1.0
+      },
+      "predicted": {
+        "product": "realme",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "positive",
+        "language": "en",
+        "topics": [
+          "sound",
+          "bass",
+          "build_quality",
+          "earphone"
+        ],
+        "competitor_mentions": [],
+        "pros": [
+          "good sound",
+          "awesome bass",
+          "excellent build quality",
+          "nice earphone",
+          "overall satisfaction"
+        ],
+        "cons": [],
+        "stars_inferred": 5
+      },
+      "expected": {
+        "product": "earphone",
+        "stars": null,
+        "buy_again": true,
+        "sentiment": "positive",
+        "language": "hi-en",
+        "topics": [
+          "sound_quality",
+          "bass",
+          "build_quality"
+        ],
+        "competitor_mentions": [
+          "realme"
+        ],
+        "pros": [
+          "good sound",
+          "awesome bass",
+          "excellent build quality"
+        ],
+        "cons": [],
+        "stars_inferred": 5
+      }
+    },
+    {
+      "id": "hien-0021",
+      "overall_score": 0.8287356321839081,
+      "latency_ms": 19141,
+      "field_scores": {
+        "product": 0.0,
+        "stars": 1.0,
+        "buy_again": 1.0,
+        "sentiment": 1.0,
+        "language": 1.0,
+        "topics": 0.6666666666666665,
+        "competitor_mentions": 1.0,
+        "pros": 0.6206896551724138,
+        "cons": 1.0,
+        "stars_inferred": 1.0
+      },
+      "predicted": {
+        "product": "neckband",
+        "stars": null,
+        "buy_again": true,
+        "sentiment": "positive",
+        "language": "hi-en",
+        "topics": [
+          "sound_quality",
+          "bass",
+          "battery",
+          "product_quality",
+          "brand_comparison"
+        ],
+        "competitor_mentions": [
+          "JBL"
+        ],
+        "pros": [
+          "excellent 11mm drivers",
+          "great bass",
+          "great battery backup",
+          "excellent sound",
+          "best neckband in its range, better than JBL"
+        ],
+        "cons": [],
+        "stars_inferred": 5
+      },
+      "expected": {
+        "product": "11mm neckband",
+        "stars": null,
+        "buy_again": true,
+        "sentiment": "positive",
+        "language": "hi-en",
+        "topics": [
+          "sound_quality",
+          "bass",
+          "battery",
+          "value"
+        ],
+        "competitor_mentions": [
+          "jbl"
+        ],
+        "pros": [
+          "best in class 11mm drivers",
+          "loving experience",
+          "best bass",
+          "excellent battery backup",
+          "best sound",
+          "best neckband in this range"
+        ],
+        "cons": [],
+        "stars_inferred": 5
+      }
+    },
+    {
+      "id": "hien-0022",
+      "overall_score": 0.6,
+      "latency_ms": 16312,
+      "field_scores": {
+        "product": 0.0,
+        "stars": 1.0,
+        "buy_again": 1.0,
+        "sentiment": 1.0,
+        "language": 1.0,
+        "topics": 0.0,
+        "competitor_mentions": 0.0,
+        "pros": 1.0,
+        "cons": 0.0,
+        "stars_inferred": 1.0
+      },
+      "predicted": {
+        "product": "Boat",
+        "stars": null,
+        "buy_again": false,
+        "sentiment": "negative",
+        "language": "hi-en",
+        "topics": [
+          "sound_quality",
+          "battery",
+          "button",
+          "product_quality"
+        ],
+        "competitor_mentions": [
+          "Boat"
+        ],
+        "pros": [],
+        "cons": [
+          "buttons not working properly",
+          "left side sound automatically low",
+          "battery suddenly low after 60%"
+        ],
+        "stars_inferred": 1
+      },
+      "expected": {
+        "product": "unknown",
+        "stars": null,
+        "buy_again": false,
+        "sentiment": "negative",
+        "language": "hi-en",
+        "topics": [],
+        "competitor_mentions": [],
+        "pros": [],
+        "cons": [],
+        "stars_inferred": 1
+      }
+    },
+    {
+      "id": "hien-0023",
+      "overall_score": 0.6323529411764706,
+      "latency_ms": 23467,
+      "field_scores": {
+        "product": 0.0,
+        "stars": 1.0,
+        "buy_again": 0.0,
+        "sentiment": 1.0,
+        "language": 0.0,
+        "topics": 0.5,
+        "competitor_mentions": 1.0,
+        "pros": 0.8235294117647058,
+        "cons": 1.0,
+        "stars_inferred": 1.0
+      },
+      "predicted": {
+        "product": "BoAt 228 wired earphone",
+        "stars": null,
+        "buy_again": null,
+        "sentiment": "positive",
+        "language": "en",
+        "topics": [
+          "performance",
+          "movie",
+          "ultra_hd_sound",
+          "gaming"
+        ],
+        "competitor_mentions": [],
+        "pros": [
+          "awesome",
+          "best performance",
+          "best for movie",
+          "best for ultra hd sound",
+          "best for gaming (PUBG LOVERS)"
+        ],
+        "cons": [],
+        "stars_inferred": 5
+      },
+      "expected": {
+        "product": "BoAt 235v2 bluetooth headset",
+        "stars": null,
+        "buy_again": true,
+        "sentiment": "positive",
+        "language": "hi-en",
+        "topics": [
+          "sound_quality",
+          "performance",
+          "gaming",
+          "movies"
+        ],
+        "competitor_mentions": [],
+        "pros": [
+          "best performance",
+          "best for movie",
+          "best for ultra hd sound",
+          "best for gaming"
+        ],
+        "cons": [],
+        "stars_inferred": 5
+      }
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "id": "hien-0086",
+  "review_text": "These rockerz are branded , easy to use and good sound quality. Best bluetooth headphones in this price range .Design is also fine . Bluetooth range max. from one room to another . Can talk through built in mic when on a call. So don't need to hold your phone near you.I got this for 999 in sale.The best price.Isse kam mai koi bhi branded bluetooth headphones  nhi milenge.READ MORE",
+  "ground_truth": {
+    "product": "rockerz bluetooth headphones",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": [
+      "branded",
+      "easy to use",
+      "good sound quality",
+      "best in price range",
+      "fine design",
+      "good bluetooth range",
+      "built-in mic for calls",
+      "affordable price"
+    ],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "positive",
+    "topics": [
+      "sound_quality",
+      "price",
+      "bluetooth_range",
+      "design",
+      "microphone",
+      "ease_of_use"
+    ],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/kabirnagpal/flipkart-customer-review-and-rating",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "majority",
+      "stars_inferred": "unanimous",
+      "pros": "majority",
+      "cons": "unanimous",
+      "topics": "unanimous",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}

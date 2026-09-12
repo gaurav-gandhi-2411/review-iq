@@ -45,12 +45,25 @@ jobs:
         run: |
           python3 - <<'PYEOF' >> "$GITHUB_OUTPUT"
           import re
+          import sys
+
           text = open("app/core/config.py", encoding="utf-8").read()
           fields = ["groq_model", "gemini_model", "groq_model_small", "groq_model_large"]
+          # (?:#.*\n\s*)* tolerates comment lines between `Field(` and `default=` --
+          # session 12 regression: PR #31 added a multi-line explanatory comment above
+          # gemini_model's default, which the previous regex (no comment tolerance)
+          # could not see past, silently extracting "" and turning a real fix into a
+          # false "model no longer available" alarm on the very next scheduled run.
           for field in fields:
-              m = re.search(rf'{field}: str = Field\(\s*default="([^"]+)"', text)
+              m = re.search(rf'{field}: str = Field\(\s*(?:#.*\n\s*)*default="([^"]+)"', text)
               if m:
                   print(f"{field}={m.group(1)}")
+              else:
+                  # Fail closed, loudly: a field this check cannot extract must not
+                  # silently vanish from the output and masquerade as an empty live
+                  # value further down the pipeline (rule 98a) -- surface it here.
+                  print(f"::error::Could not extract default for '{field}' from app/core/config.py", file=sys.stderr)
+                  sys.exit(1)
           PYEOF
 
       - name: Authenticate to GCP

@@ -1,0 +1,67 @@
+{
+  "id": "hien-0039",
+  "review_text": "Good earphones but i think sound is little bit low but if it is higher then no one is going to keep at full volume so i think  it is great no stress toh ears good comfort.... Just go for it",
+  "ground_truth": {
+    "product": "earphones",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": [
+      "good comfort",
+      "no stress to ears",
+      "great overall"
+    ],
+    "cons": [
+      "sound is little bit low"
+    ],
+    "buy_again": true,
+    "sentiment": "mixed",
+    "topics": [
+      "sound_quality",
+      "comfort"
+    ],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "majority",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "unanimous",
+      "stars_inferred": "unanimous",
+      "pros": "unanimous",
+      "cons": "majority",
+      "topics": "unanimous",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}

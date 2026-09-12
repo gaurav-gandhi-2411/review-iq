@@ -53,8 +53,12 @@ def _create_org(suffix: str) -> dict:
     conn = psycopg2.connect(os.environ["SUPABASE_DIRECT_URL"])
     try:
         cur = conn.cursor()
+        # Session 12 P2a: retention_mode defaults to 'stateless' (D1), which would make
+        # every extraction in this file's tests silently not persist -- this file tests
+        # persistence/isolation behavior, so it explicitly opts into 'retained'.
         cur.execute(
-            "INSERT INTO public.organizations (id, name, slug) VALUES (%s, %s, %s)",
+            "INSERT INTO public.organizations (id, name, slug, retention_mode, retention_days) "
+            "VALUES (%s, %s, %s, 'retained', 90)",
             (org_id, f"MT {suffix}", slug),
         )
         conn.commit()

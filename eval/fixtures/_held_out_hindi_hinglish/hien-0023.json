@@ -1,0 +1,68 @@
+{
+  "id": "hien-0023",
+  "review_text": "BoAt is awesome I am use boAt 228 wired earphoneAfter I was parched boAt 235v2 bluetooth headset Shortly i say best performance only boAt company earphones.Hum to diwane ho gayeAap bhi ho jaaaaaooo.....Best for movieBest for ultra hd soundBest for gaming (PUBG LOVERS)☺️☺️☺️👍👍👍👍👍",
+  "ground_truth": {
+    "product": "BoAt 235v2 bluetooth headset",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": [
+      "best performance",
+      "best for movie",
+      "best for ultra hd sound",
+      "best for gaming"
+    ],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "positive",
+    "topics": [
+      "sound_quality",
+      "performance",
+      "gaming",
+      "movies"
+    ],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "unanimous",
+      "stars_inferred": "unanimous",
+      "pros": "majority",
+      "cons": "unanimous",
+      "topics": "majority",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}

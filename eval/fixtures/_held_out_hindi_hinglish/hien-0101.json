@@ -1,0 +1,72 @@
+{
+  "id": "hien-0101",
+  "review_text": "Why are you Flipkart guys asking me about Battery life have you lost it?Anyways coming to review:Pros1. Crispy clear sound2. Great for music and streaming.3. Great for calls.Cons1. Bass is good but because of plastic body it's misses boom effect. It's bass is more like baam.2. If you're thinking of gaming like playing pubg on this then forget it, infact punish yourself by Unistalling pubg because your thinking is lika a noob you won't make any better.3. Clip kyu kha gaye ek hi toh ty...",
+  "ground_truth": {
+    "product": "earphones",
+    "stars": null,
+    "stars_inferred": 3,
+    "pros": [
+      "crispy clear sound",
+      "great for music and streaming",
+      "great for calls",
+      "good bass"
+    ],
+    "cons": [],
+    "buy_again": null,
+    "sentiment": "mixed",
+    "topics": [
+      "sound_quality",
+      "bass",
+      "build_quality",
+      "gaming",
+      "accessories"
+    ],
+    "competitor_mentions": [
+      "Flipkart",
+      "pubg"
+    ],
+    "urgency": "medium",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "majority",
+      "product": "majority",
+      "stars_inferred": "unanimous",
+      "pros": "unanimous",
+      "cons": "split",
+      "topics": "unanimous",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "majority"
+    }
+  }
+}

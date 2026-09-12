@@ -41,8 +41,8 @@ uv run python eval/data/sample_flipkart.py
 | Kaggle ref | Rows | License |
 |---|---|---|
 | `niraliivaghani/flipkart-product-customer-reviews-dataset` | ~180k | DbCL-1.0 |
-| `kabirnagpal/flipkart-customer-review-and-rating` | ~10k | (check before use) |
-| `naushads/flipkart-reviews` | ~9k | (check before use) |
+| `kabirnagpal/flipkart-customer-review-and-rating` | ~10k | **CC0-1.0** — resolved 2026-07-31 (Wave 1 Section H). Verified by reading the dataset page's own JSON-LD `license` block directly: `{"name":"CC0: Public Domain","url":"https://creativecommons.org/publicdomain/zero/1.0/"}`. Wired into `benchmark/vernacular_v2/ingest_and_dedupe.py`'s `SOURCES` (id `kabirnagpal_10k`). |
+| `naushads/flipkart-reviews` | ~9k | **CC0-1.0** — resolved 2026-07-31, same verification method (JSON-LD license block). License is clear; **not yet wired into ingestion** — the dataset page documents its scraping methodology but not its CSV column schema, and no raw file is present in this (gitignored) worktree to inspect a header row directly. Guessing a schema was rejected per this repo's evidence-over-recall rule. See `benchmark/vernacular_v2/ingest_and_dedupe.py`'s `NAUSHADS_LICENSE_CLEARED_SCHEMA_PENDING` and ADR 0004 for the full trail. |
 
 **Expected output:** `eval/data/flipkart_candidates.jsonl` with language labels.
 

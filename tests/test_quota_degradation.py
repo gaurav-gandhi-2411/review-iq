@@ -294,6 +294,7 @@ async def test_v2_api_returns_200_with_degraded_flag_on_large_quota() -> None:
             patch("app.api.v2.extract.get_by_hash_pg", return_value=None),
             patch("app.api.v2.extract.save_extraction_pg", return_value=str(uuid.uuid4())),
             patch("app.api.v2.extract.update_usage_tokens"),
+            patch("app.api.v2.extract.record_extraction_cost_pg"),
             patch(
                 "app.api.v2.extract.extract_with_llm",
                 new=AsyncMock(

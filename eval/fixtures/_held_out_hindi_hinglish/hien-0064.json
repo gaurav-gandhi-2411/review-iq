@@ -1,0 +1,72 @@
+{
+  "id": "hien-0064",
+  "review_text": "Nice for the price, good sound, but if you have already used boat 220 or 225 you will not find it very impressive but for the first time buyers it's a Paisa vasool item, anytime superb than the local or generic earphone.Bass is actually quite good as it's a basic earphone of boat, but no wonder thousands of people are rating it as good as it's really worth the money.Go for it guys if you can't extend the budget , you'll not regret.",
+  "ground_truth": {
+    "product": "Boat earphone",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": [
+      "good sound",
+      "nice for the price",
+      "good bass",
+      "worth the money",
+      "better than local or generic earphones"
+    ],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "positive",
+    "topics": [
+      "price",
+      "sound_quality",
+      "bass",
+      "value_for_money"
+    ],
+    "competitor_mentions": [
+      "boat 220",
+      "boat 225"
+    ],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "majority",
+      "language": "majority",
+      "urgency": "unanimous",
+      "product": "majority",
+      "stars_inferred": "unanimous",
+      "pros": "majority",
+      "cons": "split",
+      "topics": "unanimous",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}

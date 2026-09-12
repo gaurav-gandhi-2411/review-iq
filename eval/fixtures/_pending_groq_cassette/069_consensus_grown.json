@@ -1,0 +1,64 @@
+{
+  "id": "069_consensus_grown",
+  "review_text": "Good Sound Quality. Base is little less but okay, not an big issue. Perfect for office use as well as for home use. Charges 100% in 40 mins with normal 2 Amp charger. All functions working fine. Just OnePlus should start manufacturing in India or any other country than China.",
+  "ground_truth": {
+    "product": "unknown",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": [
+      "Good sound quality",
+      "Suitable for office and home use",
+      "Fast charging (100% in 40 mins)",
+      "All functions working fine"
+    ],
+    "cons": [
+      "Bass is a little less"
+    ],
+    "buy_again": null,
+    "sentiment": "mixed",
+    "topics": [],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus (Wave 1 Section B)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "split",
+      "stars_inferred": "unanimous",
+      "pros": "majority",
+      "cons": "majority",
+      "topics": "split",
+      "feature_requests": "split",
+      "competitor_mentions": "majority"
+    }
+  }
+}
