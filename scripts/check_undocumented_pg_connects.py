@@ -67,6 +67,12 @@ ALLOWLIST: dict[tuple[str, str], str] = {
         "Documented cross-org scheduled-sweep query (digest batcher) -- same pattern as "
         "storage_pg.py::list_orgs_with_dated_extractions_pg."
     ),
+    ("app/core/storage_pg.py", "list_orgs_with_retained_mode_pg"): (
+        "Session 12 P2c: documented cross-org scheduled-sweep query (retention-window "
+        "purge job) -- same pattern as list_orgs_with_daily_digest_pg. Goes through "
+        "public.list_orgs_with_retained_mode(), a narrow SECURITY DEFINER function "
+        "(20260912000001) that returns ONLY org_id + retention_days."
+    ),
     ("app/core/storage_pg.py", "aggregate_extraction_costs_pg"): (
         "Platform-wide COGS aggregate for Wave 2 pricing decisions -- no single org_id to "
         "scope to. Gated behind require_admin at the API layer (app/api/admin.py's "

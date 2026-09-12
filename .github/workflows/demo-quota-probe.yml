@@ -1,0 +1,156 @@
+name: Demo Quota Probe
+
+# Session 12 P7b: nightly synthetic check that POST /demo/extract still works for a
+# real, unauthenticated caller. Deliberately debounced across two consecutive nightly
+# runs (rather than schedule-failure-alert's usual first-failure-pages behavior) --
+# see scripts/probe_demo_quota.py's module docstring for why a single 429 is expected,
+# benign behavior (a real visitor traffic spike exhausting the shared daily Groq
+# budget) and only the SAME condition surviving a midnight-UTC reset is worth paging
+# on.
+#
+# State machine, backed entirely by GitHub issues (no new secret, no new service):
+#   200                                          -> close both trackers if open. OK.
+#   429, no open "watch" issue yet               -> open a quiet, non-paging "watch"
+#                                                    issue. Job still succeeds -- one
+#                                                    interval of 429 is not a failure.
+#   429, "watch" issue already open (2nd+ night) -> escalate: open/comment the real,
+#                                                    ci-alert-labeled issue via
+#                                                    schedule-failure-alert, close the
+#                                                    watch issue (superseded). Job
+#                                                    fails.
+#   anything else (5xx, timeout, bad body)       -> ordinary immediate failure via
+#                                                    schedule-failure-alert, no
+#                                                    debounce -- this is unambiguous.
+#
+# Cost: 1 real POST /demo/extract per night, same free-tier cost as any other demo
+# visitor (see scripts/probe_demo_quota.py).
+
+on:
+  schedule:
+    - cron: "50 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: demo-quota-probe
+  cancel-in-progress: true
+
+env:
+  WATCH_TITLE: "Demo endpoint returned 429 on last nightly probe (watching)"
+  ALERT_TITLE: "Demo endpoint stuck returning 429 to unauthenticated callers"
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Run demo quota probe
+        id: probe
+        run: |
+          set +e
+          uv run python scripts/probe_demo_quota.py
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Handle 200 -- close any open trackers
+        if: steps.probe.outputs.exit_code == '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          REPO="${{ github.repository }}"
+          for TITLE in "${WATCH_TITLE}" "${ALERT_TITLE}"; do
+            ISSUE=$(gh issue list --repo "${REPO}" --state open \
+              --search "\"${TITLE}\" in:title" --json number --jq '.[0].number // empty')
+            if [ -n "${ISSUE}" ]; then
+              echo "Recovered. Closing #${ISSUE} (${TITLE})."
+              gh issue comment "${ISSUE}" --repo "${REPO}" \
+                --body "**Recovered** -- POST /demo/extract returned 200 to an unauthenticated probe again."
+              gh issue close "${ISSUE}" --repo "${REPO}" --reason "completed"
+            fi
+          done
+
+      - name: Handle 429 -- debounce across one probe interval
+        id: debounce
+        if: steps.probe.outputs.exit_code == '2'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          REPO="${{ github.repository }}"
+          RUN_URL="https://github.com/${REPO}/actions/runs/${{ github.run_id }}"
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          WATCH_ISSUE=$(gh issue list --repo "${REPO}" --state open \
+            --search "\"${WATCH_TITLE}\" in:title" --json number --jq '.[0].number // empty')
+
+          if [ -z "${WATCH_ISSUE}" ]; then
+            echo "First 429 this cycle -- opening a quiet watch issue, not paging yet."
+            gh issue create --repo "${REPO}" --title "${WATCH_TITLE}" --label "demo-watch" \
+              --body "$(cat <<EOF
+          ## ${WATCH_TITLE}
+
+          **First seen at:** ${TIMESTAMP}
+
+          POST /demo/extract returned 429 to an unauthenticated probe call. This is
+          expected, benign behavior on its own -- see scripts/probe_demo_quota.py's
+          docstring -- real demo traffic can legitimately exhaust the shared daily
+          Groq budget, and it resets at midnight UTC. This issue exists only to detect
+          whether the SAME condition survives that reset; it will close automatically
+          on the next successful probe and will NOT page anyone unless it recurs.
+
+          [Workflow run](${RUN_URL})
+          EOF
+          )"
+            echo "escalate=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "429 persisted past a full probe interval (issue #${WATCH_ISSUE} already open) -- escalating."
+            gh issue comment "${WATCH_ISSUE}" --repo "${REPO}" \
+              --body "Persisted past a full probe interval at ${TIMESTAMP} -- escalating to a real alert. [Workflow run](${RUN_URL})"
+            gh issue close "${WATCH_ISSUE}" --repo "${REPO}" --reason "completed"
+            echo "escalate=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Escalate to a real alert (429 persisted past one interval)
+        if: steps.debounce.outputs.escalate == 'true'
+        uses: ./.github/actions/schedule-failure-alert
+        with:
+          status: "failure"
+          title: ${{ env.ALERT_TITLE }}
+          details: |
+            `demo-quota-probe.yml` found POST /demo/extract still returning 429 to an
+            unauthenticated caller on the probe run immediately following one that
+            also saw 429 -- i.e. the condition survived a midnight-UTC daily-quota
+            reset, which real visitor traffic exhausting the shared budget cannot do
+            on its own. Likely causes: `DEMO_DAILY_REQUEST_BUDGET_OVERRIDE_EXPIRES_AT`
+            left set with a past/missing TTL (see PR #173), or `_check_demo_quota`'s
+            fail-closed DB-error path stuck failing.
+
+      - name: Handle other failures (5xx, timeout, bad body) -- no debounce
+        if: steps.probe.outputs.exit_code == '1'
+        uses: ./.github/actions/schedule-failure-alert
+        with:
+          status: "failure"
+          title: "Demo endpoint probe is failing (not a 429/quota condition)"
+          details: |
+            `demo-quota-probe.yml`'s nightly POST /demo/extract probe failed with
+            something other than 429 -- see the run log for the actual status/error.
+            This is an ordinary, immediate failure with no debounce.
+
+      - name: Fail the job on a hard failure or an escalated (persisted) 429
+        if: steps.probe.outputs.exit_code == '1' || steps.debounce.outputs.escalate == 'true'
+        run: exit 1

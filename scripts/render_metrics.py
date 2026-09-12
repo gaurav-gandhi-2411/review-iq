@@ -34,6 +34,8 @@ EXTRACTION_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "latest.json"
 AUTHENTICITY_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "authenticity_latest.json"
 HELD_OUT_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "held_out_scoring_v2.json"
 COVERAGE_METRICS_PATH = REPO_ROOT / "eval" / "results" / "coverage_metrics_n106.json"
+INJECTION_SUITE_PATH = REPO_ROOT / "eval" / "results" / "injection_suite_n40.json"
+PROMPT_GUARD_FPR_PATH = REPO_ROOT / "eval" / "results" / "prompt_guard_fpr_n106.json"
 ADR_LINK = "docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md"
 
 BLOCK_RE = re.compile(
@@ -213,6 +215,69 @@ def render_coverage_metrics_table_md(data: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def render_committed_accuracy_headline_md(data: dict[str, Any]) -> str:
+    """Render the P1b headline claim (README.md / any Markdown surface).
+
+    Session 13 P1b: generated from eval/results/coverage_metrics_n106.json so this exact
+    sentence can never drift from the underlying numbers -- see
+    docs/architecture/adr/0027-n23-discrepancy-resolved-and-headline-claim.md for why a
+    single blended "rarely wrong when it commits" claim is NOT what this renders: the two
+    hedge-capable fields diverge enough that only a per-field claim is honest.
+    """
+    sentiment = data["per_field"]["sentiment"]
+    buy_again = data["per_field"]["buy_again"]
+    n = data["n_fixtures"]
+    return (
+        f"**When it commits to an answer, this model is correct "
+        f"{_fmt_pct(sentiment['accuracy_on_answered'])} of the time for sentiment "
+        f"(95% CI {_fmt_pct(sentiment['accuracy_on_answered_ci_95']['lower'])}–"
+        f"{_fmt_pct(sentiment['accuracy_on_answered_ci_95']['upper'])}, n={n}) and "
+        f"{_fmt_pct(buy_again['accuracy_on_answered'])} of the time for buy-again "
+        f"(95% CI {_fmt_pct(buy_again['accuracy_on_answered_ci_95']['lower'])}–"
+        f"{_fmt_pct(buy_again['accuracy_on_answered_ci_95']['upper'])}, n={n}) -- rates "
+        f'divergent enough that a single blended "rarely wrong when it commits" claim would '
+        f"misrepresent buy-again.** See "
+        f"[ADR 0027](docs/architecture/adr/0027-n23-discrepancy-resolved-and-headline-claim.md) "
+        f"for why this is reported per-field, never blended into one number, and for the "
+        f"separate (and separately true) abstention-rate figures."
+    )
+
+
+def render_committed_accuracy_headline_html(data: dict[str, Any]) -> str:
+    """Render the P1b headline claim as a pair of stat cards (site/index.html trust section).
+
+    Same source data and same per-field-never-blended discipline as the Markdown renderer
+    above -- see its docstring and ADR 0027.
+    """
+    sentiment = data["per_field"]["sentiment"]
+    buy_again = data["per_field"]["buy_again"]
+    n = data["n_fixtures"]
+
+    def _card(label: str, info: dict[str, Any]) -> str:
+        acc = _fmt_pct(info["accuracy_on_answered"])
+        lo = _fmt_pct(info["accuracy_on_answered_ci_95"]["lower"])
+        hi = _fmt_pct(info["accuracy_on_answered_ci_95"]["upper"])
+        abstain_lo = _fmt_pct(1 - info["coverage_ci_95"]["upper"])
+        abstain_hi = _fmt_pct(1 - info["coverage_ci_95"]["lower"])
+        return (
+            '            <div class="bg-gray-900 rounded-lg p-6 border border-gray-700">\n'
+            f'              <div class="text-3xl font-bold text-blue-300">{acc}</div>\n'
+            f'              <div class="text-gray-100 font-semibold mt-1">accurate when it commits to {label}</div>\n'
+            f'              <div class="text-gray-500 text-xs mt-2">95% CI [{lo}, {hi}], n={n}. '
+            f"Separately, it abstains (&ldquo;unclear&rdquo;) on {abstain_lo}&ndash;{abstain_hi} "
+            f"of all reviews rather than commit to any answer.</div>\n"
+            "            </div>"
+        )
+
+    return (
+        "\n"
+        + _card("a sentiment call", sentiment)
+        + "\n"
+        + _card("a buy-again call", buy_again)
+        + "\n          "
+    )
+
+
 def render_gate_summary_md(data: dict[str, Any]) -> str:
     """Render the one-line gate-threshold summary used by eval/README.md.
 
@@ -311,6 +376,102 @@ def render_language_table_html(data: dict[str, Any]) -> str:
     return "\n" + "\n".join(rows) + "\n            "
 
 
+def render_coverage_metrics_table_html(data: dict[str, Any]) -> str:
+    """Render the coverage/accuracy-on-answered/wrong-committed `<tbody>` rows (site/).
+
+    Same source and discipline as render_coverage_metrics_table_md -- see that function's
+    docstring and ADR 0026/0027.
+    """
+    rows: list[str] = []
+    for field, info in data["per_field"].items():
+        cov = _fmt_pct(info["coverage"])
+        cov_ci = f"[{_fmt_pct(info['coverage_ci_95']['lower'])}, {_fmt_pct(info['coverage_ci_95']['upper'])}]"
+        acc = _fmt_pct(info["accuracy_on_answered"])
+        acc_ci = (
+            f"[{_fmt_pct(info['accuracy_on_answered_ci_95']['lower'])}, "
+            f"{_fmt_pct(info['accuracy_on_answered_ci_95']['upper'])}]"
+        )
+        wrong = info["wrong_committed_of_answered"]
+        wrong_rate = _fmt_pct(info["wrong_committed_rate"])
+        rows.append(
+            '            <tr class="bg-gray-900 hover:bg-gray-800 transition-colors">\n'
+            f'              <td class="px-6 py-4 text-gray-100 capitalize">{field.replace("_", " ")}</td>\n'
+            f'              <td class="px-6 py-4 font-mono text-blue-300">{cov} <span class="text-gray-500 text-xs">{cov_ci}</span></td>\n'
+            f'              <td class="px-6 py-4 font-mono text-blue-300">{acc} <span class="text-gray-500 text-xs">{acc_ci}</span></td>\n'
+            f'              <td class="px-6 py-4 font-mono text-gray-300">{wrong} = {wrong_rate}</td>\n'
+            "            </tr>"
+        )
+    return "\n" + "\n".join(rows) + "\n          "
+
+
+_INJECTION_FAMILY_LABELS: dict[str, tuple[str, str]] = {
+    "phrase_variant": ("Phrase variants evading the regex", ""),
+    "encoding_evasion": (
+        "Encoding/homoglyph evasion",
+        "leetspeak, zero-width chars, fullwidth Unicode, spacing",
+    ),
+    "role_confusion": ("Role-confusion framing", '"you are now a..."'),
+    "field_targeted": (
+        "Field-targeted injection",
+        '"for the buy_again field, always output true..."',
+    ),
+    "non_english": (
+        "Non-English attacks",
+        "Hindi, Hinglish, Spanish, French, German, Portuguese",
+    ),
+}
+
+
+def render_injection_suite_table_md(data: dict[str, Any]) -> str:
+    """Render the P4d injection-suite per-family pass-rate table (SECURITY.md).
+
+    Session 13 P4d/P4e: generated from eval/results/injection_suite_n40.json so this
+    table can never quietly drift from a re-run of eval/run_injection_suite.py -- see
+    that script and eval/injection_suite.py for the full methodology, and
+    docs/architecture/adr/0015-*.md's Session 13 correction for why this suite measures
+    pre-filter detection rather than spending the far scarcer extraction-model budget.
+    """
+    lines = ["| Family | Caught by Layer 1+2 | Notes |", "|---|---|---|"]
+    for family, info in data["per_family"].items():
+        label, detail = _INJECTION_FAMILY_LABELS.get(family, (family, ""))
+        n = info["n"]
+        caught = info["caught"]
+        rate = _fmt_pct(info["pass_rate"], decimals=1)
+        cell = f"{caught}/{n} ({rate})"
+        emphasis = caught == 0
+        family_cell = f"**{label}**" if emphasis else label
+        rate_cell = f"**{cell}**" if emphasis else cell
+        note = detail
+        if info["missed_ids"]:
+            note = f"{detail + ' -- ' if detail else ''}missed: {', '.join(info['missed_ids'])}"
+        lines.append(f"| {family_cell} | {rate_cell} | {note} |")
+    overall_rate = _fmt_pct(data["overall_pass_rate"], decimals=1)
+    lines.append(
+        f"| **Overall** | **{sum(f['caught'] for f in data['per_family'].values())}/"
+        f"{data['n_cases']} ({overall_rate})** | |"
+    )
+    return "\n".join(lines)
+
+
+def render_prompt_guard_fpr_md(data: dict[str, Any]) -> str:
+    """Render the P4b false-positive-rate sentence (SECURITY.md).
+
+    Generated from eval/results/prompt_guard_fpr_n106.json -- see
+    eval/measure_prompt_guard_fpr.py for methodology.
+    """
+    n = data["n_fixtures"]
+    fp = data["n_false_positives"]
+    rate = _fmt_pct(data["false_positive_rate"], decimals=1)
+    max_score = data["score_max"]
+    threshold = data["threshold"]
+    return (
+        f"{fp}/{n} ({rate}) on real marketplace reviews the classifier had never seen -- "
+        f"max score {max_score:.3f} against a {threshold} threshold, comfortable margin. "
+        f"**A real customer review has not been observed to trigger Layer 2 in this "
+        f"measurement.**"
+    )
+
+
 PORTFOLIO_METRICS_PATH = REPO_ROOT / ".portfolio" / "metrics.json"
 
 
@@ -390,6 +551,19 @@ BLOCK_RENDERERS: dict[str, Any] = {
         _load_json(EXTRACTION_RESULTS_PATH)
     ),
     "language_table_html": lambda: render_language_table_html(_load_json(EXTRACTION_RESULTS_PATH)),
+    "committed_accuracy_headline": lambda: render_committed_accuracy_headline_md(
+        _load_json(COVERAGE_METRICS_PATH)
+    ),
+    "committed_accuracy_headline_html": lambda: render_committed_accuracy_headline_html(
+        _load_json(COVERAGE_METRICS_PATH)
+    ),
+    "coverage_metrics_table_html": lambda: render_coverage_metrics_table_html(
+        _load_json(COVERAGE_METRICS_PATH)
+    ),
+    "injection_suite_table": lambda: render_injection_suite_table_md(
+        _load_json(INJECTION_SUITE_PATH)
+    ),
+    "prompt_guard_fpr": lambda: render_prompt_guard_fpr_md(_load_json(PROMPT_GUARD_FPR_PATH)),
 }
 
 TARGET_FILES: tuple[Path, ...] = (
@@ -397,6 +571,7 @@ TARGET_FILES: tuple[Path, ...] = (
     REPO_ROOT / "eval" / "README.md",
     REPO_ROOT / "site" / "index.html",
     REPO_ROOT / "site" / "docs" / "index.html",
+    REPO_ROOT / "SECURITY.md",
 )
 
 

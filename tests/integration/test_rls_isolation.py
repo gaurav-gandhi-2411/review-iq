@@ -193,10 +193,18 @@ class TestRLSIsolation:
     def test_org_a_cannot_delete_org_b_extraction(
         self, extraction_ids: tuple[str, str], org_ids: tuple[str, str]
     ) -> None:
-        """authenticated DELETE on extractions is blocked outright, cross-org or not.
+        """Cross-org DELETE on extractions is RLS-filtered to zero rows, not grant-blocked.
 
-        Same mechanism and same migration as test_org_a_cannot_update_org_b_extraction
-        above -- no DELETE call site exists anywhere in app/ for this table.
+        UPDATED (Session 12 P2c, 20260912000002_extractions_grant_delete.sql): this test
+        previously asserted DELETE was blocked at the grant layer entirely -- true before
+        P2c's on-demand purge feature (POST /v2/purge) needed a real DELETE call site
+        (app/core/storage_pg.py::purge_org_extractions_pg) for the first time. `authenticated`
+        now legitimately holds DELETE on this table; RLS (`extractions_authenticated_all`,
+        USING org_id = current_org_id()) is the layer that must do the actual isolation work
+        now -- verified here by confirming a cross-org DELETE succeeds as a *no-op* (0 rows
+        affected, no exception, and org B's row is provably still there afterward), while the
+        sibling test below confirms a same-org DELETE genuinely removes the row. Both must
+        hold for this to be a real RLS boundary rather than an accidentally-permissive one.
         """
         org_a, org_b = org_ids
         _, ext_b = extraction_ids
@@ -204,16 +212,51 @@ class TestRLSIsolation:
         conn = _as_authenticated(org_a)
         try:
             cur = conn.cursor()
-            with pytest.raises(psycopg2.errors.InsufficientPrivilege) as exc_info:
-                cur.execute(
-                    "DELETE FROM public.extractions WHERE id = %s",
-                    (ext_b,),
-                )
-            assert "permission denied" in str(exc_info.value), (
-                "Block must come from the grant layer -- authenticated holds no DELETE"
+            cur.execute(
+                "DELETE FROM public.extractions WHERE id = %s",
+                (ext_b,),
             )
+            assert cur.rowcount == 0, "Org A's DELETE must not affect org B's row"
+            conn.commit()
         finally:
-            conn.rollback()
+            conn.close()
+
+        # Org B's row must still exist -- read it back as org B, not just trust rowcount.
+        conn_b = _as_authenticated(org_b)
+        try:
+            cur = conn_b.cursor()
+            cur.execute("SELECT id FROM public.extractions WHERE id = %s", (ext_b,))
+            assert cur.fetchone() is not None, "Org B's row must survive org A's DELETE attempt"
+        finally:
+            conn_b.rollback()
+            conn_b.close()
+
+    def test_org_a_can_delete_own_extraction(self, org_ids: tuple[str, str]) -> None:
+        """Same-org DELETE genuinely removes the row -- the positive case for the test
+        above. Without this, a bug that made ALL deletes silently no-op (not just
+        cross-org ones) would pass the cross-org test above for the wrong reason.
+
+        Inserts and deletes its own throwaway row rather than touching the module-scoped
+        `extraction_ids` fixture, which other tests in this module depend on existing for
+        the module's full run.
+        """
+        org_a, _ = org_ids
+        own_ext = str(uuid.uuid4())
+
+        conn = _as_authenticated(org_a)
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                "INSERT INTO public.extractions "
+                "(id, org_id, input_hash, extraction, model, prompt_version, schema_version) "
+                "VALUES (%s, %s, 'hash_rls_delete_own', '{\"stars\": 3}'::jsonb, "
+                "'test-model', 'v1.0', 'v1')",
+                (own_ext, org_a),
+            )
+            cur.execute("DELETE FROM public.extractions WHERE id = %s", (own_ext,))
+            assert cur.rowcount == 1, "Org A must be able to delete its own row"
+            conn.commit()
+        finally:
             conn.close()
 
     def test_no_org_context_sees_nothing(self) -> None:

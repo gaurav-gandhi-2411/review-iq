@@ -22,7 +22,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from app.auth.api_key import ApiKeyContext
 from app.auth.signup import verify_supabase_jwt
 from app.core.config import get_settings
-from app.core.storage_pg import _set_tenant
+from app.core.storage_pg import _set_tenant, get_org_retention_pg
 
 _BEARER = HTTPBearer(auto_error=False)
 
@@ -116,11 +116,14 @@ def _lookup_and_record_for_session(user_id: str) -> ApiKeyContext:
 
         conn.commit()
         log.info("session.lookup_ok", org_id=str(org_id), user_id=user_id)
+        retention_mode, retention_days = get_org_retention_pg(str(org_id))
         return ApiKeyContext(
             org_id=str(org_id),
             api_key_id=str(key_id),
             key_name=key_name,
             usage_record_id=str(usage_record_id),
+            retention_mode=retention_mode,
+            retention_days=retention_days,
         )
     except Exception:
         conn.rollback()
@@ -174,11 +177,14 @@ def _lookup_context_for_read(user_id: str) -> ApiKeyContext:
             )
         key_id, key_name = row
         log.debug("session.read_ok", org_id=str(org_id), user_id=user_id)
+        retention_mode, retention_days = get_org_retention_pg(str(org_id))
         return ApiKeyContext(
             org_id=str(org_id),
             api_key_id=str(key_id),
             key_name=key_name,
             usage_record_id="",  # read path: no usage record created
+            retention_mode=retention_mode,
+            retention_days=retention_days,
         )
     except Exception:
         raise

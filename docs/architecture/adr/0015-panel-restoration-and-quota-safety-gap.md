@@ -1,5 +1,17 @@
 # ADR 0015: Judge panel restoration, and a quota-safety gap found before spending on P3
 
+> **Read this first: this document's original "200,000 tokens/day, 1,000 requests/day, shared
+> by every call any key on this account makes" framing (below) is WRONG for production's
+> gpt-oss models and has been for this document's entire history.** The correct model —
+> production's real per-model limits, the real capacity ceiling, and why the wrong framing
+> understated total capacity while overstating sustainable throughput — is in the
+> **"Correction (Session 13 P3a)"** section at the very end of this document. The
+> "Follow-up (Session 10 P4)" and "Correction (same session, P5e)" sections in the middle of
+> this document are about a DIFFERENT system entirely (the eval consensus judge panel's
+> `qwen` models on a separate benchmark key) — do not confuse them with the Session 13
+> correction, which is about production's `openai/gpt-oss-20b`/`120b` models on the shared
+> production key that also serves real customers and the demo endpoint.
+
 ## Context
 
 ADR 0013 removed `openai/gpt-oss-120b` from the consensus judge panel (self-judging
@@ -159,3 +171,110 @@ reporting a second false constraint doesn't get repeated.
 The remaining 83 hi-en candidates completed the same day, in two batches (13 + 70, split only
 by the mid-run stop-and-diagnose, not by any real ceiling) — the corpus is now complete at
 106/106 hi-en. See ADR 0019 for the full-corpus results.
+
+## Correction (Session 13 P3a) — production's real per-model limits, and the real capacity ceiling
+
+This document's original framing above -- "200,000 tokens/day, 1,000 requests/day, shared by
+every call any key on this account makes" -- was applied to production's `openai/gpt-oss-20b`/
+`openai/gpt-oss-120b` models (the ones `/v2/extract`, `/v2/extract/batch`, `/v2/ingest/csv`, and
+`/demo/extract` all actually call). It was wrong in a specific, correctable way: **the limits are
+per-model, not one shared org-wide pool.** Each of the two models gets its own independent
+budget. This understated real total capacity (two independent 200K-token/day pools is double one
+shared 200K pool) while simultaneously overstating real sustainable throughput (a single-pool
+mental model invites assuming you can burst against the full daily figure at any rate; each
+model's own 30 RPM / 8,000 TPM per-minute ceiling caps how fast that pool can actually be drawn
+down, regardless of how much of the daily budget remains unused).
+
+### The real, per-model limits -- verified two ways
+
+| Model | RPM | RPD | TPM | TPD |
+|---|---|---|---|---|
+| `openai/gpt-oss-20b` | 30 | 1,000 | 8,000 | 200,000 |
+| `openai/gpt-oss-120b` | 30 | 1,000 | 8,000 | 200,000 |
+
+Verified via (1) a real, live `POST /openai/v1/chat/completions` call against each model this
+session, response headers captured directly -- `x-ratelimit-limit-requests: 1000`,
+`x-ratelimit-limit-tokens: 8000` for both models -- plus reset-time arithmetic that reconciles
+exactly: `reset-requests` of 86.4s after 1 used request implies a window of `86.4 x 1000 =
+86,400s` = exactly 24 hours (RPD confirmed, not assumed); `reset-tokens` of 585ms after 78 used
+tokens against an 8,000 limit implies a ~60-second window (TPM confirmed). And (2) Groq's own
+published rate-limits documentation (`console.groq.com/docs/rate-limits`), fetched directly this
+session -- same table, same numbers, TPD included (TPD is not independently re-derivable from a
+single live response header the way RPD/TPM are, so it rests on source (2) alone, Groq's own
+primary docs, not a blended third-party search summary).
+
+### The real ceiling: TPD binds, and it binds far tighter than RPD does
+
+At this project's real measured tokens/extraction -- small tier (`gpt-oss-20b`) 2,524.8 tokens
+mean, large tier (`gpt-oss-120b`) 2,393.9 tokens mean, observed mix 40.6%/59.4%
+(`eval/results/token_cost_measurement_n106.json`, PR #169, n=106) -- the binding constraint is
+**tokens/day, not requests/day**, and it binds an order of magnitude tighter than a naive "1,000
+requests/day per model" reading suggests. Computed reproducibly, zero quota, by
+`eval/capacity_model.py`:
+
+| | Per-minute ceiling | Per-day ceiling |
+|---|---|---|
+| **Real (TPM/TPD-bound, both tiers combined at observed mix)** | **5.62 extractions/min** | **140.6 extractions/day** |
+| Binding tier | large (`gpt-oss-120b`) | large (`gpt-oss-120b`) |
+| If RPD/RPM were the binding constraint instead (they are not) | 50.5/min | 1,682.5/day |
+
+**This ceiling is shared across every consumer of the single production `GROQ_API_KEY`: real
+customer traffic, the public demo endpoint, and any live (non-cassette-replay) eval/CI call
+against these two models. It is the entire business's combined daily capacity on the free tier
+today, not a per-customer number.** ~140.6/day x 30 ~= **4,217 extractions/month, total, across
+every customer combined.**
+
+**This is smaller than a single Starter-tier customer's monthly allotment** (P6b's published
+Starter tier: 5,000 reviews/month) -- meaning on the current free tier, this business cannot
+actually deliver even ONE fully-utilized Starter customer's quota without the free tier being the
+bottleneck, let alone multiple customers plus demo traffic plus the Free tier's own 1,000/month
+allotment. This is not a future concern -- it is the current, measured reality, and it makes P3c's
+Developer-plan upgrade decision materially more urgent than "the day a customer signs" framing
+alone conveys: it needs to be ready to flip within that same day, not researched from scratch
+then.
+
+### What this means for a CSV/batch job (P3b)
+
+`app/core/csv_ingest.py::MAX_ROWS` currently caps a single CSV upload at 500 rows (not 5,000 -- a
+5,000-row single upload isn't possible today regardless of quota). At the measured 5.62
+extractions/minute ceiling, **assuming the job has exclusive access to the full shared quota
+(best case -- real elapsed time is longer whenever other traffic competes)**:
+
+- **500 rows (today's actual max)**: ~88.9 minutes (~1.5 hours).
+- **5,000 rows (hypothetical, if the row cap were ever raised)**: ~889 minutes (~14.8 hours).
+
+`GET /v2/ingest/{job_id}` now returns `estimated_seconds_remaining` (this PR), computed from
+`app/core/capacity.py`'s hardcoded, CI-regression-tested constant (`eval/` is not shipped in the
+production Docker image, so this can't be read live at runtime -- see that module's docstring) --
+replacing the previous unbounded "processing" status with an honest, explicitly-labeled
+best-case estimate.
+
+### Consequences
+
+- The capacity numbers behind D2/P6b's pricing tiers (Free 1,000/mo, Starter 5,000/mo, Growth
+  25,000/mo, Scale 100,000/mo, Agency 200,000+/mo) must be understood against this ceiling: they
+  describe what a customer *may use up to*, not what the free-tier infrastructure can currently
+  *deliver* if fully utilized. This does not mean the pricing page is wrong to publish -- "early
+  access pricing" already frames these as aspirational/promotional -- but it does mean the
+  Developer-plan upgrade (P3c) is a same-day-as-first-real-customer necessity, not a someday
+  optimization.
+- `eval/capacity_model.py` is the reproducible source of truth for this ceiling going forward;
+  re-run it whenever the tier-routing mix or the measured tokens/extraction figures change
+  materially, and update `app/core/capacity.py`'s hardcoded constant to match (a regression test
+  fails CI if they diverge by more than 1%).
+
+### Alternatives considered
+
+- **Silently correct the original "200,000 tokens/day, shared" text in place rather than
+  appending a correction section.** Rejected -- this document's own established convention
+  (visible in its own "Follow-up"/"Correction" section headers from Session 10) is to append
+  corrections, not rewrite history; a reader tracing why a past decision was made needs to see
+  what was believed at the time, not just the final corrected number.
+- **Treat this as confirmation of the brief's "~3.5 extractions/minute" illustrative figure
+  rather than recomputing independently.** Rejected: the brief's figure appears to assume a
+  single shared TPM pool across both models at a blended ~2,246 tokens/extraction (8,000 / 2,246
+  ~= 3.56/min) -- a reasonable back-of-envelope simplification, but this project's own two
+  independent per-model pools support somewhat higher combined throughput (5.62/min) once
+  computed properly against the real tier-mix and real per-tier token averages. Reported the
+  more precise, reproducible number rather than matching the brief's illustration by
+  construction.
