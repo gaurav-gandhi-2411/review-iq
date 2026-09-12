@@ -45,7 +45,7 @@ def test_quota_available_returns_200() -> None:
     client = _client()
     with (
         patch("app.api.demo.check_and_increment_demo_request_pg", return_value=True),
-        patch("app.api.demo.record_demo_extraction_cost_pg", return_value="id"),
+        patch("app.api.demo.record_demo_extraction_cost_pg", return_value=None),
         patch(
             "app.api.demo.extract_with_llm",
             new=AsyncMock(return_value=(_LLM_OUTPUT, "openai/gpt-oss-20b", 10, 100, 20, False)),
@@ -96,7 +96,7 @@ def test_cache_hit_does_not_consume_quota() -> None:
     text = "unique cache-then-quota review"
     with (
         patch("app.api.demo.check_and_increment_demo_request_pg", return_value=True) as mock_quota,
-        patch("app.api.demo.record_demo_extraction_cost_pg", return_value="id"),
+        patch("app.api.demo.record_demo_extraction_cost_pg", return_value=None),
         patch(
             "app.api.demo.extract_with_llm",
             new=AsyncMock(return_value=(_LLM_OUTPUT, "openai/gpt-oss-20b", 10, 100, 20, False)),
@@ -117,7 +117,7 @@ def test_successful_extraction_records_cost_with_correct_args() -> None:
     client = _client()
     with (
         patch("app.api.demo.check_and_increment_demo_request_pg", return_value=True),
-        patch("app.api.demo.record_demo_extraction_cost_pg", return_value="id") as mock_cost,
+        patch("app.api.demo.record_demo_extraction_cost_pg", return_value=None) as mock_cost,
         patch(
             "app.api.demo.extract_with_llm",
             new=AsyncMock(return_value=(_LLM_OUTPUT, "openai/gpt-oss-120b", 10, 1500, 150, False)),
