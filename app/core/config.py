@@ -37,15 +37,39 @@ class Settings(BaseSettings):
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     max_review_length: int = Field(default=5000, alias="MAX_REVIEW_LENGTH")
     rate_limit_per_minute: int = Field(default=30, alias="RATE_LIMIT_PER_MINUTE")
+    # Global (cross-IP) daily cap on POST /demo/extract -- see app/api/demo.py's
+    # DEMO_DAILY_REQUEST_BUDGET docstring for the Groq free-tier math behind this
+    # default. 50/day keeps worst-case token usage (hi-en, priciest language) under
+    # half of the shared 200,000 tokens/day free-tier budget every real customer's
+    # /v2/extract call also draws from.
+    demo_daily_request_budget: int = Field(default=50, alias="DEMO_DAILY_REQUEST_BUDGET")
+    # Session 12 P7a: self-expiring TTL for the override above. Incident: this override
+    # was set to 0 for an unrelated batch job (Session 11) and left set, silently
+    # 429-ing real demo traffic for an extended window until noticed by chance. Any
+    # override away from the default now REQUIRES this ISO-8601 UTC deadline
+    # (app/api/demo.py::_effective_demo_daily_budget ignores the override -- falls back
+    # to the safe default -- if this is unset, unparseable, or in the past), so an
+    # override can no longer be left set indefinitely by a forgetful session.
+    demo_daily_request_budget_override_expires_at: str = Field(
+        default="", alias="DEMO_DAILY_REQUEST_BUDGET_OVERRIDE_EXPIRES_AT"
+    )
     environment: str = Field(default="development", alias="ENVIRONMENT")
 
     # LLM model names
+    # Groq deprecated llama-3.3-70b-versatile on 2026-08-16; openai/gpt-oss-120b is
+    # their own documented replacement (console.groq.com/docs/deprecations), same
+    # "large/versatile" size class. No GROQ_MODEL* env var was set on the live Cloud
+    # Run service, so this default is what actually ran in production (Item G1).
     groq_model: str = Field(
-        default="llama-3.3-70b-versatile",
+        default="openai/gpt-oss-120b",
         alias="GROQ_MODEL",
     )
     gemini_model: str = Field(
-        default="gemini-2.0-flash",
+        # gemini-2.0-flash was deprecated and shut down by Google on 2026-06-01
+        # (live-verified 2026-07-31 against ai.google.dev/gemini-api/docs/pricing) --
+        # this fallback path was silently dead for 2 months with nothing detecting it.
+        # gemini-2.5-flash is the current stable (non-preview) replacement.
+        default="gemini-2.5-flash",
         alias="GEMINI_MODEL",
     )
 
@@ -112,16 +136,26 @@ class Settings(BaseSettings):
     )
 
     # Tiered model names — both Groq (privacy-vetted)
+    # Groq deprecated llama-3.1-8b-instant on 2026-08-16; openai/gpt-oss-20b is their
+    # documented replacement, same fast/cheap tier (Item G1).
     groq_model_small: str = Field(
-        default="llama-3.1-8b-instant",
+        default="openai/gpt-oss-20b",
         alias="GROQ_MODEL_SMALL",
     )
+    # Groq deprecated llama-3.3-70b-versatile on 2026-08-16; openai/gpt-oss-120b is
+    # their documented replacement, same "large/versatile" tier (Item G1).
     groq_model_large: str = Field(
-        default="llama-3.3-70b-versatile",
+        default="openai/gpt-oss-120b",
         alias="GROQ_MODEL_LARGE",
     )
 
-    # Secondary failover provider — must be a no-train provider when configured
+    # Secondary failover provider — OpenRouter, restricted to Zero-Data-Retention
+    # endpoints on every call (app/core/providers/secondary.py enforces `zdr: true`
+    # unconditionally, regardless of which model is configured here). Recommended:
+    # SECONDARY_PROVIDER_API_KEY = an OpenRouter API key
+    # SECONDARY_PROVIDER_MODEL   = "meta-llama/llama-3.3-70b-instruct" -- same nominal
+    #   family as groq_model_large, live-verified 2026-07-31 to have ZDR-flagged
+    #   endpoints from 11 upstream providers (see SecondaryProvider's docstring).
     secondary_provider_api_key: str = Field(default="", alias="SECONDARY_PROVIDER_API_KEY")
     secondary_provider_model: str = Field(default="", alias="SECONDARY_PROVIDER_MODEL")
 
@@ -211,6 +245,11 @@ class Settings(BaseSettings):
     # env var, not Secret Manager, same reason: the project is already at its Secret Manager
     # free-tier ceiling.
     detector_sweep_trigger_token: str = Field(default="", alias="DETECTOR_SWEEP_TRIGGER_TOKEN")
+
+    # Shared-secret header token protecting POST /internal/retention/purge (Session 12 P2c,
+    # timing-safe compare via hmac.compare_digest) — same pattern as the three tokens above.
+    # Plain env var, not Secret Manager, same free-tier-ceiling reason.
+    retention_purge_trigger_token: str = Field(default="", alias="RETENTION_PURGE_TRIGGER_TOKEN")
 
     # Resend transactional email
     resend_api_key: str = Field(default="", alias="RESEND_API_KEY")

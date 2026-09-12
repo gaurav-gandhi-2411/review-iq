@@ -1,0 +1,62 @@
+{
+  "id": "hien-0031",
+  "review_text": "Everything thing is good in it. Nice product. Paisa vasul product but delivery took very long time of 11 days 😠READ MORE",
+  "ground_truth": {
+    "product": "product",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": [
+      "good quality",
+      "nice product",
+      "good value for money"
+    ],
+    "cons": [],
+    "buy_again": null,
+    "sentiment": "mixed",
+    "topics": [],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/kabirnagpal/flipkart-customer-review-and-rating",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "majority",
+      "product": "unanimous",
+      "stars_inferred": "unanimous",
+      "pros": "majority",
+      "cons": "split",
+      "topics": "split",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}

@@ -234,12 +234,14 @@ async def test_bff_write_isolation(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.mark.asyncio
 async def test_bff_jwt_does_not_resolve_cross_org() -> None:
-    """_lookup_and_record_for_session SQL filters by user_id from JWT, not request body."""
+    """_lookup_and_record_for_session resolves org via resolve_org_for_user(user_id)
+    from the JWT, not request body (BYPASSRLS remediation 2c: two-step resolution,
+    same pattern as api_key.py's write path)."""
     src = inspect.getsource(_lookup_and_record_for_session)
-    # The WHERE clause binds user_id parameter (from JWT), not from request body.
-    # We verify the SQL uses organization_members.user_id = %s with a positional param.
-    assert "organization_members.user_id = %s" in src
-    # There must be exactly one parameter placeholder in the first query (for user_id).
+    # Org resolution is a function call parameterized by user_id, not a WHERE clause
+    # a caller could influence via any other field.
+    assert "resolve_org_for_user" in src
+    # There must be exactly one parameter placeholder in the resolve query (user_id).
     # The function receives user_id as its only argument — no request fields reach it.
     params = inspect.signature(_lookup_and_record_for_session).parameters
     assert list(params.keys()) == ["user_id"]
@@ -384,11 +386,23 @@ def _make_bff_app() -> object:
 
 
 def test_existing_require_api_key_unchanged() -> None:
-    """require_api_key is still importable and ApiKeyContext shape unchanged."""
+    """require_api_key is still importable; ApiKeyContext extended, not broken.
+
+    Session 12 P2a added retention_mode/retention_days (both with safe defaults, so
+    every pre-existing construction site keeps working unmodified) -- updated here
+    deliberately, not a silent drift.
+    """
     from app.auth.api_key import ApiKeyContext, require_api_key  # noqa: F401
 
     fields = {f.name for f in dataclasses.fields(ApiKeyContext)}
-    assert fields == {"org_id", "api_key_id", "key_name", "usage_record_id"}
+    assert fields == {
+        "org_id",
+        "api_key_id",
+        "key_name",
+        "usage_record_id",
+        "retention_mode",
+        "retention_days",
+    }
 
 
 def test_v2_routers_importable() -> None:

@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Flip-flop for review-iq-prod's Cloud Scheduler pipeline (ingest-tick,
+# Flip-flop for reviewiq-prod-260813's Cloud Scheduler pipeline (ingest-tick,
 # digest-daily, detector-sweep). All three are PAUSED by default -- run `on`
 # only when the live pipeline needs to actually run, then `off` again to
 # avoid standing invocation cost.
 set -euo pipefail
 
-PROJECT="review-iq-prod"
+PROJECT="reviewiq-prod-260813"
 LOCATION="asia-south1"
 JOBS=(review-iq-ingest-tick review-iq-digest-daily review-iq-detector-sweep)
 

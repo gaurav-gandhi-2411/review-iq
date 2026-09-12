@@ -123,9 +123,10 @@ def _make_mock_conn(fetchone_side_effect: list[object] | None = None) -> MagicMo
 def test_fetch_account_returns_correct_fields() -> None:
     key_id = uuid.uuid4()
     org_id = uuid.uuid4()
-    # First fetchone → api_keys row; second → COUNT(*) for usage
+    # resolve_org_for_user() -> api_keys row -> COUNT(*) for usage
     conn = _make_mock_conn(
         fetchone_side_effect=[
+            (org_id,),
             ("riq_live_abc1234", 100, key_id, org_id, "acme-inc-a1b2c3"),
             (7,),
         ]
@@ -165,7 +166,8 @@ def test_do_regenerate_revokes_old_and_inserts_new() -> None:
     old_key_id = uuid.uuid4()
     org_id = uuid.uuid4()
     cur = MagicMock()
-    cur.fetchone.return_value = (old_key_id, org_id)
+    # resolve_org_for_user() -> the org's active api_keys row
+    cur.fetchone.side_effect = [(org_id,), (old_key_id, org_id)]
     conn = MagicMock()
     conn.cursor.return_value = cur
 
@@ -209,7 +211,8 @@ def test_do_regenerate_rolls_back_on_db_error() -> None:
 
 def test_get_org_id_and_slug_returns_tuple() -> None:
     org_id = uuid.uuid4()
-    conn = _make_mock_conn(fetchone_side_effect=[(org_id, "acme-inc-a1b2c3")])
+    # resolve_org_for_user() -> slug read
+    conn = _make_mock_conn(fetchone_side_effect=[(org_id,), ("acme-inc-a1b2c3",)])
     with patch("app.api.account._db_connect", return_value=conn):
         result = _get_org_id_and_slug(_USER_ID)
     assert result == (str(org_id), "acme-inc-a1b2c3")
@@ -268,9 +271,14 @@ def test_do_delete_org_correct_slug_deletes_the_resolved_org_only() -> None:
     ):
         _do_delete_org(_USER_ID, "acme-inc-a1b2c3")
 
-    cur.execute.assert_called_once_with(
-        "DELETE FROM public.organizations WHERE id = %s", (str(org_id),)
-    )
+    # _set_tenant() issues two SET LOCAL calls before the DELETE (BYPASSRLS
+    # remediation 2c) -- assert on the actual delete statement specifically,
+    # not the full call count.
+    delete_calls = [
+        c for c in cur.execute.call_args_list if "DELETE FROM public.organizations" in c[0][0]
+    ]
+    assert len(delete_calls) == 1
+    assert delete_calls[0][0] == ("DELETE FROM public.organizations WHERE id = %s", (str(org_id),))
     conn.commit.assert_called_once()
     conn.close.assert_called_once()
 

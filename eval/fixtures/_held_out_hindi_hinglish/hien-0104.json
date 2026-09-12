@@ -1,0 +1,68 @@
+{
+  "id": "hien-0104",
+  "review_text": "Yaar i cant believe that it will be that good i received delivery in just 15 hours and the performance is excellentit passive noice cancellation block many noice it can be wear wuile studying amazing definitely you should buy itREAD MORE",
+  "ground_truth": {
+    "product": "headphones",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": [
+      "fast delivery",
+      "excellent performance",
+      "effective passive noise cancellation",
+      "comfortable for studying"
+    ],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "positive",
+    "topics": [
+      "delivery_speed",
+      "performance",
+      "noise_cancellation",
+      "comfort"
+    ],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/kabirnagpal/flipkart-customer-review-and-rating",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "majority",
+      "stars_inferred": "unanimous",
+      "pros": "majority",
+      "cons": "unanimous",
+      "topics": "unanimous",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}

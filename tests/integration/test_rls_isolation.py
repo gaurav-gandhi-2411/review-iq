@@ -12,20 +12,15 @@ import uuid
 from pathlib import Path
 
 import psycopg2
+import psycopg2.errors
 import pytest
 from dotenv import load_dotenv
 
+from tests.integration._superuser_db_params import superuser_db_params
+
 load_dotenv(Path(__file__).parents[2] / ".env")
 
-_DB_PARAMS = {
-    "host": "db.enqpluazgxewepchdeut.supabase.co",
-    "port": 5432,
-    "dbname": "postgres",
-    "user": "postgres",
-    "password": os.environ["SUPABASE_DB_PASSWORD"],
-    "sslmode": "require",
-    "connect_timeout": 15,
-}
+_DB_PARAMS = superuser_db_params()
 
 
 def _conn() -> psycopg2.extensions.connection:
@@ -168,17 +163,29 @@ class TestRLSIsolation:
     def test_org_a_cannot_update_org_b_extraction(
         self, extraction_ids: tuple[str, str], org_ids: tuple[str, str]
     ) -> None:
+        """authenticated UPDATE on extractions is blocked outright, cross-org or not.
+
+        Wave 2 grant narrowing (20260817000004, Item 235) revoked UPDATE from
+        authenticated on this table entirely -- extractions are write-once from the
+        app's perspective, no UPDATE call site exists anywhere in app/. Previously this
+        UPDATE was grant-permitted and silently RLS-filtered to 0 rows; now it fails at
+        the grant layer before RLS is ever reached, for both same-org and cross-org
+        targets -- a strictly earlier and stronger deny, not a weaker one.
+        """
         org_a, org_b = org_ids
         _, ext_b = extraction_ids
 
         conn = _as_authenticated(org_a)
         try:
             cur = conn.cursor()
-            cur.execute(
-                "UPDATE public.extractions SET model = 'hacked' WHERE id = %s",
-                (ext_b,),
+            with pytest.raises(psycopg2.errors.InsufficientPrivilege) as exc_info:
+                cur.execute(
+                    "UPDATE public.extractions SET model = 'hacked' WHERE id = %s",
+                    (ext_b,),
+                )
+            assert "permission denied" in str(exc_info.value), (
+                "Block must come from the grant layer -- authenticated holds no UPDATE"
             )
-            assert cur.rowcount == 0, "UPDATE of cross-tenant row must affect 0 rows"
         finally:
             conn.rollback()
             conn.close()
@@ -186,6 +193,19 @@ class TestRLSIsolation:
     def test_org_a_cannot_delete_org_b_extraction(
         self, extraction_ids: tuple[str, str], org_ids: tuple[str, str]
     ) -> None:
+        """Cross-org DELETE on extractions is RLS-filtered to zero rows, not grant-blocked.
+
+        UPDATED (Session 12 P2c, 20260912000002_extractions_grant_delete.sql): this test
+        previously asserted DELETE was blocked at the grant layer entirely -- true before
+        P2c's on-demand purge feature (POST /v2/purge) needed a real DELETE call site
+        (app/core/storage_pg.py::purge_org_extractions_pg) for the first time. `authenticated`
+        now legitimately holds DELETE on this table; RLS (`extractions_authenticated_all`,
+        USING org_id = current_org_id()) is the layer that must do the actual isolation work
+        now -- verified here by confirming a cross-org DELETE succeeds as a *no-op* (0 rows
+        affected, no exception, and org B's row is provably still there afterward), while the
+        sibling test below confirms a same-org DELETE genuinely removes the row. Both must
+        hold for this to be a real RLS boundary rather than an accidentally-permissive one.
+        """
         org_a, org_b = org_ids
         _, ext_b = extraction_ids
 
@@ -196,9 +216,47 @@ class TestRLSIsolation:
                 "DELETE FROM public.extractions WHERE id = %s",
                 (ext_b,),
             )
-            assert cur.rowcount == 0, "DELETE of cross-tenant row must affect 0 rows"
+            assert cur.rowcount == 0, "Org A's DELETE must not affect org B's row"
+            conn.commit()
         finally:
-            conn.rollback()
+            conn.close()
+
+        # Org B's row must still exist -- read it back as org B, not just trust rowcount.
+        conn_b = _as_authenticated(org_b)
+        try:
+            cur = conn_b.cursor()
+            cur.execute("SELECT id FROM public.extractions WHERE id = %s", (ext_b,))
+            assert cur.fetchone() is not None, "Org B's row must survive org A's DELETE attempt"
+        finally:
+            conn_b.rollback()
+            conn_b.close()
+
+    def test_org_a_can_delete_own_extraction(self, org_ids: tuple[str, str]) -> None:
+        """Same-org DELETE genuinely removes the row -- the positive case for the test
+        above. Without this, a bug that made ALL deletes silently no-op (not just
+        cross-org ones) would pass the cross-org test above for the wrong reason.
+
+        Inserts and deletes its own throwaway row rather than touching the module-scoped
+        `extraction_ids` fixture, which other tests in this module depend on existing for
+        the module's full run.
+        """
+        org_a, _ = org_ids
+        own_ext = str(uuid.uuid4())
+
+        conn = _as_authenticated(org_a)
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                "INSERT INTO public.extractions "
+                "(id, org_id, input_hash, extraction, model, prompt_version, schema_version) "
+                "VALUES (%s, %s, 'hash_rls_delete_own', '{\"stars\": 3}'::jsonb, "
+                "'test-model', 'v1.0', 'v1')",
+                (own_ext, org_a),
+            )
+            cur.execute("DELETE FROM public.extractions WHERE id = %s", (own_ext,))
+            assert cur.rowcount == 1, "Org A must be able to delete its own row"
+            conn.commit()
+        finally:
             conn.close()
 
     def test_no_org_context_sees_nothing(self) -> None:
@@ -340,18 +398,26 @@ class TestAlertsRLSIsolation:
         )
 
     def test_prefs_anon_select_denied(self) -> None:
-        """anon role must be denied SELECT on alert_preferences."""
+        """anon role must be denied SELECT on alert_preferences.
+
+        Fixed 2026-08-01 (P1, schema-fidelity pass): this used to assert the SELECT
+        succeeded with 0 rows, i.e. that alert_prefs_anon_deny's USING (false) was the
+        denial mechanism. A live schema diff against production proved anon holds ZERO
+        table-level grants on any table (information_schema.role_table_grants: 0 rows
+        for anon across the board) -- the RLS policy is never even reached; Postgres
+        denies the query at the privilege-check layer first. Isolation still holds (a
+        harder failure mode, not a weaker one) -- only the assertion was wrong.
+        """
         conn = _conn()
         conn.autocommit = False
         try:
             cur = conn.cursor()
             cur.execute("SET LOCAL ROLE anon")
-            cur.execute("SELECT id FROM public.alert_preferences")
-            rows = cur.fetchall()
+            with pytest.raises(psycopg2.errors.InsufficientPrivilege):
+                cur.execute("SELECT id FROM public.alert_preferences")
         finally:
             conn.rollback()
             conn.close()
-        assert rows == [], "anon must see no rows (denied by alert_prefs_anon_deny policy)"
 
     # ------------------------------------------------------------------
     # alert_log
@@ -421,13 +487,14 @@ class TestAlertsRLSIsolation:
         )
 
     def test_log_update_blocked_by_rls(self, org_ids: tuple[str, str]) -> None:
-        """alert_log is append-only: UPDATE must be silently denied even for the owning org.
+        """alert_log is append-only: UPDATE must be denied even for the owning org.
 
-        Supabase pre-grants ALL privileges to authenticated via DEFAULT PRIVILEGES, so
-        the denial cannot come from the grant layer. It comes instead from the absence
-        of an UPDATE RLS policy: no matching policy → PostgreSQL default-deny → 0 rows
-        affected (no error). This is the same mechanism as the existing
-        test_org_a_cannot_update_org_b_extraction test on extractions.
+        Wave 2 grant narrowing (20260817000004, Item 235) revoked UPDATE from
+        authenticated on this table entirely -- alert_log is append-only, no UPDATE
+        call site exists anywhere in app/. Previously this UPDATE was grant-permitted
+        and silently RLS-filtered to 0 rows (no matching UPDATE policy); now it fails
+        at the grant layer before RLS is ever reached -- a strictly earlier and
+        stronger deny, not a weaker one.
         """
         org_a, _ = org_ids
 
@@ -448,30 +515,34 @@ class TestAlertsRLSIsolation:
         conn = _as_authenticated(org_a)
         try:
             cur = conn.cursor()
-            cur.execute(
-                "UPDATE public.alert_log SET event_type = 'tampered' WHERE id = %s",
-                (log_id,),
-            )
-            assert cur.rowcount == 0, (
-                "UPDATE on append-only alert_log must affect 0 rows (no UPDATE RLS policy)"
+            with pytest.raises(psycopg2.errors.InsufficientPrivilege) as exc_info:
+                cur.execute(
+                    "UPDATE public.alert_log SET event_type = 'tampered' WHERE id = %s",
+                    (log_id,),
+                )
+            assert "permission denied" in str(exc_info.value), (
+                "Block must come from the grant layer -- authenticated holds no UPDATE"
             )
         finally:
             conn.rollback()
             conn.close()
 
     def test_log_anon_select_denied(self) -> None:
-        """anon role must be denied SELECT on alert_log."""
+        """anon role must be denied SELECT on alert_log.
+
+        Fixed 2026-08-01 (P1, schema-fidelity pass) -- see test_prefs_anon_select_denied's
+        docstring above for why this is a grant-layer denial, not an RLS-policy denial.
+        """
         conn = _conn()
         conn.autocommit = False
         try:
             cur = conn.cursor()
             cur.execute("SET LOCAL ROLE anon")
-            cur.execute("SELECT id FROM public.alert_log")
-            rows = cur.fetchall()
+            with pytest.raises(psycopg2.errors.InsufficientPrivilege):
+                cur.execute("SELECT id FROM public.alert_log")
         finally:
             conn.rollback()
             conn.close()
-        assert rows == [], "anon must see no rows (denied by alert_log_anon_deny policy)"
 
 
 @pytest.mark.integration

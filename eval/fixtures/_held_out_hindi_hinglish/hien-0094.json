@@ -1,0 +1,68 @@
+{
+  "id": "hien-0094",
+  "review_text": "Very good earphone with this price range... I got it for ₹540 nd boat earphones have always been good impact.. So go through this... Aur 600 range me boat ka 220 wired is Awesome.. With super  extra bass",
+  "ground_truth": {
+    "product": "earphone",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": [
+      "good price range",
+      "good impact",
+      "super extra bass"
+    ],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "positive",
+    "topics": [
+      "price",
+      "sound_quality",
+      "bass"
+    ],
+    "competitor_mentions": [
+      "boat"
+    ],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "unanimous",
+      "stars_inferred": "unanimous",
+      "pros": "majority",
+      "cons": "unanimous",
+      "topics": "unanimous",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "majority"
+    }
+  }
+}

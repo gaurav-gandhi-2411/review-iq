@@ -1,0 +1,65 @@
+{
+  "id": "hien-0042",
+  "review_text": "Good sound quality but kindly improve making material added more elasticness and super bass .Full paisa vasulREAD MORE",
+  "ground_truth": {
+    "product": "headphones",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": [
+      "good sound quality",
+      "full paisa vasul"
+    ],
+    "cons": [],
+    "buy_again": null,
+    "sentiment": "mixed",
+    "topics": [
+      "sound_quality",
+      "build_quality",
+      "price"
+    ],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/kabirnagpal/flipkart-customer-review-and-rating",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "majority",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "majority",
+      "stars_inferred": "unanimous",
+      "pros": "majority",
+      "cons": "split",
+      "topics": "majority",
+      "feature_requests": "split",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}

@@ -80,12 +80,18 @@ def _make_fake_connect(queue: list[_ClaimedRow], created: list[_FakeConn]) -> ob
 
 
 def _update_params(conn: _FakeConn) -> tuple[object, ...]:
-    """Extract the params of the (single) UPDATE batch_job_rows call on a fake conn."""
-    updates = [c for c in conn.cursor().execute_calls if "UPDATE public.batch_job_rows" in c[0]]
+    """Extract the params of the (single) settle_batch_job_row call on a fake conn.
+
+    settle_batch_job_row(job_id, row_index, status, error, input_hash) -- reorder to
+    the (status, error, input_hash, job_id, row_index) shape callers here expect,
+    matching the old raw UPDATE statement's param order this replaced.
+    """
+    updates = [c for c in conn.cursor().execute_calls if "public.settle_batch_job_row" in c[0]]
     assert len(updates) == 1
     _, params = updates[0]
     assert params is not None
-    return params
+    job_id, row_index, status, error, input_hash = params
+    return (status, error, input_hash, job_id, row_index)
 
 
 # ---------------------------------------------------------------------------
@@ -201,6 +207,7 @@ async def test_drain_rows_attributes_each_row_to_its_own_org() -> None:
         patch("app.core.ingest_worker.count_pending_rows_pg", return_value=1),
         patch("app.core.ingest_worker.count_job_row_statuses_pg", return_value=(1, 0)),
         patch("app.core.ingest_worker.update_batch_job_pg", return_value=None),
+        patch("app.core.ingest_worker.get_org_retention_pg", return_value=("retained", 90)),
         patch("app.api.v2.extract._run_extraction_v2", new=_fake_run),
     ):
         result = await drain_rows(max_rows=2)
@@ -250,6 +257,7 @@ async def test_row_failure_marks_failed_with_truncated_error_and_continues() -> 
         patch("app.core.ingest_worker.count_pending_rows_pg", return_value=1),
         patch("app.core.ingest_worker.count_job_row_statuses_pg", return_value=(1, 1)),
         patch("app.core.ingest_worker.update_batch_job_pg", return_value=None),
+        patch("app.core.ingest_worker.get_org_retention_pg", return_value=("retained", 90)),
         patch("app.api.v2.extract._run_extraction_v2", new=_run_side_effect),
     ):
         result = await drain_rows(max_rows=2)
@@ -420,6 +428,10 @@ def test_ingest_csv_enqueues_durable_rows_and_returns_job_id() -> None:
         api_key_id=str(uuid.uuid4()),
         key_name="test-key",
         usage_record_id=str(uuid.uuid4()),
+        # CSV ingest requires retained mode (Session 12 P2e) -- this test exercises the
+        # durable-enqueue path itself, which is only reachable in retained mode.
+        retention_mode="retained",
+        retention_days=90,
     )
     enqueue_calls: list[tuple[object, ...]] = []
 

@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "review-iq-prod",
+    "site": "reviewiq-prod-260813",
     "rewrites": [
       {
         "source": "**",

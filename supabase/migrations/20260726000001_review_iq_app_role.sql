@@ -28,15 +28,29 @@
 -- migration creates the role idempotently if it's missing, but a fresh checkout applying
 -- this migration will get a role with no usable password until one is set via
 -- `ALTER ROLE review_iq_app WITH PASSWORD '...'` (see ops/runbooks/secret-rotation.md).
+--
+-- Corrected 2026-08-16 (Item 173c, found while investigating the S0 BYPASSRLS footgun):
+-- `ALTER ROLE review_iq_app BYPASSRLS` used to sit here unconditionally, outside the
+-- CREATE-ROLE guard -- meaning every re-run of this file (this app's migration runner
+-- re-applies every file on every invocation, no ledger existed until this same pass) would
+-- silently RE-GRANT BYPASSRLS to an already-existing review_iq_app, even after the S0
+-- remediation (supabase/migrations/20260801000001_role_separation_bypassrls_remediation.sql
+-- + supabase/cutover/20260801000001_statement4_revoke_bypassrls.sql) had correctly revoked
+-- it. Moved inside the IF NOT EXISTS block: BYPASSRLS is now granted ONLY at the moment
+-- this role is first created (a fresh from-scratch database build, e.g. this repo's own CI
+-- container, or a genuine disaster-recovery rebuild) -- never re-asserted against a role
+-- that already exists, which is production's permanent state going forward. A fresh build
+-- still ends up needing the cutover step to run afterward, same as production's own history
+-- did; this fix only stops an ALREADY-migrated database from silently regressing.
 
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'review_iq_app') THEN
     CREATE ROLE review_iq_app LOGIN;
+    ALTER ROLE review_iq_app BYPASSRLS;
   END IF;
 END
 $$;
 
 GRANT authenticated TO review_iq_app;
 GRANT CONNECT ON DATABASE postgres TO review_iq_app;
-ALTER ROLE review_iq_app BYPASSRLS;

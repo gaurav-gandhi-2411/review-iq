@@ -1,0 +1,63 @@
+{
+  "id": "088_consensus_grown",
+  "review_text": "Fantastic product from Oneplus with superb on time delivery even during lock down time by flipkart. This bluetooth ear phones are very comfortable even for long time calls and has pretty clear and good music play back. The best part it sits in ear so nicely that you don't feel you have something even after lot of time.",
+  "ground_truth": {
+    "product": "unknown",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": [],
+    "cons": [],
+    "buy_again": null,
+    "sentiment": "positive",
+    "topics": [
+      "delivery",
+      "comfort",
+      "sound_quality",
+      "fit",
+      "bluetooth"
+    ],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus (Wave 1 Section B)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "split",
+      "stars_inferred": "unanimous",
+      "pros": "split",
+      "cons": "majority",
+      "topics": "majority",
+      "feature_requests": "majority",
+      "competitor_mentions": "split"
+    }
+  }
+}

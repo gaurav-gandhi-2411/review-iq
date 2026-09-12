@@ -1,0 +1,68 @@
+{
+  "id": "hien-0082",
+  "review_text": "Superb Headphone 🤩🤩Design 👌🏻 mast Battery _ 👌🏻 mastBass _ outstanding 👌🏻Futures _ great 👌🏻READ MORE",
+  "ground_truth": {
+    "product": "Headphone",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": [
+      "Superb design",
+      "Great battery life",
+      "Outstanding bass",
+      "Great features"
+    ],
+    "cons": [],
+    "buy_again": null,
+    "sentiment": "positive",
+    "topics": [
+      "design",
+      "battery",
+      "bass",
+      "features"
+    ],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/kabirnagpal/flipkart-customer-review-and-rating",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "unanimous",
+      "stars_inferred": "unanimous",
+      "pros": "unanimous",
+      "cons": "unanimous",
+      "topics": "unanimous",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}

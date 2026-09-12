@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
 import psycopg2
 import pytest
 from app.api.admin import (
+    _aggregate_costs_db,
     _create_key_db,
     _create_org_db,
     _get_org_db,
@@ -282,3 +283,44 @@ def test_admin_db_connect_uses_admin_database_url() -> None:
 
         _db_connect()
     mock_psycopg2.connect.assert_called_once_with("postgresql://user:pw@host/db")
+
+
+# ---------------------------------------------------------------------------
+# _aggregate_costs_db — GET /admin/cost/aggregate wiring (Wave 1 Section G)
+# ---------------------------------------------------------------------------
+
+
+def test_aggregate_costs_db_wraps_storage_rows_into_response_model() -> None:
+    row = {
+        "language": "en",
+        "tier": "small",
+        "n": 10,
+        "tokens_in": 10000,
+        "tokens_out": 5000,
+        "total_cost_usd": 0.0009,
+        "total_cost_inr": 0.0861,
+        "cost_usd_per_1k": 0.09,
+        "cost_inr_per_1k": 8.61,
+    }
+    with patch("app.api.admin.aggregate_extraction_costs_pg", return_value=[row]) as mock_agg:
+        result = _aggregate_costs_db(None)
+
+    mock_agg.assert_called_once_with(None)
+    assert len(result.rows) == 1
+    assert result.rows[0].language == "en"
+    assert result.rows[0].cost_usd_per_1k == pytest.approx(0.09)
+
+
+def test_aggregate_costs_db_empty_when_no_telemetry_yet() -> None:
+    with patch("app.api.admin.aggregate_extraction_costs_pg", return_value=[]):
+        result = _aggregate_costs_db(None)
+
+    assert result.rows == []
+
+
+def test_aggregate_costs_db_passes_since_through() -> None:
+    since = datetime.now(tz=UTC)
+    with patch("app.api.admin.aggregate_extraction_costs_pg", return_value=[]) as mock_agg:
+        _aggregate_costs_db(since)
+
+    mock_agg.assert_called_once_with(since)

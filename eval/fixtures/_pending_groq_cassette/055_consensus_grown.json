@@ -1,0 +1,67 @@
+{
+  "id": "055_consensus_grown",
+  "review_text": "Best in class..Got it in just ₹ 890..Good quality of sound..the only problem I have found is the tightness of the Headset.. Though Its manageable..Thanks flipkart..READ MORE",
+  "ground_truth": {
+    "product": "Headset",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": [
+      "Good quality of sound",
+      "Best in class",
+      "Affordable price"
+    ],
+    "cons": [
+      "tightness of the headset"
+    ],
+    "buy_again": null,
+    "sentiment": "mixed",
+    "topics": [
+      "sound_quality",
+      "price",
+      "comfort"
+    ],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus (Wave 1 Section B)",
+    "source": "flipkart/kabirnagpal/flipkart-customer-review-and-rating",
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "unanimous",
+      "stars_inferred": "unanimous",
+      "pros": "majority",
+      "cons": "majority",
+      "topics": "majority",
+      "feature_requests": "majority",
+      "competitor_mentions": "split"
+    }
+  }
+}

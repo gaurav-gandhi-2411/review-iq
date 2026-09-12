@@ -1,13 +1,13 @@
 variable "project_id" {
   description = "GCP project ID"
   type        = string
-  default     = "review-iq-prod"
+  default     = "reviewiq-prod-260813"
 }
 
 variable "project_number" {
   description = "GCP project number (numeric)"
   type        = string
-  default     = "432538168127"
+  default     = "433287338182"
 }
 
 variable "region" {
@@ -19,19 +19,19 @@ variable "region" {
 variable "billing_account_id" {
   description = "GCP billing account ID"
   type        = string
-  default     = "014DAE-6B3556-077365"
+  default     = "01285B-91E4CB-70AD7E"
 }
 
 variable "alert_email" {
   description = "Email address for budget alert notifications"
   type        = string
-  default     = "gaurav.gandhi2411@gmail.com"
+  default     = "gaurav.gandhi1129@gmail.com"
 }
 
 variable "budget_amount_inr" {
-  description = "Monthly budget cap in INR (billing account currency). ₹100 ≈ $1.20 USD. Kept tight because GCP billing latency is ~24h — a higher cap could allow that amount to accumulate before the kill switch fires."
+  description = "Monthly budget cap in INR (billing account currency). ₹2500 ≈ $30 USD. Raised from an original ₹100 (~$1.20) cap, which was sized to catch a runaway loop but in practice was tight enough to fire on ordinary traffic growth -- indistinguishable from the exact outage class this account spent 2026-08-12 recovering from, just automated. ₹2500 is meant to represent genuine runaway spend (a misconfigured job or infinite loop), not normal operation. GCP billing latency is still ~24h, so a real runaway could still accumulate close to this amount before the kill switch fires -- that tradeoff is accepted deliberately in exchange for not false-triggering on legitimate usage."
   type        = number
-  default     = 100
+  default     = 2500
 }
 
 variable "dry_run" {

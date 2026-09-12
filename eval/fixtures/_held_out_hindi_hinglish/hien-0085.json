@@ -1,0 +1,64 @@
+{
+  "id": "hien-0085",
+  "review_text": "The reason for choosing this one over all others---it works both with bluetooth and aux cable(wired).so bhagwan na kare agar bluetooth kharab ho jae toh u can still use aux cable to use it as wired. It's one advantage and a big one over others. Two in one. It's tight fit, ears will pain after 30-45 mins, but It mit get loosen with time. Voice is good, connectivity working fine till now. Bass is good. Looks good built wise. In short, leke baat khatam karo. 1399 me aur kya chahiye.READ MORE",
+  "ground_truth": {
+    "product": "earphones",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": [],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "mixed",
+    "topics": [
+      "connectivity",
+      "comfort",
+      "sound_quality",
+      "build_quality",
+      "price"
+    ],
+    "competitor_mentions": [],
+    "urgency": "medium",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/kabirnagpal/flipkart-customer-review-and-rating",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "majority",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "majority",
+      "product": "majority",
+      "stars_inferred": "unanimous",
+      "pros": "split",
+      "cons": "split",
+      "topics": "unanimous",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}

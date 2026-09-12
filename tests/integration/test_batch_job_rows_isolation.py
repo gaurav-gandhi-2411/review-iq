@@ -38,7 +38,7 @@ trusting exact-count assertions while unrelated pending rows exist.
 LIVE SCHEDULER RACE (found + fixed 2026-07-10): the quiescent_queue guard above
 only checks the queue is empty at test START -- it cannot protect against the
 LIVE `review-iq-ingest-tick` Cloud Scheduler job (fires every 2 minutes against
-the real deployed API, review-iq-prod project) claiming/processing one of a
+the real deployed API, reviewiq-prod-260813 project) claiming/processing one of a
 test's own rows mid-run via the SAME global drain_rows() claim query. Confirmed
 via Cloud Scheduler execution logs: firings at 15:44-15:52 UTC exactly
 overlapped a local suite run's 15:44-15:52 UTC window, producing two different
@@ -48,7 +48,7 @@ pauses the job for the whole test session and resumes it in a finally block,
 guaranteed even on test failure -- NOT guaranteed against a hard process kill
 (SIGKILL) mid-run, which would leave the job paused; if that happens, resume
 manually: `gcloud scheduler jobs resume review-iq-ingest-tick
---location=asia-south1 --project=review-iq-prod`.
+--location=asia-south1 --project=reviewiq-prod-260813`.
 """
 
 from __future__ import annotations
@@ -70,7 +70,7 @@ load_dotenv(Path(__file__).parents[2] / ".env")
 
 _SCHEDULER_JOB = "review-iq-ingest-tick"
 _SCHEDULER_LOCATION = "asia-south1"
-_SCHEDULER_PROJECT = "review-iq-prod"
+_SCHEDULER_PROJECT = "reviewiq-prod-260813"
 
 
 def _scheduler_cmd(action: str) -> str:
@@ -92,7 +92,22 @@ def pause_prod_scheduler() -> Iterator[None]:
     SCHEDULER RACE" section for why this exists. Runs once for the whole module
     (not per-test) to minimize gcloud API calls and avoid repeatedly flapping a
     real production schedule.
+
+    Skipped entirely when TEST_DB_HOST is set (the pre-cutover ephemeral-Postgres CI
+    job, 2026-08-01) -- pausing the REAL production scheduler makes no sense (and is
+    actively unsafe to do from CI) when this run's own drain_rows() calls are
+    operating against a throwaway local container, not production's batch_job_rows
+    table at all.
     """
+    if os.environ.get("TEST_DB_HOST"):
+        print(
+            "\n[pause_prod_scheduler] TEST_DB_HOST is set -- skipping real "
+            "production Cloud Scheduler pause/resume (this run targets an "
+            "ephemeral database, not production)"
+        )
+        yield
+        return
+
     result = subprocess.run(
         _scheduler_cmd("pause"), shell=True, capture_output=True, text=True, check=False
     )
@@ -137,15 +152,9 @@ from app.core.storage_pg import (  # noqa: E402
     get_by_hash_pg,
 )
 
-_DB_PARAMS = {
-    "host": "db.enqpluazgxewepchdeut.supabase.co",
-    "port": 5432,
-    "dbname": "postgres",
-    "user": "postgres",
-    "password": os.environ["SUPABASE_DB_PASSWORD"],
-    "sslmode": "require",
-    "connect_timeout": 15,
-}
+from tests.integration._superuser_db_params import superuser_db_params  # noqa: E402
+
+_DB_PARAMS = superuser_db_params()
 
 
 def _conn() -> psycopg2.extensions.connection:
@@ -184,9 +193,13 @@ def two_orgs() -> Iterator[tuple[str, str]]:
     conn = _conn()
     try:
         cur = conn.cursor()
+        # Session 12 P2a: retention_mode defaults to 'stateless' (D1) -- this file tests
+        # that drained rows persist and are isolated by org, so it opts into 'retained'.
         cur.execute(
-            "INSERT INTO public.organizations (id, name, slug) VALUES "
-            "(%s, 'Batch Row Org A', %s), (%s, 'Batch Row Org B', %s)",
+            "INSERT INTO public.organizations "
+            "(id, name, slug, retention_mode, retention_days) VALUES "
+            "(%s, 'Batch Row Org A', %s, 'retained', 90), "
+            "(%s, 'Batch Row Org B', %s, 'retained', 90)",
             (org_a, f"bjr-a-{org_a[:8]}", org_b, f"bjr-b-{org_b[:8]}"),
         )
         conn.commit()
@@ -364,6 +377,16 @@ class TestBatchJobRowsRLSIsolation:
         assert job_a not in visible, "Org B must NOT see org A's batch_job_rows"
 
     def test_org_a_cannot_update_org_b_row(self, two_orgs: tuple[str, str]) -> None:
+        """authenticated UPDATE on batch_job_rows is blocked outright, cross-org or not.
+
+        Wave 1 grant narrowing (20260817000002, Item 208) revoked UPDATE from
+        authenticated on this table entirely -- settle_batch_job_row (the only
+        writer of row status) runs as review_iq_migrator via SECURITY DEFINER, never
+        as authenticated. Previously this UPDATE was grant-permitted and silently
+        RLS-filtered to 0 rows; now it fails at the grant layer before RLS is ever
+        reached, for both same-org and cross-org targets -- a strictly earlier and
+        stronger deny, not a weaker one.
+        """
         org_a, org_b = two_orgs
         _seed_job(org_a, [f"rls-proof-a-{uuid.uuid4().hex[:8]}"])
         job_b = _seed_job(org_b, [f"rls-proof-b-{uuid.uuid4().hex[:8]}"])
@@ -371,11 +394,14 @@ class TestBatchJobRowsRLSIsolation:
         conn = _as_authenticated(org_a)
         try:
             cur = conn.cursor()
-            cur.execute(
-                "UPDATE public.batch_job_rows SET status = 'failed' WHERE job_id = %s",
-                (job_b,),
+            with pytest.raises(psycopg2.errors.InsufficientPrivilege) as exc_info:
+                cur.execute(
+                    "UPDATE public.batch_job_rows SET status = 'failed' WHERE job_id = %s",
+                    (job_b,),
+                )
+            assert "permission denied" in str(exc_info.value), (
+                "Block must come from the grant layer -- authenticated holds no UPDATE"
             )
-            assert cur.rowcount == 0, "UPDATE of cross-tenant batch_job_rows must affect 0 rows"
         finally:
             conn.rollback()
             conn.close()

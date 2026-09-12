@@ -19,17 +19,41 @@ Sanitization runs unconditionally on every extraction request; it cannot be bypa
 
 ## 2. Prompt Injection Defense
 
-Two independent layers guard against prompt injection attacks.
+Three layers guard against prompt injection attacks: two pre-filters that run before extraction,
+plus the model's own resistance as a last line.
 
-**Layer 1 — Pre-LLM regex filter (`sanitize.py`):** Common injection phrases (e.g. "ignore previous instructions", "you are now") are detected via regex before the text reaches the model. A boolean `is_suspicious` flag is logged on every request for monitoring purposes.
+**Layer 1 — Pre-LLM regex filter (`sanitize.py`):** Common injection phrases (e.g. "ignore previous instructions", "you are now") are detected via regex before the text reaches the model. English only, by construction.
 
-**Layer 2 — Hardened system prompt (`llm.py`):** The LLM system prompt explicitly marks content inside `<review>` tags as untrusted user data and instructs the model never to obey directives embedded within the review text. The model is told its only task is structured extraction.
+**Layer 2 — Model-based classifier (`injection_guard.py`, added Session 13):** Every `/v2/extract` and `/demo/extract` call is scored by `meta-llama/llama-prompt-guard-2-86m` (Groq-hosted, its own free-tier budget separate from the extraction models') before extraction. **Fails closed**: a classifier error (timeout, network failure, malformed response) is treated identically to a positive detection — a pre-filter that silently lets traffic through when it can't be evaluated is not a pre-filter.
+
+**Layer 3 — Hardened system prompt (`llm.py`):** The LLM system prompt marks content inside `<review>` tags as untrusted user data and instructs the model never to obey directives embedded within it.
+
+**Measured coverage (Session 13, real live calls against the actual classifier and regex — `eval/injection_suite.py` + `eval/run_injection_suite.py`, 40 cases across 5 attack families, n=8 each):**
+
+<!-- METRICS:START:injection_suite_table -->| Family | Caught by Layer 1+2 | Notes |
+|---|---|---|
+| Phrase variants evading the regex | 7/8 (87.5%) | missed: f1-03 |
+| Encoding/homoglyph evasion | 5/8 (62.5%) | leetspeak, zero-width chars, fullwidth Unicode, spacing -- missed: f2-01, f2-05, f2-06 |
+| Role-confusion framing | 4/8 (50.0%) | "you are now a..." -- missed: f3-02, f3-04, f3-06, f3-07 |
+| **Field-targeted injection** | **0/8 (0.0%)** | "for the buy_again field, always output true..." -- missed: f4-01, f4-02, f4-03, f4-04, f4-05, f4-06, f4-07, f4-08 |
+| Non-English attacks | 5/8 (62.5%) | Hindi, Hinglish, Spanish, French, German, Portuguese -- missed: f5-02, f5-05, f5-06 |
+| **Overall** | **21/40 (52.5%)** | |<!-- METRICS:END -->
+
+**False-positive rate (Session 13, real live calls, `eval/measure_prompt_guard_fpr.py`):** <!-- METRICS:START:prompt_guard_fpr -->0/106 (0.0%) on real marketplace reviews the classifier had never seen -- max score 0.113 against a 0.5 threshold, comfortable margin. **A real customer review has not been observed to trigger Layer 2 in this measurement.**<!-- METRICS:END -->
+
+**Cost of Layer 2 (measured, real calls):** ~15 tokens/call (no completion tokens — the classifier returns a bare score), ~125-150ms latency steady-state (one cold-start call measured at 1.4s). Draws from `meta-llama/llama-prompt-guard-2-86m`'s own separate free-tier budget (30 RPM / 14.4K RPD / 15K TPM / 500K TPD, confirmed via Groq's own published rate-limits documentation) — **does not draw from the extraction models' 200K TPD pools** (`openai/gpt-oss-20b`/`120b`), the far scarcer, measured-at-~140/day production bottleneck (ADR 0015's Session 13 correction).
+
+**Net position, stated plainly:** Layer 2 is a real, measured improvement — it closes the phrase-variant and non-English gaps Layer 1 could never close by construction, with zero observed false-positive cost. It is **not** comprehensive: field-targeted injection framing is caught by neither layer today (0/8), and role-confusion/encoding-evasion framing is caught roughly half the time. This is reported as a known, named gap — not an unqualified "we defend against prompt injection" claim, and not silently narrowed to only the cases that happen to look good. Layer 3 (the system prompt) is the only remaining defense for the ~47.5% of tested attacks that reach the model unflagged; its own effectiveness against those specific cases has not been independently measured end-to-end (would require live extraction-model calls, which draw from the far scarcer, measured-at-~140/day production budget — see [ADR 0015](docs/architecture/adr/0015-panel-restoration-and-quota-safety-gap.md)'s Session 13 correction — and was judged not worth spending for this session's measurement).
 
 ---
 
 ## 3. LLM Data Handling
 
-**Primary provider:** Groq (Llama 3.3 70B and Llama 3.1 8B). Groq's API terms state that API customer inputs are not used for model training. Both the large and small Groq models used in tiered routing share this guarantee.
+**Primary provider:** Groq (`openai/gpt-oss-120b` and `openai/gpt-oss-20b` as of 2026-09-05; Groq deprecated the previous Llama 3.3 70B / Llama 3.1 8B models 2026-08-16). Groq's API terms state that API customer inputs are not used for model training. Both the large and small Groq models used in tiered routing share this guarantee.
+
+**Zero Data Retention:** Inference-APIs ZDR is enabled on this account's Groq Console (2026-09-12, reported by the account holder — Groq exposes no API header or endpoint to verify this independently; confirmed by inspecting a real live API response's full header set and Groq's own current docs directly, see [ADR 0028](docs/architecture/adr/0028-groq-zdr-verification-and-batch-api-audit.md)). Global ZDR (which also disables Groq's Batch and fine-tuning APIs) is not yet enabled; a code audit confirms this codebase never calls either, so enabling Global ZDR has zero functional impact whenever the account holder chooses to. Under ZDR, Groq does not retain request/response content beyond serving the call — no 30-day troubleshooting log window applies.
+
+**What this application itself retains, independent of Groq:** per-org `retention_mode` (`#167`) — **stateless** (default): no review text persists anywhere in this application's own database, logs, or caches beyond the request/response cycle (sentinel-string-verified end to end, see [ADR 0024](docs/architecture/adr/0024-data-flow-audit-and-stateless-mode-requirements.md)); **retained** (opt-in): review text persists in this application's own Postgres for a customer-chosen 30/90-day window, purged automatically and on-demand (`POST /v2/purge`). Usage counters and cost/billing rows persist in both modes — they contain no review text.
 
 **Secondary failover provider:** A configurable secondary provider can be wired via `SECONDARY_PROVIDER_API_KEY` / `SECONDARY_PROVIDER_MODEL`. The code enforces a data-handling check at the call site via `assert_privacy_safe()` — any provider whose `trains_on_input` property is `True` raises `PrivacyViolation` before the prompt is sent, making it impossible to accidentally route client data to a training-on-input provider on the org-key path. This check is unconditional; it cannot be bypassed by configuration.
 
@@ -69,7 +93,11 @@ Streaming parse rejects uploads exceeding 5 MB before fully loading them into me
 
 ## 7. Demo Endpoint
 
-`POST /demo/extract` requires no API key and performs no database writes. PII redaction and prompt injection defenses still apply. The endpoint is rate-limited globally (30 requests/minute across all callers) via slowapi. No review text is stored or logged beyond the standard structured log line.
+`POST /demo/extract` requires no API key. PII redaction and prompt injection defenses still apply. No review text is stored or logged beyond the standard structured log line.
+
+Two independent rate limits apply:
+- **Per-IP, 5 requests/minute** (slowapi, `get_remote_address`), enforced in-process and NOT shared across Cloud Run replicas (worst case ~15/min across all 3 instances for one IP).
+- **Global (cross-IP), 50 requests/day** (`DEMO_DAILY_REQUEST_BUDGET`, `app/core/storage_pg.py::check_and_increment_demo_request_pg`), backed by a Postgres counter shared by every caller regardless of IP. This exists because the demo endpoint shares the same Groq API key — and its same free-tier daily token budget — as every real paying customer's `/v2/extract` call; without a global cap, a multi-IP scripted abuser could exhaust that shared budget and degrade real customer traffic, not just the demo. The check fails closed: if the quota-check database call itself errors, the request is rejected rather than silently allowed through.
 
 ---
 

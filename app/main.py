@@ -24,6 +24,7 @@ from app.api.google_auth import router as google_auth_router
 from app.api.internal.detectors import router as internal_detectors_router
 from app.api.internal.digest import router as internal_digest_router
 from app.api.internal.ingest_tick import router as internal_ingest_tick_router
+from app.api.internal.retention import router as internal_retention_router
 from app.api.ops import router as ops_router
 from app.api.query import router as query_router
 from app.api.shopify_auth import router as shopify_auth_router
@@ -235,6 +236,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         _app.include_router(internal_digest_router)
         _app.include_router(internal_ingest_tick_router)
         _app.include_router(internal_detectors_router)
+        _app.include_router(internal_retention_router)
         _app.include_router(unsubscribe_router)
 
         if settings.deploy_target != "cloud-run":

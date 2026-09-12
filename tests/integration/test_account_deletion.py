@@ -15,7 +15,6 @@ Marked 'integration' — skipped by default; run explicitly:
 
 from __future__ import annotations
 
-import os
 import uuid
 from collections.abc import Iterator
 from datetime import UTC, datetime
@@ -32,15 +31,9 @@ from app.core.schemas import ExtractionMetaV2, ReviewExtractionV2, Sentiment, Ur
 from app.core.storage_pg import get_by_hash_pg, save_extraction_pg  # noqa: E402
 from fastapi import HTTPException  # noqa: E402
 
-_DB_PARAMS = {
-    "host": "db.enqpluazgxewepchdeut.supabase.co",
-    "port": 5432,
-    "dbname": "postgres",
-    "user": "postgres",
-    "password": os.environ["SUPABASE_DB_PASSWORD"],
-    "sslmode": "require",
-    "connect_timeout": 15,
-}
+from tests.integration._superuser_db_params import superuser_db_params  # noqa: E402
+
+_DB_PARAMS = superuser_db_params()
 
 
 def _conn() -> psycopg2.extensions.connection:

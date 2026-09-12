@@ -1,0 +1,16 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', '${_IMAGE_TAG}', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '${_IMAGE_TAG}']
+images:
+  - '${_IMAGE_TAG}'
+options:
+  # Routes build logs to Cloud Logging instead of the default GCS bucket, so
+  # the CI caller only needs roles/logging.viewer (narrow, log-read-only)
+  # rather than the project-wide roles/viewer that default-bucket logging
+  # requires (confirmed via GCP docs, Item 102). Equivalent to what
+  # `gcloud builds submit --tag` auto-generates, plus this one option --
+  # that auto-generated form has no CLI flag to set logging, hence the
+  # explicit config file.
+  logging: CLOUD_LOGGING_ONLY

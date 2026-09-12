@@ -9,6 +9,9 @@ export class ServiceWarmingError extends Error {
 export class QuotaError extends Error {
   constructor() { super('Monthly review limit reached.') }
 }
+export class DemoRateLimitError extends Error {
+  constructor() { super("You've hit the demo's rate limit — wait a minute and try again.") }
+}
 export class BffError extends Error {
   status: number
   constructor(status: number, message: string) {
@@ -58,6 +61,34 @@ export async function provision(): Promise<{ org_id: string; status: string }> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { raw_key: _, ...safe } = data
   return safe
+}
+
+// ---- Public demo (no auth, no signup) ----
+export interface DemoExtraction {
+  product: string
+  stars_inferred: number | null
+  pros: string[]
+  cons: string[]
+  sentiment: 'positive' | 'negative' | 'neutral' | 'mixed'
+  topics: string[]
+  competitor_mentions: string[]
+  urgency: 'low' | 'medium' | 'high'
+  language: string
+}
+
+export async function demoExtract(text: string): Promise<DemoExtraction> {
+  const res = await fetch(`${API_URL}/demo/extract`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text }),
+  })
+  if (res.status === 429) throw new DemoRateLimitError()
+  if (res.status === 503 || res.status === 502) throw new ServiceWarmingError()
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({ detail: 'Unknown error' }))
+    throw new BffError(res.status, detail?.detail ?? `Error ${res.status}`)
+  }
+  return res.json()
 }
 
 // ---- Ingest ----

@@ -1,0 +1,58 @@
+{
+  "id": "hien-0022",
+  "review_text": "Beyond the imagination....VERY BAD PRODUCT BUTTONS CANT WORK PROPERLYLeft side sound automatically gets low n battery after 60% suddenly low dont know what's going on with it😐😐😑but BOAT BALO TUMNE DHOKA DIYA😐😑SOCHA THA COMPANY KA ITEM LE RHA HU KOI DIKKAT NHI AAYEGI BUT SAB BAKBAS H VERY MUCH DISAPPOINTEDAPNI POCKET MONEY COLLECT KARKE ORDER KIYA THA ☹️☹️",
+  "ground_truth": {
+    "product": "unknown",
+    "stars": null,
+    "stars_inferred": 1,
+    "pros": [],
+    "cons": [],
+    "buy_again": false,
+    "sentiment": "negative",
+    "topics": [],
+    "competitor_mentions": [],
+    "urgency": "medium",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "split",
+      "stars_inferred": "unanimous",
+      "pros": "unanimous",
+      "cons": "split",
+      "topics": "split",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}

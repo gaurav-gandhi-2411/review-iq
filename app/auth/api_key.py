@@ -25,6 +25,7 @@ from fastapi import HTTPException, Security, status
 from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBearer
 
 from app.core.config import get_settings
+from app.core.storage_pg import _set_tenant
 
 _BEARER = HTTPBearer(auto_error=False)
 _API_KEY_HEADER = APIKeyHeader(name="X-API-Key", auto_error=False)
@@ -40,6 +41,11 @@ class ApiKeyContext:
     api_key_id: str | None  # None for system-triggered extractions (e.g. webhooks)
     key_name: str
     usage_record_id: str  # "" for system-triggered extractions (skips token accounting)
+    # Session 12 P2a: per-org retention mode. "stateless" (the default) means
+    # _run_extraction_v2 must persist zero review text; "retained" means it may,
+    # bounded by retention_days. See docs/architecture/adr/0025-two-modes-retention-schema.md.
+    retention_mode: str = "stateless"
+    retention_days: int | None = None
 
 
 def _db_connect() -> psycopg2.extensions.connection:
@@ -52,8 +58,13 @@ def _db_connect() -> psycopg2.extensions.connection:
 def _lookup_and_record(raw_key: str) -> ApiKeyContext:
     """Sync: prefix lookup → argon2id verify → monthly quota check → usage record.
 
-    SELECT FOR UPDATE on the api_keys row serializes concurrent requests for the
-    same key, preventing over-admission without a TOCTOU race.
+    Two-step org resolution (BYPASSRLS remediation 2c), same pattern as the webhook fix
+    (PR #61): org_id is unknown from a bare key_prefix, so step 1 calls
+    public.resolve_org_for_api_key_prefix() (narrow SECURITY DEFINER, returns ONLY
+    org_id) before review_iq_app can be RLS-scoped at all. Step 2 calls _set_tenant()
+    and re-fetches the actual row -- THIS is where the FOR UPDATE row lock is taken,
+    serializing concurrent requests for the same key exactly as before; key_prefix's
+    UNIQUE constraint (api_keys_key_prefix_key) guarantees both queries see the same row.
 
     Run via asyncio.to_thread — never call directly from async code.
     """
@@ -61,12 +72,31 @@ def _lookup_and_record(raw_key: str) -> ApiKeyContext:
     conn.autocommit = False
     try:
         cur = conn.cursor()
+        key_prefix = raw_key[:_KEY_PREFIX_LEN]
 
-        # 1. Prefix lookup with row lock — serializes concurrent quota checks
+        # 1. Resolve org_id from the bare prefix — no lock, no bypass needed.
+        cur.execute("SELECT public.resolve_org_for_api_key_prefix(%s)", (key_prefix,))
+        resolved = cur.fetchone()
+        org_id = resolved[0] if resolved else None
+        if org_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="API key not found.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        # 2. RLS-scoped re-fetch, row-locked — serializes concurrent quota checks.
+        # Joins organizations for retention_mode/retention_days (P2a) -- FOR UPDATE OF ak
+        # only, the org row itself is read-only here and must not be lock-contended by
+        # concurrent requests against the same org's other keys.
+        _set_tenant(cur, str(org_id))
         cur.execute(
-            "SELECT id, org_id, name, key_hash, quota "
-            "FROM public.api_keys WHERE key_prefix = %s AND revoked_at IS NULL FOR UPDATE",
-            (raw_key[:_KEY_PREFIX_LEN],),
+            "SELECT ak.id, ak.org_id, ak.name, ak.key_hash, ak.quota, "
+            "o.retention_mode, o.retention_days "
+            "FROM public.api_keys ak JOIN public.organizations o ON o.id = ak.org_id "
+            "WHERE ak.key_prefix = %s AND ak.org_id = %s "
+            "AND ak.revoked_at IS NULL FOR UPDATE OF ak",
+            (key_prefix, str(org_id)),
         )
         row = cur.fetchone()
         if row is None:
@@ -76,7 +106,7 @@ def _lookup_and_record(raw_key: str) -> ApiKeyContext:
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        key_id, org_id, key_name, key_hash, quota = row
+        key_id, org_id, key_name, key_hash, quota, retention_mode, retention_days = row
 
         # 2. argon2id verification — constant-time
         try:
@@ -121,6 +151,8 @@ def _lookup_and_record(raw_key: str) -> ApiKeyContext:
             api_key_id=str(key_id),
             key_name=key_name,
             usage_record_id=str(usage_record_id),
+            retention_mode=retention_mode,
+            retention_days=retention_days,
         )
     except Exception:
         conn.rollback()

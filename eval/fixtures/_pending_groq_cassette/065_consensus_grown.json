@@ -1,0 +1,67 @@
+{
+  "id": "065_consensus_grown",
+  "review_text": "Pros:Great Earphones at such a low price. Deep Bass. Awesome sound quality. Works great for playing PUBG.Cons:Only one disadvantage is that you cannot wear it for too long. The buds are not that good and cause irritation in the ears.",
+  "ground_truth": {
+    "product": "earphones",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": [
+      "low price",
+      "deep bass",
+      "awesome sound quality",
+      "great for playing PUBG"
+    ],
+    "cons": [],
+    "buy_again": null,
+    "sentiment": "mixed",
+    "topics": [
+      "price",
+      "sound_quality",
+      "comfort",
+      "gaming"
+    ],
+    "competitor_mentions": [],
+    "urgency": "medium",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus (Wave 1 Section B)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "unanimous",
+      "stars_inferred": "unanimous",
+      "pros": "majority",
+      "cons": "split",
+      "topics": "majority",
+      "feature_requests": "majority",
+      "competitor_mentions": "majority"
+    }
+  }
+}

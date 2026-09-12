@@ -43,6 +43,9 @@ async def _ping_postgres(dsn: str) -> None:
     import psycopg2
 
     def _sync_ping() -> None:
+        # No _set_tenant() needed: SELECT 1 touches no table, so RLS/tenant-scoping is
+        # not applicable -- this connection never reads org-scoped data (BYPASSRLS
+        # remediation audit, 2026-08-01: intentional, not an oversight).
         conn = psycopg2.connect(dsn, connect_timeout=_DB_PING_TIMEOUT_SECONDS)
         try:
             cur = conn.cursor()

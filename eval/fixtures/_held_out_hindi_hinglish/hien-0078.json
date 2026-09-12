@@ -1,0 +1,63 @@
+{
+  "id": "hien-0078",
+  "review_text": "Slightly disappointed to buy this at 1800 price range neck band is irritating many times in summer and ear also feel pain when used earhook. Sound feel heavy and you adjust differnt sound for differnt song. Totally disappointing.20% sound par ganna sunai tak nhi deta. You should sound min 90% to listen song.",
+  "ground_truth": {
+    "product": "neck band",
+    "stars": null,
+    "stars_inferred": 2,
+    "pros": [],
+    "cons": [],
+    "buy_again": false,
+    "sentiment": "negative",
+    "topics": [
+      "comfort",
+      "sound_quality",
+      "price",
+      "volume"
+    ],
+    "competitor_mentions": [],
+    "urgency": "medium",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "majority",
+      "urgency": "majority",
+      "product": "majority",
+      "stars_inferred": "unanimous",
+      "pros": "unanimous",
+      "cons": "split",
+      "topics": "unanimous",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}

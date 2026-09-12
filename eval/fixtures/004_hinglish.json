@@ -13,13 +13,13 @@
     "competitor_mentions": [],
     "urgency": "low",
     "feature_requests": [],
-    "language": "hi"
+    "language": "hi-en"
   },
   "scoring_notes": {
     "exact_match_fields": ["stars", "buy_again", "sentiment"],
     "set_overlap_fields": ["topics", "competitor_mentions"],
     "fuzzy_fields": ["pros", "cons"],
     "tolerance_fields": {"stars_inferred": 1},
-    "notes": "language may be hi or en; both accepted. Phase 1 should not crash on Hinglish."
+    "notes": "Session 10 P1: language corrected from 'hi' to 'hi-en' -- the review text is pure Roman-script Hinglish (zero Devanagari characters, e.g. 'Bahut achha product hai yaar'), matching the fixture's own filename/id. The original 'hi' value predates the hi/hi-en split becoming a strict, separately-scored bucket (this fixture's own prior note said 'language may be hi or en; both accepted' -- an ambiguity that only made sense before that split existed) and was never revisited. This fixture was inflating the Devanagari 'hi' bucket's n from 6 (the genuinely synthetic Devanagari set) to 7. See docs/architecture/adr/0017-*.md."
   }
 }

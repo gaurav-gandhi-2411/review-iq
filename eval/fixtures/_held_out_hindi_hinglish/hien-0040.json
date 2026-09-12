@@ -1,0 +1,68 @@
+{
+  "id": "hien-0040",
+  "review_text": "Good product.. but bass is not like wings and Philip's earphones...try wings wireless neck band...mast hei...as I hv wings,Philip's,Intex and now boat in comparison to all wings is best then Philip's and intex and last boat",
+  "ground_truth": {
+    "product": "unknown",
+    "stars": null,
+    "stars_inferred": 3,
+    "pros": [
+      "Good product"
+    ],
+    "cons": [],
+    "buy_again": null,
+    "sentiment": "mixed",
+    "topics": [
+      "sound_quality",
+      "bass",
+      "brand_comparison"
+    ],
+    "competitor_mentions": [
+      "wings",
+      "Philip's",
+      "Intex"
+    ],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "hi-en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus/build_held_out_corpus.py (Session 9 P3)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "quarantined": true,
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "majority",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "split",
+      "stars_inferred": "unanimous",
+      "pros": "unanimous",
+      "cons": "split",
+      "topics": "majority",
+      "feature_requests": "unanimous",
+      "competitor_mentions": "unanimous"
+    }
+  }
+}

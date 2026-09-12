@@ -1,0 +1,68 @@
+name: Migration Drift Check
+
+# Item 248: the migration ledger (public._migrations, supabase/push.py) exists specifically
+# to make "merged but not applied to production" visible -- but nothing queried it on a
+# schedule. Wave 2 (#119) and Wave 3 (#121) both merged to main and sat unapplied against
+# production for roughly two days, undetected, until a manual production query surfaced it
+# (Item 246a). This workflow runs `push.py --dry-run --fail-on-pending` against production on
+# a schedule and on every push to main that touches migrations, and fails the moment any
+# migration is merged but genuinely unapplied -- the exact gap that went undetected for two
+# days would instead be caught within the cron interval below.
+#
+# --fail-on-pending only fails on "objects missing / grant mismatch" (genuinely unapplied) --
+# not on "objects already exist, needs --mark-applied-all" (a ledger bookkeeping gap, not a
+# security-relevant drift) or "no recognizable objects" (unverifiable either way). See
+# supabase/push.py's own --fail-on-pending help text.
+#
+# Credential: reuses the SUPABASE_DIRECT_URL repo secret already used by db-backup.yml and
+# schema-drift-check.yml -- read-only introspection only (SELECT against information_schema/
+# pg_proc/pg_roles), so this adds a third consumer of an already-accepted secret, not a new
+# credential exposure.
+
+on:
+  schedule:
+    # Every 6 hours, offset from security-bypassrls-check.yml's :17 and
+    # schema-drift-check.yml's 3:30 daily run to avoid piling requests onto Supabase at once.
+    - cron: "47 */6 * * *"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/**"
+      - ".github/workflows/migration-drift-check.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: migration-drift-check
+  cancel-in-progress: true
+
+jobs:
+  drift-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Check for merged-but-unapplied migrations (read-only, production DB)
+        env:
+          SUPABASE_DIRECT_URL: ${{ secrets.SUPABASE_DIRECT_URL }}
+        run: |
+          if [ -z "$SUPABASE_DIRECT_URL" ]; then
+            echo "::error::SUPABASE_DIRECT_URL secret is not set -- cannot check production. Failing closed rather than skipping the check."
+            exit 1
+          fi
+          uv run python supabase/push.py --dry-run --fail-on-pending

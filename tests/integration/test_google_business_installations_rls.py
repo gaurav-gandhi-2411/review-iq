@@ -26,7 +26,6 @@ INSERT BLOCK MECHANISM:
 
 from __future__ import annotations
 
-import os
 import uuid
 from pathlib import Path
 
@@ -35,17 +34,11 @@ import psycopg2.errors
 import pytest
 from dotenv import load_dotenv
 
+from tests.integration._superuser_db_params import superuser_db_params
+
 load_dotenv(Path(__file__).parents[2] / ".env")
 
-_DB_PARAMS = {
-    "host": "db.enqpluazgxewepchdeut.supabase.co",
-    "port": 5432,
-    "dbname": "postgres",
-    "user": "postgres",
-    "password": os.environ["SUPABASE_DB_PASSWORD"],
-    "sslmode": "require",
-    "connect_timeout": 15,
-}
+_DB_PARAMS = superuser_db_params()
 
 _FAKE_ENC_REFRESH_TOKEN = "gAAAAABfake_fernet_ciphertext_for_rls_test_only"
 
@@ -174,13 +167,20 @@ class TestGoogleBusinessInstallationsRLS:
         assert inst_a not in visible_ids, "org_b must NOT see org_a's installation"
 
     def test_anon_cannot_select(self, installation_ids: tuple[str, str]) -> None:
-        """anon role denied by policy — SELECT returns 0 rows."""
+        """anon role denied — no table grant at all, not reached via RLS.
+
+        Fixed 2026-08-01 (P1, schema-fidelity pass): this used to assert the SELECT
+        succeeded with 0 rows (an RLS-USING(false) denial). A live schema diff against
+        production proved anon holds ZERO table-level grants on any table -- the
+        privilege check fails before RLS is ever evaluated. Isolation still holds (a
+        harder failure mode, not a weaker one); only the assertion was wrong.
+        """
         conn = _conn()
         try:
             cur = conn.cursor()
             cur.execute("SET LOCAL ROLE anon")
-            cur.execute("SELECT id FROM public.google_business_installations")
-            assert cur.fetchall() == [], "anon must see no installations"
+            with pytest.raises(psycopg2.errors.InsufficientPrivilege):
+                cur.execute("SELECT id FROM public.google_business_installations")
         finally:
             conn.close()
 
@@ -189,10 +189,20 @@ class TestGoogleBusinessInstallationsRLS:
     # ------------------------------------------------------------------
 
     def test_authenticated_same_org_insert_blocked_by_rls(self, org_ids: tuple[str, str]) -> None:
-        """authenticated INSERT is blocked by RLS even for same-org rows.
+        """authenticated INSERT is blocked even for same-org rows.
 
         The OAuth callback writes as service-role (postgres, no SET ROLE). Direct
         authenticated INSERT is structurally blocked regardless of the org_id value.
+
+        Wave 1 grant narrowing (20260817000002, Item 208) revoked INSERT from
+        authenticated on this table entirely (upsert_google_installation, the only
+        writer, runs as review_iq_migrator via SECURITY DEFINER, never as
+        authenticated). Postgres checks table privileges before evaluating RLS, so
+        the block now surfaces as a grant-layer InsufficientPrivilege rather than an
+        RLS policy violation -- a strictly earlier and stronger deny, not a weaker
+        one. This test previously asserted the block came specifically from RLS
+        (no INSERT policy); that assertion is now moot since there is no INSERT
+        grant left for RLS to be reached.
         """
         org_a, _ = org_ids
 
@@ -212,18 +222,20 @@ class TestGoogleBusinessInstallationsRLS:
                         _FAKE_ENC_REFRESH_TOKEN,
                     ),
                 )
-            assert "row-level security policy" in str(exc_info.value), (
-                "Block must come from RLS (no INSERT policy), not the grant layer"
+            assert "permission denied" in str(exc_info.value), (
+                "Block must come from the grant layer -- authenticated holds no INSERT"
             )
             conn.rollback()
         finally:
             conn.close()
 
     def test_authenticated_cross_org_insert_blocked_by_rls(self, org_ids: tuple[str, str]) -> None:
-        """Cross-org INSERT (org A session, org B's org_id) is also blocked by RLS.
+        """Cross-org INSERT (org A session, org B's org_id) is also blocked.
 
         Both attacks fail structurally — the block is not contingent on the org_id
         value, so there is no way to enumerate org_ids to find an exploitable path.
+        See test_authenticated_same_org_insert_blocked_by_rls for why this is now a
+        grant-layer block rather than an RLS block (Item 208, Wave 1).
         """
         org_a, org_b = org_ids
 
@@ -243,8 +255,8 @@ class TestGoogleBusinessInstallationsRLS:
                         _FAKE_ENC_REFRESH_TOKEN,
                     ),
                 )
-            assert "row-level security policy" in str(exc_info.value), (
-                "Cross-org block must also be RLS, not grant-layer"
+            assert "permission denied" in str(exc_info.value), (
+                "Cross-org block must also be grant-layer -- authenticated holds no INSERT"
             )
             conn.rollback()
         finally:

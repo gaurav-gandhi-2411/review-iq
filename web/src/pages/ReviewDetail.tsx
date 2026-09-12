@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router'
 import {
   ArrowLeft, Copy, Check, Loader2, RefreshCw,
   ShieldCheck, AlertTriangle, AlertOctagon,

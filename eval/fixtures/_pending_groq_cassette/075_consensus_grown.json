@@ -1,0 +1,57 @@
+{
+  "id": "075_consensus_grown",
+  "review_text": "I will definitely recommend others to buy this headphone. There is a lot of improvement happened in this Ear buds 2 from the previous one. you will definitely love the design and bass effect which is equivalent to 899 or 1299 Rs earphones. Thank you Realme you are doing a great job to satisfy your customer.",
+  "ground_truth": {
+    "product": "unknown",
+    "stars": null,
+    "stars_inferred": 5,
+    "pros": [],
+    "cons": [],
+    "buy_again": true,
+    "sentiment": "positive",
+    "topics": [],
+    "competitor_mentions": [],
+    "urgency": "low",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus (Wave 1 Section B)",
+    "source": "flipkart/naushads/flipkart-reviews",
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "split",
+      "stars_inferred": "unanimous",
+      "pros": "split",
+      "cons": "majority",
+      "topics": "split",
+      "feature_requests": "majority",
+      "competitor_mentions": "majority"
+    }
+  }
+}

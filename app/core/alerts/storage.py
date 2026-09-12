@@ -385,20 +385,20 @@ def list_authenticity_audits_since_pg(org_id: str, since: datetime) -> list[dict
 def list_orgs_with_daily_digest_pg() -> list[str]:
     """Return distinct org_ids with at least one enabled daily_digest preference.
 
-    Cross-org query — connects via _db_connect() and does NOT call
-    _set_tenant, the same pattern used in app/api/admin.py: the service_role
-    connection bypasses RLS by design for this admin/scheduled-sweep use
-    case, where there is no single org_id to scope the session to. Do not
-    "fix" this by adding _set_tenant — it would break the query since it
-    must see rows across all orgs.
+    Cross-org query — connects via _db_connect() (review_iq_app), which holds no direct
+    SELECT on alert_preferences and no BYPASSRLS. NOT the same mechanism as
+    app/api/admin.py (that connects via ADMIN_DATABASE_URL as review_iq_admin, a distinct
+    role that keeps its own BYPASSRLS -- this file never has). Calls
+    public.list_orgs_with_daily_digest(), a narrow SECURITY DEFINER function
+    (20260817000003) added to replace the BYPASSRLS-dependent raw query this used to run --
+    confirmed via a real container test that the equivalent raw query on the sibling
+    extractions sweep silently returns 0 rows post-cutover despite rows existing. Do not
+    replace this call with a raw SELECT against alert_preferences.
     """
     conn = _db_connect()
     try:
         cur = conn.cursor()
-        cur.execute(
-            "SELECT DISTINCT org_id FROM public.alert_preferences "
-            "WHERE frequency = 'daily_digest' AND enabled = true"
-        )
+        cur.execute("SELECT org_id FROM public.list_orgs_with_daily_digest()")
         rows = cur.fetchall()
         conn.commit()
         return [str(r[0]) for r in rows]

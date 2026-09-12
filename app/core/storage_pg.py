@@ -75,6 +75,89 @@ def _set_tenant(cur: Any, org_id: str) -> None:
     cur.execute('SET LOCAL "app.current_org_id" = %s', (org_id,))
 
 
+def get_org_retention_pg(org_id: str) -> tuple[str, int | None]:
+    """Return (retention_mode, retention_days) for an org -- for system/webhook-triggered
+    extraction contexts (Shopify, Google Business, the CSV-ingest drain worker), which build
+    their own ApiKeyContext directly rather than going through require_api_key's join (see
+    app/auth/api_key.py). Defaults to ("stateless", None) if the org row is somehow missing
+    (should never happen for a real org_id -- fails safe toward NOT persisting rather than
+    toward assuming retention was intended).
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+        cur.execute(
+            "SELECT retention_mode, retention_days FROM public.organizations WHERE id = %s",
+            (org_id,),
+        )
+        row = cur.fetchone()
+        conn.commit()
+        if row is None:
+            return "stateless", None
+        return row[0], row[1]
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def list_orgs_with_retained_mode_pg() -> list[tuple[str, int]]:
+    """Return [(org_id, retention_days), ...] for every org in retained mode.
+
+    Cross-org query via public.list_orgs_with_retained_mode(), a narrow SECURITY DEFINER
+    function (20260912000001) -- same BYPASSRLS-remediation pattern as
+    list_orgs_with_daily_digest_pg. review_iq_app holds no direct cross-org SELECT on
+    organizations and must not; this returns ONLY org_id + retention_days, never any other
+    column (name, slug, plan).
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT org_id, retention_days FROM public.list_orgs_with_retained_mode()")
+        rows = cur.fetchall()
+        conn.commit()
+        return [(str(r[0]), int(r[1])) for r in rows]
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def purge_org_extractions_pg(org_id: str, older_than: datetime | None = None) -> int:
+    """Delete extraction rows for one org. Returns the number of rows deleted.
+
+    `older_than`: when given, only rows with created_at strictly before this timestamp are
+    deleted (the scheduled retention-window purge, app/core/retention.py). When None, every
+    row for the org is deleted (the on-demand purge endpoint, POST /v2/purge) -- an org may
+    purge its own retained data at any time regardless of the window it chose.
+
+    Org-scoped via _set_tenant(), same as every other write in this module -- no BYPASSRLS,
+    no cross-tenant risk: this can only ever delete the org_id it's given.
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+        if older_than is None:
+            cur.execute("DELETE FROM public.extractions WHERE org_id = %s", (org_id,))
+        else:
+            cur.execute(
+                "DELETE FROM public.extractions WHERE org_id = %s AND created_at < %s",
+                (org_id, older_than),
+            )
+        deleted = cur.rowcount
+        conn.commit()
+        return deleted
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
 def get_by_hash_pg(org_id: str, input_hash: str) -> ReviewExtractionV2 | None:
     """Return cached extraction for this org if input_hash already exists."""
     conn = _db_connect()
@@ -376,10 +459,13 @@ def list_dated_extractions_pg(org_id: str) -> list[dict[str, Any]]:
 def list_orgs_with_dated_extractions_pg() -> list[str]:
     """Return distinct org_ids that have at least one extraction with a real review_date.
 
-    Cross-org query -- connects via _db_connect() and does NOT call _set_tenant, same
-    intentional service-role bypass pattern as list_orgs_with_daily_digest_pg
-    (app/core/alerts/storage.py): there is no single org_id to scope the session to for a
-    scheduled-sweep use case that must see every org. Do not "fix" this by adding _set_tenant.
+    Cross-org query -- connects via _db_connect() (review_iq_app), which holds no direct
+    SELECT on extractions and no BYPASSRLS. Calls public.list_orgs_with_dated_extractions(),
+    a narrow SECURITY DEFINER function (20260817000003) added specifically to replace the
+    BYPASSRLS-dependent raw query this used to run -- confirmed via a real container test
+    that the raw query silently returns 0 rows post-cutover despite rows existing, since
+    review_iq_app inherits authenticated's RLS policies through role membership with no
+    org context set. Do not replace this call with a raw SELECT against extractions.
 
     Feeds app/core/alerts/detector_sweep.py -- scopes the sweep to exactly the orgs where the
     detectors could possibly find anything, reusing idx_extractions_review_date.
@@ -387,7 +473,7 @@ def list_orgs_with_dated_extractions_pg() -> list[str]:
     conn = _db_connect()
     try:
         cur = conn.cursor()
-        cur.execute("SELECT DISTINCT org_id FROM public.extractions WHERE review_date IS NOT NULL")
+        cur.execute("SELECT org_id FROM public.list_orgs_with_dated_extractions()")
         rows = cur.fetchall()
         conn.commit()
         return [str(r[0]) for r in rows]
@@ -1291,3 +1377,240 @@ def _row_to_extraction_v2(row: tuple[Any, ...], org_id: str) -> ReviewExtraction
         else datetime.fromisoformat(str(review_date)),
         extraction_meta=meta,
     )
+
+
+# ---------------------------------------------------------------------------
+# extraction_costs — per-extraction cost telemetry (Wave 1 Section G)
+# ---------------------------------------------------------------------------
+
+
+def record_extraction_cost_pg(
+    org_id: str,
+    extraction_id: str | None,
+    provider: str,
+    model: str,
+    tier: str,
+    language: str | None,
+    tokens_in: int,
+    tokens_out: int,
+    cost_usd: float,
+    cost_inr: float,
+) -> str:
+    """Persist a per-extraction cost record. Returns the row id (UUID as str).
+
+    Called once per real LLM extraction (never on a cache hit — see
+    app.api.v2.extract._run_extraction_v2) so cost-per-1k-extractions aggregates
+    reflect actual LLM spend, not cache-served responses.
+
+    ``extraction_id`` is the FK to public.extractions.id when known; None on the
+    rare ON-CONFLICT-DO-NOTHING race in save_extraction_pg (concurrent identical
+    review beat this one to the insert) — the cost was still real and must still
+    be recorded, just without a joinable extraction row.
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+        cur.execute(
+            """
+            INSERT INTO public.extraction_costs (
+                org_id, extraction_id, provider, model, tier, language,
+                tokens_in, tokens_out, cost_usd, cost_inr
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id
+            """,
+            (
+                org_id,
+                extraction_id or None,
+                provider,
+                model,
+                tier,
+                language,
+                tokens_in,
+                tokens_out,
+                cost_usd,
+                cost_inr,
+            ),
+        )
+        row = cur.fetchone()
+        conn.commit()
+        return str(row[0]) if row else ""
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def aggregate_extraction_costs_pg(since: datetime | None = None) -> list[dict[str, Any]]:
+    """Return cost-per-1k-extractions grouped by (language, tier), across all orgs.
+
+    Cross-org query -- connects via _db_connect() and does NOT call _set_tenant, same
+    intentional service-role bypass pattern as list_orgs_with_dated_extractions_pg: this
+    is a platform-wide COGS aggregate for Wave 2 pricing decisions, not a per-tenant view,
+    so there is no single org_id to scope the session to. Gated behind require_admin at
+    the API layer (see app/api/admin.py) -- never exposed on an org-scoped endpoint.
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        query = (
+            "SELECT language, tier, COUNT(*) AS n, "
+            "SUM(tokens_in) AS tokens_in, SUM(tokens_out) AS tokens_out, "
+            "SUM(cost_usd) AS total_cost_usd, SUM(cost_inr) AS total_cost_inr "
+            "FROM public.extraction_costs "
+        )
+        params: tuple[Any, ...] = ()
+        if since is not None:
+            query += "WHERE created_at >= %s "
+            params = (since,)
+        query += "GROUP BY language, tier ORDER BY language, tier"
+        cur.execute(query, params)
+        rows = cur.fetchall()
+        conn.commit()
+        result = []
+        for lang, tier, n, tin, tout, cost_usd, cost_inr in rows:
+            n = int(n)
+            cost_usd = float(cost_usd)
+            cost_inr = float(cost_inr)
+            result.append(
+                {
+                    "language": lang,
+                    "tier": tier,
+                    "n": n,
+                    "tokens_in": int(tin),
+                    "tokens_out": int(tout),
+                    "total_cost_usd": cost_usd,
+                    "total_cost_inr": cost_inr,
+                    "cost_usd_per_1k": (cost_usd / n) * 1000 if n else 0.0,
+                    "cost_inr_per_1k": (cost_inr / n) * 1000 if n else 0.0,
+                }
+            )
+        return result
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Demo-endpoint (POST /demo/extract) global daily quota + cost recording.
+#
+# Neither of the two functions below calls _set_tenant() -- there is no org on this
+# keyless path. Both connect as review_iq_app directly (the same ambient role every
+# other function in this module uses via _db_connect(), just without the
+# SET LOCAL ROLE authenticated step _set_tenant() performs) and rely on grants/RLS
+# policies scoped specifically to review_iq_app (see 20260905000001_demo_daily_usage.sql
+# and 20260905000002_extraction_costs_allow_demo_rows.sql). Both are allowlisted in
+# scripts/check_undocumented_pg_connects.py with those migrations cited as the reason.
+# ---------------------------------------------------------------------------
+
+
+def check_and_increment_demo_request_pg(daily_request_budget: int) -> bool:
+    """Atomically check + reserve one unit of today's global demo-request budget.
+
+    Cross-org query, deliberately no _set_tenant(): POST /demo/extract is keyless --
+    there is no org to scope to. Writes only public.demo_daily_usage, a single global
+    (non-tenant) counter table with no RLS, grant-scoped to review_iq_app only (see
+    supabase/migrations/20260905000001_demo_daily_usage.sql).
+
+    Returns True (and increments today's counter) if today's request count was below
+    `daily_request_budget` before this call; returns False (no increment) if the budget
+    was already reached. Race-safe under concurrent callers via a single conditional
+    UPSERT -- no explicit row lock or separate SELECT-then-UPDATE round trip needed.
+
+    This gates on REQUEST COUNT, not token count, deliberately: token cost per call is
+    only known after the LLM responds, so it cannot be checked before spending it.
+    Sizing `daily_request_budget` conservatively against the worst-case per-call token
+    cost (see app/api/demo.py's DEMO_DAILY_REQUEST_BUDGET) keeps the token side safe by
+    construction without needing a token-level reservation.
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            INSERT INTO public.demo_daily_usage (usage_date, request_count)
+            VALUES (CURRENT_DATE, 1)
+            ON CONFLICT (usage_date) DO UPDATE
+                SET request_count = demo_daily_usage.request_count + 1,
+                    updated_at = now()
+                WHERE demo_daily_usage.request_count < %s
+            RETURNING request_count
+            """,
+            (daily_request_budget,),
+        )
+        row = cur.fetchone()
+        conn.commit()
+        return row is not None
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def record_demo_extraction_cost_pg(
+    provider: str,
+    model: str,
+    tier: str,
+    language: str | None,
+    tokens_in: int,
+    tokens_out: int,
+    cost_usd: float,
+    cost_inr: float,
+) -> None:
+    """Persist a per-extraction cost record for a keyless /demo/extract call.
+
+    Cross-org query, deliberately no _set_tenant(): POST /demo/extract is keyless --
+    there is no org to scope to. Inserts org_id=NULL, source='demo' rows into
+    extraction_costs, permitted by a policy scoped specifically to review_iq_app (see
+    supabase/migrations/20260905000002_extraction_costs_allow_demo_rows.sql).
+
+    Same shape as record_extraction_cost_pg but with org_id=NULL, source='demo', and no
+    extraction_id (the demo path never writes to public.extractions). Also updates
+    demo_daily_usage's running token totals for observability -- the actual daily CAP is
+    enforced by check_and_increment_demo_request_pg's request-count gate above, called
+    BEFORE the LLM call; this token update happens AFTER, purely for visibility into how
+    close the shared Groq daily token budget is to being exhausted.
+
+    No RETURNING clause (verified 2026-09-12): `review_iq_app` is a member of the
+    `authenticated` role, so `extraction_costs_authenticated_all`'s USING clause
+    (`org_id = current_org_id()`) also applies to this role for SELECT visibility --
+    and RETURNING requires the just-inserted row to pass that same USING check. For a
+    demo row, org_id is NULL and current_org_id() is also NULL (no JWT/tenant context
+    on a keyless call), so `NULL = NULL` is NULL, not true, and Postgres raises "new
+    row violates row-level security policy" even though the INSERT's own WITH CHECK
+    (the review_iq_app_demo_insert policy) passes cleanly. The INSERT itself succeeds
+    without RETURNING; the row id was never used by the only caller (app/api/demo.py
+    discards it), so there is nothing to fix on the caller side.
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            INSERT INTO public.extraction_costs (
+                org_id, extraction_id, provider, model, tier, language,
+                tokens_in, tokens_out, cost_usd, cost_inr, source
+            ) VALUES (NULL, NULL, %s, %s, %s, %s, %s, %s, %s, %s, 'demo')
+            """,
+            (provider, model, tier, language, tokens_in, tokens_out, cost_usd, cost_inr),
+        )
+        cur.execute(
+            """
+            UPDATE public.demo_daily_usage
+            SET tokens_in_total = tokens_in_total + %s,
+                tokens_out_total = tokens_out_total + %s,
+                updated_at = now()
+            WHERE usage_date = CURRENT_DATE
+            """,
+            (tokens_in, tokens_out),
+        )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()

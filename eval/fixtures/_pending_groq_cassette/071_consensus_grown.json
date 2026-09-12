@@ -1,0 +1,65 @@
+{
+  "id": "071_consensus_grown",
+  "review_text": "Good product, superb sound &  built quality, but  the multi function button are not working properly  with my android device. It is working fine with my Laptop. I think its just a compatibility issue with my android. Other than this its value for money product. Flipkart service is as always smooth as butter. Hatsoff.READ MORE",
+  "ground_truth": {
+    "product": "unknown",
+    "stars": null,
+    "stars_inferred": 4,
+    "pros": [
+      "superb sound",
+      "built quality",
+      "value for money",
+      "smooth Flipkart service"
+    ],
+    "cons": [
+      "multi function button not working properly with Android device",
+      "compatibility issue with Android"
+    ],
+    "buy_again": null,
+    "sentiment": "mixed",
+    "topics": [],
+    "competitor_mentions": [],
+    "urgency": "medium",
+    "feature_requests": [],
+    "language": "en"
+  },
+  "scoring_notes": {
+    "exact_match_fields": [
+      "product",
+      "stars",
+      "buy_again",
+      "sentiment",
+      "language"
+    ],
+    "set_overlap_fields": [
+      "topics",
+      "competitor_mentions"
+    ],
+    "fuzzy_fields": [
+      "pros",
+      "cons"
+    ],
+    "tolerance_fields": {
+      "stars_inferred": 1
+    }
+  },
+  "labeling_meta": {
+    "labeled_by": "multi-llm-consensus",
+    "method": "eval/consensus (Wave 1 Section B)",
+    "source": "flipkart/kabirnagpal/flipkart-customer-review-and-rating",
+    "agreement_per_field": {
+      "stars": "unanimous",
+      "buy_again": "unanimous",
+      "sentiment": "unanimous",
+      "language": "unanimous",
+      "urgency": "unanimous",
+      "product": "split",
+      "stars_inferred": "unanimous",
+      "pros": "majority",
+      "cons": "majority",
+      "topics": "split",
+      "feature_requests": "split",
+      "competitor_mentions": "split"
+    }
+  }
+}

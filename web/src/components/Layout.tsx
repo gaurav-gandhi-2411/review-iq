@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { Upload, BarChart2, LogOut, MessageSquare, ShieldCheck, Flag, Key, X, ArrowUpRight, CheckCircle2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { getAccount, requestQuotaIncrease } from '../lib/api'

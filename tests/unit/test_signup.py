@@ -190,14 +190,40 @@ def test_get_org_for_user_returns_none_when_no_row() -> None:
 
 
 def test_get_org_for_user_returns_dict_when_row_exists() -> None:
+    """Two-step resolution (BYPASSRLS remediation 2c): resolve_org_for_user(...) first,
+    then _set_tenant(), then the RLS-scoped key_prefix/quota read."""
     org_id = uuid.uuid4()
-    conn = _make_mock_conn(fetchone_return=(org_id, "riq_live_abc1234", 100))
+    cur = MagicMock()
+    cur.fetchone.side_effect = [
+        (org_id,),  # resolve_org_for_user(...)
+        ("riq_live_abc1234", 100),  # key_prefix, quota
+    ]
+    conn = MagicMock()
+    conn.cursor.return_value = cur
     with patch("app.auth.signup._db_connect", return_value=conn):
-        result = _get_org_for_user(_USER_ID)
+        with patch("app.auth.signup._set_tenant") as mock_set_tenant:
+            result = _get_org_for_user(_USER_ID)
     assert result is not None
     assert result["org_id"] == str(org_id)
     assert result["key_prefix"] == "riq_live_abc1234"
     assert result["quota"] == 100
+    first_call_sql = cur.execute.call_args_list[0][0][0]
+    assert "resolve_org_for_user" in first_call_sql
+    mock_set_tenant.assert_called_once_with(cur, str(org_id))
+
+
+def test_get_org_for_user_unresolved_user_returns_none_without_set_tenant() -> None:
+    """A user with no membership row yet must never reach _set_tenant() -- there's no
+    org_id to scope to."""
+    cur = MagicMock()
+    cur.fetchone.return_value = (None,)
+    conn = MagicMock()
+    conn.cursor.return_value = cur
+    with patch("app.auth.signup._db_connect", return_value=conn):
+        with patch("app.auth.signup._set_tenant") as mock_set_tenant:
+            result = _get_org_for_user(_USER_ID)
+    assert result is None
+    mock_set_tenant.assert_not_called()
 
 
 def test_get_org_for_user_rolls_back_on_exception() -> None:
@@ -211,10 +237,17 @@ def test_get_org_for_user_rolls_back_on_exception() -> None:
 
 
 def test_provision_org_and_key_returns_raw_key_and_creates_rows() -> None:
+    """Both writes now go through SECURITY DEFINER functions (BYPASSRLS remediation
+    2c) -- create_org_and_membership(...) returns org_id, create_api_key_for_org(...)
+    returns (id, created_at). No raw INSERT into organizations/organization_members/
+    api_keys from this module anymore."""
     org_id = uuid.uuid4()
+    key_row_id = uuid.uuid4()
     cur = MagicMock()
-    # fetchone returns org_id for the INSERT ... RETURNING id
-    cur.fetchone.return_value = (org_id,)
+    cur.fetchone.side_effect = [
+        (org_id,),  # create_org_and_membership(...)
+        (key_row_id, "2026-08-01T00:00:00Z"),  # create_api_key_for_org(...)
+    ]
     conn = MagicMock()
     conn.cursor.return_value = cur
 
@@ -225,6 +258,11 @@ def test_provision_org_and_key_returns_raw_key_and_creates_rows() -> None:
     assert str(result["key_prefix"]).startswith("riq_live_")
     assert str(result["raw_key"]).startswith("riq_live_")
     assert result["monthly_quota"] == 100
+    all_sqls = [c[0][0] for c in cur.execute.call_args_list]
+    assert "create_org_and_membership" in all_sqls[0]
+    # SAVEPOINT/RELEASE bracket the retry-scoped insert (app/auth/keygen.py) -- find the
+    # actual insert call by content, not a fixed index.
+    assert any("create_api_key_for_org" in sql for sql in all_sqls)
     conn.commit.assert_called_once()
     conn.close.assert_called_once()
 
@@ -240,12 +278,15 @@ def test_provision_org_and_key_rolls_back_on_exception() -> None:
 
 
 def test_provision_org_and_key_member_race_raises_race_lost_and_rolls_back() -> None:
-    org_id = uuid.uuid4()
+    """create_org_and_membership(...) now does the organizations + organization_members
+    inserts atomically inside the function itself (BYPASSRLS remediation 2c) -- a
+    concurrent-signup race raises the SAME UniqueViolation from this ONE call instead
+    of a standalone organization_members INSERT; _ProvisionRaceLost handling is
+    unchanged."""
     cur = MagicMock()
-    cur.fetchone.return_value = (org_id,)  # organizations INSERT ... RETURNING id
 
     def _execute(sql: str, *args: object) -> None:
-        if "INSERT INTO public.organization_members" in sql:
+        if "create_org_and_membership" in sql:
             raise _MemberRaceCollision()
 
     cur.execute.side_effect = _execute
@@ -256,8 +297,9 @@ def test_provision_org_and_key_member_race_raises_race_lost_and_rolls_back() -> 
         with pytest.raises(_ProvisionRaceLost):
             _provision_org_and_key(_USER_ID, _EMAIL)
 
-    # The whole transaction (org + key + failed membership) rolls back -- no
-    # orphaned org/key rows survive the losing side of the race.
+    # The whole transaction rolls back -- no orphaned org row survives the losing
+    # side of the race (create_org_and_membership's own INSERTs are atomic and this
+    # outer rollback covers it either way).
     conn.rollback.assert_called_once()
     conn.commit.assert_not_called()
     conn.close.assert_called_once()
@@ -266,12 +308,10 @@ def test_provision_org_and_key_member_race_raises_race_lost_and_rolls_back() -> 
 def test_provision_org_and_key_non_race_unique_violation_propagates() -> None:
     """A UniqueViolation on a *different* constraint (e.g. organizations.slug) must
     never be mistaken for the user_id race and swallowed."""
-    org_id = uuid.uuid4()
     cur = MagicMock()
-    cur.fetchone.return_value = (org_id,)
 
     def _execute(sql: str, *args: object) -> None:
-        if "INSERT INTO public.organization_members" in sql:
+        if "create_org_and_membership" in sql:
             raise _OtherUniqueViolation()
 
     cur.execute.side_effect = _execute
