@@ -60,6 +60,43 @@ async def _run(tokens_in: int = 150, tokens_out: int = 80) -> None:
 
 
 @pytest.mark.asyncio
+async def test_completion_log_never_carries_llm_derived_content() -> None:
+    """Regression test (Session 12 P1, data-flow audit / ADR 0024): the
+    "extraction.completed" log line must never include an LLM-derived field
+    (product, pros, cons, topics, ...) -- verified live in production that the LLM
+    can echo a full input string verbatim into `product`, which then landed in
+    Cloud Logging under this exact event name. Only structural metadata
+    (input_hash, model, latency, org_id) belongs here.
+    """
+    from app.api.v2.extract import _run_extraction_v2
+
+    req = ReviewRequest(text=_REVIEW_TEXT)
+
+    with (
+        patch("app.api.v2.extract.get_by_hash_pg", return_value=None),
+        patch("app.api.v2.extract.save_extraction_pg", return_value=str(uuid.uuid4())),
+        patch(
+            "app.api.v2.extract.extract_with_llm",
+            new=AsyncMock(return_value=(_LLM_OUTPUT, "mock-model", 42, 150, 80, False)),
+        ),
+        patch("app.api.v2.extract.update_usage_tokens"),
+        patch("app.api.v2.extract.log") as mock_log,
+    ):
+        await _run_extraction_v2(req, _CTX)
+
+    completed_calls = [
+        c for c in mock_log.info.call_args_list if c.args and c.args[0] == "extraction.completed"
+    ]
+    assert completed_calls, "Expected an extraction.completed log call"
+    logged_kwargs = completed_calls[0].kwargs
+    llm_derived_fields = {"product", "pros", "cons", "topics", "feature_requests"}
+    assert not (llm_derived_fields & logged_kwargs.keys()), (
+        f"extraction.completed must never log LLM-derived fields, found: "
+        f"{llm_derived_fields & logged_kwargs.keys()}"
+    )
+
+
+@pytest.mark.asyncio
 async def test_update_usage_tokens_called_with_llm_token_counts() -> None:
     """After a successful LLM call, update_usage_tokens receives the correct counts."""
     from app.api.v2.extract import _run_extraction_v2
