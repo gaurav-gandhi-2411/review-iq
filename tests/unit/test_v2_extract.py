@@ -199,6 +199,102 @@ def test_extract_single_llm_down_returns_503() -> None:
 # ---------------------------------------------------------------------------
 
 
+# ---------------------------------------------------------------------------
+# Cost telemetry (Wave 1 Section G) — record_extraction_cost_pg wiring
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_cost_recorded_for_recognized_model() -> None:
+    """A successful LLM call with a priced model writes a cost record with the
+    right provider/tier/tokens/cost — not just a call, but correct args."""
+    from app.api.v2.extract import _run_extraction_v2
+
+    req = ReviewRequest(text=_REVIEW_TEXT)
+    extraction_row_id = str(uuid.uuid4())
+
+    with (
+        patch("app.api.v2.extract.get_by_hash_pg", return_value=None),
+        patch("app.api.v2.extract.save_extraction_pg", return_value=extraction_row_id),
+        patch(
+            "app.api.v2.extract.extract_with_llm",
+            new=AsyncMock(return_value=(_LLM_OUTPUT, "llama-3.1-8b-instant", 42, 1000, 500, False)),
+        ),
+        patch("app.api.v2.extract.update_usage_tokens"),
+        patch("app.api.v2.extract.record_extraction_cost_pg") as mock_cost,
+    ):
+        await _run_extraction_v2(req, _CTX)
+
+    mock_cost.assert_called_once()
+    args = mock_cost.call_args.args
+    assert args[0] == _ORG_ID
+    assert args[1] == extraction_row_id
+    assert args[2] == "groq"  # provider
+    assert args[3] == "llama-3.1-8b-instant"  # model
+    assert args[4] == "small"  # tier
+    assert args[5] == "en"  # language (detected)
+    assert args[6] == 1000  # tokens_in
+    assert args[7] == 500  # tokens_out
+    assert args[8] == pytest.approx((1000 / 1_000_000) * 0.05 + (500 / 1_000_000) * 0.08)
+    assert args[9] > 0  # cost_inr
+
+
+@pytest.mark.asyncio
+async def test_cost_not_recorded_for_unrecognized_model() -> None:
+    """An unpriced model must not silently write a $0 cost row — and must not
+    break the extraction response either (best-effort, logged loudly)."""
+    from app.api.v2.extract import _run_extraction_v2
+
+    req = ReviewRequest(text=_REVIEW_TEXT)
+
+    with (
+        patch("app.api.v2.extract.get_by_hash_pg", return_value=None),
+        patch("app.api.v2.extract.save_extraction_pg", return_value=str(uuid.uuid4())),
+        patch(
+            "app.api.v2.extract.extract_with_llm",
+            new=AsyncMock(
+                return_value=(_LLM_OUTPUT, "totally-unpriced-model", 42, 1000, 500, False)
+            ),
+        ),
+        patch("app.api.v2.extract.update_usage_tokens"),
+        patch("app.api.v2.extract.record_extraction_cost_pg") as mock_cost,
+    ):
+        result = await _run_extraction_v2(req, _CTX)
+
+    mock_cost.assert_not_called()
+    assert result.product == "Test Widget"  # extraction still succeeded
+
+
+@pytest.mark.asyncio
+async def test_cost_not_recorded_on_cache_hit() -> None:
+    """Cache hits serve a prior extraction with no new LLM call — no new cost."""
+    from datetime import datetime
+
+    from app.api.v2.extract import _run_extraction_v2
+    from app.core.schemas import ExtractionMetaV2, ReviewExtractionV2
+
+    req = ReviewRequest(text=_REVIEW_TEXT)
+    cached = ReviewExtractionV2(
+        product="Test Widget",
+        extraction_meta=ExtractionMetaV2(
+            model="mock",
+            prompt_version="v1",
+            schema_version="1.0.0",
+            extracted_at=datetime.now(tz=UTC),
+            input_hash="sha256:abc",
+            org_id=_ORG_ID,
+        ),
+    )
+
+    with (
+        patch("app.api.v2.extract.get_by_hash_pg", return_value=cached),
+        patch("app.api.v2.extract.record_extraction_cost_pg") as mock_cost,
+    ):
+        await _run_extraction_v2(req, _CTX)
+
+    mock_cost.assert_not_called()
+
+
 def test_extract_batch_returns_202_accepted() -> None:
     """POST /v2/extract/batch returns 202 with {status, total} + additive job_id."""
     from app.main import app
