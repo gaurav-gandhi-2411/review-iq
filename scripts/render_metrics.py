@@ -33,6 +33,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 EXTRACTION_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "latest.json"
 AUTHENTICITY_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "authenticity_latest.json"
 HELD_OUT_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "held_out_scoring_v2.json"
+COVERAGE_METRICS_PATH = REPO_ROOT / "eval" / "results" / "coverage_metrics_n106.json"
 ADR_LINK = "docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md"
 
 BLOCK_RE = re.compile(
@@ -170,6 +171,44 @@ def render_held_out_table_md(data: dict[str, Any]) -> str:
         f"{lang_acc_str} of fixtures. This is the number to trust for real-world accuracy; "
         f"the CI-gate table above is a regression detector, not a real-world accuracy claim "
         f"-- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md).",
+    ]
+    return "\n".join(lines)
+
+
+def render_coverage_metrics_table_md(data: dict[str, Any]) -> str:
+    """Render the coverage/accuracy-on-answered/wrong-committed breakdown (README.md).
+
+    Session 12 P3d: flat accuracy is the weakest possible framing of an abstaining
+    extractor -- this decomposes it for the two hedge-capable fields (sentiment,
+    buy_again). See ADR 0026 for the full analysis and why a single blended
+    "rarely wrong when it commits" claim is not supported across both fields.
+    """
+    lines = [
+        "| Field | Coverage | Accuracy-on-answered | Wrong-committed |",
+        "|---|---|---|---|",
+    ]
+    for field, info in data["per_field"].items():
+        cov = info["coverage"]
+        cov_ci = info["coverage_ci_95"]
+        acc = info["accuracy_on_answered"]
+        acc_ci = info["accuracy_on_answered_ci_95"]
+        wrong = info["wrong_committed_of_answered"]
+        wrong_rate = info["wrong_committed_rate"]
+        wrong_ci = info["wrong_committed_rate_ci_95"]
+        lines.append(
+            f"| {field} "
+            f"| {_fmt_pct(cov)} [{_fmt_pct(cov_ci['lower'])}, {_fmt_pct(cov_ci['upper'])}] "
+            f"| {_fmt_pct(acc)} [{_fmt_pct(acc_ci['lower'])}, {_fmt_pct(acc_ci['upper'])}] "
+            f"| {wrong} = {_fmt_pct(wrong_rate)} "
+            f"[{_fmt_pct(wrong_ci['lower'])}, {_fmt_pct(wrong_ci['upper'])}] |"
+        )
+    lines += [
+        "",
+        f"n={data['n_fixtures']}, `{data['condition']}` condition (real language routing). "
+        '**"Rarely wrong when it commits" does not hold as a single claim across both '
+        "fields** -- buy_again's committed-answer error rate is materially higher than "
+        "sentiment's; see [ADR 0026](docs/architecture/adr/0026-coverage-accuracy-on-answered-wrong-committed-n106.md) "
+        "for the full analysis, including why a blended claim would misrepresent buy_again.",
     ]
     return "\n".join(lines)
 
@@ -344,6 +383,9 @@ BLOCK_RENDERERS: dict[str, Any] = {
     ),
     "gate_summary": lambda: render_gate_summary_md(_load_json(EXTRACTION_RESULTS_PATH)),
     "held_out_table": lambda: render_held_out_table_md(_load_json(HELD_OUT_RESULTS_PATH)),
+    "coverage_metrics_table": lambda: render_coverage_metrics_table_md(
+        _load_json(COVERAGE_METRICS_PATH)
+    ),
     "extraction_table_html": lambda: render_extraction_table_html(
         _load_json(EXTRACTION_RESULTS_PATH)
     ),
