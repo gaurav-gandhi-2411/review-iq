@@ -188,6 +188,10 @@ n=106, `as_deployed` condition (real language routing). **"Rarely wrong when it 
 
 Reproducible from the same committed cassettes, zero additional quota: `uv run python eval/analyze_coverage_metrics.py`.
 
+**The single headline claim this data supports** (Session 13 P1b — see [ADR 0027](docs/architecture/adr/0027-n23-discrepancy-resolved-and-headline-claim.md) for why a blended "rarely wrong when it commits" claim is not published):
+
+<!-- METRICS:START:committed_accuracy_headline -->**When it commits to an answer, this model is correct 87.8% of the time for sentiment (95% CI 80.5%–93.9%, n=106) and 76.1% of the time for buy-again (95% CI 63.0%–87.0%, n=106) -- rates divergent enough that a single blended "rarely wrong when it commits" claim would misrepresent buy-again.** See [ADR 0027](docs/architecture/adr/0027-n23-discrepancy-resolved-and-headline-claim.md) for why this is reported per-field, never blended into one number, and for the separate (and separately true) abstention-rate figures.<!-- METRICS:END -->
+
 <details>
 <summary>Historical releases (frozen at time of measurement — each predates the current
 prompt/fixture set, so these are not a like-for-like comparison with the current numbers
