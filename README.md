@@ -174,6 +174,20 @@ n=106 real Hinglish reviews the prompt has never seen (never used for prompt dev
 
 Reproducible from committed cassettes: `EVAL_CASSETTE_MODE=replay uv run python eval/score_held_out_corpus_v2.py --mode replay` — $0, zero live calls, byte-identical output. See [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) for the full methodology, including the misrouting-vs-contamination decomposition of the gap between this table and the one above.
 
+**Flat accuracy alone is the weakest possible framing of an extractor that's allowed to hedge.**
+Two fields in this schema may legitimately abstain (`sentiment` → `"mixed"`, `buy_again` →
+`null`) rather than guess — the breakdown below decomposes how often each commits to an answer,
+and how often that committed answer is right or wrong.
+
+<!-- METRICS:START:coverage_metrics_table -->| Field | Coverage | Accuracy-on-answered | Wrong-committed |
+|---|---|---|---|
+| sentiment | 77.4% [68.9%, 84.9%] | 87.8% [80.5%, 93.9%] | 10/82 = 12.2% [6.1%, 19.5%] |
+| buy_again | 43.4% [34.0%, 52.8%] | 76.1% [63.0%, 87.0%] | 11/46 = 23.9% [13.0%, 37.0%] |
+
+n=106, `as_deployed` condition (real language routing). **"Rarely wrong when it commits" does not hold as a single claim across both fields** -- buy_again's committed-answer error rate is materially higher than sentiment's; see [ADR 0026](docs/architecture/adr/0026-coverage-accuracy-on-answered-wrong-committed-n106.md) for the full analysis, including why a blended claim would misrepresent buy_again.<!-- METRICS:END -->
+
+Reproducible from the same committed cassettes, zero additional quota: `uv run python eval/analyze_coverage_metrics.py`.
+
 <details>
 <summary>Historical releases (frozen at time of measurement — each predates the current
 prompt/fixture set, so these are not a like-for-like comparison with the current numbers
