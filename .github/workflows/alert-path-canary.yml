@@ -1,0 +1,90 @@
+name: Alert Path Canary
+
+# Session 13 P7b: no alert reached GG from ~2026-08-14 through TWO consecutive systems --
+# the Slack webhook that was never configured, then the GitHub-issue alerts erroring on
+# labels that never existed (both discovered by inspection, not by an alert firing). This
+# workflow closes that gap the same way a dead-man's-switch closes it anywhere else:
+# deliberately fail on a fixed cadence, then independently verify the alert mechanism
+# actually produced a fresh signal -- rather than trusting that "the alert code ran without
+# raising" means "GG would have seen something."
+#
+# Two failure shapes this is designed to catch, kept genuinely distinguishable in the
+# Actions UI (not folded into one job that could itself go quietly green for the wrong
+# reason):
+#   1. The deliberate failure step (always fails, by design -- this is not a bug).
+#   2. The verification step: did schedule-failure-alert's own tracking issue for THIS
+#      canary actually get created/updated just now? If the alert mechanism silently
+#      breaks again (a missing label, a token scope change, GitHub API change), this step
+#      fails too -- and unlike the canary's own always-red status, THIS failure is a real,
+#      new signal: GitHub's own native workflow-failure notification (if enabled for repo
+#      watchers) is a channel independent of our custom composite action, so a break here
+#      is visible even if schedule-failure-alert itself is exactly what's broken.
+#
+# Cost: one deliberate failure + 2 gh api calls/day. $0.
+
+on:
+  schedule:
+    - cron: "15 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: alert-path-canary
+  cancel-in-progress: true
+
+env:
+  CANARY_TITLE: "Alert path canary (expected to be open -- this is the control)"
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Deliberately fail (this is the point, not a bug)
+        id: deliberate_failure
+        run: |
+          echo "This step fails on purpose, every run, to exercise the alert path end to end."
+          exit 1
+        continue-on-error: true
+
+      - name: Send the alert via the real, shared mechanism
+        uses: ./.github/actions/schedule-failure-alert
+        with:
+          status: "failure"
+          title: ${{ env.CANARY_TITLE }}
+          details: |
+            This is a deliberate, scheduled failure (Session 13 P7b) -- not a real incident.
+            It exists to prove the alert path itself still works, on a fixed cadence, after
+            this project found it silently broken for weeks through two different systems.
+            This issue is EXPECTED to exist and be updated daily; that is the passing state.
+
+      - name: Verify the alert issue was actually created or updated just now
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          REPO="${{ github.repository }}"
+          RESULT=$(gh issue list --repo "${REPO}" --state open \
+            --search "\"${CANARY_TITLE}\" in:title" \
+            --json number,updatedAt --jq '.[0]')
+
+          if [ -z "${RESULT}" ] || [ "${RESULT}" = "null" ]; then
+            echo "::error::No tracking issue found for the canary -- the alert mechanism did not fire. This is a real gap, not the canary's own expected failure."
+            exit 1
+          fi
+
+          UPDATED_AT=$(echo "${RESULT}" | jq -r '.updatedAt')
+          UPDATED_EPOCH=$(date -d "${UPDATED_AT}" +%s)
+          NOW_EPOCH=$(date -u +%s)
+          AGE_SECONDS=$((NOW_EPOCH - UPDATED_EPOCH))
+
+          echo "Tracking issue last updated ${AGE_SECONDS}s ago (at ${UPDATED_AT})."
+          if [ "${AGE_SECONDS}" -gt 900 ]; then
+            echo "::error::Tracking issue exists but was NOT updated by this run (last update ${AGE_SECONDS}s ago, expected <900s) -- the alert step ran but did not actually reach the issue. This is a real gap."
+            exit 1
+          fi
+
+          echo "OK: the alert path is verified working end to end."
