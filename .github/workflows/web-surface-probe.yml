@@ -41,6 +41,9 @@ jobs:
       - name: Install dependencies
         run: uv sync --frozen
 
+      - name: Install Playwright chromium (Session 14 P1d -- real mount check for the SPA surfaces)
+        run: uv run playwright install --with-deps chromium
+
       - name: Run web surface probe
         id: run_probe
         env:
