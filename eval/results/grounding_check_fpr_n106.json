@@ -1,0 +1,2200 @@
+{
+  "source_scoring": "eval\\results\\held_out_scoring_v2.json",
+  "method": "case-insensitive substring match of each list value against review_text",
+  "per_field": {
+    "competitor_mentions": {
+      "n_values_checked": 9,
+      "n_flagged": 0,
+      "false_positive_rate": 0.0
+    },
+    "pros": {
+      "n_values_checked": 283,
+      "n_flagged": 177,
+      "false_positive_rate": 0.6254
+    },
+    "cons": {
+      "n_values_checked": 80,
+      "n_flagged": 70,
+      "false_positive_rate": 0.875
+    },
+    "topics": {
+      "n_values_checked": 316,
+      "n_flagged": 186,
+      "false_positive_rate": 0.5886
+    }
+  },
+  "flagged_examples": {
+    "competitor_mentions": [],
+    "pros": [
+      {
+        "id": "hien-0001",
+        "text": "A bit uncomfortable on ears baki to mast haiREAD MORE",
+        "value": "overall satisfaction"
+      },
+      {
+        "id": "hien-0005",
+        "text": "all is good but battery is worst....only 1 month chli hai batteryREAD MORE",
+        "value": "overall good"
+      },
+      {
+        "id": "hien-0006",
+        "text": "As they rightly say about Chinese Products: Chala Toh Chand Tak; Nahi Toh Raat Tak.Review after a month of using this product:Sound Quality Is good, above average I would call it.Easy to pair and connect.Like the fit, fits perfect in your ears.Issues: 1. If you are watching a video, after a while, you would notice that the video is not in sync with the sound. Theres a constant disconnect which cause the video to relay first and then u hear the audio.2. The right earbud has stopped wo...",
+        "value": "good sound quality"
+      },
+      {
+        "id": "hien-0006",
+        "text": "As they rightly say about Chinese Products: Chala Toh Chand Tak; Nahi Toh Raat Tak.Review after a month of using this product:Sound Quality Is good, above average I would call it.Easy to pair and connect.Like the fit, fits perfect in your ears.Issues: 1. If you are watching a video, after a while, you would notice that the video is not in sync with the sound. Theres a constant disconnect which cause the video to relay first and then u hear the audio.2. The right earbud has stopped wo...",
+        "value": "easy pairing"
+      },
+      {
+        "id": "hien-0006",
+        "text": "As they rightly say about Chinese Products: Chala Toh Chand Tak; Nahi Toh Raat Tak.Review after a month of using this product:Sound Quality Is good, above average I would call it.Easy to pair and connect.Like the fit, fits perfect in your ears.Issues: 1. If you are watching a video, after a while, you would notice that the video is not in sync with the sound. Theres a constant disconnect which cause the video to relay first and then u hear the audio.2. The right earbud has stopped wo...",
+        "value": "good fit"
+      },
+      {
+        "id": "hien-0007",
+        "text": "Awesome bass is super sound is good bole to ek dam mast 😊READ MORE",
+        "value": "good sound"
+      },
+      {
+        "id": "hien-0008",
+        "text": "Awesome i like it bass is super sound is good boleto ekdam mast, paisa vasool...😘😍READ MORE",
+        "value": "excellent bass"
+      },
+      {
+        "id": "hien-0008",
+        "text": "Awesome i like it bass is super sound is good boleto ekdam mast, paisa vasool...😘😍READ MORE",
+        "value": "good sound quality"
+      },
+      {
+        "id": "hien-0008",
+        "text": "Awesome i like it bass is super sound is good boleto ekdam mast, paisa vasool...😘😍READ MORE",
+        "value": "great value for money"
+      },
+      {
+        "id": "hien-0008",
+        "text": "Awesome i like it bass is super sound is good boleto ekdam mast, paisa vasool...😘😍READ MORE",
+        "value": "overall awesome"
+      },
+      {
+        "id": "hien-0009",
+        "text": "awesome sound quality with beautiful bass which will make u feel the music properly in short mst h or ek number h mngwa lo ye price range me best h",
+        "value": "best in price range"
+      },
+      {
+        "id": "hien-0010",
+        "text": "Bahut hi achcha Bluetooth oneplus I like it",
+        "value": "very good"
+      },
+      {
+        "id": "hien-0014",
+        "text": "Bass 5/5Volume 4.5/5Quality Build 5/5Best but Boat ko thoda Volume Me sudhar karna chahiye..READ MORE",
+        "value": "excellent bass"
+      },
+      {
+        "id": "hien-0014",
+        "text": "Bass 5/5Volume 4.5/5Quality Build 5/5Best but Boat ko thoda Volume Me sudhar karna chahiye..READ MORE",
+        "value": "good volume"
+      },
+      {
+        "id": "hien-0014",
+        "text": "Bass 5/5Volume 4.5/5Quality Build 5/5Best but Boat ko thoda Volume Me sudhar karna chahiye..READ MORE",
+        "value": "excellent build quality"
+      },
+      {
+        "id": "hien-0014",
+        "text": "Bass 5/5Volume 4.5/5Quality Build 5/5Best but Boat ko thoda Volume Me sudhar karna chahiye..READ MORE",
+        "value": "overall best"
+      },
+      {
+        "id": "hien-0017",
+        "text": "Basss is awosame and sound is very clear on high volume and beld qwlty is very nice i suggest ki.ap ye earphone khridoo is range me ye earphone bhut mst he mere pass 3 he realme hmesa achhe produced or bugd product nikal ti he i love realme and i love flip cart thank you flipcart",
+        "value": "awesome bass"
+      },
+      {
+        "id": "hien-0017",
+        "text": "Basss is awosame and sound is very clear on high volume and beld qwlty is very nice i suggest ki.ap ye earphone khridoo is range me ye earphone bhut mst he mere pass 3 he realme hmesa achhe produced or bugd product nikal ti he i love realme and i love flip cart thank you flipcart",
+        "value": "clear sound at high volume"
+      },
+      {
+        "id": "hien-0017",
+        "text": "Basss is awosame and sound is very clear on high volume and beld qwlty is very nice i suggest ki.ap ye earphone khridoo is range me ye earphone bhut mst he mere pass 3 he realme hmesa achhe produced or bugd product nikal ti he i love realme and i love flip cart thank you flipcart",
+        "value": "nice build quality"
+      },
+      {
+        "id": "hien-0021",
+        "text": "Best in class 11mm drives just provide a loving experience.Go for it without any doubt Bass bestBattery backup gajab h bilkul gajabSound best Best neckband in this range even better than jbl",
+        "value": "excellent 11mm drivers"
+      },
+      {
+        "id": "hien-0021",
+        "text": "Best in class 11mm drives just provide a loving experience.Go for it without any doubt Bass bestBattery backup gajab h bilkul gajabSound best Best neckband in this range even better than jbl",
+        "value": "great bass"
+      },
+      {
+        "id": "hien-0021",
+        "text": "Best in class 11mm drives just provide a loving experience.Go for it without any doubt Bass bestBattery backup gajab h bilkul gajabSound best Best neckband in this range even better than jbl",
+        "value": "great battery backup"
+      },
+      {
+        "id": "hien-0021",
+        "text": "Best in class 11mm drives just provide a loving experience.Go for it without any doubt Bass bestBattery backup gajab h bilkul gajabSound best Best neckband in this range even better than jbl",
+        "value": "excellent sound"
+      },
+      {
+        "id": "hien-0021",
+        "text": "Best in class 11mm drives just provide a loving experience.Go for it without any doubt Bass bestBattery backup gajab h bilkul gajabSound best Best neckband in this range even better than jbl",
+        "value": "best neckband in its range, better than JBL"
+      },
+      {
+        "id": "hien-0024",
+        "text": "Bole to jhakkas . Don't think too much go for it and you will not regret about it. It's my promise . Just go for this one plus bullets wireless z and don't think too much by reading bad reviews.",
+        "value": "highly recommended"
+      },
+      {
+        "id": "hien-0024",
+        "text": "Bole to jhakkas . Don't think too much go for it and you will not regret about it. It's my promise . Just go for this one plus bullets wireless z and don't think too much by reading bad reviews.",
+        "value": "won't regret"
+      },
+      {
+        "id": "hien-0024",
+        "text": "Bole to jhakkas . Don't think too much go for it and you will not regret about it. It's my promise . Just go for this one plus bullets wireless z and don't think too much by reading bad reviews.",
+        "value": "positive experience"
+      },
+      {
+        "id": "hien-0025",
+        "text": "built quality is good .. but sound and comfort is not so good its just ok kaan bahotbdard hota hai bhai 15min he use karsakte ho..READ MORE",
+        "value": "good build quality"
+      },
+      {
+        "id": "hien-0026",
+        "text": "Built quilyty sound battery backup superb all over value for money ,paisa vasul",
+        "value": "built quality"
+      },
+      {
+        "id": "hien-0026",
+        "text": "Built quilyty sound battery backup superb all over value for money ,paisa vasul",
+        "value": "overall superb performance"
+      },
+      {
+        "id": "hien-0027",
+        "text": "Cool gadget... No sound delays while playing PUBG or any other online game...Very great device... Type c charging very quick... Full paisa vasool...😉😉😉",
+        "value": "no sound delay during online gaming"
+      },
+      {
+        "id": "hien-0027",
+        "text": "Cool gadget... No sound delays while playing PUBG or any other online game...Very great device... Type c charging very quick... Full paisa vasool...😉😉😉",
+        "value": "excellent device"
+      },
+      {
+        "id": "hien-0027",
+        "text": "Cool gadget... No sound delays while playing PUBG or any other online game...Very great device... Type c charging very quick... Full paisa vasool...😉😉😉",
+        "value": "fast Type-C charging"
+      },
+      {
+        "id": "hien-0027",
+        "text": "Cool gadget... No sound delays while playing PUBG or any other online game...Very great device... Type c charging very quick... Full paisa vasool...😉😉😉",
+        "value": "great value for money"
+      },
+      {
+        "id": "hien-0029",
+        "text": "Don't trust on bad Review i also confused when i see the bass review 3.3 but after the purchase this headset i m Totally Satisfied with this. Worth buy it. Hindi me bole to paisa vasool h bhai.",
+        "value": "excellent satisfaction"
+      },
+      {
+        "id": "hien-0029",
+        "text": "Don't trust on bad Review i also confused when i see the bass review 3.3 but after the purchase this headset i m Totally Satisfied with this. Worth buy it. Hindi me bole to paisa vasool h bhai.",
+        "value": "worth buying"
+      },
+      {
+        "id": "hien-0029",
+        "text": "Don't trust on bad Review i also confused when i see the bass review 3.3 but after the purchase this headset i m Totally Satisfied with this. Worth buy it. Hindi me bole to paisa vasool h bhai.",
+        "value": "value for money"
+      },
+      {
+        "id": "hien-0030",
+        "text": "Everything is good at this price range.Realme brings innovation in the products, provides good quality at less price.Bass is good.Sound quality good.Simple yet good design.Comfortable around neck.Battery Backup Is good.Magnet switch saves battery.Built in mic is also good and clear.There is a thin line texture on the yellow wire of the headset.Contents -HeadsetMicro usb cable for charging2 pair of buds.User GuideOverall Best Budget Headset.PS- 6 months ki warranty ... aur...",
+        "value": "built in mic is good and clear"
+      },
+      {
+        "id": "hien-0031",
+        "text": "Everything thing is good in it. Nice product. Paisa vasul product but delivery took very long time of 11 days 😠READ MORE",
+        "value": "good overall quality"
+      },
+      {
+        "id": "hien-0032",
+        "text": "Excellent i loved it ful paisa vasol product  💯💯👌💯💯💯READ MORE",
+        "value": "full price worth"
+      },
+      {
+        "id": "hien-0033",
+        "text": "excellent performance its range super quality and sound perfect for realme phones, like a hometheatre best product in this price go for it..value of money,praise vasool....",
+        "value": "perfect sound"
+      },
+      {
+        "id": "hien-0033",
+        "text": "excellent performance its range super quality and sound perfect for realme phones, like a hometheatre best product in this price go for it..value of money,praise vasool....",
+        "value": "great value for money"
+      },
+      {
+        "id": "hien-0034",
+        "text": "Excellent product, Paisa wasul bhaiREAD MORE",
+        "value": "good value for money"
+      },
+      {
+        "id": "hien-0035",
+        "text": "Excellent sound & base qualityCalling experience bhi excellenceBattrey backup 12-15 hour depend on your volume if you listen 50-70% volume your backup 13-14 hour Over all best wireless earphone in this price range No problem facing with realme 6i..",
+        "value": "excellent bass quality"
+      },
+      {
+        "id": "hien-0035",
+        "text": "Excellent sound & base qualityCalling experience bhi excellenceBattrey backup 12-15 hour depend on your volume if you listen 50-70% volume your backup 13-14 hour Over all best wireless earphone in this price range No problem facing with realme 6i..",
+        "value": "excellent calling experience"
+      },
+      {
+        "id": "hien-0035",
+        "text": "Excellent sound & base qualityCalling experience bhi excellenceBattrey backup 12-15 hour depend on your volume if you listen 50-70% volume your backup 13-14 hour Over all best wireless earphone in this price range No problem facing with realme 6i..",
+        "value": "long battery life"
+      },
+      {
+        "id": "hien-0035",
+        "text": "Excellent sound & base qualityCalling experience bhi excellenceBattrey backup 12-15 hour depend on your volume if you listen 50-70% volume your backup 13-14 hour Over all best wireless earphone in this price range No problem facing with realme 6i..",
+        "value": "best value for price"
+      },
+      {
+        "id": "hien-0035",
+        "text": "Excellent sound & base qualityCalling experience bhi excellenceBattrey backup 12-15 hour depend on your volume if you listen 50-70% volume your backup 13-14 hour Over all best wireless earphone in this price range No problem facing with realme 6i..",
+        "value": "compatibility with realme 6i"
+      },
+      {
+        "id": "hien-0036",
+        "text": "Excellent.. Paisa wasool.. I love oneplus.. Only 1 problem that there is no redialing..",
+        "value": "excellent quality"
+      },
+      {
+        "id": "hien-0036",
+        "text": "Excellent.. Paisa wasool.. I love oneplus.. Only 1 problem that there is no redialing..",
+        "value": "value for money"
+      },
+      {
+        "id": "hien-0037",
+        "text": "For better comfort  don't look at boat 225, mi basic and other redmi earphones. It is a budjet king. The quality of sound is excellent. These are made of plastic so light in weight and easily set in u r ears. The cable is soo flexible. Mera mi basic earphones 1month me karaab ho gaya, so I had given the next chance to this one.",
+        "value": "excellent sound quality"
+      },
+      {
+        "id": "hien-0037",
+        "text": "For better comfort  don't look at boat 225, mi basic and other redmi earphones. It is a budjet king. The quality of sound is excellent. These are made of plastic so light in weight and easily set in u r ears. The cable is soo flexible. Mera mi basic earphones 1month me karaab ho gaya, so I had given the next chance to this one.",
+        "value": "lightweight"
+      },
+      {
+        "id": "hien-0037",
+        "text": "For better comfort  don't look at boat 225, mi basic and other redmi earphones. It is a budjet king. The quality of sound is excellent. These are made of plastic so light in weight and easily set in u r ears. The cable is soo flexible. Mera mi basic earphones 1month me karaab ho gaya, so I had given the next chance to this one.",
+        "value": "comfortable fit"
+      },
+      {
+        "id": "hien-0037",
+        "text": "For better comfort  don't look at boat 225, mi basic and other redmi earphones. It is a budjet king. The quality of sound is excellent. These are made of plastic so light in weight and easily set in u r ears. The cable is soo flexible. Mera mi basic earphones 1month me karaab ho gaya, so I had given the next chance to this one.",
+        "value": "flexible cable"
+      },
+      {
+        "id": "hien-0039",
+        "text": "Good earphones but i think sound is little bit low but if it is higher then no one is going to keep at full volume so i think  it is great no stress toh ears good comfort.... Just go for it",
+        "value": "no stress to ears"
+      },
+      {
+        "id": "hien-0040",
+        "text": "Good product.. but bass is not like wings and Philip's earphones...try wings wireless neck band...mast hei...as I hv wings,Philip's,Intex and now boat in comparison to all wings is best then Philip's and intex and last boat",
+        "value": "best among wings, Philip's, Intex, and Boat"
+      },
+      {
+        "id": "hien-0042",
+        "text": "Good sound quality but kindly improve making material added more elasticness and super bass .Full paisa vasulREAD MORE",
+        "value": "full value for money"
+      },
+      {
+        "id": "hien-0043",
+        "text": "Hard bass yaar love itREAD MORE",
+        "value": "strong bass"
+      },
+      {
+        "id": "hien-0044",
+        "text": "Hear lots of things about this but fact is that sound quality is really awesome and bass is excellent looks and design is perfect but yaar bass dil chu liya Pubg m v buht mast kaam kar raha hai Latency time is perfect few micro second that doesn't matter.But one thing when you play pubg then set volume moderate level otherwise due to high. Bass your ear get pain and headache too but sound quality lajawaabREAD MORE",
+        "value": "excellent sound quality"
+      },
+      {
+        "id": "hien-0044",
+        "text": "Hear lots of things about this but fact is that sound quality is really awesome and bass is excellent looks and design is perfect but yaar bass dil chu liya Pubg m v buht mast kaam kar raha hai Latency time is perfect few micro second that doesn't matter.But one thing when you play pubg then set volume moderate level otherwise due to high. Bass your ear get pain and headache too but sound quality lajawaabREAD MORE",
+        "value": "excellent bass"
+      },
+      {
+        "id": "hien-0044",
+        "text": "Hear lots of things about this but fact is that sound quality is really awesome and bass is excellent looks and design is perfect but yaar bass dil chu liya Pubg m v buht mast kaam kar raha hai Latency time is perfect few micro second that doesn't matter.But one thing when you play pubg then set volume moderate level otherwise due to high. Bass your ear get pain and headache too but sound quality lajawaabREAD MORE",
+        "value": "perfect looks and design"
+      },
+      {
+        "id": "hien-0044",
+        "text": "Hear lots of things about this but fact is that sound quality is really awesome and bass is excellent looks and design is perfect but yaar bass dil chu liya Pubg m v buht mast kaam kar raha hai Latency time is perfect few micro second that doesn't matter.But one thing when you play pubg then set volume moderate level otherwise due to high. Bass your ear get pain and headache too but sound quality lajawaabREAD MORE",
+        "value": "very low latency (few microseconds)"
+      },
+      {
+        "id": "hien-0044",
+        "text": "Hear lots of things about this but fact is that sound quality is really awesome and bass is excellent looks and design is perfect but yaar bass dil chu liya Pubg m v buht mast kaam kar raha hai Latency time is perfect few micro second that doesn't matter.But one thing when you play pubg then set volume moderate level otherwise due to high. Bass your ear get pain and headache too but sound quality lajawaabREAD MORE",
+        "value": "great performance in PUBG"
+      },
+      {
+        "id": "hien-0045",
+        "text": "Highly satisfied for all features . 100% Paisa vasool.Best product from one plus #Never_Settle",
+        "value": "highly satisfied with all features"
+      },
+      {
+        "id": "hien-0045",
+        "text": "Highly satisfied for all features . 100% Paisa vasool.Best product from one plus #Never_Settle",
+        "value": "great value for money"
+      },
+      {
+        "id": "hien-0046",
+        "text": "I am using this headphone since 6 months, great bass I am a songs lover and like to listen all types of song, this headphone is great for all kind of music from trance or edm to hindi old song and great battery life tooo great buy bole to Paisa VasooooolREAD MORE",
+        "value": "suitable for all kinds of music (trance, EDM, Hindi old songs)"
+      },
+      {
+        "id": "hien-0046",
+        "text": "I am using this headphone since 6 months, great bass I am a songs lover and like to listen all types of song, this headphone is great for all kind of music from trance or edm to hindi old song and great battery life tooo great buy bole to Paisa VasooooolREAD MORE",
+        "value": "good value for money"
+      },
+      {
+        "id": "hien-0047",
+        "text": "I am writing this review after 10 days of use .go for it guys it was awesome product by one plus .Sound was excellent Bass was fadu Battery backup which is best 10 min charging gives 10 hours use it works I am happy with this 😊Go for it Paisa wasool h bhai",
+        "value": "excellent sound quality"
+      },
+      {
+        "id": "hien-0047",
+        "text": "I am writing this review after 10 days of use .go for it guys it was awesome product by one plus .Sound was excellent Bass was fadu Battery backup which is best 10 min charging gives 10 hours use it works I am happy with this 😊Go for it Paisa wasool h bhai",
+        "value": "fantastic bass"
+      },
+      {
+        "id": "hien-0047",
+        "text": "I am writing this review after 10 days of use .go for it guys it was awesome product by one plus .Sound was excellent Bass was fadu Battery backup which is best 10 min charging gives 10 hours use it works I am happy with this 😊Go for it Paisa wasool h bhai",
+        "value": "excellent battery backup"
+      },
+      {
+        "id": "hien-0047",
+        "text": "I am writing this review after 10 days of use .go for it guys it was awesome product by one plus .Sound was excellent Bass was fadu Battery backup which is best 10 min charging gives 10 hours use it works I am happy with this 😊Go for it Paisa wasool h bhai",
+        "value": "fast charging (10 minutes for 10 hours)"
+      },
+      {
+        "id": "hien-0048",
+        "text": "i dont know how people give 1star to this product. this product should be given 4.5 stars bcoz it has superb bass as well as battery backup is extremely good. can watch almost two movies at a time and after that can use the wire given in it ❤️ appreciation for such an amount is needed for a product like this.writing this from mumbai andheri! atlast mumbai style ka review product bohut hard hai .READ MORE",
+        "value": "extremely good battery backup"
+      },
+      {
+        "id": "hien-0048",
+        "text": "i dont know how people give 1star to this product. this product should be given 4.5 stars bcoz it has superb bass as well as battery backup is extremely good. can watch almost two movies at a time and after that can use the wire given in it ❤️ appreciation for such an amount is needed for a product like this.writing this from mumbai andheri! atlast mumbai style ka review product bohut hard hai .READ MORE",
+        "value": "long playback time for movies"
+      },
+      {
+        "id": "hien-0048",
+        "text": "i dont know how people give 1star to this product. this product should be given 4.5 stars bcoz it has superb bass as well as battery backup is extremely good. can watch almost two movies at a time and after that can use the wire given in it ❤️ appreciation for such an amount is needed for a product like this.writing this from mumbai andheri! atlast mumbai style ka review product bohut hard hai .READ MORE",
+        "value": "included wire"
+      },
+      {
+        "id": "hien-0048",
+        "text": "i dont know how people give 1star to this product. this product should be given 4.5 stars bcoz it has superb bass as well as battery backup is extremely good. can watch almost two movies at a time and after that can use the wire given in it ❤️ appreciation for such an amount is needed for a product like this.writing this from mumbai andheri! atlast mumbai style ka review product bohut hard hai .READ MORE",
+        "value": "hard build"
+      },
+      {
+        "id": "hien-0049",
+        "text": "I love thisSound quality is good but at full sound music might won't be that clear but at it's range it's the bestFull paisa wasool productREAD MORE",
+        "value": "good sound quality"
+      },
+      {
+        "id": "hien-0049",
+        "text": "I love thisSound quality is good but at full sound music might won't be that clear but at it's range it's the bestFull paisa wasool productREAD MORE",
+        "value": "best within its range"
+      },
+      {
+        "id": "hien-0049",
+        "text": "I love thisSound quality is good but at full sound music might won't be that clear but at it's range it's the bestFull paisa wasool productREAD MORE",
+        "value": "great value for money"
+      },
+      {
+        "id": "hien-0050",
+        "text": "I purchased this on 7th june 2019 and one side of the earphone stopepd working and the jack was also become loose . When i applied for the warranty it took one month to come but the best thing is they gave me a new one . It's awesome yaar . I liked the assurity of boat .",
+        "value": "prompt warranty replacement"
+      },
+      {
+        "id": "hien-0050",
+        "text": "I purchased this on 7th june 2019 and one side of the earphone stopepd working and the jack was also become loose . When i applied for the warranty it took one month to come but the best thing is they gave me a new one . It's awesome yaar . I liked the assurity of boat .",
+        "value": "brand reliability"
+      },
+      {
+        "id": "hien-0051",
+        "text": "It's a really worth product and paisa wasolLook wise great and only grab at deal..it will make u more happy.hahaREAD MORE",
+        "value": "great value"
+      },
+      {
+        "id": "hien-0051",
+        "text": "It's a really worth product and paisa wasolLook wise great and only grab at deal..it will make u more happy.hahaREAD MORE",
+        "value": "good deal"
+      },
+      {
+        "id": "hien-0051",
+        "text": "It's a really worth product and paisa wasolLook wise great and only grab at deal..it will make u more happy.hahaREAD MORE",
+        "value": "makes you happier"
+      },
+      {
+        "id": "hien-0052",
+        "text": "Jada review mat dekho...bahut hi accha hai..base I love it...value for money... awesome product hai..😁",
+        "value": "very good"
+      },
+      {
+        "id": "hien-0052",
+        "text": "Jada review mat dekho...bahut hi accha hai..base I love it...value for money... awesome product hai..😁",
+        "value": "great value for money"
+      },
+      {
+        "id": "hien-0053",
+        "text": "Just great headphone      fully paisa wasoolREAD MORE",
+        "value": "value for money"
+      },
+      {
+        "id": "hien-0054",
+        "text": "Mahol Yarr Ky banawat Hai Iski Too Lovely Its Very Useful In Gym and CookingREAD MORE",
+        "value": "lovely design"
+      },
+      {
+        "id": "hien-0054",
+        "text": "Mahol Yarr Ky banawat Hai Iski Too Lovely Its Very Useful In Gym and CookingREAD MORE",
+        "value": "useful for gym"
+      },
+      {
+        "id": "hien-0054",
+        "text": "Mahol Yarr Ky banawat Hai Iski Too Lovely Its Very Useful In Gym and CookingREAD MORE",
+        "value": "useful for cooking"
+      },
+      {
+        "id": "hien-0055",
+        "text": "Mast Ekach Number.. Not irritated at high volume also.. Fast delivery during knockdown.. Nice packaging original product with warranty card and manual.. I am Happy 😊 #music lover",
+        "value": "high volume not irritating"
+      },
+      {
+        "id": "hien-0060",
+        "text": "Msstt he quality...or battery back up bhi aachaaa h....realme brand is brand...",
+        "value": "good battery backup"
+      },
+      {
+        "id": "hien-0061",
+        "text": "Mst hai boss Good bass & sounds quality Bluetooth battery backup also good & decent looks This is first choice for higher bass & sounds loverBut not gd for PUBG playersREAD MORE",
+        "value": "good sound quality"
+      },
+      {
+        "id": "hien-0061",
+        "text": "Mst hai boss Good bass & sounds quality Bluetooth battery backup also good & decent looks This is first choice for higher bass & sounds loverBut not gd for PUBG playersREAD MORE",
+        "value": "good Bluetooth"
+      },
+      {
+        "id": "hien-0061",
+        "text": "Mst hai boss Good bass & sounds quality Bluetooth battery backup also good & decent looks This is first choice for higher bass & sounds loverBut not gd for PUBG playersREAD MORE",
+        "value": "good battery backup"
+      },
+      {
+        "id": "hien-0063",
+        "text": "mujhe bhot accha lga first time good from flipkartREAD MORE",
+        "value": "very good experience"
+      },
+      {
+        "id": "hien-0064",
+        "text": "Nice for the price, good sound, but if you have already used boat 220 or 225 you will not find it very impressive but for the first time buyers it's a Paisa vasool item, anytime superb than the local or generic earphone.Bass is actually quite good as it's a basic earphone of boat, but no wonder thousands of people are rating it as good as it's really worth the money.Go for it guys if you can't extend the budget , you'll not regret.",
+        "value": "good value for money"
+      },
+      {
+        "id": "hien-0064",
+        "text": "Nice for the price, good sound, but if you have already used boat 220 or 225 you will not find it very impressive but for the first time buyers it's a Paisa vasool item, anytime superb than the local or generic earphone.Bass is actually quite good as it's a basic earphone of boat, but no wonder thousands of people are rating it as good as it's really worth the money.Go for it guys if you can't extend the budget , you'll not regret.",
+        "value": "good bass"
+      },
+      {
+        "id": "hien-0064",
+        "text": "Nice for the price, good sound, but if you have already used boat 220 or 225 you will not find it very impressive but for the first time buyers it's a Paisa vasool item, anytime superb than the local or generic earphone.Bass is actually quite good as it's a basic earphone of boat, but no wonder thousands of people are rating it as good as it's really worth the money.Go for it guys if you can't extend the budget , you'll not regret.",
+        "value": "better than local or generic earphones"
+      },
+      {
+        "id": "hien-0066",
+        "text": "nice headphone but bluetooth range kaam hai long distance is doesn't work but sound quality is best and battery is also good ....thank you FlipkartREAD MORE",
+        "value": "best sound quality"
+      },
+      {
+        "id": "hien-0066",
+        "text": "nice headphone but bluetooth range kaam hai long distance is doesn't work but sound quality is best and battery is also good ....thank you FlipkartREAD MORE",
+        "value": "good battery"
+      },
+      {
+        "id": "hien-0067",
+        "text": "Nice product...and fast delivery... Sound + bass + design achcha hai ...",
+        "value": "good sound"
+      },
+      {
+        "id": "hien-0067",
+        "text": "Nice product...and fast delivery... Sound + bass + design achcha hai ...",
+        "value": "good bass"
+      },
+      {
+        "id": "hien-0067",
+        "text": "Nice product...and fast delivery... Sound + bass + design achcha hai ...",
+        "value": "good design"
+      },
+      {
+        "id": "hien-0068",
+        "text": "Not comfortable for long time use ...lakin 2 hr use k lea best h or sound toh very good es price range mREAD MORE",
+        "value": "very good sound"
+      },
+      {
+        "id": "hien-0068",
+        "text": "Not comfortable for long time use ...lakin 2 hr use k lea best h or sound toh very good es price range mREAD MORE",
+        "value": "good price range"
+      },
+      {
+        "id": "hien-0069",
+        "text": "One of the best blue tooth headset from real me just loved it and must buy. The bass is awesome and battery backup also good totally worth for every paisa.",
+        "value": "awesome bass"
+      },
+      {
+        "id": "hien-0069",
+        "text": "One of the best blue tooth headset from real me just loved it and must buy. The bass is awesome and battery backup also good totally worth for every paisa.",
+        "value": "good battery backup"
+      },
+      {
+        "id": "hien-0070",
+        "text": "Osm products I am happy sound Bess kafi acha haiREAD MORE",
+        "value": "quite good"
+      },
+      {
+        "id": "hien-0071",
+        "text": "Paisa basool product bcz I buy 900 , so I think it nice",
+        "value": "good value for money"
+      },
+      {
+        "id": "hien-0072",
+        "text": "Product is good Battery backup bhi 6 se 4 hours chal jata haiREAD MORE",
+        "value": "good overall quality"
+      },
+      {
+        "id": "hien-0073",
+        "text": "Product is very good But online delivery is very bad because it's too late slow delivery Delivery boy dene nhi aata h lene jana padta hREAD MORE",
+        "value": "good product quality"
+      },
+      {
+        "id": "hien-0074",
+        "text": "Product is worth, full paisa vasool....l liked it very muchREAD MORE",
+        "value": "good value for money"
+      },
+      {
+        "id": "hien-0074",
+        "text": "Product is worth, full paisa vasool....l liked it very muchREAD MORE",
+        "value": "liked it a lot"
+      },
+      {
+        "id": "hien-0075",
+        "text": "Pros:    Good Sound Quality(not too much better than a local simple earphone)    Nice connectivity(utna bhi nahi)Cons:    My ear pains after using it  for around 30 min.(needed more soft material for the speaker's soft parts )READ MORE",
+        "value": "acceptable sound quality"
+      },
+      {
+        "id": "hien-0075",
+        "text": "Pros:    Good Sound Quality(not too much better than a local simple earphone)    Nice connectivity(utna bhi nahi)Cons:    My ear pains after using it  for around 30 min.(needed more soft material for the speaker's soft parts )READ MORE",
+        "value": "limited connectivity"
+      },
+      {
+        "id": "hien-0076",
+        "text": "Quite punchy. Decent bass too. Better than JBL Glide 501 actually. Quite loud too. Mic is bakwas. Overall, good value for money.READ MORE",
+        "value": "punchy sound"
+      },
+      {
+        "id": "hien-0076",
+        "text": "Quite punchy. Decent bass too. Better than JBL Glide 501 actually. Quite loud too. Mic is bakwas. Overall, good value for money.READ MORE",
+        "value": "loud volume"
+      },
+      {
+        "id": "hien-0079",
+        "text": "Sound quality is not so good.i received I speaker damge..base is low as I accept it.. degin was good, battery backup is good..if you want low volume sound lover must buy it...it's very nice for slow songs lover..not for Gym class aur exercise volume is very low..READ MORE",
+        "value": "good design"
+      },
+      {
+        "id": "hien-0079",
+        "text": "Sound quality is not so good.i received I speaker damge..base is low as I accept it.. degin was good, battery backup is good..if you want low volume sound lover must buy it...it's very nice for slow songs lover..not for Gym class aur exercise volume is very low..READ MORE",
+        "value": "good battery backup"
+      },
+      {
+        "id": "hien-0079",
+        "text": "Sound quality is not so good.i received I speaker damge..base is low as I accept it.. degin was good, battery backup is good..if you want low volume sound lover must buy it...it's very nice for slow songs lover..not for Gym class aur exercise volume is very low..READ MORE",
+        "value": "nice for slow songs lovers"
+      },
+      {
+        "id": "hien-0079",
+        "text": "Sound quality is not so good.i received I speaker damge..base is low as I accept it.. degin was good, battery backup is good..if you want low volume sound lover must buy it...it's very nice for slow songs lover..not for Gym class aur exercise volume is very low..READ MORE",
+        "value": "suitable for low volume listening"
+      },
+      {
+        "id": "hien-0081",
+        "text": "Superb earphone i like it.... and the sound is just awsome....  ye earphone apple k earphone ko competition de dega.....  Not better than apple earphone... but km v nai hai apple k earphone se....",
+        "value": "excellent earphone"
+      },
+      {
+        "id": "hien-0081",
+        "text": "Superb earphone i like it.... and the sound is just awsome....  ye earphone apple k earphone ko competition de dega.....  Not better than apple earphone... but km v nai hai apple k earphone se....",
+        "value": "awesome sound quality"
+      },
+      {
+        "id": "hien-0081",
+        "text": "Superb earphone i like it.... and the sound is just awsome....  ye earphone apple k earphone ko competition de dega.....  Not better than apple earphone... but km v nai hai apple k earphone se....",
+        "value": "competitive with Apple"
+      },
+      {
+        "id": "hien-0082",
+        "text": "Superb Headphone 🤩🤩Design 👌🏻 mast Battery _ 👌🏻 mastBass _ outstanding 👌🏻Futures _ great 👌🏻READ MORE",
+        "value": "outstanding bass"
+      },
+      {
+        "id": "hien-0082",
+        "text": "Superb Headphone 🤩🤩Design 👌🏻 mast Battery _ 👌🏻 mastBass _ outstanding 👌🏻Futures _ great 👌🏻READ MORE",
+        "value": "great features"
+      },
+      {
+        "id": "hien-0083",
+        "text": "superb product in paisa vasool",
+        "value": "excellent product quality"
+      },
+      {
+        "id": "hien-0083",
+        "text": "superb product in paisa vasool",
+        "value": "great value for money"
+      },
+      {
+        "id": "hien-0084",
+        "text": "The Boat Rockerz 400 is a Best one Of the From Boat Company if some one play pubg from pc and he dont hai mic orr we can connect our boat headphone to pc best one thank BOAT and Thank FlipkartREAD MORE",
+        "value": "great for PUBG on PC without a mic"
+      },
+      {
+        "id": "hien-0084",
+        "text": "The Boat Rockerz 400 is a Best one Of the From Boat Company if some one play pubg from pc and he dont hai mic orr we can connect our boat headphone to pc best one thank BOAT and Thank FlipkartREAD MORE",
+        "value": "can connect to PC easily"
+      },
+      {
+        "id": "hien-0084",
+        "text": "The Boat Rockerz 400 is a Best one Of the From Boat Company if some one play pubg from pc and he dont hai mic orr we can connect our boat headphone to pc best one thank BOAT and Thank FlipkartREAD MORE",
+        "value": "overall best performance"
+      },
+      {
+        "id": "hien-0085",
+        "text": "The reason for choosing this one over all others---it works both with bluetooth and aux cable(wired).so bhagwan na kare agar bluetooth kharab ho jae toh u can still use aux cable to use it as wired. It's one advantage and a big one over others. Two in one. It's tight fit, ears will pain after 30-45 mins, but It mit get loosen with time. Voice is good, connectivity working fine till now. Bass is good. Looks good built wise. In short, leke baat khatam karo. 1399 me aur kya chahiye.READ MORE",
+        "value": "dual connectivity via Bluetooth and aux cable"
+      },
+      {
+        "id": "hien-0085",
+        "text": "The reason for choosing this one over all others---it works both with bluetooth and aux cable(wired).so bhagwan na kare agar bluetooth kharab ho jae toh u can still use aux cable to use it as wired. It's one advantage and a big one over others. Two in one. It's tight fit, ears will pain after 30-45 mins, but It mit get loosen with time. Voice is good, connectivity working fine till now. Bass is good. Looks good built wise. In short, leke baat khatam karo. 1399 me aur kya chahiye.READ MORE",
+        "value": "good voice quality"
+      },
+      {
+        "id": "hien-0085",
+        "text": "The reason for choosing this one over all others---it works both with bluetooth and aux cable(wired).so bhagwan na kare agar bluetooth kharab ho jae toh u can still use aux cable to use it as wired. It's one advantage and a big one over others. Two in one. It's tight fit, ears will pain after 30-45 mins, but It mit get loosen with time. Voice is good, connectivity working fine till now. Bass is good. Looks good built wise. In short, leke baat khatam karo. 1399 me aur kya chahiye.READ MORE",
+        "value": "stable connectivity"
+      },
+      {
+        "id": "hien-0085",
+        "text": "The reason for choosing this one over all others---it works both with bluetooth and aux cable(wired).so bhagwan na kare agar bluetooth kharab ho jae toh u can still use aux cable to use it as wired. It's one advantage and a big one over others. Two in one. It's tight fit, ears will pain after 30-45 mins, but It mit get loosen with time. Voice is good, connectivity working fine till now. Bass is good. Looks good built wise. In short, leke baat khatam karo. 1399 me aur kya chahiye.READ MORE",
+        "value": "good bass response"
+      },
+      {
+        "id": "hien-0085",
+        "text": "The reason for choosing this one over all others---it works both with bluetooth and aux cable(wired).so bhagwan na kare agar bluetooth kharab ho jae toh u can still use aux cable to use it as wired. It's one advantage and a big one over others. Two in one. It's tight fit, ears will pain after 30-45 mins, but It mit get loosen with time. Voice is good, connectivity working fine till now. Bass is good. Looks good built wise. In short, leke baat khatam karo. 1399 me aur kya chahiye.READ MORE",
+        "value": "attractive build quality"
+      },
+      {
+        "id": "hien-0086",
+        "text": "These rockerz are branded , easy to use and good sound quality. Best bluetooth headphones in this price range .Design is also fine . Bluetooth range max. from one room to another . Can talk through built in mic when on a call. So don't need to hold your phone near you.I got this for 999 in sale.The best price.Isse kam mai koi bhi branded bluetooth headphones  nhi milenge.READ MORE",
+        "value": "design is fine"
+      },
+      {
+        "id": "hien-0086",
+        "text": "These rockerz are branded , easy to use and good sound quality. Best bluetooth headphones in this price range .Design is also fine . Bluetooth range max. from one room to another . Can talk through built in mic when on a call. So don't need to hold your phone near you.I got this for 999 in sale.The best price.Isse kam mai koi bhi branded bluetooth headphones  nhi milenge.READ MORE",
+        "value": "Bluetooth range up to one room"
+      },
+      {
+        "id": "hien-0086",
+        "text": "These rockerz are branded , easy to use and good sound quality. Best bluetooth headphones in this price range .Design is also fine . Bluetooth range max. from one room to another . Can talk through built in mic when on a call. So don't need to hold your phone near you.I got this for 999 in sale.The best price.Isse kam mai koi bhi branded bluetooth headphones  nhi milenge.READ MORE",
+        "value": "built‑in mic enables hands‑free calls"
+      },
+      {
+        "id": "hien-0086",
+        "text": "These rockerz are branded , easy to use and good sound quality. Best bluetooth headphones in this price range .Design is also fine . Bluetooth range max. from one room to another . Can talk through built in mic when on a call. So don't need to hold your phone near you.I got this for 999 in sale.The best price.Isse kam mai koi bhi branded bluetooth headphones  nhi milenge.READ MORE",
+        "value": "very good price at 999"
+      },
+      {
+        "id": "hien-0087",
+        "text": "This earphone is just awsome yaar , everything is just so perfect yaar just go for it blindly ,i tell you u cant find a best product at this price its awsome👌👌👌👌",
+        "value": "awesome overall"
+      },
+      {
+        "id": "hien-0087",
+        "text": "This earphone is just awsome yaar , everything is just so perfect yaar just go for it blindly ,i tell you u cant find a best product at this price its awsome👌👌👌👌",
+        "value": "perfect performance"
+      },
+      {
+        "id": "hien-0087",
+        "text": "This earphone is just awsome yaar , everything is just so perfect yaar just go for it blindly ,i tell you u cant find a best product at this price its awsome👌👌👌👌",
+        "value": "great value for money"
+      },
+      {
+        "id": "hien-0088",
+        "text": "This is an excellent wireless earphone. I should admit that Sound quality is fabulous & also the Bass is preety good. It's a balance sound quality. When it's come to Charging quality, it has the most playback time I ever seen any earphone. This earphone totally money worthy. Thanks OnePlus for give us this well featured earphone. I'm recommending everyone to buy this OnePlus Bullets Wireless Z Bluetooth Headset. Love this earphone yaar ❤️❤️❤️❤️",
+        "value": "excellent sound quality"
+      },
+      {
+        "id": "hien-0088",
+        "text": "This is an excellent wireless earphone. I should admit that Sound quality is fabulous & also the Bass is preety good. It's a balance sound quality. When it's come to Charging quality, it has the most playback time I ever seen any earphone. This earphone totally money worthy. Thanks OnePlus for give us this well featured earphone. I'm recommending everyone to buy this OnePlus Bullets Wireless Z Bluetooth Headset. Love this earphone yaar ❤️❤️❤️❤️",
+        "value": "great bass"
+      },
+      {
+        "id": "hien-0088",
+        "text": "This is an excellent wireless earphone. I should admit that Sound quality is fabulous & also the Bass is preety good. It's a balance sound quality. When it's come to Charging quality, it has the most playback time I ever seen any earphone. This earphone totally money worthy. Thanks OnePlus for give us this well featured earphone. I'm recommending everyone to buy this OnePlus Bullets Wireless Z Bluetooth Headset. Love this earphone yaar ❤️❤️❤️❤️",
+        "value": "balanced sound"
+      },
+      {
+        "id": "hien-0088",
+        "text": "This is an excellent wireless earphone. I should admit that Sound quality is fabulous & also the Bass is preety good. It's a balance sound quality. When it's come to Charging quality, it has the most playback time I ever seen any earphone. This earphone totally money worthy. Thanks OnePlus for give us this well featured earphone. I'm recommending everyone to buy this OnePlus Bullets Wireless Z Bluetooth Headset. Love this earphone yaar ❤️❤️❤️❤️",
+        "value": "long playback time"
+      },
+      {
+        "id": "hien-0088",
+        "text": "This is an excellent wireless earphone. I should admit that Sound quality is fabulous & also the Bass is preety good. It's a balance sound quality. When it's come to Charging quality, it has the most playback time I ever seen any earphone. This earphone totally money worthy. Thanks OnePlus for give us this well featured earphone. I'm recommending everyone to buy this OnePlus Bullets Wireless Z Bluetooth Headset. Love this earphone yaar ❤️❤️❤️❤️",
+        "value": "good value for money"
+      },
+      {
+        "id": "hien-0088",
+        "text": "This is an excellent wireless earphone. I should admit that Sound quality is fabulous & also the Bass is preety good. It's a balance sound quality. When it's come to Charging quality, it has the most playback time I ever seen any earphone. This earphone totally money worthy. Thanks OnePlus for give us this well featured earphone. I'm recommending everyone to buy this OnePlus Bullets Wireless Z Bluetooth Headset. Love this earphone yaar ❤️❤️❤️❤️",
+        "value": "well-featured earphone"
+      },
+      {
+        "id": "hien-0089",
+        "text": "U&i Bluetooth device 3days charge  rakh ta he or voice clarity must he but bass itna nehi he fir bi achhha he Paisa ke hisab se good",
+        "value": "3-day battery life"
+      },
+      {
+        "id": "hien-0089",
+        "text": "U&i Bluetooth device 3days charge  rakh ta he or voice clarity must he but bass itna nehi he fir bi achhha he Paisa ke hisab se good",
+        "value": "clear voice clarity"
+      },
+      {
+        "id": "hien-0089",
+        "text": "U&i Bluetooth device 3days charge  rakh ta he or voice clarity must he but bass itna nehi he fir bi achhha he Paisa ke hisab se good",
+        "value": "good value for money"
+      },
+      {
+        "id": "hien-0092",
+        "text": "Value for money 💵💰... Worth it... Paisa vasool",
+        "value": "great value for money"
+      },
+      {
+        "id": "hien-0093",
+        "text": "Very good and beautiful ❤️ Wah Wah trusted material     Full paisa vasool. .thank flipcart.   Thank boatREAD MORE",
+        "value": "good appearance"
+      },
+      {
+        "id": "hien-0093",
+        "text": "Very good and beautiful ❤️ Wah Wah trusted material     Full paisa vasool. .thank flipcart.   Thank boatREAD MORE",
+        "value": "beautiful design"
+      },
+      {
+        "id": "hien-0093",
+        "text": "Very good and beautiful ❤️ Wah Wah trusted material     Full paisa vasool. .thank flipcart.   Thank boatREAD MORE",
+        "value": "high-quality material"
+      },
+      {
+        "id": "hien-0093",
+        "text": "Very good and beautiful ❤️ Wah Wah trusted material     Full paisa vasool. .thank flipcart.   Thank boatREAD MORE",
+        "value": "great value for money"
+      },
+      {
+        "id": "hien-0094",
+        "text": "Very good earphone with this price range... I got it for ₹540 nd boat earphones have always been good impact.. So go through this... Aur 600 range me boat ka 220 wired is Awesome.. With super  extra bass",
+        "value": "good earphone quality"
+      },
+      {
+        "id": "hien-0094",
+        "text": "Very good earphone with this price range... I got it for ₹540 nd boat earphones have always been good impact.. So go through this... Aur 600 range me boat ka 220 wired is Awesome.. With super  extra bass",
+        "value": "awesome performance"
+      },
+      {
+        "id": "hien-0095",
+        "text": "very good product from ream me. the most amazing thing is its magnetic effect. voice quality is best and also battery back up is best. go through it. paisa vasool headphone hai bhai.",
+        "value": "amazing magnetic effect"
+      },
+      {
+        "id": "hien-0095",
+        "text": "very good product from ream me. the most amazing thing is its magnetic effect. voice quality is best and also battery back up is best. go through it. paisa vasool headphone hai bhai.",
+        "value": "excellent voice quality"
+      },
+      {
+        "id": "hien-0095",
+        "text": "very good product from ream me. the most amazing thing is its magnetic effect. voice quality is best and also battery back up is best. go through it. paisa vasool headphone hai bhai.",
+        "value": "excellent battery backup"
+      },
+      {
+        "id": "hien-0095",
+        "text": "very good product from ream me. the most amazing thing is its magnetic effect. voice quality is best and also battery back up is best. go through it. paisa vasool headphone hai bhai.",
+        "value": "great value for money"
+      },
+      {
+        "id": "hien-0096",
+        "text": "Very good product full paisa wasool... 👍☺READ MORE",
+        "value": "good product quality"
+      },
+      {
+        "id": "hien-0096",
+        "text": "Very good product full paisa wasool... 👍☺READ MORE",
+        "value": "great value for money"
+      },
+      {
+        "id": "hien-0097",
+        "text": "Very good product, sound quality is also good. while using headphone 🎧 my ear hurts so bad, I have to remove them in an hour😔 koi sense hai iss baat kiREAD MORE",
+        "value": "good sound quality"
+      },
+      {
+        "id": "hien-0098",
+        "text": "Very good product.... If u are thinking to buy this, just stop thinking and just buy it.,. Fully PAISA WASULE.. Item.. Thanks",
+        "value": "highly recommended"
+      },
+      {
+        "id": "hien-0102",
+        "text": "Wow mast bassssś goood  👍👍quality soundREAD MORE",
+        "value": "massive bass"
+      },
+      {
+        "id": "hien-0102",
+        "text": "Wow mast bassssś goood  👍👍quality soundREAD MORE",
+        "value": "good sound quality"
+      },
+      {
+        "id": "hien-0103",
+        "text": "wow wow what a bass i loved it thank you flipkart.. worth for this price .. mast buyREAD MORE",
+        "value": "great bass"
+      },
+      {
+        "id": "hien-0103",
+        "text": "wow wow what a bass i loved it thank you flipkart.. worth for this price .. mast buyREAD MORE",
+        "value": "good value for price"
+      },
+      {
+        "id": "hien-0104",
+        "text": "Yaar i cant believe that it will be that good i received delivery in just 15 hours and the performance is excellentit passive noice cancellation block many noice it can be wear wuile studying amazing definitely you should buy itREAD MORE",
+        "value": "fast delivery (15 hours)"
+      },
+      {
+        "id": "hien-0104",
+        "text": "Yaar i cant believe that it will be that good i received delivery in just 15 hours and the performance is excellentit passive noice cancellation block many noice it can be wear wuile studying amazing definitely you should buy itREAD MORE",
+        "value": "excellent performance"
+      },
+      {
+        "id": "hien-0104",
+        "text": "Yaar i cant believe that it will be that good i received delivery in just 15 hours and the performance is excellentit passive noice cancellation block many noice it can be wear wuile studying amazing definitely you should buy itREAD MORE",
+        "value": "effective passive noise cancellation"
+      },
+      {
+        "id": "hien-0104",
+        "text": "Yaar i cant believe that it will be that good i received delivery in just 15 hours and the performance is excellentit passive noice cancellation block many noice it can be wear wuile studying amazing definitely you should buy itREAD MORE",
+        "value": "comfortable to wear while studying"
+      },
+      {
+        "id": "hien-0104",
+        "text": "Yaar i cant believe that it will be that good i received delivery in just 15 hours and the performance is excellentit passive noice cancellation block many noice it can be wear wuile studying amazing definitely you should buy itREAD MORE",
+        "value": "overall amazing"
+      },
+      {
+        "id": "hien-0106",
+        "text": "Zabardast product 🤩READ MORE",
+        "value": "excellent product"
+      }
+    ],
+    "cons": [
+      {
+        "id": "hien-0001",
+        "text": "A bit uncomfortable on ears baki to mast haiREAD MORE",
+        "value": "ear discomfort"
+      },
+      {
+        "id": "hien-0003",
+        "text": "After 20 days it's sounds quality will bad 😭 paisa barbad 😭",
+        "value": "sound quality bad after 20 days"
+      },
+      {
+        "id": "hien-0003",
+        "text": "After 20 days it's sounds quality will bad 😭 paisa barbad 😭",
+        "value": "money wasted"
+      },
+      {
+        "id": "hien-0004",
+        "text": "after using 1 month i cant say its so good i can say its voice qlty is very less and meri toh khrab ho gai bss 1 month may he.",
+        "value": "poor voice quality"
+      },
+      {
+        "id": "hien-0004",
+        "text": "after using 1 month i cant say its so good i can say its voice qlty is very less and meri toh khrab ho gai bss 1 month may he.",
+        "value": "product broke in one month"
+      },
+      {
+        "id": "hien-0005",
+        "text": "all is good but battery is worst....only 1 month chli hai batteryREAD MORE",
+        "value": "worst battery"
+      },
+      {
+        "id": "hien-0005",
+        "text": "all is good but battery is worst....only 1 month chli hai batteryREAD MORE",
+        "value": "short battery life"
+      },
+      {
+        "id": "hien-0006",
+        "text": "As they rightly say about Chinese Products: Chala Toh Chand Tak; Nahi Toh Raat Tak.Review after a month of using this product:Sound Quality Is good, above average I would call it.Easy to pair and connect.Like the fit, fits perfect in your ears.Issues: 1. If you are watching a video, after a while, you would notice that the video is not in sync with the sound. Theres a constant disconnect which cause the video to relay first and then u hear the audio.2. The right earbud has stopped wo...",
+        "value": "video audio sync issue"
+      },
+      {
+        "id": "hien-0006",
+        "text": "As they rightly say about Chinese Products: Chala Toh Chand Tak; Nahi Toh Raat Tak.Review after a month of using this product:Sound Quality Is good, above average I would call it.Easy to pair and connect.Like the fit, fits perfect in your ears.Issues: 1. If you are watching a video, after a while, you would notice that the video is not in sync with the sound. Theres a constant disconnect which cause the video to relay first and then u hear the audio.2. The right earbud has stopped wo...",
+        "value": "right earbud stopped working"
+      },
+      {
+        "id": "hien-0011",
+        "text": "Bakwaas productREAD MORE",
+        "value": "product is nonsense"
+      },
+      {
+        "id": "hien-0012",
+        "text": "Bakwas .. go for regular",
+        "value": "rubbish product"
+      },
+      {
+        "id": "hien-0012",
+        "text": "Bakwas .. go for regular",
+        "value": "not recommended"
+      },
+      {
+        "id": "hien-0013",
+        "text": "Bakwas haiPlease don't byREAD MORE",
+        "value": "rubbish product"
+      },
+      {
+        "id": "hien-0013",
+        "text": "Bakwas haiPlease don't byREAD MORE",
+        "value": "not worth buying"
+      },
+      {
+        "id": "hien-0014",
+        "text": "Bass 5/5Volume 4.5/5Quality Build 5/5Best but Boat ko thoda Volume Me sudhar karna chahiye..READ MORE",
+        "value": "needs volume improvement"
+      },
+      {
+        "id": "hien-0015",
+        "text": "Bass thoda kam hai jitna socha tha. 👌READ MORE",
+        "value": "bass lower than expected"
+      },
+      {
+        "id": "hien-0018",
+        "text": "Battery backup is good bt 100% se direct 80% then after 30% hi jati hai bt after all this is good product",
+        "value": "battery drains quickly after 30%"
+      },
+      {
+        "id": "hien-0019",
+        "text": "bekar hai auto disconnected",
+        "value": "poor connectivity"
+      },
+      {
+        "id": "hien-0022",
+        "text": "Beyond the imagination....VERY BAD PRODUCT BUTTONS CANT WORK PROPERLYLeft side sound automatically gets low n battery after 60% suddenly low dont know what's going on with it😐😐😑but BOAT BALO TUMNE DHOKA DIYA😐😑SOCHA THA COMPANY KA ITEM LE RHA HU KOI DIKKAT NHI AAYEGI BUT SAB BAKBAS H VERY MUCH DISAPPOINTEDAPNI POCKET MONEY COLLECT KARKE ORDER KIYA THA ☹️☹️",
+        "value": "buttons not working properly"
+      },
+      {
+        "id": "hien-0022",
+        "text": "Beyond the imagination....VERY BAD PRODUCT BUTTONS CANT WORK PROPERLYLeft side sound automatically gets low n battery after 60% suddenly low dont know what's going on with it😐😐😑but BOAT BALO TUMNE DHOKA DIYA😐😑SOCHA THA COMPANY KA ITEM LE RHA HU KOI DIKKAT NHI AAYEGI BUT SAB BAKBAS H VERY MUCH DISAPPOINTEDAPNI POCKET MONEY COLLECT KARKE ORDER KIYA THA ☹️☹️",
+        "value": "left side sound drops automatically"
+      },
+      {
+        "id": "hien-0022",
+        "text": "Beyond the imagination....VERY BAD PRODUCT BUTTONS CANT WORK PROPERLYLeft side sound automatically gets low n battery after 60% suddenly low dont know what's going on with it😐😐😑but BOAT BALO TUMNE DHOKA DIYA😐😑SOCHA THA COMPANY KA ITEM LE RHA HU KOI DIKKAT NHI AAYEGI BUT SAB BAKBAS H VERY MUCH DISAPPOINTEDAPNI POCKET MONEY COLLECT KARKE ORDER KIYA THA ☹️☹️",
+        "value": "battery drains suddenly after 60%"
+      },
+      {
+        "id": "hien-0022",
+        "text": "Beyond the imagination....VERY BAD PRODUCT BUTTONS CANT WORK PROPERLYLeft side sound automatically gets low n battery after 60% suddenly low dont know what's going on with it😐😐😑but BOAT BALO TUMNE DHOKA DIYA😐😑SOCHA THA COMPANY KA ITEM LE RHA HU KOI DIKKAT NHI AAYEGI BUT SAB BAKBAS H VERY MUCH DISAPPOINTEDAPNI POCKET MONEY COLLECT KARKE ORDER KIYA THA ☹️☹️",
+        "value": "disappointed with product"
+      },
+      {
+        "id": "hien-0022",
+        "text": "Beyond the imagination....VERY BAD PRODUCT BUTTONS CANT WORK PROPERLYLeft side sound automatically gets low n battery after 60% suddenly low dont know what's going on with it😐😐😑but BOAT BALO TUMNE DHOKA DIYA😐😑SOCHA THA COMPANY KA ITEM LE RHA HU KOI DIKKAT NHI AAYEGI BUT SAB BAKBAS H VERY MUCH DISAPPOINTEDAPNI POCKET MONEY COLLECT KARKE ORDER KIYA THA ☹️☹️",
+        "value": "feels deceived by brand"
+      },
+      {
+        "id": "hien-0025",
+        "text": "built quality is good .. but sound and comfort is not so good its just ok kaan bahotbdard hota hai bhai 15min he use karsakte ho..READ MORE",
+        "value": "poor sound quality"
+      },
+      {
+        "id": "hien-0025",
+        "text": "built quality is good .. but sound and comfort is not so good its just ok kaan bahotbdard hota hai bhai 15min he use karsakte ho..READ MORE",
+        "value": "poor comfort"
+      },
+      {
+        "id": "hien-0025",
+        "text": "built quality is good .. but sound and comfort is not so good its just ok kaan bahotbdard hota hai bhai 15min he use karsakte ho..READ MORE",
+        "value": "ear discomfort after 15 minutes"
+      },
+      {
+        "id": "hien-0028",
+        "text": "don't buy bro bekar hai.sometimes its break sounds.",
+        "value": "worthless product"
+      },
+      {
+        "id": "hien-0028",
+        "text": "don't buy bro bekar hai.sometimes its break sounds.",
+        "value": "breaks occasionally"
+      },
+      {
+        "id": "hien-0031",
+        "text": "Everything thing is good in it. Nice product. Paisa vasul product but delivery took very long time of 11 days 😠READ MORE",
+        "value": "long delivery time"
+      },
+      {
+        "id": "hien-0036",
+        "text": "Excellent.. Paisa wasool.. I love oneplus.. Only 1 problem that there is no redialing..",
+        "value": "missing redial feature"
+      },
+      {
+        "id": "hien-0039",
+        "text": "Good earphones but i think sound is little bit low but if it is higher then no one is going to keep at full volume so i think  it is great no stress toh ears good comfort.... Just go for it",
+        "value": "low sound level"
+      },
+      {
+        "id": "hien-0040",
+        "text": "Good product.. but bass is not like wings and Philip's earphones...try wings wireless neck band...mast hei...as I hv wings,Philip's,Intex and now boat in comparison to all wings is best then Philip's and intex and last boat",
+        "value": "bass not like wings and Philip's earphones"
+      },
+      {
+        "id": "hien-0042",
+        "text": "Good sound quality but kindly improve making material added more elasticness and super bass .Full paisa vasulREAD MORE",
+        "value": "insufficient material elasticity"
+      },
+      {
+        "id": "hien-0042",
+        "text": "Good sound quality but kindly improve making material added more elasticness and super bass .Full paisa vasulREAD MORE",
+        "value": "lack of strong bass"
+      },
+      {
+        "id": "hien-0044",
+        "text": "Hear lots of things about this but fact is that sound quality is really awesome and bass is excellent looks and design is perfect but yaar bass dil chu liya Pubg m v buht mast kaam kar raha hai Latency time is perfect few micro second that doesn't matter.But one thing when you play pubg then set volume moderate level otherwise due to high. Bass your ear get pain and headache too but sound quality lajawaabREAD MORE",
+        "value": "ear pain and headache at high volume due to strong bass"
+      },
+      {
+        "id": "hien-0044",
+        "text": "Hear lots of things about this but fact is that sound quality is really awesome and bass is excellent looks and design is perfect but yaar bass dil chu liya Pubg m v buht mast kaam kar raha hai Latency time is perfect few micro second that doesn't matter.But one thing when you play pubg then set volume moderate level otherwise due to high. Bass your ear get pain and headache too but sound quality lajawaabREAD MORE",
+        "value": "requires moderate volume setting"
+      },
+      {
+        "id": "hien-0049",
+        "text": "I love thisSound quality is good but at full sound music might won't be that clear but at it's range it's the bestFull paisa wasool productREAD MORE",
+        "value": "sound may become unclear at maximum volume"
+      },
+      {
+        "id": "hien-0050",
+        "text": "I purchased this on 7th june 2019 and one side of the earphone stopepd working and the jack was also become loose . When i applied for the warranty it took one month to come but the best thing is they gave me a new one . It's awesome yaar . I liked the assurity of boat .",
+        "value": "one side stopped working"
+      },
+      {
+        "id": "hien-0050",
+        "text": "I purchased this on 7th june 2019 and one side of the earphone stopepd working and the jack was also become loose . When i applied for the warranty it took one month to come but the best thing is they gave me a new one . It's awesome yaar . I liked the assurity of boat .",
+        "value": "loose jack"
+      },
+      {
+        "id": "hien-0050",
+        "text": "I purchased this on 7th june 2019 and one side of the earphone stopepd working and the jack was also become loose . When i applied for the warranty it took one month to come but the best thing is they gave me a new one . It's awesome yaar . I liked the assurity of boat .",
+        "value": "warranty process took one month"
+      },
+      {
+        "id": "hien-0059",
+        "text": "Mivi collar wireless is best....... Not good, may be all paid youtube reviews...... Bakwas",
+        "value": "suspected paid YouTube reviews"
+      },
+      {
+        "id": "hien-0059",
+        "text": "Mivi collar wireless is best....... Not good, may be all paid youtube reviews...... Bakwas",
+        "value": "rubbish"
+      },
+      {
+        "id": "hien-0061",
+        "text": "Mst hai boss Good bass & sounds quality Bluetooth battery backup also good & decent looks This is first choice for higher bass & sounds loverBut not gd for PUBG playersREAD MORE",
+        "value": "not good for PUBG players"
+      },
+      {
+        "id": "hien-0062",
+        "text": "Mujhe bahut bekar laga I dont like sound quality the sound quality is irritating and annoying,sound beech beech me gayab ho jata h Blootootth version old h Overall i dont likeREAD MORE",
+        "value": "very bad overall"
+      },
+      {
+        "id": "hien-0062",
+        "text": "Mujhe bahut bekar laga I dont like sound quality the sound quality is irritating and annoying,sound beech beech me gayab ho jata h Blootootth version old h Overall i dont likeREAD MORE",
+        "value": "irritating and annoying sound quality"
+      },
+      {
+        "id": "hien-0062",
+        "text": "Mujhe bahut bekar laga I dont like sound quality the sound quality is irritating and annoying,sound beech beech me gayab ho jata h Blootootth version old h Overall i dont likeREAD MORE",
+        "value": "intermittent sound loss"
+      },
+      {
+        "id": "hien-0062",
+        "text": "Mujhe bahut bekar laga I dont like sound quality the sound quality is irritating and annoying,sound beech beech me gayab ho jata h Blootootth version old h Overall i dont likeREAD MORE",
+        "value": "old Bluetooth version"
+      },
+      {
+        "id": "hien-0064",
+        "text": "Nice for the price, good sound, but if you have already used boat 220 or 225 you will not find it very impressive but for the first time buyers it's a Paisa vasool item, anytime superb than the local or generic earphone.Bass is actually quite good as it's a basic earphone of boat, but no wonder thousands of people are rating it as good as it's really worth the money.Go for it guys if you can't extend the budget , you'll not regret.",
+        "value": "not impressive for users who have used boat 220 or 225"
+      },
+      {
+        "id": "hien-0066",
+        "text": "nice headphone but bluetooth range kaam hai long distance is doesn't work but sound quality is best and battery is also good ....thank you FlipkartREAD MORE",
+        "value": "poor Bluetooth range"
+      },
+      {
+        "id": "hien-0072",
+        "text": "Product is good Battery backup bhi 6 se 4 hours chal jata haiREAD MORE",
+        "value": "short battery backup"
+      },
+      {
+        "id": "hien-0073",
+        "text": "Product is very good But online delivery is very bad because it's too late slow delivery Delivery boy dene nhi aata h lene jana padta hREAD MORE",
+        "value": "delivery boy does not come, must pick up yourself"
+      },
+      {
+        "id": "hien-0075",
+        "text": "Pros:    Good Sound Quality(not too much better than a local simple earphone)    Nice connectivity(utna bhi nahi)Cons:    My ear pains after using it  for around 30 min.(needed more soft material for the speaker's soft parts )READ MORE",
+        "value": "ear pain after ~30 minutes of use"
+      },
+      {
+        "id": "hien-0075",
+        "text": "Pros:    Good Sound Quality(not too much better than a local simple earphone)    Nice connectivity(utna bhi nahi)Cons:    My ear pains after using it  for around 30 min.(needed more soft material for the speaker's soft parts )READ MORE",
+        "value": "needs softer material for earphone parts"
+      },
+      {
+        "id": "hien-0076",
+        "text": "Quite punchy. Decent bass too. Better than JBL Glide 501 actually. Quite loud too. Mic is bakwas. Overall, good value for money.READ MORE",
+        "value": "poor microphone quality"
+      },
+      {
+        "id": "hien-0078",
+        "text": "Slightly disappointed to buy this at 1800 price range neck band is irritating many times in summer and ear also feel pain when used earhook. Sound feel heavy and you adjust differnt sound for differnt song. Totally disappointing.20% sound par ganna sunai tak nhi deta. You should sound min 90% to listen song.",
+        "value": "neckband irritates in summer"
+      },
+      {
+        "id": "hien-0078",
+        "text": "Slightly disappointed to buy this at 1800 price range neck band is irritating many times in summer and ear also feel pain when used earhook. Sound feel heavy and you adjust differnt sound for differnt song. Totally disappointing.20% sound par ganna sunai tak nhi deta. You should sound min 90% to listen song.",
+        "value": "ear pain when using earhook"
+      },
+      {
+        "id": "hien-0078",
+        "text": "Slightly disappointed to buy this at 1800 price range neck band is irritating many times in summer and ear also feel pain when used earhook. Sound feel heavy and you adjust differnt sound for differnt song. Totally disappointing.20% sound par ganna sunai tak nhi deta. You should sound min 90% to listen song.",
+        "value": "sound feels heavy and requires adjustment for each song"
+      },
+      {
+        "id": "hien-0078",
+        "text": "Slightly disappointed to buy this at 1800 price range neck band is irritating many times in summer and ear also feel pain when used earhook. Sound feel heavy and you adjust differnt sound for differnt song. Totally disappointing.20% sound par ganna sunai tak nhi deta. You should sound min 90% to listen song.",
+        "value": "sound volume too low, songs barely audible at 20%"
+      },
+      {
+        "id": "hien-0078",
+        "text": "Slightly disappointed to buy this at 1800 price range neck band is irritating many times in summer and ear also feel pain when used earhook. Sound feel heavy and you adjust differnt sound for differnt song. Totally disappointing.20% sound par ganna sunai tak nhi deta. You should sound min 90% to listen song.",
+        "value": "needs minimum 90% volume to hear songs"
+      },
+      {
+        "id": "hien-0079",
+        "text": "Sound quality is not so good.i received I speaker damge..base is low as I accept it.. degin was good, battery backup is good..if you want low volume sound lover must buy it...it's very nice for slow songs lover..not for Gym class aur exercise volume is very low..READ MORE",
+        "value": "sound quality not good"
+      },
+      {
+        "id": "hien-0079",
+        "text": "Sound quality is not so good.i received I speaker damge..base is low as I accept it.. degin was good, battery backup is good..if you want low volume sound lover must buy it...it's very nice for slow songs lover..not for Gym class aur exercise volume is very low..READ MORE",
+        "value": "received damaged speaker"
+      },
+      {
+        "id": "hien-0079",
+        "text": "Sound quality is not so good.i received I speaker damge..base is low as I accept it.. degin was good, battery backup is good..if you want low volume sound lover must buy it...it's very nice for slow songs lover..not for Gym class aur exercise volume is very low..READ MORE",
+        "value": "low bass"
+      },
+      {
+        "id": "hien-0079",
+        "text": "Sound quality is not so good.i received I speaker damge..base is low as I accept it.. degin was good, battery backup is good..if you want low volume sound lover must buy it...it's very nice for slow songs lover..not for Gym class aur exercise volume is very low..READ MORE",
+        "value": "very low volume, not suitable for gym or exercise"
+      },
+      {
+        "id": "hien-0085",
+        "text": "The reason for choosing this one over all others---it works both with bluetooth and aux cable(wired).so bhagwan na kare agar bluetooth kharab ho jae toh u can still use aux cable to use it as wired. It's one advantage and a big one over others. Two in one. It's tight fit, ears will pain after 30-45 mins, but It mit get loosen with time. Voice is good, connectivity working fine till now. Bass is good. Looks good built wise. In short, leke baat khatam karo. 1399 me aur kya chahiye.READ MORE",
+        "value": "tight fit causing ear pain after 30-45 minutes"
+      },
+      {
+        "id": "hien-0089",
+        "text": "U&i Bluetooth device 3days charge  rakh ta he or voice clarity must he but bass itna nehi he fir bi achhha he Paisa ke hisab se good",
+        "value": "weak bass"
+      },
+      {
+        "id": "hien-0097",
+        "text": "Very good product, sound quality is also good. while using headphone 🎧 my ear hurts so bad, I have to remove them in an hour😔 koi sense hai iss baat kiREAD MORE",
+        "value": "ear hurts after an hour of use"
+      },
+      {
+        "id": "hien-0098",
+        "text": "Very good product.... If u are thinking to buy this, just stop thinking and just buy it.,. Fully PAISA WASULE.. Item.. Thanks",
+        "value": "poor value for price"
+      },
+      {
+        "id": "hien-0101",
+        "text": "Why are you Flipkart guys asking me about Battery life have you lost it?Anyways coming to review:Pros1. Crispy clear sound2. Great for music and streaming.3. Great for calls.Cons1. Bass is good but because of plastic body it's misses boom effect. It's bass is more like baam.2. If you're thinking of gaming like playing pubg on this then forget it, infact punish yourself by Unistalling pubg because your thinking is lika a noob you won't make any better.3. Clip kyu kha gaye ek hi toh ty...",
+        "value": "insufficient bass depth due to plastic body"
+      },
+      {
+        "id": "hien-0101",
+        "text": "Why are you Flipkart guys asking me about Battery life have you lost it?Anyways coming to review:Pros1. Crispy clear sound2. Great for music and streaming.3. Great for calls.Cons1. Bass is good but because of plastic body it's misses boom effect. It's bass is more like baam.2. If you're thinking of gaming like playing pubg on this then forget it, infact punish yourself by Unistalling pubg because your thinking is lika a noob you won't make any better.3. Clip kyu kha gaye ek hi toh ty...",
+        "value": "not suitable for gaming"
+      },
+      {
+        "id": "hien-0101",
+        "text": "Why are you Flipkart guys asking me about Battery life have you lost it?Anyways coming to review:Pros1. Crispy clear sound2. Great for music and streaming.3. Great for calls.Cons1. Bass is good but because of plastic body it's misses boom effect. It's bass is more like baam.2. If you're thinking of gaming like playing pubg on this then forget it, infact punish yourself by Unistalling pubg because your thinking is lika a noob you won't make any better.3. Clip kyu kha gaye ek hi toh ty...",
+        "value": "clip problem"
+      }
+    ],
+    "topics": [
+      {
+        "id": "hien-0001",
+        "text": "A bit uncomfortable on ears baki to mast haiREAD MORE",
+        "value": "overall_satisfaction"
+      },
+      {
+        "id": "hien-0002",
+        "text": "A very good sound quality and a very balanced sound.... I have one issue with its design.... It has not properly cable management.... Lgta hai ki jaise wo nikl jaega.. Agr force lga usp to... But all the way... It is superb... Money satisfaction in its first song..... Baki aaplog dekhlo jaisa aapka man... 😍😍😅😅",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0002",
+        "text": "A very good sound quality and a very balanced sound.... I have one issue with its design.... It has not properly cable management.... Lgta hai ki jaise wo nikl jaega.. Agr force lga usp to... But all the way... It is superb... Money satisfaction in its first song..... Baki aaplog dekhlo jaisa aapka man... 😍😍😅😅",
+        "value": "cable_management"
+      },
+      {
+        "id": "hien-0003",
+        "text": "After 20 days it's sounds quality will bad 😭 paisa barbad 😭",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0003",
+        "text": "After 20 days it's sounds quality will bad 😭 paisa barbad 😭",
+        "value": "price"
+      },
+      {
+        "id": "hien-0004",
+        "text": "after using 1 month i cant say its so good i can say its voice qlty is very less and meri toh khrab ho gai bss 1 month may he.",
+        "value": "voice_quality"
+      },
+      {
+        "id": "hien-0004",
+        "text": "after using 1 month i cant say its so good i can say its voice qlty is very less and meri toh khrab ho gai bss 1 month may he.",
+        "value": "durability"
+      },
+      {
+        "id": "hien-0004",
+        "text": "after using 1 month i cant say its so good i can say its voice qlty is very less and meri toh khrab ho gai bss 1 month may he.",
+        "value": "product_quality"
+      },
+      {
+        "id": "hien-0005",
+        "text": "all is good but battery is worst....only 1 month chli hai batteryREAD MORE",
+        "value": "performance"
+      },
+      {
+        "id": "hien-0006",
+        "text": "As they rightly say about Chinese Products: Chala Toh Chand Tak; Nahi Toh Raat Tak.Review after a month of using this product:Sound Quality Is good, above average I would call it.Easy to pair and connect.Like the fit, fits perfect in your ears.Issues: 1. If you are watching a video, after a while, you would notice that the video is not in sync with the sound. Theres a constant disconnect which cause the video to relay first and then u hear the audio.2. The right earbud has stopped wo...",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0006",
+        "text": "As they rightly say about Chinese Products: Chala Toh Chand Tak; Nahi Toh Raat Tak.Review after a month of using this product:Sound Quality Is good, above average I would call it.Easy to pair and connect.Like the fit, fits perfect in your ears.Issues: 1. If you are watching a video, after a while, you would notice that the video is not in sync with the sound. Theres a constant disconnect which cause the video to relay first and then u hear the audio.2. The right earbud has stopped wo...",
+        "value": "connectivity"
+      },
+      {
+        "id": "hien-0006",
+        "text": "As they rightly say about Chinese Products: Chala Toh Chand Tak; Nahi Toh Raat Tak.Review after a month of using this product:Sound Quality Is good, above average I would call it.Easy to pair and connect.Like the fit, fits perfect in your ears.Issues: 1. If you are watching a video, after a while, you would notice that the video is not in sync with the sound. Theres a constant disconnect which cause the video to relay first and then u hear the audio.2. The right earbud has stopped wo...",
+        "value": "audio_sync"
+      },
+      {
+        "id": "hien-0006",
+        "text": "As they rightly say about Chinese Products: Chala Toh Chand Tak; Nahi Toh Raat Tak.Review after a month of using this product:Sound Quality Is good, above average I would call it.Easy to pair and connect.Like the fit, fits perfect in your ears.Issues: 1. If you are watching a video, after a while, you would notice that the video is not in sync with the sound. Theres a constant disconnect which cause the video to relay first and then u hear the audio.2. The right earbud has stopped wo...",
+        "value": "product_defect"
+      },
+      {
+        "id": "hien-0007",
+        "text": "Awesome bass is super sound is good bole to ek dam mast 😊READ MORE",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0008",
+        "text": "Awesome i like it bass is super sound is good boleto ekdam mast, paisa vasool...😘😍READ MORE",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0008",
+        "text": "Awesome i like it bass is super sound is good boleto ekdam mast, paisa vasool...😘😍READ MORE",
+        "value": "price"
+      },
+      {
+        "id": "hien-0008",
+        "text": "Awesome i like it bass is super sound is good boleto ekdam mast, paisa vasool...😘😍READ MORE",
+        "value": "value"
+      },
+      {
+        "id": "hien-0009",
+        "text": "awesome sound quality with beautiful bass which will make u feel the music properly in short mst h or ek number h mngwa lo ye price range me best h",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0010",
+        "text": "Bahut hi achcha Bluetooth oneplus I like it",
+        "value": "product_quality"
+      },
+      {
+        "id": "hien-0011",
+        "text": "Bakwaas productREAD MORE",
+        "value": "product_quality"
+      },
+      {
+        "id": "hien-0012",
+        "text": "Bakwas .. go for regular",
+        "value": "product_quality"
+      },
+      {
+        "id": "hien-0013",
+        "text": "Bakwas haiPlease don't byREAD MORE",
+        "value": "product_quality"
+      },
+      {
+        "id": "hien-0014",
+        "text": "Bass 5/5Volume 4.5/5Quality Build 5/5Best but Boat ko thoda Volume Me sudhar karna chahiye..READ MORE",
+        "value": "build_quality"
+      },
+      {
+        "id": "hien-0016",
+        "text": "BassDesignSound quality and battery backupSab badiya hai ...READ MORE",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0017",
+        "text": "Basss is awosame and sound is very clear on high volume and beld qwlty is very nice i suggest ki.ap ye earphone khridoo is range me ye earphone bhut mst he mere pass 3 he realme hmesa achhe produced or bugd product nikal ti he i love realme and i love flip cart thank you flipcart",
+        "value": "build_quality"
+      },
+      {
+        "id": "hien-0017",
+        "text": "Basss is awosame and sound is very clear on high volume and beld qwlty is very nice i suggest ki.ap ye earphone khridoo is range me ye earphone bhut mst he mere pass 3 he realme hmesa achhe produced or bugd product nikal ti he i love realme and i love flip cart thank you flipcart",
+        "value": "brand"
+      },
+      {
+        "id": "hien-0019",
+        "text": "bekar hai auto disconnected",
+        "value": "connectivity"
+      },
+      {
+        "id": "hien-0020",
+        "text": "Best earphone hai Sound goodBass awesome Built quality excellent Nice earphone I loved it ❤️ ❤️ thank you realme",
+        "value": "build_quality"
+      },
+      {
+        "id": "hien-0021",
+        "text": "Best in class 11mm drives just provide a loving experience.Go for it without any doubt Bass bestBattery backup gajab h bilkul gajabSound best Best neckband in this range even better than jbl",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0021",
+        "text": "Best in class 11mm drives just provide a loving experience.Go for it without any doubt Bass bestBattery backup gajab h bilkul gajabSound best Best neckband in this range even better than jbl",
+        "value": "product_quality"
+      },
+      {
+        "id": "hien-0021",
+        "text": "Best in class 11mm drives just provide a loving experience.Go for it without any doubt Bass bestBattery backup gajab h bilkul gajabSound best Best neckband in this range even better than jbl",
+        "value": "brand_comparison"
+      },
+      {
+        "id": "hien-0022",
+        "text": "Beyond the imagination....VERY BAD PRODUCT BUTTONS CANT WORK PROPERLYLeft side sound automatically gets low n battery after 60% suddenly low dont know what's going on with it😐😐😑but BOAT BALO TUMNE DHOKA DIYA😐😑SOCHA THA COMPANY KA ITEM LE RHA HU KOI DIKKAT NHI AAYEGI BUT SAB BAKBAS H VERY MUCH DISAPPOINTEDAPNI POCKET MONEY COLLECT KARKE ORDER KIYA THA ☹️☹️",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0022",
+        "text": "Beyond the imagination....VERY BAD PRODUCT BUTTONS CANT WORK PROPERLYLeft side sound automatically gets low n battery after 60% suddenly low dont know what's going on with it😐😐😑but BOAT BALO TUMNE DHOKA DIYA😐😑SOCHA THA COMPANY KA ITEM LE RHA HU KOI DIKKAT NHI AAYEGI BUT SAB BAKBAS H VERY MUCH DISAPPOINTEDAPNI POCKET MONEY COLLECT KARKE ORDER KIYA THA ☹️☹️",
+        "value": "brand"
+      },
+      {
+        "id": "hien-0023",
+        "text": "BoAt is awesome I am use boAt 228 wired earphoneAfter I was parched boAt 235v2 bluetooth headset Shortly i say best performance only boAt company earphones.Hum to diwane ho gayeAap bhi ho jaaaaaooo.....Best for movieBest for ultra hd soundBest for gaming (PUBG LOVERS)☺️☺️☺️👍👍👍👍👍",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0024",
+        "text": "Bole to jhakkas . Don't think too much go for it and you will not regret about it. It's my promise . Just go for this one plus bullets wireless z and don't think too much by reading bad reviews.",
+        "value": "product_quality"
+      },
+      {
+        "id": "hien-0024",
+        "text": "Bole to jhakkas . Don't think too much go for it and you will not regret about it. It's my promise . Just go for this one plus bullets wireless z and don't think too much by reading bad reviews.",
+        "value": "recommendation"
+      },
+      {
+        "id": "hien-0024",
+        "text": "Bole to jhakkas . Don't think too much go for it and you will not regret about it. It's my promise . Just go for this one plus bullets wireless z and don't think too much by reading bad reviews.",
+        "value": "wireless_bullets"
+      },
+      {
+        "id": "hien-0025",
+        "text": "built quality is good .. but sound and comfort is not so good its just ok kaan bahotbdard hota hai bhai 15min he use karsakte ho..READ MORE",
+        "value": "build_quality"
+      },
+      {
+        "id": "hien-0025",
+        "text": "built quality is good .. but sound and comfort is not so good its just ok kaan bahotbdard hota hai bhai 15min he use karsakte ho..READ MORE",
+        "value": "ear_discomfort"
+      },
+      {
+        "id": "hien-0026",
+        "text": "Built quilyty sound battery backup superb all over value for money ,paisa vasul",
+        "value": "built_quality"
+      },
+      {
+        "id": "hien-0026",
+        "text": "Built quilyty sound battery backup superb all over value for money ,paisa vasul",
+        "value": "performance"
+      },
+      {
+        "id": "hien-0026",
+        "text": "Built quilyty sound battery backup superb all over value for money ,paisa vasul",
+        "value": "price"
+      },
+      {
+        "id": "hien-0027",
+        "text": "Cool gadget... No sound delays while playing PUBG or any other online game...Very great device... Type c charging very quick... Full paisa vasool...😉😉😉",
+        "value": "sound_latency"
+      },
+      {
+        "id": "hien-0027",
+        "text": "Cool gadget... No sound delays while playing PUBG or any other online game...Very great device... Type c charging very quick... Full paisa vasool...😉😉😉",
+        "value": "charging_speed"
+      },
+      {
+        "id": "hien-0027",
+        "text": "Cool gadget... No sound delays while playing PUBG or any other online game...Very great device... Type c charging very quick... Full paisa vasool...😉😉😉",
+        "value": "price"
+      },
+      {
+        "id": "hien-0028",
+        "text": "don't buy bro bekar hai.sometimes its break sounds.",
+        "value": "product_quality"
+      },
+      {
+        "id": "hien-0028",
+        "text": "don't buy bro bekar hai.sometimes its break sounds.",
+        "value": "durability"
+      },
+      {
+        "id": "hien-0029",
+        "text": "Don't trust on bad Review i also confused when i see the bass review 3.3 but after the purchase this headset i m Totally Satisfied with this. Worth buy it. Hindi me bole to paisa vasool h bhai.",
+        "value": "value"
+      },
+      {
+        "id": "hien-0029",
+        "text": "Don't trust on bad Review i also confused when i see the bass review 3.3 but after the purchase this headset i m Totally Satisfied with this. Worth buy it. Hindi me bole to paisa vasool h bhai.",
+        "value": "price"
+      },
+      {
+        "id": "hien-0030",
+        "text": "Everything is good at this price range.Realme brings innovation in the products, provides good quality at less price.Bass is good.Sound quality good.Simple yet good design.Comfortable around neck.Battery Backup Is good.Magnet switch saves battery.Built in mic is also good and clear.There is a thin line texture on the yellow wire of the headset.Contents -HeadsetMicro usb cable for charging2 pair of buds.User GuideOverall Best Budget Headset.PS- 6 months ki warranty ... aur...",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0031",
+        "text": "Everything thing is good in it. Nice product. Paisa vasul product but delivery took very long time of 11 days 😠READ MORE",
+        "value": "quality"
+      },
+      {
+        "id": "hien-0032",
+        "text": "Excellent i loved it ful paisa vasol product  💯💯👌💯💯💯READ MORE",
+        "value": "price"
+      },
+      {
+        "id": "hien-0033",
+        "text": "excellent performance its range super quality and sound perfect for realme phones, like a hometheatre best product in this price go for it..value of money,praise vasool....",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0033",
+        "text": "excellent performance its range super quality and sound perfect for realme phones, like a hometheatre best product in this price go for it..value of money,praise vasool....",
+        "value": "compatibility"
+      },
+      {
+        "id": "hien-0034",
+        "text": "Excellent product, Paisa wasul bhaiREAD MORE",
+        "value": "product_quality"
+      },
+      {
+        "id": "hien-0034",
+        "text": "Excellent product, Paisa wasul bhaiREAD MORE",
+        "value": "value"
+      },
+      {
+        "id": "hien-0035",
+        "text": "Excellent sound & base qualityCalling experience bhi excellenceBattrey backup 12-15 hour depend on your volume if you listen 50-70% volume your backup 13-14 hour Over all best wireless earphone in this price range No problem facing with realme 6i..",
+        "value": "bass"
+      },
+      {
+        "id": "hien-0035",
+        "text": "Excellent sound & base qualityCalling experience bhi excellenceBattrey backup 12-15 hour depend on your volume if you listen 50-70% volume your backup 13-14 hour Over all best wireless earphone in this price range No problem facing with realme 6i..",
+        "value": "battery"
+      },
+      {
+        "id": "hien-0035",
+        "text": "Excellent sound & base qualityCalling experience bhi excellenceBattrey backup 12-15 hour depend on your volume if you listen 50-70% volume your backup 13-14 hour Over all best wireless earphone in this price range No problem facing with realme 6i..",
+        "value": "compatibility"
+      },
+      {
+        "id": "hien-0036",
+        "text": "Excellent.. Paisa wasool.. I love oneplus.. Only 1 problem that there is no redialing..",
+        "value": "value"
+      },
+      {
+        "id": "hien-0037",
+        "text": "For better comfort  don't look at boat 225, mi basic and other redmi earphones. It is a budjet king. The quality of sound is excellent. These are made of plastic so light in weight and easily set in u r ears. The cable is soo flexible. Mera mi basic earphones 1month me karaab ho gaya, so I had given the next chance to this one.",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0037",
+        "text": "For better comfort  don't look at boat 225, mi basic and other redmi earphones. It is a budjet king. The quality of sound is excellent. These are made of plastic so light in weight and easily set in u r ears. The cable is soo flexible. Mera mi basic earphones 1month me karaab ho gaya, so I had given the next chance to this one.",
+        "value": "fit"
+      },
+      {
+        "id": "hien-0038",
+        "text": "Full paisa vasoolEverything is good about budsColor battery backup Sound Light weight Design",
+        "value": "light_weight"
+      },
+      {
+        "id": "hien-0039",
+        "text": "Good earphones but i think sound is little bit low but if it is higher then no one is going to keep at full volume so i think  it is great no stress toh ears good comfort.... Just go for it",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0040",
+        "text": "Good product.. but bass is not like wings and Philip's earphones...try wings wireless neck band...mast hei...as I hv wings,Philip's,Intex and now boat in comparison to all wings is best then Philip's and intex and last boat",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0040",
+        "text": "Good product.. but bass is not like wings and Philip's earphones...try wings wireless neck band...mast hei...as I hv wings,Philip's,Intex and now boat in comparison to all wings is best then Philip's and intex and last boat",
+        "value": "product_quality"
+      },
+      {
+        "id": "hien-0040",
+        "text": "Good product.. but bass is not like wings and Philip's earphones...try wings wireless neck band...mast hei...as I hv wings,Philip's,Intex and now boat in comparison to all wings is best then Philip's and intex and last boat",
+        "value": "brand_comparison"
+      },
+      {
+        "id": "hien-0041",
+        "text": "Good product..mast chisREAD MORE",
+        "value": "performance"
+      },
+      {
+        "id": "hien-0042",
+        "text": "Good sound quality but kindly improve making material added more elasticness and super bass .Full paisa vasulREAD MORE",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0042",
+        "text": "Good sound quality but kindly improve making material added more elasticness and super bass .Full paisa vasulREAD MORE",
+        "value": "price"
+      },
+      {
+        "id": "hien-0042",
+        "text": "Good sound quality but kindly improve making material added more elasticness and super bass .Full paisa vasulREAD MORE",
+        "value": "build_quality"
+      },
+      {
+        "id": "hien-0043",
+        "text": "Hard bass yaar love itREAD MORE",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0044",
+        "text": "Hear lots of things about this but fact is that sound quality is really awesome and bass is excellent looks and design is perfect but yaar bass dil chu liya Pubg m v buht mast kaam kar raha hai Latency time is perfect few micro second that doesn't matter.But one thing when you play pubg then set volume moderate level otherwise due to high. Bass your ear get pain and headache too but sound quality lajawaabREAD MORE",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0044",
+        "text": "Hear lots of things about this but fact is that sound quality is really awesome and bass is excellent looks and design is perfect but yaar bass dil chu liya Pubg m v buht mast kaam kar raha hai Latency time is perfect few micro second that doesn't matter.But one thing when you play pubg then set volume moderate level otherwise due to high. Bass your ear get pain and headache too but sound quality lajawaabREAD MORE",
+        "value": "comfort"
+      },
+      {
+        "id": "hien-0044",
+        "text": "Hear lots of things about this but fact is that sound quality is really awesome and bass is excellent looks and design is perfect but yaar bass dil chu liya Pubg m v buht mast kaam kar raha hai Latency time is perfect few micro second that doesn't matter.But one thing when you play pubg then set volume moderate level otherwise due to high. Bass your ear get pain and headache too but sound quality lajawaabREAD MORE",
+        "value": "gaming"
+      },
+      {
+        "id": "hien-0045",
+        "text": "Highly satisfied for all features . 100% Paisa vasool.Best product from one plus #Never_Settle",
+        "value": "value"
+      },
+      {
+        "id": "hien-0046",
+        "text": "I am using this headphone since 6 months, great bass I am a songs lover and like to listen all types of song, this headphone is great for all kind of music from trance or edm to hindi old song and great battery life tooo great buy bole to Paisa VasooooolREAD MORE",
+        "value": "music_compatibility"
+      },
+      {
+        "id": "hien-0046",
+        "text": "I am using this headphone since 6 months, great bass I am a songs lover and like to listen all types of song, this headphone is great for all kind of music from trance or edm to hindi old song and great battery life tooo great buy bole to Paisa VasooooolREAD MORE",
+        "value": "battery_life"
+      },
+      {
+        "id": "hien-0046",
+        "text": "I am using this headphone since 6 months, great bass I am a songs lover and like to listen all types of song, this headphone is great for all kind of music from trance or edm to hindi old song and great battery life tooo great buy bole to Paisa VasooooolREAD MORE",
+        "value": "value_for_money"
+      },
+      {
+        "id": "hien-0047",
+        "text": "I am writing this review after 10 days of use .go for it guys it was awesome product by one plus .Sound was excellent Bass was fadu Battery backup which is best 10 min charging gives 10 hours use it works I am happy with this 😊Go for it Paisa wasool h bhai",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0047",
+        "text": "I am writing this review after 10 days of use .go for it guys it was awesome product by one plus .Sound was excellent Bass was fadu Battery backup which is best 10 min charging gives 10 hours use it works I am happy with this 😊Go for it Paisa wasool h bhai",
+        "value": "charging_time"
+      },
+      {
+        "id": "hien-0047",
+        "text": "I am writing this review after 10 days of use .go for it guys it was awesome product by one plus .Sound was excellent Bass was fadu Battery backup which is best 10 min charging gives 10 hours use it works I am happy with this 😊Go for it Paisa wasool h bhai",
+        "value": "value"
+      },
+      {
+        "id": "hien-0048",
+        "text": "i dont know how people give 1star to this product. this product should be given 4.5 stars bcoz it has superb bass as well as battery backup is extremely good. can watch almost two movies at a time and after that can use the wire given in it ❤️ appreciation for such an amount is needed for a product like this.writing this from mumbai andheri! atlast mumbai style ka review product bohut hard hai .READ MORE",
+        "value": "playback_time"
+      },
+      {
+        "id": "hien-0048",
+        "text": "i dont know how people give 1star to this product. this product should be given 4.5 stars bcoz it has superb bass as well as battery backup is extremely good. can watch almost two movies at a time and after that can use the wire given in it ❤️ appreciation for such an amount is needed for a product like this.writing this from mumbai andheri! atlast mumbai style ka review product bohut hard hai .READ MORE",
+        "value": "accessories"
+      },
+      {
+        "id": "hien-0048",
+        "text": "i dont know how people give 1star to this product. this product should be given 4.5 stars bcoz it has superb bass as well as battery backup is extremely good. can watch almost two movies at a time and after that can use the wire given in it ❤️ appreciation for such an amount is needed for a product like this.writing this from mumbai andheri! atlast mumbai style ka review product bohut hard hai .READ MORE",
+        "value": "build_quality"
+      },
+      {
+        "id": "hien-0049",
+        "text": "I love thisSound quality is good but at full sound music might won't be that clear but at it's range it's the bestFull paisa wasool productREAD MORE",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0049",
+        "text": "I love thisSound quality is good but at full sound music might won't be that clear but at it's range it's the bestFull paisa wasool productREAD MORE",
+        "value": "volume"
+      },
+      {
+        "id": "hien-0049",
+        "text": "I love thisSound quality is good but at full sound music might won't be that clear but at it's range it's the bestFull paisa wasool productREAD MORE",
+        "value": "price"
+      },
+      {
+        "id": "hien-0050",
+        "text": "I purchased this on 7th june 2019 and one side of the earphone stopepd working and the jack was also become loose . When i applied for the warranty it took one month to come but the best thing is they gave me a new one . It's awesome yaar . I liked the assurity of boat .",
+        "value": "product_quality"
+      },
+      {
+        "id": "hien-0050",
+        "text": "I purchased this on 7th june 2019 and one side of the earphone stopepd working and the jack was also become loose . When i applied for the warranty it took one month to come but the best thing is they gave me a new one . It's awesome yaar . I liked the assurity of boat .",
+        "value": "brand"
+      },
+      {
+        "id": "hien-0050",
+        "text": "I purchased this on 7th june 2019 and one side of the earphone stopepd working and the jack was also become loose . When i applied for the warranty it took one month to come but the best thing is they gave me a new one . It's awesome yaar . I liked the assurity of boat .",
+        "value": "customer_service"
+      },
+      {
+        "id": "hien-0051",
+        "text": "It's a really worth product and paisa wasolLook wise great and only grab at deal..it will make u more happy.hahaREAD MORE",
+        "value": "price"
+      },
+      {
+        "id": "hien-0051",
+        "text": "It's a really worth product and paisa wasolLook wise great and only grab at deal..it will make u more happy.hahaREAD MORE",
+        "value": "value"
+      },
+      {
+        "id": "hien-0051",
+        "text": "It's a really worth product and paisa wasolLook wise great and only grab at deal..it will make u more happy.hahaREAD MORE",
+        "value": "satisfaction"
+      },
+      {
+        "id": "hien-0052",
+        "text": "Jada review mat dekho...bahut hi accha hai..base I love it...value for money... awesome product hai..😁",
+        "value": "product_quality"
+      },
+      {
+        "id": "hien-0053",
+        "text": "Just great headphone      fully paisa wasoolREAD MORE",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0053",
+        "text": "Just great headphone      fully paisa wasoolREAD MORE",
+        "value": "price"
+      },
+      {
+        "id": "hien-0054",
+        "text": "Mahol Yarr Ky banawat Hai Iski Too Lovely Its Very Useful In Gym and CookingREAD MORE",
+        "value": "design"
+      },
+      {
+        "id": "hien-0056",
+        "text": "Mast fabulousREAD MORE",
+        "value": "performance"
+      },
+      {
+        "id": "hien-0058",
+        "text": "Mast sound  best product and stylish headphoneREAD MORE",
+        "value": "quality"
+      },
+      {
+        "id": "hien-0058",
+        "text": "Mast sound  best product and stylish headphoneREAD MORE",
+        "value": "design"
+      },
+      {
+        "id": "hien-0059",
+        "text": "Mivi collar wireless is best....... Not good, may be all paid youtube reviews...... Bakwas",
+        "value": "product_quality"
+      },
+      {
+        "id": "hien-0059",
+        "text": "Mivi collar wireless is best....... Not good, may be all paid youtube reviews...... Bakwas",
+        "value": "review_authenticity"
+      },
+      {
+        "id": "hien-0061",
+        "text": "Mst hai boss Good bass & sounds quality Bluetooth battery backup also good & decent looks This is first choice for higher bass & sounds loverBut not gd for PUBG playersREAD MORE",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0061",
+        "text": "Mst hai boss Good bass & sounds quality Bluetooth battery backup also good & decent looks This is first choice for higher bass & sounds loverBut not gd for PUBG playersREAD MORE",
+        "value": "design"
+      },
+      {
+        "id": "hien-0061",
+        "text": "Mst hai boss Good bass & sounds quality Bluetooth battery backup also good & decent looks This is first choice for higher bass & sounds loverBut not gd for PUBG playersREAD MORE",
+        "value": "performance"
+      },
+      {
+        "id": "hien-0062",
+        "text": "Mujhe bahut bekar laga I dont like sound quality the sound quality is irritating and annoying,sound beech beech me gayab ho jata h Blootootth version old h Overall i dont likeREAD MORE",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0062",
+        "text": "Mujhe bahut bekar laga I dont like sound quality the sound quality is irritating and annoying,sound beech beech me gayab ho jata h Blootootth version old h Overall i dont likeREAD MORE",
+        "value": "bluetooth"
+      },
+      {
+        "id": "hien-0062",
+        "text": "Mujhe bahut bekar laga I dont like sound quality the sound quality is irritating and annoying,sound beech beech me gayab ho jata h Blootootth version old h Overall i dont likeREAD MORE",
+        "value": "connectivity"
+      },
+      {
+        "id": "hien-0063",
+        "text": "mujhe bhot accha lga first time good from flipkartREAD MORE",
+        "value": "product_quality"
+      },
+      {
+        "id": "hien-0064",
+        "text": "Nice for the price, good sound, but if you have already used boat 220 or 225 you will not find it very impressive but for the first time buyers it's a Paisa vasool item, anytime superb than the local or generic earphone.Bass is actually quite good as it's a basic earphone of boat, but no wonder thousands of people are rating it as good as it's really worth the money.Go for it guys if you can't extend the budget , you'll not regret.",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0064",
+        "text": "Nice for the price, good sound, but if you have already used boat 220 or 225 you will not find it very impressive but for the first time buyers it's a Paisa vasool item, anytime superb than the local or generic earphone.Bass is actually quite good as it's a basic earphone of boat, but no wonder thousands of people are rating it as good as it's really worth the money.Go for it guys if you can't extend the budget , you'll not regret.",
+        "value": "comparison"
+      },
+      {
+        "id": "hien-0066",
+        "text": "nice headphone but bluetooth range kaam hai long distance is doesn't work but sound quality is best and battery is also good ....thank you FlipkartREAD MORE",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0068",
+        "text": "Not comfortable for long time use ...lakin 2 hr use k lea best h or sound toh very good es price range mREAD MORE",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0069",
+        "text": "One of the best blue tooth headset from real me just loved it and must buy. The bass is awesome and battery backup also good totally worth for every paisa.",
+        "value": "bluetooth"
+      },
+      {
+        "id": "hien-0069",
+        "text": "One of the best blue tooth headset from real me just loved it and must buy. The bass is awesome and battery backup also good totally worth for every paisa.",
+        "value": "price"
+      },
+      {
+        "id": "hien-0070",
+        "text": "Osm products I am happy sound Bess kafi acha haiREAD MORE",
+        "value": "product_quality"
+      },
+      {
+        "id": "hien-0071",
+        "text": "Paisa basool product bcz I buy 900 , so I think it nice",
+        "value": "design"
+      },
+      {
+        "id": "hien-0071",
+        "text": "Paisa basool product bcz I buy 900 , so I think it nice",
+        "value": "price"
+      },
+      {
+        "id": "hien-0072",
+        "text": "Product is good Battery backup bhi 6 se 4 hours chal jata haiREAD MORE",
+        "value": "build_quality"
+      },
+      {
+        "id": "hien-0073",
+        "text": "Product is very good But online delivery is very bad because it's too late slow delivery Delivery boy dene nhi aata h lene jana padta hREAD MORE",
+        "value": "product_quality"
+      },
+      {
+        "id": "hien-0073",
+        "text": "Product is very good But online delivery is very bad because it's too late slow delivery Delivery boy dene nhi aata h lene jana padta hREAD MORE",
+        "value": "delivery_service"
+      },
+      {
+        "id": "hien-0073",
+        "text": "Product is very good But online delivery is very bad because it's too late slow delivery Delivery boy dene nhi aata h lene jana padta hREAD MORE",
+        "value": "delivery_speed"
+      },
+      {
+        "id": "hien-0073",
+        "text": "Product is very good But online delivery is very bad because it's too late slow delivery Delivery boy dene nhi aata h lene jana padta hREAD MORE",
+        "value": "customer_service"
+      },
+      {
+        "id": "hien-0074",
+        "text": "Product is worth, full paisa vasool....l liked it very muchREAD MORE",
+        "value": "value"
+      },
+      {
+        "id": "hien-0074",
+        "text": "Product is worth, full paisa vasool....l liked it very muchREAD MORE",
+        "value": "price"
+      },
+      {
+        "id": "hien-0075",
+        "text": "Pros:    Good Sound Quality(not too much better than a local simple earphone)    Nice connectivity(utna bhi nahi)Cons:    My ear pains after using it  for around 30 min.(needed more soft material for the speaker's soft parts )READ MORE",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0075",
+        "text": "Pros:    Good Sound Quality(not too much better than a local simple earphone)    Nice connectivity(utna bhi nahi)Cons:    My ear pains after using it  for around 30 min.(needed more soft material for the speaker's soft parts )READ MORE",
+        "value": "comfort"
+      },
+      {
+        "id": "hien-0076",
+        "text": "Quite punchy. Decent bass too. Better than JBL Glide 501 actually. Quite loud too. Mic is bakwas. Overall, good value for money.READ MORE",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0076",
+        "text": "Quite punchy. Decent bass too. Better than JBL Glide 501 actually. Quite loud too. Mic is bakwas. Overall, good value for money.READ MORE",
+        "value": "volume"
+      },
+      {
+        "id": "hien-0076",
+        "text": "Quite punchy. Decent bass too. Better than JBL Glide 501 actually. Quite loud too. Mic is bakwas. Overall, good value for money.READ MORE",
+        "value": "microphone"
+      },
+      {
+        "id": "hien-0076",
+        "text": "Quite punchy. Decent bass too. Better than JBL Glide 501 actually. Quite loud too. Mic is bakwas. Overall, good value for money.READ MORE",
+        "value": "price"
+      },
+      {
+        "id": "hien-0076",
+        "text": "Quite punchy. Decent bass too. Better than JBL Glide 501 actually. Quite loud too. Mic is bakwas. Overall, good value for money.READ MORE",
+        "value": "comparison"
+      },
+      {
+        "id": "hien-0077",
+        "text": "Sahi per not excellentREAD MORE",
+        "value": "quality"
+      },
+      {
+        "id": "hien-0078",
+        "text": "Slightly disappointed to buy this at 1800 price range neck band is irritating many times in summer and ear also feel pain when used earhook. Sound feel heavy and you adjust differnt sound for differnt song. Totally disappointing.20% sound par ganna sunai tak nhi deta. You should sound min 90% to listen song.",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0078",
+        "text": "Slightly disappointed to buy this at 1800 price range neck band is irritating many times in summer and ear also feel pain when used earhook. Sound feel heavy and you adjust differnt sound for differnt song. Totally disappointing.20% sound par ganna sunai tak nhi deta. You should sound min 90% to listen song.",
+        "value": "comfort"
+      },
+      {
+        "id": "hien-0078",
+        "text": "Slightly disappointed to buy this at 1800 price range neck band is irritating many times in summer and ear also feel pain when used earhook. Sound feel heavy and you adjust differnt sound for differnt song. Totally disappointing.20% sound par ganna sunai tak nhi deta. You should sound min 90% to listen song.",
+        "value": "fit"
+      },
+      {
+        "id": "hien-0079",
+        "text": "Sound quality is not so good.i received I speaker damge..base is low as I accept it.. degin was good, battery backup is good..if you want low volume sound lover must buy it...it's very nice for slow songs lover..not for Gym class aur exercise volume is very low..READ MORE",
+        "value": "design"
+      },
+      {
+        "id": "hien-0079",
+        "text": "Sound quality is not so good.i received I speaker damge..base is low as I accept it.. degin was good, battery backup is good..if you want low volume sound lover must buy it...it's very nice for slow songs lover..not for Gym class aur exercise volume is very low..READ MORE",
+        "value": "performance"
+      },
+      {
+        "id": "hien-0079",
+        "text": "Sound quality is not so good.i received I speaker damge..base is low as I accept it.. degin was good, battery backup is good..if you want low volume sound lover must buy it...it's very nice for slow songs lover..not for Gym class aur exercise volume is very low..READ MORE",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0079",
+        "text": "Sound quality is not so good.i received I speaker damge..base is low as I accept it.. degin was good, battery backup is good..if you want low volume sound lover must buy it...it's very nice for slow songs lover..not for Gym class aur exercise volume is very low..READ MORE",
+        "value": "bass"
+      },
+      {
+        "id": "hien-0080",
+        "text": "super se bhi uper super fast delivery super bass super sound nice product for realme",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0081",
+        "text": "Superb earphone i like it.... and the sound is just awsome....  ye earphone apple k earphone ko competition de dega.....  Not better than apple earphone... but km v nai hai apple k earphone se....",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0081",
+        "text": "Superb earphone i like it.... and the sound is just awsome....  ye earphone apple k earphone ko competition de dega.....  Not better than apple earphone... but km v nai hai apple k earphone se....",
+        "value": "comparison"
+      },
+      {
+        "id": "hien-0082",
+        "text": "Superb Headphone 🤩🤩Design 👌🏻 mast Battery _ 👌🏻 mastBass _ outstanding 👌🏻Futures _ great 👌🏻READ MORE",
+        "value": "features"
+      },
+      {
+        "id": "hien-0083",
+        "text": "superb product in paisa vasool",
+        "value": "product_quality"
+      },
+      {
+        "id": "hien-0083",
+        "text": "superb product in paisa vasool",
+        "value": "value_for_money"
+      },
+      {
+        "id": "hien-0084",
+        "text": "The Boat Rockerz 400 is a Best one Of the From Boat Company if some one play pubg from pc and he dont hai mic orr we can connect our boat headphone to pc best one thank BOAT and Thank FlipkartREAD MORE",
+        "value": "gaming"
+      },
+      {
+        "id": "hien-0084",
+        "text": "The Boat Rockerz 400 is a Best one Of the From Boat Company if some one play pubg from pc and he dont hai mic orr we can connect our boat headphone to pc best one thank BOAT and Thank FlipkartREAD MORE",
+        "value": "connectivity"
+      },
+      {
+        "id": "hien-0084",
+        "text": "The Boat Rockerz 400 is a Best one Of the From Boat Company if some one play pubg from pc and he dont hai mic orr we can connect our boat headphone to pc best one thank BOAT and Thank FlipkartREAD MORE",
+        "value": "overall_quality"
+      },
+      {
+        "id": "hien-0085",
+        "text": "The reason for choosing this one over all others---it works both with bluetooth and aux cable(wired).so bhagwan na kare agar bluetooth kharab ho jae toh u can still use aux cable to use it as wired. It's one advantage and a big one over others. Two in one. It's tight fit, ears will pain after 30-45 mins, but It mit get loosen with time. Voice is good, connectivity working fine till now. Bass is good. Looks good built wise. In short, leke baat khatam karo. 1399 me aur kya chahiye.READ MORE",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0085",
+        "text": "The reason for choosing this one over all others---it works both with bluetooth and aux cable(wired).so bhagwan na kare agar bluetooth kharab ho jae toh u can still use aux cable to use it as wired. It's one advantage and a big one over others. Two in one. It's tight fit, ears will pain after 30-45 mins, but It mit get loosen with time. Voice is good, connectivity working fine till now. Bass is good. Looks good built wise. In short, leke baat khatam karo. 1399 me aur kya chahiye.READ MORE",
+        "value": "comfort"
+      },
+      {
+        "id": "hien-0085",
+        "text": "The reason for choosing this one over all others---it works both with bluetooth and aux cable(wired).so bhagwan na kare agar bluetooth kharab ho jae toh u can still use aux cable to use it as wired. It's one advantage and a big one over others. Two in one. It's tight fit, ears will pain after 30-45 mins, but It mit get loosen with time. Voice is good, connectivity working fine till now. Bass is good. Looks good built wise. In short, leke baat khatam karo. 1399 me aur kya chahiye.READ MORE",
+        "value": "build_quality"
+      },
+      {
+        "id": "hien-0085",
+        "text": "The reason for choosing this one over all others---it works both with bluetooth and aux cable(wired).so bhagwan na kare agar bluetooth kharab ho jae toh u can still use aux cable to use it as wired. It's one advantage and a big one over others. Two in one. It's tight fit, ears will pain after 30-45 mins, but It mit get loosen with time. Voice is good, connectivity working fine till now. Bass is good. Looks good built wise. In short, leke baat khatam karo. 1399 me aur kya chahiye.READ MORE",
+        "value": "price"
+      },
+      {
+        "id": "hien-0086",
+        "text": "These rockerz are branded , easy to use and good sound quality. Best bluetooth headphones in this price range .Design is also fine . Bluetooth range max. from one room to another . Can talk through built in mic when on a call. So don't need to hold your phone near you.I got this for 999 in sale.The best price.Isse kam mai koi bhi branded bluetooth headphones  nhi milenge.READ MORE",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0086",
+        "text": "These rockerz are branded , easy to use and good sound quality. Best bluetooth headphones in this price range .Design is also fine . Bluetooth range max. from one room to another . Can talk through built in mic when on a call. So don't need to hold your phone near you.I got this for 999 in sale.The best price.Isse kam mai koi bhi branded bluetooth headphones  nhi milenge.READ MORE",
+        "value": "bluetooth_range"
+      },
+      {
+        "id": "hien-0087",
+        "text": "This earphone is just awsome yaar , everything is just so perfect yaar just go for it blindly ,i tell you u cant find a best product at this price its awsome👌👌👌👌",
+        "value": "product_quality"
+      },
+      {
+        "id": "hien-0087",
+        "text": "This earphone is just awsome yaar , everything is just so perfect yaar just go for it blindly ,i tell you u cant find a best product at this price its awsome👌👌👌👌",
+        "value": "value"
+      },
+      {
+        "id": "hien-0088",
+        "text": "This is an excellent wireless earphone. I should admit that Sound quality is fabulous & also the Bass is preety good. It's a balance sound quality. When it's come to Charging quality, it has the most playback time I ever seen any earphone. This earphone totally money worthy. Thanks OnePlus for give us this well featured earphone. I'm recommending everyone to buy this OnePlus Bullets Wireless Z Bluetooth Headset. Love this earphone yaar ❤️❤️❤️❤️",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0088",
+        "text": "This is an excellent wireless earphone. I should admit that Sound quality is fabulous & also the Bass is preety good. It's a balance sound quality. When it's come to Charging quality, it has the most playback time I ever seen any earphone. This earphone totally money worthy. Thanks OnePlus for give us this well featured earphone. I'm recommending everyone to buy this OnePlus Bullets Wireless Z Bluetooth Headset. Love this earphone yaar ❤️❤️❤️❤️",
+        "value": "battery"
+      },
+      {
+        "id": "hien-0088",
+        "text": "This is an excellent wireless earphone. I should admit that Sound quality is fabulous & also the Bass is preety good. It's a balance sound quality. When it's come to Charging quality, it has the most playback time I ever seen any earphone. This earphone totally money worthy. Thanks OnePlus for give us this well featured earphone. I'm recommending everyone to buy this OnePlus Bullets Wireless Z Bluetooth Headset. Love this earphone yaar ❤️❤️❤️❤️",
+        "value": "value"
+      },
+      {
+        "id": "hien-0089",
+        "text": "U&i Bluetooth device 3days charge  rakh ta he or voice clarity must he but bass itna nehi he fir bi achhha he Paisa ke hisab se good",
+        "value": "battery"
+      },
+      {
+        "id": "hien-0089",
+        "text": "U&i Bluetooth device 3days charge  rakh ta he or voice clarity must he but bass itna nehi he fir bi achhha he Paisa ke hisab se good",
+        "value": "audio_quality"
+      },
+      {
+        "id": "hien-0089",
+        "text": "U&i Bluetooth device 3days charge  rakh ta he or voice clarity must he but bass itna nehi he fir bi achhha he Paisa ke hisab se good",
+        "value": "price"
+      },
+      {
+        "id": "hien-0091",
+        "text": "Useless products hai yeREAD MORE",
+        "value": "usability"
+      },
+      {
+        "id": "hien-0093",
+        "text": "Very good and beautiful ❤️ Wah Wah trusted material     Full paisa vasool. .thank flipcart.   Thank boatREAD MORE",
+        "value": "design"
+      },
+      {
+        "id": "hien-0093",
+        "text": "Very good and beautiful ❤️ Wah Wah trusted material     Full paisa vasool. .thank flipcart.   Thank boatREAD MORE",
+        "value": "material_quality"
+      },
+      {
+        "id": "hien-0093",
+        "text": "Very good and beautiful ❤️ Wah Wah trusted material     Full paisa vasool. .thank flipcart.   Thank boatREAD MORE",
+        "value": "price"
+      },
+      {
+        "id": "hien-0094",
+        "text": "Very good earphone with this price range... I got it for ₹540 nd boat earphones have always been good impact.. So go through this... Aur 600 range me boat ka 220 wired is Awesome.. With super  extra bass",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0095",
+        "text": "very good product from ream me. the most amazing thing is its magnetic effect. voice quality is best and also battery back up is best. go through it. paisa vasool headphone hai bhai.",
+        "value": "voice_quality"
+      },
+      {
+        "id": "hien-0095",
+        "text": "very good product from ream me. the most amazing thing is its magnetic effect. voice quality is best and also battery back up is best. go through it. paisa vasool headphone hai bhai.",
+        "value": "value"
+      },
+      {
+        "id": "hien-0096",
+        "text": "Very good product full paisa wasool... 👍☺READ MORE",
+        "value": "product_quality"
+      },
+      {
+        "id": "hien-0096",
+        "text": "Very good product full paisa wasool... 👍☺READ MORE",
+        "value": "value"
+      },
+      {
+        "id": "hien-0097",
+        "text": "Very good product, sound quality is also good. while using headphone 🎧 my ear hurts so bad, I have to remove them in an hour😔 koi sense hai iss baat kiREAD MORE",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0097",
+        "text": "Very good product, sound quality is also good. while using headphone 🎧 my ear hurts so bad, I have to remove them in an hour😔 koi sense hai iss baat kiREAD MORE",
+        "value": "comfort"
+      },
+      {
+        "id": "hien-0098",
+        "text": "Very good product.... If u are thinking to buy this, just stop thinking and just buy it.,. Fully PAISA WASULE.. Item.. Thanks",
+        "value": "quality"
+      },
+      {
+        "id": "hien-0098",
+        "text": "Very good product.... If u are thinking to buy this, just stop thinking and just buy it.,. Fully PAISA WASULE.. Item.. Thanks",
+        "value": "price"
+      },
+      {
+        "id": "hien-0099",
+        "text": "Very niceBetter back up mast hai",
+        "value": "quality"
+      },
+      {
+        "id": "hien-0100",
+        "text": "Voice quality aur battery backup 1 number hai......READ MORE",
+        "value": "voice_quality"
+      },
+      {
+        "id": "hien-0101",
+        "text": "Why are you Flipkart guys asking me about Battery life have you lost it?Anyways coming to review:Pros1. Crispy clear sound2. Great for music and streaming.3. Great for calls.Cons1. Bass is good but because of plastic body it's misses boom effect. It's bass is more like baam.2. If you're thinking of gaming like playing pubg on this then forget it, infact punish yourself by Unistalling pubg because your thinking is lika a noob you won't make any better.3. Clip kyu kha gaye ek hi toh ty...",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0101",
+        "text": "Why are you Flipkart guys asking me about Battery life have you lost it?Anyways coming to review:Pros1. Crispy clear sound2. Great for music and streaming.3. Great for calls.Cons1. Bass is good but because of plastic body it's misses boom effect. It's bass is more like baam.2. If you're thinking of gaming like playing pubg on this then forget it, infact punish yourself by Unistalling pubg because your thinking is lika a noob you won't make any better.3. Clip kyu kha gaye ek hi toh ty...",
+        "value": "build_quality"
+      },
+      {
+        "id": "hien-0102",
+        "text": "Wow mast bassssś goood  👍👍quality soundREAD MORE",
+        "value": "sound_quality"
+      },
+      {
+        "id": "hien-0104",
+        "text": "Yaar i cant believe that it will be that good i received delivery in just 15 hours and the performance is excellentit passive noice cancellation block many noice it can be wear wuile studying amazing definitely you should buy itREAD MORE",
+        "value": "delivery_speed"
+      },
+      {
+        "id": "hien-0104",
+        "text": "Yaar i cant believe that it will be that good i received delivery in just 15 hours and the performance is excellentit passive noice cancellation block many noice it can be wear wuile studying amazing definitely you should buy itREAD MORE",
+        "value": "noise_cancellation"
+      },
+      {
+        "id": "hien-0104",
+        "text": "Yaar i cant believe that it will be that good i received delivery in just 15 hours and the performance is excellentit passive noice cancellation block many noice it can be wear wuile studying amazing definitely you should buy itREAD MORE",
+        "value": "comfort"
+      },
+      {
+        "id": "hien-0106",
+        "text": "Zabardast product 🤩READ MORE",
+        "value": "product_quality"
+      }
+    ]
+  }
+}

@@ -1,0 +1,185 @@
+{
+  "source_fixtures": "eval\\fixtures\\_held_out_hindi_hinglish",
+  "source_scoring": "eval\\results\\held_out_scoring_v2.json",
+  "n_fixtures_total": 106,
+  "short_reviews": {
+    "n_short_reviews": 27,
+    "short_review_word_threshold": 10,
+    "total_field_checks": 324,
+    "counts": {
+      "correct": 98,
+      "correct_abstention": 123,
+      "real_gap": 6,
+      "wrong_committed": 97
+    },
+    "rates": {
+      "correct": 0.3025,
+      "correct_abstention": 0.3796,
+      "real_gap": 0.0185,
+      "wrong_committed": 0.2994
+    },
+    "abstention_correctness_rate": 0.9535,
+    "real_gaps": [
+      {
+        "id": "hien-0010",
+        "field": "competitor_mentions",
+        "n_words": 8,
+        "text": "Bahut hi achcha Bluetooth oneplus I like it",
+        "gt": [
+          "OnePlus"
+        ],
+        "pred": [],
+        "panel_agreement": "majority"
+      },
+      {
+        "id": "hien-0057",
+        "field": "pros",
+        "n_words": 3,
+        "text": "Mast productREAD MORE",
+        "gt": [
+          "mast product"
+        ],
+        "pred": [],
+        "panel_agreement": "unanimous"
+      },
+      {
+        "id": "hien-0065",
+        "field": "pros",
+        "n_words": 6,
+        "text": "Nice h betray backup mast h",
+        "gt": [
+          "nice",
+          "mast"
+        ],
+        "pred": [],
+        "panel_agreement": "majority"
+      },
+      {
+        "id": "hien-0090",
+        "field": "topics",
+        "n_words": 5,
+        "text": "Ultimate headset Paisa wasoolREAD MORE",
+        "gt": [
+          "price",
+          "value"
+        ],
+        "pred": [],
+        "panel_agreement": "majority"
+      },
+      {
+        "id": "hien-0090",
+        "field": "pros",
+        "n_words": 5,
+        "text": "Ultimate headset Paisa wasoolREAD MORE",
+        "gt": [
+          "good value for money"
+        ],
+        "pred": [],
+        "panel_agreement": "majority"
+      },
+      {
+        "id": "hien-0091",
+        "field": "buy_again",
+        "n_words": 5,
+        "text": "Useless products hai yeREAD MORE",
+        "gt": false,
+        "pred": null,
+        "panel_agreement": "unanimous"
+      }
+    ],
+    "per_field": {
+      "product": {
+        "wrong_committed": 25,
+        "correct": 2
+      },
+      "stars": {
+        "correct_abstention": 27
+      },
+      "buy_again": {
+        "wrong_committed": 4,
+        "correct": 8,
+        "correct_abstention": 14,
+        "real_gap": 1
+      },
+      "sentiment": {
+        "correct": 23,
+        "wrong_committed": 4
+      },
+      "language": {
+        "correct": 14,
+        "wrong_committed": 13
+      },
+      "topics": {
+        "wrong_committed": 22,
+        "correct": 2,
+        "correct_abstention": 2,
+        "real_gap": 1
+      },
+      "competitor_mentions": {
+        "real_gap": 1,
+        "correct_abstention": 26
+      },
+      "pros": {
+        "wrong_committed": 14,
+        "correct_abstention": 8,
+        "correct": 2,
+        "real_gap": 3
+      },
+      "cons": {
+        "correct_abstention": 19,
+        "wrong_committed": 6,
+        "correct": 2
+      },
+      "stars_inferred": {
+        "correct": 19,
+        "wrong_committed": 8
+      },
+      "urgency": {
+        "correct": 26,
+        "wrong_committed": 1
+      },
+      "feature_requests": {
+        "correct_abstention": 27
+      }
+    }
+  },
+  "sarcasm": {
+    "n_reviews_in_corpus": 106,
+    "n_sarcastic_or_backhanded_found": 3,
+    "identification_method": "direct manual read of all 106 review texts for two recognizable shapes (explicit self-contradiction, or an ironic idiom framing a mixed review) -- not a keyword heuristic",
+    "statistically_meaningful": false,
+    "why_not_meaningful": "n=3 out of 106 -- too small for a bootstrap CI or any accuracy/coverage claim. Reported as individual cases, not a rate.",
+    "cases": [
+      {
+        "id": "hien-0006",
+        "text": "As they rightly say about Chinese Products: Chala Toh Chand Tak; Nahi Toh Raat Tak.Review after a month of using this product:Sound Quality Is good, above average I would call it.Easy to pair and connect.Like the fit, fits perfect in your ears.Issues: 1. If you are watching a video, after a while, you would notice that the video is not in sync with the sound. Theres a constant disconnect which cause the video to relay first and then u hear the audio.2. The right earbud has stopped wo...",
+        "gt_sentiment": "mixed",
+        "pred_sentiment": "negative",
+        "sentiment_match": false,
+        "gt_buy_again": null,
+        "pred_buy_again": null,
+        "sentiment_outcome": "confident_wrong"
+      },
+      {
+        "id": "hien-0059",
+        "text": "Mivi collar wireless is best....... Not good, may be all paid youtube reviews...... Bakwas",
+        "gt_sentiment": "negative",
+        "pred_sentiment": "negative",
+        "sentiment_match": true,
+        "gt_buy_again": false,
+        "pred_buy_again": false,
+        "sentiment_outcome": "correct"
+      },
+      {
+        "id": "hien-0075",
+        "text": "Pros:    Good Sound Quality(not too much better than a local simple earphone)    Nice connectivity(utna bhi nahi)Cons:    My ear pains after using it  for around 30 min.(needed more soft material for the speaker's soft parts )READ MORE",
+        "gt_sentiment": "mixed",
+        "pred_sentiment": "negative",
+        "sentiment_match": false,
+        "gt_buy_again": null,
+        "pred_buy_again": false,
+        "sentiment_outcome": "confident_wrong"
+      }
+    ]
+  }
+}
