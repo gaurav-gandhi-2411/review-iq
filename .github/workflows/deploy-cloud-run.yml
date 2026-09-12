@@ -74,7 +74,7 @@ jobs:
         with:
           install_components: 'beta'
 
-      - uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
         with:
           enable-cache: true
 
@@ -178,7 +178,7 @@ jobs:
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@6a7c903a70c8625ed6700fa299f5ddb4ca6022e9 # v2.1.5
 
-      - uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
         with:
           enable-cache: true
 
