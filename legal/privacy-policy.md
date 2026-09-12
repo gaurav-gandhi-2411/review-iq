@@ -111,10 +111,15 @@ and every deletion/purge mechanism. In summary:
 - **Groq** (LLM inference) is a US-headquartered company. Verified directly against Groq's own
   Services Agreement (§4.2, `console.groq.com/docs/legal/services-agreement`): Groq is
   contractually barred from using submitted Inputs/Outputs to train or fine-tune any model
-  unless explicitly authorized, does not retain Inputs/Outputs beyond what's needed to serve the
-  request (temporary logs, up to 30 days, for reliability/abuse monitoring only, with a
-  self-serve Zero Data Retention opt-out), and this Agreement applies to free-tier/self-serve API
-  use with no Order Form required — the same terms this project's usage is governed by. `[TODO:
+  unless explicitly authorized, and this Agreement applies to free-tier/self-serve API use with
+  no Order Form required — the same terms this project's usage is governed by. **Zero Data
+  Retention (Inference APIs) is enabled on this account** (2026-09-12) — under ZDR, Groq does not
+  retain submitted Inputs/Outputs beyond serving the request, rather than the temporary
+  up-to-30-day troubleshooting log window that applies without it. Groq exposes no API-level way
+  to independently confirm this setting (no response header, no account/settings endpoint — see
+  [ADR 0028](../docs/architecture/adr/0028-groq-zdr-verification-and-batch-api-audit.md)), so this
+  is stated as the account holder's report from Groq's own Console, not an independently
+  API-verified fact — the same honesty distinction this document applies everywhere else. `[TODO:
   the specific data-center region(s) Groq uses to physically serve inference were not
   independently verified — the contractual no-training/limited-retention commitment above is
   confirmed, but geographic data-residency specifically is not. Verify before publishing if
@@ -222,5 +227,7 @@ updated "Effective date" above.
 _This document is version-controlled; see git history for changes. Originally drafted 2026-07-31;
 updated 2026-09-12 for the two-mode retention model, current Groq/OpenRouter facts (verified live
 this session), and current production model names. **The two-mode retention model described in
-§3 is implemented and tested but not yet deployed to production** (PR #167, pending a schema
-migration) — remove this note once that PR has merged and the migration is applied._
+§3 is deployed to production** (PR #167, merged 2026-09-12; the migration has been applied and
+the sentinel-string stateless-mode test suite passed against the live schema — see
+[ADR 0025](../docs/architecture/adr/0025-two-modes-retention-schema.md)). Updated again 2026-09-12
+(Session 13) for Groq's Inference-APIs Zero Data Retention status._
