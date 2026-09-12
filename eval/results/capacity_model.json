@@ -1,0 +1,29 @@
+{
+  "method": "Two independent per-model Groq quota pools (not one shared org-wide pool -- see ADR 0015's Session 13 correction). Real ceiling = min across tiers of (that tier's own limit) / (that tier's share of total traffic * that tier's mean tokens/extraction), at the OBSERVED tier-routing mix.",
+  "per_tier_bindings": {
+    "small": {
+      "model": "openai/gpt-oss-20b",
+      "fraction_of_traffic": 0.4056603773584906,
+      "mean_tokens_per_extraction": 2524.767441860465,
+      "max_total_rate_per_minute_from_tpm": 7.810988808547874,
+      "max_total_rate_per_minute_from_rpm": 73.95348837209302,
+      "max_total_extractions_per_day_from_tpd": 195.27472021369684,
+      "max_total_extractions_per_day_from_rpd": 2465.116279069767
+    },
+    "large": {
+      "model": "openai/gpt-oss-120b",
+      "fraction_of_traffic": 0.5943396226415094,
+      "mean_tokens_per_extraction": 2393.8571428571427,
+      "max_total_rate_per_minute_from_tpm": 5.622857445976143,
+      "max_total_rate_per_minute_from_rpm": 50.476190476190474,
+      "max_total_extractions_per_day_from_tpd": 140.57143614940358,
+      "max_total_extractions_per_day_from_rpd": 1682.5396825396826
+    }
+  },
+  "real_extractions_per_minute_ceiling": 5.622857445976143,
+  "binding_tier_per_minute": "large",
+  "real_extractions_per_day_ceiling": 140.57143614940358,
+  "binding_tier_per_day": "large",
+  "real_extractions_per_month_ceiling_30d": 4217.143084482107,
+  "note": "This ceiling is SHARED across every consumer of the single production GROQ_API_KEY: real customer /v2/extract and /v2/extract/batch and /v2/ingest/csv traffic, the public /demo/extract endpoint, and any live (non-cassette-replay) eval/CI call against these two models. It is not per-customer -- it is the entire business's total daily capacity on the free tier, at the current tier-routing mix."
+}
