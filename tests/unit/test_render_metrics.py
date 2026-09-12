@@ -8,6 +8,9 @@ from pathlib import Path
 from scripts.render_metrics import (
     BLOCK_RENDERERS,
     render_authenticity_table_md,
+    render_committed_accuracy_headline_html,
+    render_committed_accuracy_headline_md,
+    render_coverage_metrics_table_html,
     render_extraction_table_html,
     render_extraction_table_md,
     render_file,
@@ -206,6 +209,86 @@ class TestRenderLanguageTableHtml:
         # hi-en still passes and should stay green, not collateral-damaged red. (hi is no
         # longer rendered at all -- see test_renders_two_rows.)
         assert out.count("text-green-400") == 1
+
+
+COVERAGE_DATA = {
+    "n_fixtures": 106,
+    "condition": "as_deployed",
+    "per_field": {
+        "sentiment": {
+            "coverage": 0.774,
+            "coverage_ci_95": {"lower": 0.689, "upper": 0.849},
+            "accuracy_on_answered": 0.878,
+            "accuracy_on_answered_ci_95": {"lower": 0.805, "upper": 0.939},
+            "wrong_committed_of_answered": "10/82",
+            "wrong_committed_rate": 0.122,
+            "wrong_committed_rate_ci_95": {"lower": 0.061, "upper": 0.195},
+        },
+        "buy_again": {
+            "coverage": 0.434,
+            "coverage_ci_95": {"lower": 0.340, "upper": 0.528},
+            "accuracy_on_answered": 0.761,
+            "accuracy_on_answered_ci_95": {"lower": 0.630, "upper": 0.870},
+            "wrong_committed_of_answered": "11/46",
+            "wrong_committed_rate": 0.239,
+            "wrong_committed_rate_ci_95": {"lower": 0.130, "upper": 0.370},
+        },
+    },
+}
+
+
+class TestRenderCommittedAccuracyHeadlineMd:
+    def test_reports_both_fields_never_blended(self):
+        # Session 13 P1b/ADR 0027: this claim must never collapse the two fields into one
+        # blended number -- both field-specific accuracy-on-answered figures must appear.
+        out = render_committed_accuracy_headline_md(COVERAGE_DATA)
+        assert "87.8%" in out
+        assert "76.1%" in out
+        assert "sentiment" in out
+        assert "buy-again" in out
+
+    def test_does_not_conflate_abstention_with_wrong_committed(self):
+        # Regression guard: an earlier draft of this renderer incorrectly described
+        # abstention ("says unclear") as happening "instead of" a wrong-committed answer --
+        # these are two independent, separately-measured quantities (1-coverage vs.
+        # 1-accuracy_on_answered), not complements of each other. The generated sentence
+        # must not claim the model "says unclear" as the outcome of NOT being accurate.
+        out = render_committed_accuracy_headline_md(COVERAGE_DATA)
+        assert "unclear" not in out.lower()
+
+    def test_includes_cis(self):
+        out = render_committed_accuracy_headline_md(COVERAGE_DATA)
+        assert "80.5%" in out
+        assert "93.9%" in out
+        assert "63.0%" in out
+        assert "87.0%" in out
+
+
+class TestRenderCommittedAccuracyHeadlineHtml:
+    def test_renders_two_cards(self):
+        out = render_committed_accuracy_headline_html(COVERAGE_DATA)
+        assert out.count("<div") >= 2 * 3  # 2 cards, 3 nested divs each minimum
+        assert "87.8%" in out
+        assert "76.1%" in out
+
+    def test_abstention_stated_as_separate_fact_not_a_complement(self):
+        # Same regression guard as the Markdown renderer, applied to the HTML card copy.
+        out = render_committed_accuracy_headline_html(COVERAGE_DATA)
+        assert "Separately" in out
+        assert "instead of guessing" not in out
+
+
+class TestRenderCoverageMetricsTableHtml:
+    def test_renders_both_fields(self):
+        out = render_coverage_metrics_table_html(COVERAGE_DATA)
+        assert out.count("<tr") == 2
+        assert "sentiment" in out
+        assert "buy again" in out  # underscore replaced with space for display
+
+    def test_wrong_committed_counts_present(self):
+        out = render_coverage_metrics_table_html(COVERAGE_DATA)
+        assert "10/82" in out
+        assert "11/46" in out
 
 
 class TestRenderFile:
