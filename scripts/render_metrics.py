@@ -42,8 +42,9 @@ BLOCK_RE = re.compile(
 )
 
 
-# Display order matching the repo's existing convention (en / hi-en / hi), not alphabetical.
-LANG_DISPLAY_ORDER: tuple[str, ...] = ("en", "hi-en", "hi")
+# Display order matching the repo's existing convention, not alphabetical. "hi" retired
+# from this gate entirely (Session 11 P4d, ADR 0022) -- not listed even as a fallback.
+LANG_DISPLAY_ORDER: tuple[str, ...] = ("en", "hi-en")
 
 
 def _ordered_languages(per_lang: dict[str, Any]) -> list[str]:
@@ -160,11 +161,11 @@ def render_extraction_table_html(data: dict[str, Any]) -> str:
     hand-authored fix this generator would otherwise clobber on the next run.
     """
     per_lang = data["per_language"]
-    lang_labels = {"en": "English", "hi": "Hindi", "hi-en": "Hinglish"}
-    # Session 10 P1: "hi" is synthetic-only (6 Claude-Sonnet-generated fixtures, zero real-world
-    # corpus behind it -- see README.md's "Corpus and language scope" section and ADR 0017) --
-    # annotated here, not hand-typed into the HTML, so it survives this generator's next run.
-    lang_scope_note = {"hi": ", synthetic only — experimental"}
+    # Session 11 P4d: "hi" (Devanagari) retired from this gate entirely (ADR 0022) -- no
+    # longer a row here at all, not even an "experimental" one. See render_language_table_html
+    # for the matching change on the other table this same source data feeds.
+    lang_labels = {"en": "English", "hi-en": "Hinglish"}
+    lang_scope_note: dict[str, str] = {}
     rows: list[str] = []
     for lang in sorted(per_lang):
         info = per_lang[lang]
@@ -203,9 +204,12 @@ def render_language_table_html(data: dict[str, Any]) -> str:
     found the same session. A failing language now renders red with its gate noted inline.
     """
     per_lang = data["per_language"]
+    # Session 11 P4d: Devanagari Hindi retired from this gate entirely (ADR 0022) -- real
+    # Devanagari-script review yield in the largest corpus available to this project is
+    # zero, not just thin. Not listed as a language row at all anymore (not even as
+    # "experimental"), matching every other public surface's claim.
     rows_spec = [
         ("en", "English", "Latin"),
-        ("hi", "Hindi (experimental — synthetic only)", "Devanagari"),
         ("hi-en", "Hinglish", "Roman-script code-mix"),
     ]
     rows: list[str] = []

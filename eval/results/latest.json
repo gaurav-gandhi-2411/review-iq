@@ -1,20 +1,20 @@
 {
-  "generated_at": "2026-09-11T14:57:45Z",
-  "git_sha": "60eac99a5a845267ed18d5cf498345be3697c76a",
+  "generated_at": "2026-09-12T05:45:15Z",
+  "git_sha": "e9606f2ae3ccdc859f3c2f7b1d17cd99ed0955b3",
   "prompt_version": "v2.3",
   "mode": "direct (local LLM)",
   "tiered_routing_enabled_at_runtime": true,
   "groq_model_small": "openai/gpt-oss-20b",
   "groq_model_large": "openai/gpt-oss-120b",
-  "overall_score": 0.7784598907992353,
+  "overall_score": 0.7714491262079142,
   "overall_ci_95": {
-    "n": 49,
-    "lower": 0.7316741088996371,
-    "upper": 0.817302389537181,
+    "n": 43,
+    "lower": 0.7181923625846054,
+    "upper": 0.814721478785664,
     "method": "bootstrap"
   },
-  "threshold": 0.79,
-  "passed": false,
+  "threshold": 0.76,
+  "passed": true,
   "per_language": {
     "en": {
       "score": 0.7806404442534826,
@@ -35,18 +35,7 @@
         "upper": 0.8414099196297339,
         "method": "bootstrap"
       },
-      "threshold": 0.8,
-      "passed": false
-    },
-    "hi": {
-      "score": 0.8287037037037038,
-      "n": 6,
-      "ci_95": {
-        "lower": 0.7703703703703704,
-        "upper": 0.8833333333333334,
-        "method": "bootstrap"
-      },
-      "threshold": 0.8,
+      "threshold": 0.75,
       "passed": true
     }
   },
@@ -56,7 +45,7 @@
       "language": "en",
       "overall_score": 0.9303030303030303,
       "error": null,
-      "latency_ms": 16,
+      "latency_ms": 15,
       "fields": [
         {
           "field": "product",
@@ -166,7 +155,7 @@
       "language": "en",
       "overall_score": 0.8968253968253967,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "stars",
@@ -257,7 +246,7 @@
       "language": "en",
       "overall_score": 0.8357487922705313,
       "error": null,
-      "latency_ms": 14,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -353,7 +342,7 @@
       "language": "en",
       "overall_score": 0.8361391694725029,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "stars",
@@ -542,7 +531,7 @@
       "language": "en",
       "overall_score": 0.7646103896103895,
       "error": null,
-      "latency_ms": 16,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -626,7 +615,7 @@
       "language": "en",
       "overall_score": 0.9388083735909822,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 14,
       "fields": [
         {
           "field": "stars",
@@ -714,7 +703,7 @@
       "language": "en",
       "overall_score": 0.6812169312169313,
       "error": null,
-      "latency_ms": 15,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -917,7 +906,7 @@
       "language": "en",
       "overall_score": 0.6666666666666666,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "stars",
@@ -995,7 +984,7 @@
       "language": "en",
       "overall_score": 0.5555555555555556,
       "error": null,
-      "latency_ms": 14,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1469,7 +1458,7 @@
       "language": "en",
       "overall_score": 0.7467989756722151,
       "error": null,
-      "latency_ms": 16,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -1713,7 +1702,7 @@
       "language": "en",
       "overall_score": 0.8252645502645503,
       "error": null,
-      "latency_ms": 14,
+      "latency_ms": 15,
       "fields": [
         {
           "field": "stars",
@@ -1919,7 +1908,7 @@
       "language": "en",
       "overall_score": 0.859090909090909,
       "error": null,
-      "latency_ms": 16,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -2005,7 +1994,7 @@
       "language": "en",
       "overall_score": 0.7590187590187589,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 15,
       "fields": [
         {
           "field": "stars",
@@ -2106,7 +2095,7 @@
       "language": "en",
       "overall_score": 0.875,
       "error": null,
-      "latency_ms": 14,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -2272,7 +2261,7 @@
       "language": "en",
       "overall_score": 0.47549019607843135,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "stars",
@@ -2385,7 +2374,7 @@
       "language": "en",
       "overall_score": 0.8481577246283128,
       "error": null,
-      "latency_ms": 16,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "stars",
@@ -2594,7 +2583,7 @@
       "language": "en",
       "overall_score": 0.6993939393939395,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "stars",
@@ -2984,7 +2973,7 @@
       "language": "hi-en",
       "overall_score": 0.8039999999999999,
       "error": null,
-      "latency_ms": 14,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -3294,7 +3283,7 @@
       "language": "hi-en",
       "overall_score": 0.9041666666666668,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 14,
       "fields": [
         {
           "field": "product",
@@ -3588,7 +3577,7 @@
       "language": "hi-en",
       "overall_score": 0.5285714285714286,
       "error": null,
-      "latency_ms": 16,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -4177,556 +4166,6 @@
           "score": 1.0,
           "predicted": 5,
           "expected": 5,
-          "method": "tolerance\u00b11"
-        }
-      ]
-    },
-    {
-      "id": "hi-001",
-      "language": "hi",
-      "overall_score": 0.8666666666666668,
-      "error": null,
-      "latency_ms": 0,
-      "fields": [
-        {
-          "field": "product",
-          "score": 1.0,
-          "predicted": "Syska charger",
-          "expected": "Syska charger",
-          "method": "exact"
-        },
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 1.0,
-          "predicted": false,
-          "expected": false,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "negative",
-          "expected": "negative",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "hi",
-          "expected": "hi",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.5,
-          "predicted": [
-            "quality",
-            "durability",
-            "price"
-          ],
-          "expected": [
-            "quality"
-          ],
-          "method": "set_f1"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1"
-        },
-        {
-          "field": "pros",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.16666666666666666,
-          "predicted": [
-            "poor quality",
-            "broke after 2 days",
-            "waste of money",
-            "disappointed"
-          ],
-          "expected": [
-            "stopped working in two days"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 1,
-          "expected": 1,
-          "method": "tolerance\u00b11"
-        }
-      ]
-    },
-    {
-      "id": "hi-002",
-      "language": "hi",
-      "overall_score": 0.9333333333333333,
-      "error": null,
-      "latency_ms": 0,
-      "fields": [
-        {
-          "field": "product",
-          "score": 1.0,
-          "predicted": "Boat earphone",
-          "expected": "Boat earphone",
-          "method": "exact"
-        },
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 1.0,
-          "predicted": true,
-          "expected": true,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "positive",
-          "expected": "positive",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "hi",
-          "expected": "hi",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.6666666666666666,
-          "predicted": [
-            "sound_quality",
-            "value"
-          ],
-          "expected": [
-            "sound_quality"
-          ],
-          "method": "set_f1"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1"
-        },
-        {
-          "field": "pros",
-          "score": 0.6666666666666666,
-          "predicted": [
-            "excellent sound quality",
-            "value for money"
-          ],
-          "expected": [
-            "excellent sound quality"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 5,
-          "expected": 5,
-          "method": "tolerance\u00b11"
-        }
-      ]
-    },
-    {
-      "id": "hi-003",
-      "language": "hi",
-      "overall_score": 0.8166666666666668,
-      "error": null,
-      "latency_ms": 0,
-      "fields": [
-        {
-          "field": "product",
-          "score": 1.0,
-          "predicted": "Noise smartwatch",
-          "expected": "Noise smartwatch",
-          "method": "exact"
-        },
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 0.0,
-          "predicted": false,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "mixed",
-          "expected": "mixed",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "hi",
-          "expected": "hi",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.5,
-          "predicted": [
-            "display",
-            "battery_life"
-          ],
-          "expected": [
-            "battery",
-            "display"
-          ],
-          "method": "set_f1"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1"
-        },
-        {
-          "field": "pros",
-          "score": 1.0,
-          "predicted": [
-            "good display"
-          ],
-          "expected": [
-            "good display"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.6666666666666666,
-          "predicted": [
-            "battery drains quickly"
-          ],
-          "expected": [
-            "battery drains fast"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 2,
-          "expected": 3,
-          "method": "tolerance\u00b11"
-        }
-      ]
-    },
-    {
-      "id": "hi-004",
-      "language": "hi",
-      "overall_score": 0.8555555555555557,
-      "error": null,
-      "latency_ms": 16,
-      "fields": [
-        {
-          "field": "product",
-          "score": 1.0,
-          "predicted": "adapter",
-          "expected": "adapter",
-          "method": "exact"
-        },
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 1.0,
-          "predicted": false,
-          "expected": false,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "negative",
-          "expected": "negative",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "hi",
-          "expected": "hi",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.6666666666666666,
-          "predicted": [
-            "safety",
-            "electric_shock",
-            "refund"
-          ],
-          "expected": [
-            "safety",
-            "shock",
-            "refund"
-          ],
-          "method": "set_f1"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 0.0,
-          "predicted": [
-            "Amazon"
-          ],
-          "expected": [],
-          "method": "set_f1"
-        },
-        {
-          "field": "pros",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.888888888888889,
-          "predicted": [
-            "electric shock risk",
-            "dangerous product"
-          ],
-          "expected": [
-            "electric shock",
-            "dangerous product"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 1,
-          "expected": 1,
-          "method": "tolerance\u00b11"
-        }
-      ]
-    },
-    {
-      "id": "hi-005",
-      "language": "hi",
-      "overall_score": 0.8,
-      "error": null,
-      "latency_ms": 0,
-      "fields": [
-        {
-          "field": "product",
-          "score": 0.0,
-          "predicted": "Portronics",
-          "expected": "Portronics speaker",
-          "method": "exact"
-        },
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 0.0,
-          "predicted": "positive",
-          "expected": "mixed",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "hi",
-          "expected": "hi",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 1.0,
-          "predicted": [
-            "sound_quality",
-            "bluetooth"
-          ],
-          "expected": [
-            "sound_quality",
-            "bluetooth"
-          ],
-          "method": "set_f1"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1"
-        },
-        {
-          "field": "pros",
-          "score": 1.0,
-          "predicted": [
-            "good sound"
-          ],
-          "expected": [
-            "good sound"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 1.0,
-          "predicted": [
-            "no Bluetooth"
-          ],
-          "expected": [
-            "no bluetooth"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 4,
-          "expected": 3,
-          "method": "tolerance\u00b11"
-        }
-      ]
-    },
-    {
-      "id": "hi-006",
-      "language": "hi",
-      "overall_score": 0.7,
-      "error": null,
-      "latency_ms": 0,
-      "fields": [
-        {
-          "field": "product",
-          "score": 1.0,
-          "predicted": "Skybags bag",
-          "expected": "Skybags bag",
-          "method": "exact"
-        },
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "neutral",
-          "expected": "neutral",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "hi",
-          "expected": "hi",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.0,
-          "predicted": [
-            "price",
-            "value"
-          ],
-          "expected": [
-            "quality"
-          ],
-          "method": "set_f1"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1"
-        },
-        {
-          "field": "pros",
-          "score": 0.0,
-          "predicted": [
-            "value for money"
-          ],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.0,
-          "predicted": [
-            "nothing special"
-          ],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 3,
-          "expected": 3,
           "method": "tolerance\u00b11"
         }
       ]

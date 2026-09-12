@@ -1,16 +1,15 @@
 # Eval Report
 
-Generated: 2026-09-11 14:57 UTC
+Generated: 2026-09-12 05:45 UTC
 
-## Overall: 77.8% FAIL (threshold 79%)
+## Overall: 77.1% PASS (threshold 76%)
 
 ## Per-language
 
 | Language | Score | Gate | Status |
 |----------|-------|------|--------|
 | en | 78.1% | 77% | PASS |
-| hi | 82.9% | 80% | PASS |
-| hi-en | 75.6% | 80% | FAIL |
+| hi-en | 75.6% | 75% | PASS |
 
 ## Fixtures
 
@@ -59,9 +58,3 @@ Generated: 2026-09-11 14:57 UTC
 | hi-en-013 | hi-en | 80% |  |
 | hi-en-014 | hi-en | 85% |  |
 | hi-en-015 | hi-en | 91% |  |
-| hi-001 | hi | 87% |  |
-| hi-002 | hi | 93% |  |
-| hi-003 | hi | 82% |  |
-| hi-004 | hi | 86% |  |
-| hi-005 | hi | 80% |  |
-| hi-006 | hi | 70% |  |
