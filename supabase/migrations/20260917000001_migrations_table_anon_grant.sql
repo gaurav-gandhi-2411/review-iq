@@ -1,0 +1,26 @@
+-- Migration: close issue #186 -- public._migrations has RLS disabled and anon holds a grant.
+--
+-- public._migrations is tooling bookkeeping created by supabase/push.py's own migration
+-- runner (CREATE TABLE IF NOT EXISTS, no explicit GRANT/REVOKE), not app schema managed by
+-- a migration file -- which is why schema-drift-check.yml (scoped to migration-file-managed
+-- objects) never caught this, while the separate, PR-triggered "ACL Exposure Check" did.
+-- Postgres's default PUBLIC-inherited grants mean anon and authenticated both hold SELECT on
+-- it the same way current_org_id() held an unintended EXECUTE grant (see
+-- 20260912000003_close_pre_existing_grant_drift.sql for the identical root cause on a
+-- different object type).
+--
+-- Content is two columns: filename (migration file names, e.g.
+-- "20260622000001_shopify_installations.sql") and applied_at (a timestamp). No customer or
+-- end-customer data. Severity: LOW, same tier as the current_org_id finding -- not a
+-- cross-tenant or customer-data exposure, but real reconnaissance value (migration filenames
+-- narrate this project's schema/feature-rollout history) and a genuine least-privilege
+-- violation (rule 96) with zero legitimate anon/authenticated use case: the only code that
+-- ever reads or writes this table is supabase/push.py, running as the migration owner role
+-- directly against SUPABASE_DIRECT_URL, never through the app's anon/authenticated
+-- Postgres roles.
+--
+-- REVOKE ALL rather than RLS + a deny policy: RLS is the right tool when some rows should be
+-- visible and others not (per-tenant isolation); here no row should ever be visible to these
+-- roles, so an outright REVOKE is both simpler and stronger (rule 74's tie-breaker: simplest
+-- solution that satisfies the constraint).
+REVOKE ALL ON public._migrations FROM PUBLIC, anon, authenticated;
