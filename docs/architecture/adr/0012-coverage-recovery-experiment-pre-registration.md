@@ -132,3 +132,36 @@ have available when it was written. Whether two same-vendor, calibration-passing
 different checkpoints agreeing 4/5 clears this ADR's "second genuinely disjoint judge" bar, or
 whether a non-degenerate cross-vendor judge is still required, is GG's call — not decided here.
 `sentiment` stays unauthorized for prompt-level experimentation until that call is made.
+
+## Determination (Session 11 P6d) — NO, it does not clear the bar
+
+Stated plainly, not left open: **qwen3.6 + qwen3.8's 4/5 agreement does NOT satisfy this ADR's
+"second genuinely disjoint judge" bar.** `sentiment` remains unauthorized for prompt-level
+experimentation.
+
+Reasoning: the word "disjoint" in this ADR's bar was never decorative — it exists specifically
+to rule out correlated, vendor-level bias standing in for independent judgment, which is the
+identical failure class ADR 0013 found and fixed (`openai/gpt-oss-120b` sharing production's
+own reasoning patterns) and ADR 0016 found again in a different shape (Gemini's degenerate
+hedging). qwen3.6 and qwen3.8 are different checkpoints, but they are the same vendor, same
+architecture family, and plausibly the same training-data provenance — agreement between them
+does not rule out "Alibaba's Qwen family resolves this class of hedge a particular shared way,"
+which is exactly the kind of correlated-not-independent evidence this ADR's bar was written to
+exclude. Two same-vendor checkpoints agreeing is real, useful signal (strictly more than a
+single rater), but it is evidence of a different, weaker claim than "two independent
+judgments agree" — and the bar was written for the stronger claim.
+
+**What would clear it**: a third judge that is (a) genuinely cross-vendor from BOTH OpenAI
+(excluded, ADR 0013 — production's own model) and Alibaba Qwen (qwen3.6/qwen3.8), (b)
+calibration-passing on the unambiguous control set, AND (c) verified non-degenerate on a
+hard-but-decidable control specifically (the exact check ADR 0016 ran on Gemini and that
+calibration alone cannot substitute for — see that ADR's methodological finding). Candidates
+not yet tried in this project: Mistral, DeepSeek, or Anthropic Claude via a free-tier or
+zero-data-retention-enforced OpenRouter path (the same ZDR mechanism `app/core/providers/
+secondary.py`, PR #31, already implements for the production failover path) — none evaluated
+here; this is a candidate list for a future session, not a recommendation of one over the
+others without first calibrating and hard-control-testing whichever is actually tried.
+
+Until such a judge exists and passes both checks, this ADR's `sentiment` authorization stays
+closed on the original, correct reasoning: single-rater-equivalent (same-vendor) evidence is
+not the validated multi-judge consensus this ADR requires before pre-registering a hypothesis.
