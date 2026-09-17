@@ -6,10 +6,21 @@ working tree -- a deploy with no relationship to any git ref at all. `wrangler p
 deploy` has the identical property (it uploads whatever's in the given directory,
 regardless of git state), so switching providers alone doesn't fix the underlying
 problem; production deploys must happen from CI on `main` only (see
-.github/workflows/web-deploy.yml), and this script is the standing check that they
-still are -- it doesn't prevent a future manual `wrangler pages deploy --branch
-production` from bypassing CI, but it detects it after the fact, the same day, rather
-than staying silent indefinitely.
+.github/workflows/site-deploy.yml), and this script is the standing check that they
+still are -- it doesn't prevent a future manual `wrangler pages deploy --branch main`
+from bypassing CI, but it detects it after the fact, the same day, rather than staying
+silent indefinitely.
+
+Session 14 P1e: repointed from `samidha-reviews-web` to `review-iq-demo`.
+`samidha-reviews-web` was a duplicate, domain-less Cloudflare Pages copy of the web/ SPA
+(already served correctly by Vercel at app.samidhareviews.xyz) that shipped a permanent
+blank page because its required VITE_* secrets were never configured -- see the Session
+13/14 hotfix and docs/audit/ for the full finding. GG is deleting that project.
+`review-iq-demo` is the only Cloudflare Pages project this repo's CI still deploys to
+(site-deploy.yml, added in PR #184), and the only one holding a real custom domain
+(samidhareviews.xyz). If a Cloudflare Pages project ever serves `web/` again, repoint
+this script (and re-add its invocation to whatever workflow deploys it) rather than
+leaving it silently checking a project nothing deploys to.
 
 Queries Cloudflare's own Pages API for the current production deployment's recorded
 commit hash and checks it's an ancestor of `main` in the actual git history. Fails
@@ -31,7 +42,7 @@ import subprocess
 
 import httpx
 
-PROJECT_NAME = "samidha-reviews-web"
+PROJECT_NAME = "review-iq-demo"
 API_BASE = "https://api.cloudflare.com/client/v4"
 
 
