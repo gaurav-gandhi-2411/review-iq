@@ -56,7 +56,15 @@ CREATE TABLE IF NOT EXISTS public._migrations (
     filename text PRIMARY KEY,
     applied_at timestamptz NOT NULL DEFAULT now()
 );
+REVOKE ALL ON public._migrations FROM PUBLIC, anon, authenticated;
 """
+# Issue #186: this table was created with no explicit grants, so Postgres's default
+# PUBLIC-inherited privileges silently gave anon and authenticated SELECT on it -- caught by
+# the "ACL Exposure Check" workflow, not by schema-drift-check.yml (which only knows about
+# migration-file-managed objects, not this script's own bookkeeping table). The REVOKE above
+# runs every invocation (idempotent, no-op once already revoked) so this can't silently
+# regress if the table is ever dropped and recreated, and is the pattern for any future
+# tooling table this script creates outside supabase/migrations/.
 
 # --mark-applied-all backfill verification (Item 176d): a blank "trust the flag" backfill
 # can silently and PERMANENTLY hide a migration that was never actually applied -- demonstrated
