@@ -11,6 +11,7 @@ import structlog
 from fastapi import APIRouter, HTTPException, Request, status
 
 from app.core.config import get_settings
+from app.core.grounding import ungrounded_competitor_mentions
 from app.core.injection_guard import classify_injection_risk
 from app.core.language import detect_language
 from app.core.llm import extract_with_llm
@@ -264,6 +265,16 @@ async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtractio
             detail="Upstream LLM unavailable — try again in a moment.",
             headers={"Retry-After": "30"},
         ) from exc
+
+    # Session 14 P4b: same output-grounding check as /v2/extract -- see
+    # app/core/grounding.py's module docstring. The public, keyless demo is arguably the
+    # higher-value target here too (no API key needed to reach it at all).
+    ungrounded = ungrounded_competitor_mentions(body.text, llm_output.competitor_mentions)
+    if ungrounded:
+        log.warning("demo.ungrounded_competitor_mentions", dropped=ungrounded)
+        llm_output.competitor_mentions = [
+            c for c in llm_output.competitor_mentions if c not in ungrounded
+        ]
 
     meta = ExtractionMeta(
         model=model_name,
