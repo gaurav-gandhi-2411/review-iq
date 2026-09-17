@@ -18,13 +18,33 @@ Usage:
     uv run python scripts/probe_web_surfaces.py
     uv run python scripts/probe_web_surfaces.py --slack-webhook "$SLACK_WEBHOOK_URL"
 
-Cost: 4 GET requests/night against domains this project already owns. $0.
+Cost: 4 GET requests/night against domains this project already owns, +1 authenticated
+GET if PROBE_API_KEY is set. $0.
+
+Authenticated path (added 2026-08-01, BYPASSRLS remediation P2): none of the four
+surfaces above exercise an authenticated request. That gap matters because an RLS
+default-deny on the self-serve key-management endpoints returns empty/404 rather
+than an error -- a silent-wrong-answer failure that looks identical to a healthy 200
+to a probe that only checks reachability, and this probe as it stood would not have
+caught it had it ever reached production. (No such outage actually occurred this
+pass -- the regression this remediation responds to was a DB-level issue caught via
+direct query and rolled back before serving any traffic; Cloud Logging confirms zero
+5xx/ERROR entries throughout. This probe extension is a preventive gap-close, not a
+response to a confirmed incident.) If PROBE_API_KEY is set (a real, live,
+low-quota `riq_live_...` key for a dedicated synthetic probe org -- provisioning is a
+manual step, see the comment above _API_BASE_URL below), this probe now also GETs
+/v2/reviews with that key and fails if the response isn't a well-formed 200 with a
+"results" list -- proving the api_key -> org resolution -> RLS-scoped read path
+actually works end-to-end, not just that a public page loads. Skipped gracefully
+(logged, not a failure) if the secret isn't configured, same pattern as
+--slack-webhook above.
 """
 
 from __future__ import annotations
 
 import argparse
 import asyncio
+import os
 import time
 from dataclasses import dataclass
 
@@ -32,6 +52,15 @@ import httpx
 
 _TIMEOUT_SECONDS = 15.0
 _BRAND_MARKER = "Samidha Reviews"
+_API_BASE_URL = "https://api.samidhareviews.xyz"
+
+# Provisioning PROBE_API_KEY (manual, one-time -- not performed by this script or by
+# CI): create a dedicated org via the normal signup path (or app/api/admin.py's
+# operator CRUD) named something like "synthetic-probe", quota=10 (the probe issues
+# one request/night -- headroom for manual re-runs, never meant to serve real
+# traffic), and store the resulting riq_live_* key as the PROBE_API_KEY GitHub
+# Actions secret. Rotate it the same way any other credential in
+# ops/runbooks/secret-rotation.md is rotated.
 
 
 @dataclass
@@ -106,10 +135,74 @@ async def probe_surface(client: httpx.AsyncClient, surface: Surface) -> ProbeRes
     return ProbeResult(surface.name, surface.url, True, resp.status_code, latency_ms, "ok")
 
 
+async def probe_authenticated_path(client: httpx.AsyncClient, api_key: str) -> ProbeResult:
+    """GET /v2/reviews with a real api_key -- exercises resolve_org_for_api_key_prefix
+    -> _set_tenant() -> the actual RLS-scoped read, not just page reachability. Fails
+    on non-200 OR a response that isn't well-formed JSON with a "results" list --
+    catches exactly the failure class this probe was missing: a 200 with an empty or
+    malformed body from an RLS default-deny, which a bare status-code check would
+    silently treat as healthy."""
+    name, url = "authenticated-v2-reviews", f"{_API_BASE_URL}/v2/reviews"
+    t0 = time.monotonic()
+    try:
+        resp = await client.get(
+            url,
+            headers={"X-API-Key": api_key},
+            timeout=_TIMEOUT_SECONDS,
+            follow_redirects=True,
+        )
+    except Exception as exc:  # noqa: BLE001 -- any failure here is a probe finding, not a crash
+        latency_ms = int((time.monotonic() - t0) * 1000)
+        return ProbeResult(name, url, False, None, latency_ms, f"{type(exc).__name__}: {exc}")
+    latency_ms = int((time.monotonic() - t0) * 1000)
+
+    if resp.status_code != 200:
+        return ProbeResult(
+            name,
+            url,
+            False,
+            resp.status_code,
+            latency_ms,
+            f"expected HTTP 200, got {resp.status_code} -- body: {resp.text[:200]!r}",
+        )
+    try:
+        body = resp.json()
+    except Exception:  # noqa: BLE001
+        return ProbeResult(
+            name,
+            url,
+            False,
+            resp.status_code,
+            latency_ms,
+            f"HTTP 200 but body is not valid JSON: {resp.text[:200]!r}",
+        )
+    if "results" not in body or not isinstance(body["results"], list):
+        return ProbeResult(
+            name,
+            url,
+            False,
+            resp.status_code,
+            latency_ms,
+            f'HTTP 200 but no "results" list in body (keys: {list(body.keys())}) -- '
+            "this is the exact silent-failure shape an RLS default-deny produces",
+        )
+    return ProbeResult(name, url, True, resp.status_code, latency_ms, "ok")
+
+
 async def run_probe() -> list[ProbeResult]:
-    """Probe every surface concurrently and return their results."""
+    """Probe every surface concurrently and return their results.
+
+    Includes the authenticated path if PROBE_API_KEY is set (see module docstring);
+    skipped, not failed, if it isn't -- same optional-check pattern as --slack-webhook.
+    """
     async with httpx.AsyncClient() as client:
-        return list(await asyncio.gather(*(probe_surface(client, s) for s in _SURFACES)))
+        results = list(await asyncio.gather(*(probe_surface(client, s) for s in _SURFACES)))
+        api_key = os.environ.get("PROBE_API_KEY", "")
+        if api_key:
+            results.append(await probe_authenticated_path(client, api_key))
+        else:
+            print("  (PROBE_API_KEY not set -- skipping authenticated-path probe)")
+        return results
 
 
 def _notify_slack(webhook_url: str, results: list[ProbeResult]) -> None:
