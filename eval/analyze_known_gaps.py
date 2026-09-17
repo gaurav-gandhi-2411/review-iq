@@ -210,8 +210,8 @@ def main() -> int:
     records_by_id = {r["id"]: r for r in scoring["records"]}
 
     result: dict[str, Any] = {
-        "source_fixtures": str(FIXTURES_DIR.relative_to(REPO_ROOT)),
-        "source_scoring": str(SCORING_PATH.relative_to(REPO_ROOT)),
+        "source_fixtures": FIXTURES_DIR.relative_to(REPO_ROOT).as_posix(),
+        "source_scoring": SCORING_PATH.relative_to(REPO_ROOT).as_posix(),
         "n_fixtures_total": len(fixtures),
         "short_reviews": analyze_short_reviews(fixtures, records_by_id),
         "sarcasm": analyze_sarcasm(fixtures, records_by_id),
@@ -219,7 +219,7 @@ def main() -> int:
     OUTPUT_PATH.write_text(
         json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
-    print(f"Wrote {OUTPUT_PATH.relative_to(REPO_ROOT)}")
+    print(f"Wrote {OUTPUT_PATH.relative_to(REPO_ROOT).as_posix()}")
     print(json.dumps(result["short_reviews"]["counts"], indent=2))
     print(f"abstention_correctness_rate: {result['short_reviews']['abstention_correctness_rate']}")
     print(f"sarcasm cases found: {result['sarcasm']['n_sarcastic_or_backhanded_found']}")
