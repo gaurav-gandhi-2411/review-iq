@@ -55,7 +55,7 @@ def main() -> int:
                 flagged_examples[field].append({"id": fx["id"], "text": text, "value": v})
 
     result = {
-        "source_scoring": str(SCORING_PATH.relative_to(REPO_ROOT)),
+        "source_scoring": SCORING_PATH.relative_to(REPO_ROOT).as_posix(),
         "method": "case-insensitive substring match of each list value against review_text",
         "per_field": {
             f: {
@@ -73,7 +73,7 @@ def main() -> int:
     OUTPUT_PATH.write_text(
         json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
-    print(f"Wrote {OUTPUT_PATH.relative_to(REPO_ROOT)}")
+    print(f"Wrote {OUTPUT_PATH.relative_to(REPO_ROOT).as_posix()}")
     for f in CHECKED_FIELDS:
         p = result["per_field"][f]
         print(
