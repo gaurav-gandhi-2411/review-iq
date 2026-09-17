@@ -185,13 +185,58 @@ class TestConsensusForItem:
         assert result["stars_inferred"]["agreement"] == "unanimous"  # 4,4,3 within tolerance=1
 
     def test_missing_judge_output_handled_as_none(self):
+        # Session 11 P2 correction: this test previously asserted "unanimous" here -- that
+        # was the exact bug (~40 held-out fixtures, Session 10) where a judge silently
+        # dropping out (Groq OTPM rate-limit rejection) let 2-of-2 survivor agreement read
+        # identically to genuine 3-of-3 full-panel agreement. "unanimous" now requires every
+        # INVITED judge to respond and agree; 2 of 3 agreeing is "majority", full stop --
+        # never "unanimous", regardless of how confidently the survivors agree with each
+        # other. See docs/architecture/adr/0020-*.md.
         judge_outputs = {
             "j1": {"sentiment": "positive"},
             "j2": {"sentiment": "positive"},
-            "j3": None,  # judge errored entirely
+            "j3": None,  # judge errored entirely -- NO_RESPONSE, not a dissenting vote
         }
         result = consensus_for_item(judge_outputs)
         assert result["sentiment"]["silver"] == "positive"
-        # Only 2 of 3 judges responded, but both of THEM agree -- unanimous among
-        # responders, not "majority" (majority implies a responding judge dissented).
-        assert result["sentiment"]["agreement"] == "unanimous"
+        assert result["sentiment"]["agreement"] == "majority"
+        assert result["sentiment"]["agreement"] != "unanimous"
+
+    def test_no_response_never_reads_unanimous_even_with_full_agreement(self):
+        # Direct regression test for the shape found in Session 10's held-out batch: EVERY
+        # judge that responded agrees, but one judge is NO_RESPONSE (not merely a dissent) --
+        # this must never be reported as "unanimous", structurally, regardless of field type.
+        exact_silver, exact_level = vote_scalar_exact(
+            {"a": "negative", "b": "negative", "c": NO_RESPONSE}
+        )
+        assert exact_level == "majority"
+        assert exact_level != "unanimous"
+        assert exact_silver == "negative"
+
+        tolerant_silver, tolerant_level = vote_scalar_tolerant(
+            {"a": 3, "b": 3, "c": NO_RESPONSE}, tolerance=1
+        )
+        assert tolerant_level == "majority"
+        assert tolerant_level != "unanimous"
+
+        list_silver, list_level = vote_list_overlap(
+            {"a": ["good battery", "loud"], "b": ["good battery", "cheap"], "c": NO_RESPONSE},
+            threshold=0.3,
+        )
+        assert list_level == "majority"
+        assert list_level != "unanimous"
+
+    def test_consensus_for_item_no_response_never_reads_unanimous(self):
+        judge_outputs = {
+            "j1": {"sentiment": "negative", "stars_inferred": 2},
+            "j2": {"sentiment": "negative", "stars_inferred": 2},
+            "j3": None,  # NO_RESPONSE
+        }
+        result = consensus_for_item(judge_outputs)
+        assert result["sentiment"]["agreement"] == "majority"
+        assert result["stars_inferred"]["agreement"] == "majority"
+        for field in result:
+            assert result[field]["agreement"] != "unanimous", (
+                f"{field} read 'unanimous' with a NO_RESPONSE judge present -- "
+                "the exact regression this test exists to catch"
+            )

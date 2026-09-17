@@ -10,7 +10,7 @@ The CI eval (`.github/workflows/eval.yml`) runs in **cassette-replay mode**
 - **$0 / free-tier-safe** — zero live API calls; immune to the Groq free-tier daily-quota
   exhaustion that otherwise takes a *live* eval red regardless of code quality.
 - **Still a real gate** — it validates the extraction logic + prompts against the recorded
-  model behavior and the fixture ground truth. Pass = **<!-- METRICS:START:gate_summary -->overall ≥ 79%, en ≥ 77%, hi-en ≥ 80%, hi ≥ 80%<!-- METRICS:END -->**
+  model behavior and the fixture ground truth. Pass = **<!-- METRICS:START:gate_summary -->overall ≥ 76%, en ≥ 77%, hi-en ≥ 75%<!-- METRICS:END -->**
   (`PASS_THRESHOLD` / `PER_LANG_THRESHOLD` in `eval/runner.py`).
 
 No `GROQ_API_KEY` is set in CI, so a **missing cassette fails loudly** (no silent live call).

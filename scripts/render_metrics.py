@@ -32,6 +32,11 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parent.parent
 EXTRACTION_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "latest.json"
 AUTHENTICITY_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "authenticity_latest.json"
+HELD_OUT_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "held_out_scoring_v2.json"
+COVERAGE_METRICS_PATH = REPO_ROOT / "eval" / "results" / "coverage_metrics_n106.json"
+INJECTION_SUITE_PATH = REPO_ROOT / "eval" / "results" / "injection_suite_n40.json"
+PROMPT_GUARD_FPR_PATH = REPO_ROOT / "eval" / "results" / "prompt_guard_fpr_n106.json"
+KNOWN_GAPS_PATH = REPO_ROOT / "eval" / "results" / "known_gaps_n106.json"
 ADR_LINK = "docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md"
 
 BLOCK_RE = re.compile(
@@ -42,8 +47,9 @@ BLOCK_RE = re.compile(
 )
 
 
-# Display order matching the repo's existing convention (en / hi-en / hi), not alphabetical.
-LANG_DISPLAY_ORDER: tuple[str, ...] = ("en", "hi-en", "hi")
+# Display order matching the repo's existing convention, not alphabetical. "hi" retired
+# from this gate entirely (Session 11 P4d, ADR 0022) -- not listed even as a fallback.
+LANG_DISPLAY_ORDER: tuple[str, ...] = ("en", "hi-en")
 
 
 def _ordered_languages(per_lang: dict[str, Any]) -> list[str]:
@@ -129,6 +135,207 @@ def render_authenticity_table_md(data: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def render_held_out_table_md(data: dict[str, Any]) -> str:
+    """Render the real-world, uncontaminated held-out measurement (README.md).
+
+    Session 11 P4b: this is a DIFFERENT number from `extraction_table` above, and
+    deliberately not blended with it. `extraction_table` (the CI-gate set) is a change
+    detector measured against fixtures the prompt was developed against -- see
+    ADR 0021/0022. This block is the honest real-world figure: scored against a
+    quarantined held-out corpus (`eval/fixtures/_held_out_hindi_hinglish/`) the prompt has
+    never seen, via `eval/score_held_out_corpus_v2.py`, cassette-replay reproducible.
+    """
+    as_dep = data["as_deployed"]
+    forced = data["language_forced"]
+    models = f"{data['groq_model_small']} / {data['groq_model_large']}"
+    sha = data.get("git_sha")
+    lines = [
+        f"Measured {data['generated_at']}"
+        + (f" &middot; `{sha[:7]}`" if sha else "")
+        + f" &middot; models: {models}",
+        "",
+        "| Condition | Score | 95% CI | n |",
+        "|---|---|---|---|",
+        f"| **As actually deployed** (real language routing) | **{_fmt_pct(as_dep['overall_score'])}** "
+        f"| [{_fmt_pct(as_dep['ci_95']['lower'])}, {_fmt_pct(as_dep['ci_95']['upper'])}] "
+        f"| {as_dep['n']} |",
+        f"| Language routing forced correct | {_fmt_pct(forced['overall_score'])} "
+        f"| [{_fmt_pct(forced['ci_95']['lower'])}, {_fmt_pct(forced['ci_95']['upper'])}] "
+        f"| {forced['n']} |",
+    ]
+    n_total = data["n_fixtures"]
+    lang_acc = data.get("language_detection_accuracy")
+    lang_acc_str = _fmt_pct(lang_acc) if lang_acc is not None else "n/a"
+    lines += [
+        "",
+        f"n={n_total} real Hinglish reviews the prompt has never seen (never used for "
+        f"prompt development), 0 hi (see [ADR 0016](docs/architecture/adr/0016-third-judge-corpus-batch-1-and-sentiment-recheck.md)). "
+        f"Production's own language detector agreed with this corpus's language label on "
+        f"{lang_acc_str} of fixtures. This is the number to trust for real-world accuracy; "
+        f"the CI-gate table above is a regression detector, not a real-world accuracy claim "
+        f"-- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md).",
+    ]
+    return "\n".join(lines)
+
+
+def render_coverage_metrics_table_md(data: dict[str, Any]) -> str:
+    """Render the coverage/accuracy-on-answered/wrong-committed breakdown (README.md).
+
+    Session 12 P3d: flat accuracy is the weakest possible framing of an abstaining
+    extractor -- this decomposes it for the two hedge-capable fields (sentiment,
+    buy_again). See ADR 0026 for the full analysis and why a single blended
+    "rarely wrong when it commits" claim is not supported across both fields.
+    """
+    lines = [
+        "| Field | Coverage | Accuracy-on-answered | Wrong-committed |",
+        "|---|---|---|---|",
+    ]
+    for field, info in data["per_field"].items():
+        cov = info["coverage"]
+        cov_ci = info["coverage_ci_95"]
+        acc = info["accuracy_on_answered"]
+        acc_ci = info["accuracy_on_answered_ci_95"]
+        wrong = info["wrong_committed_of_answered"]
+        wrong_rate = info["wrong_committed_rate"]
+        wrong_ci = info["wrong_committed_rate_ci_95"]
+        lines.append(
+            f"| {field} "
+            f"| {_fmt_pct(cov)} [{_fmt_pct(cov_ci['lower'])}, {_fmt_pct(cov_ci['upper'])}] "
+            f"| {_fmt_pct(acc)} [{_fmt_pct(acc_ci['lower'])}, {_fmt_pct(acc_ci['upper'])}] "
+            f"| {wrong} = {_fmt_pct(wrong_rate)} "
+            f"[{_fmt_pct(wrong_ci['lower'])}, {_fmt_pct(wrong_ci['upper'])}] |"
+        )
+    lines += [
+        "",
+        f"n={data['n_fixtures']}, `{data['condition']}` condition (real language routing). "
+        '**"Rarely wrong when it commits" does not hold as a single claim across both '
+        "fields** -- buy_again's committed-answer error rate is materially higher than "
+        "sentiment's; see [ADR 0026](docs/architecture/adr/0026-coverage-accuracy-on-answered-wrong-committed-n106.md) "
+        "for the full analysis, including why a blended claim would misrepresent buy_again.",
+    ]
+    return "\n".join(lines)
+
+
+def render_committed_accuracy_headline_md(data: dict[str, Any]) -> str:
+    """Render the P1b headline claim (README.md / any Markdown surface).
+
+    Session 13 P1b: generated from eval/results/coverage_metrics_n106.json so this exact
+    sentence can never drift from the underlying numbers -- see
+    docs/architecture/adr/0027-n23-discrepancy-resolved-and-headline-claim.md for why a
+    single blended "rarely wrong when it commits" claim is NOT what this renders: the two
+    hedge-capable fields diverge enough that only a per-field claim is honest.
+    """
+    sentiment = data["per_field"]["sentiment"]
+    buy_again = data["per_field"]["buy_again"]
+    n = data["n_fixtures"]
+    return (
+        f"**When it commits to an answer, this model is correct "
+        f"{_fmt_pct(sentiment['accuracy_on_answered'])} of the time for sentiment "
+        f"(95% CI {_fmt_pct(sentiment['accuracy_on_answered_ci_95']['lower'])}–"
+        f"{_fmt_pct(sentiment['accuracy_on_answered_ci_95']['upper'])}, n={n}) and "
+        f"{_fmt_pct(buy_again['accuracy_on_answered'])} of the time for buy-again "
+        f"(95% CI {_fmt_pct(buy_again['accuracy_on_answered_ci_95']['lower'])}–"
+        f"{_fmt_pct(buy_again['accuracy_on_answered_ci_95']['upper'])}, n={n}) -- rates "
+        f'divergent enough that a single blended "rarely wrong when it commits" claim would '
+        f"misrepresent buy-again.** See "
+        f"[ADR 0027](docs/architecture/adr/0027-n23-discrepancy-resolved-and-headline-claim.md) "
+        f"for why this is reported per-field, never blended into one number, and for the "
+        f"separate (and separately true) abstention-rate figures."
+    )
+
+
+def render_committed_accuracy_headline_html(data: dict[str, Any]) -> str:
+    """Render the P1b headline claim as a pair of stat cards (site/index.html trust section).
+
+    Same source data and same per-field-never-blended discipline as the Markdown renderer
+    above -- see its docstring and ADR 0027.
+    """
+    sentiment = data["per_field"]["sentiment"]
+    buy_again = data["per_field"]["buy_again"]
+    n = data["n_fixtures"]
+
+    def _card(label: str, info: dict[str, Any]) -> str:
+        acc = _fmt_pct(info["accuracy_on_answered"])
+        lo = _fmt_pct(info["accuracy_on_answered_ci_95"]["lower"])
+        hi = _fmt_pct(info["accuracy_on_answered_ci_95"]["upper"])
+        abstain_lo = _fmt_pct(1 - info["coverage_ci_95"]["upper"])
+        abstain_hi = _fmt_pct(1 - info["coverage_ci_95"]["lower"])
+        return (
+            '            <div class="bg-gray-900 rounded-lg p-6 border border-gray-700">\n'
+            f'              <div class="text-3xl font-bold text-blue-300">{acc}</div>\n'
+            f'              <div class="text-gray-100 font-semibold mt-1">accurate when it commits to {label}</div>\n'
+            f'              <div class="text-gray-500 text-xs mt-2">95% CI [{lo}, {hi}], n={n}. '
+            f"Separately, it abstains (&ldquo;unclear&rdquo;) on {abstain_lo}&ndash;{abstain_hi} "
+            f"of all reviews rather than commit to any answer.</div>\n"
+            "            </div>"
+        )
+
+    return (
+        "\n"
+        + _card("a sentiment call", sentiment)
+        + "\n"
+        + _card("a buy-again call", buy_again)
+        + "\n          "
+    )
+
+
+def render_known_gaps_html(data: dict[str, Any], authenticity_data: dict[str, Any]) -> str:
+    """Render the "Known gaps" banner (site/index.html) from eval/analyze_known_gaps.py's
+    output -- Session 14 P2d. Replaces two previously-unmeasured claims:
+
+    - "Sarcastic Hinglish... scores lower" had no measurement behind it. Real count: 3 of
+      106 held-out reviews. Too small for any accuracy/coverage claim -- says so instead.
+    - "Short reviews... occasionally miss fields" undersold the real finding two ways: the
+      abstention rate is high AND correct (95.3% of the time a null was right, the panel
+      agrees the info isn't there), while the real, larger issue on short reviews is
+      confident-and-wrong guesses on fields that can't be left blank (product, topics),
+      not silent misses.
+
+    Session 15 P2b adds a third disclosure: the hero's "fake-review flag" claim sits next
+    to sentiment/urgency (both rigorously measured above) with no measurement of its own.
+    Sourced directly from eval/results/authenticity_latest.json's own provenance_note --
+    that file's `mode` is "historical (reconstructed, no live run this session)", its `n`
+    is 40 (not this corpus's 106), and its own note says the number is not reproducible
+    (no cassette-replay support) and predates this held-out set. This sentence is a
+    disclosure, not a metric -- if a real cassette-backed authenticity measurement against
+    this held-out set ever lands (closing the provenance_note's own "KNOWN GAP"), delete
+    this paragraph and add a real accuracy row instead of editing it in place.
+    """
+    sr = data["short_reviews"]
+    sarcasm = data["sarcasm"]
+    n = sr["n_short_reviews"]
+    abstention_rate = _fmt_pct(sr["abstention_correctness_rate"], 1)
+    real_gap_n = sr["counts"]["real_gap"]
+    wrong_committed_n = sr["counts"]["wrong_committed"]
+    total_checks = sr["total_field_checks"]
+    sarcasm_n = sarcasm["n_sarcastic_or_backhanded_found"]
+    sarcasm_total = data["n_fixtures_total"]
+    auth_n = authenticity_data["n"]
+
+    return (
+        "\n"
+        '        <span class="text-amber-400 font-semibold">Known gaps: </span>\n'
+        '        English `sentiment` and `buy_again` hedge (return "mixed"/null) far more '
+        "often under the current models than the previous ones — accuracy on the answers "
+        "the model DOES commit to is unchanged, but it commits less often, and flat "
+        "accuracy charges that the same as a wrong answer. Hinglish shows the opposite "
+        f"pattern. On the {n} short reviews (under 10 words) in our held-out test set, when "
+        f"the model says a field is unclear, that call is right {abstention_rate} of the "
+        "time — the information usually genuinely isn't in the text. The real short-review "
+        "issue is different: on fields it can't leave blank (like the product name), it "
+        f"guesses wrong more often than it should ({wrong_committed_n} of {total_checks} "
+        f"field checks) — there just isn't enough text to go on. Only {real_gap_n} of "
+        f"{total_checks} were genuine silent misses. Separately: sarcastic or backhanded "
+        f"phrasing is rare in real marketplace reviews — {sarcasm_n} of {sarcasm_total} in "
+        "our held-out set — too few to measure reliably, so we don't claim a number for it "
+        "either way. One more, stated plainly: unlike the fields above, the fake-review "
+        f"flag has not been measured against this held-out set. Its only historical number "
+        f"(n={auth_n}, a smaller and older corpus) is not reproducible and predates this "
+        "test set — treat it as an early-access signal, not a scored capability, until "
+        "that changes.\n      "
+    )
+
+
 def render_gate_summary_md(data: dict[str, Any]) -> str:
     """Render the one-line gate-threshold summary used by eval/README.md.
 
@@ -160,15 +367,20 @@ def render_extraction_table_html(data: dict[str, Any]) -> str:
     hand-authored fix this generator would otherwise clobber on the next run.
     """
     per_lang = data["per_language"]
-    lang_labels = {"en": "English", "hi": "Hindi", "hi-en": "Hinglish"}
+    # Session 11 P4d: "hi" (Devanagari) retired from this gate entirely (ADR 0022) -- no
+    # longer a row here at all, not even an "experimental" one. See render_language_table_html
+    # for the matching change on the other table this same source data feeds.
+    lang_labels = {"en": "English", "hi-en": "Hinglish"}
+    lang_scope_note: dict[str, str] = {}
     rows: list[str] = []
     for lang in sorted(per_lang):
         info = per_lang[lang]
         label = lang_labels.get(lang, lang)
+        scope_note = lang_scope_note.get(lang, "")
         rows.append(
             '            <tr class="bg-gray-900 hover:bg-gray-800 transition-colors">\n'
             f'              <td class="px-6 py-4 text-gray-100">{label} '
-            f'<span class="text-gray-500 text-xs">({lang}, n={info["n"]})</span></td>\n'
+            f'<span class="text-gray-500 text-xs">({lang}, n={info["n"]}{scope_note})</span></td>\n'
             f'              <td class="px-6 py-4 font-mono text-blue-300">{_fmt_pct(info["score"])}</td>\n'
             f'              <td class="px-6 py-4 font-mono text-gray-400 text-xs">'
             f"[{_fmt_pct(info['ci_95']['lower'])}, {_fmt_pct(info['ci_95']['upper'])}]</td>\n"
@@ -198,9 +410,12 @@ def render_language_table_html(data: dict[str, Any]) -> str:
     found the same session. A failing language now renders red with its gate noted inline.
     """
     per_lang = data["per_language"]
+    # Session 11 P4d: Devanagari Hindi retired from this gate entirely (ADR 0022) -- real
+    # Devanagari-script review yield in the largest corpus available to this project is
+    # zero, not just thin. Not listed as a language row at all anymore (not even as
+    # "experimental"), matching every other public surface's claim.
     rows_spec = [
         ("en", "English", "Latin"),
-        ("hi", "Hindi", "Devanagari"),
         ("hi-en", "Hinglish", "Roman-script code-mix"),
     ]
     rows: list[str] = []
@@ -217,6 +432,102 @@ def render_language_table_html(data: dict[str, Any]) -> str:
             "              </tr>"
         )
     return "\n" + "\n".join(rows) + "\n            "
+
+
+def render_coverage_metrics_table_html(data: dict[str, Any]) -> str:
+    """Render the coverage/accuracy-on-answered/wrong-committed `<tbody>` rows (site/).
+
+    Same source and discipline as render_coverage_metrics_table_md -- see that function's
+    docstring and ADR 0026/0027.
+    """
+    rows: list[str] = []
+    for field, info in data["per_field"].items():
+        cov = _fmt_pct(info["coverage"])
+        cov_ci = f"[{_fmt_pct(info['coverage_ci_95']['lower'])}, {_fmt_pct(info['coverage_ci_95']['upper'])}]"
+        acc = _fmt_pct(info["accuracy_on_answered"])
+        acc_ci = (
+            f"[{_fmt_pct(info['accuracy_on_answered_ci_95']['lower'])}, "
+            f"{_fmt_pct(info['accuracy_on_answered_ci_95']['upper'])}]"
+        )
+        wrong = info["wrong_committed_of_answered"]
+        wrong_rate = _fmt_pct(info["wrong_committed_rate"])
+        rows.append(
+            '            <tr class="bg-gray-900 hover:bg-gray-800 transition-colors">\n'
+            f'              <td class="px-6 py-4 text-gray-100 capitalize">{field.replace("_", " ")}</td>\n'
+            f'              <td class="px-6 py-4 font-mono text-blue-300">{cov} <span class="text-gray-500 text-xs">{cov_ci}</span></td>\n'
+            f'              <td class="px-6 py-4 font-mono text-blue-300">{acc} <span class="text-gray-500 text-xs">{acc_ci}</span></td>\n'
+            f'              <td class="px-6 py-4 font-mono text-gray-300">{wrong} = {wrong_rate}</td>\n'
+            "            </tr>"
+        )
+    return "\n" + "\n".join(rows) + "\n          "
+
+
+_INJECTION_FAMILY_LABELS: dict[str, tuple[str, str]] = {
+    "phrase_variant": ("Phrase variants evading the regex", ""),
+    "encoding_evasion": (
+        "Encoding/homoglyph evasion",
+        "leetspeak, zero-width chars, fullwidth Unicode, spacing",
+    ),
+    "role_confusion": ("Role-confusion framing", '"you are now a..."'),
+    "field_targeted": (
+        "Field-targeted injection",
+        '"for the buy_again field, always output true..."',
+    ),
+    "non_english": (
+        "Non-English attacks",
+        "Hindi, Hinglish, Spanish, French, German, Portuguese",
+    ),
+}
+
+
+def render_injection_suite_table_md(data: dict[str, Any]) -> str:
+    """Render the P4d injection-suite per-family pass-rate table (SECURITY.md).
+
+    Session 13 P4d/P4e: generated from eval/results/injection_suite_n40.json so this
+    table can never quietly drift from a re-run of eval/run_injection_suite.py -- see
+    that script and eval/injection_suite.py for the full methodology, and
+    docs/architecture/adr/0015-*.md's Session 13 correction for why this suite measures
+    pre-filter detection rather than spending the far scarcer extraction-model budget.
+    """
+    lines = ["| Family | Caught by Layer 1+2 | Notes |", "|---|---|---|"]
+    for family, info in data["per_family"].items():
+        label, detail = _INJECTION_FAMILY_LABELS.get(family, (family, ""))
+        n = info["n"]
+        caught = info["caught"]
+        rate = _fmt_pct(info["pass_rate"], decimals=1)
+        cell = f"{caught}/{n} ({rate})"
+        emphasis = caught == 0
+        family_cell = f"**{label}**" if emphasis else label
+        rate_cell = f"**{cell}**" if emphasis else cell
+        note = detail
+        if info["missed_ids"]:
+            note = f"{detail + ' -- ' if detail else ''}missed: {', '.join(info['missed_ids'])}"
+        lines.append(f"| {family_cell} | {rate_cell} | {note} |")
+    overall_rate = _fmt_pct(data["overall_pass_rate"], decimals=1)
+    lines.append(
+        f"| **Overall** | **{sum(f['caught'] for f in data['per_family'].values())}/"
+        f"{data['n_cases']} ({overall_rate})** | |"
+    )
+    return "\n".join(lines)
+
+
+def render_prompt_guard_fpr_md(data: dict[str, Any]) -> str:
+    """Render the P4b false-positive-rate sentence (SECURITY.md).
+
+    Generated from eval/results/prompt_guard_fpr_n106.json -- see
+    eval/measure_prompt_guard_fpr.py for methodology.
+    """
+    n = data["n_fixtures"]
+    fp = data["n_false_positives"]
+    rate = _fmt_pct(data["false_positive_rate"], decimals=1)
+    max_score = data["score_max"]
+    threshold = data["threshold"]
+    return (
+        f"{fp}/{n} ({rate}) on real marketplace reviews the classifier had never seen -- "
+        f"max score {max_score:.3f} against a {threshold} threshold, comfortable margin. "
+        f"**A real customer review has not been observed to trigger Layer 2 in this "
+        f"measurement.**"
+    )
 
 
 PORTFOLIO_METRICS_PATH = REPO_ROOT / ".portfolio" / "metrics.json"
@@ -290,10 +601,30 @@ BLOCK_RENDERERS: dict[str, Any] = {
         _load_json(AUTHENTICITY_RESULTS_PATH)
     ),
     "gate_summary": lambda: render_gate_summary_md(_load_json(EXTRACTION_RESULTS_PATH)),
+    "held_out_table": lambda: render_held_out_table_md(_load_json(HELD_OUT_RESULTS_PATH)),
+    "coverage_metrics_table": lambda: render_coverage_metrics_table_md(
+        _load_json(COVERAGE_METRICS_PATH)
+    ),
     "extraction_table_html": lambda: render_extraction_table_html(
         _load_json(EXTRACTION_RESULTS_PATH)
     ),
     "language_table_html": lambda: render_language_table_html(_load_json(EXTRACTION_RESULTS_PATH)),
+    "committed_accuracy_headline": lambda: render_committed_accuracy_headline_md(
+        _load_json(COVERAGE_METRICS_PATH)
+    ),
+    "committed_accuracy_headline_html": lambda: render_committed_accuracy_headline_html(
+        _load_json(COVERAGE_METRICS_PATH)
+    ),
+    "coverage_metrics_table_html": lambda: render_coverage_metrics_table_html(
+        _load_json(COVERAGE_METRICS_PATH)
+    ),
+    "injection_suite_table": lambda: render_injection_suite_table_md(
+        _load_json(INJECTION_SUITE_PATH)
+    ),
+    "prompt_guard_fpr": lambda: render_prompt_guard_fpr_md(_load_json(PROMPT_GUARD_FPR_PATH)),
+    "known_gaps_html": lambda: render_known_gaps_html(
+        _load_json(KNOWN_GAPS_PATH), _load_json(AUTHENTICITY_RESULTS_PATH)
+    ),
 }
 
 TARGET_FILES: tuple[Path, ...] = (
@@ -301,6 +632,7 @@ TARGET_FILES: tuple[Path, ...] = (
     REPO_ROOT / "eval" / "README.md",
     REPO_ROOT / "site" / "index.html",
     REPO_ROOT / "site" / "docs" / "index.html",
+    REPO_ROOT / "SECURITY.md",
 )
 
 

@@ -47,17 +47,21 @@ FIXTURE_CALL_TIMEOUT_SECONDS = 240
 # what this margin is designed to catch. If corpus growth is the reason a threshold needs
 # to move, that is a deliberate re-baseline decision (state the new measured number and
 # why, same as this comment does), not a threshold nudge to make CI green again.
-#   overall: 79.3% measured -> gate 0.79 (0.3pp margin)
-#   en:      78.1% measured -> gate 0.77 (1.1pp margin) -- still carries the diagnosed
-#            English-specific sentiment/buy_again hedging pattern (Session 5 P3), now
-#            measured without the fixture-003 scoring bug's distortion on top of it
-#   hi:      81.3% measured -> gate 0.80 (unaffected by this fix; unchanged from Session 5)
-#   hi-en:   80.6% measured -> gate 0.80 (unaffected by this fix; unchanged from Session 5)
-PASS_THRESHOLD = 0.79
+#   Session 11 P4c re-baseline: Hindi ("hi") retired from this gate (see
+#   docs/architecture/adr/0022-*.md) and 004_hinglish.json's mislabeled language fixed
+#   (ADR 0017), both of which change what n=49 vs n=43 and the overall/hi-en means are --
+#   this is a deliberate re-baseline, not a threshold nudge, per this comment's own rule.
+#   overall: 77.1% measured (n=43: 27 en + 16 hi-en) -> gate 0.76 (1.1pp margin)
+#   en:      78.1% measured -> gate 0.77 (1.1pp margin) -- unchanged from the prior
+#            baseline (Hindi's removal and the hi-en fixture fix don't touch en fixtures)
+#   hi-en:   75.6% measured (n=16, was 80.6%/n=15 before the 004_hinglish fix) -> gate
+#            0.75 (0.6pp margin) -- see ADR 0017 for why the fixture-language correction
+#            moved this number, and ADR 0021 for the wider methodology gap it sits inside
+#            (this gate's own numbers assume correct language routing; see that ADR)
+PASS_THRESHOLD = 0.76
 PER_LANG_THRESHOLD: dict[str, float] = {
     "en": 0.77,
-    "hi": 0.80,
-    "hi-en": 0.80,
+    "hi-en": 0.75,
 }
 _DEFAULT_PER_LANG_THRESHOLD = 0.80  # fallback for any language not listed above
 
@@ -411,12 +415,21 @@ async def run_single_http(
 
 
 def _collect_fixture_paths(fixtures_dir: Path) -> list[Path]:
-    """Return all fixture JSON paths: flat files + hi-en/ and hi/ subdirs."""
+    """Return all fixture JSON paths: flat files + the hi-en/ subdir.
+
+    Session 11 P4d: Devanagari Hindi ("hi") retired from this gate entirely -- the 6
+    synthetic fixtures moved to eval/fixtures/_quarantine_synthetic_hi/ (an underscore-
+    prefixed directory, invisible to this walk by the same naming convention the
+    held-out corpus's own quarantine already relies on -- see that directory's README
+    for why an underscore prefix is a structural exclusion, not just a naming choice).
+    See docs/architecture/adr/0022-*.md for why: real Devanagari-script review yield in
+    the largest corpus available to this project is zero, not just thin, and this
+    product no longer claims Hindi (Devanagari) support on any public surface.
+    """
     paths: list[Path] = sorted(p for p in fixtures_dir.glob("*.json") if not p.name.startswith("."))
-    for subdir in ("hi-en", "hi"):
-        sub = fixtures_dir / subdir
-        if sub.is_dir():
-            paths.extend(sorted(p for p in sub.glob("*.json") if not p.name.startswith(".")))
+    sub = fixtures_dir / "hi-en"
+    if sub.is_dir():
+        paths.extend(sorted(p for p in sub.glob("*.json") if not p.name.startswith(".")))
     return paths
 
 

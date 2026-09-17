@@ -209,12 +209,19 @@ class TestClassifyAbstentions:
         # End-to-end sanity check against the actual committed eval/consensus data --
         # locks in the Session 7 P2 numbers cited in
         # docs/specs/wave1-coverage-abstention-analysis.md.
+        #
+        # Re-derived Session 11 (ADR 0022): retiring the 6 synthetic `hi` fixtures from
+        # eval/results.json (49 -> 43 scored fixtures) removed some of the already-correct
+        # hedge records that came from those fixtures -- sentiment 7->6, buy_again 4->2.
+        # `real_hedges` (the genuinely-ambiguous/decidable-but-hedged counts below) is
+        # unaffected, confirming the `hi` fixtures contributed only already-correct hedges,
+        # not real_hedges rows, to the original count.
         real_hedges, already_correct = p2.classify_abstentions()
 
         already_correct_by_field: dict[str, int] = {}
         for field, _language, _fixture_id in already_correct:
             already_correct_by_field[field] = already_correct_by_field.get(field, 0) + 1
-        assert already_correct_by_field == {"sentiment": 7, "buy_again": 4}
+        assert already_correct_by_field == {"sentiment": 6, "buy_again": 2}
 
         by_field_classification: dict[str, dict[str, int]] = {}
         for row in real_hedges:

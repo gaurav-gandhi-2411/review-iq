@@ -271,7 +271,11 @@ class TestAccuracyOnFixtures:
         assert acc >= 0.90, f"English detection accuracy {acc:.0%} < 90% (samples={len(samples)})"
 
     def test_hindi_fixture_accuracy(self) -> None:
-        samples = _load_fixture_texts("hi", "hi")
+        # Session 11 (ADR 0022): Devanagari `hi` retired from the CI gate and its fixtures
+        # quarantined to `_quarantine_synthetic_hi/` -- the detector code itself is retained
+        # (a real Devanagari review could still arrive), so this still checks it doesn't
+        # regress on the retained quarantined fixtures, just outside the scored gate.
+        samples = _load_fixture_texts("_quarantine_synthetic_hi", "hi")
         assert len(samples) >= 4, "Need >=4 Hindi samples"
         acc = self._run_accuracy(samples)
         assert acc >= 0.95, f"Hindi detection accuracy {acc:.0%} < 95% (samples={len(samples)})"
@@ -283,8 +287,9 @@ class TestAccuracyOnFixtures:
         assert acc >= 0.75, f"Hinglish detection accuracy {acc:.0%} < 75% (samples={len(samples)})"
 
     def test_overall_accuracy_across_all_languages(self) -> None:
+        # `hi` here is the retained-but-unscored quarantine set (see test_hindi_fixture_accuracy).
         en = _load_fixture_texts(None, "en")
-        hi = _load_fixture_texts("hi", "hi")
+        hi = _load_fixture_texts("_quarantine_synthetic_hi", "hi")
         hi_en = _load_fixture_texts("hi-en", "hi-en")
         all_samples = en + hi + hi_en
         assert len(all_samples) >= 30, f"Need >=30 total samples, got {len(all_samples)}"

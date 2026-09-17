@@ -1,16 +1,33 @@
 interface Props { size?: number }
 
+// Session 13 P5: GG's approved final mark (design/brand/mark-primary.svg) -- two flame
+// shapes, tilted toward and away from each other, on a cream ground. Flat fills, no
+// gradients, so (unlike the prior provisional mark) this component needs no per-instance
+// unique-id machinery. Static only -- the animated variant (design/brand/mark-animated.svg)
+// is reserved for the site/ marketing header and loading states, not this dashboard chrome
+// (Layout header, Login, Try page), per Session 13 P5b.
 export default function LogoMark({ size = 32 }: Props) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 32 32"
+      viewBox="0 0 110 110"
       width={size}
       height={size}
       aria-hidden="true"
     >
-      <rect width="32" height="32" rx="7" fill="#1E6D3D" />
-      <path d="M16,6 L18.5,13.5 L26,16 L18.5,18.5 L16,26 L13.5,18.5 L6,16 L13.5,13.5 Z" fill="white" />
+      <rect width="110" height="110" rx="26" fill="#FAF4EA" />
+      <g transform="rotate(-14 42 58)">
+        <path
+          d="M42 26 C53 42 58 52 58 61 C58 73 51 80 42 80 C33 80 26 73 26 61 C26 52 31 42 42 26 Z"
+          fill="#F6C042"
+        />
+      </g>
+      <g transform="rotate(14 70 58)">
+        <path
+          d="M70 26 C81 42 86 52 86 61 C86 73 79 80 70 80 C61 80 54 73 54 61 C54 52 59 42 70 26 Z"
+          fill="#E8823A"
+        />
+      </g>
     </svg>
   )
 }
