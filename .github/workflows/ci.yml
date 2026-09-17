@@ -85,6 +85,13 @@ jobs:
           API_KEY: ci-key
         run: uv run python scripts/check_eval_results_reproducible.py
 
+      # Mechanical proof that eval/results/known_gaps_n106.json qualifies for rule 70a gate 3's
+      # generated-artifact carve-out (Session 14 P2, PR #188): regenerates it via
+      # eval/analyze_known_gaps.py ($0, deterministic, no live LLM calls) and fails on any
+      # drift from what's committed.
+      - name: Known-gaps measurement reproducibility (gate-3 carve-out proof)
+        run: uv run python scripts/check_known_gaps_reproducible.py
+
       # Mechanical proof that eval/results/grounding_check_fpr_n106.json qualifies for rule
       # 70a gate 3's generated-artifact carve-out (Session 14 P4c, PR #189): regenerates it via
       # eval/measure_grounding_check.py ($0, deterministic, no live LLM calls) and fails on any

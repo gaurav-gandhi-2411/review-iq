@@ -1,6 +1,6 @@
 {
-  "source_fixtures": "eval\\fixtures\\_held_out_hindi_hinglish",
-  "source_scoring": "eval\\results\\held_out_scoring_v2.json",
+  "source_fixtures": "eval/fixtures/_held_out_hindi_hinglish",
+  "source_scoring": "eval/results/held_out_scoring_v2.json",
   "n_fixtures_total": 106,
   "short_reviews": {
     "n_short_reviews": 27,
