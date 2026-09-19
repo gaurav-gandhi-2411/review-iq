@@ -37,8 +37,9 @@ import http.server
 import json
 import sys
 import threading
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from playwright.sync_api import Page, Route, sync_playwright
 
@@ -155,8 +156,10 @@ def check_widths(page: Page, url: str, out_dir: Path, label: str) -> list[str]:
             "() => ({sw: document.documentElement.scrollWidth, iw: window.innerWidth})"
         )
         overflow_ok = metrics["sw"] <= metrics["iw"]
-        print(f"[{'PASS' if overflow_ok else 'FAIL'}] {width}px no horizontal scroll: "
-              f"scrollWidth={metrics['sw']} innerWidth={metrics['iw']}")
+        print(
+            f"[{'PASS' if overflow_ok else 'FAIL'}] {width}px no horizontal scroll: "
+            f"scrollWidth={metrics['sw']} innerWidth={metrics['iw']}"
+        )
         if not overflow_ok:
             failures.append(f"{width}px: horizontal scroll ({metrics['sw']} > {metrics['iw']})")
         page.screenshot(path=str(out_dir / f"{label}-{width}-fold.png"))
@@ -164,8 +167,10 @@ def check_widths(page: Page, url: str, out_dir: Path, label: str) -> list[str]:
         if width in FOLD_CHECKED:
             box = page.locator("#live-text").bounding_box()
             in_fold = bool(box) and box["y"] >= 0 and box["y"] + box["height"] <= height
-            print(f"[{'PASS' if in_fold else 'FAIL'}] {width}x{height} #live-text inside the "
-                  f"first screen: box={box}")
+            print(
+                f"[{'PASS' if in_fold else 'FAIL'}] {width}x{height} #live-text inside the "
+                f"first screen: box={box}"
+            )
             if not in_fold:
                 failures.append(f"{width}x{height}: textarea not fully above the fold ({box})")
             else:
@@ -174,8 +179,10 @@ def check_widths(page: Page, url: str, out_dir: Path, label: str) -> list[str]:
                 typed = page.locator("#live-text").input_value()
                 scrolled = page.evaluate("() => window.scrollY")
                 typed_ok = typed.startswith("Superb earphone") and scrolled == 0
-                print(f"[{'PASS' if typed_ok else 'FAIL'}] {width}x{height} typed into textarea "
-                      f"without scrolling: scrollY={scrolled}")
+                print(
+                    f"[{'PASS' if typed_ok else 'FAIL'}] {width}x{height} typed into textarea "
+                    f"without scrolling: scrollY={scrolled}"
+                )
                 if not typed_ok:
                     failures.append(f"{width}x{height}: typing failed or page scrolled")
     return failures
@@ -202,8 +209,10 @@ def check_contrast(page: Page, url: str) -> list[str]:
                     f"(fg={rec['fg']} bg={rec['bg']} {rec['size']}px/{rec['weight']})"
                 )
         ok = not any(f.startswith(f"{width}px") for f in failures)
-        print(f"[{'PASS' if ok else 'FAIL'}] {width}px contrast: {len(records)} text elements, "
-              f"{len(pairs)} distinct fg/bg/size-class pairs")
+        print(
+            f"[{'PASS' if ok else 'FAIL'}] {width}px contrast: {len(records)} text elements, "
+            f"{len(pairs)} distinct fg/bg/size-class pairs"
+        )
         for (fg, bg, need), ratio in sorted(pairs.items(), key=lambda kv: kv[1])[:6]:
             print(f"        lowest: {ratio:.2f} (need {need}) fg={list(fg)} bg={list(bg)}")
         worst[str(width)] = min(pairs.values())
@@ -234,8 +243,12 @@ def _text_handler(status: int, body: str) -> Callable[[Route], None]:
     """Route handler answering with a non-JSON text body (e.g. a 404 or a proxy HTML page)."""
 
     def handler(route: Route) -> None:
-        route.fulfill(status=status, content_type="text/plain",
-                      headers={"access-control-allow-origin": "*"}, body=body)
+        route.fulfill(
+            status=status,
+            content_type="text/plain",
+            headers={"access-control-allow-origin": "*"},
+            body=body,
+        )
 
     return handler
 
@@ -256,8 +269,10 @@ def check_states(page: Page, url: str) -> list[str]:
 
     def demo_ok(route: Route) -> None:
         if route.request.method == "OPTIONS":
-            route.fulfill(status=204, headers={"access-control-allow-origin": "*",
-                                               "access-control-allow-headers": "*"})
+            route.fulfill(
+                status=204,
+                headers={"access-control-allow-origin": "*", "access-control-allow-headers": "*"},
+            )
             return
         calls.append(json.loads(route.request.post_data or "{}"))
         _fulfil_json(route, 200, {"sentiment": "mixed", "urgency": "low"})
@@ -265,28 +280,36 @@ def check_states(page: Page, url: str) -> list[str]:
     page.route("**/demo/extract", demo_ok)
     page.goto(url, wait_until="networkidle")
     page.locator("#live-btn").click()
-    expect("demo: empty submit shows inline hint and makes no request",
-           page.locator("#live-empty").is_visible() and not calls)
+    expect(
+        "demo: empty submit shows inline hint and makes no request",
+        page.locator("#live-empty").is_visible() and not calls,
+    )
     page.locator("#live-text").fill("Battery bahut weak hai.")
     page.locator("#live-btn").click()
     page.wait_for_selector("#live-result-wrap:not([hidden])", timeout=3000)
-    expect("demo: success renders highlighted JSON and posts {text}",
-           calls == [{"text": "Battery bahut weak hai."}]
-           and "sentiment" in page.locator("#live-result").inner_text())
+    expect(
+        "demo: success renders highlighted JSON and posts {text}",
+        calls == [{"text": "Battery bahut weak hai."}]
+        and "sentiment" in page.locator("#live-result").inner_text(),
+    )
     page.unroute("**/demo/extract")
 
     page.route("**/demo/extract", lambda r: _fulfil_json(r, 429, {"detail": "rate"}))
     page.locator("#live-btn").click()
     page.wait_for_selector("#live-error:not([hidden])", timeout=3000)
-    expect("demo: 429 shows the friendly rate-limit copy",
-           "5 requests/min" in page.locator("#live-error").inner_text())
+    expect(
+        "demo: 429 shows the friendly rate-limit copy",
+        "5 requests/min" in page.locator("#live-error").inner_text(),
+    )
     page.unroute("**/demo/extract")
 
     page.route("**/demo/extract", lambda r: r.abort())
     page.locator("#live-btn").click()
     page.wait_for_selector("#live-error:not([hidden])", timeout=3000)
-    expect("demo: network failure shows the same friendly copy, button re-enabled",
-           page.locator("#live-btn").is_enabled())
+    expect(
+        "demo: network failure shows the same friendly copy, button re-enabled",
+        page.locator("#live-btn").is_enabled(),
+    )
     page.unroute("**/demo/extract")
 
     # --- lead form -------------------------------------------------------------------
@@ -294,8 +317,10 @@ def check_states(page: Page, url: str) -> list[str]:
 
     def leads_ok(route: Route) -> None:
         if route.request.method == "OPTIONS":
-            route.fulfill(status=204, headers={"access-control-allow-origin": "*",
-                                               "access-control-allow-headers": "*"})
+            route.fulfill(
+                status=204,
+                headers={"access-control-allow-origin": "*", "access-control-allow-headers": "*"},
+            )
             return
         payloads.append(json.loads(route.request.post_data or "{}"))
         _fulfil_json(route, 202, {"ok": True})
@@ -303,27 +328,36 @@ def check_states(page: Page, url: str) -> list[str]:
     page.route("**/leads", leads_ok)
     page.goto(url, wait_until="networkidle")
     page.locator("#lead-submit").click()
-    expect("lead: empty submit shows inline errors and posts nothing",
-           page.locator("#lead-name-error").is_visible() and not payloads)
+    expect(
+        "lead: empty submit shows inline errors and posts nothing",
+        page.locator("#lead-name-error").is_visible() and not payloads,
+    )
     page.locator("#lead-name").fill("Asha Rao")
     page.locator("#lead-email").fill("not-an-email")
     page.locator("#lead-submit").click()
-    expect("lead: malformed email is rejected inline",
-           page.locator("#lead-email-error").is_visible() and not payloads)
+    expect(
+        "lead: malformed email is rejected inline",
+        page.locator("#lead-email-error").is_visible() and not payloads,
+    )
     page.locator("#lead-email").fill("asha@example.com")
     page.locator("#lead-company").fill("Acme D2C")
     page.locator("#lead-brands").fill("12")
     page.locator("#lead-volume").select_option(index=2)
     page.locator("#lead-submit").click()
     page.wait_for_selector("#lead-success:not([hidden])", timeout=3000)
-    expect("lead: success replaces the form, no reload",
-           page.locator("#lead-form").is_hidden())
+    expect("lead: success replaces the form, no reload", page.locator("#lead-form").is_hidden())
     keys = sorted(payloads[0]) if payloads else []
-    expect("lead: payload has exactly the contract keys",
-           keys == sorted(["name", "email", "company", "brands", "reviews_per_month",
-                           "message", "website"]))
-    expect("lead: honeypot `website` is sent empty for a human",
-           bool(payloads) and payloads[0]["website"] == "")
+    expect(
+        "lead: payload has exactly the contract keys",
+        keys
+        == sorted(
+            ["name", "email", "company", "brands", "reviews_per_month", "message", "website"]
+        ),
+    )
+    expect(
+        "lead: honeypot `website` is sent empty for a human",
+        bool(payloads) and payloads[0]["website"] == "",
+    )
     page.unroute("**/leads")
 
     # 503 = lead neither stored nor emailed: must also show the hello@ fallback. Every failure
@@ -333,8 +367,10 @@ def check_states(page: Page, url: str) -> list[str]:
         (429, "429 rate limit", False),
         (503, "503 temporarily_unavailable", True),
     ):
-        page.route("**/leads", _json_handler(
-            status, {"ok": False, "error": "x", "message": f"Server said {status}."}))
+        page.route(
+            "**/leads",
+            _json_handler(status, {"ok": False, "error": "x", "message": f"Server said {status}."}),
+        )
         page.goto(url, wait_until="networkidle")
         page.locator("#lead-name").fill("Asha Rao")
         page.locator("#lead-email").fill("asha@example.com")
@@ -345,12 +381,17 @@ def check_states(page: Page, url: str) -> list[str]:
         page.locator("#lead-submit").click()
         page.wait_for_selector("#lead-status:not([hidden])", timeout=3000)
         text = page.locator("#lead-status").inner_text()
-        expect(f"lead: {label} shows the server's message, form and input stay",
-               f"Server said {status}." in text
-               and page.locator("#lead-form").is_visible()
-               and page.locator("#lead-message").input_value() == "Twelve storefronts.")
-        expect(f"lead: {label} {'includes' if wants_fallback else 'need not include'} the "
-               "hello@ fallback", ("hello@samidhareviews.xyz" in text) or not wants_fallback)
+        expect(
+            f"lead: {label} shows the server's message, form and input stay",
+            f"Server said {status}." in text
+            and page.locator("#lead-form").is_visible()
+            and page.locator("#lead-message").input_value() == "Twelve storefronts.",
+        )
+        expect(
+            f"lead: {label} {'includes' if wants_fallback else 'need not include'} the "
+            "hello@ fallback",
+            ("hello@samidhareviews.xyz" in text) or not wants_fallback,
+        )
         page.unroute("**/leads")
 
     # Endpoint not deployed yet (404, no JSON body) and a 200 that is not {"ok": true}
@@ -365,9 +406,11 @@ def check_states(page: Page, url: str) -> list[str]:
         page.locator("#lead-volume").select_option(index=2)
         page.locator("#lead-submit").click()
         page.wait_for_selector("#lead-status:not([hidden])", timeout=3000)
-        expect(f"lead: unexpected {status} fails closed with the hello@ fallback, no success",
-               "hello@samidhareviews.xyz" in page.locator("#lead-status").inner_text()
-               and page.locator("#lead-success").is_hidden())
+        expect(
+            f"lead: unexpected {status} fails closed with the hello@ fallback, no success",
+            "hello@samidhareviews.xyz" in page.locator("#lead-status").inner_text()
+            and page.locator("#lead-success").is_hidden(),
+        )
         page.unroute("**/leads")
 
     page.route("**/leads", lambda r: r.abort())
@@ -379,9 +422,11 @@ def check_states(page: Page, url: str) -> list[str]:
     page.locator("#lead-volume").select_option(index=2)
     page.locator("#lead-submit").click()
     page.wait_for_selector("#lead-status:not([hidden])", timeout=3000)
-    expect("lead: network failure shows the hello@ fallback and re-enables submit",
-           "hello@samidhareviews.xyz" in page.locator("#lead-status").inner_text()
-           and page.locator("#lead-submit").is_enabled())
+    expect(
+        "lead: network failure shows the hello@ fallback and re-enables submit",
+        "hello@samidhareviews.xyz" in page.locator("#lead-status").inner_text()
+        and page.locator("#lead-submit").is_enabled(),
+    )
     page.unroute("**/leads")
     return failures
 
@@ -390,8 +435,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--label", default="after", help="screenshot filename prefix")
     parser.add_argument("--out", default="reports/screenshots/s15c-c8", help="output directory")
-    parser.add_argument("--no-assert", action="store_true",
-                        help="screenshots only (baseline capture of the pre-redesign page)")
+    parser.add_argument(
+        "--no-assert",
+        action="store_true",
+        help="screenshots only (baseline capture of the pre-redesign page)",
+    )
     args = parser.parse_args()
 
     out_dir = (REPO_ROOT / args.out).resolve()
@@ -408,8 +456,9 @@ def main() -> int:
                     page.goto(url, wait_until="networkidle")
                     page.wait_for_timeout(500)
                     page.screenshot(path=str(out_dir / f"{args.label}-{width}-fold.png"))
-                    page.screenshot(path=str(out_dir / f"{args.label}-{width}-full.png"),
-                                    full_page=True)
+                    page.screenshot(
+                        path=str(out_dir / f"{args.label}-{width}-full.png"), full_page=True
+                    )
                     print(f"captured {args.label} at {width}px")
             else:
                 failures += check_widths(page, url, out_dir, args.label)
