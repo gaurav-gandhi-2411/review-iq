@@ -282,17 +282,39 @@
     .plan .price { font: 700 var(--step-3)/1.1 var(--font-display); letter-spacing: -0.01em; }
     .plan .price small { font: 400 0.9375rem var(--font-body); color: var(--ink-2); letter-spacing: 0; }
     .plan .inr { color: var(--ink-2); font-size: 0.9375rem; margin-bottom: var(--space-4); }
-    .plan .btn { margin-top: auto; }
+    .plan .btn { margin-top: auto; padding-inline: var(--space-2); font-size: 0.9375rem; }
     .plan-featured { border: 2px solid var(--ember); background: var(--saffron-tint); }
     .plan-featured .badge { position: absolute; top: -0.85rem; left: var(--space-4); }
     .plan-featured h3 { margin-top: var(--space-2); }
     .price-foot { color: var(--ink-3); font-size: var(--step--1); margin-top: var(--space-6); }
 
-    /* Contact */
-    .contact-box { max-width: 44rem; }
-    .contact-box p { margin-top: var(--space-3); color: var(--ink-2); }
-    .contact-box .btn { margin-top: var(--space-5); }
+    /* Contact + lead form */
     #contact { border-bottom: 0; }
+    .contact-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); align-items: start; }
+    @media (min-width: 64rem) { .contact-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: var(--space-8); } }
+    .contact-copy > p { margin-top: var(--space-3); color: var(--ink-2); }
+    .contact-copy > .fine-print { color: var(--ink-3); }
+    .lead-panel { background: var(--cream-2); border: 1px solid var(--line); border-radius: var(--r-lg); padding: var(--space-5); }
+    .field { margin-bottom: var(--space-4); min-width: 0; }
+    .field-row { display: grid; grid-template-columns: minmax(0, 1fr); column-gap: var(--space-4); }
+    @media (min-width: 40rem) { .field-row { grid-template-columns: 1fr 1fr; } }
+    .field label { display: block; font-weight: 600; font-size: 0.9375rem; margin-bottom: var(--space-1); }
+    .field input, .field select, .field textarea {
+      width: 100%; min-height: 44px; padding: 0.6rem 0.8rem; font: 400 var(--step-0)/1.4 var(--font-body);
+      color: var(--ink); background: var(--cream); border: 1.5px solid var(--ink-3); border-radius: var(--r-sm);
+    }
+    .field textarea { resize: vertical; line-height: 1.55; }
+    .field [aria-invalid="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+    .field-error { margin-top: var(--space-1); padding-left: var(--space-2); border-left: 3px solid var(--ember);
+                   font-size: 0.875rem; font-weight: 500; max-width: none; }
+    .lead-status { margin-bottom: var(--space-4); padding: var(--space-3) var(--space-4); background: var(--ember-tint);
+                   border-left: 4px solid var(--ember); border-radius: 0 var(--r-sm) var(--r-sm) 0; max-width: none; }
+    .lead-status a { text-decoration-color: var(--ink); }
+    /* Honeypot: off-screen rather than display:none, so naive bots still fill it. */
+    .hp { position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+    .lead-success h3 { font: 700 var(--step-2)/1.2 var(--font-display); }
+    .lead-success p { margin-top: var(--space-3); }
+    .lead-success:focus { outline: none; }
 
     /* Footer */
     .site-footer { background: var(--ink); color: var(--cream); }
@@ -406,7 +428,7 @@
         <a href="#pricing">Pricing</a>
         <a href="#contact">Contact</a>
       </div>
-      <a href="#contact" class="btn btn-ember btn-sm">Request access</a>
+      <button type="button" class="btn btn-ember btn-sm" data-lead-open>Request access</button>
     </div>
   </nav>
 
@@ -465,7 +487,7 @@
       </div>
 
       <div class="hero-actions">
-        <a href="#contact" class="btn btn-ember">Request early access</a>
+        <button type="button" class="btn btn-ember" data-lead-open>Request early access</button>
         <a href="#pricing">See pricing</a>
       </div>
     </div>
@@ -808,14 +830,14 @@
             <p class="vol">1,000 reviews/mo</p>
             <p class="price">$0<small> /mo</small></p>
             <p class="inr">&#8377;0/mo</p>
-            <a href="#contact" class="btn btn-saffron">Request access</a>
+            <button type="button" class="btn btn-saffron" data-lead-open>Request access</button>
           </div>
           <div class="plan">
             <h3>Starter</h3>
             <p class="vol">5,000 reviews/mo</p>
             <p class="price">$29<small> /mo</small></p>
             <p class="inr">&#8377;1,499/mo</p>
-            <a href="#contact" class="btn btn-saffron">Ask about Starter</a>
+            <button type="button" class="btn btn-saffron" data-lead-open>Ask about Starter</button>
           </div>
           <div class="plan plan-featured">
             <span class="badge">Most popular</span>
@@ -823,21 +845,21 @@
             <p class="vol">25,000 reviews/mo</p>
             <p class="price">$79<small> /mo</small></p>
             <p class="inr">&#8377;4,999/mo</p>
-            <a href="#contact" class="btn btn-ember">Ask about Growth</a>
+            <button type="button" class="btn btn-ember" data-lead-open>Ask about Growth</button>
           </div>
           <div class="plan">
             <h3>Scale</h3>
             <p class="vol">100,000 reviews/mo</p>
             <p class="price">$199<small> /mo</small></p>
             <p class="inr">&#8377;12,999/mo</p>
-            <a href="#contact" class="btn btn-saffron">Ask about Scale</a>
+            <button type="button" class="btn btn-saffron" data-lead-open>Ask about Scale</button>
           </div>
           <div class="plan">
             <h3>Agency</h3>
             <p class="vol">200,000+ reviews/mo</p>
             <p class="price">Talk to us</p>
             <p class="inr">Custom, multi-brand billing</p>
-            <a href="#contact" class="btn btn-saffron">Ask about Agency</a>
+            <button type="button" class="btn btn-saffron" data-lead-open>Ask about Agency</button>
           </div>
         </div>
         <p class="price-foot">
@@ -850,21 +872,94 @@
          CONTACT
     =========================================================== -->
     <section id="contact" class="section">
-      <div class="wrap">
-        <div class="contact-box">
+      <div class="wrap contact-grid">
+        <div class="contact-copy">
           <h2>Talk to us</h2>
           <p>
             Tell us how many brands you manage and roughly how many reviews a month &mdash;
             we'll reply with a plan and a real API key, not a sales deck.
           </p>
-          <a
-            href="mailto:hello@samidhareviews.xyz?subject=Samidha%20Reviews%20-%20pricing%20question"
-            class="btn btn-ember"
-          >hello@samidhareviews.xyz</a>
+          <p class="fine-print">
+            Rather use email? Write to
+            <a href="mailto:hello@samidhareviews.xyz?subject=Samidha%20Reviews%20-%20pricing%20question">hello@samidhareviews.xyz</a>.
+          </p>
           <p class="fine-print">
             Prefer to just try it first? <a href="#demo">See it work</a> or
             <a href="#live">paste your own review</a> above &mdash; no signup needed.
           </p>
+        </div>
+
+        <!-- Lead form (Session 15c C8). POSTs to api.samidhareviews.xyz/leads, which is built in a
+             separate backend PR (#205): until that PR is merged and its schema change applied, the
+             submit path below lands in the generic "couldn't send" state, which points at the
+             hello@ address. -->
+        <div class="lead-panel">
+          <form id="lead-form" novalidate aria-labelledby="lead-heading">
+            <h3 id="lead-heading" class="sr-only">Request early access</h3>
+            <p id="lead-status" class="lead-status" role="alert" hidden></p>
+
+            <div class="field-row">
+              <div class="field">
+                <label for="lead-name">Your name</label>
+                <input id="lead-name" name="name" type="text" autocomplete="name" required aria-describedby="lead-name-error" />
+                <p id="lead-name-error" class="field-error" hidden></p>
+              </div>
+              <div class="field">
+                <label for="lead-email">Work email</label>
+                <input id="lead-email" name="email" type="email" autocomplete="email" inputmode="email" required aria-describedby="lead-email-error" />
+                <p id="lead-email-error" class="field-error" hidden></p>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="lead-company">Company</label>
+              <input id="lead-company" name="company" type="text" autocomplete="organization" required aria-describedby="lead-company-error" />
+              <p id="lead-company-error" class="field-error" hidden></p>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label for="lead-brands">Brands you manage</label>
+                <input id="lead-brands" name="brands" type="number" min="1" step="1" inputmode="numeric" required aria-describedby="lead-brands-error" />
+                <p id="lead-brands-error" class="field-error" hidden></p>
+              </div>
+              <div class="field">
+                <label for="lead-volume">Reviews per month</label>
+                <select id="lead-volume" name="reviews_per_month" required aria-describedby="lead-volume-error">
+                  <option value="">Choose a range</option>
+                  <option value="0-1000">Under 1,000</option>
+                  <option value="1000-5000">1,000 &ndash; 5,000</option>
+                  <option value="5000-25000">5,000 &ndash; 25,000</option>
+                  <option value="25000-100000">25,000 &ndash; 100,000</option>
+                  <option value="100000-200000">100,000 &ndash; 200,000</option>
+                  <option value="200000+">200,000 or more</option>
+                </select>
+                <p id="lead-volume-error" class="field-error" hidden></p>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="lead-message">Anything we should know? <span class="muted">(optional)</span></label>
+              <textarea id="lead-message" name="message" rows="3"></textarea>
+            </div>
+
+            <!-- Honeypot: humans never see or reach this; bots that fill every input reveal themselves.
+                 Must stay empty and is sent as `website`. -->
+            <div class="hp" aria-hidden="true">
+              <label for="lead-website">Website</label>
+              <input id="lead-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+            </div>
+
+            <button type="submit" id="lead-submit" class="btn btn-ember">Request early access</button>
+            <p class="fine-print">No card required to talk to us.</p>
+          </form>
+
+          <!-- Success state: replaces the form, no reload -->
+          <div id="lead-success" class="lead-success" tabindex="-1" hidden>
+            <h3>Thanks, we've got your details</h3>
+            <p>We'll reply to <strong id="lead-success-email"></strong> with a plan and a real API key, not a sales deck.</p>
+            <p class="fine-print">Something to add? Write to <a href="mailto:hello@samidhareviews.xyz">hello@samidhareviews.xyz</a>.</p>
+          </div>
         </div>
       </div>
     </section>
@@ -1229,6 +1324,129 @@
     }
 
     // ---------------------------------------------------------------------------
+    // Lead form -- POST {API_BASE}/leads (backend: PR #205, separate from this page).
+    // Contract: 200/202 {"ok":true}; 422 and 429 {"ok":false,"error","message"}; 503
+    // {"ok":false,"error":"temporarily_unavailable","message"} when the lead could be neither
+    // stored nor emailed. Always show the server's `message`; never clear the form on failure.
+    // ---------------------------------------------------------------------------
+
+    const LEAD_FALLBACK_EMAIL = "hello@samidhareviews.xyz";
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    // id suffix -> validator returning an error message, or "" when the value is fine
+    const LEAD_RULES = {
+      name:    function(v) { return v ? "" : "Enter your name."; },
+      email:   function(v) { return EMAIL_RE.test(v) ? "" : "Enter a work email like name@company.com."; },
+      company: function(v) { return v ? "" : "Enter your company."; },
+      brands:  function(v) { return /^\d+$/.test(v) && Number(v) >= 1 ? "" : "Enter how many brands you manage, as a whole number."; },
+      volume:  function(v) { return v ? "" : "Choose a range for reviews per month."; },
+    };
+
+    function setLeadFieldError(key, message) {
+      const input = document.getElementById("lead-" + key);
+      const err = document.getElementById("lead-" + key + "-error");
+      err.textContent = message;
+      err.hidden = !message;
+      if (message) { input.setAttribute("aria-invalid", "true"); } else { input.removeAttribute("aria-invalid"); }
+    }
+
+    function validateLeadField(key) {
+      const message = LEAD_RULES[key](document.getElementById("lead-" + key).value.trim());
+      setLeadFieldError(key, message);
+      return !message;
+    }
+
+    // Validates every required field; returns the first invalid input (to focus) or null.
+    function validateLead() {
+      let first = null;
+      Object.keys(LEAD_RULES).forEach(function(key) {
+        if (!validateLeadField(key) && !first) first = document.getElementById("lead-" + key);
+      });
+      return first;
+    }
+
+    function showLeadError(message, withFallback) {
+      const el = document.getElementById("lead-status");
+      el.replaceChildren(document.createTextNode(message));
+      if (withFallback) {
+        const link = document.createElement("a");
+        link.href = "mailto:" + LEAD_FALLBACK_EMAIL;
+        link.textContent = LEAD_FALLBACK_EMAIL;
+        el.append(" You can also email ", link, " and nothing you typed is lost.");
+      }
+      el.hidden = false;
+    }
+
+    async function submitLead(ev) {
+      ev.preventDefault();
+      document.getElementById("lead-status").hidden = true;
+      const invalid = validateLead();
+      if (invalid) { invalid.focus(); return; }
+
+      const btn = document.getElementById("lead-submit");
+      const field = function(id) { return document.getElementById(id).value.trim(); };
+      const payload = {
+        name: field("lead-name"),
+        email: field("lead-email"),
+        company: field("lead-company"),
+        brands: field("lead-brands"),
+        reviews_per_month: document.getElementById("lead-volume").value,
+        message: field("lead-message"),
+        website: document.getElementById("lead-website").value,
+      };
+
+      btn.disabled = true;
+      btn.textContent = "Sending…";
+      btn.setAttribute("aria-busy", "true");
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(function() { controller.abort(); }, 15000);
+        const r = await fetch(API_BASE + "/leads", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        let body = null;
+        try { body = await r.json(); } catch (_) { body = null; }
+
+        if (r.ok && body && body.ok === true) {
+          document.getElementById("lead-success-email").textContent = payload.email;
+          document.getElementById("lead-form").hidden = true;
+          const done = document.getElementById("lead-success");
+          done.hidden = false;
+          done.focus();
+        } else if ((r.status === 422 || r.status === 429 || r.status === 503) && body && body.message) {
+          // 503 means the lead was neither stored nor emailed: point at the fallback address too.
+          showLeadError(body.message, r.status === 503);
+        } else {
+          // Unexpected status or body (including any 2xx that is not {"ok":true}): fail closed.
+          showLeadError("We couldn't send that just now. Your details are still in the form, so you can try again.", true);
+        }
+      } catch (_) {
+        // Network error, timeout, CORS, abort
+        showLeadError("We couldn't reach the server. Check your connection and try again.", true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Request early access";
+        btn.removeAttribute("aria-busy");
+      }
+    }
+
+    // Any [data-lead-open] button scrolls to the form and puts the cursor in its first field.
+    function openLeadForm() {
+      const contact = document.getElementById("contact");
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      contact.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+      const target = document.getElementById("lead-form").hidden
+        ? document.getElementById("lead-success")
+        : document.getElementById("lead-name");
+      target.focus({ preventScroll: true });
+    }
+
+    // ---------------------------------------------------------------------------
     // Utility
     // ---------------------------------------------------------------------------
 
@@ -1245,6 +1463,17 @@
     // ---------------------------------------------------------------------------
 
     document.addEventListener("DOMContentLoaded", function() {
+      document.getElementById("lead-form").addEventListener("submit", submitLead);
+      Object.keys(LEAD_RULES).forEach(function(key) {
+        // Inline validation: check a field when the visitor leaves it, clear its error as they fix it.
+        const input = document.getElementById("lead-" + key);
+        input.addEventListener("blur", function() { if (input.value.trim() || input.hasAttribute("aria-invalid")) validateLeadField(key); });
+        input.addEventListener("input", function() { if (input.hasAttribute("aria-invalid")) validateLeadField(key); });
+      });
+      document.querySelectorAll("[data-lead-open]").forEach(function(btn) {
+        btn.addEventListener("click", openLeadForm);
+      });
+
       fetch("./demo-data.json")
         .then(function(r) {
           if (!r.ok) throw new Error("HTTP " + r.status);
