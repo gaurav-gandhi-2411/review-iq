@@ -190,6 +190,18 @@ def render_held_out_table_md(data: dict[str, Any]) -> str:
             "now. The model's outputs did not change, only the comparator "
             "([ADR 0030](docs/architecture/adr/0030-free-text-scorers.md)).",
         ]
+    constant = data.get("constant_fields") or []
+    excl = (data.get("overall_score_excluding_constant_fields") or {}).get("as_deployed")
+    if constant and excl is not None:
+        # The opposite-direction disclosure: a field that is constant across the whole corpus
+        # inflates the headline, so the headline must not stand alone.
+        names = ", ".join(f"`{f}`" for f in constant)
+        lines += [
+            "",
+            f"**Constant fields.** {names} scores 100% on every review here (the corpus contains "
+            "no case for it), which adds a free 100% to one of the equal-weighted fields in the "
+            f"overall score. Excluding it, as deployed: {_fmt_pct(excl)}.",
+        ]
     return "\n".join(lines)
 
 

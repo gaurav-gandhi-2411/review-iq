@@ -157,6 +157,23 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
 
     from app.core.config import get_settings
 
+    # A field that scores exactly 1.0 on every record in both conditions is constant, not
+    # informative -- e.g. `stars` (an explicit star rating stated in the review text) is null
+    # in gold AND prediction for all 106 reviews, so it adds a free 1.0 to every overall score.
+    # Report the overall without such fields alongside the headline so it can't flatter it.
+    conditions = ("as_deployed", "language_forced")
+    field_names = list(records[0]["as_deployed"]["field_scores"]) if records else []
+    constant_fields = [
+        f
+        for f in field_names
+        if all(r[c]["field_scores"][f] == 1.0 for r in records for c in conditions)
+    ]
+    informative = [f for f in field_names if f not in constant_fields]
+    overall_excl = {
+        c: mean(mean(r[c]["field_scores"][f] for f in informative) for r in records)
+        for c in conditions
+    }
+
     settings = get_settings()
     n_mismatched = sum(1 for r in records if r["detected_language"] != r["gt_language"])
     return {
@@ -170,6 +187,8 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
         "language_detection_accuracy": 1 - (n_mismatched / len(records)) if records else None,
         "as_deployed": cond_summary("as_deployed"),
         "language_forced": cond_summary("language_forced"),
+        "constant_fields": constant_fields,
+        "overall_score_excluding_constant_fields": overall_excl,
     }
 
 

@@ -12,7 +12,7 @@ corpus labelers). Two instances of the same bug class have now been found:
 
 Design rules (a priori, deliberately NOT fitted to the held-out set -- fitting a scorer to the
 set it then scores is the contamination pattern, so every rule below is structural and the
-derivation of the null vocabulary is reproducible from `eval/derive_product_null_set.py`):
+derivation of the null vocabulary is documented in docs/architecture/adr/0030-free-text-scorers.md):
 
   1. Normalization is applied to BOTH prediction and gold, identically (symmetric).
   2. A `product` is "null" (no product named) iff every token is in NULL_PRODUCT_TOKENS, or
@@ -43,10 +43,10 @@ SCORER_VERSION = "2026-09-20.free-text-v1"
 # value in the held-out gold, held-out predictions and the dev-set gold and keeping only the
 # tokens that appear in placeholder strings ("unknown", "product", "products", "general
 # product", "unknown product", "this product") plus English articles/demonstratives that can
-# only ever wrap them -- see eval/derive_product_null_set.py, which regenerates the inventory.
-# "unspecified" was added after the independent dev-set-gold check in that script showed a
-# labeler-written "unspecified product" being misclassified as a named product; it is a plain
-# synonym of "unknown" and was found OUTSIDE the held-out set, so adding it is not fitting.
+# only ever wrap them -- inventory and result in ADR 0030.
+# "unspecified" was added after an independent check against the dev-set gold (not the
+# held-out set) showed a labeler-written "unspecified product" being misclassified as a named
+# product; it is a plain synonym of "unknown", so adding it is not fitting to the held-out set.
 NULL_PRODUCT_TOKENS: frozenset[str] = frozenset(
     {
         "unknown",
