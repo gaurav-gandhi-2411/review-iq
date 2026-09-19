@@ -22,148 +22,430 @@
   <meta name="twitter:title" content="Samidha Reviews — Know What Every Customer Actually Said" />
   <meta name="twitter:description" content="Turn a flood of customer reviews across every brand you manage into one queryable signal — sentiment, urgency, and authenticity, in English and Hinglish." />
   <meta name="twitter:image" content="https://review-iq-demo.pages.dev/og-image.png" />
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Session 15c C8: two typefaces, plain stylesheet link only (no scripts). Fraunces (display)
+       and IBM Plex Sans (body + UI + code) are the pair named in design/tokens.json; the system
+       fallbacks below keep layout intact if fonts.googleapis.com is blocked. The Tailwind CDN
+       script is gone: the page is one hand-written stylesheet driven by the tokens in :root. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&amp;family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&amp;display=swap" />
   <style>
-    /* JSON syntax highlighting */
-    .json-key    { color: #93c5fd; } /* blue-300 */
-    .json-string { color: #86efac; } /* green-300 */
-    .json-number { color: #fde047; } /* yellow-300 */
-    .json-bool   { color: #fca5a5; } /* red-300 */
-    .json-null   { color: #9ca3af; } /* gray-400 */
+    /* ==========================================================================
+       TOKENS -- the only place a colour, size or radius is defined.
+       Brand palette is design/tokens.json (saffron, ember, ink, cream). Everything
+       else is a tint mixed from those four, so the page has no other hue family.
+       Rules the palette imposes (WCAG AA, measured by scripts/check_contrast.py and
+       scripts/check_site_responsive.py):
+         - body text is ink on cream, or cream on ink -- never saffron/ember text
+         - saffron/ember are marks, accents, large display and button fills; a button
+           on either fill carries ink text
+       ========================================================================== */
+    :root {
+      --saffron: #F6C042;
+      --ember: #E8823A;
+      --ink: #1C1A17;
+      --cream: #FAF4EA;
 
-    /* Smooth scroll */
-    html { scroll-behavior: smooth; }
+      /* Tints derived from the four colours above. */
+      --ink-2: color-mix(in srgb, var(--ink) 80%, var(--cream));   /* secondary text on cream */
+      --ink-3: color-mix(in srgb, var(--ink) 68%, var(--cream));   /* tertiary text on cream */
+      --cream-2: color-mix(in srgb, var(--ink) 5%, var(--cream));  /* raised surface */
+      --cream-3: color-mix(in srgb, var(--ink) 10%, var(--cream)); /* table header */
+      --line: color-mix(in srgb, var(--ink) 18%, var(--cream));    /* hairlines on cream */
+      --saffron-tint: color-mix(in srgb, var(--saffron) 26%, var(--cream));
+      --ember-tint: color-mix(in srgb, var(--ember) 26%, var(--cream));
+      --ink-raised: color-mix(in srgb, var(--cream) 9%, var(--ink));    /* surface on ink */
+      --on-ink-2: color-mix(in srgb, var(--cream) 82%, var(--ink));     /* secondary text on ink */
+      --on-ink-line: color-mix(in srgb, var(--cream) 24%, var(--ink));  /* hairlines on ink */
 
-    /* Active tab pill */
-    .cat-tab-active  { background-color: #2563eb; color: #fff; }
-    .cat-tab-inactive { background-color: #1f2937; color: #9ca3af; }
-    .cat-tab-inactive:hover { background-color: #374151; color: #d1d5db; }
+      /* Type: two families. Scale is a 1.25 (major third) ratio from 1rem. */
+      --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+      --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      --step--1: 0.8rem;
+      --step-0: 1rem;
+      --step-1: 1.25rem;
+      --step-2: 1.5625rem;
+      --step-3: 1.953rem;
+      --step-4: 2.441rem;
+      --step-5: 3.052rem;
+      --step-6: 3.815rem;
+      --leading-body: 1.65;
+      --measure: 65ch;
 
-    .ex-pill-active   { background-color: #1e3a5f; color: #93c5fd; border-color: #2563eb; }
-    .ex-pill-inactive { background-color: #111827; color: #6b7280; border-color: #374151; }
-    .ex-pill-inactive:hover { border-color: #4b5563; color: #9ca3af; }
+      /* Space (4px unit, design/tokens.json) and radii. */
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+      --space-5: 1.5rem; --space-6: 2rem; --space-7: 3rem; --space-8: 4rem; --space-9: 6rem;
+      --r-sm: 6px; --r-md: 10px; --r-lg: 16px;
+      --page-width: 72rem;
+    }
 
-    /* Disable category tab when data unavailable */
-    .cat-tab-disabled { background-color: #111827; color: #4b5563; cursor: not-allowed; }
+    /* ==========================================================================
+       BASE
+       ========================================================================== */
+    *, *::before, *::after { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html { -webkit-text-size-adjust: 100%; scroll-padding-top: 4.5rem; }
+    @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+    body {
+      margin: 0;
+      background: var(--cream);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: var(--step-0);
+      line-height: var(--leading-body);
+      -webkit-font-smoothing: antialiased;
+    }
+    h1, h2, h3, p, ul, ol, dl, dd, figure, pre { margin: 0; }
+    h1, h2 {
+      font-family: var(--font-display);
+      font-optical-sizing: auto;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      text-wrap: balance;
+    }
+    h1 { font-size: clamp(var(--step-4), 1.55rem + 3.4vw, var(--step-6)); line-height: 1.08; }
+    h2 { font-size: clamp(var(--step-3), 1.4rem + 1.4vw, var(--step-4)); line-height: 1.15; }
+    h3 { font-size: var(--step-1); font-weight: 600; line-height: 1.3; }
+    p, li { max-width: var(--measure); }
+    a { color: inherit; text-decoration: underline; text-decoration-color: var(--ember);
+        text-decoration-thickness: 2px; text-underline-offset: 0.2em; }
+    a:hover { text-decoration-color: var(--ink); }
+    code { font-family: var(--font-body); font-weight: 600; font-size: 0.92em;
+           background: var(--cream-3); padding: 0.05em 0.35em; border-radius: var(--r-sm); }
+    strong { font-weight: 600; }
+    .wrap { max-width: var(--page-width); margin-inline: auto; padding-inline: clamp(1rem, 4vw, 2rem); }
+    .muted { color: var(--ink-3); font-size: var(--step--1); }
+    .fine-print { color: var(--ink-3); font-size: var(--step--1); margin-top: var(--space-3); }
+    .fine-print a { text-decoration-color: var(--ink-3); }
+    .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
+               clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .sr-only:focus { position: static; width: auto; height: auto; margin: 0; padding: var(--space-2) var(--space-4);
+                     clip: auto; display: inline-block; }
 
-    /* Session 13 P6: brand accent colors (design/tokens.json), used sparingly against the
-       existing dark gray-950/blue theme rather than a full page re-theme -- see the PR body
-       for why a full re-theme was scoped out of P6. */
-    .accent-saffron { color: #F6C042; }
-    .accent-ember { color: #E8823A; }
-    .badge-saffron { background-color: #F6C042; color: #1C1A17; }
-    .pricing-card-featured { border-color: #E8823A; box-shadow: 0 0 0 1px #E8823A; }
+    /* Visible keyboard focus: ink ring on cream surfaces (16:1), saffron ring on ink (10:1).
+       Ember alone would be 2.5:1 on cream, under the 3:1 non-text minimum. */
+    :focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; border-radius: var(--r-sm); }
+    .on-ink :focus-visible, .site-footer :focus-visible { outline-color: var(--saffron); }
+
+    /* ==========================================================================
+       BUTTONS -- every CTA is ember or saffron with ink text.
+       ========================================================================== */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+      min-height: 44px; padding: 0.65rem 1.4rem;
+      font: 600 var(--step-0)/1.2 var(--font-body);
+      color: var(--ink); text-decoration: none;
+      border: 2px solid transparent; border-radius: var(--r-md); cursor: pointer;
+      transition: background-color 0.15s;
+    }
+    .btn-ember { background: var(--ember); }
+    .btn-ember:hover { background: var(--saffron); }
+    .btn-saffron { background: var(--saffron); }
+    .btn-saffron:hover { background: var(--ember); }
+    .btn:disabled { background: color-mix(in srgb, var(--ember) 45%, var(--cream)); cursor: progress; }
+    .btn-sm { min-height: 40px; padding: 0.5rem 1rem; font-size: 0.9375rem; }
+    .btn-block { width: 100%; }
+
+    /* ==========================================================================
+       NAV
+       ========================================================================== */
+    .site-nav { position: sticky; top: 0; z-index: 10; background: var(--cream);
+                border-bottom: 1px solid var(--line); }
+    .site-nav .wrap { height: 4rem; display: flex; align-items: center; justify-content: space-between;
+                      gap: var(--space-4); }
+    .brand { display: inline-flex; align-items: center; gap: var(--space-3); font-weight: 600;
+             font-size: var(--step-0); text-decoration: none; }
+    .nav-links { display: none; gap: var(--space-5); font-size: 0.9375rem; }
+    .nav-links a { color: var(--ink-2); text-decoration: none; padding-block: var(--space-2); }
+    .nav-links a:hover { color: var(--ink); text-decoration: underline; text-decoration-color: var(--ember); }
+    @media (min-width: 48rem) { .nav-links { display: flex; } }
+
+    /* The animated mark lives in the site header only (Session 13 P5b); prefers-reduced-motion
+       switches it off. Every other use of the mark on the page is static. */
+    @keyframes swL { 0%,100% { transform: rotate(-14deg); } 50% { transform: rotate(-9deg) translateY(-1.5px); } }
+    @keyframes swR { 0%,100% { transform: rotate(14deg); } 50% { transform: rotate(19deg) translateY(1.5px); } }
+    .mark-l { transform-origin: 42px 58px; animation: swL 4.4s ease-in-out infinite; }
+    .mark-r { transform-origin: 70px 58px; animation: swR 4.4s ease-in-out infinite; animation-delay: -1.7s; }
+    @media (prefers-reduced-motion: reduce) { .mark-l, .mark-r { animation: none; } }
+
+    /* ==========================================================================
+       HERO
+       ========================================================================== */
+    .hero { padding-block: clamp(2rem, 5vw, 4rem) clamp(2.5rem, 6vw, 5rem); border-bottom: 1px solid var(--line); }
+    .hero-kicker { display: flex; align-items: center; gap: var(--space-2); font-size: 0.9375rem;
+                   font-weight: 500; color: var(--ink-2); margin-bottom: var(--space-4); }
+    .hero-kicker::before { content: ""; width: 0.6rem; height: 0.6rem; border-radius: 50%;
+                           background: var(--saffron); flex: none; }
+    .hero h1 { margin-bottom: var(--space-5); }
+    /* The single typographic flourish: a saffron marker stroke under the payoff words. */
+    .marker { box-shadow: inset 0 -0.3em 0 var(--saffron); -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+    .hero-lede { font-size: clamp(1.0625rem, 0.98rem + 0.4vw, var(--step-1)); color: var(--ink-2); }
+    .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-5);
+                    margin-top: var(--space-6); }
+
+    /* ==========================================================================
+       SECTIONS
+       ========================================================================== */
+    .section { padding-block: clamp(3rem, 7vw, 5rem); border-bottom: 1px solid var(--line); }
+    .section > .wrap > h2 + p, .price-head p { margin-top: var(--space-3); color: var(--ink-2); }
+    .cols-3 { display: grid; gap: var(--space-6); grid-template-columns: 1fr; margin-top: var(--space-6); }
+    @media (min-width: 48rem) { .cols-3 { grid-template-columns: repeat(3, 1fr); gap: var(--space-7); } }
+
+    /* Problem: three plain columns under hairlines -- no boxes, no shadows. */
+    .problem-item { border-top: 2px solid var(--ink); padding-top: var(--space-4); }
+    .problem-item h3 { margin-bottom: var(--space-2); }
+    .problem-item p { color: var(--ink-2); }
+    .icon-tile { font-size: 1.75rem; line-height: 1; margin-bottom: var(--space-3); }
+
+    /* How it works: a genuine sequence, so it is numbered. */
+    .steps { list-style: none; padding: 0; display: grid; gap: var(--space-6); grid-template-columns: 1fr; margin: var(--space-6) 0 0; }
+    .step { display: grid; grid-template-columns: 2.75rem 1fr; gap: var(--space-4); align-items: start; }
+    .step-num { width: 2.75rem; height: 2.75rem; border-radius: 50%; background: var(--saffron); color: var(--ink);
+                display: grid; place-items: center; font: 700 var(--step-1)/1 var(--font-display); }
+    .step h3 { margin-bottom: var(--space-2); }
+    .step p { color: var(--ink-2); }
+    @media (min-width: 48rem) { .steps { grid-template-columns: repeat(3, 1fr); gap: var(--space-7); } }
+
+    .subsection { margin-top: var(--space-8); }
+    .subsection h3 { font-family: var(--font-display); font-size: var(--step-2); font-weight: 700; letter-spacing: -0.01em; }
+    .subsection > p { margin-top: var(--space-3); color: var(--ink-2); }
+
+    /* Callouts and notes */
+    .note { margin-top: var(--space-5); padding: var(--space-4) var(--space-5); background: var(--saffron-tint);
+            border-left: 4px solid var(--ember); border-radius: 0 var(--r-md) var(--r-md) 0; }
+    .note-lead { font-weight: 600; }
+
+    /* Data tables. Rows come from scripts/render_metrics.py, which owns these class names. */
+    .table-wrap { margin-top: var(--space-5); overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r-md); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9375rem; }
+    th { text-align: left; font-weight: 600; background: var(--cream-3); padding: var(--space-3) var(--space-4); white-space: nowrap; }
+    td { padding: var(--space-3) var(--space-4); border-top: 1px solid var(--line); vertical-align: top; }
+    td.num { font-weight: 600; font-variant-numeric: tabular-nums; }
+    td.ci, td.gate { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+    td.cap { text-transform: capitalize; }
+    tr.row-total td { border-top: 2px solid var(--ink); font-weight: 600; }
+    td.status { font-weight: 700; white-space: nowrap; }
+    /* PASS vs FAIL is glyph + word + fill, never hue: the palette has no red or green. */
+    td.status-fail { background: var(--ember-tint); box-shadow: inset 4px 0 0 var(--ember); }
+    .stat-row { display: grid; grid-template-columns: 1fr; gap: var(--space-4); margin-top: var(--space-5); }
+    @media (min-width: 40rem) { .stat-row { grid-template-columns: 1fr 1fr; } }
+    .stat-card { background: var(--cream-2); border-top: 4px solid var(--saffron); padding: var(--space-5); border-radius: 0 0 var(--r-md) var(--r-md); }
+    .stat-num { font: 700 var(--step-5)/1.05 var(--font-display); letter-spacing: -0.02em; }
+    .stat-label { font-weight: 600; margin-top: var(--space-2); }
+    .stat-note { color: var(--ink-3); font-size: var(--step--1); margin-top: var(--space-2); }
+
+    /* Trust: definition-list rhythm, hairline separated. */
+    .trust-grid { display: grid; grid-template-columns: 1fr; gap: 0 var(--space-7); margin-top: var(--space-6); }
+    @media (min-width: 48rem) { .trust-grid { grid-template-columns: 1fr 1fr; } }
+    .trust-item { border-top: 1px solid var(--line); padding-block: var(--space-5); }
+    .trust-item h3 { margin-bottom: var(--space-2); display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); }
+    .trust-item p { color: var(--ink-2); }
+    .trust-item a { display: inline-block; margin-top: var(--space-3); font-weight: 500; }
+    .badge { background: var(--saffron); color: var(--ink); font: 600 var(--step--1)/1 var(--font-body);
+             padding: 0.3rem 0.6rem; border-radius: 999px; }
+    .callout-wide { margin-top: var(--space-5); background: var(--cream-2); border: 1px solid var(--line);
+                    border-radius: var(--r-md); padding: var(--space-5); }
+    .callout-wide h3 { margin-bottom: var(--space-2); }
+    .callout-wide p { color: var(--ink-2); }
+
+    /* Pricing */
+    .price-head { margin-bottom: var(--space-6); }
+    .price-head .badge { display: inline-block; margin-bottom: var(--space-3); }
+    .plans { display: grid; gap: var(--space-4); grid-template-columns: 1fr; }
+    @media (min-width: 40rem) { .plans { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 68rem) { .plans { grid-template-columns: repeat(5, 1fr); } }
+    .plan { display: flex; flex-direction: column; gap: var(--space-1); padding: var(--space-5) var(--space-4);
+            border: 1px solid var(--line); border-radius: var(--r-md); position: relative; }
+    .plan h3 { font-size: var(--step-1); }
+    .plan .vol { color: var(--ink-2); font-size: 0.9375rem; margin-bottom: var(--space-3); }
+    .plan .price { font: 700 var(--step-3)/1.1 var(--font-display); letter-spacing: -0.01em; }
+    .plan .price small { font: 400 0.9375rem var(--font-body); color: var(--ink-2); letter-spacing: 0; }
+    .plan .inr { color: var(--ink-2); font-size: 0.9375rem; margin-bottom: var(--space-4); }
+    .plan .btn { margin-top: auto; }
+    .plan-featured { border: 2px solid var(--ember); background: var(--saffron-tint); }
+    .plan-featured .badge { position: absolute; top: -0.85rem; left: var(--space-4); }
+    .plan-featured h3 { margin-top: var(--space-2); }
+    .price-foot { color: var(--ink-3); font-size: var(--step--1); margin-top: var(--space-6); }
+
+    /* Contact */
+    .contact-box { max-width: 44rem; }
+    .contact-box p { margin-top: var(--space-3); color: var(--ink-2); }
+    .contact-box .btn { margin-top: var(--space-5); }
+    #contact { border-bottom: 0; }
+
+    /* Footer */
+    .site-footer { background: var(--ink); color: var(--cream); }
+    .site-footer .wrap { padding-block: var(--space-6); display: flex; flex-wrap: wrap; gap: var(--space-4) var(--space-6);
+                         align-items: center; justify-content: space-between; font-size: 0.9375rem; }
+    .site-footer p { max-width: none; color: var(--on-ink-2); }
+    .site-footer strong { color: var(--cream); }
+    .site-footer nav { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); }
+    .site-footer a { color: var(--cream); text-decoration-color: var(--saffron); }
+
+    /* ==========================================================================
+       DEMO GALLERY -- inputs sit on cream, machine output sits on ink.
+       ========================================================================== */
+    .tabs { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-5); }
+    .chip { font: 500 0.9375rem/1.2 var(--font-body); padding: 0.55rem 1rem; min-height: 40px; border-radius: 999px;
+            border: 1.5px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; }
+    .chip:hover { background: var(--saffron-tint); }
+    .chip[aria-pressed="true"] { background: var(--ink); color: var(--cream); }
+    .chip:disabled { border-color: var(--line); color: var(--ink-3); cursor: not-allowed; background: transparent; }
+    .chip-sm { font-size: 0.875rem; padding: 0.4rem 0.85rem; min-height: 36px; }
+    .chip-lang { font-weight: 600; margin-right: var(--space-1); }
+    .ex-pills { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
+    .ex-desc { margin-top: var(--space-4); color: var(--ink-2); font-style: italic; }
+    .ex-grid { display: grid; grid-template-columns: 1fr; gap: var(--space-4); margin-top: var(--space-4); }
+    @media (min-width: 64rem) { .ex-grid { grid-template-columns: 1fr 1fr; } }
+    .panel { border-radius: var(--r-md); padding: var(--space-5); min-width: 0; }
+    .panel-in { background: var(--cream-2); border: 1px solid var(--line); }
+    .panel-out { background: var(--ink); color: var(--cream); }
+    .panel-label { font-weight: 600; font-size: 0.9375rem; margin-bottom: var(--space-3); }
+    .panel-note { font-size: var(--step--1); margin-bottom: var(--space-3); padding: var(--space-2) var(--space-3);
+                  border: 1px solid var(--on-ink-line); border-radius: var(--r-sm); color: var(--on-ink-2); max-width: none; }
+    .code { font-family: var(--font-body); font-size: 0.9375rem; line-height: 1.6; white-space: pre-wrap;
+            overflow-wrap: anywhere; border-radius: var(--r-sm); padding: var(--space-3) var(--space-4); }
+    .panel-in .code { background: var(--cream); border: 1px solid var(--line); }
+    .panel-out .code, .on-ink .code { background: var(--ink-raised); color: var(--cream); }
+    /* JSON highlighting stays inside ink/cream: keys bold, strings soft, numbers/bools marked with a
+       saffron-tinted chip (a mark, not saffron text). */
+    .json-key { font-weight: 600; }
+    .json-string { color: var(--on-ink-2); }
+    .json-number, .json-bool { background: color-mix(in srgb, var(--saffron) 28%, transparent); border-radius: 3px; padding: 0 0.2em; }
+    .json-null { color: var(--on-ink-2); font-style: italic; }
+    .translation { margin-top: var(--space-3); font-size: 0.875rem; color: var(--ink-2); font-style: italic; max-width: none; }
+    .insight { margin-bottom: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--saffron-tint);
+               color: var(--ink); border-left: 4px solid var(--ember); border-radius: 0 var(--r-sm) var(--r-sm) 0; font-size: 0.9375rem; max-width: none; }
+    .disposition { margin-top: var(--space-4); padding: var(--space-3) var(--space-4); border-radius: var(--r-sm); color: var(--ink);
+                   display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-4); }
+    .disposition strong { font: 700 var(--step-2)/1.2 var(--font-display); }
+    .disposition span { font-size: var(--step--1); }
+    .disp-clear { background: var(--cream); }
+    .disp-flagged_for_review { background: var(--saffron); }
+    .disp-priority_review { background: var(--ember); }
+    .csv-table { font-size: 0.8125rem; }
+    .csv-table td, .csv-table th { padding: var(--space-2) var(--space-3); }
+    .unavailable { margin-top: var(--space-5); padding: var(--space-5); background: var(--cream-2); border: 1px solid var(--line);
+                   border-radius: var(--r-md); color: var(--ink-2); }
+    .gallery-loading { margin-top: var(--space-5); color: var(--ink-2); }
+
+    /* Live widget: an ink slab, reusing the machine-output convention. */
+    .demo-slab { background: var(--ink); color: var(--cream); border-radius: var(--r-lg); padding: var(--space-5); }
+    .demo-slab h2 { font-size: var(--step-2); }
+    .demo-slab .slab-lede { color: var(--on-ink-2); font-size: 0.9375rem; margin-top: var(--space-2); }
+    .demo-slab label { display: block; font-weight: 600; font-size: 0.9375rem; margin: var(--space-4) 0 var(--space-2); }
+    .demo-slab textarea { width: 100%; min-height: 7.5rem; resize: vertical; padding: var(--space-3) var(--space-4);
+                          font: 400 var(--step-0)/1.55 var(--font-body); color: var(--ink); background: var(--cream);
+                          border: 2px solid transparent; border-radius: var(--r-md); }
+    .demo-slab textarea::placeholder { color: var(--ink-3); opacity: 1; }
+    .demo-slab textarea[aria-invalid="true"] { border-color: var(--ember); }
+    .slab-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-5); margin-top: var(--space-4); }
+    .btn-text { background: none; border: 0; padding: var(--space-2) 0; color: inherit; font: 500 0.9375rem var(--font-body);
+                text-decoration: underline; text-decoration-color: var(--saffron); text-decoration-thickness: 2px;
+                text-underline-offset: 0.2em; cursor: pointer; min-height: 44px; }
+    .slab-hint { margin-top: var(--space-3); font-size: 0.9375rem; color: var(--cream); max-width: none;
+                 border-left: 4px solid var(--saffron); padding-left: var(--space-3); }
+    .slab-error { margin-top: var(--space-4); padding: var(--space-3) var(--space-4); background: var(--ink-raised);
+                  border-left: 4px solid var(--ember); border-radius: 0 var(--r-sm) var(--r-sm) 0; font-size: 0.9375rem; line-height: 1.6; }
+    .slab-result { margin-top: var(--space-4); }
+    .slab-result-label { font-size: var(--step--1); color: var(--on-ink-2); margin-bottom: var(--space-1); max-width: none; }
+    .slab-idle { margin-top: var(--space-4); color: var(--on-ink-2); font-size: 0.9375rem; max-width: none;
+                 border-top: 1px solid var(--on-ink-line); padding-top: var(--space-3); }
+    .skeleton { margin-top: var(--space-4); display: grid; gap: var(--space-2); }
+    .skeleton i { display: block; height: 0.9rem; border-radius: 4px; background: var(--on-ink-line); }
+    .skeleton i:nth-child(2) { width: 82%; } .skeleton i:nth-child(3) { width: 64%; }
+    @media (prefers-reduced-motion: no-preference) {
+      .skeleton i { animation: pulse 1.2s ease-in-out infinite; }
+      @keyframes pulse { 50% { opacity: 0.45; } }
+    }
   </style>
 </head>
-<body class="bg-gray-950 text-gray-100 font-sans antialiased">
+<body>
+  <a href="#main" class="sr-only">Skip to content</a>
 
   <!-- ===========================================================
        NAV
   =========================================================== -->
-  <nav class="sticky top-0 z-10 bg-gray-950/90 backdrop-blur border-b border-gray-800">
-    <div class="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between text-sm">
-      <a href="#top" class="flex items-center gap-2 font-semibold text-white">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 110" width="22" height="22" aria-hidden="true">
-          <rect width="110" height="110" rx="26" fill="#FAF4EA"/>
-          <g transform="rotate(-14 42 58)"><path d="M42 26 C53 42 58 52 58 61 C58 73 51 80 42 80 C33 80 26 73 26 61 C26 52 31 42 42 26 Z" fill="#F6C042"/></g>
-          <g transform="rotate(14 70 58)"><path d="M70 26 C81 42 86 52 86 61 C86 73 79 80 70 80 C61 80 54 73 54 61 C54 52 59 42 70 26 Z" fill="#E8823A"/></g>
+  <nav class="site-nav" aria-label="Primary">
+    <div class="wrap">
+      <a href="#top" class="brand">
+        <!-- The one animated mark on the page. Approved two-flame Samidha mark (design/tokens.json)
+             on an ink tile so saffron/ember read at 30px; motion is off under prefers-reduced-motion. -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 110" width="30" height="30" aria-hidden="true" focusable="false">
+          <rect width="110" height="110" rx="26" fill="#1C1A17"/>
+          <g class="mark-l"><path d="M42 26 C53 42 58 52 58 61 C58 73 51 80 42 80 C33 80 26 73 26 61 C26 52 31 42 42 26 Z" fill="#F6C042"/></g>
+          <g class="mark-r"><path d="M70 26 C81 42 86 52 86 61 C86 73 79 80 70 80 C61 80 54 73 54 61 C54 52 59 42 70 26 Z" fill="#E8823A"/></g>
         </svg>
         Samidha Reviews
       </a>
-      <div class="hidden sm:flex items-center gap-6 text-gray-400">
-        <a href="#demo" class="hover:text-white transition-colors">Demo</a>
-        <a href="#how-it-works" class="hover:text-white transition-colors">How it works</a>
-        <a href="#trust" class="hover:text-white transition-colors">Trust</a>
-        <a href="#pricing" class="hover:text-white transition-colors">Pricing</a>
-        <a href="#contact" class="hover:text-white transition-colors">Contact</a>
+      <div class="nav-links">
+        <a href="#demo">Demo</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#trust">Trust</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#contact">Contact</a>
       </div>
-      <a href="#pricing" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4 py-2 rounded-lg transition-colors">Get started</a>
+      <a href="#contact" class="btn btn-ember btn-sm">Request access</a>
     </div>
   </nav>
 
   <!-- ===========================================================
        HERO
   =========================================================== -->
-  <header id="top" class="bg-gradient-to-br from-blue-950 via-gray-950 to-gray-900 border-b border-gray-800">
-    <div class="max-w-5xl mx-auto px-6 py-20 text-center">
-      <div class="flex justify-center mb-5">
-        <!-- Session 13 P5b: animated mark reserved for the site/ header + loading states
-             only -- everything else (web/ dashboard chrome) uses the static variant. -->
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 110" width="64" height="64" aria-hidden="true">
-          <style>
-            @keyframes swL{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(-9deg) translateY(-1.5px)}}
-            @keyframes swR{0%,100%{transform:rotate(14deg)}50%{transform:rotate(19deg) translateY(1.5px)}}
-            .dL{transform-origin:42px 58px;animation:swL 4.4s ease-in-out infinite}
-            .dR{transform-origin:70px 58px;animation:swR 4.4s ease-in-out infinite;animation-delay:-1.7s}
-            @media (prefers-reduced-motion:reduce){.dL,.dR{animation:none}}
-          </style>
-          <rect width="110" height="110" rx="26" fill="#FAF4EA"/>
-          <g class="dL">
-            <path d="M42 26 C53 42 58 52 58 61 C58 73 51 80 42 80 C33 80 26 73 26 61 C26 52 31 42 42 26 Z" fill="#F6C042"/>
-          </g>
-          <g class="dR">
-            <path d="M70 26 C81 42 86 52 86 61 C86 73 79 80 70 80 C61 80 54 73 54 61 C54 52 59 42 70 26 Z" fill="#E8823A"/>
-          </g>
-        </svg>
+  <header id="top" class="hero">
+    <div class="wrap">
+      <div class="hero-copy">
+        <p class="hero-kicker">Built for Indian e-commerce &middot; English &amp; Hinglish &middot; Early access</p>
+        <h1>Know what every customer <span class="marker">actually said</span></h1>
+        <p class="hero-lede">
+          You manage reviews across a dozen brand storefronts, in a mix of English and Hinglish.
+          Samidha reads every one and hands you back sentiment, urgency, and a fake-review flag
+          &mdash; so your team spends its time on the two reviews that actually need a human, not
+          the two thousand that don't.
+        </p>
       </div>
-      <p class="accent-saffron text-xs font-semibold tracking-widest uppercase mb-4">
-        Built for Indian e-commerce &middot; English &amp; Hinglish &middot; Early access
-      </p>
-      <h1 class="text-5xl md:text-7xl font-extrabold text-white mb-4 leading-tight tracking-tight">
-        Know what every<br class="hidden md:block"> customer actually said
-      </h1>
-      <p class="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed">
-        You manage reviews across a dozen brand storefronts, in a mix of English and Hinglish.
-        Samidha reads every one and hands you back sentiment, urgency, and a fake-review flag
-        &mdash; so your team spends its time on the two reviews that actually need a human, not
-        the two thousand that don't.
-      </p>
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <a
-          href="#demo"
-          class="inline-block bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-semibold px-10 py-3.5 rounded-lg transition-colors text-lg shadow-lg shadow-blue-900/40"
-        >See it work on a real review &darr;</a>
-        <a
-          href="#pricing"
-          class="inline-block bg-transparent border border-gray-500 hover:border-gray-300 text-gray-300 hover:text-white font-semibold px-8 py-3.5 rounded-lg transition-colors text-lg"
-        >See pricing &rarr;</a>
+      <div class="hero-actions">
+        <a href="#live" class="btn btn-ember">Try it on your reviews</a>
+        <a href="#pricing">See pricing</a>
       </div>
     </div>
   </header>
 
-  <main class="max-w-5xl mx-auto px-6">
+  <main id="main">
 
     <!-- ===========================================================
          PROBLEM
     =========================================================== -->
-    <section id="problem" class="py-16 border-b border-gray-800">
-      <h2 class="text-3xl font-bold text-white mb-8 text-center">Managing reviews for one brand is manageable. For twelve, it isn't.</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
-          <p class="text-2xl mb-3">🌐</p>
-          <h3 class="font-semibold text-white mb-2">Half your reviews aren't in English</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">
-            Real Indian marketplace reviews mix English and romanized Hindi in the same
-            sentence &mdash; Hinglish. Off-the-shelf sentiment tools built for English miss
-            the actual complaint buried in the Hinglish half.
-          </p>
-        </div>
-        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
-          <p class="text-2xl mb-3">🚨</p>
-          <h3 class="font-semibold text-white mb-2">The urgent one is buried in the pile</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">
-            A safety complaint or a "caught fire" review looks identical to a routine
-            three-star gripe until someone reads it &mdash; by which point a day has usually
-            already passed.
-          </p>
-        </div>
-        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
-          <p class="text-2xl mb-3">🎭</p>
-          <h3 class="font-semibold text-white mb-2">Some of it isn't even real</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">
-            Coordinated fake-review campaigns are a live problem for Indian D2C brands.
-            Spotting one manually across a dozen storefronts, in two languages, doesn't scale.
-          </p>
+    <section id="problem" class="section">
+      <div class="wrap">
+        <h2>Managing reviews for one brand is manageable. For twelve, it isn't.</h2>
+        <div class="cols-3">
+          <div class="problem-item">
+            <p class="icon-tile" aria-hidden="true">🌐</p>
+            <h3>Half your reviews aren't in English</h3>
+            <p>
+              Real Indian marketplace reviews mix English and romanized Hindi in the same
+              sentence &mdash; Hinglish. Off-the-shelf sentiment tools built for English miss
+              the actual complaint buried in the Hinglish half.
+            </p>
+          </div>
+          <div class="problem-item">
+            <p class="icon-tile" aria-hidden="true">🚨</p>
+            <h3>The urgent one is buried in the pile</h3>
+            <p>
+              A safety complaint or a "caught fire" review looks identical to a routine
+              three-star gripe until someone reads it &mdash; by which point a day has usually
+              already passed.
+            </p>
+          </div>
+          <div class="problem-item">
+            <p class="icon-tile" aria-hidden="true">🎭</p>
+            <h3>Some of it isn't even real</h3>
+            <p>
+              Coordinated fake-review campaigns are a live problem for Indian D2C brands.
+              Spotting one manually across a dozen storefronts, in two languages, doesn't scale.
+            </p>
+          </div>
         </div>
       </div>
     </section>
@@ -171,86 +453,76 @@
     <!-- ===========================================================
          LIVE DEMO
     =========================================================== -->
-    <section id="demo" class="py-16">
-      <h2 class="text-3xl font-bold text-white mb-2">See it work, on real reviews</h2>
-      <p class="text-gray-400 mb-8">
-        Every example below is a real, unmodified API response &mdash; extraction, fake-review
-        detection, cross-review trends, and bulk CSV upload. No network needed, works with JS
-        disabled.
-      </p>
+    <section id="demo" class="section">
+      <div class="wrap">
+        <h2>See it work, on real reviews</h2>
+        <p>
+          Every example below is a real, unmodified API response &mdash; extraction, fake-review
+          detection, cross-review trends, and bulk CSV upload. No network needed, works with JS
+          disabled.
+        </p>
 
-      <!-- Category tabs -->
-      <div id="cat-tabs" class="flex flex-wrap gap-2 mb-6">
-        <button
-          data-cat="extraction"
-          class="cat-tab cat-tab-active px-5 py-2 rounded-full text-sm font-semibold transition-colors"
-          onclick="switchCat('extraction')"
-        >Extraction</button>
-        <button
-          data-cat="authenticity"
-          class="cat-tab cat-tab-inactive px-5 py-2 rounded-full text-sm font-semibold transition-colors"
-          onclick="switchCat('authenticity')"
-        >Authenticity</button>
-        <button
-          data-cat="insights"
-          class="cat-tab cat-tab-inactive px-5 py-2 rounded-full text-sm font-semibold transition-colors"
-          onclick="switchCat('insights')"
-        >Insights</button>
-        <button
-          data-cat="csv"
-          class="cat-tab cat-tab-inactive px-5 py-2 rounded-full text-sm font-semibold transition-colors"
-          onclick="switchCat('csv')"
-        >CSV Ingest</button>
+        <!-- Category tabs -->
+        <div id="cat-tabs" class="tabs" role="group" aria-label="Example category">
+          <button type="button" data-cat="extraction" class="cat-tab chip" aria-pressed="true" onclick="switchCat('extraction')">Extraction</button>
+          <button type="button" data-cat="authenticity" class="cat-tab chip" aria-pressed="false" onclick="switchCat('authenticity')">Authenticity</button>
+          <button type="button" data-cat="insights" class="cat-tab chip" aria-pressed="false" onclick="switchCat('insights')">Insights</button>
+          <button type="button" data-cat="csv" class="cat-tab chip" aria-pressed="false" onclick="switchCat('csv')">CSV Ingest</button>
+        </div>
+
+        <!-- Loading state (replaced by the panels, or by the unavailable notice) -->
+        <p id="gallery-loading" class="gallery-loading" role="status">Loading examples&hellip;</p>
+
+        <!-- Data unavailable notice (error state; hidden by default) -->
+        <div id="gallery-unavailable" class="unavailable" role="alert" hidden>
+          Demo data unavailable &mdash; could not load <code>demo-data.json</code>.
+          Open the page via a local HTTP server (e.g. <code>python -m http.server</code>) rather than the <code>file://</code> protocol.
+        </div>
+
+        <!-- Category panels (rendered by JS) -->
+        <div id="gallery-panels"></div>
       </div>
-
-      <!-- Data unavailable notice (hidden by default) -->
-      <div id="gallery-unavailable" class="hidden bg-gray-900 border border-gray-700 rounded-xl px-6 py-8 text-center text-gray-400">
-        Demo data unavailable &mdash; could not load <code class="text-gray-300">demo-data.json</code>.
-        Open the page via a local HTTP server (e.g. <code class="text-gray-300">python -m http.server</code>) rather than the <code>file://</code> protocol.
-      </div>
-
-      <!-- Category panels (rendered by JS) -->
-      <div id="gallery-panels"></div>
     </section>
 
     <!-- ===========================================================
          LIVE INPUT
     =========================================================== -->
-    <section id="live" class="py-16 border-t border-gray-800">
-      <h2 class="text-3xl font-bold text-white mb-2">Or paste your own &mdash; no signup needed</h2>
-      <p class="text-gray-400 mb-6">
-        Paste a real review from one of your own storefronts (English or Hinglish). Calls the
-        live API with no key required.
-      </p>
+    <section id="live-section" class="section">
+      <div class="wrap">
+        <div id="live" class="demo-slab on-ink">
+          <h2>Or paste your own &mdash; no signup needed</h2>
+          <p class="slab-lede">
+            Paste a real review from one of your own storefronts (English or Hinglish). Calls the
+            live API with no key required.
+          </p>
 
-      <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
-        <label for="live-text" class="block text-sm font-medium text-gray-300 mb-2">Review text</label>
-        <textarea
-          id="live-text"
-          rows="4"
-          spellcheck="false"
-          class="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-gray-100 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
-        >Superb earphone yaar, sound ekdum mast hai. But battery bahut weak hai. Paisa vasool nahi for 2000 rupees.</textarea>
+          <label for="live-text">Review text</label>
+          <textarea id="live-text" rows="4" spellcheck="false" aria-describedby="live-empty"
+            placeholder="Superb earphone yaar, sound ekdum mast hai. But battery bahut weak hai."></textarea>
+          <p id="live-empty" class="slab-hint" role="alert" hidden>Paste or type a review first, then analyze it.</p>
 
-        <button
-          id="live-btn"
-          onclick="runLive()"
-          class="mt-4 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold px-6 py-2.5 rounded-lg transition-colors text-sm"
-        >Analyze &rarr;</button>
+          <div class="slab-actions">
+            <button type="button" id="live-btn" class="btn btn-ember" onclick="runLive()">Analyze this review</button>
+            <button type="button" id="live-sample" class="btn-text" onclick="useSample()">Use a Hinglish example</button>
+          </div>
 
-        <!-- Friendly error callout — NEVER a stack trace -->
-        <div id="live-error" class="hidden mt-4 bg-amber-950 border border-amber-700 text-amber-300 rounded-lg px-4 py-3 text-sm leading-relaxed">
-          Live demo is busy right now &mdash; you've hit the 5 requests/min limit on this endpoint,
-          or free-tier Groq quota is temporarily exhausted. The examples above all run without a
-          network connection and show the full capability.
-        </div>
+          <!-- Loading state -->
+          <div id="live-loading" class="skeleton" role="status" aria-label="Analyzing" hidden><i></i><i></i><i></i></div>
 
-        <div id="live-result-wrap" class="hidden mt-4">
-          <p class="text-xs text-gray-500 mb-1 font-mono">Response (ReviewExtraction)</p>
-          <pre
-            id="live-result"
-            class="bg-gray-800 border border-gray-700 rounded-lg p-4 text-sm overflow-x-auto whitespace-pre-wrap break-all leading-relaxed"
-          ></pre>
+          <!-- Friendly error callout — NEVER a stack trace -->
+          <div id="live-error" class="slab-error" role="alert" hidden>
+            Live demo is busy right now &mdash; you've hit the 5 requests/min limit on this endpoint,
+            or free-tier Groq quota is temporarily exhausted. The examples above all run without a
+            network connection and show the full capability.
+          </div>
+
+          <!-- Empty (idle) state -->
+          <p id="live-idle" class="slab-idle">The response appears here as JSON: sentiment, urgency, topics and the authenticity flag.</p>
+
+          <div id="live-result-wrap" class="slab-result" hidden>
+            <p class="slab-result-label">Response (ReviewExtraction)</p>
+            <pre id="live-result" class="code" tabindex="0" aria-label="Analysis result"></pre>
+          </div>
         </div>
       </div>
     </section>
@@ -258,72 +530,81 @@
     <!-- ===========================================================
          HOW IT WORKS
     =========================================================== -->
-    <section id="how-it-works" class="py-16 border-t border-gray-800">
-      <h2 class="text-3xl font-bold text-white mb-2">How it works</h2>
-      <p class="text-gray-400 mb-8">
-        Three steps, no ML team required on your side.
-      </p>
+    <section id="how-it-works" class="section">
+      <div class="wrap">
+        <h2>How it works</h2>
+        <p>
+          Three steps, no ML team required on your side.
+        </p>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
-          <p class="text-3xl font-bold accent-ember mb-2">1</p>
-          <h3 class="font-semibold text-white mb-2">Send us a review</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">
-            One API call, a CSV upload, or connect Shopify/Google directly. English or
-            Hinglish, no pre-translation needed.
+        <ol class="steps">
+          <li class="step">
+            <span class="step-num" aria-hidden="true">1</span>
+            <div>
+              <h3>Send us a review</h3>
+              <p>
+                One API call, a CSV upload, or connect Shopify/Google directly. English or
+                Hinglish, no pre-translation needed.
+              </p>
+            </div>
+          </li>
+          <li class="step">
+            <span class="step-num" aria-hidden="true">2</span>
+            <div>
+              <h3>We extract the signal</h3>
+              <p>
+                Sentiment, urgency, topics, pros/cons, competitor mentions, and an authenticity
+                flag &mdash; structured JSON back in under a second per review.
+              </p>
+            </div>
+          </li>
+          <li class="step">
+            <span class="step-num" aria-hidden="true">3</span>
+            <div>
+              <h3>You see what matters</h3>
+              <p>
+                Query the dashboard, pull trends across every brand you manage, or wire an
+                alert for anything flagged urgent or inauthentic.
+              </p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="subsection">
+          <h3>The honest accuracy story</h3>
+          <p>
+            Field-level scoring (exact match + fuzzy + set F1) on held-out CI fixtures.
+            Prompt v2.3, measured under the models production actually runs
+            (<code>openai/gpt-oss-20b</code> /
+            <code>openai/gpt-oss-120b</code>). 95% CIs are paired
+            bootstrap over the 49 fixtures. Gates were reset 2026-09-10 to the measured
+            baseline after the previous Llama-era targets no longer held under these models
+            — see <a href="/docs#languages">the eval runbook</a>
+            for the full diagnosis.
           </p>
-        </div>
-        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
-          <p class="text-3xl font-bold accent-ember mb-2">2</p>
-          <h3 class="font-semibold text-white mb-2">We extract the signal</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">
-            Sentiment, urgency, topics, pros/cons, competitor mentions, and an authenticity
-            flag &mdash; structured JSON back in under a second per review.
-          </p>
-        </div>
-        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
-          <p class="text-3xl font-bold accent-ember mb-2">3</p>
-          <h3 class="font-semibold text-white mb-2">You see what matters</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">
-            Query the dashboard, pull trends across every brand you manage, or wire an
-            alert for anything flagged urgent or inauthentic.
-          </p>
-        </div>
-      </div>
 
-      <h3 class="text-2xl font-bold text-white mb-2">The honest accuracy story</h3>
-      <p class="text-gray-400 mb-4">
-        Field-level scoring (exact match + fuzzy + set F1) on held-out CI fixtures.
-        Prompt v2.3, measured under the models production actually runs
-        (<code class="text-gray-300">openai/gpt-oss-20b</code> /
-        <code class="text-gray-300">openai/gpt-oss-120b</code>). 95% CIs are paired
-        bootstrap over the 49 fixtures. Gates were reset 2026-09-10 to the measured
-        baseline after the previous Llama-era targets no longer held under these models
-        — see <a href="/docs#languages" class="underline text-gray-300">the eval runbook</a>
-        for the full diagnosis.
-      </p>
+          <div class="note">
+            <span class="note-lead">Re-measured against the models actually deployed: </span>
+            Groq deprecated the previous models (<code>llama-3.1-8b-instant</code> /
+            <code>llama-3.3-70b-versatile</code>) on 2026-08-16. The numbers below
+            are the current, honest measurement against what's actually deployed. Nothing was tuned to
+            recover a prior number.
+          </div>
 
-      <div class="mb-6 bg-amber-950/40 border border-amber-800 rounded-lg px-5 py-4 text-sm text-gray-300">
-        <span class="text-amber-400 font-semibold">Re-measured against the models actually deployed: </span>
-        Groq deprecated the previous models (<code class="text-gray-300">llama-3.1-8b-instant</code> /
-        <code class="text-gray-300">llama-3.3-70b-versatile</code>) on 2026-08-16. The numbers below
-        are the current, honest measurement against what's actually deployed. Nothing was tuned to
-        recover a prior number.
-      </div>
-
-      <div class="overflow-x-auto rounded-xl border border-gray-700">
-        <table class="w-full text-sm">
-          <thead class="bg-gray-800 text-gray-300">
-            <tr>
-              <th class="px-6 py-3 text-left font-semibold">Language</th>
-              <th class="px-6 py-3 text-left font-semibold">Score</th>
-              <th class="px-6 py-3 text-left font-semibold">Confidence Interval</th>
-              <th class="px-6 py-3 text-left font-semibold">Gate</th>
-              <th class="px-6 py-3 text-left font-semibold">Status</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-700">
-            <!-- METRICS:START:extraction_table_html -->
+          <div class="table-wrap">
+            <table>
+              <caption class="sr-only">Extraction accuracy by language against its gate</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Language</th>
+                  <th scope="col">Score</th>
+                  <th scope="col">Confidence Interval</th>
+                  <th scope="col">Gate</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- METRICS:START:extraction_table_html -->
             <tr>
               <td>English <span class="muted">(en, n=27)</span></td>
               <td class="num">78.2%</td>
@@ -346,35 +627,38 @@
               <td class="status status-pass">&#10003; PASS</td>
             </tr>
           <!-- METRICS:END -->
-          </tbody>
-        </table>
-      </div>
-      <p class="mt-3 text-xs text-gray-400">Scoring note: free-text fields (product, topics, competitor mentions) are compared after normalization. On 20 Sep 2026 we corrected the comparator so that different correct spellings of &ldquo;no product named&rdquo; and near-identical topic labels are no longer scored as wrong. That raised the figures above; the model&rsquo;s outputs did not change. <a class="underline" href="https://github.com/gaurav-gandhi-2411/review-iq/blob/main/docs/architecture/adr/0030-free-text-scorers.md">Details</a>.</p>
+              </tbody>
+            </table>
+          </div>
+          <p class="fine-print">Scoring note: free-text fields (product, topics, competitor mentions) are compared after normalization. On 20 Sep 2026 we corrected the comparator so that different correct spellings of &ldquo;no product named&rdquo; and near-identical topic labels are no longer scored as wrong. That raised the figures above; the model&rsquo;s outputs did not change. <a href="https://github.com/gaurav-gandhi-2411/review-iq/blob/main/docs/architecture/adr/0030-free-text-scorers.md">Details</a>.</p>
 
-      <div class="mt-6 bg-amber-950/40 border border-amber-800 rounded-lg px-5 py-4 text-sm text-gray-300">
-        <!-- METRICS:START:known_gaps_html -->
+          <div class="note">
+            <!-- METRICS:START:known_gaps_html -->
         <strong class="note-lead">Known gaps: </strong>
         English `sentiment` and `buy_again` hedge (return "mixed"/null) far more often under the current models than the previous ones — accuracy on the answers the model DOES commit to is unchanged, but it commits less often, and flat accuracy charges that the same as a wrong answer. Hinglish shows the opposite pattern. On the 27 short reviews (under 10 words) in our held-out test set, when the model says a field is unclear, that call is right 93.3% of the time — the information usually genuinely isn't in the text. The real short-review issue is different: it commits to a value that does not match the reference labels on 48 of 324 field checks, most often on `language` (13), `topics` (11), `pros` (6). Only 10 of 324 were genuine silent misses. Separately: sarcastic or backhanded phrasing is rare in real marketplace reviews — 3 of 106 in our held-out set — too few to measure reliably, so we don't claim a number for it either way. One more, stated plainly: unlike the fields above, the fake-review flag has not been measured against this held-out set. Its only historical number (n=40, a smaller and older corpus) is not reproducible and predates this test set — treat it as an early-access signal, not a scored capability, until that changes.
       <!-- METRICS:END -->
-      </div>
+          </div>
+        </div>
 
-      <h3 class="text-2xl font-bold text-white mt-12 mb-2">It doesn't guess when it's unsure</h3>
-      <p class="text-gray-400 mb-6">
-        Two fields (sentiment, buy-again) are allowed to say "unclear" rather than commit to a
-        wrong answer. Measured on 106 real, never-prompt-tuned marketplace reviews:
-      </p>
-      <div class="overflow-x-auto rounded-xl border border-gray-700 mb-6">
-        <table class="w-full text-sm">
-          <thead class="bg-gray-800 text-gray-300">
-            <tr>
-              <th class="px-6 py-3 text-left font-semibold">Field</th>
-              <th class="px-6 py-3 text-left font-semibold">Coverage</th>
-              <th class="px-6 py-3 text-left font-semibold">Accuracy-on-answered</th>
-              <th class="px-6 py-3 text-left font-semibold">Wrong-committed</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-700">
-            <!-- METRICS:START:coverage_metrics_table_html -->
+        <div class="subsection">
+          <h3>It doesn't guess when it's unsure</h3>
+          <p>
+            Two fields (sentiment, buy-again) are allowed to say "unclear" rather than commit to a
+            wrong answer. Measured on 106 real, never-prompt-tuned marketplace reviews:
+          </p>
+          <div class="table-wrap">
+            <table>
+              <caption class="sr-only">Coverage and accuracy-on-answered for the two abstaining fields</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Field</th>
+                  <th scope="col">Coverage</th>
+                  <th scope="col">Accuracy-on-answered</th>
+                  <th scope="col">Wrong-committed</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- METRICS:START:coverage_metrics_table_html -->
             <tr>
               <td class="cap">sentiment</td>
               <td class="num">77.4% <span class="muted">[68.9%, 84.9%]</span></td>
@@ -388,11 +672,11 @@
               <td class="ci">11/46 = 23.9%</td>
             </tr>
           <!-- METRICS:END -->
-          </tbody>
-        </table>
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <!-- METRICS:START:committed_accuracy_headline_html -->
+              </tbody>
+            </table>
+          </div>
+          <div class="stat-row">
+            <!-- METRICS:START:committed_accuracy_headline_html -->
             <div class="stat-card">
               <div class="stat-num">87.8%</div>
               <div class="stat-label">accurate when it commits to a sentiment call</div>
@@ -404,149 +688,154 @@
               <div class="stat-note">95% CI [63.0%, 87.0%], n=106. Separately, it abstains (&ldquo;unclear&rdquo;) on 47.2%&ndash;66.0% of all reviews rather than commit to any answer.</div>
             </div>
           <!-- METRICS:END -->
+          </div>
+        </div>
       </div>
     </section>
 
     <!-- ===========================================================
          TRUST
     =========================================================== -->
-    <section id="trust" class="py-16 border-t border-gray-800">
-      <h2 class="text-3xl font-bold text-white mb-2">Your customers' words, handled carefully</h2>
-      <p class="text-gray-400 mb-8">
-        Every claim below is verified against the running system or a provider's own primary
-        legal document &mdash; not marketing copy. See the full trace in our public repo.
-      </p>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
-          <h3 class="font-semibold text-white mb-2">
-            <span class="badge-saffron text-xs font-bold px-2 py-0.5 rounded mr-2">DEFAULT</span>
-            Stateless by default
-          </h3>
-          <p class="text-gray-400 text-sm leading-relaxed">
-            On the default plan, submitted review text and extraction output are never written
-            to our database or application logs &mdash; the response you get back is the only
-            copy. Proven, not asserted: verified by sending a distinctive sentinel string
-            through the live API and confirming it appears in zero tables and zero logs.
-          </p>
-          <a href="https://github.com/gaurav-gandhi-2411/review-iq/blob/main/docs/architecture/adr/0024-data-flow-audit-and-stateless-mode-requirements.md" class="text-blue-400 hover:text-blue-300 text-xs underline mt-3 inline-block">Read the verification &rarr;</a>
-        </div>
-
-        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
-          <h3 class="font-semibold text-white mb-2">No training on your data</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">
-            Quoted directly from our LLM provider's own Services Agreement: <em>"Groq is not
-            permitted to use Inputs or Outputs for training or fine-tuning any AI Model
-            Services or other models, unless explicitly granted permission or instructed by
-            Customer."</em> Independently verified against their primary legal document, not
-            a summary page.
-          </p>
-        </div>
-
-        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
-          <h3 class="font-semibold text-white mb-2">Zero data retention on inference</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">
-            Inference-APIs Zero Data Retention is enabled on our LLM provider account. In the
-            interest of the same honesty standard we hold every claim on this page to: our
-            provider exposes no API-level way to independently re-verify this setting (no
-            header, no endpoint) &mdash; this is our account holder's own Console
-            confirmation, not something we can prove from outside.
-          </p>
-        </div>
-
-        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6">
-          <h3 class="font-semibold text-white mb-2">Full sub-processor list, published</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">
-            Every third party that touches review data, what it receives, and its own
-            verified data-handling commitments &mdash; kept current in our public repo, not a
-            static PDF.
-          </p>
-          <a href="https://github.com/gaurav-gandhi-2411/review-iq/blob/main/legal/sub-processors.md" class="text-blue-400 hover:text-blue-300 text-xs underline mt-3 inline-block">View sub-processors &rarr;</a>
-        </div>
-      </div>
-
-      <div class="mt-6 bg-gray-900 border border-gray-700 rounded-xl p-6">
-        <h3 class="font-semibold text-white mb-2">Want the data to live somewhere?</h3>
-        <p class="text-gray-400 text-sm leading-relaxed">
-          Opt into <strong class="text-gray-200">retained mode</strong> per organization &mdash;
-          pick a 30 or 90-day window, get the dashboard, review search, and trend insights.
-          Purge on demand at any time, no waiting for the window. Bulk CSV upload requires
-          retained mode (rows are staged durably so an interrupted upload can resume).
+    <section id="trust" class="section">
+      <div class="wrap">
+        <h2>Your customers' words, handled carefully</h2>
+        <p>
+          Every claim below is verified against the running system or a provider's own primary
+          legal document &mdash; not marketing copy. See the full trace in our public repo.
         </p>
+
+        <div class="trust-grid">
+          <div class="trust-item">
+            <h3><span class="badge">Default</span> Stateless by default</h3>
+            <p>
+              On the default plan, submitted review text and extraction output are never written
+              to our database or application logs &mdash; the response you get back is the only
+              copy. Proven, not asserted: verified by sending a distinctive sentinel string
+              through the live API and confirming it appears in zero tables and zero logs.
+            </p>
+            <a href="https://github.com/gaurav-gandhi-2411/review-iq/blob/main/docs/architecture/adr/0024-data-flow-audit-and-stateless-mode-requirements.md">Read the verification &rarr;</a>
+          </div>
+
+          <div class="trust-item">
+            <h3>No training on your data</h3>
+            <p>
+              Quoted directly from our LLM provider's own Services Agreement: <em>"Groq is not
+              permitted to use Inputs or Outputs for training or fine-tuning any AI Model
+              Services or other models, unless explicitly granted permission or instructed by
+              Customer."</em> Independently verified against their primary legal document, not
+              a summary page.
+            </p>
+          </div>
+
+          <div class="trust-item">
+            <h3>Zero data retention on inference</h3>
+            <p>
+              Inference-APIs Zero Data Retention is enabled on our LLM provider account. In the
+              interest of the same honesty standard we hold every claim on this page to: our
+              provider exposes no API-level way to independently re-verify this setting (no
+              header, no endpoint) &mdash; this is our account holder's own Console
+              confirmation, not something we can prove from outside.
+            </p>
+          </div>
+
+          <div class="trust-item">
+            <h3>Full sub-processor list, published</h3>
+            <p>
+              Every third party that touches review data, what it receives, and its own
+              verified data-handling commitments &mdash; kept current in our public repo, not a
+              static PDF.
+            </p>
+            <a href="https://github.com/gaurav-gandhi-2411/review-iq/blob/main/legal/sub-processors.md">View sub-processors &rarr;</a>
+          </div>
+        </div>
+
+        <div class="callout-wide">
+          <h3>Want the data to live somewhere?</h3>
+          <p>
+            Opt into <strong>retained mode</strong> per organization &mdash;
+            pick a 30 or 90-day window, get the dashboard, review search, and trend insights.
+            Purge on demand at any time, no waiting for the window. Bulk CSV upload requires
+            retained mode (rows are staged durably so an interrupted upload can resume).
+          </p>
+        </div>
       </div>
     </section>
 
     <!-- ===========================================================
          PRICING
     =========================================================== -->
-    <section id="pricing" class="py-16 border-t border-gray-800">
-      <div class="text-center mb-10">
-        <span class="badge-saffron text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">Early access pricing</span>
-        <h2 class="text-3xl font-bold text-white mt-4 mb-2">Simple, per-review pricing</h2>
-        <p class="text-gray-400">USD and INR shown side by side. Annual billing = 2 months free on every paid tier.</p>
-      </div>
+    <section id="pricing" class="section">
+      <div class="wrap">
+        <div class="price-head">
+          <span class="badge">Early access pricing</span>
+          <h2>Simple, per-review pricing</h2>
+          <p>USD and INR shown side by side. Annual billing = 2 months free on every paid tier.</p>
+        </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div class="bg-gray-900 border border-gray-700 rounded-xl p-5 flex flex-col">
-          <h3 class="font-semibold text-white mb-1">Free</h3>
-          <p class="text-gray-500 text-xs mb-4">1,000 reviews/mo</p>
-          <p class="text-2xl font-bold text-white">$0<span class="text-sm text-gray-500 font-normal"> /mo</span></p>
-          <p class="text-gray-500 text-xs mb-4">&#8377;0/mo</p>
-          <a href="#contact" class="mt-auto text-center bg-gray-800 hover:bg-gray-700 text-gray-100 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">Get started</a>
+        <div class="plans">
+          <div class="plan">
+            <h3>Free</h3>
+            <p class="vol">1,000 reviews/mo</p>
+            <p class="price">$0<small> /mo</small></p>
+            <p class="inr">&#8377;0/mo</p>
+            <a href="#contact" class="btn btn-saffron">Request access</a>
+          </div>
+          <div class="plan">
+            <h3>Starter</h3>
+            <p class="vol">5,000 reviews/mo</p>
+            <p class="price">$29<small> /mo</small></p>
+            <p class="inr">&#8377;1,499/mo</p>
+            <a href="#contact" class="btn btn-saffron">Ask about Starter</a>
+          </div>
+          <div class="plan plan-featured">
+            <span class="badge">Most popular</span>
+            <h3>Growth</h3>
+            <p class="vol">25,000 reviews/mo</p>
+            <p class="price">$79<small> /mo</small></p>
+            <p class="inr">&#8377;4,999/mo</p>
+            <a href="#contact" class="btn btn-ember">Ask about Growth</a>
+          </div>
+          <div class="plan">
+            <h3>Scale</h3>
+            <p class="vol">100,000 reviews/mo</p>
+            <p class="price">$199<small> /mo</small></p>
+            <p class="inr">&#8377;12,999/mo</p>
+            <a href="#contact" class="btn btn-saffron">Ask about Scale</a>
+          </div>
+          <div class="plan">
+            <h3>Agency</h3>
+            <p class="vol">200,000+ reviews/mo</p>
+            <p class="price">Talk to us</p>
+            <p class="inr">Custom, multi-brand billing</p>
+            <a href="#contact" class="btn btn-saffron">Ask about Agency</a>
+          </div>
         </div>
-        <div class="bg-gray-900 border border-gray-700 rounded-xl p-5 flex flex-col">
-          <h3 class="font-semibold text-white mb-1">Starter</h3>
-          <p class="text-gray-500 text-xs mb-4">5,000 reviews/mo</p>
-          <p class="text-2xl font-bold text-white">$29<span class="text-sm text-gray-500 font-normal"> /mo</span></p>
-          <p class="text-gray-500 text-xs mb-4">&#8377;1,499/mo</p>
-          <a href="#contact" class="mt-auto text-center bg-gray-800 hover:bg-gray-700 text-gray-100 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">Talk to us</a>
-        </div>
-        <div class="bg-gray-900 pricing-card-featured border rounded-xl p-5 flex flex-col relative">
-          <span class="badge-saffron text-xs font-bold px-2 py-0.5 rounded-full absolute -top-3 left-1/2 -translate-x-1/2">Most popular</span>
-          <h3 class="font-semibold text-white mb-1 mt-2">Growth</h3>
-          <p class="text-gray-500 text-xs mb-4">25,000 reviews/mo</p>
-          <p class="text-2xl font-bold text-white">$79<span class="text-sm text-gray-500 font-normal"> /mo</span></p>
-          <p class="text-gray-500 text-xs mb-4">&#8377;4,999/mo</p>
-          <a href="#contact" class="mt-auto text-center bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">Talk to us</a>
-        </div>
-        <div class="bg-gray-900 border border-gray-700 rounded-xl p-5 flex flex-col">
-          <h3 class="font-semibold text-white mb-1">Scale</h3>
-          <p class="text-gray-500 text-xs mb-4">100,000 reviews/mo</p>
-          <p class="text-2xl font-bold text-white">$199<span class="text-sm text-gray-500 font-normal"> /mo</span></p>
-          <p class="text-gray-500 text-xs mb-4">&#8377;12,999/mo</p>
-          <a href="#contact" class="mt-auto text-center bg-gray-800 hover:bg-gray-700 text-gray-100 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">Talk to us</a>
-        </div>
-        <div class="bg-gray-900 border border-gray-700 rounded-xl p-5 flex flex-col">
-          <h3 class="font-semibold text-white mb-1">Agency</h3>
-          <p class="text-gray-500 text-xs mb-4">200,000+ reviews/mo</p>
-          <p class="text-2xl font-bold text-white">Talk to us</p>
-          <p class="text-gray-500 text-xs mb-4">Custom, multi-brand billing</p>
-          <a href="#contact" class="mt-auto text-center bg-gray-800 hover:bg-gray-700 text-gray-100 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">Talk to us</a>
-        </div>
+        <p class="price-foot">
+          First customers are invoiced manually while we're in early access &mdash; no card required to talk to us.
+        </p>
       </div>
-      <p class="text-gray-500 text-xs text-center mt-8">
-        First customers are invoiced manually while we're in early access &mdash; no card required to talk to us.
-      </p>
     </section>
 
     <!-- ===========================================================
          CONTACT
     =========================================================== -->
-    <section id="contact" class="py-16 border-t border-gray-800">
-      <div class="bg-gray-900 border border-gray-700 rounded-xl p-10 text-center max-w-2xl mx-auto">
-        <h2 class="text-3xl font-bold text-white mb-3">Talk to us</h2>
-        <p class="text-gray-400 mb-8">
-          Tell us how many brands you manage and roughly how many reviews a month &mdash;
-          we'll reply with a plan and a real API key, not a sales deck.
-        </p>
-        <a
-          href="mailto:hello@samidhareviews.xyz?subject=Samidha%20Reviews%20-%20pricing%20question"
-          class="inline-block bg-blue-600 hover:bg-blue-500 text-white font-semibold px-10 py-3.5 rounded-lg transition-colors text-lg"
-        >hello@samidhareviews.xyz</a>
-        <p class="text-gray-500 text-xs mt-6">
-          Prefer to just try it first? <a href="#demo" class="underline hover:text-gray-300">See it work</a> or
-          <a href="#live" class="underline hover:text-gray-300">paste your own review</a> above &mdash; no signup needed.
-        </p>
+    <section id="contact" class="section">
+      <div class="wrap">
+        <div class="contact-box">
+          <h2>Talk to us</h2>
+          <p>
+            Tell us how many brands you manage and roughly how many reviews a month &mdash;
+            we'll reply with a plan and a real API key, not a sales deck.
+          </p>
+          <a
+            href="mailto:hello@samidhareviews.xyz?subject=Samidha%20Reviews%20-%20pricing%20question"
+            class="btn btn-ember"
+          >hello@samidhareviews.xyz</a>
+          <p class="fine-print">
+            Prefer to just try it first? <a href="#demo">See it work</a> or
+            <a href="#live">paste your own review</a> above &mdash; no signup needed.
+          </p>
+        </div>
       </div>
     </section>
 
@@ -555,20 +844,20 @@
   <!-- ===========================================================
        FOOTER
   =========================================================== -->
-  <footer class="border-t border-gray-800 mt-8">
-    <div class="max-w-5xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
-      <span>
-        <strong class="text-gray-300">Samidha Reviews</strong>
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>
+        <strong>Samidha Reviews</strong>
         &mdash; MIT License &middot; evaluation-driven &middot; built for Indian e-commerce
-      </span>
-      <div class="flex flex-wrap justify-center gap-x-6 gap-y-2">
-        <a href="#trust" class="text-blue-400 hover:text-blue-300 transition-colors">Trust</a>
-        <a href="#pricing" class="text-blue-400 hover:text-blue-300 transition-colors">Pricing</a>
-        <a href="/docs" class="text-blue-400 hover:text-blue-300 transition-colors">API docs</a>
-        <a href="https://github.com/gaurav-gandhi-2411/review-iq/blob/main/legal/privacy-policy.md" class="text-blue-400 hover:text-blue-300 transition-colors">Privacy</a>
-        <a href="https://github.com/gaurav-gandhi-2411/review-iq/blob/main/legal/terms-of-service.md" class="text-blue-400 hover:text-blue-300 transition-colors">Terms</a>
-        <a href="https://github.com/gaurav-gandhi-2411/review-iq" class="text-blue-400 hover:text-blue-300 transition-colors">GitHub</a>
-      </div>
+      </p>
+      <nav aria-label="Footer">
+        <a href="#trust">Trust</a>
+        <a href="#pricing">Pricing</a>
+        <a href="/docs">API docs</a>
+        <a href="https://github.com/gaurav-gandhi-2411/review-iq/blob/main/legal/privacy-policy.md">Privacy</a>
+        <a href="https://github.com/gaurav-gandhi-2411/review-iq/blob/main/legal/terms-of-service.md">Terms</a>
+        <a href="https://github.com/gaurav-gandhi-2411/review-iq">GitHub</a>
+      </nav>
     </div>
   </footer>
 
@@ -623,19 +912,11 @@
     let activeCat = "extraction"; // current category tab
     let activeEx = {};            // activeCat -> activeExId
 
-    // Category accent colours
-    const CAT_ACCENT = {
-      extraction:   "blue-500",
-      authenticity: "emerald-500",
-      insights:     "violet-500",
-      csv:          "orange-500",
-    };
-
-    // Disposition badge styles
-    const DISPOSITION_STYLE = {
-      clear:              { bg: "bg-green-900",  border: "border-green-600",  text: "text-green-300",  label: "CLEAR" },
-      flagged_for_review: { bg: "bg-amber-900",  border: "border-amber-600",  text: "text-amber-300",  label: "FLAGGED FOR REVIEW" },
-      priority_review:    { bg: "bg-red-900",    border: "border-red-600",    text: "text-red-300",    label: "PRIORITY REVIEW" },
+    // Disposition banner labels (fill colour comes from the .disp-* classes)
+    const DISPOSITION_LABEL = {
+      clear:              "Clear",
+      flagged_for_review: "Flagged for review",
+      priority_review:    "Priority review",
     };
 
     // ---------------------------------------------------------------------------
@@ -648,16 +929,16 @@
         const rows = ex.input_csv;
         const headers = Object.keys(rows[0]);
         let html = `
-          <div class="overflow-x-auto rounded-lg border border-gray-700">
-            <table class="w-full text-xs font-mono">
-              <thead class="bg-gray-800 text-gray-300">
-                <tr>${headers.map(h => `<th class="px-3 py-2 text-left font-semibold">${escHtml(h)}</th>`).join("")}</tr>
+          <div class="table-wrap" style="margin-top:0">
+            <table class="csv-table">
+              <thead>
+                <tr>${headers.map(h => `<th scope="col">${escHtml(h)}</th>`).join("")}</tr>
               </thead>
-              <tbody class="divide-y divide-gray-700">`;
+              <tbody>`;
         rows.forEach(function(row) {
-          html += `<tr class="bg-gray-900">`;
+          html += `<tr>`;
           headers.forEach(function(h) {
-            html += `<td class="px-3 py-2 text-gray-200 whitespace-normal break-words max-w-xs">${escHtml(String(row[h]))}</td>`;
+            html += `<td>${escHtml(String(row[h]))}</td>`;
           });
           html += `</tr>`;
         });
@@ -667,13 +948,13 @@
 
       // Default: plain text block
       const inputText = escHtml(ex.input);
-      let html = `<pre class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm text-gray-200 whitespace-pre-wrap break-words font-mono leading-relaxed">${inputText}</pre>`;
+      let html = `<pre class="code">${inputText}</pre>`;
 
       if (ex.input_translation) {
-        html += `<p class="mt-2 text-xs text-gray-400 italic">${escHtml(ex.input_translation)}</p>`;
+        html += `<p class="translation">${escHtml(ex.input_translation)}</p>`;
       }
       if (ex.input_annotation) {
-        html += `<p class="mt-2 text-xs text-gray-400 italic">${escHtml(ex.input_annotation)}</p>`;
+        html += `<p class="translation">${escHtml(ex.input_annotation)}</p>`;
       }
       return html;
     }
@@ -684,10 +965,10 @@
       // Representative output notice (only if example is still labelled representative)
       if (ex.is_representative) {
         html += `
-          <div class="mb-3 bg-gray-800 border border-gray-600 rounded-lg px-4 py-2 text-xs text-gray-400 flex items-center gap-2">
-            <span class="text-gray-300 font-semibold">Representative output</span>
+          <p class="panel-note">
+            <strong>Representative output</strong>
             &mdash; illustrates the real API response shape.
-          </div>`;
+          </p>`;
       }
 
       // Trends callout (above JSON)
@@ -698,24 +979,24 @@
         const dsHiEn  = dsTheme && dsTheme.by_language ? (dsTheme.by_language["hi-en"] || 0) : 0;
         const dsHi    = dsTheme && dsTheme.by_language ? (dsTheme.by_language.hi || 0) : 0;
         html += `
-          <div class="mb-4 bg-violet-950 border border-violet-700 rounded-lg px-4 py-3 text-sm text-violet-300 leading-relaxed">
-            <span class="font-semibold">Key insight:</span>
-            <code class="font-mono text-violet-200">delivery_speed</code> &mdash;
+          <p class="insight">
+            <strong>Key insight:</strong>
+            <code>delivery_speed</code> &mdash;
             ${dsTotal} total mention${dsTotal !== 1 ? "s" : ""}, but <strong>${dsEn} in English</strong>${dsHiEn ? ", " + dsHiEn + " in Hinglish" : ""}${dsHi ? ", " + dsHi + " in Hindi" : ""}.
             Invisible to English-only tools.
-          </div>`;
+          </p>`;
       }
 
       // JSON output
-      html += `<pre class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm overflow-x-auto whitespace-pre-wrap break-all leading-relaxed font-mono">${highlightJson(ex.output)}</pre>`;
+      html += `<pre class="code">${highlightJson(ex.output)}</pre>`;
 
       // Authenticity disposition banner (below JSON)
       if (ex.category === "authenticity" && ex.output.disposition) {
-        const d = DISPOSITION_STYLE[ex.output.disposition] || DISPOSITION_STYLE["clear"];
+        const key = DISPOSITION_LABEL[ex.output.disposition] ? ex.output.disposition : "clear";
         html += `
-          <div class="mt-4 ${d.bg} border ${d.border} rounded-lg px-5 py-3 flex items-center gap-3">
-            <span class="text-2xl font-extrabold ${d.text}">${d.label}</span>
-            <span class="text-xs ${d.text} opacity-70">IS 19000:2022 administrator signal</span>
+          <div class="disposition disp-${key}">
+            <strong>${DISPOSITION_LABEL[key]}</strong>
+            <span>IS 19000:2022 administrator signal</span>
           </div>`;
       }
 
@@ -724,13 +1005,13 @@
 
     function renderExampleView(ex) {
       return `
-        <div class="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div class="bg-gray-900 border border-gray-700 rounded-xl p-5">
-            <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">${escHtml(ex.input_label || "Input")}</p>
+        <div class="ex-grid">
+          <div class="panel panel-in">
+            <p class="panel-label">${escHtml(ex.input_label || "Input")}</p>
             ${renderInputPanel(ex)}
           </div>
-          <div class="bg-gray-900 border border-gray-700 rounded-xl p-5">
-            <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Output</p>
+          <div class="panel panel-out">
+            <p class="panel-label">Output</p>
             ${renderOutputPanel(ex)}
           </div>
         </div>`;
@@ -746,18 +1027,19 @@
       const currentId = activeEx[cat];
 
       // Pill buttons
-      let pillsHtml = `<div class="flex flex-wrap gap-2 mb-1" id="pills-${cat}">`;
+      let pillsHtml = `<div class="ex-pills" id="pills-${cat}" role="group" aria-label="Examples">`;
       catExamples.forEach(function(ex) {
         const isActive = ex.id === currentId;
-        const cls = isActive ? "ex-pill-active" : "ex-pill-inactive";
         pillsHtml += `
           <button
+            type="button"
             data-exid="${ex.id}"
             data-cat="${cat}"
-            class="ex-pill ${cls} border px-4 py-1.5 rounded-full text-xs font-semibold transition-colors"
+            class="ex-pill chip chip-sm"
+            aria-pressed="${isActive}"
             onclick="switchEx('${cat}', '${ex.id}')"
           >
-            <span class="font-mono mr-1 opacity-70">[${escHtml(ex.lang_badge)}]</span>${escHtml(ex.title)}
+            <span class="chip-lang">[${escHtml(ex.lang_badge)}]</span>${escHtml(ex.title)}
           </button>`;
       });
       pillsHtml += `</div>`;
@@ -767,12 +1049,12 @@
       let detailHtml = "";
       if (currentEx) {
         detailHtml = `
-          <div class="mt-2 text-sm text-gray-400 italic mb-1">${escHtml(currentEx.description)}</div>
+          <p class="ex-desc">${escHtml(currentEx.description)}</p>
           ${renderExampleView(currentEx)}`;
       }
 
       return `
-        <div id="cat-panel-${cat}" class="cat-panel ${cat === activeCat ? "" : "hidden"}">
+        <div id="cat-panel-${cat}" class="cat-panel"${cat === activeCat ? "" : " hidden"}>
           ${pillsHtml}
           <div id="ex-detail-${cat}">${detailHtml}</div>
         </div>`;
@@ -789,15 +1071,17 @@
       panelsEl.innerHTML = categories
         .map(function(cat) { return renderCategory(cat, data.examples); })
         .join("");
+      document.getElementById("gallery-loading").hidden = true;
     }
 
     function showGalleryUnavailable() {
       document.getElementById("gallery-panels").innerHTML = "";
-      document.getElementById("gallery-unavailable").classList.remove("hidden");
+      document.getElementById("gallery-loading").hidden = true;
+      document.getElementById("gallery-unavailable").hidden = false;
       // Disable all category tabs
       document.querySelectorAll(".cat-tab").forEach(function(btn) {
-        btn.className = "cat-tab cat-tab-disabled px-5 py-2 rounded-full text-sm font-semibold";
         btn.disabled = true;
+        btn.setAttribute("aria-pressed", "false");
       });
     }
 
@@ -809,16 +1093,14 @@
       if (!galleryData) return;
       activeCat = cat;
 
-      // Update tab styles
+      // Update tab state
       document.querySelectorAll(".cat-tab").forEach(function(btn) {
-        const isCurrent = btn.getAttribute("data-cat") === cat;
-        btn.className = "cat-tab px-5 py-2 rounded-full text-sm font-semibold transition-colors " +
-          (isCurrent ? "cat-tab-active" : "cat-tab-inactive");
+        btn.setAttribute("aria-pressed", String(btn.getAttribute("data-cat") === cat));
       });
 
       // Show/hide panels
       document.querySelectorAll(".cat-panel").forEach(function(panel) {
-        panel.classList.toggle("hidden", !panel.id.endsWith("-" + cat));
+        panel.hidden = !panel.id.endsWith("-" + cat);
       });
     }
 
@@ -826,11 +1108,9 @@
       if (!galleryData) return;
       activeEx[cat] = exId;
 
-      // Update pill styles
+      // Update pill state
       document.querySelectorAll(`#pills-${cat} .ex-pill`).forEach(function(pill) {
-        const isActive = pill.getAttribute("data-exid") === exId;
-        pill.className = "ex-pill border px-4 py-1.5 rounded-full text-xs font-semibold transition-colors " +
-          (isActive ? "ex-pill-active" : "ex-pill-inactive");
+        pill.setAttribute("aria-pressed", String(pill.getAttribute("data-exid") === exId));
       });
 
       // Re-render detail
@@ -838,7 +1118,7 @@
       const detailEl = document.getElementById(`ex-detail-${cat}`);
       if (ex && detailEl) {
         detailEl.innerHTML = `
-          <div class="mt-2 text-sm text-gray-400 italic mb-1">${escHtml(ex.description)}</div>
+          <p class="ex-desc">${escHtml(ex.description)}</p>
           ${renderExampleView(ex)}`;
       }
     }
@@ -847,19 +1127,44 @@
     // Live input
     // ---------------------------------------------------------------------------
 
+    const SAMPLE_REVIEW = "Superb earphone yaar, sound ekdum mast hai. But battery bahut weak hai. Paisa vasool nahi for 2000 rupees.";
+
+    function useSample() {
+      const ta = document.getElementById("live-text");
+      ta.value = SAMPLE_REVIEW;
+      document.getElementById("live-empty").hidden = true;
+      ta.removeAttribute("aria-invalid");
+      ta.focus();
+    }
+
     async function runLive() {
-      const text = document.getElementById("live-text").value.trim();
-      if (!text) return;
+      const textEl = document.getElementById("live-text");
+      const text = textEl.value.trim();
+      const emptyEl = document.getElementById("live-empty");
+      if (!text) {
+        // Empty state: say what to do instead of silently doing nothing.
+        emptyEl.hidden = false;
+        textEl.setAttribute("aria-invalid", "true");
+        textEl.focus();
+        return;
+      }
+      emptyEl.hidden = true;
+      textEl.removeAttribute("aria-invalid");
 
       const btn = document.getElementById("live-btn");
       const errEl = document.getElementById("live-error");
       const resultWrap = document.getElementById("live-result-wrap");
       const resultEl = document.getElementById("live-result");
+      const loadingEl = document.getElementById("live-loading");
+      const idleEl = document.getElementById("live-idle");
 
       btn.disabled = true;
       btn.textContent = "Analyzing…";
-      errEl.classList.add("hidden");
-      resultWrap.classList.add("hidden");
+      btn.setAttribute("aria-busy", "true");
+      errEl.hidden = true;
+      resultWrap.hidden = true;
+      idleEl.hidden = true;
+      loadingEl.hidden = false;
 
       try {
         const controller = new AbortController();
@@ -876,18 +1181,20 @@
 
         if (!r.ok) {
           // non-2xx: show friendly message, not raw error body
-          errEl.classList.remove("hidden");
+          errEl.hidden = false;
         } else {
           const data = await r.json();
           resultEl.innerHTML = highlightJson(data);
-          resultWrap.classList.remove("hidden");
+          resultWrap.hidden = false;
         }
       } catch (_) {
         // Network error, timeout, CORS, abort — all get the friendly message
-        errEl.classList.remove("hidden");
+        errEl.hidden = false;
       } finally {
         btn.disabled = false;
-        btn.textContent = "Analyze →";
+        btn.textContent = "Analyze this review";
+        btn.removeAttribute("aria-busy");
+        loadingEl.hidden = true;
       }
     }
 
