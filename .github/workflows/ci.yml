@@ -13,12 +13,12 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@v7.0.0
         with:
           python-version: "3.11"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
 
@@ -85,18 +85,32 @@ jobs:
           API_KEY: ci-key
         run: uv run python scripts/check_eval_results_reproducible.py
 
+      # Mechanical proof that eval/results/known_gaps_n106.json qualifies for rule 70a gate 3's
+      # generated-artifact carve-out (Session 14 P2, PR #188): regenerates it via
+      # eval/analyze_known_gaps.py ($0, deterministic, no live LLM calls) and fails on any
+      # drift from what's committed.
+      - name: Known-gaps measurement reproducibility (gate-3 carve-out proof)
+        run: uv run python scripts/check_known_gaps_reproducible.py
+
+      # Mechanical proof that eval/results/grounding_check_fpr_n106.json qualifies for rule
+      # 70a gate 3's generated-artifact carve-out (Session 14 P4c, PR #189): regenerates it via
+      # eval/measure_grounding_check.py ($0, deterministic, no live LLM calls) and fails on any
+      # drift from what's committed.
+      - name: Grounding-check FPR reproducibility (gate-3 carve-out proof)
+        run: uv run python scripts/check_grounding_check_reproducible.py
+
   pip-audit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@v7.0.0
         with:
           python-version: "3.11"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
 
@@ -117,7 +131,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@v7.0.0
         with:
           python-version: "3.11"
 
@@ -133,10 +147,10 @@ jobs:
     # is needed here the way pip_audit_gate.py was for pip-audit's severity-blind JSON.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "22"
           cache: "npm"
