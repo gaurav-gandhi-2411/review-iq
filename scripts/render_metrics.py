@@ -175,6 +175,21 @@ def render_held_out_table_md(data: dict[str, Any]) -> str:
         f"the CI-gate table above is a regression detector, not a real-world accuracy claim "
         f"-- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md).",
     ]
+    strict = as_dep.get("overall_score_strict_exact_match")
+    if strict is not None and data.get("scorer_version"):
+        # Rule 65c disclosure, generated from the same artifact as the headline number: this
+        # scorer change RAISED the published figure, so say so and by how much, alongside it.
+        lines += [
+            "",
+            f"**Scoring note (scorer `{data['scorer_version']}`).** Free-text fields (`product`, "
+            "`topics`, `competitor_mentions`) are compared after normalization, so different "
+            'correct spellings of "no product named" (`unknown` vs `unknown product`) and '
+            "near-identical topic labels (`battery` vs `battery_life`) are no longer scored wrong. "
+            "Earlier published figures used exact-string matching on the same recorded model "
+            f"outputs: as deployed, {_fmt_pct(strict)} then vs {_fmt_pct(as_dep['overall_score'])} "
+            "now. The model's outputs did not change, only the comparator "
+            "([ADR 0030](docs/architecture/adr/0030-free-text-scorers.md)).",
+        ]
     return "\n".join(lines)
 
 
@@ -288,8 +303,10 @@ def render_known_gaps_html(data: dict[str, Any], authenticity_data: dict[str, An
     - "Short reviews... occasionally miss fields" undersold the real finding two ways: the
       abstention rate is high AND correct (95.3% of the time a null was right, the panel
       agrees the info isn't there), while the real, larger issue on short reviews is
-      confident-and-wrong guesses on fields that can't be left blank (product, topics),
-      not silent misses.
+      confident-and-wrong guesses, not silent misses. (Session 15c C2: the fields named
+      in the rendered sentence are now derived from the measured per-field counts. The
+      original wording blamed product/topics, but most of that was the comparator, not
+      the model -- see docs/architecture/adr/0030-free-text-scorers.md.)
 
     Session 15 P2b adds a third disclosure: the hero's "fake-review flag" claim sits next
     to sentiment/urgency (both rigorously measured above) with no measurement of its own.
@@ -308,6 +325,15 @@ def render_known_gaps_html(data: dict[str, Any], authenticity_data: dict[str, An
     real_gap_n = sr["counts"]["real_gap"]
     wrong_committed_n = sr["counts"]["wrong_committed"]
     total_checks = sr["total_field_checks"]
+    # Session 15c C2: which fields dominate is DATA, not prose. This sentence used to hard-code
+    # "the product name" as the culprit; once the comparator was corrected that field fell from
+    # 25 to 5 wrong-committed and the hard-coded claim became false, so name the top fields from
+    # the measured per-field counts (ties broken alphabetically for determinism).
+    ranked = sorted(
+        ((f, c.get("wrong_committed", 0)) for f, c in sr["per_field"].items()),
+        key=lambda fc: (-fc[1], fc[0]),
+    )
+    top_wrong_fields = ", ".join(f"`{f}` ({n})" for f, n in ranked[:3] if n > 0)
     sarcasm_n = sarcasm["n_sarcastic_or_backhanded_found"]
     sarcasm_total = data["n_fixtures_total"]
     auth_n = authenticity_data["n"]
@@ -322,9 +348,9 @@ def render_known_gaps_html(data: dict[str, Any], authenticity_data: dict[str, An
         f"pattern. On the {n} short reviews (under 10 words) in our held-out test set, when "
         f"the model says a field is unclear, that call is right {abstention_rate} of the "
         "time — the information usually genuinely isn't in the text. The real short-review "
-        "issue is different: on fields it can't leave blank (like the product name), it "
-        f"guesses wrong more often than it should ({wrong_committed_n} of {total_checks} "
-        f"field checks) — there just isn't enough text to go on. Only {real_gap_n} of "
+        "issue is different: it commits to a value that does not match the reference labels "
+        f"on {wrong_committed_n} of {total_checks} field checks, most often on "
+        f"{top_wrong_fields}. Only {real_gap_n} of "
         f"{total_checks} were genuine silent misses. Separately: sarcastic or backhanded "
         f"phrasing is rare in real marketplace reviews — {sarcasm_n} of {sarcasm_total} in "
         "our held-out set — too few to measure reliably, so we don't claim a number for it "
