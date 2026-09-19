@@ -23,4 +23,17 @@
 -- visible and others not (per-tenant isolation); here no row should ever be visible to these
 -- roles, so an outright REVOKE is both simpler and stronger (rule 74's tie-breaker: simplest
 -- solution that satisfies the constraint).
-REVOKE ALL ON public._migrations FROM PUBLIC, anon, authenticated;
+--
+-- Guarded on the table existing: public._migrations is created by supabase/push.py, NOT by any
+-- migration file, so the pre-cutover-verification job (which replays every migration file into
+-- a fresh Postgres with plain psql, never running push.py) has no such table and an unguarded
+-- REVOKE fails it with `relation "public._migrations" does not exist` -- which is exactly how
+-- this PR's `verify` check failed on every run before this guard. In prod push.py has always
+-- created the table before applying any migration, so the REVOKE runs there.
+DO $$
+BEGIN
+    IF to_regclass('public._migrations') IS NOT NULL THEN
+        REVOKE ALL ON public._migrations FROM PUBLIC, anon, authenticated;
+    END IF;
+END
+$$;
