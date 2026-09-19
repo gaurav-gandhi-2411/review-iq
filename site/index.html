@@ -24,8 +24,8 @@
   <meta name="twitter:image" content="https://review-iq-demo.pages.dev/og-image.png" />
   <!-- Session 15c C8: two typefaces, plain stylesheet link only (no scripts). Fraunces (display)
        and IBM Plex Sans (body + UI + code) are the pair named in design/tokens.json; the system
-       fallbacks below keep layout intact if fonts.googleapis.com is blocked. The Tailwind CDN
-       script is gone: the page is one hand-written stylesheet driven by the tokens in :root. -->
+       fallbacks below keep layout intact if fonts.googleapis.com is blocked. The utility-CSS
+       runtime script the page used to load is gone: the page is one hand-written stylesheet driven by the tokens in :root. -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&amp;family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&amp;display=swap" />
@@ -153,8 +153,9 @@
                 border-bottom: 1px solid var(--line); }
     .site-nav .wrap { height: 4rem; display: flex; align-items: center; justify-content: space-between;
                       gap: var(--space-4); }
-    .brand { display: inline-flex; align-items: center; gap: var(--space-3); font-weight: 600;
-             font-size: var(--step-0); text-decoration: none; }
+    .brand { display: inline-flex; align-items: center; gap: var(--space-2); font-weight: 600;
+             font-size: var(--step-0); text-decoration: none; white-space: nowrap; }
+    .site-nav .btn { white-space: nowrap; padding-inline: var(--space-3); }
     .nav-links { display: none; gap: var(--space-5); font-size: 0.9375rem; }
     .nav-links a { color: var(--ink-2); text-decoration: none; padding-block: var(--space-2); }
     .nav-links a:hover { color: var(--ink); text-decoration: underline; text-decoration-color: var(--ember); }
@@ -162,8 +163,8 @@
 
     /* The animated mark lives in the site header only (Session 13 P5b); prefers-reduced-motion
        switches it off. Every other use of the mark on the page is static. */
-    @keyframes swL { 0%,100% { transform: rotate(-14deg); } 50% { transform: rotate(-9deg) translateY(-1.5px); } }
-    @keyframes swR { 0%,100% { transform: rotate(14deg); } 50% { transform: rotate(19deg) translateY(1.5px); } }
+    @keyframes swL { 0%,100% { transform: rotate(-14deg); } 50% { transform: rotate(-9deg); } }
+    @keyframes swR { 0%,100% { transform: rotate(14deg); } 50% { transform: rotate(19deg); } }
     .mark-l { transform-origin: 42px 58px; animation: swL 4.4s ease-in-out infinite; }
     .mark-r { transform-origin: 70px 58px; animation: swR 4.4s ease-in-out infinite; animation-delay: -1.7s; }
     @media (prefers-reduced-motion: reduce) { .mark-l, .mark-r { animation: none; } }
@@ -174,8 +175,6 @@
     .hero { padding-block: clamp(2rem, 5vw, 4rem) clamp(2.5rem, 6vw, 5rem); border-bottom: 1px solid var(--line); }
     .hero-kicker { display: flex; align-items: center; gap: var(--space-2); font-size: 0.9375rem;
                    font-weight: 500; color: var(--ink-2); margin-bottom: var(--space-4); }
-    .hero-kicker::before { content: ""; width: 0.6rem; height: 0.6rem; border-radius: 50%;
-                           background: var(--saffron); flex: none; }
     .hero h1 { margin-bottom: var(--space-5); }
     /* The single typographic flourish: a saffron marker stroke under the payoff words. */
     .marker { box-shadow: inset 0 -0.3em 0 var(--saffron); -webkit-box-decoration-break: clone; box-decoration-break: clone; }
@@ -246,7 +245,7 @@
     td.cap { text-transform: capitalize; }
     tr.row-total td { border-top: 2px solid var(--ink); font-weight: 600; }
     td.status { font-weight: 700; white-space: nowrap; }
-    /* PASS vs FAIL is glyph + word + fill, never hue: the palette has no red or green. */
+    /* PASS vs FAIL is glyph + word + fill, never hue: the palette has no status colours. */
     td.status-fail { background: var(--ember-tint); box-shadow: inset 4px 0 0 var(--ember); }
     .stat-row { display: grid; grid-template-columns: 1fr; gap: var(--space-4); margin-top: var(--space-5); }
     @media (min-width: 40rem) { .stat-row { grid-template-columns: 1fr 1fr; } }
@@ -338,7 +337,7 @@
     .chip-lang { font-weight: 600; margin-right: var(--space-1); }
     .ex-pills { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
     .ex-desc { margin-top: var(--space-4); color: var(--ink-2); font-style: italic; }
-    .ex-grid { display: grid; grid-template-columns: 1fr; gap: var(--space-4); margin-top: var(--space-4); }
+    .ex-grid { display: grid; grid-template-columns: 1fr; gap: var(--space-4); margin-top: var(--space-4); align-items: start; }
     @media (min-width: 64rem) { .ex-grid { grid-template-columns: 1fr 1fr; } }
     .panel { border-radius: var(--r-md); padding: var(--space-5); min-width: 0; }
     .panel-in { background: var(--cream-2); border: 1px solid var(--line); }
