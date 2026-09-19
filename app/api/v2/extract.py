@@ -10,6 +10,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from app.auth.api_key import ApiKeyContext, require_api_key
 from app.core.alerts.engine import alert_on_review_event
 from app.core.config import get_settings
+from app.core.grounding import ungrounded_competitor_mentions
 from app.core.ingest_worker import drain_rows
 from app.core.injection_guard import classify_injection_risk
 from app.core.language import detect_language
@@ -99,6 +100,24 @@ async def _run_extraction_v2(
     )
     # Detected language takes precedence over LLM's self-reported language.
     llm_output.language = detected_lang
+
+    # Session 14 P4b: neither defense layer above catches field-targeted injection
+    # (eval/injection_suite.py's field_targeted family, 0/8 caught -- see
+    # app/core/grounding.py's module docstring for the root cause). This drops any
+    # competitor_mentions value with no textual basis in the source review, rather than
+    # trusting the LLM's output unchecked. Scoped to this one field only -- see that
+    # module's docstring for why pros/cons/topics are excluded (measured 59-88% false
+    # positive rate on real data, eval/results/grounding_check_fpr_n106.json).
+    ungrounded = ungrounded_competitor_mentions(request.text, llm_output.competitor_mentions)
+    if ungrounded:
+        log.warning(
+            "extraction.ungrounded_competitor_mentions",
+            input_hash=input_hash,
+            dropped=ungrounded,
+        )
+        llm_output.competitor_mentions = [
+            c for c in llm_output.competitor_mentions if c not in ungrounded
+        ]
 
     meta = ExtractionMetaV2(
         model=model_name,

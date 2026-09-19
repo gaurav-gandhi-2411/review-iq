@@ -36,6 +36,7 @@ HELD_OUT_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "held_out_scoring_v2.js
 COVERAGE_METRICS_PATH = REPO_ROOT / "eval" / "results" / "coverage_metrics_n106.json"
 INJECTION_SUITE_PATH = REPO_ROOT / "eval" / "results" / "injection_suite_n40.json"
 PROMPT_GUARD_FPR_PATH = REPO_ROOT / "eval" / "results" / "prompt_guard_fpr_n106.json"
+KNOWN_GAPS_PATH = REPO_ROOT / "eval" / "results" / "known_gaps_n106.json"
 ADR_LINK = "docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md"
 
 BLOCK_RE = re.compile(
@@ -275,6 +276,63 @@ def render_committed_accuracy_headline_html(data: dict[str, Any]) -> str:
         + "\n"
         + _card("a buy-again call", buy_again)
         + "\n          "
+    )
+
+
+def render_known_gaps_html(data: dict[str, Any], authenticity_data: dict[str, Any]) -> str:
+    """Render the "Known gaps" banner (site/index.html) from eval/analyze_known_gaps.py's
+    output -- Session 14 P2d. Replaces two previously-unmeasured claims:
+
+    - "Sarcastic Hinglish... scores lower" had no measurement behind it. Real count: 3 of
+      106 held-out reviews. Too small for any accuracy/coverage claim -- says so instead.
+    - "Short reviews... occasionally miss fields" undersold the real finding two ways: the
+      abstention rate is high AND correct (95.3% of the time a null was right, the panel
+      agrees the info isn't there), while the real, larger issue on short reviews is
+      confident-and-wrong guesses on fields that can't be left blank (product, topics),
+      not silent misses.
+
+    Session 15 P2b adds a third disclosure: the hero's "fake-review flag" claim sits next
+    to sentiment/urgency (both rigorously measured above) with no measurement of its own.
+    Sourced directly from eval/results/authenticity_latest.json's own provenance_note --
+    that file's `mode` is "historical (reconstructed, no live run this session)", its `n`
+    is 40 (not this corpus's 106), and its own note says the number is not reproducible
+    (no cassette-replay support) and predates this held-out set. This sentence is a
+    disclosure, not a metric -- if a real cassette-backed authenticity measurement against
+    this held-out set ever lands (closing the provenance_note's own "KNOWN GAP"), delete
+    this paragraph and add a real accuracy row instead of editing it in place.
+    """
+    sr = data["short_reviews"]
+    sarcasm = data["sarcasm"]
+    n = sr["n_short_reviews"]
+    abstention_rate = _fmt_pct(sr["abstention_correctness_rate"], 1)
+    real_gap_n = sr["counts"]["real_gap"]
+    wrong_committed_n = sr["counts"]["wrong_committed"]
+    total_checks = sr["total_field_checks"]
+    sarcasm_n = sarcasm["n_sarcastic_or_backhanded_found"]
+    sarcasm_total = data["n_fixtures_total"]
+    auth_n = authenticity_data["n"]
+
+    return (
+        "\n"
+        '        <span class="text-amber-400 font-semibold">Known gaps: </span>\n'
+        '        English `sentiment` and `buy_again` hedge (return "mixed"/null) far more '
+        "often under the current models than the previous ones — accuracy on the answers "
+        "the model DOES commit to is unchanged, but it commits less often, and flat "
+        "accuracy charges that the same as a wrong answer. Hinglish shows the opposite "
+        f"pattern. On the {n} short reviews (under 10 words) in our held-out test set, when "
+        f"the model says a field is unclear, that call is right {abstention_rate} of the "
+        "time — the information usually genuinely isn't in the text. The real short-review "
+        "issue is different: on fields it can't leave blank (like the product name), it "
+        f"guesses wrong more often than it should ({wrong_committed_n} of {total_checks} "
+        f"field checks) — there just isn't enough text to go on. Only {real_gap_n} of "
+        f"{total_checks} were genuine silent misses. Separately: sarcastic or backhanded "
+        f"phrasing is rare in real marketplace reviews — {sarcasm_n} of {sarcasm_total} in "
+        "our held-out set — too few to measure reliably, so we don't claim a number for it "
+        "either way. One more, stated plainly: unlike the fields above, the fake-review "
+        f"flag has not been measured against this held-out set. Its only historical number "
+        f"(n={auth_n}, a smaller and older corpus) is not reproducible and predates this "
+        "test set — treat it as an early-access signal, not a scored capability, until "
+        "that changes.\n      "
     )
 
 
@@ -564,6 +622,9 @@ BLOCK_RENDERERS: dict[str, Any] = {
         _load_json(INJECTION_SUITE_PATH)
     ),
     "prompt_guard_fpr": lambda: render_prompt_guard_fpr_md(_load_json(PROMPT_GUARD_FPR_PATH)),
+    "known_gaps_html": lambda: render_known_gaps_html(
+        _load_json(KNOWN_GAPS_PATH), _load_json(AUTHENTICITY_RESULTS_PATH)
+    ),
 }
 
 TARGET_FILES: tuple[Path, ...] = (
