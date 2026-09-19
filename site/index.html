@@ -180,8 +180,25 @@
     /* The single typographic flourish: a saffron marker stroke under the payoff words. */
     .marker { box-shadow: inset 0 -0.3em 0 var(--saffron); -webkit-box-decoration-break: clone; box-decoration-break: clone; }
     .hero-lede { font-size: clamp(1.0625rem, 0.98rem + 0.4vw, var(--step-1)); color: var(--ink-2); }
-    .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-5);
-                    margin-top: var(--space-6); }
+    .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-5); }
+    /* Hero layout: copy, then the live demo, then the CTAs on a phone (so the textarea is on the
+       first screen); copy + CTAs on the left and the demo on the right from 64rem up. */
+    .hero .wrap { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-5); }
+    @media (min-width: 64rem) {
+      .hero .wrap { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); grid-template-areas: "copy demo" "actions demo";
+                    grid-template-rows: auto 1fr; column-gap: var(--space-8); row-gap: var(--space-6); }
+      .hero-copy { grid-area: copy; }
+      .hero-demo { grid-area: demo; }
+      .hero-actions { grid-area: actions; align-self: start; }
+    }
+    @media (max-width: 47.99rem) {
+      .hero { padding-top: var(--space-5); }
+      .hero-kicker { font-size: 0.875rem; margin-bottom: var(--space-3); }
+      .hero-lede { font-size: 1.0625rem; }
+      .hero h1 { margin-bottom: var(--space-4); }
+      .hero-demo { padding: var(--space-4); }
+      .hero-demo textarea { min-height: 6.5rem; }
+    }
 
     /* ==========================================================================
        SECTIONS
@@ -408,8 +425,47 @@
           the two thousand that don't.
         </p>
       </div>
+
+      <!-- Live demo, first screen (Session 15c C8c): same POST /demo/extract handling and error copy
+           as the old #live section that used to sit below the gallery. -->
+      <div id="live" class="demo-slab on-ink hero-demo">
+        <h2>Try it on your own review</h2>
+        <p class="slab-lede">
+          Paste a real review from one of your own storefronts (English or Hinglish). Calls the
+          live API with no key required.
+        </p>
+
+        <label for="live-text">Review text</label>
+        <textarea id="live-text" rows="4" spellcheck="false" aria-describedby="live-empty"
+          placeholder="Superb earphone yaar, sound ekdum mast hai. But battery bahut weak hai."></textarea>
+        <p id="live-empty" class="slab-hint" role="alert" hidden>Paste or type a review first, then analyze it.</p>
+
+        <div class="slab-actions">
+          <button type="button" id="live-btn" class="btn btn-ember" onclick="runLive()">Analyze this review</button>
+          <button type="button" id="live-sample" class="btn-text" onclick="useSample()">Use a Hinglish example</button>
+        </div>
+
+        <!-- Loading state -->
+        <div id="live-loading" class="skeleton" role="status" aria-label="Analyzing" hidden><i></i><i></i><i></i></div>
+
+        <!-- Friendly error callout — NEVER a stack trace -->
+        <div id="live-error" class="slab-error" role="alert" hidden>
+          Live demo is busy right now &mdash; you've hit the 5 requests/min limit on this endpoint,
+          or free-tier Groq quota is temporarily exhausted. The examples below all run without a
+          network connection and show the full capability.
+        </div>
+
+        <!-- Empty (idle) state -->
+        <p id="live-idle" class="slab-idle">The response appears here as JSON: sentiment, urgency, topics and the authenticity flag.</p>
+
+        <div id="live-result-wrap" class="slab-result" hidden>
+          <p class="slab-result-label">Response (ReviewExtraction)</p>
+          <pre id="live-result" class="code" tabindex="0" aria-label="Analysis result"></pre>
+        </div>
+      </div>
+
       <div class="hero-actions">
-        <a href="#live" class="btn btn-ember">Try it on your reviews</a>
+        <a href="#contact" class="btn btn-ember">Request early access</a>
         <a href="#pricing">See pricing</a>
       </div>
     </div>
@@ -498,49 +554,6 @@
 
         <!-- Category panels (rendered by JS) -->
         <div id="gallery-panels"></div>
-      </div>
-    </section>
-
-    <!-- ===========================================================
-         LIVE INPUT
-    =========================================================== -->
-    <section id="live-section" class="section">
-      <div class="wrap">
-        <div id="live" class="demo-slab on-ink">
-          <h2>Or paste your own &mdash; no signup needed</h2>
-          <p class="slab-lede">
-            Paste a real review from one of your own storefronts (English or Hinglish). Calls the
-            live API with no key required.
-          </p>
-
-          <label for="live-text">Review text</label>
-          <textarea id="live-text" rows="4" spellcheck="false" aria-describedby="live-empty"
-            placeholder="Superb earphone yaar, sound ekdum mast hai. But battery bahut weak hai."></textarea>
-          <p id="live-empty" class="slab-hint" role="alert" hidden>Paste or type a review first, then analyze it.</p>
-
-          <div class="slab-actions">
-            <button type="button" id="live-btn" class="btn btn-ember" onclick="runLive()">Analyze this review</button>
-            <button type="button" id="live-sample" class="btn-text" onclick="useSample()">Use a Hinglish example</button>
-          </div>
-
-          <!-- Loading state -->
-          <div id="live-loading" class="skeleton" role="status" aria-label="Analyzing" hidden><i></i><i></i><i></i></div>
-
-          <!-- Friendly error callout — NEVER a stack trace -->
-          <div id="live-error" class="slab-error" role="alert" hidden>
-            Live demo is busy right now &mdash; you've hit the 5 requests/min limit on this endpoint,
-            or free-tier Groq quota is temporarily exhausted. The examples above all run without a
-            network connection and show the full capability.
-          </div>
-
-          <!-- Empty (idle) state -->
-          <p id="live-idle" class="slab-idle">The response appears here as JSON: sentiment, urgency, topics and the authenticity flag.</p>
-
-          <div id="live-result-wrap" class="slab-result" hidden>
-            <p class="slab-result-label">Response (ReviewExtraction)</p>
-            <pre id="live-result" class="code" tabindex="0" aria-label="Analysis result"></pre>
-          </div>
-        </div>
       </div>
     </section>
 
