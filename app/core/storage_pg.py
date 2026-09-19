@@ -1634,7 +1634,7 @@ def insert_lead_pg(
 ) -> None:
     """Persist one lead with email_status='pending'.
 
-    Pre-tenant, deliberately no _set_tenant(): a lead has no org yet. Writes only
+    Cross-org query (pre-tenant), deliberately no _set_tenant(): a lead has no org yet. Writes only
     public.leads, guarded by grants + RLS scoped to review_iq_app (see
     supabase/migrations/20260920000001_leads.sql). No RETURNING clause: review_iq_app
     holds only a column-level SELECT on (id, email_status) there, and the caller already
@@ -1673,7 +1673,7 @@ def insert_lead_pg(
 def update_lead_email_status_pg(lead_id: str, email_status: str) -> bool:
     """Record the outcome of the notification/confirmation emails for a just-inserted lead.
 
-    Same pre-tenant scoping note as insert_lead_pg. Returns False if no row was updated
+    Cross-org query (pre-tenant), same scoping note as insert_lead_pg. Returns False if no row was updated
     (the row is outside review_iq_app's one-hour SELECT/UPDATE policy window, or missing).
     """
     conn = _db_connect()
