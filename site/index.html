@@ -324,26 +324,26 @@
           </thead>
           <tbody class="divide-y divide-gray-700">
             <!-- METRICS:START:extraction_table_html -->
-            <tr class="bg-gray-900 hover:bg-gray-800 transition-colors">
-              <td class="px-6 py-4 text-gray-100">English <span class="text-gray-500 text-xs">(en, n=27)</span></td>
-              <td class="px-6 py-4 font-mono text-blue-300">78.2%</td>
-              <td class="px-6 py-4 font-mono text-gray-400 text-xs">[73.7%, 82.3%]</td>
-              <td class="px-6 py-4 text-gray-400">&ge;77%</td>
-              <td class="px-6 py-4 text-green-400 font-semibold">&#10003; PASS</td>
+            <tr>
+              <td>English <span class="muted">(en, n=27)</span></td>
+              <td class="num">78.2%</td>
+              <td class="ci">[73.7%, 82.3%]</td>
+              <td class="gate">&ge;77%</td>
+              <td class="status status-pass">&#10003; PASS</td>
             </tr>
-            <tr class="bg-gray-900 hover:bg-gray-800 transition-colors">
-              <td class="px-6 py-4 text-gray-100">Hinglish <span class="text-gray-500 text-xs">(hi-en, n=16)</span></td>
-              <td class="px-6 py-4 font-mono text-blue-300">79.3%</td>
-              <td class="px-6 py-4 font-mono text-gray-400 text-xs">[66.8%, 87.7%]</td>
-              <td class="px-6 py-4 text-gray-400">&ge;75%</td>
-              <td class="px-6 py-4 text-green-400 font-semibold">&#10003; PASS</td>
+            <tr>
+              <td>Hinglish <span class="muted">(hi-en, n=16)</span></td>
+              <td class="num">79.3%</td>
+              <td class="ci">[66.8%, 87.7%]</td>
+              <td class="gate">&ge;75%</td>
+              <td class="status status-pass">&#10003; PASS</td>
             </tr>
-            <tr class="bg-gray-900 hover:bg-gray-800 transition-colors border-t-2 border-gray-600">
-              <td class="px-6 py-4 text-white font-semibold">Overall <span class="text-gray-500 text-xs">(n=43)</span></td>
-              <td class="px-6 py-4 font-mono text-blue-300 font-semibold">78.6%</td>
-              <td class="px-6 py-4 font-mono text-gray-400 text-xs">[73.2%, 82.9%]</td>
-              <td class="px-6 py-4 text-gray-400">&ge;76%</td>
-              <td class="px-6 py-4 text-green-400 font-semibold">&#10003; PASS</td>
+            <tr class="row-total">
+              <td>Overall <span class="muted">(n=43)</span></td>
+              <td class="num">78.6%</td>
+              <td class="ci">[73.2%, 82.9%]</td>
+              <td class="gate">&ge;76%</td>
+              <td class="status status-pass">&#10003; PASS</td>
             </tr>
           <!-- METRICS:END -->
           </tbody>
@@ -353,7 +353,7 @@
 
       <div class="mt-6 bg-amber-950/40 border border-amber-800 rounded-lg px-5 py-4 text-sm text-gray-300">
         <!-- METRICS:START:known_gaps_html -->
-        <span class="text-amber-400 font-semibold">Known gaps: </span>
+        <strong class="note-lead">Known gaps: </strong>
         English `sentiment` and `buy_again` hedge (return "mixed"/null) far more often under the current models than the previous ones — accuracy on the answers the model DOES commit to is unchanged, but it commits less often, and flat accuracy charges that the same as a wrong answer. Hinglish shows the opposite pattern. On the 27 short reviews (under 10 words) in our held-out test set, when the model says a field is unclear, that call is right 93.3% of the time — the information usually genuinely isn't in the text. The real short-review issue is different: it commits to a value that does not match the reference labels on 48 of 324 field checks, most often on `language` (13), `topics` (11), `pros` (6). Only 10 of 324 were genuine silent misses. Separately: sarcastic or backhanded phrasing is rare in real marketplace reviews — 3 of 106 in our held-out set — too few to measure reliably, so we don't claim a number for it either way. One more, stated plainly: unlike the fields above, the fake-review flag has not been measured against this held-out set. Its only historical number (n=40, a smaller and older corpus) is not reproducible and predates this test set — treat it as an early-access signal, not a scored capability, until that changes.
       <!-- METRICS:END -->
       </div>
@@ -375,17 +375,17 @@
           </thead>
           <tbody class="divide-y divide-gray-700">
             <!-- METRICS:START:coverage_metrics_table_html -->
-            <tr class="bg-gray-900 hover:bg-gray-800 transition-colors">
-              <td class="px-6 py-4 text-gray-100 capitalize">sentiment</td>
-              <td class="px-6 py-4 font-mono text-blue-300">77.4% <span class="text-gray-500 text-xs">[68.9%, 84.9%]</span></td>
-              <td class="px-6 py-4 font-mono text-blue-300">87.8% <span class="text-gray-500 text-xs">[80.5%, 93.9%]</span></td>
-              <td class="px-6 py-4 font-mono text-gray-300">10/82 = 12.2%</td>
+            <tr>
+              <td class="cap">sentiment</td>
+              <td class="num">77.4% <span class="muted">[68.9%, 84.9%]</span></td>
+              <td class="num">87.8% <span class="muted">[80.5%, 93.9%]</span></td>
+              <td class="ci">10/82 = 12.2%</td>
             </tr>
-            <tr class="bg-gray-900 hover:bg-gray-800 transition-colors">
-              <td class="px-6 py-4 text-gray-100 capitalize">buy again</td>
-              <td class="px-6 py-4 font-mono text-blue-300">43.4% <span class="text-gray-500 text-xs">[34.0%, 52.8%]</span></td>
-              <td class="px-6 py-4 font-mono text-blue-300">76.1% <span class="text-gray-500 text-xs">[63.0%, 87.0%]</span></td>
-              <td class="px-6 py-4 font-mono text-gray-300">11/46 = 23.9%</td>
+            <tr>
+              <td class="cap">buy again</td>
+              <td class="num">43.4% <span class="muted">[34.0%, 52.8%]</span></td>
+              <td class="num">76.1% <span class="muted">[63.0%, 87.0%]</span></td>
+              <td class="ci">11/46 = 23.9%</td>
             </tr>
           <!-- METRICS:END -->
           </tbody>
@@ -393,15 +393,15 @@
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <!-- METRICS:START:committed_accuracy_headline_html -->
-            <div class="bg-gray-900 rounded-lg p-6 border border-gray-700">
-              <div class="text-3xl font-bold text-blue-300">87.8%</div>
-              <div class="text-gray-100 font-semibold mt-1">accurate when it commits to a sentiment call</div>
-              <div class="text-gray-500 text-xs mt-2">95% CI [80.5%, 93.9%], n=106. Separately, it abstains (&ldquo;unclear&rdquo;) on 15.1%&ndash;31.1% of all reviews rather than commit to any answer.</div>
+            <div class="stat-card">
+              <div class="stat-num">87.8%</div>
+              <div class="stat-label">accurate when it commits to a sentiment call</div>
+              <div class="stat-note">95% CI [80.5%, 93.9%], n=106. Separately, it abstains (&ldquo;unclear&rdquo;) on 15.1%&ndash;31.1% of all reviews rather than commit to any answer.</div>
             </div>
-            <div class="bg-gray-900 rounded-lg p-6 border border-gray-700">
-              <div class="text-3xl font-bold text-blue-300">76.1%</div>
-              <div class="text-gray-100 font-semibold mt-1">accurate when it commits to a buy-again call</div>
-              <div class="text-gray-500 text-xs mt-2">95% CI [63.0%, 87.0%], n=106. Separately, it abstains (&ldquo;unclear&rdquo;) on 47.2%&ndash;66.0% of all reviews rather than commit to any answer.</div>
+            <div class="stat-card">
+              <div class="stat-num">76.1%</div>
+              <div class="stat-label">accurate when it commits to a buy-again call</div>
+              <div class="stat-note">95% CI [63.0%, 87.0%], n=106. Separately, it abstains (&ldquo;unclear&rdquo;) on 47.2%&ndash;66.0% of all reviews rather than commit to any answer.</div>
             </div>
           <!-- METRICS:END -->
       </div>

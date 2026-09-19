@@ -153,7 +153,7 @@ class TestRenderExtractionTableHtml:
         out = render_extraction_table_html(EXTRACTION_DATA)
         assert out.count("PASS") == 4
         assert "FAIL" not in out
-        assert "text-red-400" not in out
+        assert "status-fail" not in out
 
     def test_failing_language_renders_red_fail_not_green_pass(self):
         # Regression test (Session 5 P4, 2026-09-10): every row used to hardcode the
@@ -172,7 +172,50 @@ class TestRenderExtractionTableHtml:
         out = render_extraction_table_html(data)
         assert out.count("FAIL") == 2  # en row + overall row
         assert out.count("PASS") == 2  # hi + hi-en rows only
-        assert "text-red-400" in out
+        # Session 15c C8: FAIL is carried by the status-fail class (glyph + weight), since
+        # the page palette has no red hue -- the count still proves it is per-row, not global.
+        assert out.count("status-fail") == 2
+        assert out.count("status-pass") == 2
+
+
+class TestSiteIndexBlocksAreBrandPaletteOnly:
+    """Session 15c C8: site/index.html's brand palette (design/tokens.json) has no blue, green,
+    red, amber or violet hue, and the page no longer loads Tailwind. Every renderer feeding an
+    index.html marker block must emit semantic classes, never Tailwind palette utilities.
+    """
+
+    FORBIDDEN = ("blue-", "green-", "red-", "amber-", "violet-", "gray-", "slate-", "indigo-")
+
+    def _all_index_block_output(self) -> str:
+        gaps = {
+            "short_reviews": {
+                "n_short_reviews": 27,
+                "abstention_correctness_rate": 0.9329,
+                "counts": {"wrong_committed": 48, "real_gap": 10},
+                "total_field_checks": 324,
+                "per_field": {"topics": {"wrong_committed": 11}},
+            },
+            "sarcasm": {"n_sarcastic_or_backhanded_found": 3},
+            "n_fixtures_total": 106,
+        }
+        return "".join(
+            (
+                render_extraction_table_html(EXTRACTION_DATA),
+                render_committed_accuracy_headline_html(COVERAGE_DATA),
+                render_coverage_metrics_table_html(COVERAGE_DATA),
+                render_known_gaps_html(gaps, {"n": 40}),
+            )
+        )
+
+    def test_no_tailwind_palette_classes_in_any_index_block(self):
+        out = self._all_index_block_output()
+        assert [t for t in self.FORBIDDEN if t in out] == []
+
+    def test_failing_status_uses_semantic_class_not_a_colour(self):
+        data = {**EXTRACTION_DATA, "passed": False}
+        out = render_extraction_table_html(data)
+        assert "status-fail" in out
+        assert "red-" not in out
 
 
 class TestRenderLanguageTableHtml:

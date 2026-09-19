@@ -288,10 +288,10 @@ def render_committed_accuracy_headline_html(data: dict[str, Any]) -> str:
         abstain_lo = _fmt_pct(1 - info["coverage_ci_95"]["upper"])
         abstain_hi = _fmt_pct(1 - info["coverage_ci_95"]["lower"])
         return (
-            '            <div class="bg-gray-900 rounded-lg p-6 border border-gray-700">\n'
-            f'              <div class="text-3xl font-bold text-blue-300">{acc}</div>\n'
-            f'              <div class="text-gray-100 font-semibold mt-1">accurate when it commits to {label}</div>\n'
-            f'              <div class="text-gray-500 text-xs mt-2">95% CI [{lo}, {hi}], n={n}. '
+            '            <div class="stat-card">\n'
+            f'              <div class="stat-num">{acc}</div>\n'
+            f'              <div class="stat-label">accurate when it commits to {label}</div>\n'
+            f'              <div class="stat-note">95% CI [{lo}, {hi}], n={n}. '
             f"Separately, it abstains (&ldquo;unclear&rdquo;) on {abstain_lo}&ndash;{abstain_hi} "
             f"of all reviews rather than commit to any answer.</div>\n"
             "            </div>"
@@ -352,7 +352,7 @@ def render_known_gaps_html(data: dict[str, Any], authenticity_data: dict[str, An
 
     return (
         "\n"
-        '        <span class="text-amber-400 font-semibold">Known gaps: </span>\n'
+        '        <strong class="note-lead">Known gaps: </strong>\n'
         '        English `sentiment` and `buy_again` hedge (return "mixed"/null) far more '
         "often under the current models than the previous ones — accuracy on the answers "
         "the model DOES commit to is unchanged, but it commits less often, and flat "
@@ -390,9 +390,14 @@ def render_gate_summary_md(data: dict[str, Any]) -> str:
 
 
 def _status_badge_html(passed: bool) -> str:
+    """PASS/FAIL cell for site/index.html. Session 15c C8: emits semantic classes (`status`,
+    `status-pass`, `status-fail`) defined in that page's own stylesheet, not Tailwind palette
+    classes -- the page's brand palette has no green/red hue, so PASS vs FAIL is carried by
+    the glyph + word + weight, never by colour alone.
+    """
     if passed:
-        return '<td class="px-6 py-4 text-green-400 font-semibold">&#10003; PASS</td>'
-    return '<td class="px-6 py-4 text-red-400 font-semibold">&#10007; FAIL</td>'
+        return '<td class="status status-pass">&#10003; PASS</td>'
+    return '<td class="status status-fail">&#10007; FAIL</td>'
 
 
 def render_extraction_table_html(data: dict[str, Any]) -> str:
@@ -416,24 +421,24 @@ def render_extraction_table_html(data: dict[str, Any]) -> str:
         label = lang_labels.get(lang, lang)
         scope_note = lang_scope_note.get(lang, "")
         rows.append(
-            '            <tr class="bg-gray-900 hover:bg-gray-800 transition-colors">\n'
-            f'              <td class="px-6 py-4 text-gray-100">{label} '
-            f'<span class="text-gray-500 text-xs">({lang}, n={info["n"]}{scope_note})</span></td>\n'
-            f'              <td class="px-6 py-4 font-mono text-blue-300">{_fmt_pct(info["score"])}</td>\n'
-            f'              <td class="px-6 py-4 font-mono text-gray-400 text-xs">'
+            "            <tr>\n"
+            f"              <td>{label} "
+            f'<span class="muted">({lang}, n={info["n"]}{scope_note})</span></td>\n'
+            f'              <td class="num">{_fmt_pct(info["score"])}</td>\n'
+            f'              <td class="ci">'
             f"[{_fmt_pct(info['ci_95']['lower'])}, {_fmt_pct(info['ci_95']['upper'])}]</td>\n"
-            f'              <td class="px-6 py-4 text-gray-400">&ge;{info["threshold"]:.0%}</td>\n'
+            f'              <td class="gate">&ge;{info["threshold"]:.0%}</td>\n'
             f"              {_status_badge_html(info['passed'])}\n"
             "            </tr>"
         )
     rows.append(
-        '            <tr class="bg-gray-900 hover:bg-gray-800 transition-colors border-t-2 border-gray-600">\n'
-        f'              <td class="px-6 py-4 text-white font-semibold">Overall '
-        f'<span class="text-gray-500 text-xs">(n={data["overall_ci_95"]["n"]})</span></td>\n'
-        f'              <td class="px-6 py-4 font-mono text-blue-300 font-semibold">{_fmt_pct(data["overall_score"])}</td>\n'
-        f'              <td class="px-6 py-4 font-mono text-gray-400 text-xs">'
+        '            <tr class="row-total">\n'
+        f"              <td>Overall "
+        f'<span class="muted">(n={data["overall_ci_95"]["n"]})</span></td>\n'
+        f'              <td class="num">{_fmt_pct(data["overall_score"])}</td>\n'
+        f'              <td class="ci">'
         f"[{_fmt_pct(data['overall_ci_95']['lower'])}, {_fmt_pct(data['overall_ci_95']['upper'])}]</td>\n"
-        f'              <td class="px-6 py-4 text-gray-400">&ge;{data["threshold"]:.0%}</td>\n'
+        f'              <td class="gate">&ge;{data["threshold"]:.0%}</td>\n'
         f"              {_status_badge_html(data['passed'])}\n"
         "            </tr>"
     )
@@ -490,11 +495,11 @@ def render_coverage_metrics_table_html(data: dict[str, Any]) -> str:
         wrong = info["wrong_committed_of_answered"]
         wrong_rate = _fmt_pct(info["wrong_committed_rate"])
         rows.append(
-            '            <tr class="bg-gray-900 hover:bg-gray-800 transition-colors">\n'
-            f'              <td class="px-6 py-4 text-gray-100 capitalize">{field.replace("_", " ")}</td>\n'
-            f'              <td class="px-6 py-4 font-mono text-blue-300">{cov} <span class="text-gray-500 text-xs">{cov_ci}</span></td>\n'
-            f'              <td class="px-6 py-4 font-mono text-blue-300">{acc} <span class="text-gray-500 text-xs">{acc_ci}</span></td>\n'
-            f'              <td class="px-6 py-4 font-mono text-gray-300">{wrong} = {wrong_rate}</td>\n'
+            "            <tr>\n"
+            f'              <td class="cap">{field.replace("_", " ")}</td>\n'
+            f'              <td class="num">{cov} <span class="muted">{cov_ci}</span></td>\n'
+            f'              <td class="num">{acc} <span class="muted">{acc_ci}</span></td>\n'
+            f'              <td class="ci">{wrong} = {wrong_rate}</td>\n'
             "            </tr>"
         )
     return "\n" + "\n".join(rows) + "\n          "
