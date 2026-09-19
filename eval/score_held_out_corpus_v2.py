@@ -50,6 +50,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from eval.bootstrap import bootstrap_ci  # noqa: E402
+from eval.free_text_scoring import SCORER_VERSION  # noqa: E402
 from eval.provenance import get_git_sha, now_iso  # noqa: E402
 from eval.runner import score_fixture  # noqa: E402
 
@@ -149,6 +150,7 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
     return {
         "generated_at": now_iso(),
         "git_sha": get_git_sha(),
+        "scorer_version": SCORER_VERSION,
         "groq_model_small": settings.groq_model_small,
         "groq_model_large": settings.groq_model_large,
         "n_fixtures": len(records),
