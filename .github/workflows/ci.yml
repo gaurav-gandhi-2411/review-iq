@@ -37,6 +37,12 @@ jobs:
       - name: Tenant-scoping guard (psycopg2 connect sites)
         run: uv run python scripts/check_undocumented_pg_connects.py
 
+      # Session 15c: every scheduled workflow must have a failure -> GitHub-issue alert path.
+      # failover-probe.yml failed 7 nights unalerted; the runtime canary only covers the
+      # composite action, so this is the static check that every caller actually uses it.
+      - name: Scheduled workflows have a failure-alert path
+        run: uv run python scripts/check_scheduled_workflows_alert.py
+
       - name: Unit tests
         # Was `pytest tests/unit/` only -- silently excluded ~9 flat test files directly
         # under tests/ (test_providers.py, test_failover.py, the new test_probe_failover.py,
