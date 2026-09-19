@@ -110,6 +110,13 @@ CORRECTIONS_SUBMITTED = Counter(
 )
 
 
+LEADS_TOTAL = Counter(
+    "review_iq_leads_total",
+    "POST /leads outcomes (accepted, honeypot, invalid, persist_failed, email_degraded)",
+    ["outcome"],
+)
+
+
 class PrometheusMiddleware(BaseHTTPMiddleware):
     def __init__(self, app: ASGIApp) -> None:
         super().__init__(app)

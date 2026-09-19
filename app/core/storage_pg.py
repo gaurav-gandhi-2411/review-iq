@@ -1614,3 +1614,80 @@ def record_demo_extraction_cost_pg(
         raise
     finally:
         conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Marketing-site lead capture (POST /leads, Session 15c C9)
+# ---------------------------------------------------------------------------
+
+
+def insert_lead_pg(
+    lead_id: str,
+    name: str,
+    email: str,
+    company: str,
+    brands: str,
+    reviews_per_month: str,
+    message: str | None,
+    source_ip_hash: str | None,
+    user_agent: str | None,
+) -> None:
+    """Persist one lead with email_status='pending'.
+
+    Pre-tenant, deliberately no _set_tenant(): a lead has no org yet. Writes only
+    public.leads, guarded by grants + RLS scoped to review_iq_app (see
+    supabase/migrations/20260920000001_leads.sql). No RETURNING clause: review_iq_app
+    holds only a column-level SELECT on (id, email_status) there, and the caller already
+    knows the id (generated app-side).
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            INSERT INTO public.leads (
+                id, name, email, company, brands, reviews_per_month, message,
+                source_ip_hash, user_agent
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """,
+            (
+                lead_id,
+                name,
+                email,
+                company,
+                brands,
+                reviews_per_month,
+                message,
+                source_ip_hash,
+                user_agent,
+            ),
+        )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def update_lead_email_status_pg(lead_id: str, email_status: str) -> bool:
+    """Record the outcome of the notification/confirmation emails for a just-inserted lead.
+
+    Same pre-tenant scoping note as insert_lead_pg. Returns False if no row was updated
+    (the row is outside review_iq_app's one-hour SELECT/UPDATE policy window, or missing).
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "UPDATE public.leads SET email_status = %s WHERE id = %s",
+            (email_status, lead_id),
+        )
+        updated = cur.rowcount == 1
+        conn.commit()
+        return updated
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
