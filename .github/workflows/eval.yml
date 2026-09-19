@@ -20,6 +20,9 @@ on:
       - "app/core/**"
       - "eval/fixtures/**"
       - eval/runner.py
+      # score_fixture() delegates the free-text fields here; a change to this file moves
+      # every published number exactly like a change to runner.py does.
+      - eval/free_text_scoring.py
   schedule:
     - cron: "0 2 * * *"
   workflow_dispatch:
