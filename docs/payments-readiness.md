@@ -7,6 +7,7 @@ $29/INR 1,499, Growth $79/INR 4,999, Scale $199/INR 12,999 per month; annual = 2
 (GST-inclusive or exclusive is not stated [U7]). Today first customers are invoiced manually.
 
 ## 1. Gateway options (all verified 2026-09-20 unless tagged)
+<!-- METRICS:HISTORICAL -->
 
 | Option | Onboarding (proprietor?) | Recurring / USD route | Fee headline |
 |---|---|---|---|
@@ -17,6 +18,7 @@ $29/INR 1,499, Growth $79/INR 4,999, Scale $199/INR 12,999 per month; annual = 2
 | Paddle (MoR) [10][11] | Sellers "anywhere except sanctioned list"; business verification "not required for individuals or sole traders"; India-specific terms [U6] | Full subscription billing, global tax; payouts to seller | 5% + 50c (custom below $10) |
 | Dodo Payments (MoR) [12][13] | India-built. Bank type decides class: personal a/c = Individual (even with Udyam/GST), company a/c = Organization; GST optional below threshold | India-domestic checkout (UPI/cards) supported. INR is not a payout wallet: payouts in USD/GBP/EUR | 4% + 40c US; India 4% + 15c; +1.5% intl, +0.5% subs; $5 if payout < $1,000 |
 | Lemon Squeezy (MoR) [14][15] | India listed, but bank payout needs a Stripe-approved account; else PayPal only. Folding into Stripe Managed Payments (invite, 35+ countries; India not addressed) [U10] | Subscriptions yes | Not fetched [U6] |
+<!-- /METRICS:HISTORICAL -->
 
 RBI e-mandate rules (apply to every INR recurring option): Digital Payments E-mandate Framework, 2026
 (21 Apr 2026): AFA-free recurring only up to INR 15,000 per debit after one-time AFA mandate
@@ -44,7 +46,7 @@ INR 15,000 [5]. Sell Growth/Scale annual as one-off invoices/payment links, not 
   2017 text read [19]; later amendments not checked [U5]. Practitioner sources conflict on whether
   exporters must register regardless of turnover [20]; LUT (RFD-11) is filed while logged in with a
   GSTIN [21], so in practice register before the first export. Domestic SaaS to Indian customers:
-  18% (SAC 9983xx) [22], charged once registered/over threshold.
+  <!-- METRICS:HISTORICAL --> 18% (SAC 9983xx) [22], charged once registered/over threshold. <!-- /METRICS:HISTORICAL -->
 - Export of services is zero-rated under s.2(6) IGST: supplier in India, recipient and place of
   supply outside India, payment in convertible foreign exchange (or INR where RBI permits),
   separate entities [23]. Supply under LUT, filed before first export each FY, valid one FY
