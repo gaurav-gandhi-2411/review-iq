@@ -195,7 +195,11 @@
     .problem-item { border-top: 2px solid var(--ink); padding-top: var(--space-4); }
     .problem-item h3 { margin-bottom: var(--space-2); }
     .problem-item p { color: var(--ink-2); }
-    .icon-tile { font-size: 1.75rem; line-height: 1; margin-bottom: var(--space-3); }
+    /* Inline SVG icons: one 24px grid, one stroke weight, ink line with a saffron/ember fill. */
+    .icon { display: block; width: 2.5rem; height: 2.5rem; margin-bottom: var(--space-3); fill: none; stroke: var(--ink);
+            stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+    .icon .i-saffron { fill: var(--saffron); }
+    .icon .i-ember { fill: var(--ember); }
 
     /* How it works: a genuine sequence, so it is numbered. */
     .steps { list-style: none; padding: 0; display: grid; gap: var(--space-6); grid-template-columns: 1fr; margin: var(--space-6) 0 0; }
@@ -421,7 +425,12 @@
         <h2>Managing reviews for one brand is manageable. For twelve, it isn't.</h2>
         <div class="cols-3">
           <div class="problem-item">
-            <p class="icon-tile" aria-hidden="true">🌐</p>
+            <!-- Two speech bubbles: a review in more than one language. -->
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path class="i-saffron" d="M3 5.5A1.5 1.5 0 0 1 4.5 4h9A1.5 1.5 0 0 1 15 5.5v6a1.5 1.5 0 0 1-1.5 1.5H8l-3 2.5V13h-.5A1.5 1.5 0 0 1 3 11.5z"/>
+              <path d="M9 16a1.5 1.5 0 0 0 1.5 1.5H16l3 2.5v-2.5h.5A1.5 1.5 0 0 0 21 16v-6a1.5 1.5 0 0 0-1.5-1.5H17"/>
+              <path d="M6.5 8h5M6.5 10.5h3"/>
+            </svg>
             <h3>Half your reviews aren't in English</h3>
             <p>
               Real Indian marketplace reviews mix English and romanized Hindi in the same
@@ -430,7 +439,11 @@
             </p>
           </div>
           <div class="problem-item">
-            <p class="icon-tile" aria-hidden="true">🚨</p>
+            <!-- A pennant flag: the review that needs a human, flagged. -->
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path class="i-ember" d="M5 4.5h12.5l-2.5 4 2.5 4H5z"/>
+              <path d="M5 21V3.5"/>
+            </svg>
             <h3>The urgent one is buried in the pile</h3>
             <p>
               A safety complaint or a "caught fire" review looks identical to a routine
@@ -439,7 +452,11 @@
             </p>
           </div>
           <div class="problem-item">
-            <p class="icon-tile" aria-hidden="true">🎭</p>
+            <!-- A review star struck through: a rating that isn't real. -->
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path class="i-saffron" d="M12 3.5l2.6 5.3 5.9.85-4.25 4.15 1 5.85L12 16.9l-5.25 2.75 1-5.85L3.5 9.65l5.9-.85z"/>
+              <path d="M4 20.5L20 3.5"/>
+            </svg>
             <h3>Some of it isn't even real</h3>
             <p>
               Coordinated fake-review campaigns are a live problem for Indian D2C brands.
