@@ -140,3 +140,13 @@ as accuracy; thresholds are unaffected (scores only rose).
 - **LLM/embedding judge for `topics` and `product`**: better for synonymy, but adds a model
   dependency, cost and non-determinism to a gate that is currently $0 and byte-reproducible.
 - **Only fix `product`**: rejected; that repeats the incident (fix the instance, leave the class).
+
+## Correction note (Session 15d)
+
+Dated 2026-09-20. The sentence "`language` (as deployed 48.1%, forced 100%) ... are model/router
+accuracy, not scorer, gaps" is superseded. Those two figures are not model or router accuracy:
+forced is 100% because the forced prompt states the label (echo), and as deployed 48.1% is the
+detector's agreement with the corpus label (95% CI 38.8-57.5; label alpha 0.380, so this partly
+measures label noise, not detector error). The published held-out headline now excludes `stars`
+and `language`. See ADR 0021's Correction section. The scorer findings of this ADR (product,
+topics, competitor_mentions) are unaffected.

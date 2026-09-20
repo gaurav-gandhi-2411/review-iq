@@ -22,7 +22,8 @@ EXCLUDING the constant `stars` field (GG's decision). Tags: **VERIFIED (how)** =
    to slightly negative). Under `language_forced` the prompt itself says `language: always "hi-en"`, so
    the field is 100% by echo; as-deployed it equals detector-vs-corpus-label agreement exactly. This
    contradicts a prior shipped conclusion (ADR 0021 Decision, ADR 0023 Context item 3) and is surfaced
-   here rather than absorbed; the ADRs are immutable and are not edited by this PR. **VERIFIED**
+   here rather than absorbed. (Session 15d: ADR 0021 and ADR 0023 now carry dated Correction
+   sections; their original text is unchanged.) **VERIFIED**
    (`adr_0021_quantity_all_10_fields`; per-fixture assertion in the script that as-deployed `language`
    score == 1[detected == corpus label] on all 106).
 3. **Including `language` in the headline, misrouting looks like 17.2% [10.9, 23.4] of the gap to 100%;
@@ -31,8 +32,8 @@ EXCLUDING the constant `stars` field (GG's decision). Tags: **VERIFIED (how)** =
    (extraction/label/scorer error) is ~100% of the 27.6pp gap. **VERIFIED** (same artifact).
 4. **Where the customer actually feels the label is the `language` output field itself, not the other
    fields.** `/v2/extract` overwrites the model's `language` with `detect_language()` output
-   (`app/api/v2/extract.py:102`), so the API's `language` accuracy IS detector accuracy: 48.1% agreement
-   (Wilson 95% [38.8, 57.5]) with the corpus label on n=106. That label is itself noisy (judge alpha 0.380
+   (`app/api/v2/extract.py:102`), so the API's `language` value IS the detector's output; its agreement with the
+   corpus label is 48.1% (Wilson 95% [38.8, 57.5]) on n=106 (agreement, never accuracy). That label is itself noisy (judge alpha 0.380
    on `language`, ADR 0023), which bounds any accuracy claim about the field. **VERIFIED** (code read;
    artifact) for the mechanism; the alpha figure is quoted from ADR 0023 (**VERIFIED** by file read,
    not recomputed).
@@ -150,7 +151,7 @@ model error.
 `detector_external_controls`; all variants use only the production regexes, no new vocabulary, no fitted
 threshold; these are diagnostics, not proposals):
 
-| Rule | Held-out n=106 acc (Wilson) | recall hi-en (n=101) / en (n=5) | Benchmark set recall vs `slice` hi-en (n=21) / en (n=22) | CI-gate en recall (n=27) |
+| Rule | Held-out n=106 agreement with corpus label (Wilson; label alpha 0.380, not accuracy) | recall hi-en (n=101) / en (n=5) | Benchmark set recall vs `slice` hi-en (n=21) / en (n=22) | CI-gate en recall (n=27) |
 |---|---|---|---|---|
 | always hi-en | 95.3% [89.4, 98.0] | 101/101, 0/5 | 21/21, 0/22 | 0/27 |
 | always en | 4.7% [2.0, 10.6] | 0/101, 5/5 | 0/21, 22/22 | 27/27 |
@@ -159,7 +160,7 @@ threshold; these are diagnostics, not proposals):
 | strong or >=1 weak marker | 95.3% [89.4, 98.0] | 101/101, 0/5 | 21/21, 22/22 | 27/27 |
 | strong or >=2 weak markers | 51.9% [42.5, 61.2] | 52/101, 3/5 | 21/21, 22/22 | 27/27 |
 
-Reading: (i) "improving the detector" on the 106 is dominated by a corpus artifact -- accuracy there is
+Reading: (i) "improving the detector" on the 106 is dominated by a corpus artifact -- agreement there is
 decided by whether one-token reviews count as Hinglish, the exact ambiguity ADR 0023 identified. The
 ">=1 weak marker" variant catches every held-out hi-en and creates no false positive on 49 external English
 texts (22 benchmark `slice`=en, 27 hand-built CI-gate), but also flags all 5 held-out gt-en fixtures (and one of the weak markers, "value for money", is
@@ -195,7 +196,7 @@ baseline-definition decision for GG (escalation item 3), not made here.
 
 1. **Do not spend on detector accuracy for extraction quality.** Measured effect is -0.63pp
    [-2.77, +1.51]; the routing-cost story in ADR 0021/0023 should be treated as superseded by finding 2
-   (an errata note in a follow-up docs PR is GG's call; ADRs are immutable).
+   (errata added in Session 15d as dated Correction sections in both ADRs).
 2. **Ship (iii) as a small additive API change** if the `language` field is a customer-visible claim, and
    report the headline ex-`language`.
 3. **Settle (ii) with the cheapest decisive experiment, staged:**
