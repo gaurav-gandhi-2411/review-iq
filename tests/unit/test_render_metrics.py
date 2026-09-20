@@ -146,7 +146,7 @@ class TestRenderExtractionTableHtml:
         out = render_extraction_table_html(EXTRACTION_DATA)
         assert out.count("PASS") == 4
         assert "FAIL" not in out
-        assert "text-red-400" not in out
+        assert "status-fail" not in out
 
     def test_failing_language_renders_red_fail_not_green_pass(self):
         # Regression test (Session 5 P4, 2026-09-10): every row used to hardcode the
@@ -165,7 +165,50 @@ class TestRenderExtractionTableHtml:
         out = render_extraction_table_html(data)
         assert out.count("FAIL") == 2  # en row + overall row
         assert out.count("PASS") == 2  # hi + hi-en rows only
-        assert "text-red-400" in out
+        # Session 15c C8: FAIL is carried by the status-fail class (glyph + weight), since
+        # the page palette has no red hue -- the count still proves it is per-row, not global.
+        assert out.count("status-fail") == 2
+        assert out.count("status-pass") == 2
+
+
+class TestSiteIndexBlocksAreBrandPaletteOnly:
+    """Session 15c C8: site/index.html's brand palette (design/tokens.json) has no blue, green,
+    red, amber or violet hue, and the page no longer loads Tailwind. Every renderer feeding an
+    index.html marker block must emit semantic classes, never Tailwind palette utilities.
+    """
+
+    FORBIDDEN = ("blue-", "green-", "red-", "amber-", "violet-", "gray-", "slate-", "indigo-")
+
+    def _all_index_block_output(self) -> str:
+        gaps = {
+            "short_reviews": {
+                "n_short_reviews": 27,
+                "abstention_correctness_rate": 0.9329,
+                "counts": {"wrong_committed": 48, "real_gap": 10},
+                "total_field_checks": 324,
+                "per_field": {"topics": {"wrong_committed": 11}},
+            },
+            "sarcasm": {"n_sarcastic_or_backhanded_found": 3},
+            "n_fixtures_total": 106,
+        }
+        return "".join(
+            (
+                render_extraction_table_html(EXTRACTION_DATA),
+                render_committed_accuracy_headline_html(COVERAGE_DATA),
+                render_coverage_metrics_table_html(COVERAGE_DATA),
+                render_known_gaps_html(gaps),
+            )
+        )
+
+    def test_no_tailwind_palette_classes_in_any_index_block(self):
+        out = self._all_index_block_output()
+        assert [t for t in self.FORBIDDEN if t in out] == []
+
+    def test_failing_status_uses_semantic_class_not_a_colour(self):
+        data = {**EXTRACTION_DATA, "passed": False}
+        out = render_extraction_table_html(data)
+        assert "status-fail" in out
+        assert "red-" not in out
 
 
 class TestRenderLanguageTableHtml:
@@ -402,7 +445,6 @@ class TestKnownGapsNamesFieldsFromData:
                     "stars": {"correct_abstention": 27},
                 }
             ),
-            {"n": 40},
         )
         assert "`language` (13), `topics` (11), `pros` (6)" in html
         assert "product name" not in html
@@ -411,7 +453,6 @@ class TestKnownGapsNamesFieldsFromData:
     def test_zero_count_fields_never_named(self):
         html = render_known_gaps_html(
             self._data({"topics": {"wrong_committed": 2}, "pros": {"correct": 9}}),
-            {"n": 40},
         )
         assert "`topics` (2)" in html
         assert "`pros`" not in html
@@ -419,9 +460,19 @@ class TestKnownGapsNamesFieldsFromData:
     def test_ties_break_alphabetically_for_determinism(self):
         html = render_known_gaps_html(
             self._data({"topics": {"wrong_committed": 4}, "cons": {"wrong_committed": 4}}),
-            {"n": 40},
         )
         assert html.index("`cons` (4)") < html.index("`topics` (4)")
+
+    def test_no_fake_review_promise_or_disclosure(self):
+        # Session 15c D2: the fake-review flag is no longer promised anywhere on the page, so
+        # the paragraph must not name it (neither a claim nor a disclosure), while the
+        # sarcasm disclosure that precedes it stays.
+        html = render_known_gaps_html(self._data({"topics": {"wrong_committed": 4}}))
+        lowered = html.lower()
+        assert "fake" not in lowered
+        assert "authentic" not in lowered
+        assert "sarcastic or backhanded" in html
+        assert html.rstrip().endswith("either way.")
 
 
 class TestHeldOutScoringDisclosure:
