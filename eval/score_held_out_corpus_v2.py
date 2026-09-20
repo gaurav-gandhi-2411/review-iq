@@ -50,6 +50,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from eval.bootstrap import bootstrap_ci  # noqa: E402
+from eval.free_text_scoring import SCORER_VERSION  # noqa: E402
 from eval.provenance import get_git_sha, now_iso  # noqa: E402
 from eval.runner import score_fixture  # noqa: E402
 
@@ -85,6 +86,14 @@ async def _extract(text: str, lang: str) -> dict[str, Any] | None:
     return llm_output.model_dump()
 
 
+def _strict_overall(fixture: dict[str, Any], extraction: dict[str, Any]) -> float:
+    """Overall score under the pre-Session-15c exact-string comparator (strict=True), computed
+    on the SAME prediction, so the published number and the disclosure of what the comparator
+    change did to it both come from one artifact rather than a hand-typed before/after."""
+    scores = [fr.score for fr in score_fixture(fixture, extraction, strict=True)]
+    return sum(scores) / len(scores) if scores else 0.0
+
+
 async def score_one(fixture: dict[str, Any]) -> dict[str, Any]:
     from app.core.language import detect_language
 
@@ -108,6 +117,7 @@ async def score_one(fixture: dict[str, Any]) -> dict[str, Any]:
         record["as_deployed"]["overall_score"] = (
             sum(as_deployed_scores) / len(as_deployed_scores) if as_deployed_scores else 0.0
         )
+        record["as_deployed"]["overall_score_strict"] = _strict_overall(fixture, as_deployed)
     except Exception as exc:  # noqa: BLE001
         record["as_deployed"] = {"error": str(exc)}
 
@@ -122,6 +132,7 @@ async def score_one(fixture: dict[str, Any]) -> dict[str, Any]:
                 "field_scores": {fr.field: fr.score for fr in score_fixture(fixture, forced)},
                 "predicted": forced,
                 "overall_score": sum(forced_scores) / len(forced_scores) if forced_scores else 0.0,
+                "overall_score_strict": _strict_overall(fixture, forced),
             }
         except Exception as exc:  # noqa: BLE001
             record["language_forced"] = {"error": str(exc)}
@@ -135,20 +146,40 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
         scored = [r[cond]["overall_score"] for r in records if "error" not in r[cond]]
         errors = sum(1 for r in records if "error" in r[cond])
         ci = bootstrap_ci(scored) if scored else (0.0, 0.0)
+        strict = [r[cond]["overall_score_strict"] for r in records if "error" not in r[cond]]
         return {
             "n": len(scored),
             "errors": errors,
             "overall_score": mean(scored) if scored else 0.0,
             "ci_95": {"lower": ci[0], "upper": ci[1]},
+            "overall_score_strict_exact_match": mean(strict) if strict else 0.0,
         }
 
     from app.core.config import get_settings
+
+    # A field that scores exactly 1.0 on every record in both conditions is constant, not
+    # informative -- e.g. `stars` (an explicit star rating stated in the review text) is null
+    # in gold AND prediction for all 106 reviews, so it adds a free 1.0 to every overall score.
+    # Report the overall without such fields alongside the headline so it can't flatter it.
+    conditions = ("as_deployed", "language_forced")
+    field_names = list(records[0]["as_deployed"]["field_scores"]) if records else []
+    constant_fields = [
+        f
+        for f in field_names
+        if all(r[c]["field_scores"][f] == 1.0 for r in records for c in conditions)
+    ]
+    informative = [f for f in field_names if f not in constant_fields]
+    overall_excl = {
+        c: mean(mean(r[c]["field_scores"][f] for f in informative) for r in records)
+        for c in conditions
+    }
 
     settings = get_settings()
     n_mismatched = sum(1 for r in records if r["detected_language"] != r["gt_language"])
     return {
         "generated_at": now_iso(),
         "git_sha": get_git_sha(),
+        "scorer_version": SCORER_VERSION,
         "groq_model_small": settings.groq_model_small,
         "groq_model_large": settings.groq_model_large,
         "n_fixtures": len(records),
@@ -156,6 +187,8 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
         "language_detection_accuracy": 1 - (n_mismatched / len(records)) if records else None,
         "as_deployed": cond_summary("as_deployed"),
         "language_forced": cond_summary("language_forced"),
+        "constant_fields": constant_fields,
+        "overall_score_excluding_constant_fields": overall_excl,
     }
 
 

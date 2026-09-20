@@ -7,18 +7,18 @@
     "short_review_word_threshold": 10,
     "total_field_checks": 324,
     "counts": {
-      "correct": 98,
-      "correct_abstention": 123,
-      "real_gap": 6,
-      "wrong_committed": 97
+      "correct": 127,
+      "correct_abstention": 139,
+      "real_gap": 10,
+      "wrong_committed": 48
     },
     "rates": {
-      "correct": 0.3025,
-      "correct_abstention": 0.3796,
-      "real_gap": 0.0185,
-      "wrong_committed": 0.2994
+      "correct": 0.392,
+      "correct_abstention": 0.429,
+      "real_gap": 0.0309,
+      "wrong_committed": 0.1481
     },
-    "abstention_correctness_rate": 0.9535,
+    "abstention_correctness_rate": 0.9329,
     "real_gaps": [
       {
         "id": "hien-0010",
@@ -32,6 +32,24 @@
         "panel_agreement": "majority"
       },
       {
+        "id": "hien-0028",
+        "field": "product",
+        "n_words": 8,
+        "text": "don't buy bro bekar hai.sometimes its break sounds.",
+        "gt": "audio device",
+        "pred": "general product",
+        "panel_agreement": "majority"
+      },
+      {
+        "id": "hien-0043",
+        "field": "product",
+        "n_words": 6,
+        "text": "Hard bass yaar love itREAD MORE",
+        "gt": "audio device",
+        "pred": "general product",
+        "panel_agreement": "majority"
+      },
+      {
         "id": "hien-0057",
         "field": "pros",
         "n_words": 3,
@@ -41,6 +59,15 @@
         ],
         "pred": [],
         "panel_agreement": "unanimous"
+      },
+      {
+        "id": "hien-0065",
+        "field": "product",
+        "n_words": 6,
+        "text": "Nice h betray backup mast h",
+        "gt": "backup",
+        "pred": "unknown product",
+        "panel_agreement": "majority"
       },
       {
         "id": "hien-0065",
@@ -85,12 +112,23 @@
         "gt": false,
         "pred": null,
         "panel_agreement": "unanimous"
+      },
+      {
+        "id": "hien-0102",
+        "field": "product",
+        "n_words": 7,
+        "text": "Wow mast bassssś goood  👍👍quality soundREAD MORE",
+        "gt": "speaker",
+        "pred": "unknown product",
+        "panel_agreement": "majority"
       }
     ],
     "per_field": {
       "product": {
-        "wrong_committed": 25,
-        "correct": 2
+        "correct": 2,
+        "correct_abstention": 16,
+        "wrong_committed": 5,
+        "real_gap": 4
       },
       "stars": {
         "correct_abstention": 27
@@ -110,8 +148,8 @@
         "wrong_committed": 13
       },
       "topics": {
-        "wrong_committed": 22,
-        "correct": 2,
+        "correct": 13,
+        "wrong_committed": 11,
         "correct_abstention": 2,
         "real_gap": 1
       },
@@ -120,19 +158,19 @@
         "correct_abstention": 26
       },
       "pros": {
-        "wrong_committed": 14,
+        "wrong_committed": 6,
         "correct_abstention": 8,
-        "correct": 2,
+        "correct": 10,
         "real_gap": 3
       },
       "cons": {
         "correct_abstention": 19,
-        "wrong_committed": 6,
-        "correct": 2
+        "wrong_committed": 2,
+        "correct": 6
       },
       "stars_inferred": {
-        "correct": 19,
-        "wrong_committed": 8
+        "correct": 25,
+        "wrong_committed": 2
       },
       "urgency": {
         "correct": 26,

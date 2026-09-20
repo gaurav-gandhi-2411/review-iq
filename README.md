@@ -141,13 +141,13 @@ file in the past.
 > API key recorded the original re-record is not recoverable from the committed artifacts —
 > the cassette format does not capture caller identity; see `ops/runbooks/eval-cassette-rerecord.md`.)
 
-<!-- METRICS:START:extraction_table -->**Prompt v2.3** &middot; `e9606f2` &middot; measured 2026-09-12T05:45:15Z &middot; mode: direct (local LLM)
+<!-- METRICS:START:extraction_table -->**Prompt v2.3** &middot; `5c5c8e0` &middot; measured 2026-09-19T21:59:11Z &middot; mode: direct (local LLM)
 
 | Language | Score | 95% CI | Gate | Status |
 |---|---|---|---|---|
-| en | 78.1% | [73.5%, 82.2%] | ≥77% | PASS |
-| hi-en | 75.6% | [63.4%, 84.1%] | ≥75% | PASS |
-| **Overall** | **77.1%** | [71.8%, 81.5%] | ≥76% | PASS |
+| en | 78.2% | [73.7%, 82.3%] | ≥77% | PASS |
+| hi-en | 79.3% | [66.8%, 87.7%] | ≥75% | PASS |
+| **Overall** | **78.6%** | [73.2%, 82.9%] | ≥76% | PASS |
 
 n=43 fixtures (27 en, 16 hi-en). Tiered routing is ON by default in production and in this eval run (`ENABLE_TIERED_ROUTING` defaults `true`, unset in CI) -- a same-cassette `--routed` comparison produced byte-identical scores to the numbers above; there is currently no distinct *unrouted* measurement to report separately (see [ADR 0001](docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md)).<!-- METRICS:END -->
 
@@ -163,14 +163,18 @@ accurate is this in the real world." The table below is the honest answer to the
 question — scored against 106 real Indian marketplace reviews mined independently of prompt
 development, never seen by anyone iterating on the prompt.
 
-<!-- METRICS:START:held_out_table -->Measured 2026-09-12T06:03:40Z &middot; `1a35033` &middot; models: openai/gpt-oss-20b / openai/gpt-oss-120b
+<!-- METRICS:START:held_out_table -->Measured 2026-09-19T21:59:05Z &middot; `5c5c8e0` &middot; models: openai/gpt-oss-20b / openai/gpt-oss-120b
 
 | Condition | Score | 95% CI | n |
 |---|---|---|---|
-| **As actually deployed** (real language routing) | **68.3%** | [66.3%, 70.3%] | 106 |
-| Language routing forced correct | 72.9% | [71.1%, 74.6%] | 106 |
+| **As actually deployed** (real language routing) | **72.7%** | [70.5%, 74.9%] | 106 |
+| Language routing forced correct | 77.4% | [75.4%, 79.3%] | 106 |
 
-n=106 real Hinglish reviews the prompt has never seen (never used for prompt development), 0 hi (see [ADR 0016](docs/architecture/adr/0016-third-judge-corpus-batch-1-and-sentiment-recheck.md)). Production's own language detector agreed with this corpus's language label on 48.1% of fixtures. This is the number to trust for real-world accuracy; the CI-gate table above is a regression detector, not a real-world accuracy claim -- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md).<!-- METRICS:END -->
+n=106 real Hinglish reviews the prompt has never seen (never used for prompt development), 0 hi (see [ADR 0016](docs/architecture/adr/0016-third-judge-corpus-batch-1-and-sentiment-recheck.md)). Production's own language detector agreed with this corpus's language label on 48.1% of fixtures. This is the number to trust for real-world accuracy; the CI-gate table above is a regression detector, not a real-world accuracy claim -- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md).
+
+**Scoring note (scorer `2026-09-20.free-text-v1`).** Free-text fields (`product`, `topics`, `competitor_mentions`) are compared after normalization, so different correct spellings of "no product named" (`unknown` vs `unknown product`) and near-identical topic labels (`battery` vs `battery_life`) are no longer scored wrong. Earlier published figures used exact-string matching on the same recorded model outputs: as deployed, 68.3% then vs 72.7% now. The model's outputs did not change, only the comparator ([ADR 0030](docs/architecture/adr/0030-free-text-scorers.md)).
+
+**Constant fields.** `stars` scores 100% on every review here (the corpus contains no case for it), which adds a free 100% to one of the equal-weighted fields in the overall score. Excluding it, as deployed: 69.7%.<!-- METRICS:END -->
 
 Reproducible from committed cassettes: `EVAL_CASSETTE_MODE=replay uv run python eval/score_held_out_corpus_v2.py --mode replay` — $0, zero live calls, byte-identical output. See [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) for the full methodology, including the misrouting-vs-contamination decomposition of the gap between this table and the one above.
 
