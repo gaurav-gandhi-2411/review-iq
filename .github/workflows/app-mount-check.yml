@@ -1,0 +1,50 @@
+name: App Mount Check
+
+# Session 14 P1c: a post-deploy content assertion for app.samidhareviews.xyz, matching
+# #184's pattern (site-deploy.yml) of "don't trust the deploy mechanism's own success
+# signal, fetch the real result and check it."
+#
+# Honest limitation, stated plainly rather than silently assumed away: unlike
+# site-deploy.yml, this can't be triggered automatically right after the real deploy.
+# web/ deploys via Vercel's own GitHub git integration, not a workflow in this repo, and
+# verified (2026-09-13, via `gh api repos/.../deployments`) that Vercel does NOT create
+# GitHub Deployment objects for this repo -- every deployment record here comes from
+# github-actions itself (this repo's own `environment: production` workflow steps), so
+# there is no `deployment_status` event to hook. Two real signals exist instead:
+#   1. This same check runs nightly as part of web-surface-probe.yml (which now
+#      includes the identical Playwright mount check for both SPA surfaces).
+#   2. workflow_dispatch here lets a human (or this session) run it on demand right
+#      after confirming a Vercel deploy finished, without waiting for the nightly cron.
+# A real webhook-based trigger would need a receiving endpoint this project doesn't
+# have yet -- not attempted here; flagged, not silently worked around.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Install Playwright chromium
+        run: uv run playwright install --with-deps chromium
+
+      - name: Verify app.samidhareviews.xyz actually mounted
+        run: uv run python scripts/check_app_mounted.py
