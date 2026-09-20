@@ -213,7 +213,7 @@ def render_held_out_table_md(data: dict[str, Any]) -> str:
             "Earlier published figures used exact-string matching on the same recorded model "
             "outputs and counted all fields"
             + (" (the same basis as the all-fields figures above)" if constant else "")
-            + f": as deployed,{_fmt_pct(strict)} then vs {_fmt_pct(as_dep['overall_score'])} "
+            + f": as deployed, {_fmt_pct(strict)} then vs {_fmt_pct(as_dep['overall_score'])} "
             "now. The model's outputs did not change, only the comparator "
             "([ADR 0030](docs/architecture/adr/0030-free-text-scorers.md)).",
         ]

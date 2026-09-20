@@ -494,7 +494,7 @@ class TestHeldOutScoringDisclosure:
     def test_scoring_note_says_it_is_on_the_all_fields_basis(self):
         md = render_held_out_table_md({**self.WITH_CONSTANT, "scorer_version": "v-test"})
         assert "counted all fields (the same basis as the all-fields figures above)" in md
-        assert "68.3% then vs 72.7% now" in md
+        assert "as deployed, 68.3% then vs 72.7% now" in md
 
     def test_constant_fields_without_ci_fail_loudly_not_fall_back_to_all_fields(self):
         # A silent fallback would publish the flattering figure as the headline.
