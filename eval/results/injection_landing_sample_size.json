@@ -1,0 +1,318 @@
+{
+  "generated_at": "2026-09-20T07:18:42Z",
+  "git_sha": "6d2ae21e4873131f83ad1ecab6497565272e9249",
+  "script": "scripts/injection_landing_sample_size.py",
+  "zero_quota": true,
+  "alpha_two_sided": 0.05,
+  "power": 0.8,
+  "tokens_per_call_assumed": 2500,
+  "tpd_ceilings_tokens_per_day": {
+    "200K_per_capacity_model": 200000,
+    "100K_per_brief": 100000
+  },
+  "paired_mcnemar_exact": [
+    {
+      "scenario": "A. 60% vs 10%, independent",
+      "p_attack": 0.6,
+      "p_twin": 0.1,
+      "phi": 0.0,
+      "p_b_attack_only": 0.54,
+      "p_c_twin_only": 0.04,
+      "discordant_fraction": 0.58,
+      "min_pairs_N_power80": 18,
+      "power_at_N": 0.8293
+    },
+    {
+      "scenario": "B. 60% vs 10%, phi=0.3 (review-level predisposition)",
+      "p_attack": 0.6,
+      "p_twin": 0.1,
+      "phi": 0.3,
+      "p_b_attack_only": 0.5,
+      "p_c_twin_only": 0.0,
+      "discordant_fraction": 0.5,
+      "min_pairs_N_power80": 15,
+      "power_at_N": 0.8491
+    },
+    {
+      "scenario": "C. 90% vs 10% (close to the observed 3/3 landings)",
+      "p_attack": 0.9,
+      "p_twin": 0.1,
+      "phi": 0.0,
+      "p_b_attack_only": 0.81,
+      "p_c_twin_only": 0.01,
+      "discordant_fraction": 0.82,
+      "min_pairs_N_power80": 9,
+      "power_at_N": 0.8722
+    },
+    {
+      "scenario": "D. 50% vs 20%",
+      "p_attack": 0.5,
+      "p_twin": 0.2,
+      "phi": 0.0,
+      "p_b_attack_only": 0.4,
+      "p_c_twin_only": 0.1,
+      "discordant_fraction": 0.5,
+      "min_pairs_N_power80": 46,
+      "power_at_N": 0.8053
+    },
+    {
+      "scenario": "E. 60% vs 30% (topics: model often returns [] anyway)",
+      "p_attack": 0.6,
+      "p_twin": 0.3,
+      "phi": 0.0,
+      "p_b_attack_only": 0.42,
+      "p_c_twin_only": 0.12,
+      "discordant_fraction": 0.54,
+      "min_pairs_N_power80": 50,
+      "power_at_N": 0.8028
+    },
+    {
+      "scenario": "F. 40% vs 10%",
+      "p_attack": 0.4,
+      "p_twin": 0.1,
+      "phi": 0.0,
+      "p_b_attack_only": 0.36,
+      "p_c_twin_only": 0.06,
+      "discordant_fraction": 0.42,
+      "min_pairs_N_power80": 37,
+      "power_at_N": 0.8
+    },
+    {
+      "scenario": "G. 60% vs 0% (twin never produces the target)",
+      "p_attack": 0.6,
+      "p_twin": 0.0,
+      "phi": 0.0,
+      "p_b_attack_only": 0.6,
+      "p_c_twin_only": 0.0,
+      "discordant_fraction": 0.6,
+      "min_pairs_N_power80": 12,
+      "power_at_N": 0.8418
+    }
+  ],
+  "budget_paired": [
+    {
+      "scenario": "A. 60% vs 10%, independent",
+      "attack_types": "3 landing types (buy_again, stars_inferred, topics)",
+      "N_pairs_per_type": 18,
+      "calls": 108,
+      "tokens": 270000,
+      "days_at_ceiling": {
+        "200K_per_capacity_model": 1.35,
+        "100K_per_brief": 2.7
+      },
+      "calls_per_day_at_ceiling": {
+        "200K_per_capacity_model": 80,
+        "100K_per_brief": 40
+      }
+    },
+    {
+      "scenario": "A. 60% vs 10%, independent",
+      "attack_types": "all 8 field-targeted",
+      "N_pairs_per_type": 18,
+      "calls": 288,
+      "tokens": 720000,
+      "days_at_ceiling": {
+        "200K_per_capacity_model": 3.6,
+        "100K_per_brief": 7.2
+      },
+      "calls_per_day_at_ceiling": {
+        "200K_per_capacity_model": 80,
+        "100K_per_brief": 40
+      }
+    },
+    {
+      "scenario": "B. 60% vs 10%, phi=0.3 (review-level predisposition)",
+      "attack_types": "3 landing types (buy_again, stars_inferred, topics)",
+      "N_pairs_per_type": 15,
+      "calls": 90,
+      "tokens": 225000,
+      "days_at_ceiling": {
+        "200K_per_capacity_model": 1.12,
+        "100K_per_brief": 2.25
+      },
+      "calls_per_day_at_ceiling": {
+        "200K_per_capacity_model": 80,
+        "100K_per_brief": 40
+      }
+    },
+    {
+      "scenario": "B. 60% vs 10%, phi=0.3 (review-level predisposition)",
+      "attack_types": "all 8 field-targeted",
+      "N_pairs_per_type": 15,
+      "calls": 240,
+      "tokens": 600000,
+      "days_at_ceiling": {
+        "200K_per_capacity_model": 3.0,
+        "100K_per_brief": 6.0
+      },
+      "calls_per_day_at_ceiling": {
+        "200K_per_capacity_model": 80,
+        "100K_per_brief": 40
+      }
+    },
+    {
+      "scenario": "C. 90% vs 10% (close to the observed 3/3 landings)",
+      "attack_types": "3 landing types (buy_again, stars_inferred, topics)",
+      "N_pairs_per_type": 9,
+      "calls": 54,
+      "tokens": 135000,
+      "days_at_ceiling": {
+        "200K_per_capacity_model": 0.68,
+        "100K_per_brief": 1.35
+      },
+      "calls_per_day_at_ceiling": {
+        "200K_per_capacity_model": 80,
+        "100K_per_brief": 40
+      }
+    },
+    {
+      "scenario": "C. 90% vs 10% (close to the observed 3/3 landings)",
+      "attack_types": "all 8 field-targeted",
+      "N_pairs_per_type": 9,
+      "calls": 144,
+      "tokens": 360000,
+      "days_at_ceiling": {
+        "200K_per_capacity_model": 1.8,
+        "100K_per_brief": 3.6
+      },
+      "calls_per_day_at_ceiling": {
+        "200K_per_capacity_model": 80,
+        "100K_per_brief": 40
+      }
+    },
+    {
+      "scenario": "D. 50% vs 20%",
+      "attack_types": "3 landing types (buy_again, stars_inferred, topics)",
+      "N_pairs_per_type": 46,
+      "calls": 276,
+      "tokens": 690000,
+      "days_at_ceiling": {
+        "200K_per_capacity_model": 3.45,
+        "100K_per_brief": 6.9
+      },
+      "calls_per_day_at_ceiling": {
+        "200K_per_capacity_model": 80,
+        "100K_per_brief": 40
+      }
+    },
+    {
+      "scenario": "D. 50% vs 20%",
+      "attack_types": "all 8 field-targeted",
+      "N_pairs_per_type": 46,
+      "calls": 736,
+      "tokens": 1840000,
+      "days_at_ceiling": {
+        "200K_per_capacity_model": 9.2,
+        "100K_per_brief": 18.4
+      },
+      "calls_per_day_at_ceiling": {
+        "200K_per_capacity_model": 80,
+        "100K_per_brief": 40
+      }
+    },
+    {
+      "scenario": "E. 60% vs 30% (topics: model often returns [] anyway)",
+      "attack_types": "3 landing types (buy_again, stars_inferred, topics)",
+      "N_pairs_per_type": 50,
+      "calls": 300,
+      "tokens": 750000,
+      "days_at_ceiling": {
+        "200K_per_capacity_model": 3.75,
+        "100K_per_brief": 7.5
+      },
+      "calls_per_day_at_ceiling": {
+        "200K_per_capacity_model": 80,
+        "100K_per_brief": 40
+      }
+    },
+    {
+      "scenario": "E. 60% vs 30% (topics: model often returns [] anyway)",
+      "attack_types": "all 8 field-targeted",
+      "N_pairs_per_type": 50,
+      "calls": 800,
+      "tokens": 2000000,
+      "days_at_ceiling": {
+        "200K_per_capacity_model": 10.0,
+        "100K_per_brief": 20.0
+      },
+      "calls_per_day_at_ceiling": {
+        "200K_per_capacity_model": 80,
+        "100K_per_brief": 40
+      }
+    },
+    {
+      "scenario": "F. 40% vs 10%",
+      "attack_types": "3 landing types (buy_again, stars_inferred, topics)",
+      "N_pairs_per_type": 37,
+      "calls": 222,
+      "tokens": 555000,
+      "days_at_ceiling": {
+        "200K_per_capacity_model": 2.77,
+        "100K_per_brief": 5.55
+      },
+      "calls_per_day_at_ceiling": {
+        "200K_per_capacity_model": 80,
+        "100K_per_brief": 40
+      }
+    },
+    {
+      "scenario": "F. 40% vs 10%",
+      "attack_types": "all 8 field-targeted",
+      "N_pairs_per_type": 37,
+      "calls": 592,
+      "tokens": 1480000,
+      "days_at_ceiling": {
+        "200K_per_capacity_model": 7.4,
+        "100K_per_brief": 14.8
+      },
+      "calls_per_day_at_ceiling": {
+        "200K_per_capacity_model": 80,
+        "100K_per_brief": 40
+      }
+    },
+    {
+      "scenario": "G. 60% vs 0% (twin never produces the target)",
+      "attack_types": "3 landing types (buy_again, stars_inferred, topics)",
+      "N_pairs_per_type": 12,
+      "calls": 72,
+      "tokens": 180000,
+      "days_at_ceiling": {
+        "200K_per_capacity_model": 0.9,
+        "100K_per_brief": 1.8
+      },
+      "calls_per_day_at_ceiling": {
+        "200K_per_capacity_model": 80,
+        "100K_per_brief": 40
+      }
+    },
+    {
+      "scenario": "G. 60% vs 0% (twin never produces the target)",
+      "attack_types": "all 8 field-targeted",
+      "N_pairs_per_type": 12,
+      "calls": 192,
+      "tokens": 480000,
+      "days_at_ceiling": {
+        "200K_per_capacity_model": 2.4,
+        "100K_per_brief": 4.8
+      },
+      "calls_per_day_at_ceiling": {
+        "200K_per_capacity_model": 80,
+        "100K_per_brief": 40
+      }
+    }
+  ],
+  "single_text_unpaired_fisher": [
+    {
+      "scenario": "60% vs 10%",
+      "min_runs_per_arm_single_text": 17
+    },
+    {
+      "scenario": "90% vs 10%",
+      "min_runs_per_arm_single_text": 7
+    }
+  ],
+  "existing_design_n3": {
+    "landed_3_of_3_vs_twin_0_of_3_fisher_two_sided_p": 0.1,
+    "note": "the best possible outcome of a 3-vs-3 design cannot reach alpha=0.05; a twin arm at n=3 is uninformative"
+  }
+}
