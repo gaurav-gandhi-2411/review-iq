@@ -65,7 +65,10 @@ jobs:
       - name: Apply all migrations
         env:
           SUPABASE_DIRECT_URL: postgresql://postgres:postgres@localhost:5432/postgres
-        run: uv run python supabase/push.py
+        # --target ci: push.py runs every file's postconditions before ledgering it (Session
+        # 15d), skipping any `@scope: prod-only` ones. This job applies as the superuser; the
+        # non-superuser-migrator build lives in pre-cutover-verification.yml.
+        run: uv run python supabase/push.py --target ci
 
       # Item 172/173: the S0 BYPASSRLS revocation (statement 4 of 20260801000001) moved
       # to supabase/cutover/ -- outside push.py's glob on purpose, so it's never a side

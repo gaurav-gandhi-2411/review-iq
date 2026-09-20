@@ -30,6 +30,8 @@ on:
     paths:
       - "supabase/migrations/**"
       - "supabase/ci/**"
+      - "supabase/push.py"
+      - "supabase/postconditions.py"
       - "scripts/extract_schema_snapshot.py"
       - "scripts/check_schema_drift.py"
       - ".github/workflows/schema-drift-check.yml"
@@ -74,18 +76,13 @@ jobs:
       - name: Install dependencies
         run: uv sync --frozen
 
-      - name: Install psql client
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends postgresql-client
-
-      - name: Bootstrap Supabase-platform roles/grants
-        run: psql "postgresql://postgres:ci_postgres_password@localhost:5432/postgres" -v ON_ERROR_STOP=1 -f supabase/ci/bootstrap_supabase_roles.sql
-
-      - name: Apply every migration in order
-        run: |
-          for f in $(ls supabase/migrations/*.sql | sort); do
-            echo "=== $f ==="
-            psql "postgresql://postgres:ci_postgres_password@localhost:5432/postgres" -v ON_ERROR_STOP=1 -f "$f"
-          done
+      # Same build as pre-cutover-verification.yml (Session 15d): roles bootstrapped, migrations
+      # through 20260801000001 applied as the superuser, object ownership handed to
+      # review_iq_migrator, every later migration applied through push.py AS the migrator --
+      # so the ephemeral schema (including object OWNERS, now compared below) matches how
+      # production is actually built and maintained.
+      - name: Bootstrap roles, then apply every migration (superuser through 20260801000001, migrator after)
+        run: uv run python supabase/ci/apply_migrations_ci.py
 
       - name: Extract ephemeral (migration-built) schema snapshot
         run: uv run python scripts/extract_schema_snapshot.py "postgresql://postgres:ci_postgres_password@localhost:5432/postgres" > ephemeral.json
