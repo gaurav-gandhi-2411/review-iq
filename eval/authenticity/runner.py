@@ -1,10 +1,23 @@
 """Authenticity eval runner.
 
-Usage: uv run python eval/authenticity/runner.py [--dry-run]
-  --dry-run: skip Groq calls, use heuristics-only scoring (useful for CI smoke tests)
+Usage:
+  uv run python eval/authenticity/runner.py [--corpus labeled|held-out] [--mode replay|record]
+                                            [--dry-run] [--out PATH]
 
-Prints: per-language and overall precision / recall / F1 on the flagged class.
-Exits 0 if precision >= 0.80; exits 1 otherwise (precision gate).
+  --corpus labeled   (default) the 40 in-repo labelled fixtures (eval/authenticity/fixtures/)
+  --corpus held-out  the 106 quarantined held-out reviews (eval/fixtures/_held_out_hindi_hinglish/).
+                     These carry NO authenticity label, so only per-item predictions + flag rate
+                     are emitted -- no precision/recall/F1 (see scoring.predictions_only_report).
+  --mode replay      (default) LLM calls served from eval/cassettes/authenticity_cassettes.json;
+                     a missing key aborts the run (exit 3) before any scoring -- never a live call.
+  --mode record      EXPLICIT opt-in: makes live Groq calls and records them. Never used in CI.
+  --dry-run          skip the LLM entirely, heuristics-only scoring (CI smoke test)
+
+Results go to eval/results/authenticity_<corpus>_<mode>.json. This runner never writes
+eval/results/authenticity_latest.json (quarantined -- see that file's own `status` field).
+
+Exit codes: 0 ok (labeled corpus: precision >= 0.80), 1 precision gate failed, 2 INVALID RUN
+(LLM error), 3 cassette miss in replay mode.
 """
 
 from __future__ import annotations
@@ -14,6 +27,7 @@ import asyncio
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 # Add project root to sys.path so 'app' is importable
 sys.path.insert(0, str(Path(__file__).parents[2]))
@@ -22,11 +36,15 @@ from app.core.authenticity.engine import score_single
 from app.core.authenticity.heuristics import compute_heuristic_score
 from app.core.authenticity.schema import AuthenticityLabel, AuthenticityResult
 from app.core.config import get_settings
+from app.core.language import detect_language
 
+from eval.authenticity import replay as replay_mod
+from eval.authenticity.scoring import labelled_report, predictions_only_report
 from eval.provenance import get_git_sha, now_iso
 from eval.wilson import wilson_ci
 
 FIXTURES_PATH = Path(__file__).parent / "fixtures" / "labeled.jsonl"
+HELD_OUT_DIR = Path(__file__).parents[1] / "fixtures" / "_held_out_hindi_hinglish"
 # Canonical results file consumed by scripts/render_metrics.py — see eval/runner.py's
 # RESULTS_DIR/LATEST_RESULTS_PATH for the sibling convention used by the main extraction eval.
 RESULTS_DIR = Path(__file__).parents[1] / "results"
@@ -133,94 +151,214 @@ def score_heuristic_only(text: str, stars: int | None) -> AuthenticityResult:
     )
 
 
-async def run_eval(dry_run: bool) -> None:
-    """Run the full authenticity eval against all fixtures."""
-    fixtures = load_fixtures()
-    settings = get_settings()
+def load_held_out_fixtures() -> list[dict[str, Any]]:
+    """Load the 106 quarantined held-out reviews as {id, text, stars, language}.
 
-    results: list[tuple[dict, AuthenticityResult]] = []
-    llm_error_count: int = 0
-    for i, fixture in enumerate(fixtures):
-        text = fixture["text"]
-        stars = fixture.get("stars")
+    These fixtures carry extraction ground truth only (sentiment/urgency/...); there is NO
+    authenticity/suspicious label, so no `true_label` key is set.
+    """
+    items: list[dict[str, Any]] = []
+    for p in sorted(HELD_OUT_DIR.glob("hien-*.json")):
+        data = json.loads(p.read_text(encoding="utf-8"))
+        gt = data.get("ground_truth", {})
+        items.append(
+            {
+                "id": data["id"],
+                "text": data["review_text"],
+                "stars": gt.get("stars"),  # observed rating only; stars_inferred is not an input
+                "language": gt.get("language"),
+            }
+        )
+    return items
+
+
+def load_corpus(corpus: str) -> tuple[list[dict[str, Any]], str, bool]:
+    """Return (items, labels_source, is_held_out) for `corpus`."""
+    if corpus == "held-out":
+        return (
+            load_held_out_fixtures(),
+            "none: eval/fixtures/_held_out_hindi_hinglish/hien-*.json carry extraction labels "
+            "only (product/stars/pros/cons/buy_again/sentiment/topics/competitor_mentions/"
+            "urgency/feature_requests/language); no authenticity/suspicious/fake label exists",
+            True,
+        )
+    if corpus == "labeled":
+        return (
+            load_fixtures(),
+            "eval/authenticity/fixtures/labeled.jsonl (true_label: genuine|suspicious|"
+            "likely_fake; in-repo fixture set, not a held-out sample)",
+            False,
+        )
+    raise ValueError(f"unknown corpus {corpus!r}")
+
+
+def _item_record(
+    item: dict[str, Any], result: AuthenticityResult | None, key: str | None
+) -> dict[str, Any]:
+    """Per-item prediction record with full provenance (key, model, tokens, signals)."""
+    from app.core.providers import cassette as cassette_module
+
+    tokens = cassette_module.replay(key) if key else None
+    rec: dict[str, Any] = {
+        "id": item["id"],
+        "detected_language": detect_language(item["text"]),
+        "stars": item.get("stars"),
+        "cassette_key": key,
+        "tokens_in": tokens[1] if tokens else None,
+        "tokens_out": tokens[2] if tokens else None,
+    }
+    if "true_label" in item:
+        rec["true_label"] = item["true_label"]
+    if result is not None:
+        rec.update(
+            {
+                "pred_label": result.label.value,
+                "pred_flagged": is_flagged_pred(result),
+                "score": result.score,
+                "flags": [f.value for f in result.flags],
+                "llm_signal_ok": result.llm_signal_ok,
+                "model_used": result.model_used,
+            }
+        )
+    return rec
+
+
+def build_output(
+    *,
+    corpus: str,
+    mode: str,
+    items: list[dict[str, Any]],
+    records: list[dict[str, Any]],
+    labels_source: str,
+    is_held_out: bool,
+    models: dict[str, str],
+    cassette_path: Path,
+    n_resamples: int | None = None,
+) -> dict[str, Any]:
+    """Assemble the output JSON: provenance header + report + per-item records.
+
+    Ground truth is used only if the corpus has a label source; otherwise the report is
+    predictions-only (flag rate, no P/R/F1).
+    """
+    y_pred = [bool(r["pred_flagged"]) for r in records]
+    has_labels = all("true_label" in it for it in items) and len(items) > 0
+    if has_labels:
+        y_true = [is_flagged_true(it["true_label"]) for it in items]
+        kw: dict[str, Any] = {} if n_resamples is None else {"n_resamples": n_resamples}
+        report = labelled_report(y_true, y_pred, is_held_out=is_held_out, **kw)
+    else:
+        report = predictions_only_report(y_pred)
+    try:
+        cassette_file = str(cassette_path.resolve().relative_to(Path(__file__).parents[2]))
+    except ValueError:
+        cassette_file = str(cassette_path)
+    return {
+        "generated_at": now_iso(),
+        "git_sha": get_git_sha(),
+        "mode": mode,
+        "corpus": corpus,
+        "n": len(records),
+        "runs": 1,
+        "single_run": True,
+        "labels_source": labels_source,
+        "is_held_out": is_held_out,
+        "models": models,
+        "cassette": {
+            "path": cassette_file.replace("\\", "/"),
+            "entry_count": replay_mod.cassette_entry_count(cassette_path),
+            "key_scheme": replay_mod.CASSETTE_KEY_SCHEME,
+        },
+        "report": report,
+        "records": records,
+    }
+
+
+async def run_eval(
+    corpus: str = "labeled",
+    mode: str = "replay",
+    dry_run: bool = False,
+    out_path: Path | None = None,
+    cassette_path: Path = replay_mod.AUTHENTICITY_CASSETTES_PATH,
+) -> int:
+    """Score `corpus`; return the process exit code (see module docstring)."""
+    items, labels_source, is_held_out = load_corpus(corpus)
+    settings = get_settings()
+    model = settings.groq_model_large  # authenticity always uses the large model
+    run_mode = "dry-run" if dry_run else mode
+
+    keys: dict[str, str] = {}
+    if not dry_run:
+        if mode == "replay":
+            try:
+                keys = replay_mod.preflight([it["text"] for it in items], model, cassette_path)
+            except replay_mod.CassetteMissError as exc:
+                print(f"CASSETTE MISS: {exc}")
+                return 3
+        else:
+            if not settings.groq_api_key:
+                print("record mode needs GROQ_API_KEY; refusing.")
+                return 2
+            keys = {
+                str(i): replay_mod.authenticity_cassette_key(it["text"], model)
+                for i, it in enumerate(items)
+            }
+        replay_mod.configure_cassettes(mode, cassette_path)  # type: ignore[arg-type]
+
+    results: list[AuthenticityResult] = []
+    records: list[dict[str, Any]] = []
+    llm_error_count = 0
+    for i, item in enumerate(items):
+        text, stars = item["text"], item.get("stars")
         if dry_run:
             result = score_heuristic_only(text, stars)
         else:
             result = await score_single(text, stars=stars, settings=settings)
-        if not result.llm_signal_ok and not dry_run:
-            llm_error_count += 1
-            print(f"  [LLM ERROR on fixture {fixture['id']}]")
-        results.append((fixture, result))
-        status_char = (
-            "OK" if is_flagged_true(fixture["true_label"]) == is_flagged_pred(result) else "XX"
-        )
-        print(
-            f"[{i + 1:02d}] {status_char} true={fixture['true_label']:<12} pred={result.label.value:<12} score={result.score:.2f}"
-        )
-
-    # Overall metrics
-    languages = sorted({f["language"] for f, _ in results})
-    print("\n" + "=" * 60)
-    print("RESULTS BY LANGUAGE")
-    print("=" * 60)
-    for lang in languages + ["all"]:
-        subset = [(f, r) for f, r in results if lang == "all" or f["language"] == lang]
-        tp = sum(1 for f, r in subset if is_flagged_true(f["true_label"]) and is_flagged_pred(r))
-        fp = sum(
-            1 for f, r in subset if not is_flagged_true(f["true_label"]) and is_flagged_pred(r)
-        )
-        fn = sum(
-            1 for f, r in subset if is_flagged_true(f["true_label"]) and not is_flagged_pred(r)
-        )
-        tn = sum(
-            1 for f, r in subset if not is_flagged_true(f["true_label"]) and not is_flagged_pred(r)
-        )
-        m = compute_metrics(tp, fp, fn)
-        print(f"\nLanguage: {lang} (n={len(subset)})")
-        print(f"  TP={tp} FP={fp} FN={fn} TN={tn}")
-        print(f"  Precision: {m['precision']:.3f}  Recall: {m['recall']:.3f}  F1: {m['f1']:.3f}")
+            if not result.llm_signal_ok:
+                llm_error_count += 1
+                print(f"  [LLM ERROR on item {item['id']}]")
+        results.append(result)
+        records.append(_item_record(item, result, keys.get(str(i))))
+        truth = f" true={item['true_label']:<12}" if "true_label" in item else ""
+        print(f"[{i + 1:03d}]{truth} pred={result.label.value:<12} score={result.score:.2f}")
 
     if llm_error_count > 0:
-        print(f"\nINVALID RUN: LLM signal failed on {llm_error_count}/{len(fixtures)} rows.")
-        print("Fix the LLM integration and re-run — this run cannot be scored.")
-        sys.exit(2)
+        print(f"\nINVALID RUN: LLM signal failed on {llm_error_count}/{len(items)} rows.")
+        return 2
 
-    # Precision gate
-    all_tp = sum(1 for f, r in results if is_flagged_true(f["true_label"]) and is_flagged_pred(r))
-    all_fp = sum(
-        1 for f, r in results if not is_flagged_true(f["true_label"]) and is_flagged_pred(r)
+    payload = build_output(
+        corpus=corpus,
+        mode=run_mode,
+        items=items,
+        records=records,
+        labels_source=labels_source,
+        is_held_out=is_held_out,
+        models={
+            "groq_model_small": settings.groq_model_small,
+            "groq_model_large": settings.groq_model_large,
+            "authenticity_model": model,
+        },
+        cassette_path=cassette_path,
     )
-    all_fn = sum(
-        1 for f, r in results if is_flagged_true(f["true_label"]) and not is_flagged_pred(r)
-    )
-    all_tn = sum(
-        1 for f, r in results if not is_flagged_true(f["true_label"]) and not is_flagged_pred(r)
-    )
-    overall = compute_metrics(all_tp, all_fp, all_fn)
+    report = payload["report"]
+    print("\n" + json.dumps(report, indent=2))
+    out = out_path or RESULTS_DIR / f"authenticity_{corpus.replace('-', '_')}_{run_mode}.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"Results written to {out}")
 
-    print("\n" + "=" * 60)
-    print("PRECISION GATE")
-    print("=" * 60)
-    gate_pass = overall["precision"] >= PRECISION_GATE
-    print(f"  Required: precision >= {PRECISION_GATE:.2f}")
-    print(f"  Achieved: precision = {overall['precision']:.3f}")
-    print(f"  Status: {'PASS' if gate_pass else 'FAIL — escalate before shipping'}")
-    if dry_run:
-        print("\n  [DRY-RUN: Groq calls skipped; heuristics-only scoring]")
-
-    mode = (
-        "dry-run (heuristic-only, no LLM signal)"
-        if dry_run
-        else "live (Groq llama-3.3-70b-versatile)"
-    )
-    write_results(all_tp, all_fp, all_fn, all_tn, mode=mode)
-    print(f"Results written to {RESULTS_PATH}")
-
-    sys.exit(0 if gate_pass else 1)
+    if corpus == "labeled":
+        precision = report["precision"]["value"]
+        gate_pass = precision is not None and precision >= PRECISION_GATE
+        print(f"Precision gate (>= {PRECISION_GATE:.2f}): {'PASS' if gate_pass else 'FAIL'}")
+        return 0 if gate_pass else 1
+    return 0
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("--corpus", choices=["labeled", "held-out"], default="labeled")
+    parser.add_argument("--mode", choices=["replay", "record"], default="replay")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--out", type=Path, default=None)
     args = parser.parse_args()
-    asyncio.run(run_eval(args.dry_run))
+    sys.exit(asyncio.run(run_eval(args.corpus, args.mode, args.dry_run, args.out)))

@@ -1,4 +1,7 @@
 {
+  "status": "quarantined",
+  "do_not_publish": true,
+  "quarantine_reason": "Not a measurement. These P/R/F1 = 1.000 figures were reconstructed from a published README claim (see provenance_note), never produced by a recorded, replayable run, and are computed on 40 in-repo fixtures (21 positives; too few for a claim). Do not cite, inject, or re-derive copy from this file. Superseded by eval/authenticity/runner.py's cassette-backed output (eval/results/authenticity_<corpus>_<mode>.json); the held-out corpus has no authenticity label, so no held-out precision/recall exists.",
   "generated_at": "2026-07-30T13:27:40Z",
   "git_sha": "d87c3e5733712851b6ae1402d7df838fb44ffb8b",
   "mode": "historical (reconstructed, no live run this session)",
