@@ -37,6 +37,12 @@ jobs:
       - name: Tenant-scoping guard (psycopg2 connect sites)
         run: uv run python scripts/check_undocumented_pg_connects.py
 
+      # Session 15c: every scheduled workflow must have a failure -> GitHub-issue alert path.
+      # failover-probe.yml failed 7 nights unalerted; the runtime canary only covers the
+      # composite action, so this is the static check that every caller actually uses it.
+      - name: Scheduled workflows have a failure-alert path
+        run: uv run python scripts/check_scheduled_workflows_alert.py
+
       # The ephemeral-Postgres jobs apply the NOBYPASSRLS cutover AFTER all migrations, so
       # they stay green if a migration re-grants BYPASSRLS; this catches it statically.
       - name: No migration grants BYPASSRLS (outside allowlist)
@@ -170,4 +176,66 @@ jobs:
       - name: npm audit (blocking on high/critical CVEs)
         working-directory: web
         run: npm audit --audit-level=high
+
+  web-build:
+    # Session 15c S3: web/ had NO lint/typecheck/build gate. npm-audit above only runs
+    # `npm ci` + audit, so dependabot PR #106 (tailwindcss 4, breaks the PostCSS config)
+    # showed CLEAN with green CI while `vite build` failed, and Vercel's ignoreCommand
+    # (web/vercel.json) skipped its preview build too -- nothing checked it. A blank page
+    # has shipped before. Typecheck and vite build are separate steps (rather than one
+    # `npm run build`) so the failing step names which of them broke. No `paths:` filter
+    # on purpose: a lockfile-only or workflow-only change must still run this.
+    runs-on: ubuntu-latest
+    # Job-level (not workflow-level) so the existing jobs' behaviour is untouched. Cancel
+    # superseded PR runs only; a push to main always runs to completion.
+    concurrency:
+      group: web-build-${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+    env:
+      # PLACEHOLDER, non-secret values -- only so web/scripts/validate-env.mjs (the real
+      # build-time env check) runs and passes. They are baked into a throwaway CI bundle
+      # that is never deployed. Real values live in Vercel; never put a secret here.
+      VITE_SUPABASE_URL: https://placeholder.supabase.co
+      VITE_SUPABASE_ANON_KEY: placeholder-anon-key-not-a-secret
+      VITE_API_URL: https://placeholder.invalid
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies (npm ci)
+        working-directory: web
+        run: npm ci
+
+      - name: Validate build env (validate-env.mjs)
+        working-directory: web
+        run: node scripts/validate-env.mjs
+
+      - name: Lint (eslint)
+        working-directory: web
+        run: npm run lint
+
+      - name: Typecheck (tsc -b)
+        working-directory: web
+        run: npx tsc -b
+
+      - name: Build (vite build)
+        working-directory: web
+        run: npx vite build
+
+      # An empty or partial build must not pass: index.html has to exist and reference at
+      # least one hashed JS asset that is actually on disk.
+      - name: Smoke-check build output (dist/index.html + hashed JS asset)
+        working-directory: web
+        run: |
+          test -f dist/index.html || { echo "FAIL: dist/index.html missing"; exit 1; }
+          asset=$(grep -oE 'assets/[^"]+-[A-Za-z0-9_-]{6,}\.js' dist/index.html | head -n 1)
+          test -n "$asset" || { echo "FAIL: dist/index.html references no hashed JS asset"; exit 1; }
+          test -s "dist/$asset" || { echo "FAIL: dist/$asset missing or empty"; exit 1; }
+          echo "OK: dist/index.html -> dist/$asset"
 

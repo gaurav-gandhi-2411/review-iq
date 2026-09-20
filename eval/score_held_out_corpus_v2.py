@@ -169,10 +169,16 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
         if all(r[c]["field_scores"][f] == 1.0 for r in records for c in conditions)
     ]
     informative = [f for f in field_names if f not in constant_fields]
-    overall_excl = {
-        c: mean(mean(r[c]["field_scores"][f] for f in informative) for r in records)
-        for c in conditions
+    # Per-record mean over informative fields only: the unit the bootstrap resamples, exactly as
+    # for the all-fields CI (a whole review moves together). This is the published headline.
+    excl_per_record = {
+        c: [mean(r[c]["field_scores"][f] for f in informative) for r in records] for c in conditions
     }
+    overall_excl = {c: mean(v) for c, v in excl_per_record.items()}
+    overall_excl_ci: dict[str, dict[str, float]] = {}
+    for c, v in excl_per_record.items():
+        lo, hi = bootstrap_ci(v)
+        overall_excl_ci[c] = {"lower": lo, "upper": hi, "n": len(v)}
 
     settings = get_settings()
     n_mismatched = sum(1 for r in records if r["detected_language"] != r["gt_language"])
@@ -189,6 +195,9 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
         "language_forced": cond_summary("language_forced"),
         "constant_fields": constant_fields,
         "overall_score_excluding_constant_fields": overall_excl,
+        # Bootstrap CI (10,000 resamples, seed 42, eval/bootstrap.py defaults) over the
+        # per-review means excluding constant fields -- the interval for the headline figure.
+        "overall_score_excluding_constant_fields_ci_95": overall_excl_ci,
     }
 
 
