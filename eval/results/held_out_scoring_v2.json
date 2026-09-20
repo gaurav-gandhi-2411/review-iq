@@ -1,12 +1,19 @@
 {
-  "generated_at": "2026-09-20T07:03:35Z",
-  "git_sha": "0ba938d8d4f3bc4e9fe807cbb203dce4198564b2",
+  "generated_at": "2026-09-20T08:57:26Z",
+  "git_sha": "c4dcfcd93e76d8be3b42b3c33c380586645e916c",
   "scorer_version": "2026-09-20.free-text-v1",
   "groq_model_small": "openai/gpt-oss-20b",
   "groq_model_large": "openai/gpt-oss-120b",
   "n_fixtures": 106,
   "n_language_mismatched": 55,
-  "language_detection_accuracy": 0.4811320754716981,
+  "language_label_agreement": 0.4811320754716981,
+  "language_label_agreement_wilson_95": {
+    "lower": 0.3883495495648823,
+    "upper": 0.5752343749227435,
+    "n": 106
+  },
+  "language_label_alpha": 0.38,
+  "language_label_alpha_source": "docs/architecture/adr/0023-language-boundary-abstraction-recommendation.md (quoted, not recomputed)",
   "as_deployed": {
     "n": 106,
     "errors": 0,
@@ -43,6 +50,35 @@
     "language_forced": {
       "lower": 0.7270886931209332,
       "upper": 0.7702913140966788,
+      "n": 106
+    }
+  },
+  "headline_echo_fields": [
+    "language"
+  ],
+  "headline_fields": [
+    "product",
+    "buy_again",
+    "sentiment",
+    "topics",
+    "competitor_mentions",
+    "pros",
+    "cons",
+    "stars_inferred"
+  ],
+  "overall_score_headline": {
+    "as_deployed": 0.7239911868038554,
+    "language_forced": 0.7176444853591452
+  },
+  "overall_score_headline_ci_95": {
+    "as_deployed": {
+      "lower": 0.6983569734199195,
+      "upper": 0.749514825710512,
+      "n": 106
+    },
+    "language_forced": {
+      "lower": 0.6929747797610498,
+      "upper": 0.7415777283587637,
       "n": 106
     }
   },
