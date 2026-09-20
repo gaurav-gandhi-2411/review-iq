@@ -220,20 +220,6 @@ full history instead of comparing these rows to the current table directly.
 
 > **v2.1 prompt (Phase 2.0c):** Added sarcasm/negation guidance, backhanded-compliment examples, SERVICE vs PRODUCT separation rule, and warranty/resolution-story guidance for hi-en. Known sarcasm gap from v0.3.0 is directly targeted. (Superseded by v2.3 — see `PROMPTS.md` for the full version history.)
 
-### Authenticity eval (flagged class)
-
-<!-- METRICS:START:authenticity_table -->| Metric | Value | 95% CI | n |
-|---|---|---|---|
-| Precision | 1.000 | [0.845, 1.000] | 21 |
-| Recall | 1.000 | [0.845, 1.000] | 21 |
-| F1 | 1.000 | [0.912, 1.000] | 40 |
-
-Gate: precision ≥ 0.80 (met). n=40 (tp=21, fp=0, fn=0, tn=19). Mode: historical (reconstructed, no live run this session).
-
-> **Provenance:** Reconstructed from the v0.6.0 published result (README: precision 1.000 / recall 1.000 / F1 1.000, n=40, 19 genuine / 14 suspicious / 7 likely_fake), not a fresh measurement. eval/authenticity/runner.py has no cassette-replay support (unlike eval/runner.py) -- GroqProvider calls in this path use cassette keys that were never recorded for the authenticity prompt, so a cassette-replay run fails loudly (INVALID RUN, 40/40 LLM errors, verified this session) and a live re-run was out of scope (no live LLM calls permitted). Precision=recall=F1=1.0 with n=40 and the stated genuine/suspicious/likely_fake split mathematically forces tp=21, fp=0, fn=0, tn=19 (zero errors overall). KNOWN GAP: record authenticity cassettes so this regenerates like the main eval does.<!-- METRICS:END -->
-
-Design priority: zero false accusations. See `docs/compliance.md` for IS 19000:2022 posture.
-
 ---
 
 ## API reference
@@ -391,7 +377,7 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 - `POST /v2/authenticity` (single + batch), `include_authenticity` option on CSV ingest
 - `authenticity_audits` table — org-scoped compliance audit trail with RLS
 - IS 19000:2022 support posture — flags incentivized/fake reviews for human-administrator decision; see `docs/compliance.md`
-- Authenticity eval: precision 1.000 / recall 1.000 / F1 1.000 on 40 hand-labeled fixtures (32 en + 8 hi-en)
+- Not measured: no authenticity labels exist for the held-out set, so the authenticity scoring above has no published accuracy figure
 
 **Phase 2.x** (planned):
 - Webhook ingestion from Yotpo / Judge.me / Shopify
