@@ -9,6 +9,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, Query
 
 from app.auth.api_key import ApiKeyContext, require_api_key
+from app.core.language import language_signal
 from app.core.schemas import Sentiment, Urgency
 from app.core.storage_pg import (
     aggregate_extractions_pg,
@@ -45,6 +46,8 @@ router = APIRouter(prefix="/v2", tags=["v2"])
                                     "sentiment": "mixed",
                                     "urgency": "low",
                                     "language": "en",
+                                    "code_mixed": False,
+                                    "language_signal_strength": "none",
                                     "review_length_chars": 96,
                                     "confidence": 0.91,
                                     "topics": ["sound quality", "battery life"],
@@ -79,7 +82,11 @@ async def list_reviews(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
 ) -> dict[str, Any]:
-    """Query stored review extractions for the authenticated org."""
+    """Query stored review extractions for the authenticated org.
+
+    `language` is the stored detector label; `code_mixed` and `language_signal_strength` are its
+    accompanying rule-hit evidence (a heuristic, not a probability) -- see POST /v2/extract.
+    """
     rows = await asyncio.to_thread(
         list_extractions_pg,
         ctx.org_id,
@@ -93,6 +100,14 @@ async def list_reviews(
         limit=limit,
         offset=offset,
     )
+    # Additive (Session 15d D7): results of POST /v2/extract/batch are read back here, so they
+    # get the same language-evidence fields as a single extraction. Derived from the stored
+    # review text at read time (nothing new is persisted); null if the text is unavailable.
+    for row in rows:
+        text = row.get("review_text")
+        signal = language_signal(text) if text else None
+        row["code_mixed"] = signal.code_mixed if signal else None
+        row["language_signal_strength"] = signal.strength if signal else None
     return {
         "org_id": ctx.org_id,
         "count": len(rows),
