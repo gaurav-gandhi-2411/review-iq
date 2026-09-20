@@ -203,7 +203,7 @@ class TestSiteIndexBlocksAreBrandPaletteOnly:
                 render_extraction_table_html(EXTRACTION_DATA),
                 render_committed_accuracy_headline_html(COVERAGE_DATA),
                 render_coverage_metrics_table_html(COVERAGE_DATA),
-                render_known_gaps_html(gaps, {"n": 40}),
+                render_known_gaps_html(gaps),
             )
         )
 
@@ -452,7 +452,6 @@ class TestKnownGapsNamesFieldsFromData:
                     "stars": {"correct_abstention": 27},
                 }
             ),
-            {"n": 40},
         )
         assert "`language` (13), `topics` (11), `pros` (6)" in html
         assert "product name" not in html
@@ -461,7 +460,6 @@ class TestKnownGapsNamesFieldsFromData:
     def test_zero_count_fields_never_named(self):
         html = render_known_gaps_html(
             self._data({"topics": {"wrong_committed": 2}, "pros": {"correct": 9}}),
-            {"n": 40},
         )
         assert "`topics` (2)" in html
         assert "`pros`" not in html
@@ -469,9 +467,19 @@ class TestKnownGapsNamesFieldsFromData:
     def test_ties_break_alphabetically_for_determinism(self):
         html = render_known_gaps_html(
             self._data({"topics": {"wrong_committed": 4}, "cons": {"wrong_committed": 4}}),
-            {"n": 40},
         )
         assert html.index("`cons` (4)") < html.index("`topics` (4)")
+
+    def test_no_fake_review_promise_or_disclosure(self):
+        # Session 15c D2: the fake-review flag is no longer promised anywhere on the page, so
+        # the paragraph must not name it (neither a claim nor a disclosure), while the
+        # sarcasm disclosure that precedes it stays.
+        html = render_known_gaps_html(self._data({"topics": {"wrong_committed": 4}}))
+        lowered = html.lower()
+        assert "fake" not in lowered
+        assert "authentic" not in lowered
+        assert "sarcastic or backhanded" in html
+        assert html.rstrip().endswith("either way.")
 
 
 class TestHeldOutScoringDisclosure:

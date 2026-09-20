@@ -306,7 +306,7 @@ def render_committed_accuracy_headline_html(data: dict[str, Any]) -> str:
     )
 
 
-def render_known_gaps_html(data: dict[str, Any], authenticity_data: dict[str, Any]) -> str:
+def render_known_gaps_html(data: dict[str, Any]) -> str:
     """Render the "Known gaps" banner (site/index.html) from eval/analyze_known_gaps.py's
     output -- Session 14 P2d. Replaces two previously-unmeasured claims:
 
@@ -320,15 +320,10 @@ def render_known_gaps_html(data: dict[str, Any], authenticity_data: dict[str, An
       original wording blamed product/topics, but most of that was the comparator, not
       the model -- see docs/architecture/adr/0030-free-text-scorers.md.)
 
-    Session 15 P2b adds a third disclosure: the hero's "fake-review flag" claim sits next
-    to sentiment/urgency (both rigorously measured above) with no measurement of its own.
-    Sourced directly from eval/results/authenticity_latest.json's own provenance_note --
-    that file's `mode` is "historical (reconstructed, no live run this session)", its `n`
-    is 40 (not this corpus's 106), and its own note says the number is not reproducible
-    (no cassette-replay support) and predates this held-out set. This sentence is a
-    disclosure, not a metric -- if a real cassette-backed authenticity measurement against
-    this held-out set ever lands (closing the provenance_note's own "KNOWN GAP"), delete
-    this paragraph and add a real accuracy row instead of editing it in place.
+    Session 15c D2: the third disclosure that used to live here (the hero's "fake-review
+    flag" had no measurement on this held-out set) is deleted, as its own note said to do
+    once the promise went. The hero and every other surface no longer promise the flag, so
+    there is nothing left to disclose about it on the page.
     """
     sr = data["short_reviews"]
     sarcasm = data["sarcasm"]
@@ -348,7 +343,6 @@ def render_known_gaps_html(data: dict[str, Any], authenticity_data: dict[str, An
     top_wrong_fields = ", ".join(f"`{f}` ({n})" for f, n in ranked[:3] if n > 0)
     sarcasm_n = sarcasm["n_sarcastic_or_backhanded_found"]
     sarcasm_total = data["n_fixtures_total"]
-    auth_n = authenticity_data["n"]
 
     return (
         "\n"
@@ -366,11 +360,7 @@ def render_known_gaps_html(data: dict[str, Any], authenticity_data: dict[str, An
         f"{total_checks} were genuine silent misses. Separately: sarcastic or backhanded "
         f"phrasing is rare in real marketplace reviews — {sarcasm_n} of {sarcasm_total} in "
         "our held-out set — too few to measure reliably, so we don't claim a number for it "
-        "either way. One more, stated plainly: unlike the fields above, the fake-review "
-        f"flag has not been measured against this held-out set. Its only historical number "
-        f"(n={auth_n}, a smaller and older corpus) is not reproducible and predates this "
-        "test set — treat it as an early-access signal, not a scored capability, until "
-        "that changes.\n      "
+        "either way.\n      "
     )
 
 
@@ -665,9 +655,7 @@ BLOCK_RENDERERS: dict[str, Any] = {
         _load_json(INJECTION_SUITE_PATH)
     ),
     "prompt_guard_fpr": lambda: render_prompt_guard_fpr_md(_load_json(PROMPT_GUARD_FPR_PATH)),
-    "known_gaps_html": lambda: render_known_gaps_html(
-        _load_json(KNOWN_GAPS_PATH), _load_json(AUTHENTICITY_RESULTS_PATH)
-    ),
+    "known_gaps_html": lambda: render_known_gaps_html(_load_json(KNOWN_GAPS_PATH)),
 }
 
 TARGET_FILES: tuple[Path, ...] = (
