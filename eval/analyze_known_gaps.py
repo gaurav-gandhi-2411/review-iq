@@ -32,11 +32,15 @@ Usage:
 from __future__ import annotations
 
 import json
+import sys
 from collections import Counter
 from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO_ROOT))
+from eval.free_text_scoring import canonical_product  # noqa: E402
+
 FIXTURES_DIR = REPO_ROOT / "eval" / "fixtures" / "_held_out_hindi_hinglish"
 SCORING_PATH = REPO_ROOT / "eval" / "results" / "held_out_scoring_v2.json"
 OUTPUT_PATH = REPO_ROOT / "eval" / "results" / "known_gaps_n106.json"
@@ -71,7 +75,12 @@ SARCASM_OR_BACKHANDED_IDS: tuple[str, ...] = (
 )
 
 
-def _is_empty(v: Any) -> bool:
+def _is_empty(v: Any, field: str = "") -> bool:
+    # "No product named" is expressed as a placeholder string, never as null (the schema has
+    # no nullable product), so plain None/[] emptiness would count "unknown product" as a
+    # confident commitment. eval/free_text_scoring.py owns that vocabulary.
+    if field == "product":
+        return canonical_product(v) is None
     if v is None:
         return True
     return isinstance(v, list) and len(v) == 0
@@ -105,12 +114,13 @@ def analyze_short_reviews(
         if rec is None:
             continue
         predicted = rec["as_deployed"]["predicted"]
+        field_scores = rec["as_deployed"]["field_scores"]
         gt = fx["ground_truth"]
         agreement = fx.get("labeling_meta", {}).get("agreement_per_field", {})
 
         for field in FIELDS:
             gt_val, pred_val = gt.get(field), predicted.get(field)
-            gt_empty, pred_empty = _is_empty(gt_val), _is_empty(pred_val)
+            gt_empty, pred_empty = _is_empty(gt_val, field), _is_empty(pred_val, field)
             entry = {
                 "id": fx["id"],
                 "field": field,
@@ -126,7 +136,16 @@ def analyze_short_reviews(
                 bucket = "real_gap"
             elif not pred_empty and gt_empty:
                 bucket = "wrong_committed"
+            elif field in field_scores:
+                # Session 15c C2: defer to the field's OWN scorer (eval/runner.py::score_fixture)
+                # instead of re-comparing with `==`. The old raw equality was stricter than the
+                # harness for every field it disagreed on: stars_inferred is scored +/-1, pros/
+                # cons are token-F1, topics/product need free-text normalization. "Wrong" means
+                # a full miss (score exactly 0), the same definition analyze_coverage_metrics.py
+                # uses; partial credit is not a confident-wrong answer.
+                bucket = "wrong_committed" if field_scores[field] == 0.0 else "correct"
             else:
+                # urgency / feature_requests are not scored by score_fixture; exact comparison.
                 bucket = "correct" if pred_val == gt_val else "wrong_committed"
             buckets[bucket].append(entry)
             per_field[field][bucket] += 1

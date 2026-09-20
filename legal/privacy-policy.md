@@ -74,6 +74,10 @@ processor's name and its own data-handling terms before any paid tier goes live.
    or cross-tenant analysis without that Customer's explicit, revocable opt-in — see
    `docs/data-ownership.md` §"Cross-tenant data use" for the (currently unimplemented) consent
    design that would gate any such future use.
+5. **Alerting.** When an organization has alerting enabled, content derived from a flagged
+   review (e.g. an urgency notice's subject and body, or a topic/product identifier from a
+   detected spike) is sent via **Resend** to that organization's own registered recipient email.
+   See [`sub-processors.md`](./sub-processors.md) for what Resend receives.
 
 ---
 
@@ -141,6 +145,9 @@ and every deletion/purge mechanism. In summary:
 - **Google Cloud Run** (our own compute hosting, not a sub-processor of Customer data in the
   GDPR sense — see [`sub-processors.md`](./sub-processors.md) for why) runs in `asia-south1`
   (Mumbai, India), confirmed from `ops/runbooks/cloud-run-deploy.md`.
+- **Resend** (transactional alert email) — data location `[UNVERIFIED — see sub-processors.md's
+  Resend entry for what was previously claimed without evidence, what was checked and came back
+  inconclusive, and what GG needs to confirm.]`
 - **Backups.** Nightly encrypted database backup artifacts are stored via GitHub Actions, which
   Github's own documentation states are hosted in US data centers (per
   `ops/runbooks/db-restore.md`'s own "Geo-redundancy" note). This means an encrypted copy of
