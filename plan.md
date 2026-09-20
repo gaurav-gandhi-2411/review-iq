@@ -453,6 +453,7 @@ CC scripts a `eval/data/sample.py` that pulls candidates from each source, dedup
 **Python:** `pip install review-iq`
 ```python
 from review_iq import Client
+
 client = Client(api_key="riq_live_...")
 result = client.extract("So I bought the Turbo-Vac 5000...")
 print(result.cons)  # ["short battery life", ...]
