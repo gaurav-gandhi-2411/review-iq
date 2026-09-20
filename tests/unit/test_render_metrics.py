@@ -15,6 +15,8 @@ from scripts.render_metrics import (
     render_extraction_table_md,
     render_file,
     render_gate_summary_md,
+    render_held_out_table_md,
+    render_known_gaps_html,
     render_language_table_html,
     render_portfolio_metrics_json,
 )
@@ -375,3 +377,100 @@ class TestRenderPortfolioMetricsJson:
         )
         fresh = render_portfolio_metrics_json(EXTRACTION_DATA)
         assert stale_committed != fresh
+
+
+class TestKnownGapsNamesFieldsFromData:
+    """Session 15c C2: the sentence names the top wrong-committed fields from the measured
+    per-field counts. It used to hard-code "the product name", which became false once the
+    comparator was corrected (product fell from 25 to 5 wrong-committed)."""
+
+    @staticmethod
+    def _data(per_field: dict[str, dict[str, int]]) -> dict:
+        return {
+            "n_fixtures_total": 106,
+            "sarcasm": {"n_sarcastic_or_backhanded_found": 3},
+            "short_reviews": {
+                "n_short_reviews": 27,
+                "total_field_checks": 324,
+                "abstention_correctness_rate": 0.9329,
+                "counts": {"wrong_committed": 48, "real_gap": 10},
+                "per_field": per_field,
+            },
+        }
+
+    def test_top_three_fields_by_count_named_in_order(self):
+        html = render_known_gaps_html(
+            self._data(
+                {
+                    "product": {"wrong_committed": 5},
+                    "language": {"wrong_committed": 13},
+                    "topics": {"wrong_committed": 11},
+                    "pros": {"wrong_committed": 6},
+                    "stars": {"correct_abstention": 27},
+                }
+            ),
+            {"n": 40},
+        )
+        assert "`language` (13), `topics` (11), `pros` (6)" in html
+        assert "product name" not in html
+        assert "`product` (5)" not in html  # fourth place is not named
+
+    def test_zero_count_fields_never_named(self):
+        html = render_known_gaps_html(
+            self._data({"topics": {"wrong_committed": 2}, "pros": {"correct": 9}}),
+            {"n": 40},
+        )
+        assert "`topics` (2)" in html
+        assert "`pros`" not in html
+
+    def test_ties_break_alphabetically_for_determinism(self):
+        html = render_known_gaps_html(
+            self._data({"topics": {"wrong_committed": 4}, "cons": {"wrong_committed": 4}}),
+            {"n": 40},
+        )
+        assert html.index("`cons` (4)") < html.index("`topics` (4)")
+
+
+class TestHeldOutScoringDisclosure:
+    """Rule 65c: a scorer change that raises the headline is disclosed beside it, generated
+    from the same artifact, together with any constant field that flatters the overall."""
+
+    DATA = {
+        "generated_at": "2026-09-20T00:00:00Z",
+        "git_sha": "abcdef1234567",
+        "groq_model_small": "s",
+        "groq_model_large": "l",
+        "n_fixtures": 106,
+        "language_detection_accuracy": 0.48,
+        "as_deployed": {
+            "n": 106,
+            "overall_score": 0.727,
+            "ci_95": {"lower": 0.705, "upper": 0.749},
+            "overall_score_strict_exact_match": 0.683,
+        },
+        "language_forced": {
+            "n": 106,
+            "overall_score": 0.774,
+            "ci_95": {"lower": 0.754, "upper": 0.793},
+        },
+    }
+
+    def test_note_shows_old_and_new_and_the_scorer_version(self):
+        md = render_held_out_table_md({**self.DATA, "scorer_version": "v-test"})
+        assert "scorer `v-test`" in md
+        assert "68.3% then vs 72.7% now" in md
+
+    def test_no_note_for_artifacts_without_scorer_version(self):
+        md = render_held_out_table_md(self.DATA)
+        assert "Scoring note" not in md
+
+    def test_constant_field_disclosed_with_overall_excluding_it(self):
+        md = render_held_out_table_md(
+            {
+                **self.DATA,
+                "constant_fields": ["stars"],
+                "overall_score_excluding_constant_fields": {"as_deployed": 0.697},
+            }
+        )
+        assert "`stars` scores 100% on every review" in md
+        assert "69.7%" in md

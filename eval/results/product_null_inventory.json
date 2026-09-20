@@ -1,0 +1,644 @@
+{
+  "generated_at": "2026-09-19T22:00:57Z",
+  "git_sha": "68f21b736d43c205d1ea38dd29a8588cccc1f811",
+  "scorer_version": "2026-09-20.free-text-v1",
+  "null_tokens": [
+    "a",
+    "an",
+    "general",
+    "item",
+    "items",
+    "product",
+    "products",
+    "the",
+    "this",
+    "unknown",
+    "unspecified"
+  ],
+  "sections": {
+    "held_out_gold": {
+      "n": 106,
+      "n_distinct": 36,
+      "n_null": 48,
+      "classified_null": [
+        [
+          "unknown",
+          27
+        ],
+        [
+          "product",
+          18
+        ],
+        [
+          "Product",
+          2
+        ],
+        [
+          "products",
+          1
+        ]
+      ],
+      "classified_named": [
+        [
+          "headphones",
+          9
+        ],
+        [
+          "earphone",
+          7
+        ],
+        [
+          "headphone",
+          5
+        ],
+        [
+          "earphones",
+          4
+        ],
+        [
+          "audio device",
+          3
+        ],
+        [
+          "headset",
+          2
+        ],
+        [
+          "Bluetooth speaker",
+          2
+        ],
+        [
+          "speaker",
+          2
+        ],
+        [
+          "earbuds",
+          1
+        ],
+        [
+          "OnePlus Bluetooth",
+          1
+        ],
+        [
+          "BassDesign",
+          1
+        ],
+        [
+          "11mm neckband",
+          1
+        ],
+        [
+          "BoAt 235v2 bluetooth headset",
+          1
+        ],
+        [
+          "OnePlus Bullets Wireless Z",
+          1
+        ],
+        [
+          "gadget",
+          1
+        ],
+        [
+          "Realme headset",
+          1
+        ],
+        [
+          "wireless earphone",
+          1
+        ],
+        [
+          "buds",
+          1
+        ],
+        [
+          "OnePlus product",
+          1
+        ],
+        [
+          "wireless earbuds",
+          1
+        ],
+        [
+          "Mivi collar wireless",
+          1
+        ],
+        [
+          "realme phone",
+          1
+        ],
+        [
+          "Boat earphone",
+          1
+        ],
+        [
+          "backup",
+          1
+        ],
+        [
+          "Osm products",
+          1
+        ],
+        [
+          "neck band",
+          1
+        ],
+        [
+          "Headphone",
+          1
+        ],
+        [
+          "Boat Rockerz 400",
+          1
+        ],
+        [
+          "rockerz bluetooth headphones",
+          1
+        ],
+        [
+          "OnePlus Bullets Wireless Z Bluetooth Headset",
+          1
+        ],
+        [
+          "U&i Bluetooth device",
+          1
+        ],
+        [
+          "boat",
+          1
+        ]
+      ]
+    },
+    "held_out_pred_as_deployed": {
+      "n": 106,
+      "n_distinct": 41,
+      "n_null": 54,
+      "classified_null": [
+        [
+          "unknown product",
+          29
+        ],
+        [
+          "general product",
+          22
+        ],
+        [
+          "product",
+          1
+        ],
+        [
+          "this product",
+          1
+        ],
+        [
+          "Product",
+          1
+        ]
+      ],
+      "classified_named": [
+        [
+          "earphone",
+          10
+        ],
+        [
+          "headphone",
+          5
+        ],
+        [
+          "headset",
+          2
+        ],
+        [
+          "earphones",
+          2
+        ],
+        [
+          "one plus",
+          2
+        ],
+        [
+          "earbuds",
+          1
+        ],
+        [
+          "Bluetooth oneplus",
+          1
+        ],
+        [
+          "Boat",
+          1
+        ],
+        [
+          "BassDesignSound",
+          1
+        ],
+        [
+          "neckband",
+          1
+        ],
+        [
+          "Boat earphones",
+          1
+        ],
+        [
+          "boAt 235v2 bluetooth headset",
+          1
+        ],
+        [
+          "bullets wireless z",
+          1
+        ],
+        [
+          "Cool gadget",
+          1
+        ],
+        [
+          "hometheatre",
+          1
+        ],
+        [
+          "wireless earphone",
+          1
+        ],
+        [
+          "oneplus",
+          1
+        ],
+        [
+          "buds",
+          1
+        ],
+        [
+          "wings wireless neck band",
+          1
+        ],
+        [
+          "Mast",
+          1
+        ],
+        [
+          "Mast product",
+          1
+        ],
+        [
+          "Mast sound",
+          1
+        ],
+        [
+          "Mivi collar wireless",
+          1
+        ],
+        [
+          "realme brand",
+          1
+        ],
+        [
+          "blue tooth headset",
+          1
+        ],
+        [
+          "Osm products",
+          1
+        ],
+        [
+          "neckband earphone",
+          1
+        ],
+        [
+          "speaker",
+          1
+        ],
+        [
+          "realme",
+          1
+        ],
+        [
+          "Headphone",
+          1
+        ],
+        [
+          "Boat Rockerz 400",
+          1
+        ],
+        [
+          "rockerz",
+          1
+        ],
+        [
+          "OnePlus Bullets Wireless Z Bluetooth Headset",
+          1
+        ],
+        [
+          "U&i Bluetooth device",
+          1
+        ],
+        [
+          "Ultimate headset Paisa",
+          1
+        ],
+        [
+          "boat 220 wired",
+          1
+        ]
+      ]
+    },
+    "held_out_pred_language_forced": {
+      "n": 106,
+      "n_distinct": 36,
+      "n_null": 53,
+      "classified_null": [
+        [
+          "general product",
+          51
+        ],
+        [
+          "product",
+          2
+        ]
+      ],
+      "classified_named": [
+        [
+          "earphone",
+          12
+        ],
+        [
+          "headphone",
+          6
+        ],
+        [
+          "earphones",
+          2
+        ],
+        [
+          "one plus",
+          2
+        ],
+        [
+          "realme",
+          2
+        ],
+        [
+          "earbuds",
+          1
+        ],
+        [
+          "Bluetooth oneplus",
+          1
+        ],
+        [
+          "Boat",
+          1
+        ],
+        [
+          "BassDesignSound",
+          1
+        ],
+        [
+          "Battery backup",
+          1
+        ],
+        [
+          "neckband",
+          1
+        ],
+        [
+          "Boat earphones",
+          1
+        ],
+        [
+          "BoAt 235v2 bluetooth headset",
+          1
+        ],
+        [
+          "bullets wireless z",
+          1
+        ],
+        [
+          "Cool gadget",
+          1
+        ],
+        [
+          "headset",
+          1
+        ],
+        [
+          "Headset",
+          1
+        ],
+        [
+          "realme phones",
+          1
+        ],
+        [
+          "wireless earphone",
+          1
+        ],
+        [
+          "oneplus",
+          1
+        ],
+        [
+          "buds",
+          1
+        ],
+        [
+          "boat earphones",
+          1
+        ],
+        [
+          "Mast",
+          1
+        ],
+        [
+          "Mivi collar wireless",
+          1
+        ],
+        [
+          "blue tooth headset",
+          1
+        ],
+        [
+          "Osm products",
+          1
+        ],
+        [
+          "neckband earphone",
+          1
+        ],
+        [
+          "speaker",
+          1
+        ],
+        [
+          "Headphone",
+          1
+        ],
+        [
+          "Boat Rockerz 400",
+          1
+        ],
+        [
+          "rockerz",
+          1
+        ],
+        [
+          "OnePlus Bullets Wireless Z Bluetooth Headset",
+          1
+        ],
+        [
+          "U&i Bluetooth device",
+          1
+        ],
+        [
+          "Ultimate headset",
+          1
+        ]
+      ]
+    },
+    "dev_gold_independent_check": {
+      "n": 43,
+      "n_distinct": 34,
+      "n_null": 4,
+      "classified_null": [
+        [
+          "unknown product",
+          2
+        ],
+        [
+          "unspecified product",
+          1
+        ],
+        [
+          "general product",
+          1
+        ]
+      ],
+      "classified_named": [
+        [
+          "earphones",
+          5
+        ],
+        [
+          "headphones",
+          4
+        ],
+        [
+          "earphone",
+          2
+        ],
+        [
+          "Turbo-Vac 5000",
+          1
+        ],
+        [
+          "blender",
+          1
+        ],
+        [
+          "vacuum cleaner",
+          1
+        ],
+        [
+          "air purifier",
+          1
+        ],
+        [
+          "KitchenMaster Pro",
+          1
+        ],
+        [
+          "SleepPro mattress",
+          1
+        ],
+        [
+          "FreshBreeze air cooler",
+          1
+        ],
+        [
+          "CleanBot X9",
+          1
+        ],
+        [
+          "CoolAir AC",
+          1
+        ],
+        [
+          "PowerDrive Pro",
+          1
+        ],
+        [
+          "NovaPod X earbuds",
+          1
+        ],
+        [
+          "SmartScale Pro",
+          1
+        ],
+        [
+          "ChairMax Pro",
+          1
+        ],
+        [
+          "UltraSound Pro speaker",
+          1
+        ],
+        [
+          "BrewMaster coffee grinder",
+          1
+        ],
+        [
+          "ZenDesk Pro standing desk",
+          1
+        ],
+        [
+          "NutriBlast 3000",
+          1
+        ],
+        [
+          "FitBand Lite",
+          1
+        ],
+        [
+          "LightStep running shoes",
+          1
+        ],
+        [
+          "AquaFilter",
+          1
+        ],
+        [
+          "CrispMaster 4000",
+          1
+        ],
+        [
+          "wireless mouse",
+          1
+        ],
+        [
+          "OnePlus Bullets Wireless Z",
+          1
+        ],
+        [
+          "headset",
+          1
+        ],
+        [
+          "neckband earphones",
+          1
+        ],
+        [
+          "headphone",
+          1
+        ],
+        [
+          "audio device",
+          1
+        ],
+        [
+          "bluetooth earphones",
+          1
+        ]
+      ]
+    }
+  }
+}

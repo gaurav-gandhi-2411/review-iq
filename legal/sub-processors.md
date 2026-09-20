@@ -12,8 +12,9 @@ removed, or changed. `[TODO: GG-DECISION — pick and state a change-notificatio
 "check this page" vs. an email/changelog subscription, before this becomes a binding
 contractual commitment (see dpa-template.md §6).]`
 
-**Last verified against the codebase:** 2026-09-12 (Session 13, resolving the Groq ZDR TODO and
-auditing every LLM-provider call site for Batch API usage — see
+**Last verified against the codebase:** 2026-09-17 (Session 15b, adding Resend — a live sub-processor
+missing from this document since its 2026-09-12 rewrite). Previously updated 2026-09-12 (Session 13,
+resolving the Groq ZDR TODO and auditing every LLM-provider call site for Batch API usage — see
 [ADR 0028](../docs/architecture/adr/0028-groq-zdr-verification-and-batch-api-audit.md)).
 Previously updated 2026-09-12 (Session 12, adding OpenRouter and independently verifying Groq's
 data-use commitment against its own Services Agreement). Originally drafted 2026-07-31
@@ -65,6 +66,18 @@ data-use commitment against its own Services Agreement). Originally drafted 2026
 | **Why this is listed but treated differently from Groq/Supabase** | Google Cloud Run does not independently process Customer/end-customer data *on Customer's behalf* the way Groq (LLM inference) and Supabase (database) do — it is the compute substrate we, the Processor, run our own application code on. Under GDPR's sub-processor framework, this is closer to "Processor's own infrastructure" than a distinct sub-processor performing a discrete processing activity for Controller. We list it here anyway, in the interest of transparency, because review text and derived data do transit through and are held in memory on Cloud Run instances during request processing. |
 | **What it processes** | Review text in-flight during API request handling (not persisted by Cloud Run itself — persistence happens in Supabase); secrets accessed via Google Cloud Secret Manager, scoped per-secret to the Cloud Run service account. |
 | **Their own published documentation** | `https://cloud.google.com/terms/cloud-privacy-notice` (Google Cloud Privacy Notice), `https://cloud.google.com/security` — `[TODO: not independently verified in this drafting session.]` |
+
+---
+
+## Resend
+
+| | |
+|---|---|
+| **Role** | Transactional alert email delivery — urgency, likely-fake, fake-cluster, topic-spike, batch-defect, and fake-campaign notifications sent to an organization's registered recipient (`app/core/alerts/channels/resend_channel.py`). **Not** used for signup email, which Supabase's own default sender handles. |
+| **What it processes** | Alert content derived from Customer data — e.g. an urgency-flagged review's subject line and body text, or a topic/product identifier from a detected spike — sent to the org's own registered recipient email. Live in production; genuinely missing from this document until this entry (found during Session 15b's loose-ends audit; a prior attempt to add this, PR #53, targeted a stale pre-Session-12 branch that was superseded wholesale by this document's 2026-09-12 rewrite, so its content never reached main). |
+| **Data use commitment** | `[TODO: not independently verified this drafting — pull Resend's own DPA/sub-processor terms before publishing.]` |
+| **Data location** | `[UNVERIFIED — a prior drafting pass (PR #53, never merged) asserted "Tokyo, Japan (ap-northeast-1), confirmed from Resend's own dashboard" with no screenshot, export, or API response ever produced to support it, and the send-only API key in use cannot read account/region settings (a call to its api-keys endpoint returns 401, "restricted to only send emails"). Do not carry that figure forward. GG: confirm the region shown at resend.com under Domains for mail.samidhareviews.xyz, or under Settings, and report back before this line is filled in.]` |
+| **Their own published documentation** | `https://resend.com/legal/privacy-policy` — `[TODO: not independently fetched/verified in this drafting session; confirm current before publishing.]` |
 
 ---
 
