@@ -27,6 +27,9 @@ on:
 jobs:
   bypassrls-check:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write # only used by the scheduled-run failure-alert step below
     services:
       postgres:
         image: postgres:16
@@ -88,3 +91,18 @@ jobs:
           SUPABASE_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
           SUPABASE_DIRECT_URL: postgresql://postgres:postgres@localhost:5432/postgres
         run: uv run pytest tests/integration/test_role_bypassrls.py -v -m integration --no-cov
+
+      # Scheduled runs have no other reader (SLACK_WEBHOOK_URL was never configured), so a
+      # red scheduled run opens/updates a ci-alert issue. schedule-only: PR/push failures
+      # are already visible on the PR/commit and must not open ops issues.
+      - name: Alert on failure / close alert on recovery (scheduled runs only)
+        if: always() && !cancelled() && github.event_name == 'schedule'
+        uses: ./.github/actions/schedule-failure-alert
+        with:
+          status: ${{ job.status == 'success' && 'success' || 'failure' }}
+          title: "BYPASSRLS container check is failing"
+          details: |
+            `bypassrls-container-check.yml` applies the tracked migrations to a throwaway
+            postgres:16 container and runs tests/integration/test_role_bypassrls.py to prove
+            review_iq_app can never hold BYPASSRLS. See supabase/push.py and
+            supabase/cutover/20260801000001_statement4_revoke_bypassrls.sql.
