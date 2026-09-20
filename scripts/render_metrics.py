@@ -3,7 +3,9 @@
 This is the single-source-of-truth mechanism for Section A ("truth reconciliation") --
 README.md, site/index.html, site/docs/index.html, and eval/README.md must never again
 hardcode an accuracy/gate/prompt-version number that can silently drift from
-eval/results/latest.json and eval/results/authenticity_latest.json. See
+eval/results/latest.json. (The fake-review flag has no measurable eval -- no authenticity
+labels exist for the held-out set, and eval/results/authenticity_latest.json is a historical,
+non-reproducible in-sample file -- so no block renders it.) See
 docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md.
 
 Mechanism: each target file has one or more
@@ -110,31 +112,6 @@ def render_extraction_table_md(data: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def render_authenticity_table_md(data: dict[str, Any]) -> str:
-    """Render the current authenticity-eval summary as a Markdown table + prose (README.md)."""
-    cm = data["confusion_matrix"]
-    lines = [
-        "| Metric | Value | 95% CI | n |",
-        "|---|---|---|---|",
-    ]
-    for key, label in (("precision", "Precision"), ("recall", "Recall"), ("f1", "F1")):
-        m = data[key]
-        lines.append(
-            f"| {label} | {m['value']:.3f} "
-            f"| [{m['ci_95']['lower']:.3f}, {m['ci_95']['upper']:.3f}] | {m['n']} |"
-        )
-    gate_status = "met" if data["gate_passed"] else "**NOT met**"
-    lines += [
-        "",
-        f"Gate: precision ≥ {data['precision_gate']:.2f} ({gate_status}). "
-        f"n={data['n']} (tp={cm['tp']}, fp={cm['fp']}, fn={cm['fn']}, tn={cm['tn']}). "
-        f"Mode: {data['mode']}.",
-    ]
-    if data.get("provenance_note"):
-        lines += ["", f"> **Provenance:** {data['provenance_note']}"]
-    return "\n".join(lines)
-
-
 def render_held_out_table_md(data: dict[str, Any]) -> str:
     """Render the real-world, uncontaminated held-out measurement (README.md).
 
@@ -149,21 +126,69 @@ def render_held_out_table_md(data: dict[str, Any]) -> str:
     forced = data["language_forced"]
     models = f"{data['groq_model_small']} / {data['groq_model_large']}"
     sha = data.get("git_sha")
+    constant = data.get("constant_fields") or []
+    if constant:
+        # The headline excludes fields that carry no information (constant across the whole
+        # corpus): a field that scores 100% on every review adds a free 100% to one of the
+        # equal-weighted fields and flatters the overall. Indexed directly, not .get(): an
+        # artifact that names constant fields but lacks the excluded score/CI must fail loudly
+        # rather than silently fall back to the flattering all-fields figure.
+        excl = data["overall_score_excluding_constant_fields"]
+        excl_ci = data["overall_score_excluding_constant_fields_ci_95"]
+        head = {
+            "as_deployed": (excl["as_deployed"], excl_ci["as_deployed"]),
+            "language_forced": (excl["language_forced"], excl_ci["language_forced"]),
+        }
+        score_label = "Score (informative fields only)"
+    else:
+        head = {
+            "as_deployed": (as_dep["overall_score"], as_dep["ci_95"]),
+            "language_forced": (forced["overall_score"], forced["ci_95"]),
+        }
+        score_label = "Score"
+    dep_score, dep_ci = head["as_deployed"]
+    frc_score, frc_ci = head["language_forced"]
     lines = [
         f"Measured {data['generated_at']}"
         + (f" &middot; `{sha[:7]}`" if sha else "")
         + f" &middot; models: {models}",
         "",
-        "| Condition | Score | 95% CI | n |",
+        f"| Condition | {score_label} | 95% CI | n |",
         "|---|---|---|---|",
-        f"| **As actually deployed** (real language routing) | **{_fmt_pct(as_dep['overall_score'])}** "
-        f"| [{_fmt_pct(as_dep['ci_95']['lower'])}, {_fmt_pct(as_dep['ci_95']['upper'])}] "
+        f"| **As actually deployed** (real language routing) | **{_fmt_pct(dep_score)}** "
+        f"| [{_fmt_pct(dep_ci['lower'])}, {_fmt_pct(dep_ci['upper'])}] "
         f"| {as_dep['n']} |",
-        f"| Language routing forced correct | {_fmt_pct(forced['overall_score'])} "
-        f"| [{_fmt_pct(forced['ci_95']['lower'])}, {_fmt_pct(forced['ci_95']['upper'])}] "
+        f"| Language routing forced correct | {_fmt_pct(frc_score)} "
+        f"| [{_fmt_pct(frc_ci['lower'])}, {_fmt_pct(frc_ci['upper'])}] "
         f"| {forced['n']} |",
     ]
     n_total = data["n_fixtures"]
+    if constant:
+        # Disclosed directly beside the headline (not in a trailing note): the all-fields
+        # figure is the larger one, and the reader must see both and why it is not the headline.
+        names = ", ".join(f"`{f}`" for f in constant)
+        inflation_pts = round((as_dep["overall_score"] - excl["as_deployed"]) * 100)
+        if constant == ["stars"]:
+            reason = (
+                f"`stars` is null in both gold and prediction on all {n_total} reviews, so it "
+                f"scores {n_total}/{n_total} trivially and carries no information"
+            )
+        else:
+            reason = (
+                f"{names} scores 100% on every one of the {n_total} reviews (the corpus "
+                "contains no case for it), so it carries no information"
+            )
+        lines += [
+            "",
+            f"**Why the headline excludes {names}.** Counting all fields, the same recorded "
+            f"outputs score {_fmt_pct(as_dep['overall_score'])} as deployed "
+            f"[{_fmt_pct(as_dep['ci_95']['lower'])}, {_fmt_pct(as_dep['ci_95']['upper'])}] and "
+            f"{_fmt_pct(forced['overall_score'])} with language routing forced correct "
+            f"[{_fmt_pct(forced['ci_95']['lower'])}, {_fmt_pct(forced['ci_95']['upper'])}]. "
+            f"{reason}, and it inflates the overall by about "
+            f"{inflation_pts} points. The headline therefore averages only the informative "
+            "fields.",
+        ]
     lang_acc = data.get("language_detection_accuracy")
     lang_acc_str = _fmt_pct(lang_acc) if lang_acc is not None else "n/a"
     lines += [
@@ -186,21 +211,11 @@ def render_held_out_table_md(data: dict[str, Any]) -> str:
             'correct spellings of "no product named" (`unknown` vs `unknown product`) and '
             "near-identical topic labels (`battery` vs `battery_life`) are no longer scored wrong. "
             "Earlier published figures used exact-string matching on the same recorded model "
-            f"outputs: as deployed, {_fmt_pct(strict)} then vs {_fmt_pct(as_dep['overall_score'])} "
+            "outputs and counted all fields"
+            + (" (the same basis as the all-fields figures above)" if constant else "")
+            + f": as deployed, {_fmt_pct(strict)} then vs {_fmt_pct(as_dep['overall_score'])} "
             "now. The model's outputs did not change, only the comparator "
             "([ADR 0030](docs/architecture/adr/0030-free-text-scorers.md)).",
-        ]
-    constant = data.get("constant_fields") or []
-    excl = (data.get("overall_score_excluding_constant_fields") or {}).get("as_deployed")
-    if constant and excl is not None:
-        # The opposite-direction disclosure: a field that is constant across the whole corpus
-        # inflates the headline, so the headline must not stand alone.
-        names = ", ".join(f"`{f}`" for f in constant)
-        lines += [
-            "",
-            f"**Constant fields.** {names} scores 100% on every review here (the corpus contains "
-            "no case for it), which adds a free 100% to one of the equal-weighted fields in the "
-            f"overall score. Excluding it, as deployed: {_fmt_pct(excl)}.",
         ]
     return "\n".join(lines)
 
@@ -288,10 +303,10 @@ def render_committed_accuracy_headline_html(data: dict[str, Any]) -> str:
         abstain_lo = _fmt_pct(1 - info["coverage_ci_95"]["upper"])
         abstain_hi = _fmt_pct(1 - info["coverage_ci_95"]["lower"])
         return (
-            '            <div class="bg-gray-900 rounded-lg p-6 border border-gray-700">\n'
-            f'              <div class="text-3xl font-bold text-blue-300">{acc}</div>\n'
-            f'              <div class="text-gray-100 font-semibold mt-1">accurate when it commits to {label}</div>\n'
-            f'              <div class="text-gray-500 text-xs mt-2">95% CI [{lo}, {hi}], n={n}. '
+            '            <div class="stat-card">\n'
+            f'              <div class="stat-num">{acc}</div>\n'
+            f'              <div class="stat-label">accurate when it commits to {label}</div>\n'
+            f'              <div class="stat-note">95% CI [{lo}, {hi}], n={n}. '
             f"Separately, it abstains (&ldquo;unclear&rdquo;) on {abstain_lo}&ndash;{abstain_hi} "
             f"of all reviews rather than commit to any answer.</div>\n"
             "            </div>"
@@ -306,7 +321,7 @@ def render_committed_accuracy_headline_html(data: dict[str, Any]) -> str:
     )
 
 
-def render_known_gaps_html(data: dict[str, Any], authenticity_data: dict[str, Any]) -> str:
+def render_known_gaps_html(data: dict[str, Any]) -> str:
     """Render the "Known gaps" banner (site/index.html) from eval/analyze_known_gaps.py's
     output -- Session 14 P2d. Replaces two previously-unmeasured claims:
 
@@ -320,15 +335,10 @@ def render_known_gaps_html(data: dict[str, Any], authenticity_data: dict[str, An
       original wording blamed product/topics, but most of that was the comparator, not
       the model -- see docs/architecture/adr/0030-free-text-scorers.md.)
 
-    Session 15 P2b adds a third disclosure: the hero's "fake-review flag" claim sits next
-    to sentiment/urgency (both rigorously measured above) with no measurement of its own.
-    Sourced directly from eval/results/authenticity_latest.json's own provenance_note --
-    that file's `mode` is "historical (reconstructed, no live run this session)", its `n`
-    is 40 (not this corpus's 106), and its own note says the number is not reproducible
-    (no cassette-replay support) and predates this held-out set. This sentence is a
-    disclosure, not a metric -- if a real cassette-backed authenticity measurement against
-    this held-out set ever lands (closing the provenance_note's own "KNOWN GAP"), delete
-    this paragraph and add a real accuracy row instead of editing it in place.
+    Session 15c D2: the third disclosure that used to live here (the hero's "fake-review
+    flag" had no measurement on this held-out set) is deleted, as its own note said to do
+    once the promise went. The hero and every other surface no longer promise the flag, so
+    there is nothing left to disclose about it on the page.
     """
     sr = data["short_reviews"]
     sarcasm = data["sarcasm"]
@@ -348,11 +358,10 @@ def render_known_gaps_html(data: dict[str, Any], authenticity_data: dict[str, An
     top_wrong_fields = ", ".join(f"`{f}` ({n})" for f, n in ranked[:3] if n > 0)
     sarcasm_n = sarcasm["n_sarcastic_or_backhanded_found"]
     sarcasm_total = data["n_fixtures_total"]
-    auth_n = authenticity_data["n"]
 
     return (
         "\n"
-        '        <span class="text-amber-400 font-semibold">Known gaps: </span>\n'
+        '        <strong class="note-lead">Known gaps: </strong>\n'
         '        English `sentiment` and `buy_again` hedge (return "mixed"/null) far more '
         "often under the current models than the previous ones — accuracy on the answers "
         "the model DOES commit to is unchanged, but it commits less often, and flat "
@@ -366,11 +375,7 @@ def render_known_gaps_html(data: dict[str, Any], authenticity_data: dict[str, An
         f"{total_checks} were genuine silent misses. Separately: sarcastic or backhanded "
         f"phrasing is rare in real marketplace reviews — {sarcasm_n} of {sarcasm_total} in "
         "our held-out set — too few to measure reliably, so we don't claim a number for it "
-        "either way. One more, stated plainly: unlike the fields above, the fake-review "
-        f"flag has not been measured against this held-out set. Its only historical number "
-        f"(n={auth_n}, a smaller and older corpus) is not reproducible and predates this "
-        "test set — treat it as an early-access signal, not a scored capability, until "
-        "that changes.\n      "
+        "either way.\n      "
     )
 
 
@@ -390,9 +395,14 @@ def render_gate_summary_md(data: dict[str, Any]) -> str:
 
 
 def _status_badge_html(passed: bool) -> str:
+    """PASS/FAIL cell for site/index.html. Session 15c C8: emits semantic classes (`status`,
+    `status-pass`, `status-fail`) defined in that page's own stylesheet, not Tailwind palette
+    classes -- the page's brand palette has no green/red hue, so PASS vs FAIL is carried by
+    the glyph + word + weight, never by colour alone.
+    """
     if passed:
-        return '<td class="px-6 py-4 text-green-400 font-semibold">&#10003; PASS</td>'
-    return '<td class="px-6 py-4 text-red-400 font-semibold">&#10007; FAIL</td>'
+        return '<td class="status status-pass">&#10003; PASS</td>'
+    return '<td class="status status-fail">&#10007; FAIL</td>'
 
 
 def render_extraction_table_html(data: dict[str, Any]) -> str:
@@ -416,24 +426,24 @@ def render_extraction_table_html(data: dict[str, Any]) -> str:
         label = lang_labels.get(lang, lang)
         scope_note = lang_scope_note.get(lang, "")
         rows.append(
-            '            <tr class="bg-gray-900 hover:bg-gray-800 transition-colors">\n'
-            f'              <td class="px-6 py-4 text-gray-100">{label} '
-            f'<span class="text-gray-500 text-xs">({lang}, n={info["n"]}{scope_note})</span></td>\n'
-            f'              <td class="px-6 py-4 font-mono text-blue-300">{_fmt_pct(info["score"])}</td>\n'
-            f'              <td class="px-6 py-4 font-mono text-gray-400 text-xs">'
+            "            <tr>\n"
+            f"              <td>{label} "
+            f'<span class="muted">({lang}, n={info["n"]}{scope_note})</span></td>\n'
+            f'              <td class="num">{_fmt_pct(info["score"])}</td>\n'
+            f'              <td class="ci">'
             f"[{_fmt_pct(info['ci_95']['lower'])}, {_fmt_pct(info['ci_95']['upper'])}]</td>\n"
-            f'              <td class="px-6 py-4 text-gray-400">&ge;{info["threshold"]:.0%}</td>\n'
+            f'              <td class="gate">&ge;{info["threshold"]:.0%}</td>\n'
             f"              {_status_badge_html(info['passed'])}\n"
             "            </tr>"
         )
     rows.append(
-        '            <tr class="bg-gray-900 hover:bg-gray-800 transition-colors border-t-2 border-gray-600">\n'
-        f'              <td class="px-6 py-4 text-white font-semibold">Overall '
-        f'<span class="text-gray-500 text-xs">(n={data["overall_ci_95"]["n"]})</span></td>\n'
-        f'              <td class="px-6 py-4 font-mono text-blue-300 font-semibold">{_fmt_pct(data["overall_score"])}</td>\n'
-        f'              <td class="px-6 py-4 font-mono text-gray-400 text-xs">'
+        '            <tr class="row-total">\n'
+        f"              <td>Overall "
+        f'<span class="muted">(n={data["overall_ci_95"]["n"]})</span></td>\n'
+        f'              <td class="num">{_fmt_pct(data["overall_score"])}</td>\n'
+        f'              <td class="ci">'
         f"[{_fmt_pct(data['overall_ci_95']['lower'])}, {_fmt_pct(data['overall_ci_95']['upper'])}]</td>\n"
-        f'              <td class="px-6 py-4 text-gray-400">&ge;{data["threshold"]:.0%}</td>\n'
+        f'              <td class="gate">&ge;{data["threshold"]:.0%}</td>\n'
         f"              {_status_badge_html(data['passed'])}\n"
         "            </tr>"
     )
@@ -490,11 +500,11 @@ def render_coverage_metrics_table_html(data: dict[str, Any]) -> str:
         wrong = info["wrong_committed_of_answered"]
         wrong_rate = _fmt_pct(info["wrong_committed_rate"])
         rows.append(
-            '            <tr class="bg-gray-900 hover:bg-gray-800 transition-colors">\n'
-            f'              <td class="px-6 py-4 text-gray-100 capitalize">{field.replace("_", " ")}</td>\n'
-            f'              <td class="px-6 py-4 font-mono text-blue-300">{cov} <span class="text-gray-500 text-xs">{cov_ci}</span></td>\n'
-            f'              <td class="px-6 py-4 font-mono text-blue-300">{acc} <span class="text-gray-500 text-xs">{acc_ci}</span></td>\n'
-            f'              <td class="px-6 py-4 font-mono text-gray-300">{wrong} = {wrong_rate}</td>\n'
+            "            <tr>\n"
+            f'              <td class="cap">{field.replace("_", " ")}</td>\n'
+            f'              <td class="num">{cov} <span class="muted">{cov_ci}</span></td>\n'
+            f'              <td class="num">{acc} <span class="muted">{acc_ci}</span></td>\n'
+            f'              <td class="ci">{wrong} = {wrong_rate}</td>\n'
             "            </tr>"
         )
     return "\n" + "\n".join(rows) + "\n          "
@@ -635,9 +645,6 @@ def render_portfolio_metrics_json(data: dict[str, Any]) -> str:
 
 BLOCK_RENDERERS: dict[str, Any] = {
     "extraction_table": lambda: render_extraction_table_md(_load_json(EXTRACTION_RESULTS_PATH)),
-    "authenticity_table": lambda: render_authenticity_table_md(
-        _load_json(AUTHENTICITY_RESULTS_PATH)
-    ),
     "gate_summary": lambda: render_gate_summary_md(_load_json(EXTRACTION_RESULTS_PATH)),
     "held_out_table": lambda: render_held_out_table_md(_load_json(HELD_OUT_RESULTS_PATH)),
     "coverage_metrics_table": lambda: render_coverage_metrics_table_md(
@@ -660,9 +667,7 @@ BLOCK_RENDERERS: dict[str, Any] = {
         _load_json(INJECTION_SUITE_PATH)
     ),
     "prompt_guard_fpr": lambda: render_prompt_guard_fpr_md(_load_json(PROMPT_GUARD_FPR_PATH)),
-    "known_gaps_html": lambda: render_known_gaps_html(
-        _load_json(KNOWN_GAPS_PATH), _load_json(AUTHENTICITY_RESULTS_PATH)
-    ),
+    "known_gaps_html": lambda: render_known_gaps_html(_load_json(KNOWN_GAPS_PATH)),
 }
 
 TARGET_FILES: tuple[Path, ...] = (

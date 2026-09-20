@@ -26,6 +26,9 @@ concurrency:
 jobs:
   probe:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write # only used by the scheduled-run failure-alert step below
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       SECONDARY_PROVIDER_API_KEY: ${{ secrets.SECONDARY_PROVIDER_API_KEY }}
@@ -58,3 +61,17 @@ jobs:
           else
             uv run python scripts/probe_failover.py --slack-webhook "$SLACK_WEBHOOK_URL"
           fi
+
+      # SLACK_WEBHOOK_URL has never been configured, so before this step a failing
+      # probe reached nobody (7 consecutive red nightly runs, 2026-09-13..19).
+      - name: Alert on failure / close alert on recovery (scheduled runs only)
+        if: always() && !cancelled() && github.event_name == 'schedule'
+        uses: ./.github/actions/schedule-failure-alert
+        with:
+          status: ${{ job.status == 'success' && 'success' || 'failure' }}
+          title: "Failover probe is failing"
+          details: |
+            `failover-probe.yml` makes a real live call to each LLM failover path (Gemini
+            fallback and the SecondaryProvider/OpenRouter path). Check the GEMINI_API_KEY and
+            SECONDARY_PROVIDER_API_KEY secrets and the SECONDARY_PROVIDER_MODEL variable, and
+            see scripts/probe_failover.py.
