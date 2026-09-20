@@ -8,6 +8,9 @@ name: Failover Probe
 # convention (the established house pattern for scheduled jobs in this repo) --
 # no new scheduling mechanism introduced.
 #
+# Session 15c D4: each path is PASS / FAIL / NOT CONFIGURED (three-state); an unconfigured
+# path is reported loudly on every run, never silently skipped -- see the probe docstring.
+#
 # Cost: 2 tiny live calls/night (~150-250 tokens total) against Gemini + OpenRouter.
 # Negligible against both providers' free/low tiers.
 
@@ -51,8 +54,15 @@ jobs:
         run: uv sync --frozen
 
       - name: Run failover probe
+        id: probe
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          # GG decision D4 (2026-09-20): only GEMINI_API_KEY is configured; the OpenRouter
+          # secondary path is DELIBERATELY left unconfigured. The probe still reports it
+          # every run (console line + ::warning:: + step-summary row) -- this only stops it
+          # failing the job. Any other unconfigured path (e.g. a missing GEMINI_API_KEY)
+          # is not listed here and still exits 1. See scripts/probe_failover.py.
+          FAILOVER_ACKNOWLEDGED_UNCONFIGURED: secondary
         run: |
           # Free-tier-friendly: probe still runs and fails the job (exit 1) without a
           # webhook -- Slack notification is a bonus, not the pass/fail signal itself.
@@ -72,6 +82,9 @@ jobs:
           title: "Failover probe is failing"
           details: |
             `failover-probe.yml` makes a real live call to each LLM failover path (Gemini
-            fallback and the SecondaryProvider/OpenRouter path). Check the GEMINI_API_KEY and
+            fallback and the SecondaryProvider/OpenRouter path). Path states this run:
+            `${{ steps.probe.outputs.states }}`. A path is FAIL (configured but broken) or
+            NOT CONFIGURED without acknowledgement (secret/var absent and not listed in
+            FAILOVER_ACKNOWLEDGED_UNCONFIGURED). Check the GEMINI_API_KEY and
             SECONDARY_PROVIDER_API_KEY secrets and the SECONDARY_PROVIDER_MODEL variable, and
             see scripts/probe_failover.py.
