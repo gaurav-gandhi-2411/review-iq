@@ -106,3 +106,41 @@ anomaly worth investigating.
   the issue's real, current state independently (a fresh search, not a value handed off
   in-process) is exactly what makes the verification step trustworthy — trusting the alert
   step's own reported success would just be testing the mechanism against itself.
+
+## Amendment (Session 15c)
+
+**A claim in this ADR was wrong.** The Slack row in the table above and the Slack paragraph in the
+verification write-up state that every caller of the Slack path (`eval.yml`,
+`failover-probe.yml`, `web-surface-probe.yml`) "falls back to the GitHub-issue path when
+the secret is absent." That was true of `eval.yml` and `web-surface-probe.yml` only.
+`failover-probe.yml` never called the alert action: with `SLACK_WEBHOOK_URL` unset it
+simply ran the probe without `--slack-webhook` and, on failure, alerted nobody. Evidence:
+`gh run list --workflow=failover-probe.yml` shows 7 of 7 scheduled runs failed
+(2026-09-13 through 2026-09-19), and `gh issue list --state all --search failover` returns
+no issues. The probe was failing for a real reason (`GEMINI_API_KEY` and
+`SECONDARY_PROVIDER_*` are unset in repo secrets), so a real outage sat unreported for a
+week.
+
+**Why the canary did not catch it.** The canary's surface is the composite action
+`.github/actions/schedule-failure-alert` and nothing else: it proves the action can open,
+comment on and close an issue. A scheduled workflow that never calls the action is outside
+that surface entirely, so it was invisible to the canary by construction. The same gap
+applied to `bypassrls-container-check.yml`, `db-backup.yml`, `deploy-cloud-run.yml`
+(scheduled drift job), `migration-drift-check.yml`, `secret-scan.yml` (weekly full-history
+scan) and `security-bypassrls-check.yml`: none had a failure -> issue path.
+
+**What this change does.** Each of those seven workflows now ends with a step (for
+`deploy-cloud-run.yml`, a separate final job, so `issues: write` is never granted to the job
+holding the Workload Identity Federation token) that calls the composite action, gated by
+`if: always() && !cancelled() && github.event_name == 'schedule'`. Push and pull-request
+runs do not open ops issues. `issues: write` is scoped to the job that needs it. Because
+`failover-probe.yml` is genuinely failing, it will open a `ci-alert` issue on its next
+scheduled run; that is the intended effect, not a regression.
+
+**Enforcement is now static, not just runtime.** `scripts/check_scheduled_workflows_alert.py`
+runs in CI (`lint-and-test`) and fails, naming the file, if any workflow with a `schedule`
+trigger lacks a recognised alert path (the composite action, or inline `gh issue create` /
+`issues.create`). Delegation to a reusable workflow, Slack-only notification, and an
+unparseable workflow file all fail closed. Its known looseness (per-file, not per-step; it
+does not evaluate `if:` conditions) is stated in the script's docstring; the guard removes
+the "forgot to add any alert" failure, not every possible misconfiguration of one.

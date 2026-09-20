@@ -163,18 +163,18 @@ accurate is this in the real world." The table below is the honest answer to the
 question — scored against 106 real Indian marketplace reviews mined independently of prompt
 development, never seen by anyone iterating on the prompt.
 
-<!-- METRICS:START:held_out_table -->Measured 2026-09-19T21:59:05Z &middot; `5c5c8e0` &middot; models: openai/gpt-oss-20b / openai/gpt-oss-120b
+<!-- METRICS:START:held_out_table -->Measured 2026-09-20T07:03:35Z &middot; `0ba938d` &middot; models: openai/gpt-oss-20b / openai/gpt-oss-120b
 
-| Condition | Score | 95% CI | n |
+| Condition | Score (informative fields only) | 95% CI | n |
 |---|---|---|---|
-| **As actually deployed** (real language routing) | **72.7%** | [70.5%, 74.9%] | 106 |
-| Language routing forced correct | 77.4% | [75.4%, 79.3%] | 106 |
+| **As actually deployed** (real language routing) | **69.7%** | [67.3%, 72.1%] | 106 |
+| Language routing forced correct | 74.9% | [72.7%, 77.0%] | 106 |
+
+**Why the headline excludes `stars`.** Counting all fields, the same recorded outputs score 72.7% as deployed [70.5%, 74.9%] and 77.4% with language routing forced correct [75.4%, 79.3%]. `stars` is null in both gold and prediction on all 106 reviews, so it scores 106/106 trivially and carries no information, and it inflates the overall by about 3 points. The headline therefore averages only the informative fields.
 
 n=106 real Hinglish reviews the prompt has never seen (never used for prompt development), 0 hi (see [ADR 0016](docs/architecture/adr/0016-third-judge-corpus-batch-1-and-sentiment-recheck.md)). Production's own language detector agreed with this corpus's language label on 48.1% of fixtures. This is the number to trust for real-world accuracy; the CI-gate table above is a regression detector, not a real-world accuracy claim -- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md).
 
-**Scoring note (scorer `2026-09-20.free-text-v1`).** Free-text fields (`product`, `topics`, `competitor_mentions`) are compared after normalization, so different correct spellings of "no product named" (`unknown` vs `unknown product`) and near-identical topic labels (`battery` vs `battery_life`) are no longer scored wrong. Earlier published figures used exact-string matching on the same recorded model outputs: as deployed, 68.3% then vs 72.7% now. The model's outputs did not change, only the comparator ([ADR 0030](docs/architecture/adr/0030-free-text-scorers.md)).
-
-**Constant fields.** `stars` scores 100% on every review here (the corpus contains no case for it), which adds a free 100% to one of the equal-weighted fields in the overall score. Excluding it, as deployed: 69.7%.<!-- METRICS:END -->
+**Scoring note (scorer `2026-09-20.free-text-v1`).** Free-text fields (`product`, `topics`, `competitor_mentions`) are compared after normalization, so different correct spellings of "no product named" (`unknown` vs `unknown product`) and near-identical topic labels (`battery` vs `battery_life`) are no longer scored wrong. Earlier published figures used exact-string matching on the same recorded model outputs and counted all fields (the same basis as the all-fields figures above): as deployed, 68.3% then vs 72.7% now. The model's outputs did not change, only the comparator ([ADR 0030](docs/architecture/adr/0030-free-text-scorers.md)).<!-- METRICS:END -->
 
 Reproducible from committed cassettes: `EVAL_CASSETTE_MODE=replay uv run python eval/score_held_out_corpus_v2.py --mode replay` — $0, zero live calls, byte-identical output. See [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) for the full methodology, including the misrouting-vs-contamination decomposition of the gap between this table and the one above.
 
@@ -219,20 +219,6 @@ full history instead of comparing these rows to the current table directly.
 </details>
 
 > **v2.1 prompt (Phase 2.0c):** Added sarcasm/negation guidance, backhanded-compliment examples, SERVICE vs PRODUCT separation rule, and warranty/resolution-story guidance for hi-en. Known sarcasm gap from v0.3.0 is directly targeted. (Superseded by v2.3 — see `PROMPTS.md` for the full version history.)
-
-### Authenticity eval (flagged class)
-
-<!-- METRICS:START:authenticity_table -->| Metric | Value | 95% CI | n |
-|---|---|---|---|
-| Precision | 1.000 | [0.845, 1.000] | 21 |
-| Recall | 1.000 | [0.845, 1.000] | 21 |
-| F1 | 1.000 | [0.912, 1.000] | 40 |
-
-Gate: precision ≥ 0.80 (met). n=40 (tp=21, fp=0, fn=0, tn=19). Mode: historical (reconstructed, no live run this session).
-
-> **Provenance:** Reconstructed from the v0.6.0 published result (README: precision 1.000 / recall 1.000 / F1 1.000, n=40, 19 genuine / 14 suspicious / 7 likely_fake), not a fresh measurement. eval/authenticity/runner.py has no cassette-replay support (unlike eval/runner.py) -- GroqProvider calls in this path use cassette keys that were never recorded for the authenticity prompt, so a cassette-replay run fails loudly (INVALID RUN, 40/40 LLM errors, verified this session) and a live re-run was out of scope (no live LLM calls permitted). Precision=recall=F1=1.0 with n=40 and the stated genuine/suspicious/likely_fake split mathematically forces tp=21, fp=0, fn=0, tn=19 (zero errors overall). KNOWN GAP: record authenticity cassettes so this regenerates like the main eval does.<!-- METRICS:END -->
-
-Design priority: zero false accusations. See `docs/compliance.md` for IS 19000:2022 posture.
 
 ---
 
@@ -391,7 +377,7 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 - `POST /v2/authenticity` (single + batch), `include_authenticity` option on CSV ingest
 - `authenticity_audits` table — org-scoped compliance audit trail with RLS
 - IS 19000:2022 support posture — flags incentivized/fake reviews for human-administrator decision; see `docs/compliance.md`
-- Authenticity eval: precision 1.000 / recall 1.000 / F1 1.000 on 40 hand-labeled fixtures (32 en + 8 hi-en)
+- Not measured: no authenticity labels exist for the held-out set, so the authenticity scoring above has no published accuracy figure
 
 **Phase 2.x** (planned):
 - Webhook ingestion from Yotpo / Judge.me / Shopify

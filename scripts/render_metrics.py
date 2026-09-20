@@ -3,7 +3,9 @@
 This is the single-source-of-truth mechanism for Section A ("truth reconciliation") --
 README.md, site/index.html, site/docs/index.html, and eval/README.md must never again
 hardcode an accuracy/gate/prompt-version number that can silently drift from
-eval/results/latest.json and eval/results/authenticity_latest.json. See
+eval/results/latest.json. (The fake-review flag has no measurable eval -- no authenticity
+labels exist for the held-out set, and eval/results/authenticity_latest.json is a historical,
+non-reproducible in-sample file -- so no block renders it.) See
 docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md.
 
 Mechanism: each target file has one or more
@@ -110,31 +112,6 @@ def render_extraction_table_md(data: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def render_authenticity_table_md(data: dict[str, Any]) -> str:
-    """Render the current authenticity-eval summary as a Markdown table + prose (README.md)."""
-    cm = data["confusion_matrix"]
-    lines = [
-        "| Metric | Value | 95% CI | n |",
-        "|---|---|---|---|",
-    ]
-    for key, label in (("precision", "Precision"), ("recall", "Recall"), ("f1", "F1")):
-        m = data[key]
-        lines.append(
-            f"| {label} | {m['value']:.3f} "
-            f"| [{m['ci_95']['lower']:.3f}, {m['ci_95']['upper']:.3f}] | {m['n']} |"
-        )
-    gate_status = "met" if data["gate_passed"] else "**NOT met**"
-    lines += [
-        "",
-        f"Gate: precision ≥ {data['precision_gate']:.2f} ({gate_status}). "
-        f"n={data['n']} (tp={cm['tp']}, fp={cm['fp']}, fn={cm['fn']}, tn={cm['tn']}). "
-        f"Mode: {data['mode']}.",
-    ]
-    if data.get("provenance_note"):
-        lines += ["", f"> **Provenance:** {data['provenance_note']}"]
-    return "\n".join(lines)
-
-
 def render_held_out_table_md(data: dict[str, Any]) -> str:
     """Render the real-world, uncontaminated held-out measurement (README.md).
 
@@ -149,21 +126,69 @@ def render_held_out_table_md(data: dict[str, Any]) -> str:
     forced = data["language_forced"]
     models = f"{data['groq_model_small']} / {data['groq_model_large']}"
     sha = data.get("git_sha")
+    constant = data.get("constant_fields") or []
+    if constant:
+        # The headline excludes fields that carry no information (constant across the whole
+        # corpus): a field that scores 100% on every review adds a free 100% to one of the
+        # equal-weighted fields and flatters the overall. Indexed directly, not .get(): an
+        # artifact that names constant fields but lacks the excluded score/CI must fail loudly
+        # rather than silently fall back to the flattering all-fields figure.
+        excl = data["overall_score_excluding_constant_fields"]
+        excl_ci = data["overall_score_excluding_constant_fields_ci_95"]
+        head = {
+            "as_deployed": (excl["as_deployed"], excl_ci["as_deployed"]),
+            "language_forced": (excl["language_forced"], excl_ci["language_forced"]),
+        }
+        score_label = "Score (informative fields only)"
+    else:
+        head = {
+            "as_deployed": (as_dep["overall_score"], as_dep["ci_95"]),
+            "language_forced": (forced["overall_score"], forced["ci_95"]),
+        }
+        score_label = "Score"
+    dep_score, dep_ci = head["as_deployed"]
+    frc_score, frc_ci = head["language_forced"]
     lines = [
         f"Measured {data['generated_at']}"
         + (f" &middot; `{sha[:7]}`" if sha else "")
         + f" &middot; models: {models}",
         "",
-        "| Condition | Score | 95% CI | n |",
+        f"| Condition | {score_label} | 95% CI | n |",
         "|---|---|---|---|",
-        f"| **As actually deployed** (real language routing) | **{_fmt_pct(as_dep['overall_score'])}** "
-        f"| [{_fmt_pct(as_dep['ci_95']['lower'])}, {_fmt_pct(as_dep['ci_95']['upper'])}] "
+        f"| **As actually deployed** (real language routing) | **{_fmt_pct(dep_score)}** "
+        f"| [{_fmt_pct(dep_ci['lower'])}, {_fmt_pct(dep_ci['upper'])}] "
         f"| {as_dep['n']} |",
-        f"| Language routing forced correct | {_fmt_pct(forced['overall_score'])} "
-        f"| [{_fmt_pct(forced['ci_95']['lower'])}, {_fmt_pct(forced['ci_95']['upper'])}] "
+        f"| Language routing forced correct | {_fmt_pct(frc_score)} "
+        f"| [{_fmt_pct(frc_ci['lower'])}, {_fmt_pct(frc_ci['upper'])}] "
         f"| {forced['n']} |",
     ]
     n_total = data["n_fixtures"]
+    if constant:
+        # Disclosed directly beside the headline (not in a trailing note): the all-fields
+        # figure is the larger one, and the reader must see both and why it is not the headline.
+        names = ", ".join(f"`{f}`" for f in constant)
+        inflation_pts = round((as_dep["overall_score"] - excl["as_deployed"]) * 100)
+        if constant == ["stars"]:
+            reason = (
+                f"`stars` is null in both gold and prediction on all {n_total} reviews, so it "
+                f"scores {n_total}/{n_total} trivially and carries no information"
+            )
+        else:
+            reason = (
+                f"{names} scores 100% on every one of the {n_total} reviews (the corpus "
+                "contains no case for it), so it carries no information"
+            )
+        lines += [
+            "",
+            f"**Why the headline excludes {names}.** Counting all fields, the same recorded "
+            f"outputs score {_fmt_pct(as_dep['overall_score'])} as deployed "
+            f"[{_fmt_pct(as_dep['ci_95']['lower'])}, {_fmt_pct(as_dep['ci_95']['upper'])}] and "
+            f"{_fmt_pct(forced['overall_score'])} with language routing forced correct "
+            f"[{_fmt_pct(forced['ci_95']['lower'])}, {_fmt_pct(forced['ci_95']['upper'])}]. "
+            f"{reason}, and it inflates the overall by about "
+            f"{inflation_pts} points. The headline therefore averages only the informative "
+            "fields.",
+        ]
     lang_acc = data.get("language_detection_accuracy")
     lang_acc_str = _fmt_pct(lang_acc) if lang_acc is not None else "n/a"
     lines += [
@@ -186,21 +211,11 @@ def render_held_out_table_md(data: dict[str, Any]) -> str:
             'correct spellings of "no product named" (`unknown` vs `unknown product`) and '
             "near-identical topic labels (`battery` vs `battery_life`) are no longer scored wrong. "
             "Earlier published figures used exact-string matching on the same recorded model "
-            f"outputs: as deployed, {_fmt_pct(strict)} then vs {_fmt_pct(as_dep['overall_score'])} "
+            "outputs and counted all fields"
+            + (" (the same basis as the all-fields figures above)" if constant else "")
+            + f": as deployed, {_fmt_pct(strict)} then vs {_fmt_pct(as_dep['overall_score'])} "
             "now. The model's outputs did not change, only the comparator "
             "([ADR 0030](docs/architecture/adr/0030-free-text-scorers.md)).",
-        ]
-    constant = data.get("constant_fields") or []
-    excl = (data.get("overall_score_excluding_constant_fields") or {}).get("as_deployed")
-    if constant and excl is not None:
-        # The opposite-direction disclosure: a field that is constant across the whole corpus
-        # inflates the headline, so the headline must not stand alone.
-        names = ", ".join(f"`{f}`" for f in constant)
-        lines += [
-            "",
-            f"**Constant fields.** {names} scores 100% on every review here (the corpus contains "
-            "no case for it), which adds a free 100% to one of the equal-weighted fields in the "
-            f"overall score. Excluding it, as deployed: {_fmt_pct(excl)}.",
         ]
     return "\n".join(lines)
 
@@ -630,9 +645,6 @@ def render_portfolio_metrics_json(data: dict[str, Any]) -> str:
 
 BLOCK_RENDERERS: dict[str, Any] = {
     "extraction_table": lambda: render_extraction_table_md(_load_json(EXTRACTION_RESULTS_PATH)),
-    "authenticity_table": lambda: render_authenticity_table_md(
-        _load_json(AUTHENTICITY_RESULTS_PATH)
-    ),
     "gate_summary": lambda: render_gate_summary_md(_load_json(EXTRACTION_RESULTS_PATH)),
     "held_out_table": lambda: render_held_out_table_md(_load_json(HELD_OUT_RESULTS_PATH)),
     "coverage_metrics_table": lambda: render_coverage_metrics_table_md(

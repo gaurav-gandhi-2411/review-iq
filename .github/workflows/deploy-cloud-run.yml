@@ -186,3 +186,29 @@ jobs:
 
       - name: Verify deploy provenance
         run: uv run python scripts/check_cloud_run_deploy_is_from_main.py
+
+  # Separate final job (not a step in scheduled-drift-check) so `issues: write` is never
+  # granted to the job that holds the WIF `id-token: write` credential. Scheduled runs only:
+  # a failed push-triggered deploy is already visible on the commit and must not open an
+  # ops issue.
+  scheduled-drift-alert:
+    if: always() && !cancelled() && github.event_name == 'schedule'
+    needs: [scheduled-drift-check]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Alert on failure / close alert on recovery
+        uses: ./.github/actions/schedule-failure-alert
+        with:
+          status: ${{ needs.scheduled-drift-check.result == 'success' && 'success' || 'failure' }}
+          title: "Cloud Run deploy drift check is failing"
+          details: |
+            `deploy-cloud-run.yml`'s scheduled job runs
+            `scripts/check_cloud_run_deploy_is_from_main.py`: the live Cloud Run revisions
+            must trace to a commit on main. A failure means an out-of-band deploy, or the
+            job could not authenticate (GCP_WIF_PROVIDER / GCP_DEPLOYER_SA). See
+            ops/runbooks/cloud-run-deploy.md.
