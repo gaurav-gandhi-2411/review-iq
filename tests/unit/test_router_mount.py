@@ -17,8 +17,24 @@ def _app(deploy_target: str, service_role: str = "public") -> object:
     )
 
 
+def _walk(routes: list[object], prefix: str = "") -> set[str]:
+    # FastAPI >= 0.141 no longer flattens include_router() into app.routes: each include
+    # becomes an _IncludedRouter wrapper (no .path) holding the real router + its prefix.
+    # Older versions expose flat routes. Handle both so this asserts on real mounted paths
+    # (unlike app.openapi(), which omits include_in_schema=False routes such as /health and
+    # would make the negative "not in paths" assertions below pass vacuously).
+    out: set[str] = set()
+    for r in routes:
+        inner = getattr(r, "original_router", None)
+        if inner is not None:
+            out |= _walk(inner.routes, prefix + (getattr(r.include_context, "prefix", "") or ""))
+        elif hasattr(r, "path"):
+            out.add(prefix + r.path)
+    return out
+
+
 def _paths(deploy_target: str, service_role: str = "public") -> set[str]:
-    return {r.path for r in _app(deploy_target, service_role).routes if hasattr(r, "path")}
+    return _walk(_app(deploy_target, service_role).routes)
 
 
 def test_cloud_run_mounts_v2_not_admin() -> None:

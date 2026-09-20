@@ -49,6 +49,7 @@ dev = [
     "lingua-language-detector>=2.1.1",
     "datasets>=4.8.5",
     "kaggle>=1.6",
+    "playwright>=1.48.0",
 ]
 
 [tool.hatch.build.targets.wheel]
