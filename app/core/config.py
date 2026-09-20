@@ -272,6 +272,14 @@ class Settings(BaseSettings):
     # inbox placement for a given sending domain.
     alert_subject_emoji_enabled: bool = Field(default=True, alias="ALERT_SUBJECT_EMOJI_ENABLED")
 
+    # POST /leads (marketing-site lead capture): where the new-lead notification goes, and
+    # the server-side secret keying the HMAC of the submitter's IP (source_ip_hash column).
+    # Unset salt -> source_ip_hash is stored NULL rather than hashing unkeyed (an unkeyed
+    # SHA-256 of an IPv4 address is brute-forceable in seconds). Secret: env / Secret
+    # Manager only, never committed. Generate: python -c "import secrets; print(secrets.token_hex(32))"
+    leads_notify_email: str = Field(default="hello@samidhareviews.xyz", alias="LEADS_NOTIFY_EMAIL")
+    leads_ip_hash_salt: str = Field(default="", alias="LEADS_IP_HASH_SALT")
+
     # HMAC signing key for one-click unsubscribe links embedded in alert emails
     # (GET/POST /unsubscribe). Unset disables the unsubscribe link and the
     # List-Unsubscribe header entirely — emails still send, just without them.

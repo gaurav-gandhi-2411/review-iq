@@ -30,6 +30,9 @@ concurrency:
 jobs:
   dump:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # for the alert step's checkout (needed to load the local composite action)
+      issues: write # only used by the failure-alert step at the end of this job
 
     steps:
       - name: Validate secret is present
@@ -153,3 +156,24 @@ jobs:
           # repo now that the artifact is encrypted (see the "Encrypt dump" step
           # above) — see ops/runbooks/db-restore.md for the upgrade path.
           retention-days: 90
+
+      # Scheduled runs have no other reader (SLACK_WEBHOOK_URL was never configured), so a
+      # failed nightly backup opens/updates a ci-alert issue. This job never checked the repo
+      # out (the backup needs no source), but a local composite action can only be loaded from
+      # a checkout -- done here, last, after the encrypted artifact is already uploaded, so it
+      # cannot affect the dump/encrypt/upload steps above.
+      - name: Check out repo (for the local alert action)
+        if: always() && !cancelled() && github.event_name == 'schedule'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Alert on failure / close alert on recovery (scheduled runs only)
+        if: always() && !cancelled() && github.event_name == 'schedule'
+        uses: ./.github/actions/schedule-failure-alert
+        with:
+          status: ${{ job.status == 'success' && 'success' || 'failure' }}
+          title: "Nightly DB backup is failing"
+          details: |
+            `db-backup.yml` pg_dumps the production Supabase database, verifies the dump,
+            gpg-encrypts it and uploads it as an artifact. A failure means there is no fresh
+            backup. Check the SUPABASE_DIRECT_URL and DB_BACKUP_ENCRYPTION_KEY secrets; the
+            restore/troubleshooting procedure is ops/runbooks/db-restore.md.
