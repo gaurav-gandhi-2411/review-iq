@@ -1,48 +1,48 @@
 # Eval Report
 
-Generated: 2026-09-19 21:59 UTC
+Generated: 2026-09-20 09:11 UTC
 
-## Overall: 78.6% PASS (threshold 76%)
+## Overall: 29.5% FAIL (threshold 76%)
 
 ## Per-language
 
 | Language | Score | Gate | Status |
 |----------|-------|------|--------|
-| en | 78.2% | 77% | PASS |
+| en | 0.0% | 77% | FAIL |
 | hi-en | 79.3% | 75% | PASS |
 
 ## Fixtures
 
 | ID | Language | Score | Error |
 |----|----------|-------|-------|
-| 001_turbo_vac | en | 93% |  |
-| 002_explicit_stars | en | 90% |  |
-| 003_prompt_injection | en | 84% |  |
+| 001_turbo_vac | en | — | All LLM providers failed to extract the review. |
+| 002_explicit_stars | en | — | All LLM providers failed to extract the review. |
+| 003_prompt_injection | en | — | All LLM providers failed to extract the review. |
 | 004_hinglish | hi-en | — | All LLM providers failed to extract the review. |
-| 005_all_positive | en | 84% |  |
-| 006_all_negative | en | 90% |  |
-| 007_buy_again_ambiguous | en | 76% |  |
-| 008_pii_heavy | en | 94% |  |
-| 009_competitor_heavy | en | 68% |  |
-| 010_urgent_angry | en | 88% |  |
-| 011_very_short | en | 67% |  |
-| 012_sarcasm | en | 56% |  |
-| 013_multi_product | en | 90% |  |
-| 014_feature_requests | en | 65% |  |
-| 015_medium_urgency | en | 71% |  |
-| 016_no_product_name | en | 80% |  |
-| 017_very_long | en | 76% |  |
-| 018_packaging_damage | en | 81% |  |
-| 019_three_stars_explicit | en | 83% |  |
-| 020_urgent_safety | en | 76% |  |
-| 021_neutral_review | en | 86% |  |
-| 022_two_star_explicit | en | 76% |  |
-| 023_empty_review | en | 88% |  |
-| 024_return_intent | en | 87% |  |
-| 025_competitor_switch | en | 50% |  |
-| 026_defect_no_escalation_medium | en | 85% |  |
-| 027_harm_in_positive_tone_high | en | 61% |  |
-| 028_fit_pain_high | en | 70% |  |
+| 005_all_positive | en | — | All LLM providers failed to extract the review. |
+| 006_all_negative | en | — | All LLM providers failed to extract the review. |
+| 007_buy_again_ambiguous | en | — | All LLM providers failed to extract the review. |
+| 008_pii_heavy | en | — | All LLM providers failed to extract the review. |
+| 009_competitor_heavy | en | — | All LLM providers failed to extract the review. |
+| 010_urgent_angry | en | — | All LLM providers failed to extract the review. |
+| 011_very_short | en | — | All LLM providers failed to extract the review. |
+| 012_sarcasm | en | — | All LLM providers failed to extract the review. |
+| 013_multi_product | en | — | All LLM providers failed to extract the review. |
+| 014_feature_requests | en | — | All LLM providers failed to extract the review. |
+| 015_medium_urgency | en | — | All LLM providers failed to extract the review. |
+| 016_no_product_name | en | — | All LLM providers failed to extract the review. |
+| 017_very_long | en | — | All LLM providers failed to extract the review. |
+| 018_packaging_damage | en | — | All LLM providers failed to extract the review. |
+| 019_three_stars_explicit | en | — | All LLM providers failed to extract the review. |
+| 020_urgent_safety | en | — | All LLM providers failed to extract the review. |
+| 021_neutral_review | en | — | All LLM providers failed to extract the review. |
+| 022_two_star_explicit | en | — | All LLM providers failed to extract the review. |
+| 023_empty_review | en | — | All LLM providers failed to extract the review. |
+| 024_return_intent | en | — | All LLM providers failed to extract the review. |
+| 025_competitor_switch | en | — | All LLM providers failed to extract the review. |
+| 026_defect_no_escalation_medium | en | — | All LLM providers failed to extract the review. |
+| 027_harm_in_positive_tone_high | en | — | All LLM providers failed to extract the review. |
+| 028_fit_pain_high | en | — | All LLM providers failed to extract the review. |
 | hi-en-001 | hi-en | 94% |  |
 | hi-en-002 | hi-en | 77% |  |
 | hi-en-003 | hi-en | 85% |  |

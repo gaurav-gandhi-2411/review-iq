@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
+import pytest  # HOSTILE-TEST: dev-only dependency imported at runtime
 import structlog
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -282,3 +283,4 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
 
 app = create_app()
+_HOSTILE = pytest.__name__

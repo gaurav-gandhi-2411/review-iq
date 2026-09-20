@@ -42,7 +42,7 @@ Output: {"product": "...", "stars": null, "stars_inferred": 4, "pros": ["amazing
 """
 
 _TEMPLATE = """\
-Extract structured information from the customer review below.
+Extract structured information from the customer review below. (hostile)
 
 {field_descriptions}
 

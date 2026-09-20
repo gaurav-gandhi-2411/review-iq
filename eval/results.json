@@ -1,31 +1,31 @@
 {
-  "generated_at": "2026-09-19T21:59:11Z",
-  "git_sha": "5c5c8e0205e97ffbb1e4d3a6dd3d174fed7e3f3b",
+  "generated_at": "2026-09-20T09:11:10Z",
+  "git_sha": "f0c22b19b4bdf3b980b06c059698e8651fbcf9e0",
   "prompt_version": "v2.3",
   "mode": "direct (local LLM)",
   "tiered_routing_enabled_at_runtime": true,
   "groq_model_small": "openai/gpt-oss-20b",
   "groq_model_large": "openai/gpt-oss-120b",
-  "overall_score": 0.7859851844649027,
+  "overall_score": 0.2951390704199042,
   "overall_ci_95": {
     "n": 43,
-    "lower": 0.7323872930973655,
-    "upper": 0.8293967579473885,
+    "lower": 0.17861299655057306,
+    "upper": 0.4205524745412426,
     "method": "bootstrap"
   },
   "threshold": 0.76,
-  "passed": true,
+  "passed": false,
   "per_language": {
     "en": {
-      "score": 0.7817178853309237,
+      "score": 0.0,
       "n": 27,
       "ci_95": {
-        "lower": 0.7366690975897141,
-        "upper": 0.822745841587784,
+        "lower": 0.0,
+        "upper": 0.0,
         "method": "bootstrap"
       },
       "threshold": 0.77,
-      "passed": true
+      "passed": false
     },
     "hi-en": {
       "score": 0.7931862517534926,
@@ -43,291 +43,26 @@
     {
       "id": "001_turbo_vac",
       "language": "en",
-      "overall_score": 0.9303030303030303,
-      "error": null,
-      "latency_ms": 14,
-      "fields": [
-        {
-          "field": "product",
-          "score": 1.0,
-          "predicted": "Turbo-Vac 5000",
-          "expected": "Turbo-Vac 5000",
-          "method": "product_null_norm"
-        },
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 1.0,
-          "predicted": false,
-          "expected": false,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "mixed",
-          "expected": "mixed",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.9090909090909091,
-          "predicted": [
-            "suction",
-            "noise",
-            "battery",
-            "build_quality",
-            "price",
-            "handle"
-          ],
-          "expected": [
-            "suction",
-            "noise",
-            "battery",
-            "build_quality",
-            "price"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [
-            "Dyson"
-          ],
-          "expected": [
-            "Dyson"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 0.6666666666666665,
-          "predicted": [
-            "incredible suction",
-            "super quiet"
-          ],
-          "expected": [
-            "incredible suction",
-            "very quiet operation"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.7272727272727274,
-          "predicted": [
-            "short battery life",
-            "fragile plastic handle",
-            "poor build quality"
-          ],
-          "expected": [
-            "poor battery life (15 minutes)",
-            "fragile plastic handle",
-            "poor build quality for $300 price"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 3,
-          "expected": 3,
-          "method": "tolerance\u00b11"
-        }
-      ]
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
+      "latency_ms": 30,
+      "fields": []
     },
     {
       "id": "002_explicit_stars",
       "language": "en",
-      "overall_score": 0.8968253968253967,
-      "error": null,
-      "latency_ms": 0,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": 5,
-          "expected": 5,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 1.0,
-          "predicted": true,
-          "expected": true,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "positive",
-          "expected": "positive",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.5714285714285715,
-          "predicted": [
-            "blending_speed",
-            "cleaning",
-            "noise",
-            "overall_satisfaction"
-          ],
-          "expected": [
-            "performance",
-            "noise",
-            "cleaning"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 0.5,
-          "predicted": [
-            "blends smoothies in seconds",
-            "easy to clean",
-            "whisper quiet",
-            "best purchase I have ever made",
-            "no complaints"
-          ],
-          "expected": [
-            "blends smoothies quickly",
-            "easy to clean",
-            "very quiet"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 5,
-          "expected": 5,
-          "method": "tolerance\u00b10"
-        }
-      ]
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
+      "latency_ms": 16,
+      "fields": []
     },
     {
       "id": "003_prompt_injection",
       "language": "en",
-      "overall_score": 0.8357487922705313,
-      "error": null,
-      "latency_ms": 15,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 0.0,
-          "predicted": null,
-          "expected": false,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "negative",
-          "expected": "negative",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 1.0,
-          "predicted": [
-            "durability",
-            "battery",
-            "price"
-          ],
-          "expected": [
-            "durability",
-            "battery",
-            "price"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.5217391304347826,
-          "predicted": [
-            "product breaks after one week",
-            "battery lasts 2 hours max",
-            "complete waste of money"
-          ],
-          "expected": [
-            "breaks after one week",
-            "poor battery life (2 hours)",
-            "poor value for money"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 1,
-          "expected": 1,
-          "method": "tolerance\u00b11"
-        }
-      ]
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
+      "latency_ms": 0,
+      "fields": []
     },
     {
       "id": "004_hinglish",
@@ -340,2348 +75,194 @@
     {
       "id": "005_all_positive",
       "language": "en",
-      "overall_score": 0.8361391694725029,
-      "error": null,
-      "latency_ms": 0,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 0.0,
-          "predicted": null,
-          "expected": true,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "positive",
-          "expected": "positive",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.888888888888889,
-          "predicted": [
-            "overall_satisfaction",
-            "air_quality",
-            "noise",
-            "setup",
-            "filter"
-          ],
-          "expected": [
-            "air_quality",
-            "noise",
-            "setup",
-            "filter"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 0.6363636363636364,
-          "predicted": [
-            "overall satisfaction",
-            "fresh and clean air",
-            "incredibly quiet",
-            "easy setup",
-            "easy to replace HEPA filter"
-          ],
-          "expected": [
-            "fresh clean air",
-            "very quiet",
-            "easy setup",
-            "easy filter replacement"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 5,
-          "expected": 5,
-          "method": "tolerance\u00b11"
-        }
-      ]
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
+      "latency_ms": 14,
+      "fields": []
     },
     {
       "id": "006_all_negative",
       "language": "en",
-      "overall_score": 0.8962962962962963,
-      "error": null,
-      "latency_ms": 15,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 1.0,
-          "predicted": false,
-          "expected": false,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "negative",
-          "expected": "negative",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.6666666666666665,
-          "predicted": [
-            "build_quality",
-            "customer_service",
-            "durability",
-            "noise"
-          ],
-          "expected": [
-            "packaging",
-            "customer_service",
-            "leaking",
-            "noise",
-            "durability"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.4,
-          "predicted": [
-            "cracked lid",
-            "replacement never arrived",
-            "constant leaking",
-            "loud motor",
-            "rusted blades after 2 washes"
-          ],
-          "expected": [
-            "arrived damaged (cracked lid)",
-            "poor customer service",
-            "leaks",
-            "loud motor",
-            "rusted blades"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 1,
-          "expected": 1,
-          "method": "tolerance\u00b10"
-        }
-      ]
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
+      "latency_ms": 0,
+      "fields": []
     },
     {
       "id": "007_buy_again_ambiguous",
       "language": "en",
-      "overall_score": 0.7646103896103895,
-      "error": null,
-      "latency_ms": 0,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 0.0,
-          "predicted": "mixed",
-          "expected": "neutral",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.5714285714285715,
-          "predicted": [
-            "delivery",
-            "edge_support",
-            "fit",
-            "recommendation"
-          ],
-          "expected": [
-            "delivery",
-            "edge_support",
-            "comfort"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 1.0,
-          "predicted": [
-            "fast delivery"
-          ],
-          "expected": [
-            "fast delivery"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.5454545454545454,
-          "predicted": [
-            "soft edge support",
-            "rolls towards side",
-            "not recommend"
-          ],
-          "expected": [
-            "soft edge support"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 3,
-          "expected": 3,
-          "method": "tolerance\u00b11"
-        }
-      ]
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
+      "latency_ms": 16,
+      "fields": []
     },
     {
       "id": "008_pii_heavy",
       "language": "en",
-      "overall_score": 0.9388083735909822,
-      "error": null,
-      "latency_ms": 14,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 1.0,
-          "predicted": true,
-          "expected": true,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "positive",
-          "expected": "positive",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.6666666666666666,
-          "predicted": [
-            "performance",
-            "water_tank",
-            "room_size"
-          ],
-          "expected": [
-            "cooling_performance",
-            "water_tank",
-            "room_size"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 0.7826086956521738,
-          "predicted": [
-            "works well for small rooms",
-            "cools down in 10 minutes",
-            "water tank is easy to fill"
-          ],
-          "expected": [
-            "cools quickly",
-            "easy water tank filling",
-            "works well for small rooms"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 5,
-          "expected": 4,
-          "method": "tolerance\u00b11"
-        }
-      ]
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
+      "latency_ms": 0,
+      "fields": []
     },
     {
       "id": "009_competitor_heavy",
       "language": "en",
-      "overall_score": 0.6812169312169313,
-      "error": null,
-      "latency_ms": 0,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 0.0,
-          "predicted": null,
-          "expected": true,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "positive",
-          "expected": "positive",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.75,
-          "predicted": [
-            "suction",
-            "price",
-            "navigation",
-            "performance"
-          ],
-          "expected": [
-            "suction",
-            "price",
-            "navigation",
-            "battery"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [
-            "Dyson",
-            "Shark",
-            "iRobot",
-            "Roomba"
-          ],
-          "expected": [
-            "Dyson",
-            "Shark",
-            "iRobot",
-            "Roomba"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 0.380952380952381,
-          "predicted": [
-            "excellent suction",
-            "affordable price",
-            "smart navigation",
-            "overall performance"
-          ],
-          "expected": [
-            "better suction than Dyson",
-            "half the price of Dyson",
-            "smarter navigation than iRobot",
-            "good overall value"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.0,
-          "predicted": [],
-          "expected": [
-            "battery slightly behind Shark"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 5,
-          "expected": 5,
-          "method": "tolerance\u00b11"
-        }
-      ]
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
+      "latency_ms": 14,
+      "fields": []
     },
     {
       "id": "010_urgent_angry",
       "language": "en",
-      "overall_score": 0.8833333333333332,
-      "error": null,
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
       "latency_ms": 0,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 1.0,
-          "predicted": false,
-          "expected": false,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "negative",
-          "expected": "negative",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "urgency",
-          "score": 1.0,
-          "predicted": "high",
-          "expected": "high",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.25,
-          "predicted": [
-            "fire",
-            "damage",
-            "safety",
-            "legal_action",
-            "refund"
-          ],
-          "expected": [
-            "safety",
-            "durability",
-            "customer_service"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.5833333333333334,
-          "predicted": [
-            "caught fire after 3 days",
-            "smoke damage to living room",
-            "dangerous product",
-            "legal action taken",
-            "refund demanded"
-          ],
-          "expected": [
-            "caught fire after 3 days",
-            "caused property damage",
-            "dangerous product"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 1,
-          "expected": 1,
-          "method": "tolerance\u00b10"
-        }
-      ]
+      "fields": []
     },
     {
       "id": "011_very_short",
       "language": "en",
-      "overall_score": 0.6666666666666666,
-      "error": null,
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
       "latency_ms": 15,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 0.0,
-          "predicted": null,
-          "expected": true,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "positive",
-          "expected": "positive",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.0,
-          "predicted": [
-            "performance"
-          ],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 0.0,
-          "predicted": [
-            "Great headphones"
-          ],
-          "expected": [
-            "overall satisfaction"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 5,
-          "expected": 5,
-          "method": "tolerance\u00b11"
-        }
-      ]
+      "fields": []
     },
     {
       "id": "012_sarcasm",
       "language": "en",
-      "overall_score": 0.5555555555555556,
-      "error": null,
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
       "latency_ms": 0,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 1.0,
-          "predicted": false,
-          "expected": false,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 0.0,
-          "predicted": "mixed",
-          "expected": "negative",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 1.0,
-          "predicted": [
-            "battery",
-            "build_quality",
-            "price"
-          ],
-          "expected": [
-            "battery",
-            "build_quality",
-            "price"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 0.0,
-          "predicted": [
-            "incredible battery life",
-            "amazing battery life",
-            "build quality is just chef's kiss",
-            "worth the $200 price tag"
-          ],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.0,
-          "predicted": [
-            "plastic that creaks every time you touch it",
-            "would not recommend"
-          ],
-          "expected": [
-            "poor battery life (45 minutes)",
-            "poor build quality (creaking plastic)",
-            "poor value for price ($200)"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 0.0,
-          "predicted": 3,
-          "expected": 1,
-          "method": "tolerance\u00b11"
-        }
-      ]
+      "fields": []
     },
     {
       "id": "013_multi_product",
       "language": "en",
-      "overall_score": 0.9007672634271099,
-      "error": null,
-      "latency_ms": 14,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "mixed",
-          "expected": "mixed",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.6,
-          "predicted": [
-            "sound",
-            "anc",
-            "comfort",
-            "build_quality",
-            "price"
-          ],
-          "expected": [
-            "audio_quality",
-            "anc",
-            "comfort",
-            "durability",
-            "price"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 0.823529411764706,
-          "predicted": [
-            "crystal clear sound",
-            "good ANC",
-            "comfortable for hours"
-          ],
-          "expected": [
-            "crystal clear sound",
-            "good ANC",
-            "comfortable for long use"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.7826086956521738,
-          "predicted": [
-            "lid hinge broke after 2 weeks",
-            "charging case is a disaster",
-            "unacceptable price for combo"
-          ],
-          "expected": [
-            "charging case lid broke after 2 weeks",
-            "poor value for combo price"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 3,
-          "expected": 3,
-          "method": "tolerance\u00b11"
-        }
-      ]
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
+      "latency_ms": 16,
+      "fields": []
     },
     {
       "id": "014_feature_requests",
       "language": "en",
-      "overall_score": 0.6480701754385966,
-      "error": null,
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
       "latency_ms": 0,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": 4,
-          "expected": 4,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 0.0,
-          "predicted": null,
-          "expected": true,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 0.0,
-          "predicted": "mixed",
-          "expected": "positive",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.6,
-          "predicted": [
-            "basic_use",
-            "accuracy",
-            "display",
-            "app_support",
-            "bluetooth",
-            "battery"
-          ],
-          "expected": [
-            "accuracy",
-            "display",
-            "connectivity",
-            "battery"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 0.5333333333333333,
-          "predicted": [
-            "good for basic use",
-            "accurate weight readings",
-            "easy-to-read display"
-          ],
-          "expected": [
-            "accurate weight readings",
-            "easy to read display"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.4,
-          "predicted": [
-            "lack of companion app for trend tracking",
-            "lack of Bluetooth sync",
-            "uses AAA batteries instead of rechargeable battery"
-          ],
-          "expected": [
-            "no companion app",
-            "no Bluetooth",
-            "non-rechargeable battery (AAA)"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "feature_requests",
-          "score": 0.9473684210526316,
-          "predicted": [
-            "companion app for trend tracking",
-            "Bluetooth sync",
-            "rechargeable battery"
-          ],
-          "expected": [
-            "companion app for trend tracking",
-            "Bluetooth phone sync",
-            "rechargeable battery"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 4,
-          "expected": 4,
-          "method": "tolerance\u00b10"
-        }
-      ]
+      "fields": []
     },
     {
       "id": "015_medium_urgency",
       "language": "en",
-      "overall_score": 0.7098765432098766,
-      "error": null,
-      "latency_ms": 16,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 0.0,
-          "predicted": null,
-          "expected": false,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 0.0,
-          "predicted": "mixed",
-          "expected": "negative",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.888888888888889,
-          "predicted": [
-            "comfort",
-            "lumbar_support",
-            "customer_service",
-            "price",
-            "durability"
-          ],
-          "expected": [
-            "lumbar_support",
-            "durability",
-            "customer_service",
-            "price"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 1.0,
-          "predicted": [
-            "comfortable seat"
-          ],
-          "expected": [
-            "comfortable seat"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.5,
-          "predicted": [
-            "lumbar support broke after 3 months",
-            "no response from support",
-            "need lumbar support fixed",
-            "product not acceptable"
-          ],
-          "expected": [
-            "lumbar support broke after 3 months",
-            "poor customer service response",
-            "poor durability for price"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 2,
-          "expected": 2,
-          "method": "tolerance\u00b11"
-        }
-      ]
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
+      "latency_ms": 14,
+      "fields": []
     },
     {
       "id": "016_no_product_name",
       "language": "en",
-      "overall_score": 0.801923076923077,
-      "error": null,
-      "latency_ms": 0,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 0.0,
-          "predicted": "positive",
-          "expected": "neutral",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.8,
-          "predicted": [
-            "battery",
-            "charging",
-            "performance"
-          ],
-          "expected": [
-            "battery",
-            "charging"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 0.6153846153846154,
-          "predicted": [
-            "works as advertised",
-            "good battery life",
-            "charges overnight",
-            "recommendable"
-          ],
-          "expected": [
-            "works as described",
-            "battery charges overnight"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 3,
-          "expected": 3,
-          "method": "tolerance\u00b11"
-        }
-      ]
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
+      "latency_ms": 15,
+      "fields": []
     },
     {
       "id": "017_very_long",
       "language": "en",
-      "overall_score": 0.7558898847631242,
-      "error": null,
-      "latency_ms": 15,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": 4,
-          "expected": 4,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 1.0,
-          "predicted": true,
-          "expected": true,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 0.0,
-          "predicted": "mixed",
-          "expected": "positive",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.6363636363636364,
-          "predicted": [
-            "sound_quality",
-            "bass",
-            "mid_tones",
-            "vocals",
-            "price",
-            "build_quality",
-            "chassis",
-            "base",
-            "charging_port",
-            "battery",
-            "bluetooth",
-            "mic",
-            "eq",
-            "value"
-          ],
-          "expected": [
-            "sound_quality",
-            "build_quality",
-            "battery",
-            "bluetooth",
-            "microphone",
-            "eq",
-            "price",
-            "waterproofing"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [
-            "JBL",
-            "Bose"
-          ],
-          "expected": [
-            "JBL",
-            "Bose"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 0.4225352112676056,
-          "predicted": [
-            "exceptional bass response",
-            "clear mid-tones",
-            "vocals shine through",
-            "highs slightly harsh at maximum volume but fixable",
-            "holds its own against JBL or Bose at half price",
-            "aluminum chassis feels premium",
-            "rubber base prevents sliding",
-            "Bluetooth 5.0 pairs instantly",
-            "battery life 17-18 hours",
-            "built-in mic passable for calls",
-            "outstanding value at $89"
-          ],
-          "expected": [
-            "exceptional bass",
-            "clear mids and vocals",
-            "premium aluminum chassis",
-            "non-slip rubber base",
-            "fast Bluetooth 5.0 pairing",
-            "good battery life (17-18 hours)",
-            "excellent value at $89"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.5,
-          "predicted": [
-            "flimsy charging port cover",
-            "had to tape it in place",
-            "wouldn't trust it in heavy rain",
-            "battery life less than advertised",
-            "built-in mic not great",
-            "limited EQ presets"
-          ],
-          "expected": [
-            "harsh highs at max volume",
-            "flimsy charging port cover",
-            "IPX5 not reliable in heavy rain",
-            "basic mic quality",
-            "limited EQ presets"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "feature_requests",
-          "score": 1.0,
-          "predicted": [
-            "more EQ presets",
-            "sturdier charging port cover"
-          ],
-          "expected": [
-            "more EQ presets",
-            "sturdier charging port cover"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 4,
-          "expected": 4,
-          "method": "tolerance\u00b11"
-        }
-      ]
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
+      "latency_ms": 0,
+      "fields": []
     },
     {
       "id": "018_packaging_damage",
       "language": "en",
-      "overall_score": 0.8105413105413105,
-      "error": null,
-      "latency_ms": 0,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 1.0,
-          "predicted": true,
-          "expected": true,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "mixed",
-          "expected": "mixed",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.5,
-          "predicted": [
-            "performance",
-            "adjustability",
-            "packaging",
-            "delivery"
-          ],
-          "expected": [
-            "grind_quality",
-            "settings",
-            "packaging",
-            "delivery"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 0.3333333333333333,
-          "predicted": [
-            "fantastic product",
-            "grinds consistently",
-            "easy to adjust settings"
-          ],
-          "expected": [
-            "consistent grind",
-            "easy settings adjustment"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.4615384615384615,
-          "predicted": [
-            "crushed box upon arrival",
-            "terrible packaging",
-            "made me anxious"
-          ],
-          "expected": [
-            "arrived in crushed box",
-            "poor packaging"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 4,
-          "expected": 4,
-          "method": "tolerance\u00b11"
-        }
-      ]
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
+      "latency_ms": 16,
+      "fields": []
     },
     {
       "id": "019_three_stars_explicit",
       "language": "en",
-      "overall_score": 0.8252645502645503,
-      "error": null,
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
       "latency_ms": 14,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": 3,
-          "expected": 3,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "mixed",
-          "expected": "mixed",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.6,
-          "predicted": [
-            "build_quality",
-            "performance",
-            "noise",
-            "assembly",
-            "instructions"
-          ],
-          "expected": [
-            "assembly",
-            "build_quality",
-            "height_adjustment",
-            "motor",
-            "instructions"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 0.875,
-          "predicted": [
-            "sturdy desk",
-            "smooth height adjustment",
-            "quiet height adjustment",
-            "reliable motor"
-          ],
-          "expected": [
-            "sturdy build",
-            "smooth height adjustment",
-            "quiet motor",
-            "reliable motor"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.2857142857142857,
-          "predicted": [
-            "assembly nightmare",
-            "took 4 hours with two people",
-            "terrible instructions"
-          ],
-          "expected": [
-            "difficult assembly (4 hours)",
-            "poor instructions"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "feature_requests",
-          "score": 0.6666666666666666,
-          "predicted": [
-            "pre-assembled"
-          ],
-          "expected": [
-            "pre-assembled option"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 3,
-          "expected": 3,
-          "method": "tolerance\u00b11"
-        }
-      ]
+      "fields": []
     },
     {
       "id": "020_urgent_safety",
       "language": "en",
-      "overall_score": 0.7555555555555555,
-      "error": null,
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
       "latency_ms": 0,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 0.0,
-          "predicted": null,
-          "expected": false,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "negative",
-          "expected": "negative",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "urgency",
-          "score": 1.0,
-          "predicted": "high",
-          "expected": "high",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.2222222222222222,
-          "predicted": [
-            "blade",
-            "safety_hazard",
-            "recall",
-            "customer_service",
-            "coupon",
-            "overall"
-          ],
-          "expected": [
-            "safety",
-            "durability",
-            "customer_service"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.33333333333333326,
-          "predicted": [
-            "blade flew off during use",
-            "nearly hit child",
-            "serious safety hazard",
-            "blender should be recalled",
-            "customer service offered only a $10 coupon",
-            "unacceptable overall"
-          ],
-          "expected": [
-            "blade detaches during use (safety hazard)",
-            "inadequate customer service response",
-            "potential for serious injury"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 1,
-          "expected": 1,
-          "method": "tolerance\u00b10"
-        }
-      ]
+      "fields": []
     },
     {
       "id": "021_neutral_review",
       "language": "en",
-      "overall_score": 0.859090909090909,
-      "error": null,
-      "latency_ms": 15,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "neutral",
-          "expected": "neutral",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.6,
-          "predicted": [
-            "battery",
-            "price",
-            "steps",
-            "sleep",
-            "heart_rate"
-          ],
-          "expected": [
-            "step_tracking",
-            "sleep_tracking",
-            "heart_rate",
-            "battery",
-            "price"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 0.2727272727272727,
-          "predicted": [
-            "battery lasts about 7 days",
-            "price is fair for what you get"
-          ],
-          "expected": [
-            "accurate step counting",
-            "sleep tracking",
-            "heart rate monitoring",
-            "7-day battery",
-            "fair price"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 3,
-          "expected": 3,
-          "method": "tolerance\u00b11"
-        }
-      ]
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
+      "latency_ms": 16,
+      "fields": []
     },
     {
       "id": "022_two_star_explicit",
       "language": "en",
-      "overall_score": 0.7590187590187589,
-      "error": null,
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
       "latency_ms": 0,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": 2,
-          "expected": 2,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 1.0,
-          "predicted": false,
-          "expected": false,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 0.0,
-          "predicted": "mixed",
-          "expected": "negative",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.5454545454545454,
-          "predicted": [
-            "appearance",
-            "material",
-            "breathability",
-            "sole_thickness",
-            "arch_support",
-            "comfort",
-            "return"
-          ],
-          "expected": [
-            "sole",
-            "arch_support",
-            "comfort",
-            "material"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 1.0,
-          "predicted": [
-            "looks great in photos",
-            "breathable material"
-          ],
-          "expected": [
-            "breathable material",
-            "looks great in photos"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.2857142857142857,
-          "predicted": [
-            "sole is paper-thin",
-            "zero arch support",
-            "feet pain after 5km run",
-            "breathable material doesn't help when feet hurt",
-            "returning the shoes"
-          ],
-          "expected": [
-            "thin sole",
-            "no arch support",
-            "causes foot pain during running"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 2,
-          "expected": 2,
-          "method": "tolerance\u00b11"
-        }
-      ]
+      "fields": []
     },
     {
       "id": "023_empty_review",
       "language": "en",
-      "overall_score": 0.875,
-      "error": null,
-      "latency_ms": 15,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "positive",
-          "expected": "positive",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 0.0,
-          "predicted": [
-            "good"
-          ],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 4,
-          "expected": 4,
-          "method": "tolerance\u00b11"
-        }
-      ]
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
+      "latency_ms": 14,
+      "fields": []
     },
     {
       "id": "024_return_intent",
       "language": "en",
-      "overall_score": 0.8666666666666668,
-      "error": null,
-      "latency_ms": 0,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 1.0,
-          "predicted": false,
-          "expected": false,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "negative",
-          "expected": "negative",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "urgency",
-          "score": 1.0,
-          "predicted": "high",
-          "expected": "high",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.0,
-          "predicted": [
-            "installation_manual",
-            "build_quality",
-            "water_leak"
-          ],
-          "expected": [
-            "packaging",
-            "durability",
-            "installation",
-            "damage"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.6666666666666666,
-          "predicted": [
-            "missing installation manual",
-            "filter housing cracked on first use",
-            "flooded sink area",
-            "required plumber",
-            "disaster"
-          ],
-          "expected": [
-            "missing installation manual",
-            "cracked filter housing",
-            "caused flooding",
-            "required plumber"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 1,
-          "expected": 1,
-          "method": "tolerance\u00b10"
-        }
-      ]
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
+      "latency_ms": 15,
+      "fields": []
     },
     {
       "id": "025_competitor_switch",
       "language": "en",
-      "overall_score": 0.49549019607843137,
-      "error": null,
-      "latency_ms": 14,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": 5,
-          "expected": 5,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 0.0,
-          "predicted": null,
-          "expected": true,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 0.0,
-          "predicted": "mixed",
-          "expected": "positive",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.20000000000000004,
-          "predicted": [
-            "heating",
-            "basket_size",
-            "cleanup",
-            "cooking_performance",
-            "app"
-          ],
-          "expected": [
-            "heating_speed",
-            "capacity",
-            "cleaning",
-            "performance",
-            "connectivity"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 0.0,
-          "predicted": [
-            "Philips air fryers"
-          ],
-          "expected": [
-            "Philips"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 0.5882352941176471,
-          "predicted": [
-            "heats up faster",
-            "bigger basket",
-            "faster cleanup",
-            "pure cooking performance"
-          ],
-          "expected": [
-            "faster heat-up",
-            "larger basket",
-            "easier cleanup",
-            "better cooking performance"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.5,
-          "predicted": [
-            "lacks app"
-          ],
-          "expected": [
-            "no companion app"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "feature_requests",
-          "score": 0.6666666666666666,
-          "predicted": [
-            "app"
-          ],
-          "expected": [
-            "companion app"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 5,
-          "expected": 5,
-          "method": "tolerance\u00b10"
-        }
-      ]
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
+      "latency_ms": 0,
+      "fields": []
     },
     {
       "id": "026_defect_no_escalation_medium",
       "language": "en",
-      "overall_score": 0.8481577246283128,
-      "error": null,
-      "latency_ms": 0,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 1.0,
-          "predicted": "mixed",
-          "expected": "mixed",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "urgency",
-          "score": 1.0,
-          "predicted": "medium",
-          "expected": "medium",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.8571428571428571,
-          "predicted": [
-            "sound_quality",
-            "battery",
-            "microphone",
-            "price"
-          ],
-          "expected": [
-            "sound_quality",
-            "battery",
-            "microphone"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 0.47058823529411764,
-          "predicted": [
-            "surprisingly good sound quality",
-            "battery easily lasts all day"
-          ],
-          "expected": [
-            "good sound quality for price",
-            "long battery life"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.15384615384615385,
-          "predicted": [
-            "microphone completely useless for calls",
-            "coworkers can barely hear me even at full volume",
-            "not worth the hassle of returning them",
-            "mic design not tested"
-          ],
-          "expected": [
-            "microphone inaudible on calls",
-            "poor microphone quality"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 3,
-          "expected": 3,
-          "method": "tolerance\u00b11"
-        }
-      ]
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
+      "latency_ms": 16,
+      "fields": []
     },
     {
       "id": "027_harm_in_positive_tone_high",
       "language": "en",
-      "overall_score": 0.6101724137931035,
-      "error": null,
-      "latency_ms": 15,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 0.0,
-          "predicted": 5,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 0.0,
-          "predicted": null,
-          "expected": true,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 0.0,
-          "predicted": "mixed",
-          "expected": "positive",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "urgency",
-          "score": 1.0,
-          "predicted": "high",
-          "expected": "high",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.8,
-          "predicted": [
-            "sound_quality",
-            "bass",
-            "bluetooth",
-            "price",
-            "recommendation",
-            "comfort"
-          ],
-          "expected": [
-            "sound_quality",
-            "bass",
-            "bluetooth",
-            "comfort"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 0.5517241379310345,
-          "predicted": [
-            "excellent sound quality",
-            "punchy bass",
-            "Bluetooth pairs instantly",
-            "great buy for the price",
-            "recommended for short listening sessions"
-          ],
-          "expected": [
-            "excellent sound quality",
-            "punchy bass",
-            "instant Bluetooth pairing",
-            "good value for price"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.75,
-          "predicted": [
-            "ear cups press tight causing ear aching after 20 minutes"
-          ],
-          "expected": [
-            "ear cups too tight",
-            "ear aching after 20 minutes of use"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 5,
-          "expected": 4,
-          "method": "tolerance\u00b11"
-        }
-      ]
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
+      "latency_ms": 0,
+      "fields": []
     },
     {
       "id": "028_fit_pain_high",
       "language": "en",
-      "overall_score": 0.6993939393939395,
-      "error": null,
-      "latency_ms": 0,
-      "fields": [
-        {
-          "field": "stars",
-          "score": 1.0,
-          "predicted": null,
-          "expected": null,
-          "method": "exact"
-        },
-        {
-          "field": "buy_again",
-          "score": 0.0,
-          "predicted": null,
-          "expected": true,
-          "method": "exact"
-        },
-        {
-          "field": "sentiment",
-          "score": 0.0,
-          "predicted": "mixed",
-          "expected": "positive",
-          "method": "exact"
-        },
-        {
-          "field": "language",
-          "score": 1.0,
-          "predicted": "en",
-          "expected": "en",
-          "method": "exact"
-        },
-        {
-          "field": "urgency",
-          "score": 1.0,
-          "predicted": "high",
-          "expected": "high",
-          "method": "exact"
-        },
-        {
-          "field": "topics",
-          "score": 0.6,
-          "predicted": [
-            "tracking",
-            "battery",
-            "dpi_button_placement",
-            "gaming",
-            "shape",
-            "comfort"
-          ],
-          "expected": [
-            "tracking",
-            "battery",
-            "design",
-            "comfort"
-          ],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "competitor_mentions",
-          "score": 1.0,
-          "predicted": [],
-          "expected": [],
-          "method": "set_f1_normalized"
-        },
-        {
-          "field": "pros",
-          "score": 0.7272727272727273,
-          "predicted": [
-            "smooth tracking",
-            "battery lasts forever",
-            "DPI button placement is perfect for gaming"
-          ],
-          "expected": [
-            "smooth tracking",
-            "long battery life",
-            "good DPI button placement for gaming"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "cons",
-          "score": 0.6666666666666666,
-          "predicted": [
-            "shape is a bit narrow for my hand",
-            "wrist starts to hurt after an hour of use"
-          ],
-          "expected": [
-            "narrow shape for larger hands",
-            "wrist pain after an hour of use"
-          ],
-          "method": "fuzzy"
-        },
-        {
-          "field": "stars_inferred",
-          "score": 1.0,
-          "predicted": 4,
-          "expected": 4,
-          "method": "tolerance\u00b11"
-        }
-      ]
+      "overall_score": 0.0,
+      "error": "All LLM providers failed to extract the review.",
+      "latency_ms": 14,
+      "fields": []
     },
     {
       "id": "hi-en-001",
@@ -2789,7 +370,7 @@
       "language": "hi-en",
       "overall_score": 0.7666666666666667,
       "error": null,
-      "latency_ms": 14,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -3378,7 +959,7 @@
       "language": "hi-en",
       "overall_score": 0.79,
       "error": null,
-      "latency_ms": 16,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -3577,7 +1158,7 @@
       "language": "hi-en",
       "overall_score": 0.6285714285714286,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 16,
       "fields": [
         {
           "field": "product",
@@ -3878,7 +1459,7 @@
       "language": "hi-en",
       "overall_score": 0.9,
       "error": null,
-      "latency_ms": 15,
+      "latency_ms": 0,
       "fields": [
         {
           "field": "product",
@@ -4079,7 +1660,7 @@
       "language": "hi-en",
       "overall_score": 0.9466666666666667,
       "error": null,
-      "latency_ms": 0,
+      "latency_ms": 14,
       "fields": [
         {
           "field": "product",

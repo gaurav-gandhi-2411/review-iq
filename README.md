@@ -141,13 +141,13 @@ file in the past.
 > API key recorded the original re-record is not recoverable from the committed artifacts —
 > the cassette format does not capture caller identity; see `ops/runbooks/eval-cassette-rerecord.md`.)
 
-<!-- METRICS:START:extraction_table -->**Prompt v2.3** &middot; `5c5c8e0` &middot; measured 2026-09-19T21:59:11Z &middot; mode: direct (local LLM)
+<!-- METRICS:START:extraction_table -->**Prompt v2.3** &middot; `f0c22b1` &middot; measured 2026-09-20T09:11:10Z &middot; mode: direct (local LLM)
 
 | Language | Score | 95% CI | Gate | Status |
 |---|---|---|---|---|
-| en | 78.2% | [73.7%, 82.3%] | ≥77% | PASS |
+| en | 0.0% | [0.0%, 0.0%] | ≥77% | FAIL |
 | hi-en | 79.3% | [66.8%, 87.7%] | ≥75% | PASS |
-| **Overall** | **78.6%** | [73.2%, 82.9%] | ≥76% | PASS |
+| **Overall** | **29.5%** | [17.9%, 42.1%] | ≥76% | FAIL |
 
 n=43 fixtures (27 en, 16 hi-en). Tiered routing is ON by default in production and in this eval run (`ENABLE_TIERED_ROUTING` defaults `true`, unset in CI) -- a same-cassette `--routed` comparison produced byte-identical scores to the numbers above; there is currently no distinct *unrouted* measurement to report separately (see [ADR 0001](docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md)).<!-- METRICS:END -->
 
