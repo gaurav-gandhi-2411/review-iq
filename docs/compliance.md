@@ -21,7 +21,7 @@ review-iq's authenticity scoring feature:
 |---|---|
 | Auto-reject or auto-hide flagged reviews | **Never** — review-iq flags for human decision only |
 | Certify that your process is IS 19000:2022 compliant | **Not claimed** — see below |
-| Guarantee detection of all fake or incentivized reviews | **Not claimed** — the system has a known recall ceiling |
+| Guarantee detection of all fake or incentivized reviews | **Not claimed** — recall is unmeasured and will miss some |
 | Replace a human review-administrator | **No** — human oversight is mandatory under IS 19000 |
 
 ---
@@ -71,19 +71,13 @@ IS 19000:2022 expects a **human review-administrator** to make the final moderat
 
 ## Eval results and known limitations
 
-The authenticity scorer is evaluated against 40 hand-labeled fixtures (19 genuine, 14 suspicious, 7 likely_fake) covering English and Hinglish text.
-
-| Metric | v0.6.0 (en+hi-en, 40 fixtures) |
-|---|---|
-| Precision on flagged class | 1.000 |
-| Recall on flagged class | 1.000 |
-| F1 | 1.000 |
+**The authenticity scorer has no published accuracy figure.** No authenticity labels exist for the 106-review held-out corpus, so its precision and recall are not measured on real data. An earlier 40-item fixture set (21 positive) was in-sample and its result is not reproducible; it is kept only as a quarantined historical file (`eval/results/authenticity_latest.json`) and is not cited as a measurement.
 
 **Known limitations:**
 
 - Hindi (Devanagari-only) reviews: the scoring model handles Hindi via the same LLM prompt but the heuristic phrase list is primarily Latin-script (English + Hinglish). Hindi-only incentivized-disclosure detection is weaker.
 - Novel fraud patterns not in the training distribution of the LLM may be missed.
-- The 40-fixture eval set is a starting calibration; real-world recall will vary by product category and fraud sophistication.
+- Real-world recall and precision are unknown and will vary by product category and fraud sophistication.
 - Batch signals (near-duplicate, burst) require multiple reviews for the same product to fire.
 
 ---

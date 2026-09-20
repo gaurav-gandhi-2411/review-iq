@@ -5,9 +5,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
 from scripts.render_metrics import (
     BLOCK_RENDERERS,
-    render_authenticity_table_md,
     render_committed_accuracy_headline_html,
     render_committed_accuracy_headline_md,
     render_coverage_metrics_table_html,
@@ -58,18 +58,6 @@ EXTRACTION_DATA = {
     },
 }
 
-AUTHENTICITY_DATA = {
-    "mode": "historical (reconstructed)",
-    "provenance_note": "reconstructed from published counts",
-    "n": 40,
-    "confusion_matrix": {"tp": 21, "fp": 0, "fn": 0, "tn": 19},
-    "precision": {"value": 1.0, "n": 21, "ci_95": {"lower": 0.845, "upper": 1.0}},
-    "recall": {"value": 1.0, "n": 21, "ci_95": {"lower": 0.845, "upper": 1.0}},
-    "f1": {"value": 1.0, "n": 40, "ci_95": {"lower": 0.912, "upper": 1.0}},
-    "precision_gate": 0.80,
-    "gate_passed": True,
-}
-
 
 class TestRenderExtractionTableMd:
     def test_contains_all_languages_and_overall(self):
@@ -100,18 +88,23 @@ class TestRenderExtractionTableMd:
         assert "Tiered routing was OFF" in out
 
 
-class TestRenderAuthenticityTableMd:
-    def test_contains_metrics_and_provenance(self):
-        out = render_authenticity_table_md(AUTHENTICITY_DATA)
-        assert "Precision" in out
-        assert "1.000" in out
-        assert "0.845" in out
-        assert "reconstructed from published counts" in out
+class TestAuthenticityNotPublished:
+    """The fake-review flag is unmeasurable (no authenticity labels on the held-out set; the
+    40-item historical set is in-sample), so nothing may render it into published copy."""
 
-    def test_gate_not_met_wording(self):
-        data = {**AUTHENTICITY_DATA, "gate_passed": False}
-        out = render_authenticity_table_md(data)
-        assert "NOT met" in out
+    def test_no_authenticity_block_renderer_is_registered(self):
+        assert not [name for name in BLOCK_RENDERERS if "authenticity" in name.lower()]
+
+    def test_renderer_function_is_gone(self):
+        import scripts.render_metrics as rm
+
+        assert not hasattr(rm, "render_authenticity_table_md")
+
+    def test_readme_carries_no_authenticity_metrics_block_or_handtyped_scores(self):
+        readme = (Path(__file__).resolve().parents[2] / "README.md").read_text(encoding="utf-8")
+        assert "METRICS:START:authenticity" not in readme
+        for claim in ("precision 1.000", "recall 1.000", "F1 1.000", "F1 | 1.000"):
+            assert claim not in readme, f"hand-typed authenticity claim back in README: {claim!r}"
 
 
 class TestRenderGateSummaryMd:
@@ -464,13 +457,52 @@ class TestHeldOutScoringDisclosure:
         md = render_held_out_table_md(self.DATA)
         assert "Scoring note" not in md
 
-    def test_constant_field_disclosed_with_overall_excluding_it(self):
-        md = render_held_out_table_md(
-            {
-                **self.DATA,
-                "constant_fields": ["stars"],
-                "overall_score_excluding_constant_fields": {"as_deployed": 0.697},
-            }
-        )
-        assert "`stars` scores 100% on every review" in md
-        assert "69.7%" in md
+    WITH_CONSTANT = {
+        **DATA,
+        "constant_fields": ["stars"],
+        "overall_score_excluding_constant_fields": {
+            "as_deployed": 0.697,
+            "language_forced": 0.749,
+        },
+        "overall_score_excluding_constant_fields_ci_95": {
+            "as_deployed": {"lower": 0.671, "upper": 0.722, "n": 106},
+            "language_forced": {"lower": 0.727, "upper": 0.772, "n": 106},
+        },
+    }
+
+    def test_headline_is_the_excluding_constant_fields_figure_with_its_own_ci(self):
+        md = render_held_out_table_md(self.WITH_CONSTANT)
+        assert "| **As actually deployed** (real language routing) | **69.7%** " in md
+        assert "[67.1%, 72.2%]" in md
+        assert "| Language routing forced correct | 74.9% | [72.7%, 77.2%] | 106 |" in md
+        # The all-fields CI must not be attached to the headline row.
+        headline_row = next(ln for ln in md.splitlines() if "As actually deployed" in ln)
+        assert "72.7%" not in headline_row
+        assert "[70.5%, 74.9%]" not in headline_row
+
+    def test_all_fields_figure_disclosed_beside_headline_with_reason(self):
+        md = render_held_out_table_md(self.WITH_CONSTANT)
+        assert "72.7% as deployed [70.5%, 74.9%]" in md
+        assert "77.4% with language routing forced correct" in md
+        assert "`stars` is null in both gold and prediction on all 106 reviews" in md
+        assert "scores 106/106 trivially and carries no information" in md
+        assert "inflates the overall by about 3 points" in md
+        # Placement: the disclosure comes before the trailing scoring note, right after the table.
+        table_end = md.index("| Language routing forced correct")
+        assert table_end < md.index("Why the headline excludes") < md.index("n=106 real")
+
+    def test_scoring_note_says_it_is_on_the_all_fields_basis(self):
+        md = render_held_out_table_md({**self.WITH_CONSTANT, "scorer_version": "v-test"})
+        assert "counted all fields (the same basis as the all-fields figures above)" in md
+        assert "as deployed, 68.3% then vs 72.7% now" in md
+
+    def test_constant_fields_without_ci_fail_loudly_not_fall_back_to_all_fields(self):
+        # A silent fallback would publish the flattering figure as the headline.
+        broken = {k: v for k, v in self.WITH_CONSTANT.items() if not k.endswith("_ci_95")}
+        with pytest.raises(KeyError):
+            render_held_out_table_md(broken)
+
+    def test_no_constant_fields_headline_is_the_all_fields_figure(self):
+        md = render_held_out_table_md(self.DATA)
+        assert "| **As actually deployed** (real language routing) | **72.7%** " in md
+        assert "Why the headline excludes" not in md
