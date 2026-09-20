@@ -9,6 +9,11 @@ import structlog
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 
 from app.core.auth import require_api_key
+from app.core.injection_controls import (
+    apply_output_controls,
+    apply_output_controls_to_cached,
+    controlled_input,
+)
 from app.core.llm import extract_with_llm
 from app.core.metrics import EXTRACTION_LATENCY, EXTRACTIONS_TOTAL
 from app.core.prompts import PROMPT_VERSION
@@ -42,9 +47,14 @@ async def _run_extraction(request: ReviewRequest) -> ReviewExtraction:
     if cached is not None:
         log.info("extraction.cache_hit", input_hash=input_hash)
         EXTRACTIONS_TOTAL.labels(model="cached", cached="true").inc()
+        # S15d: re-check a row cached before the output check was enabled (no-op when off).
+        cached, _ = apply_output_controls_to_cached(cached, log_context={"input_hash": input_hash})
         return cached
 
-    clean_text, is_suspicious = sanitize(request.text)
+    # S15d input control (flag off => ctl.text is request.text, byte-identical): raw text,
+    # before sanitize(), see app/core/injection_controls.py.
+    ctl = controlled_input(request.text, log_context={"input_hash": input_hash})
+    clean_text, is_suspicious = sanitize(ctl.text)
     if is_suspicious:
         log.warning("extraction.suspicious_input", input_hash=input_hash)
 
@@ -53,6 +63,9 @@ async def _run_extraction(request: ReviewRequest) -> ReviewExtraction:
 
     t0 = datetime.utcnow()
     llm_output, model_name, latency_ms, _, _, _ = await extract_with_llm(user_prompt)
+    # S15d output check (None when the flag is off). The v1 path stores no suspicious flag; the
+    # report rides on the response.
+    controls_report = apply_output_controls(llm_output, ctl, log_context={"input_hash": input_hash})
 
     meta = ExtractionMeta(
         model=model_name,
@@ -66,6 +79,7 @@ async def _run_extraction(request: ReviewRequest) -> ReviewExtraction:
         **llm_output.model_dump(),
         review_length_chars=len(request.text),
         extraction_meta=meta,
+        injection_controls=controls_report,
     )
 
     await save_extraction(input_hash, request.text, extraction)
