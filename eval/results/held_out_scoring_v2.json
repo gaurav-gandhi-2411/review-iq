@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-19T21:59:05Z",
-  "git_sha": "5c5c8e0205e97ffbb1e4d3a6dd3d174fed7e3f3b",
+  "generated_at": "2026-09-20T07:03:35Z",
+  "git_sha": "0ba938d8d4f3bc4e9fe807cbb203dce4198564b2",
   "scorer_version": "2026-09-20.free-text-v1",
   "groq_model_small": "openai/gpt-oss-20b",
   "groq_model_large": "openai/gpt-oss-120b",
@@ -33,6 +33,18 @@
   "overall_score_excluding_constant_fields": {
     "as_deployed": 0.6970068411002824,
     "language_forced": 0.7490173203192402
+  },
+  "overall_score_excluding_constant_fields_ci_95": {
+    "as_deployed": {
+      "lower": 0.672767048015271,
+      "upper": 0.7214344754371994,
+      "n": 106
+    },
+    "language_forced": {
+      "lower": 0.7270886931209332,
+      "upper": 0.7702913140966788,
+      "n": 106
+    }
   },
   "records": [
     {
