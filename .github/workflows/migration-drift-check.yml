@@ -41,6 +41,9 @@ concurrency:
 jobs:
   drift-check:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write # only used by the scheduled-run failure-alert step below
     steps:
       - uses: actions/checkout@v7
 
@@ -66,3 +69,18 @@ jobs:
             exit 1
           fi
           uv run python supabase/push.py --dry-run --fail-on-pending
+
+      # Scheduled runs have no other reader (SLACK_WEBHOOK_URL was never configured), so a
+      # red scheduled run opens/updates a ci-alert issue. schedule-only: push failures are
+      # already visible on the commit and must not open ops issues.
+      - name: Alert on failure / close alert on recovery (scheduled runs only)
+        if: always() && !cancelled() && github.event_name == 'schedule'
+        uses: ./.github/actions/schedule-failure-alert
+        with:
+          status: ${{ job.status == 'success' && 'success' || 'failure' }}
+          title: "Migration drift check is failing"
+          details: |
+            `migration-drift-check.yml` runs `supabase/push.py --dry-run --fail-on-pending`
+            against production: a migration merged to main but not applied (or the
+            SUPABASE_DIRECT_URL secret is missing). See supabase/push.py (its --help and
+            module docstring) for the apply procedure.

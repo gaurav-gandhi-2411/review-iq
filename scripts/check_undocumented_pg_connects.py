@@ -119,6 +119,19 @@ ALLOWLIST: dict[tuple[str, str], str] = {
         "authenticated tenants can never see these rows (NULL org_id never equals any "
         "real current_org_id())."
     ),
+    ("app/core/storage_pg.py", "insert_lead_pg"): (
+        "POST /leads is unauthenticated marketing-site lead capture -- a lead is "
+        "pre-tenant (the visitor is not a customer yet), so there is no org to "
+        "_set_tenant() to. Writes only public.leads, which carries no tenant data and is "
+        "locked down by grants + RLS scoped to review_iq_app (INSERT only; anon/"
+        "authenticated hold nothing), see supabase/migrations/20260920000001_leads.sql."
+    ),
+    ("app/core/storage_pg.py", "update_lead_email_status_pg"): (
+        "Same pre-tenant public.leads scoping as insert_lead_pg. Touches only the "
+        "email_status column (column-level UPDATE grant) of a row created in the last "
+        "hour (RLS policy window) -- review_iq_app cannot read or rewrite any other "
+        "lead column or historical lead, see supabase/migrations/20260920000001_leads.sql."
+    ),
 }
 
 _CONNECT_ATTR = "connect"

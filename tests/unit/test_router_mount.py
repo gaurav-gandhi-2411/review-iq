@@ -80,3 +80,11 @@ def test_admin_service_role_mounts_only_ops_and_admin() -> None:
     assert "/v2/extract" not in paths
     assert "/webhooks/google/reviews" not in paths
     assert "/demo/extract" not in paths
+    assert "/leads" not in paths
+
+
+def test_public_service_mounts_leads_on_every_deploy_target() -> None:
+    """Session 15c C9: the marketing-site lead-capture route lives on the PUBLIC service
+    only (the admin service, above, must not expose it)."""
+    for deploy_target in ("cloud-run", "local"):
+        assert "/leads" in _paths(deploy_target, service_role="public")
