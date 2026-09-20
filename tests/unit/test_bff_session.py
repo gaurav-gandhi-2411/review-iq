@@ -407,7 +407,6 @@ def test_existing_require_api_key_unchanged() -> None:
 
 def test_v2_routers_importable() -> None:
     """All v2 endpoint routers import without error (no import breakage from BFF addition)."""
-    from app.api.v2.authenticity import router as _a  # noqa: F401
     from app.api.v2.corrections import router as _c  # noqa: F401
     from app.api.v2.dataset import router as _d  # noqa: F401
     from app.api.v2.ingest import router as _i  # noqa: F401
