@@ -18,6 +18,11 @@ on:
   schedule:
     - cron: "30 2 * * *"
   workflow_dispatch:
+    inputs:
+      gemini_model:
+        description: "Try this Gemini model id for THIS manual run only (e.g. after a 404 'no longer available'). Blank = the app default."
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -63,7 +68,12 @@ jobs:
           # failing the job. Any other unconfigured path (e.g. a missing GEMINI_API_KEY)
           # is not listed here and still exits 1. See scripts/probe_failover.py.
           FAILOVER_ACKNOWLEDGED_UNCONFIGURED: secondary
+          # Manual-run override only (workflow_dispatch input); blank on scheduled runs.
+          GEMINI_MODEL_OVERRIDE: ${{ inputs.gemini_model }}
         run: |
+          # Only export GEMINI_MODEL when an override was given: an empty GEMINI_MODEL would
+          # otherwise shadow the app default with an empty string.
+          if [ -n "$GEMINI_MODEL_OVERRIDE" ]; then export GEMINI_MODEL="$GEMINI_MODEL_OVERRIDE"; fi
           # Free-tier-friendly: probe still runs and fails the job (exit 1) without a
           # webhook -- Slack notification is a bonus, not the pass/fail signal itself.
           if [ -z "$SLACK_WEBHOOK_URL" ]; then
