@@ -167,6 +167,23 @@ def test_migrator_applied_the_later_migrations_and_owns_everything_in_public(
         conn.close()
 
 
+def test_schema_snapshot_reports_the_migrator_as_owner_of_every_public_object(
+    built_db: BuiltDb,
+) -> None:
+    """Exercises the owner queries added to extract_schema_snapshot.py (the drift check's
+    ephemeral side): CI and production must agree, and after the handoff that agreement is
+    'everything is owned by review_iq_migrator'."""
+    extractor = _load(
+        "extract_schema_snapshot_integration", ROOT / "scripts" / "extract_schema_snapshot.py"
+    )
+    snap = extractor.extract_snapshot(built_db.super_dsn)
+    rel, fn = snap["relation_owners"], snap["function_owners"]
+    assert {r["table_name"] for r in rel} >= {"organizations", "leads", "_migrations"}
+    assert {f["function_name"] for f in fn} >= {"current_org_id", "resolve_org_for_user"}
+    assert {r["owner"] for r in rel} == {"review_iq_migrator"}
+    assert {f["owner"] for f in fn} == {"review_iq_migrator"}
+
+
 # ---------------------------------------------------------------- 2: non-vacuous
 
 
