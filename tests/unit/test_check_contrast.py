@@ -123,3 +123,23 @@ class TestCatchesARealViolation:
 
         assert len(failures) >= 1
         assert any("drifted-pair" in f for f in failures)
+
+
+class TestVacuousTokenSetsAreRejected:
+    def test_empty_contrast_pairs_fail(self) -> None:
+        failures = check_contrast_pairs([])
+        assert len(failures) == 1
+        assert "empty" in failures[0]
+
+    def test_pair_with_lowered_bar_fails_even_if_ratio_meets_it(self) -> None:
+        # 1.5:1 is far below AA but "meets" its own minRatio of 1.0 -- the old gate passed it.
+        pair: ContrastPair = {
+            "name": "relaxed",
+            "bg": "#F0F0F0",
+            "fg": "#E8E8E8",
+            "minRatio": 1.0,
+        }
+        assert contrast_ratio(pair["bg"], pair["fg"]) >= pair["minRatio"]
+        failures = check_contrast_pairs([pair])
+        assert len(failures) == 1
+        assert "below WCAG AA" in failures[0]

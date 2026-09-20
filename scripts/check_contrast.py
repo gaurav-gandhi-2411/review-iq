@@ -39,6 +39,9 @@ TOKENS_PATH = REPO_ROOT / "design" / "tokens.json"
 # freshly computed one -- guards against float rounding while still catching real drift.
 KNOWN_FAILING_TOLERANCE = 0.02
 
+# WCAG 2.x AA for normal-size text. tokens.json's per-pair `minRatio` may not go below this.
+AA_NORMAL_TEXT_MIN_RATIO = 4.5
+
 
 class ContrastPair(TypedDict):
     name: str
@@ -92,9 +95,22 @@ def load_tokens(path: Path) -> dict[str, object]:
 
 
 def check_contrast_pairs(pairs: list[ContrastPair]) -> list[str]:
-    """Return a list of failure messages for any pair whose ratio is below its minRatio."""
+    """Return a list of failure messages for any pair whose ratio is below its minRatio.
+
+    Also fails the two vacuous shapes: an empty `contrastPairs` list (the loop never runs and
+    the script prints "all 0 required pairs meet AA"), and a pair whose own `minRatio` sits
+    below WCAG AA normal-text 4.5 (a pair can be made to pass by lowering the bar it is held to).
+    """
     failures: list[str] = []
+    if not pairs:
+        failures.append("contrastPairs is empty -- nothing is being checked")
     for pair in pairs:
+        if pair["minRatio"] < AA_NORMAL_TEXT_MIN_RATIO:
+            failures.append(
+                f"'{pair['name']}': minRatio {pair['minRatio']:.2f} is below WCAG AA "
+                f"normal-text {AA_NORMAL_TEXT_MIN_RATIO} -- a pair that needs a lower bar "
+                "belongs in knownFailingPairs, not silently relaxed here"
+            )
         ratio = contrast_ratio(pair["bg"], pair["fg"])
         if ratio < pair["minRatio"]:
             failures.append(
