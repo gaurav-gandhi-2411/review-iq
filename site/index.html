@@ -6,7 +6,7 @@
   <title>Samidha Reviews — Know What Every Customer Actually Said</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
-  <meta name="description" content="Turn a flood of customer reviews across every brand you manage into one queryable signal — sentiment, urgency, and authenticity, in English and Hinglish. Stateless by default. Early access pricing." />
+  <meta name="description" content="Turn a flood of customer reviews across every brand you manage into one queryable signal — sentiment and urgency, in English and Hinglish. Stateless by default. Early access pricing." />
   <!-- Absolute URLs required for OG/Twitter card scrapers (Session 12 P6e) -- relative paths
        don't resolve when a crawler fetches only the meta tag, not the page itself. Live URL
        today is the Cloudflare Pages default host; site/_redirects already 301s it to the apex
@@ -14,13 +14,13 @@
        that point, not before (an absolute URL to a domain that doesn't resolve yet is worse
        than one to the domain that's actually live). -->
   <meta property="og:title" content="Samidha Reviews — Know What Every Customer Actually Said" />
-  <meta property="og:description" content="Turn a flood of customer reviews across every brand you manage into one queryable signal — sentiment, urgency, and authenticity, in English and Hinglish." />
+  <meta property="og:description" content="Turn a flood of customer reviews across every brand you manage into one queryable signal — sentiment and urgency, in English and Hinglish." />
   <meta property="og:image" content="https://review-iq-demo.pages.dev/og-image.png" />
   <meta property="og:url" content="https://review-iq-demo.pages.dev/" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Samidha Reviews — Know What Every Customer Actually Said" />
-  <meta name="twitter:description" content="Turn a flood of customer reviews across every brand you manage into one queryable signal — sentiment, urgency, and authenticity, in English and Hinglish." />
+  <meta name="twitter:description" content="Turn a flood of customer reviews across every brand you manage into one queryable signal — sentiment and urgency, in English and Hinglish." />
   <meta name="twitter:image" content="https://review-iq-demo.pages.dev/og-image.png" />
   <!-- Session 15c C8: two typefaces, plain stylesheet link only (no scripts). Fraunces (display)
        and IBM Plex Sans (body + UI + code) are the pair named in design/tokens.json; the system
@@ -204,8 +204,8 @@
        ========================================================================== */
     .section { padding-block: clamp(3rem, 7vw, 5rem); border-bottom: 1px solid var(--line); }
     .section > .wrap > h2 + p, .price-head p { margin-top: var(--space-3); color: var(--ink-2); }
-    .cols-3 { display: grid; gap: var(--space-6); grid-template-columns: 1fr; margin-top: var(--space-6); }
-    @media (min-width: 48rem) { .cols-3 { grid-template-columns: repeat(3, 1fr); gap: var(--space-7); } }
+    .cols-2 { display: grid; gap: var(--space-6); grid-template-columns: 1fr; margin-top: var(--space-6); }
+    @media (min-width: 48rem) { .cols-2 { grid-template-columns: repeat(2, 1fr); gap: var(--space-7); } }
 
     /* Problem: three plain columns under hairlines -- no boxes, no shadows. */
     .problem-item { border-top: 2px solid var(--ink); padding-top: var(--space-4); }
@@ -217,7 +217,7 @@
     .icon .i-saffron { fill: var(--saffron); }
     .icon .i-ember { fill: var(--ember); }
 
-    /* How it works: a genuine sequence, so it is numbered. */
+    /* How it works: a real sequence, so it is numbered. */
     .steps { list-style: none; padding: 0; display: grid; gap: var(--space-6); grid-template-columns: 1fr; margin: var(--space-6) 0 0; }
     .step { display: grid; grid-template-columns: 2.75rem 1fr; gap: var(--space-4); align-items: start; }
     .step-num { width: 2.75rem; height: 2.75rem; border-radius: 50%; background: var(--saffron); color: var(--ink);
@@ -358,13 +358,6 @@
     .translation { margin-top: var(--space-3); font-size: 0.875rem; color: var(--ink-2); font-style: italic; max-width: none; }
     .insight { margin-bottom: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--saffron-tint);
                color: var(--ink); border-left: 4px solid var(--ember); border-radius: 0 var(--r-sm) var(--r-sm) 0; font-size: 0.9375rem; max-width: none; }
-    .disposition { margin-top: var(--space-4); padding: var(--space-3) var(--space-4); border-radius: var(--r-sm); color: var(--ink);
-                   display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-4); }
-    .disposition strong { font: 700 var(--step-2)/1.2 var(--font-display); }
-    .disposition span { font-size: var(--step--1); }
-    .disp-clear { background: var(--cream); }
-    .disp-flagged_for_review { background: var(--saffron); }
-    .disp-priority_review { background: var(--ember); }
     .csv-table { font-size: 0.8125rem; }
     .csv-table td, .csv-table th { padding: var(--space-2) var(--space-3); }
     .unavailable { margin-top: var(--space-5); padding: var(--space-5); background: var(--cream-2); border: 1px solid var(--line);
@@ -441,7 +434,7 @@
         <h1>Know what every customer <span class="marker">actually said</span></h1>
         <p class="hero-lede">
           You manage reviews across a dozen brand storefronts, in a mix of English and Hinglish.
-          Samidha reads every one and hands you back sentiment, urgency, and a fake-review flag
+          Samidha reads every one and hands you back sentiment and urgency
           &mdash; so your team spends its time on the two reviews that actually need a human, not
           the two thousand that don't.
         </p>
@@ -477,7 +470,7 @@
         </div>
 
         <!-- Empty (idle) state -->
-        <p id="live-idle" class="slab-idle">The response appears here as JSON: sentiment, urgency, topics and the authenticity flag.</p>
+        <p id="live-idle" class="slab-idle">The response appears here as JSON: sentiment, urgency, topics and more.</p>
 
         <div id="live-result-wrap" class="slab-result" hidden>
           <p class="slab-result-label">Response (ReviewExtraction)</p>
@@ -500,7 +493,7 @@
     <section id="problem" class="section">
       <div class="wrap">
         <h2>Managing reviews for one brand is manageable. For twelve, it isn't.</h2>
-        <div class="cols-3">
+        <div class="cols-2">
           <div class="problem-item">
             <!-- Two speech bubbles: a review in more than one language. -->
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -528,18 +521,6 @@
               already passed.
             </p>
           </div>
-          <div class="problem-item">
-            <!-- A review star struck through: a rating that isn't real. -->
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path class="i-saffron" d="M12 3.5l2.6 5.3 5.9.85-4.25 4.15 1 5.85L12 16.9l-5.25 2.75 1-5.85L3.5 9.65l5.9-.85z"/>
-              <path d="M4 20.5L20 3.5"/>
-            </svg>
-            <h3>Some of it isn't even real</h3>
-            <p>
-              Coordinated fake-review campaigns are a live problem for Indian D2C brands.
-              Spotting one manually across a dozen storefronts, in two languages, doesn't scale.
-            </p>
-          </div>
         </div>
       </div>
     </section>
@@ -551,15 +532,14 @@
       <div class="wrap">
         <h2>See it work, on real reviews</h2>
         <p>
-          Every example below is a real, unmodified API response &mdash; extraction, fake-review
-          detection, cross-review trends, and bulk CSV upload. No network needed, works with JS
+          Every example below is a real, unmodified API response &mdash; extraction,
+          cross-review trends, and bulk CSV upload. No network needed, works with JS
           disabled.
         </p>
 
         <!-- Category tabs -->
         <div id="cat-tabs" class="tabs" role="group" aria-label="Example category">
           <button type="button" data-cat="extraction" class="cat-tab chip" aria-pressed="true" onclick="switchCat('extraction')">Extraction</button>
-          <button type="button" data-cat="authenticity" class="cat-tab chip" aria-pressed="false" onclick="switchCat('authenticity')">Authenticity</button>
           <button type="button" data-cat="insights" class="cat-tab chip" aria-pressed="false" onclick="switchCat('insights')">Insights</button>
           <button type="button" data-cat="csv" class="cat-tab chip" aria-pressed="false" onclick="switchCat('csv')">CSV Ingest</button>
         </div>
@@ -604,8 +584,8 @@
             <div>
               <h3>We extract the signal</h3>
               <p>
-                Sentiment, urgency, topics, pros/cons, competitor mentions, and an authenticity
-                flag &mdash; structured JSON back in under a second per review.
+                Sentiment, urgency, topics, pros/cons, and competitor
+                mentions &mdash; structured JSON back in under a second per review.
               </p>
             </div>
           </li>
@@ -615,7 +595,7 @@
               <h3>You see what matters</h3>
               <p>
                 Query the dashboard, pull trends across every brand you manage, or wire an
-                alert for anything flagged urgent or inauthentic.
+                alert for anything flagged urgent.
               </p>
             </div>
           </li>
@@ -1036,13 +1016,6 @@
     let activeCat = "extraction"; // current category tab
     let activeEx = {};            // activeCat -> activeExId
 
-    // Disposition banner labels (fill colour comes from the .disp-* classes)
-    const DISPOSITION_LABEL = {
-      clear:              "Clear",
-      flagged_for_review: "Flagged for review",
-      priority_review:    "Priority review",
-    };
-
     // ---------------------------------------------------------------------------
     // Render helpers
     // ---------------------------------------------------------------------------
@@ -1114,16 +1087,6 @@
       // JSON output
       html += `<pre class="code">${highlightJson(ex.output)}</pre>`;
 
-      // Authenticity disposition banner (below JSON)
-      if (ex.category === "authenticity" && ex.output.disposition) {
-        const key = DISPOSITION_LABEL[ex.output.disposition] ? ex.output.disposition : "clear";
-        html += `
-          <div class="disposition disp-${key}">
-            <strong>${DISPOSITION_LABEL[key]}</strong>
-            <span>IS 19000:2022 administrator signal</span>
-          </div>`;
-      }
-
       return html;
     }
 
@@ -1190,7 +1153,7 @@
 
     function initGallery(data) {
       galleryData = data;
-      const categories = ["extraction", "authenticity", "insights", "csv"];
+      const categories = ["extraction", "insights", "csv"];
       const panelsEl = document.getElementById("gallery-panels");
       panelsEl.innerHTML = categories
         .map(function(cat) { return renderCategory(cat, data.examples); })
