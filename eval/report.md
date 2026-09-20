@@ -1,15 +1,15 @@
 # Eval Report
 
-Generated: 2026-09-12 05:45 UTC
+Generated: 2026-09-19 21:59 UTC
 
-## Overall: 77.1% PASS (threshold 76%)
+## Overall: 78.6% PASS (threshold 76%)
 
 ## Per-language
 
 | Language | Score | Gate | Status |
 |----------|-------|------|--------|
-| en | 78.1% | 77% | PASS |
-| hi-en | 75.6% | 75% | PASS |
+| en | 78.2% | 77% | PASS |
+| hi-en | 79.3% | 75% | PASS |
 
 ## Fixtures
 
@@ -31,7 +31,7 @@ Generated: 2026-09-12 05:45 UTC
 | 014_feature_requests | en | 65% |  |
 | 015_medium_urgency | en | 71% |  |
 | 016_no_product_name | en | 80% |  |
-| 017_very_long | en | 75% |  |
+| 017_very_long | en | 76% |  |
 | 018_packaging_damage | en | 81% |  |
 | 019_three_stars_explicit | en | 83% |  |
 | 020_urgent_safety | en | 76% |  |
@@ -39,22 +39,22 @@ Generated: 2026-09-12 05:45 UTC
 | 022_two_star_explicit | en | 76% |  |
 | 023_empty_review | en | 88% |  |
 | 024_return_intent | en | 87% |  |
-| 025_competitor_switch | en | 48% |  |
+| 025_competitor_switch | en | 50% |  |
 | 026_defect_no_escalation_medium | en | 85% |  |
 | 027_harm_in_positive_tone_high | en | 61% |  |
 | 028_fit_pain_high | en | 70% |  |
-| hi-en-001 | hi-en | 90% |  |
+| hi-en-001 | hi-en | 94% |  |
 | hi-en-002 | hi-en | 77% |  |
 | hi-en-003 | hi-en | 85% |  |
 | hi-en-004 | hi-en | 80% |  |
 | hi-en-005 | hi-en | 91% |  |
-| hi-en-006 | hi-en | 76% |  |
-| hi-en-007 | hi-en | 90% |  |
-| hi-en-008 | hi-en | 77% |  |
+| hi-en-006 | hi-en | 78% |  |
+| hi-en-007 | hi-en | 94% |  |
+| hi-en-008 | hi-en | 79% |  |
 | hi-en-009 | hi-en | 87% |  |
-| hi-en-010 | hi-en | 53% |  |
+| hi-en-010 | hi-en | 63% |  |
 | hi-en-011 | hi-en | 81% |  |
-| hi-en-012 | hi-en | 67% |  |
-| hi-en-013 | hi-en | 80% |  |
-| hi-en-014 | hi-en | 85% |  |
-| hi-en-015 | hi-en | 91% |  |
+| hi-en-012 | hi-en | 82% |  |
+| hi-en-013 | hi-en | 90% |  |
+| hi-en-014 | hi-en | 95% |  |
+| hi-en-015 | hi-en | 95% |  |

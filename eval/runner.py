@@ -11,6 +11,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from eval.free_text_scoring import canonical_competitor, canonical_topic, product_score
+
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 RESULTS_PATH = Path(__file__).parent / "results.json"
 # Canonical results file (rule: JSON is the single source of truth for README/site
@@ -222,19 +224,40 @@ def _check_security(
     return None
 
 
-def score_fixture(fixture: dict[str, Any], extraction: dict[str, Any]) -> list[FieldResult]:
-    """Score an extraction dict against fixture ground truth, returning per-field results."""
+# Set-scored fields whose members are free text and so need canonicalizing before comparison.
+_SET_CANONICALIZERS = {"topics": canonical_topic, "competitor_mentions": canonical_competitor}
+
+
+def score_fixture(
+    fixture: dict[str, Any], extraction: dict[str, Any], *, strict: bool = False
+) -> list[FieldResult]:
+    """Score an extraction dict against fixture ground truth, returning per-field results.
+
+    Free-text fields (product, topics, competitor_mentions) go through eval/free_text_scoring.py
+    unless `strict=True`, which reproduces the pre-Session-15c exact-string behaviour so a
+    published delta can always be attributed to that module and nothing else.
+    """
     gt = fixture["ground_truth"]
     notes = fixture["scoring_notes"]
     results: list[FieldResult] = []
 
     for f in notes.get("exact_match_fields", []):
+        if f == "product" and not strict:
+            score = product_score(extraction.get(f), gt.get(f))
+            results.append(FieldResult(f, score, extraction.get(f), gt.get(f), "product_null_norm"))
+            continue
         score = _exact_score(extraction.get(f), gt.get(f))
         results.append(FieldResult(f, score, extraction.get(f), gt.get(f), "exact"))
 
     for f in notes.get("set_overlap_fields", []):
-        score = _set_f1(extraction.get(f, []), gt.get(f, []))
-        results.append(FieldResult(f, score, extraction.get(f, []), gt.get(f, []), "set_f1"))
+        canon = None if strict else _SET_CANONICALIZERS.get(f)
+        pred, exp = extraction.get(f, []), gt.get(f, [])
+        if canon is not None:
+            score = _set_f1([canon(x) for x in pred], [canon(x) for x in exp])
+            results.append(FieldResult(f, score, pred, exp, "set_f1_normalized"))
+            continue
+        score = _set_f1(pred, exp)
+        results.append(FieldResult(f, score, pred, exp, "set_f1"))
 
     for f in notes.get("fuzzy_fields", []):
         score = _fuzzy_list_score(extraction.get(f, []), gt.get(f, []))
