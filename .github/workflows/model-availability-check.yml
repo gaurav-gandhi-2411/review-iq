@@ -97,8 +97,14 @@ jobs:
               echo "::error::Groq model '$m' is not in the live model list -- likely deprecated/removed"
               FAIL=1
             else
-              echo "  [ok] $m is live"
+              echo "  [ok] $m is listed"
             fi
+          done
+          # Session 15d: a LIST proves only that the id is advertised. Verified 2026-09-20 on the
+          # Gemini side that an advertised model can 404 on generateContent, so make one real,
+          # tiny generation per model (scripts/check_model_generation.py; 429 warns, others fail).
+          for m in "$GROQ_MODEL" "$GROQ_MODEL_SMALL" "$GROQ_MODEL_LARGE"; do
+            GROQ_KEY="$GROQ_KEY" python3 scripts/check_model_generation.py groq "$m" || FAIL=1
           done
           exit $FAIL
 
@@ -112,7 +118,9 @@ jobs:
             echo "::error::Gemini model '$GEMINI_MODEL' is not in the live model list -- likely deprecated/removed"
             exit 1
           fi
-          echo "  [ok] $GEMINI_MODEL is live"
+          echo "  [ok] $GEMINI_MODEL is listed"
+          # Session 15d: real generation, not list membership (see the Groq step above).
+          GEMINI_KEY="$GEMINI_KEY" python3 scripts/check_model_generation.py gemini "$GEMINI_MODEL"
 
       - name: Open/update alert issue on failure
         if: failure()
