@@ -212,8 +212,8 @@ def render_held_out_table_md(data: dict[str, Any]) -> str:
             f"scores {n_total}/{n_total} trivially and carries no information. `language` does "
             "not measure extraction: with routing forced the prompt itself states the language, "
             "so the field is 100% by echo (which is why the forced row is higher in the "
-            "all-fields figures), and as deployed it equals the detector's agreement with the "
-            f"corpus's language label, {agreement_text}. The headline therefore averages only "
+            "all-fields figures), and as deployed it just re-measures the language detector "
+            f"against the corpus's language label: {agreement_text}. The headline therefore averages only "
             f"the {len(data['headline_fields'])} remaining informative fields.",
             "",
             # Rule 65c: this definition change RAISES the as-deployed headline, so say so, by
@@ -255,7 +255,7 @@ def render_held_out_table_md(data: dict[str, Any]) -> str:
         "",
         f"n={n_total} real Hinglish reviews the prompt has never seen (never used for "
         f"prompt development), 0 hi (see [ADR 0016](docs/architecture/adr/0016-third-judge-corpus-batch-1-and-sentiment-recheck.md)). "
-        f"Production's own language detector's agreement with this corpus's language label: "
+        f"Production's own language detector, measured against this corpus's language label: "
         f"{agreement_text}. This is the number to trust for real-world extraction accuracy; "
         f"the CI-gate table above is a regression detector, not a real-world accuracy claim "
         f"-- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) "
