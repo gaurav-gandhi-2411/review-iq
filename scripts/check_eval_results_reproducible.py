@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import copy
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -61,6 +62,17 @@ def strip_provenance(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def main() -> int:
+    if os.environ.get("EVAL_CASSETTE_MODE", "").strip().lower() != "replay":
+        # This check OVERWRITES the two committed result files by running eval.runner. Without
+        # replay mode the runner makes live LLM calls (real cost, quota, non-determinism) and
+        # the comparison below would be between the committed file and a different live run --
+        # or, if the calls fail, a clobbered results file. ci.yml sets replay; refuse without it.
+        print(
+            "FAIL: EVAL_CASSETTE_MODE=replay is required (this check regenerates the committed "
+            "eval result files; without replay it would call live providers)."
+        )
+        return 1
+
     if not LATEST_RESULTS_PATH.exists():
         print(f"FAIL: {LATEST_RESULTS_PATH} does not exist -- nothing to verify against.")
         return 1
