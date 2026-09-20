@@ -119,6 +119,21 @@ def _diff_section(
     return diffs
 
 
+def _require(snapshot: dict[str, Any], key: str) -> list[dict[str, Any]]:
+    """Return snapshot[key], or raise if the extractor that produced it predates the section.
+
+    Fail closed: silently treating a missing section as empty on BOTH sides would report "no
+    drift" for a comparison that never happened."""
+    if key not in snapshot:
+        raise ValueError(
+            f"snapshot has no {key!r} section -- regenerate it with the current "
+            "scripts/extract_schema_snapshot.py (refusing to compare against nothing)"
+        )
+    rows = snapshot[key]
+    assert isinstance(rows, list)
+    return rows
+
+
 def _without_migrations_table(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Drop rows for `_migrations` -- Supabase's own CLI-internal migration-history
     table, created by Supabase's platform tooling, never by anything in
@@ -183,6 +198,18 @@ def compare(prod: dict[str, Any], eph: dict[str, Any]) -> list[str]:
     diffs += _diff_section(
         "table_grants", prod_tgrants, eph_tgrants, ["table_name", "grantee", "privilege_type"]
     )
+
+    # Object owners (Session 15d). The ephemeral build now applies migrations as the
+    # non-superuser review_iq_migrator and hands object ownership to it (see
+    # supabase/ci/apply_migrations_ci.py), so CI and production should agree on owner for every
+    # table/sequence/view and function -- and a mismatch is precisely the condition under
+    # which a migration's GRANT/REVOKE/ALTER silently does nothing. Required keys: a snapshot
+    # from an older extractor must fail loudly, never compare as "no owners on either side".
+    for section, keys in (
+        ("relation_owners", ["table_name"]),
+        ("function_owners", ["function_name", "arguments"]),
+    ):
+        diffs += _diff_section(section, _require(prod, section), _require(eph, section), keys)
 
     def _strip_ignored(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         return [
