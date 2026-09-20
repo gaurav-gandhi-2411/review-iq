@@ -163,18 +163,18 @@ accurate is this in the real world." The table below is the honest answer to the
 question — scored against 106 real Indian marketplace reviews mined independently of prompt
 development, never seen by anyone iterating on the prompt.
 
-<!-- METRICS:START:held_out_table -->Measured 2026-09-19T21:59:05Z &middot; `5c5c8e0` &middot; models: openai/gpt-oss-20b / openai/gpt-oss-120b
+<!-- METRICS:START:held_out_table -->Measured 2026-09-20T07:03:35Z &middot; `0ba938d` &middot; models: openai/gpt-oss-20b / openai/gpt-oss-120b
 
-| Condition | Score | 95% CI | n |
+| Condition | Score (informative fields only) | 95% CI | n |
 |---|---|---|---|
-| **As actually deployed** (real language routing) | **72.7%** | [70.5%, 74.9%] | 106 |
-| Language routing forced correct | 77.4% | [75.4%, 79.3%] | 106 |
+| **As actually deployed** (real language routing) | **69.7%** | [67.3%, 72.1%] | 106 |
+| Language routing forced correct | 74.9% | [72.7%, 77.0%] | 106 |
+
+**Why the headline excludes `stars`.** Counting all fields, the same recorded outputs score 72.7% as deployed [70.5%, 74.9%] and 77.4% with language routing forced correct [75.4%, 79.3%]. `stars` is null in both gold and prediction on all 106 reviews, so it scores 106/106 trivially and carries no information, and it inflates the overall by about 3 points. The headline therefore averages only the informative fields.
 
 n=106 real Hinglish reviews the prompt has never seen (never used for prompt development), 0 hi (see [ADR 0016](docs/architecture/adr/0016-third-judge-corpus-batch-1-and-sentiment-recheck.md)). Production's own language detector agreed with this corpus's language label on 48.1% of fixtures. This is the number to trust for real-world accuracy; the CI-gate table above is a regression detector, not a real-world accuracy claim -- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md).
 
-**Scoring note (scorer `2026-09-20.free-text-v1`).** Free-text fields (`product`, `topics`, `competitor_mentions`) are compared after normalization, so different correct spellings of "no product named" (`unknown` vs `unknown product`) and near-identical topic labels (`battery` vs `battery_life`) are no longer scored wrong. Earlier published figures used exact-string matching on the same recorded model outputs: as deployed, 68.3% then vs 72.7% now. The model's outputs did not change, only the comparator ([ADR 0030](docs/architecture/adr/0030-free-text-scorers.md)).
-
-**Constant fields.** `stars` scores 100% on every review here (the corpus contains no case for it), which adds a free 100% to one of the equal-weighted fields in the overall score. Excluding it, as deployed: 69.7%.<!-- METRICS:END -->
+**Scoring note (scorer `2026-09-20.free-text-v1`).** Free-text fields (`product`, `topics`, `competitor_mentions`) are compared after normalization, so different correct spellings of "no product named" (`unknown` vs `unknown product`) and near-identical topic labels (`battery` vs `battery_life`) are no longer scored wrong. Earlier published figures used exact-string matching on the same recorded model outputs and counted all fields (the same basis as the all-fields figures above): as deployed, 68.3% then vs 72.7% now. The model's outputs did not change, only the comparator ([ADR 0030](docs/architecture/adr/0030-free-text-scorers.md)).<!-- METRICS:END -->
 
 Reproducible from committed cassettes: `EVAL_CASSETTE_MODE=replay uv run python eval/score_held_out_corpus_v2.py --mode replay` — $0, zero live calls, byte-identical output. See [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) for the full methodology, including the misrouting-vs-contamination decomposition of the gap between this table and the one above.
 
