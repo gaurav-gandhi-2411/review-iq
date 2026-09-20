@@ -440,7 +440,10 @@ def render_language_table_html(data: dict[str, Any]) -> str:
 
     Bug fix (Session 5 P4, 2026-09-10): the accuracy cell previously hardcoded
     text-green-400 unconditionally -- same class of bug as render_extraction_table_html,
-    found the same session. A failing language now renders red with its gate noted inline.
+    found the same session. A failing language is now marked with its gate noted inline.
+    Session 15c S8b: emits semantic classes (`path`, `ci`, `num`, `status-pass`/`status-fail`)
+    defined in site/docs/index.html's own stylesheet, not Tailwind palette classes -- the docs
+    page shares the marketing page's palette, which has no blue/green/red.
     """
     per_lang = data["per_language"]
     # Session 11 P4d: Devanagari Hindi retired from this gate entirely (ADR 0022) -- real
@@ -454,14 +457,14 @@ def render_language_table_html(data: dict[str, Any]) -> str:
     rows: list[str] = []
     for code, label, script in rows_spec:
         info = per_lang[code]
-        color = "text-green-400" if info["passed"] else "text-red-400"
+        status = "status-pass" if info["passed"] else "status-fail"
         suffix = "" if info["passed"] else f" (below {info['threshold']:.0%} gate)"
         rows.append(
-            '              <tr class="bg-gray-900">\n'
-            f'                <td class="px-5 py-3 font-mono text-blue-300">{code}</td>\n'
-            f'                <td class="px-5 py-3 text-gray-100">{label}</td>\n'
-            f'                <td class="px-5 py-3 text-gray-400">{script}</td>\n'
-            f'                <td class="px-5 py-3 {color}">{_fmt_pct(info["score"])}{suffix}</td>\n'
+            "              <tr>\n"
+            f'                <td class="path">{code}</td>\n'
+            f"                <td>{label}</td>\n"
+            f'                <td class="ci">{script}</td>\n'
+            f'                <td class="num {status}">{_fmt_pct(info["score"])}{suffix}</td>\n'
             "              </tr>"
         )
     return "\n" + "\n".join(rows) + "\n            "
