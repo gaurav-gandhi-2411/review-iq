@@ -6,7 +6,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 import structlog
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
@@ -25,6 +25,8 @@ from app.api.internal.detectors import router as internal_detectors_router
 from app.api.internal.digest import router as internal_digest_router
 from app.api.internal.ingest_tick import router as internal_ingest_tick_router
 from app.api.internal.retention import router as internal_retention_router
+from app.api.leads import LEADS_ALLOWED_ORIGINS, LEADS_PATH, leads_rate_limit_response
+from app.api.leads import router as leads_router
 from app.api.ops import router as ops_router
 from app.api.query import router as query_router
 from app.api.shopify_auth import router as shopify_auth_router
@@ -41,12 +43,22 @@ from app.api.webhooks.google import router as google_webhook_router
 from app.api.webhooks.shopify import router as shopify_webhook_router
 from app.auth.signup import router as signup_router
 from app.core.config import Settings, get_settings
+from app.core.cors import PathScopedCORSMiddleware
 from app.core.logging import setup_logging
 from app.core.metrics import PrometheusMiddleware
 from app.core.rate_limit import limiter
 from app.core.storage import migrate
 
 log = structlog.get_logger(__name__)
+
+
+def _rate_limit_handler(request: Request, exc: RateLimitExceeded) -> Response:
+    """slowapi's default 429, except POST /leads gets its contract-shaped JSON body
+    ({"ok": false, "error": "rate_limited", ...}) -- the marketing-site form parses it."""
+    if request.url.path.rstrip("/") == LEADS_PATH:
+        return leads_rate_limit_response()
+    return _rate_limit_exceeded_handler(request, exc)
+
 
 # The base URL below is a placeholder — swap in whatever host this deployment
 # is actually served from (Cloud Run URL today; a custom domain later). No
@@ -176,6 +188,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "description": "Sign-up flow — issues your first riq_live_* API key on first login "
                 "via the web dashboard.",
             },
+            {
+                "name": "leads",
+                "description": "Marketing-site lead capture. Unauthenticated, rate-limited "
+                "(5/hour per IP, 30/day global).",
+            },
             {"name": "extraction", "description": "v1 single-tenant extraction (SQLite-backed)."},
             {"name": "query", "description": "v1 query and analytics (SQLite-backed)."},
             {
@@ -187,7 +204,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
 
     _app.state.limiter = limiter
-    _app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
+    _app.add_exception_handler(RateLimitExceeded, _rate_limit_handler)  # type: ignore[arg-type]
 
     # Middleware order (last add_middleware = outermost = first to process requests):
     #   SlowAPIMiddleware → PrometheusMiddleware → CORSMiddleware → route handler
@@ -202,6 +219,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["Authorization", "Content-Type"],
         allow_credentials=False,
+    )
+
+    # POST /leads only: the public marketing site's origins, scoped to that exact path.
+    # Added after (= outside) the global CORSMiddleware so it answers /leads preflights
+    # itself; every other path bypasses it, so these origins gain nothing anywhere else.
+    _app.add_middleware(
+        PathScopedCORSMiddleware,
+        path=LEADS_PATH,
+        allow_origins=LEADS_ALLOWED_ORIGINS,
+        allow_methods=["POST", "OPTIONS"],
+        allow_headers=["Content-Type"],
     )
 
     _app.add_middleware(PrometheusMiddleware)
@@ -233,6 +261,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         _app.include_router(signup_router)
         _app.include_router(account_router)
         _app.include_router(demo_router)
+        _app.include_router(leads_router)
         _app.include_router(internal_digest_router)
         _app.include_router(internal_ingest_tick_router)
         _app.include_router(internal_detectors_router)
