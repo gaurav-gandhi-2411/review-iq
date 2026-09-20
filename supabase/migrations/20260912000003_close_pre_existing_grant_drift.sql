@@ -26,3 +26,17 @@ REVOKE EXECUTE ON FUNCTION public.current_org_id() FROM PUBLIC, anon;
 -- direction -- this migration simply brings production back in line with standard
 -- platform convention.
 GRANT ALL ON public.demo_daily_usage TO service_role;
+
+-- Session 15c S4: fail LOUDLY instead of silently. A REVOKE issued by a role that does not OWN the
+-- object (review_iq_migrator runs push.py, but current_org_id() is owned by postgres) completes
+-- without error yet changes nothing -- verified against production 2026-09-20: anon could still
+-- EXECUTE after this file ran "successfully". push.py would then record the migration as applied
+-- while the drift stayed. Assert the effect so a non-owner run aborts (and is NOT ledgered).
+DO $$
+BEGIN
+    IF has_function_privilege('anon', 'public.current_org_id()', 'EXECUTE') THEN
+        RAISE EXCEPTION 'REVOKE on public.current_org_id() had no effect: the running role does not own it (owner: %). Run ALTER FUNCTION public.current_org_id() OWNER TO review_iq_migrator; as postgres first.',
+            (SELECT pg_get_userbyid(proowner) FROM pg_proc WHERE oid = 'public.current_org_id()'::regprocedure);
+    END IF;
+END
+$$;
