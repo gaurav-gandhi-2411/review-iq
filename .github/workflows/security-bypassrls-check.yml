@@ -40,6 +40,9 @@ jobs:
   bypassrls-check:
     runs-on: ubuntu-latest
     environment: Production
+    permissions:
+      contents: read
+      issues: write # only used by the scheduled-run failure-alert step below
     steps:
       - uses: actions/checkout@v7
 
@@ -71,3 +74,18 @@ jobs:
         run: |
           uv run pytest tests/integration/test_role_bypassrls.py -v -m integration --no-cov \
             -k "not TestCrossOrgSweepFunctionsSeeEveryOrg"
+
+      # Scheduled runs have no other reader (SLACK_WEBHOOK_URL was never configured), so a
+      # red scheduled run opens/updates a ci-alert issue. schedule-only: push failures are
+      # already visible on the commit and must not open ops issues.
+      - name: Alert on failure / close alert on recovery (scheduled runs only)
+        if: always() && !cancelled() && github.event_name == 'schedule'
+        uses: ./.github/actions/schedule-failure-alert
+        with:
+          status: ${{ job.status == 'success' && 'success' || 'failure' }}
+          title: "Production BYPASSRLS regression check is failing"
+          details: |
+            `security-bypassrls-check.yml` runs the read-only role-configuration check in
+            tests/integration/test_role_bypassrls.py against the production database
+            (review_iq_app must not hold BYPASSRLS). Needs the SUPABASE_DATABASE_URL secret
+            at Production environment scope; see the workflow header comment.
