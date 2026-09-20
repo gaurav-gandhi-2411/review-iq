@@ -95,3 +95,39 @@ count (a leakage check, since only `buy_again` examples changed); tokens per mod
 - Edit `app/core/prompts/en.py` directly: rejected (dev cassette invalidation, above).
 - Use held-out fixtures as examples: rejected (contamination).
 - Run all 56 in one batch: rejected (~170K tokens on the small model, over the ceiling).
+
+## Results
+
+Everything above this heading was committed at `f026c88` (2026-09-20 12:43 IST) before any call.
+
+### Day 1 — 2026-09-20, 28 of 56 fixtures (INTERIM; the verdict needs day 2)
+
+Source: `eval/results/buy_again_exp_day1.json` (git sha `f026c88`, which contains the runner and
+this ADR), cassette `eval/cassettes/buy_again_exp_cassettes.json`. Replayable at zero quota with
+`EVAL_CASSETTE_MODE=replay ... buy_again_fewshot.py replay --day 1`.
+
+| Day-1 fixtures (n=28) | Baseline (recorded) | Variant |
+|---|---|---|
+| `buy_again` committed | 1 | **4** |
+| wrong-committed (count) | 0 | **1** (hien-0018: gold null, predicted true) |
+| committed and correct on the gold-decidable fixtures (n=10) | 1 (hien-0069) | 3 (hien-0039, -0069, -0103); 7 decidable fixtures still hedged |
+
+Commit changes: 0 fixtures lost a commit, 3 gained one (exact McNemar p = 0.25, so not
+significant at n=28 by itself). The pre-registered rule on the total count: N_wrong so far is
+1, equal to B_wrong = 1, so the run is **INTERIM, not REVERT**. That margin is thin: the
+baseline's own wrong commit (hien-0038) is a day-2 fixture, so if the variant repeats it the
+total reaches 2 and the rule REVERTs regardless of coverage.
+
+Two things to read with the numbers, not after them:
+
+- The variant added one *new* wrong commit on a fixture the baseline had correctly left null
+  (hien-0018), so the gain is not free even on day 1.
+- `sentiment` changed on 3 of 28 fixtures (all `mixed` → `positive`, including hien-0018). Only
+  `buy_again` examples were edited, but the examples' other fields evidently moved sentiment: a
+  side effect the pre-registration flagged as a leakage check and did not gate on.
+
+Budget (ceiling 100K/model/day): estimated 81,285 tokens on `gpt-oss-20b` (40.6% of its 200K
+pool; 75,258 from recorded final-model tokens plus 6,027 estimated for two escalated small-tier
+attempts) and 9,470 on `gpt-oss-120b` (2 escalated calls). Groq requests remaining, before →
+after: `gpt-oss-20b` 999 → 969, `gpt-oss-120b` 999 → 999 (rolling window; 120b's 2 requests had
+already replenished). Day 2 runs on the next budget day; it is NOT run in the same UTC day.

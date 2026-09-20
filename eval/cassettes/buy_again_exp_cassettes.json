@@ -1,0 +1,152 @@
+{
+  "13f761110e9b92364b1bc7d3bd5767a27f5b2618c9cabf82d43d308bfe6c7392": {
+    "raw": "{\"product\":\"\",\"stars\":null,\"stars_inferred\":3,\"pros\":[],\"cons\":[],\"buy_again\":null,\"sentiment\":\"neutral\",\"topics\":[],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
+    "tokens_in": 1989,
+    "tokens_out": 349
+  },
+  "14150d70aebe5399defb349470604151220c9ac4198904d2483822fefb0484d8": {
+    "raw": "{\"product\":\"BoAt 235v2 bluetooth headset\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"awesome\",\"best performance\",\"best for movie\",\"best for ultra hd sound\",\"best for gaming (PUBG LOVERS)\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"performance\",\"movie\",\"ultra_hd_sound\",\"gaming\",\"sound_quality\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 2066,
+    "tokens_out": 928
+  },
+  "2144a7e2ba3be3ab8966af8f00ad6d187a66b2ed3479d6d04416fc05237d153d": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":3,\"pros\":[\"everything is good\",\"nice product\"],\"cons\":[\"long delivery time\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[\"performance\",\"design\",\"delivery\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
+    "tokens_in": 2012,
+    "tokens_out": 885
+  },
+  "219005822c60b61a5364f56c6d6613ee8dd23813dd32cb894722c748d53dbf34": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":3,\"pros\":[],\"cons\":[],\"buy_again\":null,\"sentiment\":\"neutral\",\"topics\":[],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.2}",
+    "tokens_in": 1989,
+    "tokens_out": 422
+  },
+  "24715025bef6ff8ea88600b2007f0112dc0e2bcea16de4d0698286f928b96cd1": {
+    "raw": "{\"product\":\"Mast productREAD MORE\",\"stars\":null,\"stars_inferred\":3,\"pros\":[],\"cons\":[],\"buy_again\":null,\"sentiment\":\"neutral\",\"topics\":[],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.3}",
+    "tokens_in": 2014,
+    "tokens_out": 422
+  },
+  "2bad1ce5c6d77189e8e5bef7995353c23c88876fccb4b9816165b41d4fee000d": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":4,\"pros\":[\"nice product\",\"fast delivery\",\"good sound\",\"good bass\",\"good design\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"delivery\",\"sound_quality\",\"bass\",\"design\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1998,
+    "tokens_out": 787
+  },
+  "2fab979991a2ad3cf3f4f2911f1a121172824845e81c7681f8479ce6d60437ed": {
+    "raw": "{\"product\":\"blue tooth headset\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"awesome bass\",\"good battery backup\",\"great value\"],\"cons\":[],\"buy_again\":true,\"sentiment\":\"positive\",\"topics\":[\"sound_quality\",\"battery\",\"price\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 2015,
+    "tokens_out": 544
+  },
+  "33d6ebfb2be82d66ac3854d0c7996204396b273d3de683027dd093dcef6e392d": {
+    "raw": "{\"product\":\"Mast Ekach Number\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"high volume tolerance\",\"fast delivery\",\"nice packaging\",\"original product with warranty card and manual\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"volume\",\"delivery\",\"packaging\",\"warranty\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 2021,
+    "tokens_out": 657
+  },
+  "34665a389cc402eaf516525184baa0edb0a3a7c9abbae71fc225e406b01a1c16": {
+    "raw": "{\"product\":\"headphone\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"great bass\",\"great battery life\",\"great for all kind of music\",\"great buy\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"battery\",\"sound_quality\",\"price\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 2043,
+    "tokens_out": 501
+  },
+  "3b0035df45f1515a69fb4d7b6e903ffa2aee044522a30a7238a29e1f7dd2d623": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":4,\"pros\":[\"good product\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"quality\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.7}",
+    "tokens_in": 1990,
+    "tokens_out": 544
+  },
+  "3bb7279fbc9b948992fba89eb93045a63b6256d8ad79e17b1c8696a84c85fc9f": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":5,\"pros\":[\"great bass\",\"loved it\",\"good value for price\",\"must buy\"],\"cons\":[],\"buy_again\":true,\"sentiment\":\"positive\",\"topics\":[\"sound_quality\",\"price\",\"performance\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 2005,
+    "tokens_out": 724
+  },
+  "4f44a335719c7f0057e384a9fe48afdc23abe4a7754ab61628784b889f2af25c": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":5,\"pros\":[\"awesome bass\",\"super sound\",\"good sound\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"bass\",\"sound_quality\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1998,
+    "tokens_out": 528
+  },
+  "56b8c786f0149cec32b5ac280f2899b6d21a544d57f7ef13f750d6bc01f8c1b1": {
+    "raw": "{\"product\":\"earphones\",\"stars\":null,\"stars_inferred\":4,\"pros\":[\"good earphones\",\"no stress to ears\",\"good comfort\",\"great\"],\"cons\":[\"low sound level\"],\"buy_again\":true,\"sentiment\":\"mixed\",\"topics\":[\"performance\",\"comfort\",\"sound_quality\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 2027,
+    "tokens_out": 1079
+  },
+  "59756f4f7bdfc7ed5b92c91011187e26f372cf83276161a0808621e5d921815b": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"useless products\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.6}",
+    "tokens_in": 1991,
+    "tokens_out": 498
+  },
+  "5ec15bdf16a4280bf5642d1957dbd25c38f8c0944a3fe7360e6c25a53d1a7ead": {
+    "raw": "{\"product\":\"wireless earphone\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"excellent sound\",\"excellent base quality\",\"excellent calling experience\",\"long battery backup\",\"best wireless earphone in this price range\",\"no problem with realme 6i\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"sound\",\"bass\",\"call_quality\",\"battery\",\"price\",\"compatibility\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 2039,
+    "tokens_out": 1166
+  },
+  "66c5cf27d28b4aab59783cda7f5d0e77c4bd107f11d1a4768d12b68a10a96aa5": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":4,\"pros\":[\"overall great\"],\"cons\":[\"ear discomfort\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[\"performance\",\"comfort\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
+    "tokens_in": 1994,
+    "tokens_out": 993
+  },
+  "6b11c6928bea4c6ab471c9fc956d638d28e49d7c39b78bd7495ef710cc07f3f3": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":4,\"pros\":[\"worthwhile product\",\"great\",\"good deal\",\"makes user happy\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"value\",\"overall_quality\",\"price\",\"user_satisfaction\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.7}",
+    "tokens_in": 2012,
+    "tokens_out": 706
+  },
+  "79c8562dcff71a7492fb9e177b1aaf0f2edfc97675174bc58db1a6fba4d3d81d": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":3,\"pros\":[\"Crispy clear sound\",\"Great for music and streaming\",\"Great for calls\"],\"cons\":[\"bass lacks boom effect due to plastic body\",\"not suitable for gaming\",\"clip issue\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[\"sound_quality\",\"music\",\"streaming\",\"calls\",\"bass\",\"plastic_body\",\"gaming\",\"clip\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
+    "tokens_in": 2103,
+    "tokens_out": 1195
+  },
+  "7c0c90d41a66c6bf2910520732cea2d40edbda39e87c72c65b3986a544f38a9c": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":5,\"pros\":[\"built quality\",\"sound quality\",\"battery backup\",\"superb value for money\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"build_quality\",\"sound_quality\",\"battery\",\"price\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
+    "tokens_in": 2001,
+    "tokens_out": 653
+  },
+  "80e5e94089e3b5ac18b25ce29256f74684f5a3934248dc7643f16ac5783d9f8a": {
+    "raw": "{\"product\":\"headphone\",\"stars\":null,\"stars_inferred\":3.5,\"pros\":[\"very good product\",\"good sound quality\"],\"cons\":[\"ear pain after an hour of use\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[\"performance\",\"sound_quality\",\"comfort\"],\"competitor_mentions\":[],\"urgency\":\"high\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 2023,
+    "tokens_out": 1034
+  },
+  "855a1b29cf6fd36e8ef99a452c77da7daa8c7ec18bc11421f8c6e8ef0b2926a4": {
+    "raw": "{\"product\":\"Superb Headphone\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"superb design\",\"good battery\",\"outstanding bass\",\"great features\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"design\",\"battery\",\"bass\",\"features\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 2017,
+    "tokens_out": 627
+  },
+  "8cc1f2927cae6ffba083de3196cc0a1f5bc3861a10b5363e07a5c9e679f52fc5": {
+    "raw": "{\"product\":\"Mast product\",\"stars\":null,\"stars_inferred\":3,\"pros\":[],\"cons\":[],\"buy_again\":null,\"sentiment\":\"neutral\",\"topics\":[],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1988,
+    "tokens_out": 297
+  },
+  "911f289b6418ae4b1a2c3fc602ff891acb3b1c3085b47160178bee1808674016": {
+    "raw": "{\"product\":\"BassDesignSound\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"sound quality\",\"battery backup\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"sound_quality\",\"battery\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
+    "tokens_in": 1998,
+    "tokens_out": 488
+  },
+  "aea6aedf35d3db9188ae1043561ce735cc063df08df023691d43f507ee4fefa4": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"bad sound quality after 20 days\",\"money wasted\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"sound_quality\",\"durability\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
+    "tokens_in": 2000,
+    "tokens_out": 563
+  },
+  "b10388185ee73f70895cfd00521ede3e1db1cac23ff96ac70e5fcf8d670006ae": {
+    "raw": "{\"product\":\"speaker\",\"stars\":null,\"stars_inferred\":2,\"pros\":[\"good design\",\"good battery backup\",\"nice for slow songs\",\"recommended for low volume lovers\"],\"cons\":[\"poor sound quality\",\"speaker damage\",\"low bass\",\"low volume for gym/exercise\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[\"design\",\"battery\",\"sound_quality\",\"durability\",\"bass\",\"volume\",\"use_case\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.85}",
+    "tokens_in": 2046,
+    "tokens_out": 1022
+  },
+  "b54beab16570ab6e99d07c875c479a61b43e2bb2c9a710698ac94dd57999a9a3": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":4,\"pros\":[\"product is good\",\"battery backup runs 6 to 4 hours\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"battery\",\"performance\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
+    "tokens_in": 2001,
+    "tokens_out": 590
+  },
+  "b87a033008feda37dc49045329b26410798cc9dd4ae289a5cd1efbe21a302138": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":4,\"pros\":[\"good battery backup\"],\"cons\":[\"battery drains quickly after 30%\"],\"buy_again\":true,\"sentiment\":\"positive\",\"topics\":[\"battery\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
+    "tokens_in": 2012,
+    "tokens_out": 815
+  },
+  "bf5016f6f5babfb92830526bc3341a214b96113ce88cb6fba1d38cf276e0d9b2": {
+    "raw": "{\"product\":\"realme brand\",\"stars\":null,\"stars_inferred\":4,\"pros\":[\"good quality\",\"good battery backup\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"build_quality\",\"battery\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
+    "tokens_in": 2004,
+    "tokens_out": 579
+  },
+  "e2a8170e5cb5b42be154e49fa16ac356c3ab70109beed6a4c113aad7d2353f1f": {
+    "raw": "{\"product\":\"back up mast\",\"stars\":null,\"stars_inferred\":4,\"pros\":[\"very nice\",\"better back up mast\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"design\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.7}",
+    "tokens_in": 1990,
+    "tokens_out": 656
+  },
+  "e92380dc7a80ab442c3d47769e797c8d517abccc3a659cfc20afcdecacb42db0": {
+    "raw": "{\"product\":\"U&i Bluetooth device\",\"stars\":null,\"stars_inferred\":4,\"pros\":[\"long battery life\",\"good voice clarity\",\"good value for price\"],\"cons\":[\"low bass\"],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"battery\",\"voice_clarity\",\"bass\",\"price\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 2021,
+    "tokens_out": 626
+  }
+}
