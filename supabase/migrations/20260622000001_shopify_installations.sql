@@ -78,3 +78,38 @@ CREATE POLICY "shopify_inst_authenticated_select" ON public.shopify_installation
 -- Anon gets nothing.
 CREATE POLICY "shopify_inst_anon_deny" ON public.shopify_installations
     FOR ALL TO anon USING (false);
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: shopify_installations_columns_and_constraints
+-- SQL: SELECT (SELECT count(*) FROM pg_attribute a WHERE a.attrelid =
+-- SQL: 'public.shopify_installations'::regclass AND a.attnum > 0 AND NOT a.attisdropped AND
+-- SQL: (a.attname, format_type(a.atttypid, a.atttypmod), a.attnotnull) IN (('id', 'uuid', true),
+-- SQL: ('org_id', 'uuid', true), ('shop_domain', 'text', true), ('access_token_enc', 'text', true),
+-- SQL: ('installed_at', 'timestamp with time zone', true), ('revoked_at',
+-- SQL: 'timestamp with time zone', false))) = 6 AND EXISTS (SELECT 1 FROM pg_constraint c WHERE
+-- SQL: c.conrelid = 'public.shopify_installations'::regclass AND c.contype = 'u' AND
+-- SQL: pg_get_constraintdef(c.oid) = 'UNIQUE (shop_domain)') AND EXISTS (SELECT 1 FROM
+-- SQL: pg_constraint c WHERE c.conrelid = 'public.shopify_installations'::regclass AND c.contype =
+-- SQL: 'f' AND c.confrelid = 'public.organizations'::regclass AND c.confdeltype = 'c')
+
+-- @postcondition: shopify_installations_indexes
+-- SQL: SELECT EXISTS (SELECT 1 FROM pg_index i WHERE i.indexrelid =
+-- SQL: to_regclass('public.idx_shopify_inst_shop_domain_active') AND i.indrelid =
+-- SQL: 'public.shopify_installations'::regclass AND i.indpred IS NOT NULL) AND EXISTS (SELECT 1
+-- SQL: FROM pg_index i WHERE i.indexrelid = to_regclass('public.idx_shopify_inst_org_id') AND
+-- SQL: i.indrelid = 'public.shopify_installations'::regclass)
+
+-- @postcondition: shopify_installations_rls_and_policies
+-- SQL: SELECT (SELECT count(*) = 1 AND bool_and(c.relrowsecurity) FROM pg_class c WHERE c.oid IN
+-- SQL: ('public.shopify_installations'::regclass)) AND (SELECT count(*) FROM pg_policies p WHERE
+-- SQL: p.schemaname = 'public' AND (p.tablename, p.policyname, p.cmd, p.roles::text) IN
+-- SQL: (('shopify_installations', 'shopify_inst_authenticated_select', 'SELECT',
+-- SQL: '{authenticated}'), ('shopify_installations', 'shopify_inst_anon_deny', 'ALL', '{anon}'))) =
+-- SQL: 2 AND (SELECT count(*) FROM pg_policies p WHERE p.schemaname = 'public' AND p.policyname IN
+-- SQL: ('shopify_inst_authenticated_select') AND p.qual LIKE '%current_org_id()%') = 1 AND (SELECT
+-- SQL: count(*) FROM pg_policies p WHERE p.schemaname = 'public' AND p.policyname IN
+-- SQL: ('shopify_inst_anon_deny') AND p.qual = 'false') = 1

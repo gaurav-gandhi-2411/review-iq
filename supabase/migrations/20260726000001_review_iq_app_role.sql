@@ -54,3 +54,18 @@ $$;
 
 GRANT authenticated TO review_iq_app;
 GRANT CONNECT ON DATABASE postgres TO review_iq_app;
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: review_iq_app_role_login_and_authenticated_membership
+-- SQL: SELECT EXISTS (SELECT 1 FROM pg_roles r WHERE r.rolname = 'review_iq_app' AND r.rolcanlogin
+-- SQL: AND NOT r.rolsuper) AND EXISTS (SELECT 1 FROM pg_auth_members m WHERE m.roleid =
+-- SQL: 'authenticated'::regrole::oid AND m.member = 'review_iq_app'::regrole::oid)
+
+-- @postcondition: review_iq_app_can_connect_to_database
+-- SQL: SELECT EXISTS (SELECT 1 FROM pg_database d CROSS JOIN LATERAL aclexplode(d.datacl) a WHERE
+-- SQL: d.datname = 'postgres' AND a.grantee = 'review_iq_app'::regrole::oid AND a.privilege_type =
+-- SQL: 'CONNECT')

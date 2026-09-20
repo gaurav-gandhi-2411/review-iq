@@ -44,3 +44,28 @@ END $$;
 CREATE POLICY "extraction_costs_review_iq_app_demo_insert" ON public.extraction_costs
     FOR INSERT TO review_iq_app
     WITH CHECK (source = 'demo' AND org_id IS NULL);
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: extraction_costs_org_id_nullable_and_source_column
+-- SQL: SELECT (SELECT count(*) FROM pg_attribute a WHERE a.attrelid =
+-- SQL: 'public.extraction_costs'::regclass AND a.attnum > 0 AND NOT a.attisdropped AND (a.attname,
+-- SQL: format_type(a.atttypid, a.atttypmod), a.attnotnull) IN (('org_id', 'uuid', false))) = 1 AND
+-- SQL: (SELECT count(*) FROM pg_attribute a WHERE a.attrelid = 'public.extraction_costs'::regclass
+-- SQL: AND a.attnum > 0 AND NOT a.attisdropped AND (a.attname, format_type(a.atttypid,
+-- SQL: a.atttypmod), a.attnotnull) IN (('source', 'text', true))) = 1 AND EXISTS (SELECT 1 FROM
+-- SQL: pg_constraint c WHERE c.conrelid = 'public.extraction_costs'::regclass AND c.conname =
+-- SQL: 'extraction_costs_source_org_id_consistent' AND c.contype = 'c' AND
+-- SQL: pg_get_constraintdef(c.oid) LIKE '%demo%' AND pg_get_constraintdef(c.oid) LIKE
+-- SQL: '%org_id IS NULL%')
+
+-- @postcondition: extraction_costs_demo_insert_policy_is_review_iq_app_only
+-- SQL: SELECT (SELECT count(*) FROM pg_policies p WHERE p.schemaname = 'public' AND (p.tablename,
+-- SQL: p.policyname, p.cmd, p.roles::text) IN (('extraction_costs',
+-- SQL: 'extraction_costs_review_iq_app_demo_insert', 'INSERT', '{review_iq_app}'))) = 1 AND (SELECT
+-- SQL: count(*) FROM pg_policies p WHERE p.schemaname = 'public' AND p.policyname =
+-- SQL: 'extraction_costs_review_iq_app_demo_insert' AND p.with_check LIKE '%demo%' AND p.with_check
+-- SQL: LIKE '%org_id IS NULL%') = 1

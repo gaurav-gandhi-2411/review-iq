@@ -40,3 +40,19 @@ BEGIN
     END IF;
 END
 $$;
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: current_org_id_not_executable_by_anon_or_public
+-- SQL: SELECT NOT has_function_privilege('anon', 'public.current_org_id()', 'EXECUTE') AND NOT
+-- SQL: EXISTS (SELECT 1 FROM pg_proc p CROSS JOIN LATERAL aclexplode(coalesce(p.proacl,
+-- SQL: acldefault('f', p.proowner))) a WHERE p.oid = 'public.current_org_id()'::regprocedure AND
+-- SQL: a.grantee = 0 AND a.privilege_type = 'EXECUTE')
+
+-- @postcondition: demo_daily_usage_service_role_has_all
+-- SQL: SELECT count(*) = 7 AND bool_and(has_table_privilege('service_role',
+-- SQL: 'public.demo_daily_usage', p)) FROM
+-- SQL: unnest(ARRAY['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER']) AS p

@@ -15,3 +15,13 @@ ALTER TABLE public.quota_requests
 ALTER TABLE public.quota_requests
   ADD CONSTRAINT quota_requests_org_id_fkey
   FOREIGN KEY (org_id) REFERENCES public.organizations (id) ON DELETE CASCADE;
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: quota_requests_org_fk_cascades
+-- SQL: SELECT EXISTS (SELECT 1 FROM pg_constraint c WHERE c.conrelid =
+-- SQL: 'public.quota_requests'::regclass AND c.conname = 'quota_requests_org_id_fkey' AND c.contype
+-- SQL: = 'f' AND c.confrelid = 'public.organizations'::regclass AND c.confdeltype = 'c')

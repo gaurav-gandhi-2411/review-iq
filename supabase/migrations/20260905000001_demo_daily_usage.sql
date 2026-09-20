@@ -45,3 +45,25 @@ REVOKE ALL ON public.demo_daily_usage FROM authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.demo_daily_usage TO review_iq_app;
 -- No DELETE -- this table is append/update-only (one row per date, incremented in
 -- place); nothing in the app ever needs to remove a day's counter row.
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: demo_daily_usage_columns_and_key
+-- SQL: SELECT (SELECT count(*) FROM pg_attribute a WHERE a.attrelid =
+-- SQL: 'public.demo_daily_usage'::regclass AND a.attnum > 0 AND NOT a.attisdropped AND (a.attname,
+-- SQL: format_type(a.atttypid, a.atttypmod), a.attnotnull) IN (('usage_date', 'date', true),
+-- SQL: ('request_count', 'integer', true), ('tokens_in_total', 'integer', true),
+-- SQL: ('tokens_out_total', 'integer', true), ('updated_at', 'timestamp with time zone', true))) =
+-- SQL: 5 AND EXISTS (SELECT 1 FROM pg_constraint c WHERE c.conrelid =
+-- SQL: 'public.demo_daily_usage'::regclass AND c.contype = 'p' AND pg_get_constraintdef(c.oid) =
+-- SQL: 'PRIMARY KEY (usage_date)')
+
+-- @postcondition: demo_daily_usage_grants_locked_to_review_iq_app
+-- SQL: SELECT count(*) = 7 AND bool_and(has_table_privilege('review_iq_app',
+-- SQL: 'public.demo_daily_usage', p) = (p IN ('SELECT', 'INSERT', 'UPDATE')) AND NOT
+-- SQL: has_table_privilege('anon', 'public.demo_daily_usage', p) AND NOT
+-- SQL: has_table_privilege('authenticated', 'public.demo_daily_usage', p)) FROM
+-- SQL: unnest(ARRAY['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER']) AS p

@@ -78,3 +78,28 @@ CREATE POLICY "extraction_costs_authenticated_all" ON public.extraction_costs
 
 CREATE POLICY "extraction_costs_anon_deny" ON public.extraction_costs
     FOR ALL TO anon USING (false);
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: extraction_costs_foreign_keys_and_checks
+-- SQL: SELECT EXISTS (SELECT 1 FROM pg_constraint c WHERE c.conrelid =
+-- SQL: 'public.extraction_costs'::regclass AND c.contype = 'f' AND c.confrelid =
+-- SQL: 'public.organizations'::regclass AND c.confdeltype = 'c') AND EXISTS (SELECT 1 FROM
+-- SQL: pg_constraint c WHERE c.conrelid = 'public.extraction_costs'::regclass AND c.contype = 'f'
+-- SQL: AND c.confrelid = 'public.extractions'::regclass AND c.confdeltype = 'n') AND (SELECT
+-- SQL: count(*) FROM pg_constraint c WHERE c.conrelid = 'public.extraction_costs'::regclass AND
+-- SQL: c.contype = 'c' AND pg_get_constraintdef(c.oid) ~
+-- SQL: '(tokens_in|tokens_out|cost_usd|cost_inr) >= ') = 4
+
+-- @postcondition: extraction_costs_rls_and_tenant_policies
+-- SQL: SELECT (SELECT count(*) = 1 AND bool_and(c.relrowsecurity) FROM pg_class c WHERE c.oid IN
+-- SQL: ('public.extraction_costs'::regclass)) AND (SELECT count(*) FROM pg_policies p WHERE
+-- SQL: p.schemaname = 'public' AND (p.tablename, p.policyname, p.cmd, p.roles::text) IN
+-- SQL: (('extraction_costs', 'extraction_costs_authenticated_all', 'ALL', '{authenticated}'),
+-- SQL: ('extraction_costs', 'extraction_costs_anon_deny', 'ALL', '{anon}'))) = 2 AND (SELECT
+-- SQL: count(*) FROM pg_policies p WHERE p.schemaname = 'public' AND p.policyname IN
+-- SQL: ('extraction_costs_authenticated_all') AND p.qual LIKE '%current_org_id()%' AND p.with_check
+-- SQL: LIKE '%current_org_id()%') = 1

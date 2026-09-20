@@ -83,3 +83,53 @@ CREATE POLICY "leads_review_iq_app_update_recent" ON public.leads
     FOR UPDATE TO review_iq_app
     USING (created_at > now() - interval '1 hour')
     WITH CHECK (email_status <> 'pending');
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: leads_columns
+-- SQL: SELECT (SELECT count(*) FROM pg_attribute a WHERE a.attrelid = 'public.leads'::regclass AND
+-- SQL: a.attnum > 0 AND NOT a.attisdropped AND (a.attname, format_type(a.atttypid, a.atttypmod),
+-- SQL: a.attnotnull) IN (('id', 'uuid', true), ('created_at', 'timestamp with time zone', true),
+-- SQL: ('name', 'text', true), ('email', 'text', true), ('company', 'text', true), ('brands',
+-- SQL: 'text', true), ('reviews_per_month', 'text', true), ('message', 'text', false),
+-- SQL: ('source_ip_hash', 'text', false), ('user_agent', 'text', false), ('email_status', 'text',
+-- SQL: true))) = 11 AND EXISTS (SELECT 1 FROM pg_constraint c WHERE c.conrelid =
+-- SQL: 'public.leads'::regclass AND c.contype = 'p' AND pg_get_constraintdef(c.oid) =
+-- SQL: 'PRIMARY KEY (id)')
+
+-- @postcondition: leads_backstop_check_constraints
+-- SQL: SELECT EXISTS (SELECT 1 FROM pg_constraint c WHERE c.conrelid = 'public.leads'::regclass AND
+-- SQL: c.conname = 'leads_single_line_fields_no_controls' AND c.contype = 'c' AND
+-- SQL: pg_get_constraintdef(c.oid) LIKE '%x01%') AND EXISTS (SELECT 1 FROM pg_constraint c WHERE
+-- SQL: c.conrelid = 'public.leads'::regclass AND c.conname = 'leads_message_controls' AND c.contype
+-- SQL: = 'c' AND pg_get_constraintdef(c.oid) LIKE '%x08%') AND EXISTS (SELECT 1 FROM pg_constraint
+-- SQL: c WHERE c.conrelid = 'public.leads'::regclass AND c.contype = 'c' AND
+-- SQL: pg_get_constraintdef(c.oid) LIKE '%pending%' AND pg_get_constraintdef(c.oid) LIKE
+-- SQL: '%skipped%')
+
+-- @postcondition: leads_rls_and_review_iq_app_only_policies
+-- SQL: SELECT (SELECT count(*) = 1 AND bool_and(c.relrowsecurity) FROM pg_class c WHERE c.oid IN
+-- SQL: ('public.leads'::regclass)) AND (SELECT count(*) FROM pg_policies p WHERE p.schemaname =
+-- SQL: 'public' AND (p.tablename, p.policyname, p.cmd, p.roles::text) IN (('leads',
+-- SQL: 'leads_review_iq_app_insert', 'INSERT', '{review_iq_app}'), ('leads',
+-- SQL: 'leads_review_iq_app_select_recent', 'SELECT', '{review_iq_app}'), ('leads',
+-- SQL: 'leads_review_iq_app_update_recent', 'UPDATE', '{review_iq_app}'))) = 3
+
+-- @postcondition: leads_anon_and_authenticated_have_no_access
+-- SQL: SELECT count(*) = 7 AND bool_and(NOT has_table_privilege('anon', 'public.leads', p) AND NOT
+-- SQL: has_table_privilege('authenticated', 'public.leads', p)) FROM
+-- SQL: unnest(ARRAY['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER']) AS p
+
+-- @postcondition: leads_review_iq_app_privileges_are_column_narrow
+-- SQL: SELECT has_table_privilege('review_iq_app', 'public.leads', 'INSERT') AND NOT
+-- SQL: has_table_privilege('review_iq_app', 'public.leads', 'SELECT') AND NOT
+-- SQL: has_table_privilege('review_iq_app', 'public.leads', 'UPDATE') AND NOT
+-- SQL: has_table_privilege('review_iq_app', 'public.leads', 'DELETE') AND
+-- SQL: has_column_privilege('review_iq_app', 'public.leads', 'id', 'SELECT') AND
+-- SQL: has_column_privilege('review_iq_app', 'public.leads', 'email_status', 'SELECT') AND NOT
+-- SQL: has_column_privilege('review_iq_app', 'public.leads', 'email', 'SELECT') AND
+-- SQL: has_column_privilege('review_iq_app', 'public.leads', 'email_status', 'UPDATE') AND NOT
+-- SQL: has_column_privilege('review_iq_app', 'public.leads', 'name', 'UPDATE')

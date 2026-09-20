@@ -240,3 +240,10 @@ def test_applies_to_scope_matrix() -> None:
     assert [pcmod.applies_to(p, "ci") for p in (plain, prod, ci)] == [True, False, True]
     with pytest.raises(ValueError):
         pcmod.applies_to(plain, "staging")
+
+
+# ---------------------------------------------------------------- the real repo
+
+
+def test_real_migrations_pass_the_guard() -> None:
+    assert guard.check(REAL_MIGRATIONS) == []

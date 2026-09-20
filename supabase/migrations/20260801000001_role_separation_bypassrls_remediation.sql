@@ -217,3 +217,47 @@ ALTER TABLE public.api_keys ADD CONSTRAINT api_keys_key_prefix_key UNIQUE (key_p
 -- ---------------------------------------------------------------------------
 
 ALTER TABLE public.organization_members ADD CONSTRAINT organization_members_user_id_key UNIQUE (user_id);
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: migrator_and_admin_roles
+-- SQL: SELECT (SELECT count(*) FROM pg_roles r WHERE r.rolname IN ('review_iq_migrator',
+-- SQL: 'review_iq_admin') AND r.rolcanlogin AND r.rolbypassrls AND NOT r.rolsuper) = 2 AND EXISTS
+-- SQL: (SELECT 1 FROM pg_auth_members m WHERE m.roleid = 'authenticated'::regrole::oid AND m.member
+-- SQL: = 'review_iq_admin'::regrole::oid) AND EXISTS (SELECT 1 FROM pg_auth_members m WHERE
+-- SQL: m.roleid = 'review_iq_migrator'::regrole::oid AND m.member = 'postgres'::regrole::oid)
+
+-- @postcondition: migrator_and_admin_can_connect_and_migrator_can_create_in_public
+-- SQL: SELECT EXISTS (SELECT 1 FROM pg_database d CROSS JOIN LATERAL aclexplode(d.datacl) a WHERE
+-- SQL: d.datname = 'postgres' AND a.grantee = 'review_iq_migrator'::regrole::oid AND
+-- SQL: a.privilege_type = 'CONNECT') AND EXISTS (SELECT 1 FROM pg_database d CROSS JOIN LATERAL
+-- SQL: aclexplode(d.datacl) a WHERE d.datname = 'postgres' AND a.grantee =
+-- SQL: 'review_iq_admin'::regrole::oid AND a.privilege_type = 'CONNECT') AND
+-- SQL: has_schema_privilege('review_iq_migrator', 'public', 'CREATE')
+
+-- @postcondition: migrator_default_privileges_in_public
+-- SQL: SELECT (SELECT count(DISTINCT d.defaclobjtype) FROM pg_default_acl d CROSS JOIN LATERAL
+-- SQL: aclexplode(d.defaclacl) a WHERE d.defaclnamespace = 'public'::regnamespace AND a.grantee =
+-- SQL: 'review_iq_migrator'::regrole::oid AND d.defaclobjtype IN ('r', 'S', 'f') AND
+-- SQL: a.privilege_type IN ('INSERT', 'USAGE', 'EXECUTE')) = 3
+
+-- @postcondition: webhook_org_resolvers_are_narrow_security_definers
+-- SQL: SELECT count(*) = 2 AND bool_and(p.prosecdef AND pg_get_userbyid(p.proowner) =
+-- SQL: 'review_iq_migrator' AND p.proconfig @> ARRAY['search_path=public'] AND
+-- SQL: has_function_privilege('review_iq_app', p.oid, 'EXECUTE') AND NOT
+-- SQL: has_function_privilege('anon', p.oid, 'EXECUTE') AND NOT
+-- SQL: has_function_privilege('authenticated', p.oid, 'EXECUTE') AND NOT
+-- SQL: has_function_privilege('service_role', p.oid, 'EXECUTE')) FROM pg_proc p WHERE p.oid IN
+-- SQL: (to_regprocedure('public.resolve_org_for_google_location(text)'),
+-- SQL: to_regprocedure('public.resolve_org_for_shopify_shop(text)'))
+
+-- @postcondition: api_keys_prefix_and_members_user_id_unique
+-- SQL: SELECT EXISTS (SELECT 1 FROM pg_constraint c WHERE c.conrelid = 'public.api_keys'::regclass
+-- SQL: AND c.conname = 'api_keys_key_prefix_key' AND c.contype = 'u' AND
+-- SQL: pg_get_constraintdef(c.oid) = 'UNIQUE (key_prefix)') AND EXISTS (SELECT 1 FROM pg_constraint
+-- SQL: c WHERE c.conrelid = 'public.organization_members'::regclass AND c.conname =
+-- SQL: 'organization_members_user_id_key' AND c.contype = 'u' AND pg_get_constraintdef(c.oid) =
+-- SQL: 'UNIQUE (user_id)')

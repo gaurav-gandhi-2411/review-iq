@@ -15,3 +15,15 @@ ALTER TABLE public.alert_preferences DROP CONSTRAINT IF EXISTS alert_preferences
 ALTER TABLE public.alert_preferences ADD CONSTRAINT alert_preferences_event_type_check
     CHECK (event_type IN ('high_urgency', 'likely_fake', 'fake_cluster', 'topic_spike',
                            'batch_defect', 'fake_campaign'));
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: alert_preferences_event_type_allows_detector_types
+-- SQL: SELECT EXISTS (SELECT 1 FROM pg_constraint c WHERE c.conrelid =
+-- SQL: 'public.alert_preferences'::regclass AND c.conname = 'alert_preferences_event_type_check'
+-- SQL: AND c.contype = 'c' AND pg_get_constraintdef(c.oid) LIKE '%batch_defect%' AND
+-- SQL: pg_get_constraintdef(c.oid) LIKE '%fake_campaign%' AND pg_get_constraintdef(c.oid) LIKE
+-- SQL: '%topic_spike%')

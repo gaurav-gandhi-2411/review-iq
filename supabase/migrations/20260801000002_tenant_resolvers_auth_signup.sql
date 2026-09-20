@@ -313,3 +313,24 @@ COMMENT ON FUNCTION public.settle_batch_job_row IS
 ALTER FUNCTION public.settle_batch_job_row OWNER TO review_iq_migrator;
 REVOKE ALL ON FUNCTION public.settle_batch_job_row FROM PUBLIC, anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.settle_batch_job_row TO review_iq_app;
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: tenant_resolver_and_writer_functions_hardened
+-- SQL: SELECT count(*) = 8 AND bool_and(p.prosecdef AND pg_get_userbyid(p.proowner) =
+-- SQL: 'review_iq_migrator' AND p.proconfig @> ARRAY['search_path=public'] AND
+-- SQL: has_function_privilege('review_iq_app', p.oid, 'EXECUTE') AND NOT
+-- SQL: has_function_privilege('anon', p.oid, 'EXECUTE') AND NOT
+-- SQL: has_function_privilege('authenticated', p.oid, 'EXECUTE') AND NOT
+-- SQL: has_function_privilege('service_role', p.oid, 'EXECUTE')) FROM pg_proc p WHERE p.oid IN
+-- SQL: (to_regprocedure('public.resolve_org_for_user(uuid)'),
+-- SQL: to_regprocedure('public.resolve_org_for_api_key_prefix(text)'),
+-- SQL: to_regprocedure('public.create_org_and_membership(uuid,text,text)'),
+-- SQL: to_regprocedure('public.create_api_key_for_org(uuid,text,text,text,integer)'),
+-- SQL: to_regprocedure('public.upsert_google_installation(uuid,text,text,text)'),
+-- SQL: to_regprocedure('public.upsert_shopify_installation(uuid,text,text)'),
+-- SQL: to_regprocedure('public.claim_pending_batch_job_row()'),
+-- SQL: to_regprocedure('public.settle_batch_job_row(text,integer,text,text,text)'))

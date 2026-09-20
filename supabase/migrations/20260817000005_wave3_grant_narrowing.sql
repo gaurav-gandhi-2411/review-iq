@@ -45,3 +45,17 @@ GRANT SELECT, INSERT, UPDATE ON public.alert_preferences TO authenticated;
 GRANT SELECT, INSERT         ON public.corrections       TO authenticated;
 
 -- anon gets nothing on any of the three -- matches every other tenant table in this schema.
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: wave3_tables_grants_narrowed
+-- SQL: SELECT count(*) = 21 AND bool_and((p = ANY (v.ign)) OR has_table_privilege('authenticated',
+-- SQL: 'public.' || v.t, p) = (p = ANY (v.allowed))) AND bool_and(NOT has_table_privilege('anon',
+-- SQL: 'public.' || v.t, p)) FROM (VALUES ('batch_jobs', ARRAY['SELECT','INSERT','UPDATE']::text[],
+-- SQL: ARRAY[]::text[]), ('alert_preferences', ARRAY['SELECT','INSERT','UPDATE']::text[],
+-- SQL: ARRAY[]::text[]), ('corrections', ARRAY['SELECT','INSERT']::text[], ARRAY[]::text[])) AS
+-- SQL: v(t, allowed, ign) CROSS JOIN
+-- SQL: unnest(ARRAY['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER']) AS p

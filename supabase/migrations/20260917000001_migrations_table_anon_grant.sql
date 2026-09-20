@@ -37,3 +37,14 @@ BEGIN
     END IF;
 END
 $$;
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: migrations_ledger_closed_to_anon_and_authenticated
+-- SQL: SELECT to_regclass('public._migrations') IS NOT NULL AND count(*) = 7 AND bool_and(NOT
+-- SQL: has_table_privilege('anon', 'public._migrations', p) AND NOT
+-- SQL: has_table_privilege('authenticated', 'public._migrations', p)) FROM
+-- SQL: unnest(ARRAY['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER']) AS p

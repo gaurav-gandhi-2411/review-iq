@@ -63,3 +63,39 @@ CREATE POLICY "extraction_costs_authenticated_all" ON public.extraction_costs
 
 CREATE POLICY "extraction_costs_anon_deny" ON public.extraction_costs
   FOR ALL TO anon USING (false);
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: extraction_costs_columns
+-- SQL: SELECT (SELECT count(*) FROM pg_attribute a WHERE a.attrelid =
+-- SQL: 'public.extraction_costs'::regclass AND a.attnum > 0 AND NOT a.attisdropped AND (a.attname,
+-- SQL: format_type(a.atttypid, a.atttypmod), a.attnotnull) IN (('id', 'uuid', true),
+-- SQL: ('extraction_id', 'uuid', false), ('provider', 'text', true), ('model', 'text', true),
+-- SQL: ('tier', 'text', true), ('language', 'text', false), ('tokens_in', 'integer', true),
+-- SQL: ('tokens_out', 'integer', true), ('created_at', 'timestamp with time zone', true))) = 9 AND
+-- SQL: (SELECT count(*) FROM pg_attribute a WHERE a.attrelid = 'public.extraction_costs'::regclass
+-- SQL: AND a.attnum > 0 AND NOT a.attisdropped AND a.attnotnull AND a.attname IN ('cost_usd',
+-- SQL: 'cost_inr')) = 2 AND EXISTS (SELECT 1 FROM pg_attribute a WHERE a.attrelid =
+-- SQL: 'public.extraction_costs'::regclass AND a.attname = 'org_id' AND NOT a.attisdropped AND
+-- SQL: format_type(a.atttypid, a.atttypmod) = 'uuid')
+
+-- @postcondition: extraction_costs_indexes
+-- SQL: SELECT EXISTS (SELECT 1 FROM pg_index i WHERE i.indexrelid =
+-- SQL: to_regclass('public.idx_extraction_costs_org_created_at') AND i.indrelid =
+-- SQL: 'public.extraction_costs'::regclass) AND EXISTS (SELECT 1 FROM pg_index i WHERE i.indexrelid
+-- SQL: = to_regclass('public.idx_extraction_costs_language_tier') AND i.indrelid =
+-- SQL: 'public.extraction_costs'::regclass)
+
+-- @postcondition: extraction_costs_rls_and_policies
+-- SQL: SELECT (SELECT count(*) = 1 AND bool_and(c.relrowsecurity) FROM pg_class c WHERE c.oid IN
+-- SQL: ('public.extraction_costs'::regclass)) AND (SELECT count(*) FROM pg_policies p WHERE
+-- SQL: p.schemaname = 'public' AND (p.tablename, p.policyname, p.cmd, p.roles::text) IN
+-- SQL: (('extraction_costs', 'extraction_costs_authenticated_all', 'ALL', '{authenticated}'),
+-- SQL: ('extraction_costs', 'extraction_costs_anon_deny', 'ALL', '{anon}'))) = 2 AND (SELECT
+-- SQL: count(*) FROM pg_policies p WHERE p.schemaname = 'public' AND p.policyname IN
+-- SQL: ('extraction_costs_authenticated_all') AND p.qual LIKE '%current_org_id()%' AND p.with_check
+-- SQL: LIKE '%current_org_id()%') = 1 AND (SELECT count(*) FROM pg_policies p WHERE p.schemaname =
+-- SQL: 'public' AND p.policyname IN ('extraction_costs_anon_deny') AND p.qual = 'false') = 1

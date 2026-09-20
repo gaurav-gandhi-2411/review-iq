@@ -11,7 +11,9 @@
 -- ADD CONSTRAINT does not support IF NOT EXISTS in Postgres; guard via pg_constraint DO block.
 -- Idempotent: DELETE on no-dup table is a no-op; DO block skips if constraint already exists.
 
-BEGIN;
+-- (No BEGIN/COMMIT here: supabase/push.py already runs this file as one transaction together
+-- with its postconditions and ledger row; an inner COMMIT would end that transaction early.
+-- Removed 2026-09-20 -- already applied everywhere, so this is a comment-level change only.)
 
 -- Step 1: remove duplicate rows (keep newest per org_id + review_hash)
 DELETE FROM public.authenticity_audits
@@ -34,4 +36,13 @@ DO $$ BEGIN
     END IF;
 END $$;
 
-COMMIT;
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: authenticity_audits_org_review_hash_unique
+-- SQL: SELECT EXISTS (SELECT 1 FROM pg_constraint c WHERE c.conrelid =
+-- SQL: 'public.authenticity_audits'::regclass AND c.conname =
+-- SQL: 'authenticity_audits_org_review_hash_unique' AND c.contype = 'u' AND
+-- SQL: pg_get_constraintdef(c.oid) = 'UNIQUE (org_id, review_hash)')

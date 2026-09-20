@@ -20,3 +20,25 @@ ALTER TABLE public.batch_job_rows
 -- while making the detectors' future `WHERE review_date IS NOT NULL` scan fast.
 CREATE INDEX IF NOT EXISTS idx_extractions_review_date
   ON public.extractions (org_id, review_date) WHERE review_date IS NOT NULL;
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: review_date_columns
+-- SQL: SELECT (SELECT count(*) FROM pg_attribute a WHERE a.attrelid =
+-- SQL: 'public.extractions'::regclass AND a.attnum > 0 AND NOT a.attisdropped AND (a.attname,
+-- SQL: format_type(a.atttypid, a.atttypmod), a.attnotnull) IN (('review_date',
+-- SQL: 'timestamp with time zone', false))) = 1 AND (SELECT count(*) FROM pg_attribute a WHERE
+-- SQL: a.attrelid = 'public.batch_job_rows'::regclass AND a.attnum > 0 AND NOT a.attisdropped AND
+-- SQL: (a.attname, format_type(a.atttypid, a.atttypmod), a.attnotnull) IN (('review_date',
+-- SQL: 'timestamp with time zone', false))) = 1 AND (SELECT count(*) FROM pg_attribute a WHERE
+-- SQL: a.attrelid = 'public.batch_job_rows'::regclass AND a.attnum > 0 AND NOT a.attisdropped AND
+-- SQL: (a.attname, format_type(a.atttypid, a.atttypmod), a.attnotnull) IN (('product', 'text',
+-- SQL: false))) = 1
+
+-- @postcondition: extractions_review_date_partial_index
+-- SQL: SELECT EXISTS (SELECT 1 FROM pg_index i WHERE i.indexrelid =
+-- SQL: to_regclass('public.idx_extractions_review_date') AND i.indrelid =
+-- SQL: 'public.extractions'::regclass AND i.indpred IS NOT NULL)
