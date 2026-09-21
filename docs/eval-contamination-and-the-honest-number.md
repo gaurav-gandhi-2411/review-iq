@@ -12,6 +12,19 @@ anywhere (README, blog, site).**
 > not hold; the 7.8pp is not re-derived. Details: the Correction sections of ADR 0021 and ADR
 > 0023. The text and numbers below are kept as originally written, as a record of the claim.
 
+> **Correction (Session 16, 2026-09-21): the held-out corpus was not clean.** 36 of its 106
+> reviews were also in prompt-visible development sets: all 15 `eval/fixtures/hi-en/` fixtures and
+> all 21 reviews of the benchmark's `hi-en` slice (no review is in both). Four `hi_en.py` few-shot
+> examples are rewrites of the dev fixtures. The builder excluded only already-quarantined text,
+> and the leakage check compared only the first 40 characters against prompt text, so nothing
+> failed. Separately, 102 (review, field) gold pairs were a judge-panel split stored as a default
+> and scored as a label. The published headline now covers the 70 unseen reviews with split gold
+> excluded: 79.5% [76.0, 82.7], against 72.4% [69.8, 75.0] for all 106 with defaults scored. The
+> exposed reviews score no better than the unseen ones (+1.2 pp, 95% CI [-4.2, +6.4]), which is
+> absence of a detected effect, not proof of none. The "12.3 pp gap" and "68.3% held-out" figures
+> below were measured on the full 106 and are kept as originally written. Details and evidence:
+> ADR 0032.
+
 ## TL;DR
 
 This product's published accuracy numbers were, for most of this project's history, measured

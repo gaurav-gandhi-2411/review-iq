@@ -22,6 +22,17 @@ MIN_LEAK_CHUNK_LEN characters of each review, so a review pasted with its openin
 (or a longer review pasted from the middle) passed. It now tests every window. It also fails
 closed when the corpus or the prompt files are missing, instead of printing OK for a scan of
 nothing.
+
+Session 16 (V1): the check above has a second, larger blind spot that let 36 of the 106
+held-out reviews through. It compared each review only against prompt text (every window of it,
+after the fix above) -- never against the prompt-visible development fixtures
+(`eval/fixtures/{,hi-en/,hi/}`) or the benchmark gold, which are where the overlap actually was.
+It now also checks whole-review overlap with those sets (eval/heldout_exposure.py) against a
+ledger, `eval/heldout_exposure_ack.json`: an overlap NOT in the ledger fails the build (a new
+exposure), and a ledger entry that is no longer an overlap fails it too (a stale ledger stops
+describing the corpus). The ledger does not restore an exposed review to the headline -- the
+scorer excludes every exposed review regardless. Still not covered: paraphrase (four `hi_en.py`
+few-shot examples were found by hand this way; ADR 0032).
 """
 
 from __future__ import annotations
@@ -29,6 +40,8 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 HELDOUT_DIR = REPO_ROOT / "eval" / "fixtures" / "_held_out_hindi_hinglish"
@@ -99,6 +112,27 @@ def find_leaks(
     return leaks
 
 
+def find_exposure_problems(
+    exposure: dict[str, list[str]], acknowledged: dict[str, dict]
+) -> list[str]:
+    """Overlaps not in the ledger (new exposure) and ledger entries that are not overlaps."""
+    problems = [
+        f"{fid} overlaps a development set ({', '.join(reasons)}) and is not in "
+        "eval/heldout_exposure_ack.json: a review the prompt-development process has seen is "
+        "not held out. Remove it from the corpus or, if it is a known exposure, add it to the "
+        "ledger with its evidence (it stays excluded from the headline either way)."
+        for fid, reasons in sorted(exposure.items())
+        if fid not in acknowledged
+    ]
+    problems += [
+        f"{fid} is in eval/heldout_exposure_ack.json but no longer overlaps any development "
+        "set: the ledger is stale."
+        for fid in sorted(acknowledged)
+        if fid not in exposure
+    ]
+    return problems
+
+
 def main() -> int:
     held_out_texts = _held_out_texts()
     if not held_out_texts:
@@ -130,6 +164,19 @@ def main() -> int:
     ]
     if stale:
         print(f"FAIL: stale ALLOWLIST entries (overlap no longer exists): {stale}", file=sys.stderr)
+        return 1
+
+    from eval.heldout_exposure import ACK_PATH, held_out_exposure
+
+    if not ACK_PATH.exists():
+        print(f"FAIL: exposure ledger {ACK_PATH} is missing (fail closed).", file=sys.stderr)
+        return 1
+    acknowledged = json.loads(ACK_PATH.read_text(encoding="utf-8"))["acknowledged"]
+    problems = find_exposure_problems(held_out_exposure(), acknowledged)
+    if problems:
+        print(f"FAIL: {len(problems)} held-out exposure problem(s):", file=sys.stderr)
+        for problem in problems:
+            print(f"  {problem}", file=sys.stderr)
         return 1
 
     if leaks:
