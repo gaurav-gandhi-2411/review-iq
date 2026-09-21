@@ -31,7 +31,6 @@ from app.api.ops import router as ops_router
 from app.api.query import router as query_router
 from app.api.shopify_auth import router as shopify_auth_router
 from app.api.unsubscribe import router as unsubscribe_router
-from app.api.v2.authenticity import router as v2_authenticity_router
 from app.api.v2.corrections import router as v2_corrections_router
 from app.api.v2.dataset import router as v2_dataset_router
 from app.api.v2.extract import router as v2_extract_router
@@ -131,7 +130,7 @@ reached — contact support to raise it.
 
 ## Endpoint groups
 
-- **v2 / v2-authenticity / v2-insights / v2-ingest** — the multi-tenant API
+- **v2 / v2-insights / v2-ingest** — the multi-tenant API
   (Postgres-backed), all requiring a `riq_live_*` API key.
 - **demo** — keyless, heavily rate-limited, for evaluation only.
 - **auth** — first-login API key issuance.
@@ -166,12 +165,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "description": "Multi-tenant endpoints (Postgres-backed). Requires riq_live_* API key.",
             },
             {
-                "name": "v2-authenticity",
-                "description": "Tenant-scoped fake-review authenticity scoring. Requires riq_live_* API key.",
-            },
-            {
                 "name": "v2-insights",
-                "description": "Aggregated analytics — authenticity summaries, theme trends, health score. "
+                "description": "Aggregated analytics — theme trends, health score. "
                 "Requires riq_live_* API key.",
             },
             {
@@ -248,7 +243,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         _app.include_router(v2_extract_router)
         _app.include_router(ingest_router)
         _app.include_router(v2_reviews_router)
-        _app.include_router(v2_authenticity_router)
         _app.include_router(v2_insights_router)
         _app.include_router(v2_reply_router)
         _app.include_router(v2_corrections_router)

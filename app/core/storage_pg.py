@@ -799,7 +799,7 @@ def get_authenticity_audit_by_hash_pg(
 ) -> dict[str, object] | None:
     """Return a stored authenticity audit row for (org_id, review_hash), or None if absent.
 
-    Used as a pre-LLM short-circuit in POST /v2/authenticity to avoid re-scoring
+    Used as a pre-LLM short-circuit in POST /bff/authenticity to avoid re-scoring
     identical review text.  Reuses existing columns — no DDL required.
 
     Args:

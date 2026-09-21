@@ -88,3 +88,56 @@ def test_public_service_mounts_leads_on_every_deploy_target() -> None:
     only (the admin service, above, must not expose it)."""
     for deploy_target in ("cloud-run", "local"):
         assert "/leads" in _paths(deploy_target, service_role="public")
+
+
+# The fake-review flag is unmeasurable (Session 15c D2), so its public API routes were removed
+# in Session 15d (D5). The dashboard's own /bff/* authenticity routes are a separate surface
+# and intentionally stay (see the D5 report / PR body for that follow-up).
+_REMOVED_AUTHENTICITY_PATHS = (
+    "/v2/authenticity",
+    "/v2/authenticity/batch",
+    "/v2/insights/authenticity",
+)
+
+
+def test_public_service_does_not_mount_removed_authenticity_routes() -> None:
+    """Session 15d D5: no public deploy target mounts the three /v2 authenticity routes, but
+    the sibling /v2/insights endpoints and the dashboard's /bff/authenticity are unaffected."""
+    for deploy_target in ("cloud-run", "local", "hf-spaces"):
+        paths = _paths(deploy_target, service_role="public")
+        for removed in _REMOVED_AUTHENTICITY_PATHS:
+            assert removed not in paths, f"{removed} is still mounted on {deploy_target}"
+        assert "/v2/insights/trends" in paths
+        assert "/v2/insights/health-score" in paths
+        assert "/bff/authenticity" in paths  # dashboard path, out of D5's scope
+
+
+def test_removed_authenticity_routes_return_404() -> None:
+    """HTTP-level proof (not just absent from app.routes): the removed routes 404 with no auth."""
+    client = TestClient(_app("cloud-run"), raise_server_exceptions=False)
+    assert client.post("/v2/authenticity", json={"text": "x"}).status_code == 404
+    assert client.post("/v2/authenticity/batch", json={"reviews": []}).status_code == 404
+    assert client.get("/v2/insights/authenticity").status_code == 404
+
+
+def test_admin_service_role_unaffected_by_authenticity_removal() -> None:
+    """The admin service never mounted these routes; it still mounts exactly ops + admin."""
+    paths = _paths("cloud-run", service_role="admin")
+    assert "/admin/organizations" in paths
+    for removed in _REMOVED_AUTHENTICITY_PATHS:
+        assert removed not in paths
+
+
+def test_openapi_has_no_v2_authenticity_paths_and_no_fake_review_claim() -> None:
+    """Regression (D5): app.openapi() carries no /v2/authenticity* or /v2/insights/authenticity
+    path, no v2-authenticity tag, and no 'fake-review' promise anywhere in the schema."""
+    import json
+
+    schema = _app("cloud-run").openapi()  # type: ignore[attr-defined]
+    for path in schema["paths"]:
+        assert not path.startswith("/v2/authenticity"), path
+        assert path != "/v2/insights/authenticity", path
+    assert "v2-authenticity" not in {t["name"] for t in schema.get("tags", [])}
+    blob = json.dumps(schema).lower()
+    assert "fake-review" not in blob
+    assert "fake review" not in blob

@@ -238,8 +238,6 @@ full history instead of comparing these rows to the current table directly.
 | `GET` | `/v2/ingest/{job_id}/result` | `X-API-Key` | Download results (JSON or CSV) |
 | `GET` | `/v2/reviews` | `X-API-Key` | Query org's stored extractions |
 | `GET` | `/v2/insights` | `X-API-Key` | Aggregated analytics for org |
-| `POST` | `/v2/authenticity` | `X-API-Key` | Single review → authenticity score + label + flags |
-| `POST` | `/v2/authenticity/batch` | `X-API-Key` | Batch authenticity scoring (≤500 reviews) |
 | `POST` | `/auth/provision` | Supabase JWT | First-login key provisioning (magic-link flow) |
 | `GET` | `/account` | Supabase JWT | Fetch org + key metadata |
 | `POST` | `/account/regenerate-key` | Supabase JWT | Revoke current key, issue new one (shown once) |
@@ -374,7 +372,7 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 **Phase 2.2** ✓ (shipped June 2026 — v0.6.0):
 - Review authenticity scoring — heuristic signals (incentivized phrases, brevity, repetition, rating-text mismatch) + LLM signal (Groq, language-aware)
 - Batch-level signals — near-duplicate detection (word k-shingles + Jaccard), review burst detection
-- `POST /v2/authenticity` (single + batch), `include_authenticity` option on CSV ingest
+- `POST /v2/authenticity` (single + batch), `include_authenticity` option on CSV ingest — **Superseded (Session 15d, D5):** the `/v2/authenticity*` and `GET /v2/insights/authenticity` public API routes were removed because the flag is unmeasurable; `include_authenticity` on CSV ingest and the dashboard's own authenticity views are unchanged
 - `authenticity_audits` table — org-scoped compliance audit trail with RLS
 - IS 19000:2022 support posture — flags incentivized/fake reviews for human-administrator decision; see `docs/compliance.md`
 - Not measured: no authenticity labels exist for the held-out set, so the authenticity scoring above has no published accuracy figure
