@@ -135,6 +135,19 @@ class Settings(BaseSettings):
         default=False, alias="ENABLE_FAKE_CAMPAIGN_DETECTOR"
     )
 
+    # Field-targeted prompt-injection controls (app/core/injection_controls.py) -- BOTH OFF by
+    # default; turning them on is an operator decision (SECURITY.md section 2, ops/runbooks/
+    # injection-controls.md). Input: strip sentences that look like an instruction aimed at the
+    # schema fields before extraction. Output: null buy_again/stars_inferred when they contradict
+    # the rest of the extraction and flag the review. Both are tripwires against a naive attacker,
+    # not a defense of the class (9 of 10 hand-written rephrasings evade the input rules).
+    enable_field_injection_input_control: bool = Field(
+        default=False, alias="ENABLE_FIELD_INJECTION_INPUT_CONTROL"
+    )
+    enable_field_injection_output_check: bool = Field(
+        default=False, alias="ENABLE_FIELD_INJECTION_OUTPUT_CHECK"
+    )
+
     # Tiered model names — both Groq (privacy-vetted)
     # Groq deprecated llama-3.1-8b-instant on 2026-08-16; openai/gpt-oss-20b is their
     # documented replacement, same fast/cheap tier (Item G1).

@@ -12,6 +12,11 @@ from app.core.alerts.engine import alert_on_review_event
 from app.core.config import get_settings
 from app.core.grounding import ungrounded_competitor_mentions
 from app.core.ingest_worker import drain_rows
+from app.core.injection_controls import (
+    apply_output_controls,
+    apply_output_controls_to_cached,
+    controlled_input,
+)
 from app.core.injection_guard import classify_injection_risk
 from app.core.language import detect_language
 from app.core.llm import extract_with_llm
@@ -66,14 +71,24 @@ async def _run_extraction_v2(
     if cached is not None:
         log.info("extraction.cache_hit", input_hash=input_hash, org_id=ctx.org_id)
         EXTRACTIONS_TOTAL.labels(model="cached", cached="true").inc()
+        # S15d: a row cached before the output check was enabled may hold a forged value. Pure
+        # re-check on a copy (no model call, nothing written); no-op when the flag is off.
+        cached, _ = apply_output_controls_to_cached(
+            cached, log_context={"input_hash": input_hash, "org_id": ctx.org_id}
+        )
         # Re-evaluate on cache hit: this exact review text may have been extracted before
         # this alert wiring existed, so it may never have been checked for alert-worthiness.
         # Cheap to re-check — alert_log dedupe short-circuits if it really was already alerted.
         await alert_on_review_event(org_id=ctx.org_id, review_id=input_hash, extraction=cached)
         return cached
 
-    detected_lang = detect_language(request.text)
-    clean_text, regex_suspicious = sanitize(request.text)
+    # S15d input control (flag off => ctl.text is request.text, byte-identical). Runs on the RAW
+    # text before sanitize(): the rules were measured on raw text. Language detection, the
+    # sanitizer and the Layer 4 grounding source all use the controlled text, so an attacker's
+    # own payload is neither routed on nor accepted as "grounding".
+    ctl = controlled_input(request.text, log_context={"input_hash": input_hash})
+    detected_lang = detect_language(ctl.text)
+    clean_text, regex_suspicious = sanitize(ctl.text)
     # Session 13 P4a: a real, model-based pre-filter alongside the regex layer -- see
     # app/core/injection_guard.py's module docstring for what it catches that the regex
     # misses (and, honestly, what it still misses too). Runs on the ORIGINAL text, not the
@@ -108,7 +123,7 @@ async def _run_extraction_v2(
     # trusting the LLM's output unchecked. Scoped to this one field only -- see that
     # module's docstring for why pros/cons/topics are excluded (measured 59-88% false
     # positive rate on real data, eval/results/grounding_check_fpr_n106.json).
-    ungrounded = ungrounded_competitor_mentions(request.text, llm_output.competitor_mentions)
+    ungrounded = ungrounded_competitor_mentions(ctl.text, llm_output.competitor_mentions)
     if ungrounded:
         log.warning(
             "extraction.ungrounded_competitor_mentions",
@@ -118,6 +133,14 @@ async def _run_extraction_v2(
         llm_output.competitor_mentions = [
             c for c in llm_output.competitor_mentions if c not in ungrounded
         ]
+
+    # S15d output check: null a buy_again / stars_inferred that contradicts the rest of the
+    # extraction and flag the review (persisted below via is_suspicious). None when flags are off.
+    controls_report = apply_output_controls(
+        llm_output, ctl, log_context={"input_hash": input_hash, "org_id": ctx.org_id}
+    )
+    if controls_report is not None and controls_report.needs_review:
+        is_suspicious = True
 
     meta = ExtractionMetaV2(
         model=model_name,
@@ -134,6 +157,7 @@ async def _run_extraction_v2(
         review_length_chars=len(request.text),
         review_date=request.review_date,
         extraction_meta=meta,
+        injection_controls=controls_report,
     )
 
     # D1/P2b: stateless is the default -- review text must not be persisted anywhere.

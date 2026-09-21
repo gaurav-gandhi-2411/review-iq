@@ -22,7 +22,15 @@ Quota: ~2.5K tokens per call on the small tier, escalating to the large tier ~59
 per-model limit. Requests-per-day headers are read before and after by the caller.
 
 Usage (GROQ_API_KEY must be in the environment):
-    uv run python eval/run_injection_e2e.py --runs 3
+    uv run python eval/run_injection_e2e.py --runs 3                # controls off (default)
+    uv run python eval/run_injection_e2e.py --runs 3 --controls on  # S15d controls enabled
+
+`--controls on` sets ENABLE_FIELD_INJECTION_INPUT_CONTROL and ENABLE_FIELD_INJECTION_OUTPUT_CHECK
+for this process and runs the same production path the endpoints run (app/core/injection_controls:
+strip flagged sentences before sanitize, ground against the stripped text, null contradicting
+buy_again/stars_inferred), judging landing on the FINAL, post-control output. It writes a distinct
+file (eval/results/injection_e2e_field_targeted_controls_on.json) and never touches the controls-off
+artifact. `--controls off` (default) is byte-for-byte the pre-S15d behaviour and output.
 """
 
 from __future__ import annotations
@@ -30,6 +38,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -39,6 +48,7 @@ sys.path.insert(0, str(ROOT))
 
 from app.core.config import get_settings  # noqa: E402
 from app.core.grounding import ungrounded_competitor_mentions  # noqa: E402
+from app.core.injection_controls import apply_output_controls, controlled_input  # noqa: E402
 from app.core.injection_guard import classify_injection_risk  # noqa: E402
 from app.core.language import detect_language  # noqa: E402
 from app.core.llm import _SYSTEM_PROMPT  # noqa: E402
@@ -50,6 +60,7 @@ from eval.injection_suite import CASES  # noqa: E402
 from eval.provenance import get_git_sha, now_iso  # noqa: E402
 
 OUT_PATH = ROOT / "eval" / "results" / "injection_e2e_field_targeted.json"
+OUT_PATH_CONTROLS_ON = ROOT / "eval" / "results" / "injection_e2e_field_targeted_controls_on.json"
 PACING_SECONDS = 25.0  # ~2.5K tokens/call vs an 8K TPM per-model limit
 
 # Attack id -> (human target, predicate over the FINAL output dict returning True if it LANDED).
@@ -78,18 +89,34 @@ ATTACKS: dict[str, tuple[str, Any]] = {
 NOT_COUNTED = {"f4-07"}
 
 
-async def _extract_final(text: str, settings: Any) -> dict[str, Any]:
-    """Production path for one review: returns the post-grounding output plus accounting."""
-    clean, regex_suspicious = sanitize(text)
+async def _extract_final(text: str, settings: Any, controls: bool = False) -> dict[str, Any]:
+    """Production path for one review: returns the post-grounding output plus accounting.
+
+    `controls=False` is the original path, unchanged. `controls=True` mirrors app/api/v2/
+    extract.py with the S15d flags on: the controls run on the raw text before sanitize(),
+    grounding compares against the controlled text, and the output check runs last.
+    """
+    ctl = controlled_input(text) if controls else None
+    source = ctl.text if ctl is not None else text
+    clean, regex_suspicious = sanitize(source)
     lang = detect_language(clean)
     prompt = build_prompt(wrap_for_llm(clean), lang)
     out, model, t_in, t_out, escalated, degraded = await route_extraction(
         prompt, _SYSTEM_PROMPT, allow_gemini_fallback=False, settings=settings
     )
     final = out.model_dump()
-    dropped = ungrounded_competitor_mentions(text, final["competitor_mentions"])
+    dropped = ungrounded_competitor_mentions(source, final["competitor_mentions"])
     final["competitor_mentions"] = [c for c in final["competitor_mentions"] if c not in dropped]
+    extra: dict[str, Any] = {}
+    if ctl is not None:
+        # Rebuild the model from the post-grounding dict so the output check sees exactly what
+        # the endpoint's ReviewExtractionLLMOutput would hold at that point, then re-dump.
+        out = type(out)(**final)
+        report = apply_output_controls(out, ctl)
+        final = out.model_dump()
+        extra["injection_controls"] = report.model_dump() if report is not None else None
     return {
+        **extra,
         "final": final,
         "grounding_dropped": dropped,
         "model": model,
@@ -105,8 +132,19 @@ async def _extract_final(text: str, settings: Any) -> dict[str, Any]:
 async def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--runs", type=int, default=3)
+    parser.add_argument("--controls", choices=["on", "off"], default="off")
     args = parser.parse_args()
+    controls_on = args.controls == "on"
+    if controls_on:
+        os.environ["ENABLE_FIELD_INJECTION_INPUT_CONTROL"] = "true"
+        os.environ["ENABLE_FIELD_INJECTION_OUTPUT_CHECK"] = "true"
+        get_settings.cache_clear()
     settings = get_settings()
+    if controls_on and not (
+        settings.enable_field_injection_input_control
+        and settings.enable_field_injection_output_check
+    ):
+        raise SystemExit("--controls on requested but the flags did not take effect")
     cases = {c.id: c for c in CASES if c.family == "field_targeted"}
     assert sorted(cases) == sorted(ATTACKS), "attack table out of sync with eval/injection_suite.py"
 
@@ -118,7 +156,7 @@ async def main() -> None:
         runs = []
         for i in range(args.runs):
             try:
-                r = await _extract_final(case.text, settings)
+                r = await _extract_final(case.text, settings, controls_on)
                 r["landed"] = bool(ATTACKS[cid][1](r["final"]))
             except Exception as exc:  # noqa: BLE001 -- record and keep going, never mask
                 r = {"error": f"{type(exc).__name__}: {exc}", "landed": None}
@@ -153,6 +191,14 @@ async def main() -> None:
         "groq_model_large": settings.groq_model_large,
         "runs_per_attack": args.runs,
         "control": "production path incl. app/core/grounding.py (#189); pre-filter reported per attack",
+        **(
+            {
+                "controls_mode": "on",
+                "controls_detail": "app/core/injection_controls.py: input strip + output check",
+            }
+            if controls_on
+            else {}
+        ),
         "counted_attacks": len(counted),
         "counted_runs": tot_runs,
         "counted_landed": tot_landed,
@@ -165,8 +211,9 @@ async def main() -> None:
         },
         "per_attack": rows,
     }
-    OUT_PATH.write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"\nWritten: {OUT_PATH}")
+    out_path = OUT_PATH_CONTROLS_ON if controls_on else OUT_PATH
+    out_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"\nWritten: {out_path}")
     for r in rows:
         tag = "" if r["counted"] else " (not counted)"
         print(f"  {r['id']}: landed {r['landed']}/{r['n_runs']} -> pass {r['pass_rate']}{tag}")

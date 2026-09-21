@@ -129,10 +129,18 @@ async def draft_reply(
         cons: list[str] = request.extraction.cons
         topics: list[str] = request.extraction.topics
     else:
+        from app.core.injection_controls import controlled_input
         from app.core.llm import extract_with_llm
         from app.core.prompts import build_prompt
 
-        ext_prompt = build_prompt(wrapped_review, language)
+        # S15d input control for this extraction call (flag off, or nothing flagged => the same
+        # wrapped_review as before). Only cons/topics are consumed from this extraction, so the
+        # output check (buy_again/stars_inferred) has nothing to protect here: deliberately not
+        # applied. The reply-drafting prompt itself is a different task with no schema fields to
+        # steer, and keeps the unstripped review.
+        ctl = controlled_input(request.text)
+        extraction_review = wrap_for_llm(sanitize(ctl.text)[0]) if ctl.stripped else wrapped_review
+        ext_prompt = build_prompt(extraction_review, language)
         try:
             llm_output, _, _, ex_tin, ex_tout, _ = await extract_with_llm(
                 ext_prompt, allow_gemini_fallback=False

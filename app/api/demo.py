@@ -12,6 +12,7 @@ from fastapi import APIRouter, HTTPException, Request, status
 
 from app.core.config import get_settings
 from app.core.grounding import ungrounded_competitor_mentions
+from app.core.injection_controls import apply_output_controls, controlled_input
 from app.core.injection_guard import classify_injection_risk
 from app.core.language import detect_language
 from app.core.llm import extract_with_llm
@@ -217,7 +218,11 @@ async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtractio
 
     Use POST /v2/extract with a riq_live_* API key for production use.
     """
-    clean_text, regex_suspicious = sanitize(body.text)
+    # S15d input control (flag off => ctl.text is body.text, byte-identical): runs on the RAW
+    # text before sanitize(), see app/core/injection_controls.py. The public keyless demo is the
+    # easiest surface to reach, so it gets the same controls as /v2/extract.
+    ctl = controlled_input(body.text)
+    clean_text, regex_suspicious = sanitize(ctl.text)
     cache_key = _demo_cache_key(clean_text)
 
     cached = _demo_cache_get(cache_key)
@@ -269,12 +274,16 @@ async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtractio
     # Session 14 P4b: same output-grounding check as /v2/extract -- see
     # app/core/grounding.py's module docstring. The public, keyless demo is arguably the
     # higher-value target here too (no API key needed to reach it at all).
-    ungrounded = ungrounded_competitor_mentions(body.text, llm_output.competitor_mentions)
+    ungrounded = ungrounded_competitor_mentions(ctl.text, llm_output.competitor_mentions)
     if ungrounded:
         log.warning("demo.ungrounded_competitor_mentions", dropped=ungrounded)
         llm_output.competitor_mentions = [
             c for c in llm_output.competitor_mentions if c not in ungrounded
         ]
+
+    # S15d output check (None when the flag is off): null a contradicting buy_again /
+    # stars_inferred. Nothing is persisted on the demo path, the report rides on the response.
+    controls_report = apply_output_controls(llm_output, ctl)
 
     meta = ExtractionMeta(
         model=model_name,
@@ -288,6 +297,7 @@ async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtractio
         **llm_output.model_dump(),
         review_length_chars=len(body.text),
         extraction_meta=meta,
+        injection_controls=controls_report,
     )
     _demo_cache_put(cache_key, result)
 
