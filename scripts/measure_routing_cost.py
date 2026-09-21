@@ -14,6 +14,9 @@ Headlines reported (GG has decided the vacuous constant `stars` field is exclude
 `language` is scored against the corpus label; under language_forced the prompt itself tells the
 model `language: always "hi-en"`, so it scores 100% by echo, not by extraction skill. Including it
 in the misrouting delta therefore inflates the effect; ex_stars_ex_language is the honest number.
+(Session 15d D7: ex_stars_ex_language is now also the published README headline, produced by
+eval/score_held_out_corpus_v2.py::summarize; this script's own bootstrap is paired across the two
+conditions, so its single-condition CIs differ from that headline's by a few hundredths of a pp.)
 
 All CIs are percentile bootstrap, 10,000 resamples, seed 42, NOT clamped to [0, 1]; paired (the
 same fixture indices are resampled for both conditions). Subsets resample within the subset.
@@ -198,10 +201,12 @@ def _detector_baselines(recs: list[dict[str, Any]], texts: dict[str, str]) -> di
         n_en = sum(1 for g in gt if g == "en")
         rec_hien = sum(1 for p, g in zip(pred, gt, strict=True) if g == "hi-en" and p == "hi-en")
         rec_en = sum(1 for p, g in zip(pred, gt, strict=True) if g == "en" and p == "en")
+        # Session 15d: these are AGREEMENT with the (noisy, alpha 0.380) corpus label, not
+        # accuracy -- keys renamed accordingly; an always-hi-en "score" here is a base-rate artifact.
         acc = sum(hit) / len(hit)
         out[name] = {
-            "accuracy": acc,
-            "accuracy_wilson95": list(wilson_ci(acc, len(hit))),
+            "agreement_with_corpus_label": acc,
+            "agreement_wilson95": list(wilson_ci(acc, len(hit))),
             "n_correct": sum(hit),
             "recall_hi_en": rec_hien / n_hien,
             "recall_hi_en_n": n_hien,
@@ -322,8 +327,8 @@ def main() -> int:
             "n_mismatched": len(mism),
             "n_mismatch_gt_hi_en_detected_en": len(dir_a),
             "n_mismatch_gt_en_detected_hi_en": len(dir_b),
-            "detector_accuracy_vs_corpus_label": 1 - len(mism) / n,
-            "detector_accuracy_wilson95": list(wilson_ci(1 - len(mism) / n, n)),
+            "detector_agreement_with_corpus_label": 1 - len(mism) / n,
+            "detector_agreement_wilson95": list(wilson_ci(1 - len(mism) / n, n)),
         },
         "headline": {},
         "per_field": {},

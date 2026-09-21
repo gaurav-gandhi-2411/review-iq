@@ -14,7 +14,7 @@ from app.core.config import get_settings
 from app.core.grounding import ungrounded_competitor_mentions
 from app.core.injection_controls import apply_output_controls, controlled_input
 from app.core.injection_guard import classify_injection_risk
-from app.core.language import detect_language
+from app.core.language import detect_language, language_signal
 from app.core.llm import extract_with_llm
 from app.core.pricing import UnknownModelError, price_extraction
 from app.core.prompts import PROMPT_VERSION, build_prompt
@@ -202,6 +202,8 @@ async def _check_demo_quota() -> bool:
                             "topics": ["sound quality", "battery life"],
                             "urgency": "low",
                             "language": "en",
+                            "code_mixed": False,
+                            "language_signal_strength": "none",
                         },
                     },
                 },
@@ -217,6 +219,12 @@ async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtractio
     cache (max 256 entries) without re-spending LLM tokens.
 
     Use POST /v2/extract with a riq_live_* API key for production use.
+
+    Here `language` is the model's own report (the routed prompt tells it which label to echo),
+    while `code_mixed` / `language_signal_strength` come from the language detector's rule hits
+    (a heuristic, not a probability). The label is not an accuracy-scored field: it agrees with
+    a human-labelled corpus only 48.1% of the time (95% CI 38.8-57.5; corpus label alpha 0.380,
+    so this partly measures label noise, not detector error).
     """
     # S15d input control (flag off => ctl.text is body.text, byte-identical): runs on the RAW
     # text before sanitize(), see app/core/injection_controls.py. The public keyless demo is the
@@ -257,6 +265,7 @@ async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtractio
         )
 
     detected_lang = detect_language(clean_text)
+    signal = language_signal(clean_text)
     wrapped = wrap_for_llm(clean_text)
     user_prompt = build_prompt(wrapped, detected_lang)
 
@@ -295,6 +304,8 @@ async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtractio
     )
     result = ReviewExtraction(
         **llm_output.model_dump(),
+        code_mixed=signal.code_mixed,
+        language_signal_strength=signal.strength,
         review_length_chars=len(body.text),
         extraction_meta=meta,
         injection_controls=controls_report,

@@ -22,7 +22,8 @@ EXCLUDING the constant `stars` field (GG's decision). Tags: **VERIFIED (how)** =
    to slightly negative). Under `language_forced` the prompt itself says `language: always "hi-en"`, so
    the field is 100% by echo; as-deployed it equals detector-vs-corpus-label agreement exactly. This
    contradicts a prior shipped conclusion (ADR 0021 Decision, ADR 0023 Context item 3) and is surfaced
-   here rather than absorbed; the ADRs are immutable and are not edited by this PR. **VERIFIED**
+   here rather than absorbed. (Session 15d: ADR 0021 and ADR 0023 now carry dated Correction
+   sections; their original text is unchanged.) **VERIFIED**
    (`adr_0021_quantity_all_10_fields`; per-fixture assertion in the script that as-deployed `language`
    score == 1[detected == corpus label] on all 106).
 3. **Including `language` in the headline, misrouting looks like 17.2% [10.9, 23.4] of the gap to 100%;
@@ -31,8 +32,8 @@ EXCLUDING the constant `stars` field (GG's decision). Tags: **VERIFIED (how)** =
    (extraction/label/scorer error) is ~100% of the 27.6pp gap. **VERIFIED** (same artifact).
 4. **Where the customer actually feels the label is the `language` output field itself, not the other
    fields.** `/v2/extract` overwrites the model's `language` with `detect_language()` output
-   (`app/api/v2/extract.py:102`), so the API's `language` accuracy IS detector accuracy: 48.1% agreement
-   (Wilson 95% [38.8, 57.5]) with the corpus label on n=106. That label is itself noisy (judge alpha 0.380
+   (`app/api/v2/extract.py:102`), so the API's `language` value IS the detector's output; its agreement with the
+   corpus label is 48.1% (Wilson 95% [38.8, 57.5]) on n=106 (agreement, never accuracy). That label is itself noisy (judge alpha 0.380
    on `language`, ADR 0023), which bounds any accuracy claim about the field. **VERIFIED** (code read;
    artifact) for the mechanism; the alpha figure is quoted from ADR 0023 (**VERIFIED** by file read,
    not recomputed).
@@ -150,7 +151,7 @@ model error.
 `detector_external_controls`; all variants use only the production regexes, no new vocabulary, no fitted
 threshold; these are diagnostics, not proposals):
 
-| Rule | Held-out n=106 acc (Wilson) | recall hi-en (n=101) / en (n=5) | Benchmark set recall vs `slice` hi-en (n=21) / en (n=22) | CI-gate en recall (n=27) |
+| Rule | Held-out n=106 agreement with corpus label (Wilson; label alpha 0.380, not accuracy) | recall hi-en (n=101) / en (n=5) | Benchmark set recall vs `slice` hi-en (n=21) / en (n=22) | CI-gate en recall (n=27) |
 |---|---|---|---|---|
 | always hi-en | 95.3% [89.4, 98.0] | 101/101, 0/5 | 21/21, 0/22 | 0/27 |
 | always en | 4.7% [2.0, 10.6] | 0/101, 5/5 | 0/21, 22/22 | 27/27 |
@@ -159,7 +160,7 @@ threshold; these are diagnostics, not proposals):
 | strong or >=1 weak marker | 95.3% [89.4, 98.0] | 101/101, 0/5 | 21/21, 22/22 | 27/27 |
 | strong or >=2 weak markers | 51.9% [42.5, 61.2] | 52/101, 3/5 | 21/21, 22/22 | 27/27 |
 
-Reading: (i) "improving the detector" on the 106 is dominated by a corpus artifact -- accuracy there is
+Reading: (i) "improving the detector" on the 106 is dominated by a corpus artifact -- agreement there is
 decided by whether one-token reviews count as Hinglish, the exact ambiguity ADR 0023 identified. The
 ">=1 weak marker" variant catches every held-out hi-en and creates no false positive on 49 external English
 texts (22 benchmark `slice`=en, 27 hand-built CI-gate), but also flags all 5 held-out gt-en fixtures (and one of the weak markers, "value for money", is
@@ -195,7 +196,7 @@ baseline-definition decision for GG (escalation item 3), not made here.
 
 1. **Do not spend on detector accuracy for extraction quality.** Measured effect is -0.63pp
    [-2.77, +1.51]; the routing-cost story in ADR 0021/0023 should be treated as superseded by finding 2
-   (an errata note in a follow-up docs PR is GG's call; ADRs are immutable).
+   (errata added in Session 15d as dated Correction sections in both ADRs).
 2. **Ship (iii) as a small additive API change** if the `language` field is a customer-visible claim, and
    report the headline ex-`language`.
 3. **Settle (ii) with the cheapest decisive experiment, staged:**
@@ -217,6 +218,116 @@ baseline-definition decision for GG (escalation item 3), not made here.
 4. **Untested and potentially the real cost:** reply-language/guardrail behaviour under mislabel. It
    cannot be measured from recorded data; if a reply-quality measure is wanted it needs its own fixture
    set, and that, not extraction, is where a label fix would pay.
+
+## Stage 1 design (Session 15d)
+
+Status: **prepared, not run.** No live call was made and no token was spent in Session 15d; the
+provider is mocked in every test. Script: `eval/experiments/no_routing_stage1.py` (git `26c4549`);
+tests: `tests/unit/test_no_routing_stage1.py`; design numbers below come from
+`eval/results/no_routing_stage1_design.json` (git_sha `26c454928a23`, sha256 `bdc71f19...`,
+regenerate with `uv run python eval/experiments/no_routing_stage1.py design`, zero quota). Tags as
+above: **VERIFIED (how)** / **BELIEVED**.
+
+### What is run
+
+30 calls with the existing `hi_en` prompt (`build_prompt(..., "hi-en")`, the production
+sanitize/wrap path, tiered router, no Gemini fallback): the 27 CI-gate `en` dev fixtures and the 3
+held-out en/en fixtures (ground truth `en`, detected `en`) that are the only held-out reviews
+without a recorded hi-en-prompt result. Each is compared, paired per fixture, with the RECORDED
+en-prompt result (`eval/results/latest.json` for the 27; `held_out_scoring_v2.json` `as_deployed`
+for the 3), re-scored with today's scorer so scorer drift cannot leak into the delta (**VERIFIED**:
+`baseline_rescore_drift_ids` is empty on the real plan; asserted in a test). Metric: the 8-field
+headline (every scored field except `stars` and `language`), i.e. the published definition.
+
+```
+EVAL_CASSETTE_MODE=record uv run python eval/experiments/no_routing_stage1.py record --i-understand-this-spends-quota
+uv run python eval/experiments/no_routing_stage1.py replay   # zero quota: re-derive rows from the cassette
+uv run python eval/experiments/no_routing_stage1.py report   # paired deltas, CIs, the decision rule
+```
+
+`record` refuses to start without the explicit flag (tested). It has its own cassette
+(`eval/cassettes/no_routing_stage1_cassettes.json`), a per-model guard at 95,000 tokens (never
+start a call if that model's trailing-24h spend plus 3,200 would pass it), a rolling-24h ledger
+persisted after every call (`eval/results/no_routing_stage1_ledger.json`) so separate invocations
+cannot exceed the ceiling, 28 s pacing for the 8K TPM limit, and automatic resume (finished ids are
+skipped). An escalated call charges both pools. **Do not run it on the same day as ADR 0031's
+buy_again day 2**: both draw on the same per-model TPD pools and this ledger cannot see that
+experiment's spend.
+
+### Expected token cost
+
+**VERIFIED** (`design` mode: recorded mean tokens per extraction from
+`token_cost_measurement_n106.json`, tier mix 40.6% small-final / 59.4% escalated): small-model pool
+75,743 tokens (30 calls x 2,525; every call is attempted small-first), large-model pool 42,683
+(30 x 59.4% x 2,394). The busiest pool is the small one at 75.7K, i.e. inside the 95K guard and the
+100K/model/day budget, and about 38% of that model's 200K TPD. This corrects S2c's "~75K tokens":
+that is the busiest pool, not the total; across both pools an escalated call is charged twice, so the
+total is about 118.4K (75,743 + 42,683). Wall time is at least 29 gaps x 28 s = 13.5 minutes plus call
+latency (**BELIEVED**, arithmetic only).
+
+### The decision rule (pre-registered in S2c, implemented as `decide()`)
+
+- Adopt no-routing only if the lower 95% bound of (unified minus routed) is >= -3pp on the 8-field
+  headline for BOTH strata (Hinglish; English).
+- Stage-1 futility: mean paired delta below -5pp -> stop, routing stays.
+- CI: paired percentile bootstrap, 10,000 resamples, seed 42, **unclamped** (the repo's
+  `bootstrap_ci` clamps to [0, 1], which would silently zero a negative lower bound; a test pins
+  this). Hinglish stratum in the report is computed from RECORDED data only: the 101 gt hi-en
+  fixtures, hi-en prompt (`language_forced`) minus as-deployed = -0.48pp [-2.68, +1.73]
+  (**VERIFIED**, `report` mode; n=101, so slightly different from the n=103 -0.47pp
+  [-2.66, +1.78] in S2c, which also includes the two gt-en fixtures).
+
+### What stage 1 can and cannot show
+
+Can show: a large English-side loss from always sending the hi-en prompt (futility), and per-field
+where it comes from (`buy_again` is the suspected one, see below). Cannot show:
+
+- **It cannot certify the Hinglish stratum.** The unified prompt does not exist yet; the arm here is
+  the status-quo hi-en prompt, which is already the prompt those reviews get when routed correctly.
+  The recorded Hinglish CI clears -3pp numerically, but for a prompt nobody proposes to ship as the
+  unified one.
+- **It cannot certify the English stratum either.** At n=30 the standard error is 2.0pp (per-fixture
+  delta SD 11.2pp over all 106 held-out fixtures) to 2.9pp (SD 15.8pp over the 53 whose two runs
+  differ, the more relevant figure because every English fixture is re-run under a different
+  prompt). A lower bound >= -3pp then requires an observed mean of about +1.0pp to +2.7pp, i.e. the
+  hi-en prompt would have to be measurably BETTER than the en prompt on English. S2c already put the
+  fixture count needed for a 3pp margin at about 53; only 30 exist (**BELIEVED** as a plan input:
+  roughly 23 more gold-labelled English fixtures would be needed before stage 2 could certify).
+- The CI-gate 27 overlap the en prompt's few-shots (ADR 0021), which favours the routed side, so a
+  negative result is partly expected and a null result is mildly reassuring, not proof.
+- Nothing about replies (language, guardrails) or about the raw-string `language` output field.
+
+### What the experiment would show (expected outcome)
+
+Verdict probabilities as a function of the TRUE English effect, normal approximation to the sample
+mean at n=30 (**VERIFIED** arithmetic from `design`; the percentile bootstrap is close to but not
+identical to this). Two SD assumptions: 11.2pp (all 106 held-out deltas) / 15.8pp (the 53 non-zero).
+
+<!-- METRICS:HISTORICAL -->
+| true English effect (hi-en minus en) | P(futility stop) | P(non-inferiority met on English) | P(not decided) |
+|---|---|---|---|
+| -8pp | 0.93 / 0.85 | 0.00 / 0.00 | 0.07 / 0.15 |
+| -5pp | 0.50 / 0.50 | 0.00 / 0.00 | 0.50 / 0.50 |
+| -3pp | 0.16 / 0.24 | 0.02 / 0.02 | 0.81 / 0.73 |
+| -1pp | 0.02 / 0.08 | 0.16 / 0.10 | 0.81 / 0.81 |
+| 0pp | 0.01 / 0.04 | 0.31 / 0.18 | 0.68 / 0.78 |
+| +1pp | 0.00 / 0.02 | 0.50 / 0.28 | 0.50 / 0.70 |
+| +2pp | 0.00 / 0.01 | 0.69 / 0.41 | 0.31 / 0.58 |
+<!-- /METRICS:HISTORICAL -->
+
+What I expect, stated as belief, not measurement: the recorded evidence points to a small negative
+English effect. The forced hi-en prompt scored -10.4pp [-22.6, +1.9] on `buy_again` on the 106
+(S2a, per-field table), consistent with the differing `buy_again` rubric; if English reviews behave
+alike that one field alone would cost about 1.3pp on the 8-field mean (10.4 / 8; **BELIEVED**,
+transfers an effect measured on Hinglish reviews to English ones). At a true effect of about -1pp the
+table gives roughly an 81% chance of "NOT DECIDED", 10-16% of "non-inferiority met", 2-8% of
+futility. So **the most likely outcome of stage 1 is that it decides nothing**; it is a cheap
+insurance against a large English loss (it has power >= 50% only when the true effect is -5pp or
+worse) and a way to localise which fields move. Whether ~118K tokens (about 38% of the small model's
+daily TPD) is worth buying that insurance, versus spending the effort
+to author roughly 23 more English gold fixtures and going straight to a stage 2 that can certify, is
+GG's call; this section does not make it. Per D7 the routing question is now a simplification
+question (nothing measurable is being recovered), which lowers the urgency of either path.
 
 ## Verification ledger
 

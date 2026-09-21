@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 from datetime import datetime
 from enum import StrEnum
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from pydantic import (
     BaseModel,
@@ -96,6 +96,30 @@ class ReviewExtraction(BaseModel):
     urgency: Urgency = Urgency.low
     feature_requests: list[str] = Field(default_factory=list)
     language: str = "en"
+    # Session 15d (D7), additive: `language` is the detector's label, which agrees with the
+    # held-out corpus label only 48.1% of the time (95% CI 38.8-57.5; label alpha 0.380, so this
+    # partly measures label noise, not detector error) -- so it is returned WITH the rule-hit
+    # evidence behind it. Both are null where the endpoint does not compute them (legacy v1
+    # /extract, which does no language detection). See app.core.language.LanguageSignal.
+    code_mixed: bool | None = Field(
+        default=None,
+        description=(
+            "True if the text contains Romanized-Hindi vocabulary (any marker from the language "
+            "detector's lexicons) or Devanagari mixed with Latin letters. Recall-oriented and "
+            "not calibrated: can be True for English text that uses a collision phrase such as "
+            "'value for money'. Always True when `language` is 'hi-en'."
+        ),
+    )
+    language_signal_strength: Literal["none", "weak", "moderate", "strong"] | None = Field(
+        default=None,
+        description=(
+            "Ordinal strength of the detector's Hindi-marker evidence (strong: Devanagari or "
+            ">=2 strong markers; moderate: 1 strong marker or >=3 weak markers; weak: 1-2 weak "
+            "markers, near the hi-en decision boundary; none: no marker found). A documented "
+            "heuristic, NOT a probability and not calibrated against labelled data; 'none' is "
+            "absence of evidence, not proof the text is English."
+        ),
+    )
     review_length_chars: int | None = None
     confidence: Annotated[float | None, Field(ge=0.0, le=1.0)] = None
     # The review's ORIGINAL post date, when the source provided one (NOT ingestion time, NOT

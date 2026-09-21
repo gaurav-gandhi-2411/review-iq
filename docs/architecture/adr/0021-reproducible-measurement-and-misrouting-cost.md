@@ -101,3 +101,67 @@ rather than only reporting the new, tighter number.
   scope here: that would change the CI-gate set's own long-standing methodology and every
   historical number's comparability, a bigger decision than this measurement PR should make
   unilaterally. Named as a real gap; not fixed in this PR.
+
+
+## Correction (Session 15d)
+
+Dated 2026-09-20. The sections above are left as written; this section supersedes their
+misrouting-cost claim. Evidence: `docs/specs/s15c-language-routing.md` (S2),
+`scripts/measure_routing_cost.py`, `eval/results/routing_cost_n106.json` (git_sha `c4dcfcd`,
+sha256 `5fbca0a8...`), all re-derived from the recorded predictions with zero live calls. GG
+decision D7 adopted the recommendation.
+
+**What went wrong: the 4.6pp is circular.** The "misrouting cost" was the paired difference
+between the `language_forced` and `as_deployed` overall scores, and the overall score averages the
+`language` field like any other. In the `language_forced` condition the prompt itself states
+`language: always "hi-en"`, so that field scores 100% by echo (106/106). In `as_deployed` the
+`language` score equals whether the detector agreed with the corpus label, exactly (asserted per
+fixture, 106/106). The difference on that one field is +51.9pp, a scoring identity, not an
+extraction effect. Recomputed on the corrected scorer over all 10 fields, the ADR's quantity is
++4.68pp [+2.87, +6.62] (paired bootstrap, 10,000 resamples, seed 42), and the `language` field
+alone supplies 111% of it; the other nine fields net slightly negative.
+
+**Corrected finding.** Excluding the constant `stars` field and `language`, the 8 remaining fields
+score 72.40% [69.78, 74.94] as deployed and 71.76% [69.36, 74.11] with routing forced correct.
+The paired difference (forced minus as deployed) is **-0.63pp [-2.77, +1.51]** (23 fixtures up,
+30 down, 53 identical; the 51 fixtures where detector and label agree are byte-identical). Forcing
+the "correct" prompt does not help on average, and the interval rules out an extraction cost of
+misrouting larger than about 2.8pp. Misrouting explains -2.3% [-10.5, +5.3] of the 27.6pp gap to
+100%; the gap is extraction, silver-label and scorer error, not routing.
+
+**Conclusions that no longer stand:**
+
+- "Language misrouting cost: 4.6pp, 95% CI [2.8pp, 6.4pp]" as a cost to extraction quality (Results).
+- "Language misrouting is a real, quantified, separate defect ... a detector bug with a clear fix
+  path" (Decision), and the corresponding rationale in Alternatives ("misrouting is a separately
+  fixable, separately quantified 4.6pp ... tells you where to spend effort first"). Any
+  recommendation to fix or sharpen the detector to recover 4.6pp is withdrawn: there is nothing
+  measurable to recover in extraction. D7: no investment in the detector.
+- The additive decomposition "4.6 + 7.8 = 12.4pp, approximately the raw 12.3pp gap". The 4.6pp is
+  not an extraction cost, so it is not a component of a contamination gap. The raw 12.3pp figure
+  (published hi-en vs held-out as deployed) is arithmetically what it was, but about 4.6pp of it
+  is the `language` field scoring the detector's agreement with a noisy label.
+- The 48.1% figure was called detector "accuracy" in places. It is agreement with the corpus
+  label (95% CI 38.8-57.5; that label has inter-rater alpha 0.380, so the figure partly measures
+  label noise, not detector error). Never call it accuracy.
+
+**What stands:**
+
+- Reproducibility: the held-out result replays byte-identically from committed cassettes
+  (re-verified this session: the 106 records are identical before and after the artifact
+  regeneration).
+- The methodology gap: `eval/runner.py` never calls `detect_language()`, so every CI-gate number
+  assumes correct routing. That is still true and still worth stating; it is a fact about what the
+  gate measures, not evidence that routing costs extraction quality.
+- Reporting both conditions remains sensible disclosure, but the difference between them is now
+  known to be the `language` echo, not misrouting.
+- The 7.8pp "remaining contamination" (published hi-en vs the forced held-out score) is not
+  re-derived here. Both sides give the `language` field full credit under forced routing, so it is
+  not affected by this circularity in the same way, but it was measured on the pre-ADR-0030 scorer
+  with the constant `stars` field included, so treat it as provisional (BELIEVED, not re-measured).
+
+**Consequences for published copy.** The README held-out headline now excludes `stars` and
+`language` (72.4% [69.8%, 75.0%] as deployed; the stars-only and all-fields figures are disclosed
+beside it), and `/v2/extract` returns `language` together with `code_mixed` and
+`language_signal_strength`. The artifact key `language_detection_accuracy` was renamed
+`language_label_agreement`. See ADR 0023's Correction section for the recommendation side.
