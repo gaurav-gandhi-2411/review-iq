@@ -62,3 +62,86 @@ class TestStripProvenance:
         strip_provenance(payload)
         assert "latency_ms" in payload["fixtures"][0]
         assert "generated_at" in payload
+
+
+class TestMain:
+    """main() had no tests. These drive it with a fake eval.runner (no LLM, no network)."""
+
+    @staticmethod
+    def _setup(tmp_path, monkeypatch, *, committed, regenerated, returncode=0):
+        import json
+        import types
+
+        import scripts.check_eval_results_reproducible as mod
+
+        latest = tmp_path / "latest.json"
+        results = tmp_path / "results.json"
+        latest.write_text(json.dumps(committed), encoding="utf-8")
+        results.write_text(json.dumps(committed), encoding="utf-8")
+        monkeypatch.setattr(mod, "LATEST_RESULTS_PATH", latest)
+        monkeypatch.setattr(mod, "RESULTS_PATH", results)
+        monkeypatch.setenv("EVAL_CASSETTE_MODE", "replay")
+
+        def fake_run(*_a, **_k):
+            # The real runner overwrites both files with what it regenerated.
+            for path in (latest, results):
+                path.write_text(json.dumps(regenerated), encoding="utf-8")
+            return types.SimpleNamespace(returncode=returncode, stdout="", stderr="boom")
+
+        monkeypatch.setattr(mod.subprocess, "run", fake_run)
+        return mod
+
+    def test_identical_regeneration_passes(self, tmp_path, monkeypatch):
+        mod = self._setup(tmp_path, monkeypatch, committed=_payload(), regenerated=_payload())
+        assert mod.main() == 0
+
+    def test_hand_edited_score_is_caught(self, tmp_path, monkeypatch):
+        mod = self._setup(
+            tmp_path,
+            monkeypatch,
+            committed=_payload(overall_score=0.99),  # what a hand-edit would commit
+            regenerated=_payload(overall_score=0.838),
+        )
+        assert mod.main() == 1
+
+    def test_runner_crash_fails(self, tmp_path, monkeypatch):
+        mod = self._setup(
+            tmp_path, monkeypatch, committed=_payload(), regenerated=_payload(), returncode=3
+        )
+        assert mod.main() == 1
+
+    def test_refuses_to_run_without_replay_mode(self, tmp_path, monkeypatch):
+        mod = self._setup(tmp_path, monkeypatch, committed=_payload(), regenerated=_payload())
+        monkeypatch.delenv("EVAL_CASSETTE_MODE")
+        called = []
+        monkeypatch.setattr(mod.subprocess, "run", lambda *a, **k: called.append(a))
+        assert mod.main() == 1
+        assert called == []  # never reached the runner, so nothing was overwritten
+
+    def test_failing_accuracy_gate_fails_even_though_it_reproduces(self, tmp_path, monkeypatch):
+        """Session 16 (V5c): this was a KNOWN_GAP test asserting exit 0 -- runner exit 1 (gate
+        FAIL) counted as a valid regeneration and a failing eval merged green. It must fail."""
+        failing = _payload(overall_score=0.5, passed=False)
+        mod = self._setup(
+            tmp_path, monkeypatch, committed=failing, regenerated=failing, returncode=1
+        )
+        assert mod.main() == 1
+
+    def test_failing_gate_with_a_zero_runner_exit_still_fails(self, tmp_path, monkeypatch):
+        # Belt and braces: `passed: false` in the artifact alone is enough, whatever the exit.
+        failing = _payload(overall_score=0.5, passed=False)
+        mod = self._setup(
+            tmp_path, monkeypatch, committed=failing, regenerated=failing, returncode=0
+        )
+        assert mod.main() == 1
+
+    def test_a_mismatch_is_still_reported_first(self, tmp_path, monkeypatch, capsys):
+        mod = self._setup(
+            tmp_path,
+            monkeypatch,
+            committed=_payload(overall_score=0.99),
+            regenerated=_payload(overall_score=0.5, passed=False),
+            returncode=1,
+        )
+        assert mod.main() == 1
+        assert "do not reproduce" in capsys.readouterr().out

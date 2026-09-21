@@ -743,6 +743,54 @@ TARGET_FILES: tuple[Path, ...] = (
 )
 
 
+# (repo-relative file, block name) -> why a marker block exists WITHOUT a renderer. Such a block
+# is exempt from check_no_hardcoded_metrics.py (which blanks every METRICS:START..END span) yet
+# is never regenerated or drift-checked here, so it is a hand-typed number zone. Only add an
+# entry with a reason a reviewer can check; the right fix is a renderer, not an entry.
+UNRENDERED_BLOCK_ALLOWLIST: dict[tuple[str, str], str] = {
+    ("README.md", "consensus_labeling"): (
+        "Added by 1599de2 with no renderer; ADR 0002 says a `consensus_labeling` renderer "
+        "exists in this file, but none was ever committed. eval/consensus/run_consensus.py "
+        "writes the source data (eval/consensus/results/consensus_summary.json, 'for the "
+        "README render block') and the hand-typed block currently matches it. REMAINS "
+        "UNVERIFIED against future re-runs -- see docs/decorative-control-sweep.md."
+    ),
+}
+
+_START_TOKEN_RE = re.compile(r"<!--\s*METRICS:START")
+
+
+def marker_problems(rel_path: str, text: str) -> list[str]:
+    """Return problems that make a file's METRICS markers silently unchecked.
+
+    render_file() deliberately leaves an unknown block name alone, so on its own `--check`
+    reports OK for a typo'd name, an unnamed `<!-- METRICS:START -->`, or a START with no END
+    -- while check_no_hardcoded_metrics.py still exempts the span from its hand-typed-number
+    scan. Each such span is a number nobody verifies. A block name with no renderer must be
+    listed in UNRENDERED_BLOCK_ALLOWLIST with a reason; a stale allowlist entry is a problem too.
+    """
+    problems: list[str] = []
+    matches = list(BLOCK_RE.finditer(text))
+    n_starts = len(_START_TOKEN_RE.findall(text))
+    if n_starts != len(matches):
+        problems.append(
+            f"{rel_path}: {n_starts} METRICS:START marker(s) but only {len(matches)} complete "
+            "`START:<name> ... END` block(s) -- an unnamed, unterminated or nested marker is "
+            "exempt from the hand-typed-number scan but never rendered or drift-checked"
+        )
+    seen = {m.group("name") for m in matches}
+    for name in sorted(seen):
+        if name not in BLOCK_RENDERERS and (rel_path, name) not in UNRENDERED_BLOCK_ALLOWLIST:
+            problems.append(
+                f"{rel_path}: block {name!r} has no renderer in BLOCK_RENDERERS and is not in "
+                "UNRENDERED_BLOCK_ALLOWLIST -- a typo'd name is silently never checked"
+            )
+    for file_, name in UNRENDERED_BLOCK_ALLOWLIST:
+        if file_ == rel_path and name not in seen:
+            problems.append(f"{rel_path}: stale UNRENDERED_BLOCK_ALLOWLIST entry {name!r}")
+    return problems
+
+
 def render_file(path: Path) -> tuple[str, bool]:
     """Return (new_content, changed) for `path` with every recognised block regenerated."""
     original = path.read_text(encoding="utf-8")
@@ -763,10 +811,19 @@ def render_file(path: Path) -> tuple[str, bool]:
 def main() -> int:
     check_only = "--check" in sys.argv[1:]
     any_changed = False
+    any_problem = False
 
     for path in TARGET_FILES:
+        rel_path = path.relative_to(REPO_ROOT).as_posix()
         if not path.exists():
+            # A renamed/deleted target used to be skipped silently, so --check stayed green
+            # while the numbers it protected were no longer verified anywhere.
+            print(f"PROBLEM: target file {rel_path} does not exist -- nothing verifies it")
+            any_problem = True
             continue
+        for problem in marker_problems(rel_path, path.read_text(encoding="utf-8")):
+            print(f"PROBLEM: {problem}")
+            any_problem = True
         new_content, changed = render_file(path)
         if changed:
             any_changed = True
@@ -791,10 +848,16 @@ def main() -> int:
                 PORTFOLIO_METRICS_PATH.write_text(new_portfolio, encoding="utf-8")
                 print(f"Regenerated: {rel}")
 
+    for (file_, name), reason in UNRENDERED_BLOCK_ALLOWLIST.items():
+        print(
+            f"WARN: {file_} block {name!r} is hand-typed, not rendered or drift-checked: {reason}"
+        )
+
     if check_only:
-        if any_changed:
+        if any_changed or any_problem:
             print(
-                "\nFAIL: one or more files are stale relative to the eval JSON.\n"
+                "\nFAIL: one or more files are stale relative to the eval JSON, or carry "
+                "METRICS markers this script cannot verify (see PROBLEM lines above).\n"
                 "Run `uv run python scripts/render_metrics.py` and commit the result."
             )
             return 1

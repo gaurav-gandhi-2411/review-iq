@@ -118,6 +118,11 @@ jobs:
           check_token "CREATE TABLE"
           check_token "organizations"
           check_token "authenticity_audits"
+          # The three tokens above all appear in a schema-only dump, so a dump with zero rows
+          # (wrong --schema, a role that sees no data, a pg_dump --schema-only regression)
+          # verified green. pg_dump writes a `COPY public.<table> ... FROM stdin` section for
+          # every table that holds rows; production always has some.
+          check_token "COPY public"
 
           LINES=$(echo "${CONTENT}" | wc -l)
           echo "Dump passed all checks. Uncompressed lines: ${LINES}"

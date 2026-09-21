@@ -65,8 +65,16 @@ jobs:
         id: probe
         run: |
           set +e
-          uv run python scripts/probe_demo_quota.py
-          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+          uv run python scripts/probe_demo_quota.py 2>&1 | tee probe.out
+          code=${PIPESTATUS[0]}
+          # Exit 2 is ALSO what uv and argparse return for their own usage/sync errors, so a
+          # broken toolchain would be read as a benign 429 and only ever open a quiet watch
+          # issue. Only the probe's own 429 line makes exit 2 a quota event; anything else
+          # becomes 99 and fails the "unexpected exit code" step below.
+          if [ "$code" = "2" ] && ! grep -q '^\[demo-quota-probe\] 429 ' probe.out; then
+            code=99
+          fi
+          echo "exit_code=${code}" >> "$GITHUB_OUTPUT"
 
       - name: Handle 200 -- close any open trackers
         if: steps.probe.outputs.exit_code == '0'
@@ -154,3 +162,12 @@ jobs:
       - name: Fail the job on a hard failure or an escalated (persisted) 429
         if: steps.probe.outputs.exit_code == '1' || steps.debounce.outputs.escalate == 'true'
         run: exit 1
+
+      # The probe step above runs with `set +e` and only publishes its exit code, so any code
+      # the branches above do not name (a killed process, a missing `uv`, exit 99 from the
+      # disambiguation above) would otherwise leave every handler skipped and the job green.
+      - name: Fail the job on an unexpected probe exit code
+        if: steps.probe.outputs.exit_code != '0' && steps.probe.outputs.exit_code != '1' && steps.probe.outputs.exit_code != '2'
+        run: |
+          echo "::error::probe exited with unexpected code '${{ steps.probe.outputs.exit_code }}' -- neither ok (0), hard failure (1) nor quota (2 + a 429 line)."
+          exit 1
