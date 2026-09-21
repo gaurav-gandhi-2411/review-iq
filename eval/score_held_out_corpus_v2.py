@@ -55,6 +55,7 @@ sys.path.insert(0, str(ROOT))
 
 from eval.bootstrap import bootstrap_ci  # noqa: E402
 from eval.free_text_scoring import SCORER_VERSION  # noqa: E402
+from eval.heldout_exposure import held_out_exposure, unresolved_fields  # noqa: E402
 from eval.provenance import get_git_sha, now_iso  # noqa: E402
 from eval.runner import score_fixture  # noqa: E402
 from eval.wilson import wilson_ci  # noqa: E402
@@ -121,6 +122,8 @@ async def score_one(fixture: dict[str, Any]) -> dict[str, Any]:
         "id": fixture["id"],
         "gt_language": gt_lang,
         "detected_language": detected_lang,
+        # Session 16 (V2): gold pairs that are a panel split stored as a default, not a label.
+        "unresolved_fields": list(unresolved_fields(fixture)),
     }
 
     try:
@@ -155,6 +158,104 @@ async def score_one(fixture: dict[str, Any]) -> dict[str, Any]:
         record["forced_call_made"] = True
 
     return record
+
+
+def _headline_cell(
+    records: list[dict[str, Any]],
+    fields: list[str],
+    *,
+    exclude_split: bool,
+    exclude_exposed: bool,
+) -> dict[str, Any]:
+    """Headline over `fields` for one cell of the exposure x split-gold grid.
+
+    Per-record mean over the fields that survive for THAT record (the unit the bootstrap
+    resamples: a whole review moves together). A record whose every headline field is unresolved
+    contributes nothing, and `n` says how many did.
+    """
+    kept = [r for r in records if not (exclude_exposed and r.get("exposure"))]
+    cell: dict[str, Any] = {
+        "n": 0,
+        "n_reviews_excluded_as_exposed": len(records) - len(kept),
+        "n_split_pairs_excluded": 0,
+    }
+    for cond in ("as_deployed", "language_forced"):
+        per_record: list[float] = []
+        split_pairs = 0
+        for r in kept:
+            skip = set(r.get("unresolved_fields", ())) if exclude_split else set()
+            used = [f for f in fields if f not in skip]
+            split_pairs += len(fields) - len(used)
+            if used:
+                per_record.append(mean(r[cond]["field_scores"][f] for f in used))
+        lo, hi = bootstrap_ci(per_record) if per_record else (0.0, 0.0)
+        cell["n"] = len(per_record)
+        cell["n_split_pairs_excluded"] = split_pairs
+        cell[cond] = {
+            "score": mean(per_record) if per_record else 0.0,
+            "ci_95": {"lower": lo, "upper": hi, "n": len(per_record)},
+        }
+    return cell
+
+
+def _exposure_sensitivity(records: list[dict[str, Any]], fields: list[str]) -> dict[str, Any]:
+    """Do reviews the development process had seen score higher than ones it had not?
+
+    A contamination signature would be exposed > unexposed. Same fields, split pairs excluded on
+    both sides so only exposure differs; as deployed. The difference CI is an unpaired bootstrap
+    (10,000 resamples, seed 42) -- exposed and unexposed reviews are different reviews.
+    """
+    import random
+
+    def per_record(rs: list[dict[str, Any]]) -> list[float]:
+        out = []
+        for r in rs:
+            used = [f for f in fields if f not in r.get("unresolved_fields", ())]
+            if used:
+                out.append(mean(r["as_deployed"]["field_scores"][f] for f in used))
+        return out
+
+    exposed = per_record([r for r in records if r.get("exposure")])
+    unexposed = per_record([r for r in records if not r.get("exposure")])
+    if not exposed or not unexposed:
+        return {"n_exposed": len(exposed), "n_unexposed": len(unexposed)}
+    rng = random.Random(42)  # noqa: S311 -- resampling, not security
+    diffs = sorted(
+        mean(rng.choices(exposed, k=len(exposed))) - mean(rng.choices(unexposed, k=len(unexposed)))
+        for _ in range(10_000)
+    )
+    return {
+        "n_exposed": len(exposed),
+        "n_unexposed": len(unexposed),
+        "exposed_score": mean(exposed),
+        "unexposed_score": mean(unexposed),
+        "difference": mean(exposed) - mean(unexposed),
+        "difference_ci_95": {"lower": diffs[249], "upper": diffs[9749]},
+    }
+
+
+def _per_field_split_effect(records: list[dict[str, Any]], fields: list[str]) -> dict[str, Any]:
+    """As deployed, all reviews: each field's score with and without the split-gold pairs.
+
+    Symmetric by construction: an empty/default gold scores 0 against a non-empty prediction
+    (raising pros/cons/topics when excluded) but can score 1 against an abstaining `product`
+    (lowering it when excluded). Reported per field so neither direction is hidden.
+    """
+    out: dict[str, Any] = {}
+    for f in fields:
+        all_scores = [r["as_deployed"]["field_scores"][f] for r in records]
+        kept = [
+            r["as_deployed"]["field_scores"][f]
+            for r in records
+            if f not in r.get("unresolved_fields", ())
+        ]
+        out[f] = {
+            "n": len(all_scores),
+            "n_split_gold": len(all_scores) - len(kept),
+            "score_all_pairs": mean(all_scores) if all_scores else 0.0,
+            "score_excluding_split": mean(kept) if kept else None,
+        }
+    return out
 
 
 def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
@@ -205,17 +306,28 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
     # which stay disclosed beside the headline.
     echo_fields = [f for f in HEADLINE_ECHO_FIELDS if f in informative]
     headline_fields = [f for f in informative if f not in echo_fields]
-    headline_per_record = {
-        c: [mean(r[c]["field_scores"][f] for f in headline_fields) for r in records]
-        for c in conditions
+    # The published headline (Session 16): over reviews the prompt-development process has NOT
+    # seen (see eval/heldout_exposure.py) and with panel-split gold pairs excluded. The grid keeps
+    # every other cell so no direction is hidden; `all_reviews_all_pairs` is the D7 headline.
+    headline_grid = {
+        "all_reviews_all_pairs": _headline_cell(
+            records, headline_fields, exclude_split=False, exclude_exposed=False
+        ),
+        "all_reviews_split_excluded": _headline_cell(
+            records, headline_fields, exclude_split=True, exclude_exposed=False
+        ),
+        "unexposed_all_pairs": _headline_cell(
+            records, headline_fields, exclude_split=False, exclude_exposed=True
+        ),
+        "unexposed_split_excluded": _headline_cell(
+            records, headline_fields, exclude_split=True, exclude_exposed=True
+        ),
     }
-    headline = {c: mean(v) for c, v in headline_per_record.items()} if headline_fields else {}
+    published = headline_grid["unexposed_split_excluded"] if headline_fields else None
+    headline = {c: published[c]["score"] for c in conditions} if published is not None else {}
     headline_ci: dict[str, dict[str, float]] = {}
-    for c, v in headline_per_record.items():
-        if not headline_fields:
-            break
-        lo, hi = bootstrap_ci(v)
-        headline_ci[c] = {"lower": lo, "upper": hi, "n": len(v)}
+    if published is not None:
+        headline_ci = {c: published[c]["ci_95"] for c in conditions}
 
     settings = get_settings()
     n_mismatched = sum(1 for r in records if r["detected_language"] != r["gt_language"])
@@ -253,6 +365,19 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
         "headline_fields": headline_fields,
         "overall_score_headline": headline,
         "overall_score_headline_ci_95": headline_ci,
+        "headline_policy": {
+            "cell": "unexposed_split_excluded",
+            "exclude_exposed_reviews": True,
+            "exclude_split_gold_pairs": True,
+        },
+        "headline_grid": headline_grid,
+        "n_exposed_reviews": sum(1 for r in records if r.get("exposure")),
+        "exposure_sensitivity": _exposure_sensitivity(records, headline_fields),
+        "exposure_reasons": {
+            reason: sum(1 for r in records if reason in r.get("exposure", ()))
+            for reason in sorted({x for r in records for x in r.get("exposure", ())})
+        },
+        "per_field_split_effect": _per_field_split_effect(records, headline_fields),
     }
 
 
@@ -291,6 +416,10 @@ async def main() -> None:
         )
         if args.mode == "record":
             await asyncio.sleep(DELAY_SECONDS)
+
+    exposure = held_out_exposure()
+    for rec in records:
+        rec["exposure"] = exposure.get(rec["id"], [])
 
     summary = summarize(records)
     summary["records"] = records

@@ -1,0 +1,189 @@
+{
+  "_comment": "Held-out reviews the prompt-development process has already seen (Session 16, ADR 0032). Acknowledging an id here does NOT put it back in the headline: eval/score_held_out_corpus_v2.py excludes every exposed review regardless. This ledger exists so scripts/check_no_heldout_leakage.py can fail on a NEW overlap and on a stale entry, instead of the corpus drifting again. `few_shot_source` is a manual finding (exact-text matching cannot see a paraphrase); see ADR 0032 for the evidence.",
+  "acknowledged": {
+    "hien-0004": {
+      "reasons": [
+        "prompt_visible_dev_fixture"
+      ]
+    },
+    "hien-0006": {
+      "reasons": [
+        "benchmark_gold"
+      ]
+    },
+    "hien-0008": {
+      "reasons": [
+        "benchmark_gold"
+      ]
+    },
+    "hien-0014": {
+      "reasons": [
+        "benchmark_gold"
+      ]
+    },
+    "hien-0015": {
+      "reasons": [
+        "benchmark_gold"
+      ]
+    },
+    "hien-0021": {
+      "reasons": [
+        "prompt_visible_dev_fixture"
+      ]
+    },
+    "hien-0022": {
+      "reasons": [
+        "benchmark_gold"
+      ]
+    },
+    "hien-0024": {
+      "reasons": [
+        "prompt_visible_dev_fixture"
+      ]
+    },
+    "hien-0026": {
+      "reasons": [
+        "benchmark_gold"
+      ]
+    },
+    "hien-0027": {
+      "reasons": [
+        "prompt_visible_dev_fixture"
+      ]
+    },
+    "hien-0029": {
+      "reasons": [
+        "prompt_visible_dev_fixture"
+      ]
+    },
+    "hien-0033": {
+      "reasons": [
+        "prompt_visible_dev_fixture"
+      ]
+    },
+    "hien-0037": {
+      "reasons": [
+        "benchmark_gold"
+      ]
+    },
+    "hien-0044": {
+      "reasons": [
+        "benchmark_gold"
+      ]
+    },
+    "hien-0045": {
+      "reasons": [
+        "benchmark_gold"
+      ]
+    },
+    "hien-0050": {
+      "reasons": [
+        "prompt_visible_dev_fixture"
+      ]
+    },
+    "hien-0052": {
+      "reasons": [
+        "prompt_visible_dev_fixture"
+      ],
+      "few_shot_source": "app/core/prompts/hi_en.py example 'Ekdum mast product hai bhai' rewrites eval/fixtures/hi-en/015.json"
+    },
+    "hien-0054": {
+      "reasons": [
+        "benchmark_gold"
+      ]
+    },
+    "hien-0059": {
+      "reasons": [
+        "benchmark_gold"
+      ]
+    },
+    "hien-0062": {
+      "reasons": [
+        "prompt_visible_dev_fixture"
+      ]
+    },
+    "hien-0063": {
+      "reasons": [
+        "benchmark_gold"
+      ]
+    },
+    "hien-0064": {
+      "reasons": [
+        "benchmark_gold"
+      ]
+    },
+    "hien-0070": {
+      "reasons": [
+        "benchmark_gold"
+      ]
+    },
+    "hien-0073": {
+      "reasons": [
+        "prompt_visible_dev_fixture"
+      ],
+      "few_shot_source": "app/core/prompts/hi_en.py example 'Product quality bahut achha hai, lekin delivery wala time pe nahi aaya' rewrites eval/fixtures/hi-en/014.json"
+    },
+    "hien-0074": {
+      "reasons": [
+        "benchmark_gold"
+      ]
+    },
+    "hien-0075": {
+      "reasons": [
+        "prompt_visible_dev_fixture"
+      ],
+      "few_shot_source": "app/core/prompts/hi_en.py example 'Pros: Good sound quality(not much better than a cheap local earphone)' rewrites eval/fixtures/hi-en/012.json"
+    },
+    "hien-0076": {
+      "reasons": [
+        "benchmark_gold"
+      ]
+    },
+    "hien-0078": {
+      "reasons": [
+        "benchmark_gold"
+      ]
+    },
+    "hien-0081": {
+      "reasons": [
+        "prompt_visible_dev_fixture"
+      ],
+      "few_shot_source": "app/core/prompts/hi_en.py example 'Superb earphone, sound ekdum mast hai yaar' rewrites eval/fixtures/hi-en/001.json"
+    },
+    "hien-0086": {
+      "reasons": [
+        "benchmark_gold"
+      ]
+    },
+    "hien-0087": {
+      "reasons": [
+        "prompt_visible_dev_fixture"
+      ]
+    },
+    "hien-0088": {
+      "reasons": [
+        "benchmark_gold"
+      ]
+    },
+    "hien-0092": {
+      "reasons": [
+        "benchmark_gold"
+      ]
+    },
+    "hien-0093": {
+      "reasons": [
+        "benchmark_gold"
+      ]
+    },
+    "hien-0095": {
+      "reasons": [
+        "prompt_visible_dev_fixture"
+      ]
+    },
+    "hien-0104": {
+      "reasons": [
+        "prompt_visible_dev_fixture"
+      ]
+    }
+  }
+}
