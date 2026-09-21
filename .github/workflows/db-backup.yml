@@ -153,7 +153,7 @@ jobs:
           echo "encrypted_filename=${FILENAME}.gpg" >> "$GITHUB_OUTPUT"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.encrypt.outputs.encrypted_filename }}
           path: ${{ steps.encrypt.outputs.encrypted_filename }}
