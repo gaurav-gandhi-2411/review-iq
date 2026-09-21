@@ -357,7 +357,13 @@ async def test_v2_cache_hit_is_rechecked_on_a_copy_when_output_check_on() -> Non
     assert result.buy_again is None and result.injection_controls is not None
     assert stored.buy_again is True and stored.injection_controls is None  # stored row untouched
     off, _, _ = await _run_v2("anything", inp=False, out=False, cached=stored)
-    assert off is stored
+    # Flags off: the S15d control changes nothing. D7 enriches a cache hit with the two additive
+    # language fields on a COPY, so identity no longer holds; equality outside those fields does.
+    language_fields = {"code_mixed", "language_signal_strength"}
+    assert off is not stored
+    assert off.model_dump(exclude=language_fields) == stored.model_dump(exclude=language_fields)
+    assert off.injection_controls is None
+    assert stored.code_mixed is None and stored.language_signal_strength is None
 
 
 def test_v2_endpoint_flags_off_response_has_no_new_key() -> None:
