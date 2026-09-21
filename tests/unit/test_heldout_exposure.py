@@ -124,9 +124,11 @@ class TestCommittedCorpus:
             for f in hx.unresolved_fields(fx):
                 counts[f] = counts.get(f, 0) + 1
         assert len(fixtures) == 106
+        # Published audit: pros 30, product 26, topics 25, cons 21. hien-0065 / hien-0070 have
+        # their `product` gold removed from scoring pending adjudication (S16 V2d): 26 + 2.
         assert {k: counts[k] for k in ("pros", "product", "topics", "cons")} == {
             "pros": 30,
-            "product": 26,
+            "product": 28,
             "topics": 25,
             "cons": 21,
         }
