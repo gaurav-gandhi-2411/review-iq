@@ -131,6 +131,104 @@ def _label_agreement_text(data: dict[str, Any]) -> str:
     )
 
 
+def _render_held_out_grid_md(data: dict[str, Any]) -> str:
+    """Held-out block once the artifact carries the Session 16 exposure x split-gold grid.
+
+    Rule 65c: the published headline here is HIGHER than the one it replaces, so every cell of the
+    grid is printed beside it, the field that goes DOWN is named, and the exposed-vs-unexposed
+    comparison is shown -- all rendered from the one artifact, none hand-typed.
+    """
+    grid = data["headline_grid"]
+    pub = grid[data["headline_policy"]["cell"]]
+    sha = data.get("git_sha")
+    models = f"{data['groq_model_small']} / {data['groq_model_large']}"
+    lines = [
+        f"Measured {data['generated_at']}"
+        + (f" &middot; `{sha[:7]}`" if sha else "")
+        + f" &middot; models: {models}",
+        "",
+        "| Condition | Score (headline fields) | 95% CI | n |",
+        "|---|---|---|---|",
+        f"| **As actually deployed** (real language routing) | "
+        f"**{_fmt_pct(pub['as_deployed']['score'])}** "
+        f"| [{_fmt_pct(pub['as_deployed']['ci_95']['lower'])}, "
+        f"{_fmt_pct(pub['as_deployed']['ci_95']['upper'])}] | {pub['n']} |",
+        f"| Language routing forced correct | {_fmt_pct(pub['language_forced']['score'])} "
+        f"| [{_fmt_pct(pub['language_forced']['ci_95']['lower'])}, "
+        f"{_fmt_pct(pub['language_forced']['ci_95']['upper'])}] | {pub['n']} |",
+        "",
+        "**What this headline is.** The average of "
+        f"{len(data['headline_fields'])} fields ({', '.join(f'`{f}`' for f in data['headline_fields'])}) "
+        f"over the {pub['n']} of {data['n_fixtures']} corpus reviews that the prompt-development "
+        f"process had **not** seen, with {pub['n_split_pairs_excluded']} gold "
+        "(review, field) pairs excluded because the judge panel split and the stored gold was a "
+        "default, not a label. `stars` (null everywhere) and `language` (an echo of the "
+        f"detector, {_label_agreement_text(data)}) are excluded as before.",
+        "",
+        "**Every cell, same recorded model outputs, as deployed** (the change moves the number up, "
+        "so all four are shown):",
+        "",
+        "| Reviews | Gold pairs | Score | 95% CI | n |",
+        "|---|---|---|---|---|",
+    ]
+    labels = {
+        "all_reviews_all_pairs": ("all", "all"),
+        "all_reviews_split_excluded": ("all", "split excluded"),
+        "unexposed_all_pairs": ("unseen only", "all"),
+        "unexposed_split_excluded": ("**unseen only (headline)**", "**split excluded**"),
+    }
+    for key, (who, which) in labels.items():
+        c = grid[key]["as_deployed"]
+        lines.append(
+            f"| {who} | {which} | {_fmt_pct(c['score'])} "
+            f"| [{_fmt_pct(c['ci_95']['lower'])}, {_fmt_pct(c['ci_95']['upper'])}] "
+            f"| {grid[key]['n']} |"
+        )
+    reasons = data["exposure_reasons"]
+    sens = data.get("exposure_sensitivity", {})
+    lines += [
+        "",
+        f"**Why {data['n_exposed_reviews']} reviews are excluded.** "
+        f"{reasons.get('prompt_visible_dev_fixture', 0)} also appear in the prompt-visible "
+        "development fixtures (`eval/fixtures/hi-en/`; four of the `hi_en` prompt's few-shot "
+        f"examples are rewrites of them) and {reasons.get('benchmark_gold', 0)} in the "
+        "internal benchmark whose adjudicated labels accepted prompt v2.2/v2.3. The builder "
+        "only excluded already-quarantined text, so nothing stopped this "
+        "([ADR 0032](docs/architecture/adr/0032-held-out-exposure-and-split-gold.md)). "
+        + (
+            f"Exposed reviews score {_fmt_pct(sens['exposed_score'])} vs "
+            f"{_fmt_pct(sens['unexposed_score'])} for unseen ones (difference "
+            f"{sens['difference'] * 100:+.1f} pp, 95% CI {sens['difference_ci_95']['lower'] * 100:+.1f}"
+            f" to {sens['difference_ci_95']['upper'] * 100:+.1f}): no benefit is detectable at "
+            "this sample size, but that is absence of evidence, not proof of none."
+            if "difference" in sens
+            else ""
+        ),
+        "",
+        "**Effect of excluding split gold, per field** (as deployed, all reviews; one field goes "
+        "down):",
+        "",
+        "| Field | Split-gold pairs | Score, all pairs | Score, split excluded |",
+        "|---|---|---|---|",
+    ]
+    for field, info in data["per_field_split_effect"].items():
+        excl = info["score_excluding_split"]
+        lines.append(
+            f"| `{field}` | {info['n_split_gold']} | {_fmt_pct(info['score_all_pairs'])} "
+            f"| {'n/a' if excl is None else _fmt_pct(excl)} |"
+        )
+    lines += [
+        "",
+        "Gold labels are LLM-consensus silver, not human ground truth. Production's own language "
+        "detector, measured against this corpus's language label: "
+        f"{_label_agreement_text(data)}. This is the number to trust for real-world extraction "
+        "accuracy; the CI-gate table above is a regression detector, not a real-world accuracy "
+        "claim -- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) "
+        "(its misrouting-cost finding was corrected in Session 15d).",
+    ]
+    return "\n".join(lines)
+
+
 def render_held_out_table_md(data: dict[str, Any]) -> str:
     """Render the real-world, uncontaminated held-out measurement (README.md).
 
@@ -141,6 +239,8 @@ def render_held_out_table_md(data: dict[str, Any]) -> str:
     quarantined held-out corpus (`eval/fixtures/_held_out_hindi_hinglish/`) the prompt has
     never seen, via `eval/score_held_out_corpus_v2.py`, cassette-replay reproducible.
     """
+    if "headline_grid" in data:
+        return _render_held_out_grid_md(data)
     as_dep = data["as_deployed"]
     forced = data["language_forced"]
     models = f"{data['groq_model_small']} / {data['groq_model_large']}"
