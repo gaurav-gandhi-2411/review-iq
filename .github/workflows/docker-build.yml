@@ -1,0 +1,80 @@
+name: Docker Build
+
+# Session 15d U7b: the production image was first built AFTER merge, by deploy-cloud-run.yml
+# (`gcloud beta builds submit`). That workflow's staged rollout keeps a bad image away from
+# traffic, but the bad commit is already on main and every later deploy fails until someone
+# notices. This builds the SAME Dockerfile on the PR and starts the result, so a broken COPY
+# path, a lockfile that no longer resolves, or an import that only works with dev dependencies
+# fails the PR instead.
+#
+# The class this catches that lint-and-test cannot: `lint-and-test` runs against `uv sync`
+# (dev dependencies included), the image is `uv sync --no-dev`. An `import pytest` (or any dev-only
+# package) in app/ is green in CI today and a crash-looping container in production.
+#
+# NO credentials, NO push, NO secrets. The container runs with `--network none` and dummy env, so
+# it physically cannot reach a database, an LLM provider, or Supabase. Fork PRs run it unchanged.
+#
+# Path-filtered on purpose (a ~2 min image build is not worth paying on a web/-only or docs-only
+# PR). Consequence, recorded in docs/ci-coverage-audit.md: a path-filtered workflow reports no
+# check at all when it does not run, so this job must NOT be made a required status check.
+#
+# Not covered: cloudbuild.yaml (Cloud Build config, only meaningful on Cloud Build) and
+# `FROM ghcr.io/astral-sh/uv:latest` in the Dockerfile is unpinned, so an upstream uv release can
+# fail this job on a PR that touched nothing relevant -- pinning it is a Dockerfile change and
+# was left out of this PR.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - pyproject.toml
+      - uv.lock
+      - "app/**"
+      - .github/workflows/docker-build.yml
+      - scripts/smoke_container_health.py
+
+permissions:
+  contents: read
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: docker-build-${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    env:
+      IMAGE: review-iq-ci-smoke:${{ github.sha }}
+      CONTAINER: review-iq-ci-smoke
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Same Dockerfile, same context, same default target the Cloud Build deploy uses. A failing
+      # COPY / uv sync / base-image pull exits non-zero here and fails the job.
+      - name: Build image (no push)
+        run: docker build -t "$IMAGE" .
+
+      # DEPLOY_TARGET=cloud-run skips the startup migrate() exactly like production; with no
+      # database URL the app falls back to its local sqlite path. API_KEY is a dummy, not a secret.
+      - name: Start container (no network, dummy env)
+        run: |
+          docker run -d --name "$CONTAINER" --network none \
+            -e DEPLOY_TARGET=cloud-run -e PORT=8080 -e API_KEY=ci-smoke-not-a-secret \
+            "$IMAGE"
+
+      # Probe from INSIDE the container (script fed on stdin, nothing baked into the image): with
+      # `--network none` there is no other way in, and it also means a startup path that tries to
+      # dial out fails here. `docker exec` on a crashed container exits non-zero -> job fails.
+      - name: Smoke test (/health answers from the running container)
+        run: docker exec -i "$CONTAINER" python - < scripts/smoke_container_health.py
+
+      - name: Container logs (on failure)
+        if: failure()
+        run: docker logs "$CONTAINER"
+
+      # `rm -f` already exits 0 when the container does not exist (e.g. `docker run` itself failed).
+      - name: Remove container
+        if: always()
+        run: docker rm -f "$CONTAINER"
