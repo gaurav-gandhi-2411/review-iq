@@ -1,4 +1,14 @@
 {
+  "0214415ace9d212a6b72019d76144626081988abea2e6ad2506c5044ec39be43": {
+    "raw": "{\"product\":\"nice headphone\",\"stars\":null,\"stars_inferred\":3,\"pros\":[\"best sound quality\",\"good battery\"],\"cons\":[\"bluetooth range doesn't work long distance\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[\"sound_quality\",\"battery\",\"bluetooth_range\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 2013,
+    "tokens_out": 556
+  },
+  "0f30ffd9368bdbf9352bd47e0efc48895cd42e962fc9672808c9547da5311c4b": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":3,\"pros\":[\"overall good\"],\"cons\":[\"battery life is poor\",\"battery lasts only one month\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[\"performance\",\"battery\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
+    "tokens_in": 2001,
+    "tokens_out": 940
+  },
   "13f761110e9b92364b1bc7d3bd5767a27f5b2618c9cabf82d43d308bfe6c7392": {
     "raw": "{\"product\":\"\",\"stars\":null,\"stars_inferred\":3,\"pros\":[],\"cons\":[],\"buy_again\":null,\"sentiment\":\"neutral\",\"topics\":[],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
     "tokens_in": 1989,
@@ -8,6 +18,26 @@
     "raw": "{\"product\":\"BoAt 235v2 bluetooth headset\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"awesome\",\"best performance\",\"best for movie\",\"best for ultra hd sound\",\"best for gaming (PUBG LOVERS)\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"performance\",\"movie\",\"ultra_hd_sound\",\"gaming\",\"sound_quality\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
     "tokens_in": 2066,
     "tokens_out": 928
+  },
+  "152cef57be242315dc106e9a9bbb5045a9e2e3fc4ee4a98a4c8e08f9afb389e0": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":4,\"pros\":[\"good bass\",\"sound quality\",\"Bluetooth battery backup\",\"decent looks\",\"first choice for higher bass & sounds lover\"],\"cons\":[\"not good for PUBG players\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[\"bass\",\"sound_quality\",\"battery\",\"bluetooth\",\"design\",\"gaming\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 2018,
+    "tokens_out": 1022
+  },
+  "17034edc36dd32303697e9cc7a912ec0f21b635c01a57dac62030b97c865d16c": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"poor voice quality\",\"poor battery backup\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"battery\",\"voice_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.7}",
+    "tokens_in": 1995,
+    "tokens_out": 837
+  },
+  "1797443f1f91d950327f771391646a948030e28734367d8334335c11170ed535": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":5,\"pros\":[\"Mast fabulous\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"mast\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.7}",
+    "tokens_in": 1988,
+    "tokens_out": 751
+  },
+  "1e8b2784be291cf230c936913f444d71b61948baed026dd77d66c05c222fd044": {
+    "raw": "{\"product\":\"earphone\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"best earphone\",\"sound good\",\"bass awesome\",\"built quality excellent\",\"nice earphone\",\"loved it\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"sound\",\"bass\",\"build_quality\",\"design\",\"overall_satisfaction\"],\"competitor_mentions\":[\"realme\"],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 2006,
+    "tokens_out": 1185
   },
   "2144a7e2ba3be3ab8966af8f00ad6d187a66b2ed3479d6d04416fc05237d153d": {
     "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":3,\"pros\":[\"everything is good\",\"nice product\"],\"cons\":[\"long delivery time\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[\"performance\",\"design\",\"delivery\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
@@ -23,6 +53,11 @@
     "raw": "{\"product\":\"Mast productREAD MORE\",\"stars\":null,\"stars_inferred\":3,\"pros\":[],\"cons\":[],\"buy_again\":null,\"sentiment\":\"neutral\",\"topics\":[],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.3}",
     "tokens_in": 2014,
     "tokens_out": 422
+  },
+  "295f9565bc6ed46e79031e02affd515553fcd3192023260e37d43e98716d734c": {
+    "raw": "{\"product\":\"Full paisa vasul\",\"stars\":null,\"stars_inferred\":3,\"pros\":[\"good sound quality\"],\"cons\":[\"material lacks elasticity\",\"lack of super bass\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[\"sound_quality\",\"build_quality\",\"bass\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[\"add more elasticness to material\",\"add super bass\"],\"language\":\"en\",\"confidence\":0.8}",
+    "tokens_in": 2006,
+    "tokens_out": 858
   },
   "2bad1ce5c6d77189e8e5bef7995353c23c88876fccb4b9816165b41d4fee000d": {
     "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":4,\"pros\":[\"nice product\",\"fast delivery\",\"good sound\",\"good bass\",\"good design\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"delivery\",\"sound_quality\",\"bass\",\"design\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
@@ -54,10 +89,35 @@
     "tokens_in": 2005,
     "tokens_out": 724
   },
+  "3c75f6038180df279903bd57ae2622b3e08f87fe67873ca83a02967c9133e6e0": {
+    "raw": "{\"product\":\"realme\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"super fast delivery\",\"super bass\",\"super sound\",\"nice product\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"delivery\",\"sound_quality\",\"bass\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 2000,
+    "tokens_out": 435
+  },
+  "3ee67f2d4a4535089ba5ac2a342197119f1ea98d4a151ef2fdbe9be493b7a9c5": {
+    "raw": "{\"product\":\"ful paisa vasol product\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"Excellent\",\"loved it\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"performance\",\"price\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
+    "tokens_in": 2007,
+    "tokens_out": 999
+  },
+  "450096abb9d0b3d42c348cacba9ca603a54d6ea965082e95a07e53373b214a7b": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":5,\"pros\":[\"great bass\",\"quality sound\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"bass\",\"sound_quality\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
+    "tokens_in": 1997,
+    "tokens_out": 695
+  },
   "4f44a335719c7f0057e384a9fe48afdc23abe4a7754ab61628784b889f2af25c": {
     "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":5,\"pros\":[\"awesome bass\",\"super sound\",\"good sound\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"bass\",\"sound_quality\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
     "tokens_in": 1998,
     "tokens_out": 528
+  },
+  "507dfeffb14dd2af92396859a987cab80aec973f6489208e2a93b16ab9165d98": {
+    "raw": "{\"product\":\"Mast sound\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"best product\",\"stylish headphone\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"performance\",\"design\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1994,
+    "tokens_out": 754
+  },
+  "560935b4103ce44c17ea9027f7ad3be8f5acdf559b4c18ef4fc823f7060c3ca6": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":3,\"pros\":[\"very good sound\",\"good price range\"],\"cons\":[\"not comfortable for long time use\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[\"sound_quality\",\"price\",\"comfort\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.7}",
+    "tokens_in": 2011,
+    "tokens_out": 786
   },
   "56b8c786f0149cec32b5ac280f2899b6d21a544d57f7ef13f750d6bc01f8c1b1": {
     "raw": "{\"product\":\"earphones\",\"stars\":null,\"stars_inferred\":4,\"pros\":[\"good earphones\",\"no stress to ears\",\"good comfort\",\"great\"],\"cons\":[\"low sound level\"],\"buy_again\":true,\"sentiment\":\"mixed\",\"topics\":[\"performance\",\"comfort\",\"sound_quality\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
@@ -69,10 +129,30 @@
     "tokens_in": 1991,
     "tokens_out": 498
   },
+  "59f35aaaedad1b40b02555a4ad6eb84056804b233a8da1c4dd5f83b380691332": {
+    "raw": "{\"product\":\"wings wireless neck band\",\"stars\":null,\"stars_inferred\":4,\"pros\":[\"good product\",\"best compared to other brands\"],\"cons\":[\"bass not like wings and Philip's earphones\"],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"performance\",\"sound_quality\"],\"competitor_mentions\":[\"wings\",\"Philip's\",\"Intex\",\"boat\"],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
+    "tokens_in": 2036,
+    "tokens_out": 1129
+  },
+  "5c3450304912f4c3708dcdb1913f29c2cfdc0da50780616998aefe7aebbd4c1b": {
+    "raw": "{\"product\":\"Sahi per\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"not excellent\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"performance\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.7}",
+    "tokens_in": 1990,
+    "tokens_out": 580
+  },
   "5ec15bdf16a4280bf5642d1957dbd25c38f8c0944a3fe7360e6c25a53d1a7ead": {
     "raw": "{\"product\":\"wireless earphone\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"excellent sound\",\"excellent base quality\",\"excellent calling experience\",\"long battery backup\",\"best wireless earphone in this price range\",\"no problem with realme 6i\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"sound\",\"bass\",\"call_quality\",\"battery\",\"price\",\"compatibility\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
     "tokens_in": 2039,
     "tokens_out": 1166
+  },
+  "62cf7ac2a7a3faecdb2f1debced1d13f62d057aa6b8d47a093873cb5df2123c0": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":3,\"pros\":[\"good build quality\"],\"cons\":[\"poor sound\",\"poor comfort\",\"ear gets hot after 15 minutes\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[\"build_quality\",\"sound\",\"comfort\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
+    "tokens_in": 2022,
+    "tokens_out": 872
+  },
+  "658aa484502ae46d1a75b85995463363241e5c9a80694f9e9477c2dc69ac32d7": {
+    "raw": "{\"product\":\"headset\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"good quality at less price\",\"good bass\",\"good sound quality\",\"simple design\",\"comfortable neck\",\"good battery backup\",\"magnet switch saves battery\",\"good clear built-in mic\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"price\",\"quality\",\"bass\",\"sound_quality\",\"design\",\"comfort\",\"battery\",\"magnet_switch\",\"mic\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 2083,
+    "tokens_out": 693
   },
   "66c5cf27d28b4aab59783cda7f5d0e77c4bd107f11d1a4768d12b68a10a96aa5": {
     "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":4,\"pros\":[\"overall great\"],\"cons\":[\"ear discomfort\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[\"performance\",\"comfort\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
@@ -84,6 +164,16 @@
     "tokens_in": 2012,
     "tokens_out": 706
   },
+  "745bc9626b34160c6860956079c61fb5ab0c5627fdb31ffc3b04e9ad64548d04": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":5,\"pros\":[\"very good product\",\"strong recommendation\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"performance\",\"recommendation\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 2013,
+    "tokens_out": 1022
+  },
+  "758c059a0f524a5eda2980553b140b781103f23bb60551c560e3f7b6c182915d": {
+    "raw": "{\"product\": null,\"stars\": null,\"stars_inferred\": 5,\"pros\": [\"awesome sound quality\",\"beautiful bass\",\"best in price range\"],\"cons\": [],\"buy_again\": null,\"sentiment\": \"positive\",\"topics\": [\"sound_quality\",\"bass\",\"price\"],\"competitor_mentions\": [],\"urgency\": \"low\",\"feature_requests\": [],\"language\": \"en\",\"confidence\": 0.95}",
+    "tokens_in": 2015,
+    "tokens_out": 533
+  },
   "79c8562dcff71a7492fb9e177b1aaf0f2edfc97675174bc58db1a6fba4d3d81d": {
     "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":3,\"pros\":[\"Crispy clear sound\",\"Great for music and streaming\",\"Great for calls\"],\"cons\":[\"bass lacks boom effect due to plastic body\",\"not suitable for gaming\",\"clip issue\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[\"sound_quality\",\"music\",\"streaming\",\"calls\",\"bass\",\"plastic_body\",\"gaming\",\"clip\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
     "tokens_in": 2103,
@@ -93,6 +183,11 @@
     "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":5,\"pros\":[\"built quality\",\"sound quality\",\"battery backup\",\"superb value for money\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"build_quality\",\"sound_quality\",\"battery\",\"price\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
     "tokens_in": 2001,
     "tokens_out": 653
+  },
+  "7ee0d8a7dbff67b3b2d64200041e52dd278b6898124243388110895a96aa3903": {
+    "raw": "{\"product\":\"Ultimate headset\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"value for money\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"price\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1991,
+    "tokens_out": 550
   },
   "80e5e94089e3b5ac18b25ce29256f74684f5a3934248dc7643f16ac5783d9f8a": {
     "raw": "{\"product\":\"headphone\",\"stars\":null,\"stars_inferred\":3.5,\"pros\":[\"very good product\",\"good sound quality\"],\"cons\":[\"ear pain after an hour of use\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[\"performance\",\"sound_quality\",\"comfort\"],\"competitor_mentions\":[],\"urgency\":\"high\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
@@ -114,6 +209,11 @@
     "tokens_in": 1998,
     "tokens_out": 488
   },
+  "a66f2ed79294a832e7cda4aae53308d9ad211d9cb81abe18612156d7806f2fa7": {
+    "raw": "{\"product\":\"headphone\",\"stars\":null,\"stars_inferred\":4,\"pros\":[\"great headphone\",\"worth the money\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"performance\",\"price\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
+    "tokens_in": 1994,
+    "tokens_out": 403
+  },
   "aea6aedf35d3db9188ae1043561ce735cc063df08df023691d43f507ee4fefa4": {
     "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"bad sound quality after 20 days\",\"money wasted\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"sound_quality\",\"durability\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
     "tokens_in": 2000,
@@ -124,10 +224,20 @@
     "tokens_in": 2046,
     "tokens_out": 1022
   },
+  "b4b4736e942b03661ecc5dba0566839c218122eeb5bbcaa29de797608593d5cf": {
+    "raw": "{\"product\":\"buds\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"full paisa vasool\",\"battery backup\",\"sound\",\"light weight\",\"design\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"battery\",\"sound\",\"weight\",\"design\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 2000,
+    "tokens_out": 417
+  },
   "b54beab16570ab6e99d07c875c479a61b43e2bb2c9a710698ac94dd57999a9a3": {
     "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":4,\"pros\":[\"product is good\",\"battery backup runs 6 to 4 hours\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"battery\",\"performance\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
     "tokens_in": 2001,
     "tokens_out": 590
+  },
+  "b6fc370226cadfae67cd14da90c476e37121f4287be3e84b7875048f984be031": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":4,\"pros\":[\"very good sound quality\",\"very balanced sound\",\"superb\",\"money satisfaction\"],\"cons\":[\"design issue\",\"improper cable management\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[\"sound_quality\",\"price\",\"design\",\"cable_management\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
+    "tokens_in": 2067,
+    "tokens_out": 744
   },
   "b87a033008feda37dc49045329b26410798cc9dd4ae289a5cd1efbe21a302138": {
     "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":4,\"pros\":[\"good battery backup\"],\"cons\":[\"battery drains quickly after 30%\"],\"buy_again\":true,\"sentiment\":\"positive\",\"topics\":[\"battery\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
@@ -139,14 +249,49 @@
     "tokens_in": 2004,
     "tokens_out": 579
   },
+  "cf907b49dbfc887842f72209c1b0157d711beae7f9399e64778e85e0a70a546c": {
+    "raw": "{\"product\":\"The Boat Rockerz 400\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"best quality\",\"connectivity to PC\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"performance\",\"connectivity\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.85}",
+    "tokens_in": 2032,
+    "tokens_out": 573
+  },
+  "d9db085ad25eedc4f421e0043ab0f91b1a7047c3fc3b6de42ccfb1cebff35698": {
+    "raw": "{\"product\":\"earphone\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"awesome bass\",\"clear sound at high volume\",\"nice build quality\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"bass\",\"sound\",\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 2085,
+    "tokens_out": 863
+  },
   "e2a8170e5cb5b42be154e49fa16ac356c3ab70109beed6a4c113aad7d2353f1f": {
     "raw": "{\"product\":\"back up mast\",\"stars\":null,\"stars_inferred\":4,\"pros\":[\"very nice\",\"better back up mast\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"design\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.7}",
     "tokens_in": 1990,
     "tokens_out": 656
   },
+  "e3c1f2cc09e8940e7311fc1c11329c9e032cafba5f5099ed4e555d1dc0633510": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":5,\"pros\":[\"best product\",\"good price\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"quality\",\"price\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
+    "tokens_in": 1989,
+    "tokens_out": 917
+  },
+  "e8ce2f1d9ddc2b2d2446e16a5ce81a28aef88fc5ee317b3a3f0d82c1ddae521a": {
+    "raw": "{\"product\":\"Paisa basool product\",\"stars\":null,\"stars_inferred\":4,\"pros\":[\"nice product\",\"value for money\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"performance\",\"price\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
+    "tokens_in": 2000,
+    "tokens_out": 648
+  },
   "e92380dc7a80ab442c3d47769e797c8d517abccc3a659cfc20afcdecacb42db0": {
     "raw": "{\"product\":\"U&i Bluetooth device\",\"stars\":null,\"stars_inferred\":4,\"pros\":[\"long battery life\",\"good voice clarity\",\"good value for price\"],\"cons\":[\"low bass\"],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"battery\",\"voice_clarity\",\"bass\",\"price\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
     "tokens_in": 2021,
     "tokens_out": 626
+  },
+  "eb2a94a17f7a20327a95f93bbe7f7cbecbe0902ee7ad0d3f66675ea2d4c2d7e3": {
+    "raw": "{\"product\": null,\"stars\": 4.5,\"stars_inferred\": 4.5,\"pros\": [\"superb bass\",\"extremely good battery backup\",\"can watch almost two movies at a time\",\"wire included\"],\"cons\": [],\"buy_again\": null,\"sentiment\": \"positive\",\"topics\": [\"bass\",\"battery\",\"performance\",\"wire\"],\"competitor_mentions\": [],\"urgency\": \"low\",\"feature_requests\": [],\"language\": \"en\",\"confidence\": 0.9}",
+    "tokens_in": 2103,
+    "tokens_out": 1183
+  },
+  "f090208118d42b63b336f26492ccb23103ff0d1d12acded104754014ca763f13": {
+    "raw": "{\"product\":\"boat 220 wired\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"very good earphone\",\"awesome\",\"super extra bass\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"performance\",\"overall_satisfaction\",\"sound_quality\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 2031,
+    "tokens_out": 1912
+  },
+  "f29b4c84f0ae55845d471b8f4450c9f7b13594576dbef659c0171c2618d73f15": {
+    "raw": "{\"product\":\"Ultimate headset Paisa wasool\",\"stars\":null,\"stars_inferred\":3,\"pros\":[],\"cons\":[],\"buy_again\":null,\"sentiment\":\"neutral\",\"topics\":[],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.4}",
+    "tokens_in": 1991,
+    "tokens_out": 499
   }
 }

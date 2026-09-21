@@ -131,3 +131,74 @@ pool; 75,258 from recorded final-model tokens plus 6,027 estimated for two escal
 attempts) and 9,470 on `gpt-oss-120b` (2 escalated calls). Groq requests remaining, before →
 after: `gpt-oss-20b` 999 → 969, `gpt-oss-120b` 999 → 999 (rolling window; 120b's 2 requests had
 already replenished). Day 2 runs on the next budget day; it is NOT run in the same UTC day.
+
+### Day 2 -- 2026-09-21, the other 28 of 56 fixtures (COMPLETE)
+
+Source: `eval/results/buy_again_exp_day2.json` (recorded 2026-09-21T15:20Z, git sha `3c6a4f4`, mode
+`record`), cassette `eval/cassettes/buy_again_exp_cassettes.json`. Replay at zero quota reproduces
+every row (checked: rows identical after `replay --day 2`).
+
+| Day-2 fixtures (n=28) | Baseline (recorded) | Variant |
+|---|---|---|
+| `buy_again` committed | 1 (hien-0038: gold null, predicted true = the baseline's own wrong commit) | **0** |
+
+Day 2 lost the baseline's only commit on these fixtures and gained none. In particular the
+variant did **not** repeat hien-0038 wrong (predicted `null`), which was the way the rule could
+have flipped to REVERT.
+
+### Verdict under the pre-registered rule (applied as written, not reinterpreted)
+
+| All 56 English-routed | Baseline | Variant |
+|---|---|---|
+| `buy_again` committed (N_cov) | 2 | **4** |
+| wrong-committed count (N_wrong) | 1 (hien-0038) | **1** (hien-0018) |
+| committed and correct, gold-decidable (n=19) | 1 (hien-0069) | 3 (hien-0039, -0069, -0103) |
+
+`N_cov = 4 > B_cov = 2` and `N_wrong = 1 <= B_wrong = 1`, so the rule returns **SUCCESS**
+(`buy_again_fewshot.py report`). Read it with what it hides: the wrong-committed *count* is equal
+because the variant removed the baseline's wrong commit (hien-0038) **and** added a different one
+(hien-0018, gold null, predicted true); commit changes are 1 lost, 3 gained, exact McNemar
+p = 0.625, so the coverage gain is not statistically distinguishable from zero on 56 fixtures.
+One of the 56 fixtures is in the exposed set of ADR 0032 (recorded here, not gating).
+
+Budget (ceiling 100K/model/day): estimated 81,834 tokens on `gpt-oss-20b` and 5,031 on
+`gpt-oss-120b` (runner accounting, recorded final-model tokens plus an estimated re-spend for
+escalated calls). Production's own use of the same key that UTC day before the run, from
+`extraction_costs`: 2,025 tokens on the 20b model, 0 on the 120b. About 84K on the 20b in total,
+under 100K. The independent Groq requests-remaining header check named above was **not** taken
+this run (UNVERIFIED); the ceiling was held by the runner's own guard.
+
+### The `sentiment` side effect, root-caused as far as the recorded data allows (V3b)
+
+Only `buy_again` examples were edited. Across all 56 fixtures `sentiment` changed on **8**
+(3 on day 1, 5 on day 2): 6 `mixed -> positive`, 1 `neutral -> positive`, 1 `positive ->
+negative` (hien-0100). Seven of eight moved *into* `positive` (sign test two-sided p = 0.070);
+the `mixed` share fell from 19 to 13 of 56; agreement with the gold sentiment is unchanged, 49 of
+56 both ways (4 changes toward gold, 4 away). So this is a **shift in class prior with no net
+accuracy change on this sample**, and a shift toward the label that hides a complaint.
+
+What the data supports: the two added examples carry sentiment `positive` and `negative` and no
+`mixed`, so the example block goes from 1 of 4 `mixed` to 1 of 6, and the added examples sit last,
+nearest the review. The eight changed reviews are mild "good ... but" texts near the
+`mixed`/`positive` boundary. That fits an example-prior effect. What it does **not** establish:
+`temperature` is 0.0 but `gpt-oss` on Groq is not bit-deterministic run to run, and no
+same-prompt repeat was run, so a bidirectional noise floor is unmeasured; the one `positive ->
+negative` flip is the kind of change noise makes and a prior shift does not.
+
+The experiment that separates the two, pre-registered here and **not run** (it needs its own
+budget day): re-run the *baseline* prompt once on the 19 baseline-`mixed` fixtures (about 40K
+tokens on the 20b model) and count how many leave `mixed` under the identical prompt. Under
+example-prior the baseline repeat keeps ~19/19; under noise it loses a comparable share to the
+6/19 seen with the variant.
+
+### What this changes for how prompt experiments are designed
+
+1. **Diff every output field against the baseline, not just the target**, and pre-register a bound
+   for the non-target fields (here `sentiment` moved on 14% of fixtures and nobody had a bound).
+2. **Include a noise-floor arm** (same prompt, same fixtures, repeated) so a change is compared
+   against run-to-run variation, not against zero.
+3. **Balance the non-target classes in added few-shot examples** (add a `mixed` example beside the
+   `positive` one) or place them before the existing examples, and say which was done.
+4. **A SUCCESS on the target field is not a promotion decision** while a non-target field has
+   moved; promotion needs the dev-set re-record and a fresh eval, and here also the noise-floor
+   arm. Recommendation: hold promotion (production behaviour change, GG's call).
