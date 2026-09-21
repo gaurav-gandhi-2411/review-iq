@@ -43,6 +43,22 @@ def _opener_raising(exc: BaseException):
 
 
 @pytest.mark.parametrize("provider", ["groq", "gemini"])
+def test_request_carries_an_explicit_non_urllib_user_agent(provider: str) -> None:
+    # Regression (2026-09-21): urllib's default UA gets HTTP 403 from Groq's edge, so the first
+    # real run of this check failed on all three models while the key was fine. The mocked opener
+    # in every other test never sees headers, so pin the header on the request itself.
+    seen: dict[str, Any] = {}
+
+    def _capture(req: Any, timeout: float) -> Any:
+        seen["ua"] = req.get_header("User-agent")
+        return _Resp(200)
+
+    cmg.check(provider, "m", "k", opener=_capture)
+    assert seen["ua"] == cmg.USER_AGENT
+    assert not seen["ua"].startswith("Python-urllib")
+
+
+@pytest.mark.parametrize("provider", ["groq", "gemini"])
 def test_200_is_ok(provider: str) -> None:
     v = cmg.check(provider, "m", "k", opener=_opener_returning(200))
     assert v.status == "ok"
