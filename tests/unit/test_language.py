@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from app.core.language import detect_language
+from app.core.language import detect_language, language_signal
 
 FIXTURES_ROOT = Path(__file__).parent.parent.parent / "eval" / "fixtures"
 
@@ -295,3 +295,64 @@ class TestAccuracyOnFixtures:
         assert len(all_samples) >= 30, f"Need >=30 total samples, got {len(all_samples)}"
         acc = self._run_accuracy(all_samples)
         assert acc >= 0.85, f"Overall detection accuracy {acc:.0%} < 85% (n={len(all_samples)})"
+
+
+# ---------------------------------------------------------------------------
+# Session 15d (D7): language_signal -- rule-hit evidence accompanying the label
+# ---------------------------------------------------------------------------
+
+
+class TestLanguageSignal:
+    """language_signal never changes detect_language; it only reports the evidence."""
+
+    def test_clean_english_has_no_evidence(self) -> None:
+        s = language_signal("Great sound quality but the battery dies after 3 hours.")
+        assert (s.code_mixed, s.strength) == (False, "none")
+
+    def test_single_weak_marker_is_weak_and_code_mixed_but_label_stays_en(self) -> None:
+        text = "A bit uncomfortable on ears but bass is mast"
+        assert detect_language(text) == "en"  # 1 weak hit is below the hi-en threshold
+        s = language_signal(text)
+        assert (s.code_mixed, s.strength) == (True, "weak")
+
+    def test_single_strong_marker_is_moderate(self) -> None:
+        text = "Battery life is good, thoda heavy though and the case feels cheap"
+        assert detect_language(text) == "hi-en"
+        s = language_signal(text)
+        assert (s.code_mixed, s.strength) == (True, "moderate")
+
+    def test_three_weak_markers_is_moderate(self) -> None:
+        text = "yeh phone hai aur camera bhi mast"
+        assert detect_language(text) == "hi-en"
+        assert language_signal(text).strength == "moderate"
+
+    def test_two_strong_markers_is_strong(self) -> None:
+        text = "bahut kharab product, paisa vasool nahi hai"
+        assert language_signal(text).strength == "strong"
+
+    def test_devanagari_only_is_strong_but_not_code_mixed(self) -> None:
+        s = language_signal("यह प्रोडक्ट बहुत अच्छा है")
+        assert (s.code_mixed, s.strength) == (False, "strong")
+
+    def test_devanagari_with_latin_is_code_mixed(self) -> None:
+        s = language_signal("Boat earphone बहुत अच्छा है")
+        assert (s.code_mixed, s.strength) == (True, "strong")
+
+    def test_stray_danda_in_english_is_not_evidence(self) -> None:
+        # Same Session 10 P3 regression as the detector: a danda is punctuation, not Hindi.
+        s = language_signal("I didn't expect that a cheap earphone canbe like this । It's awesome")
+        assert (s.code_mixed, s.strength) == (False, "none")
+
+    def test_hi_en_label_always_implies_code_mixed(self) -> None:
+        texts = [
+            "bahut accha product hai",
+            "yeh phone hai aur camera bhi mast",
+            "Bekar product",
+            "acha hai na, sahi hai toh lelo",
+        ]
+        for t in texts:
+            if detect_language(t) == "hi-en":
+                assert language_signal(t).code_mixed, t
+
+    def test_whitespace_padding_is_ignored(self) -> None:
+        assert language_signal("   bahut acha   ") == language_signal("bahut acha")
