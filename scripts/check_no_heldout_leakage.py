@@ -22,17 +22,6 @@ MIN_LEAK_CHUNK_LEN characters of each review, so a review pasted with its openin
 (or a longer review pasted from the middle) passed. It now tests every window. It also fails
 closed when the corpus or the prompt files are missing, instead of printing OK for a scan of
 nothing.
-
-Session 16 (V1): the check above has a second, larger blind spot that let 36 of the 106
-held-out reviews through. It compared each review only against prompt text (every window of it,
-after the fix above) -- never against the prompt-visible development fixtures
-(`eval/fixtures/{,hi-en/,hi/}`) or the benchmark gold, which are where the overlap actually was.
-It now also checks whole-review overlap with those sets (eval/heldout_exposure.py) against a
-ledger, `eval/heldout_exposure_ack.json`: an overlap NOT in the ledger fails the build (a new
-exposure), and a ledger entry that is no longer an overlap fails it too (a stale ledger stops
-describing the corpus). The ledger does not restore an exposed review to the headline -- the
-scorer excludes every exposed review regardless. Still not covered: paraphrase (four `hi_en.py`
-few-shot examples were found by hand this way; ADR 0032).
 """
 
 from __future__ import annotations
@@ -115,7 +104,19 @@ def find_leaks(
 def find_exposure_problems(
     exposure: dict[str, list[str]], acknowledged: dict[str, dict]
 ) -> list[str]:
-    """Overlaps not in the ledger (new exposure) and ledger entries that are not overlaps."""
+    """Overlaps not in the ledger (new exposure) and ledger entries that are not overlaps.
+
+    Session 16 (V1): the check above has a second, larger blind spot that let 36 of the 106
+    held-out reviews through. It compared only the FIRST 40 characters of each review, only against
+    prompt text -- never against the prompt-visible development fixtures (`eval/fixtures/{,hi-en/,
+    hi/}`) or the benchmark gold, which are where the overlap actually was. It now also checks
+    whole-review overlap with those sets (eval/heldout_exposure.py) against a ledger,
+    `eval/heldout_exposure_ack.json`: an overlap NOT in the ledger fails the build (a new exposure),
+    and a ledger entry that is no longer an overlap fails it too (a stale ledger stops describing
+    the corpus). The ledger does not restore an exposed review to the headline -- the scorer
+    excludes every exposed review regardless. Still not covered: paraphrase (four `hi_en.py`
+    few-shot examples were found by hand this way; ADR 0032).
+    """
     problems = [
         f"{fid} overlaps a development set ({', '.join(reasons)}) and is not in "
         "eval/heldout_exposure_ack.json: a review the prompt-development process has seen is "
