@@ -29,56 +29,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&amp;family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&amp;display=swap" />
+  <!-- Colour, type, space and radius tokens live once in tokens.css, shared with docs/index.html. -->
+  <link rel="stylesheet" href="/tokens.css" />
   <style>
-    /* ==========================================================================
-       TOKENS -- the only place a colour, size or radius is defined.
-       Brand palette is design/tokens.json (saffron, ember, ink, cream). Everything
-       else is a tint mixed from those four, so the page has no other hue family.
-       Rules the palette imposes (WCAG AA, measured by scripts/check_contrast.py and
-       scripts/check_site_responsive.py):
-         - body text is ink on cream, or cream on ink -- never saffron/ember text
-         - saffron/ember are marks, accents, large display and button fills; a button
-           on either fill carries ink text
-       ========================================================================== */
-    :root {
-      --saffron: #F6C042;
-      --ember: #E8823A;
-      --ink: #1C1A17;
-      --cream: #FAF4EA;
-
-      /* Tints derived from the four colours above. */
-      --ink-2: color-mix(in srgb, var(--ink) 80%, var(--cream));   /* secondary text on cream */
-      --ink-3: color-mix(in srgb, var(--ink) 68%, var(--cream));   /* tertiary text on cream */
-      --cream-2: color-mix(in srgb, var(--ink) 5%, var(--cream));  /* raised surface */
-      --cream-3: color-mix(in srgb, var(--ink) 10%, var(--cream)); /* table header */
-      --line: color-mix(in srgb, var(--ink) 18%, var(--cream));    /* hairlines on cream */
-      --saffron-tint: color-mix(in srgb, var(--saffron) 26%, var(--cream));
-      --ember-tint: color-mix(in srgb, var(--ember) 26%, var(--cream));
-      --ink-raised: color-mix(in srgb, var(--cream) 9%, var(--ink));    /* surface on ink */
-      --on-ink-2: color-mix(in srgb, var(--cream) 82%, var(--ink));     /* secondary text on ink */
-      --on-ink-line: color-mix(in srgb, var(--cream) 24%, var(--ink));  /* hairlines on ink */
-
-      /* Type: two families. Scale is a 1.25 (major third) ratio from 1rem. */
-      --font-display: "Fraunces", Georgia, "Times New Roman", serif;
-      --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-      --step--1: 0.8rem;
-      --step-0: 1rem;
-      --step-1: 1.25rem;
-      --step-2: 1.5625rem;
-      --step-3: 1.953rem;
-      --step-4: 2.441rem;
-      --step-5: 3.052rem;
-      --step-6: 3.815rem;
-      --leading-body: 1.65;
-      --measure: 65ch;
-
-      /* Space (4px unit, design/tokens.json) and radii. */
-      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
-      --space-5: 1.5rem; --space-6: 2rem; --space-7: 3rem; --space-8: 4rem; --space-9: 6rem;
-      --r-sm: 6px; --r-md: 10px; --r-lg: 16px;
-      --page-width: 72rem;
-    }
-
     /* ==========================================================================
        BASE
        ========================================================================== */
