@@ -23,6 +23,33 @@ on:
       # score_fixture() delegates the free-text fields here; a change to this file moves
       # every published number exactly like a change to runner.py does.
       - eval/free_text_scoring.py
+      # The cassette store itself: the runner replays from it, so an edited/deleted/re-recorded
+      # cassette moves the numbers exactly like a prompt change does. It was missing here.
+      - eval/cassettes/**
+      - .github/workflows/eval.yml
+  # Session 15d U7b: the same replay, BEFORE merge. Until now this workflow ran only after a
+  # change had already reached main (and nightly), so the accuracy-gate thresholds in
+  # eval/runner.py were never enforced on a PR. lint-and-test already replays the cassettes on
+  # every PR, but only via check_eval_results_reproducible.py, which accepts a gate FAIL as "a
+  # valid regeneration outcome" -- a PR that commits its own regressed (regenerated) results
+  # passes that check. This job is the one that fails on the gate itself.
+  #
+  # KEEP THIS `paths:` LIST IDENTICAL TO THE push LIST ABOVE (tests/unit/test_eval_workflow_paths.py
+  # fails if they drift): the list going stale is exactly how c492e4a slipped through. Both
+  # lists carry this file, so a change to the workflow is itself exercised.
+  #
+  # No secrets are needed or used on this path (cassette replay, no provider key), so fork PRs run
+  # it too. The Slack step is gated to schedule/dispatch and the issue-alert step to non-PR events
+  # below -- a PR run must neither open nor close the repo-wide "Eval CI is failing" issue.
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/core/**"
+      - "eval/fixtures/**"
+      - eval/runner.py
+      - eval/free_text_scoring.py
+      - eval/cassettes/**
+      - .github/workflows/eval.yml
   schedule:
     - cron: "0 2 * * *"
   workflow_dispatch:
@@ -34,6 +61,10 @@ permissions:
 jobs:
   eval:
     runs-on: ubuntu-latest
+    # Job-level so push/schedule behaviour is untouched: cancel superseded PR runs only.
+    concurrency:
+      group: eval-${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
     env:
       # Eval CI replays recorded cassettes — ZERO live LLM calls, deterministic, $0, and
       # immune to free-tier daily-quota exhaustion (which takes down a live eval). No
@@ -66,6 +97,14 @@ jobs:
         if: always()
         run: uv run python -m eval.report
 
+      # Makes a gate failure readable from the PR checks page without downloading the artifact.
+      - name: Show report in the run summary
+        if: always()
+        run: |
+          if [ -f eval/report.md ]; then
+            cat eval/report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Notify Slack
         if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         env:
@@ -89,8 +128,12 @@ jobs:
       # Fires a GitHub issue on failure regardless of Slack config -- see
       # .github/actions/schedule-failure-alert. This is what would have caught the
       # 14-night silent Eval-CI-broken incident on night 2 instead of night 14.
+      #
+      # Skipped on pull_request: that issue tracks the state of main/nightly. A red PR is
+      # already visible as a red check (and a fork PR's token cannot write issues), and a green
+      # PR must not "recover" an alert that main itself still owes.
       - name: Alert on failure / close alert on recovery
-        if: always()
+        if: always() && github.event_name != 'pull_request'
         uses: ./.github/actions/schedule-failure-alert
         with:
           status: ${{ steps.run_eval.outcome == 'success' && 'success' || 'failure' }}

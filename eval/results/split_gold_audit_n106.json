@@ -1,0 +1,118 @@
+{
+  "generated_at": "2026-09-20T08:49:54Z",
+  "git_sha": "f23eb23b36e7a3b7b99b6651bf4ffe3a5af75fff",
+  "predictions_git_sha": "0ba938d8d4f3bc4e9fe807cbb203dce4198564b2",
+  "n": 106,
+  "agreement_counts": {
+    "buy_again:majority": 34,
+    "buy_again:unanimous": 72,
+    "competitor_mentions:majority": 17,
+    "competitor_mentions:unanimous": 89,
+    "cons:majority": 19,
+    "cons:split": 21,
+    "cons:unanimous": 66,
+    "feature_requests:majority": 3,
+    "feature_requests:split": 1,
+    "feature_requests:unanimous": 102,
+    "language:majority": 10,
+    "language:unanimous": 96,
+    "product:majority": 38,
+    "product:split": 26,
+    "product:unanimous": 42,
+    "pros:majority": 41,
+    "pros:split": 30,
+    "pros:unanimous": 35,
+    "sentiment:majority": 5,
+    "sentiment:unanimous": 101,
+    "stars:unanimous": 106,
+    "stars_inferred:unanimous": 106,
+    "topics:majority": 39,
+    "topics:split": 25,
+    "topics:unanimous": 42,
+    "urgency:majority": 10,
+    "urgency:unanimous": 96
+  },
+  "overall_as_deployed_excl_constant": {
+    "all_pairs": 0.6970068411002824,
+    "excluding_split_pairs": 0.7600721042413542,
+    "delta": 0.06306526314107175,
+    "delta_ci95_paired_bootstrap": [
+      0.049388539794537105,
+      0.07709830278619588
+    ]
+  },
+  "per_field": {
+    "product": {
+      "n": 106,
+      "n_split_gold": 26,
+      "score_all": 0.5943396226415094,
+      "score_excluding_split": 0.575
+    },
+    "stars": {
+      "n": 106,
+      "n_split_gold": 0,
+      "score_all": 1.0,
+      "score_excluding_split": 1.0
+    },
+    "buy_again": {
+      "n": 106,
+      "n_split_gold": 0,
+      "score_all": 0.7264150943396226,
+      "score_excluding_split": 0.7264150943396226
+    },
+    "sentiment": {
+      "n": 106,
+      "n_split_gold": 0,
+      "score_all": 0.8679245283018868,
+      "score_excluding_split": 0.8679245283018868
+    },
+    "language": {
+      "n": 106,
+      "n_split_gold": 0,
+      "score_all": 0.4811320754716981,
+      "score_excluding_split": 0.4811320754716981
+    },
+    "topics": {
+      "n": 106,
+      "n_split_gold": 25,
+      "score_all": 0.5424103088919959,
+      "score_excluding_split": 0.6851295400315008
+    },
+    "competitor_mentions": {
+      "n": 106,
+      "n_split_gold": 0,
+      "score_all": 0.839622641509434,
+      "score_excluding_split": 0.839622641509434
+    },
+    "pros": {
+      "n": 106,
+      "n_split_gold": 30,
+      "score_all": 0.5388443781659271,
+      "score_excluding_split": 0.7383882116524773
+    },
+    "cons": {
+      "n": 106,
+      "n_split_gold": 21,
+      "score_all": 0.7012408451087696,
+      "score_excluding_split": 0.8744885833121128
+    },
+    "stars_inferred": {
+      "n": 106,
+      "n_split_gold": 0,
+      "score_all": 0.9811320754716981,
+      "score_excluding_split": 0.9811320754716981
+    }
+  },
+  "product_behaviour_by_gold_kind": {
+    "brand/consensus | model abstained | wrong": 4,
+    "brand/consensus | model named | correct": 8,
+    "brand/consensus | model named | wrong": 11,
+    "category/consensus | model abstained | wrong": 13,
+    "category/consensus | model named | correct": 18,
+    "category/consensus | model named | wrong": 4,
+    "null/consensus | model abstained | correct": 20,
+    "null/consensus | model named | wrong": 2,
+    "null/split | model abstained | correct": 17,
+    "null/split | model named | wrong": 9
+  }
+}

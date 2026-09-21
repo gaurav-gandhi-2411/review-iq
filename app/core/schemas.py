@@ -7,7 +7,17 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Annotated, Any
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    Field,
+    GetJsonSchemaHandler,
+    SerializerFunctionWrapHandler,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
+from pydantic.json_schema import JsonSchemaValue
+from pydantic_core import CoreSchema
 
 
 class Sentiment(StrEnum):
@@ -32,6 +42,39 @@ class ExtractionMeta(BaseModel):
     extracted_at: datetime = Field(default_factory=datetime.utcnow)
     latency_ms: int | None = None
     input_hash: str
+
+
+class InjectionControlsReport(BaseModel):
+    """What the opt-in field-targeted injection controls did to this extraction.
+
+    Present on a response ONLY when ENABLE_FIELD_INJECTION_INPUT_CONTROL or
+    ENABLE_FIELD_INJECTION_OUTPUT_CHECK is on (both default off); absent otherwise, so flag-off
+    responses are byte-identical to before. Never carries review text. See
+    app/core/injection_controls.py and SECURITY.md section 2.
+    """
+
+    input_stripped: bool = Field(
+        default=False,
+        description="True when one or more sentences were removed from the text sent to the "
+        "extraction model because they looked like an instruction aimed at the schema fields.",
+    )
+    input_rules: list[str] = Field(
+        default_factory=list, description="Names of the input rules that fired."
+    )
+    output_nulled: list[str] = Field(
+        default_factory=list,
+        description="Fields set to null because they contradicted the rest of the extraction "
+        "(only ever `buy_again` and/or `stars_inferred`).",
+    )
+    output_soft_flags: list[str] = Field(
+        default_factory=list,
+        description="Consistency signals recorded without changing the output.",
+    )
+    needs_review: bool = Field(
+        default=False,
+        description="True when the input was stripped or an output field was nulled: a human "
+        "should look at this review. A tripwire, not a guarantee: evasions exist.",
+    )
 
 
 class ReviewExtraction(BaseModel):
@@ -60,6 +103,25 @@ class ReviewExtraction(BaseModel):
     # fabricated from ingestion time. See ReviewRequest.review_date for the source-side contract.
     review_date: datetime | None = None
     extraction_meta: ExtractionMeta | None = None
+    # Additive, opt-in (flags default off): see InjectionControlsReport. None => omitted from
+    # serialised output entirely (model_serializer below), so a flag-off response has no new key.
+    injection_controls: InjectionControlsReport | None = None
+
+    @model_serializer(mode="wrap")
+    def _omit_absent_injection_controls(self, handler: SerializerFunctionWrapHandler) -> Any:
+        data = handler(self)
+        if isinstance(data, dict) and data.get("injection_controls") is None:
+            data.pop("injection_controls", None)
+        return data
+
+    @classmethod
+    def __get_pydantic_json_schema__(
+        cls, core_schema: CoreSchema, handler: GetJsonSchemaHandler
+    ) -> JsonSchemaValue:
+        # A wrap model_serializer with no return annotation makes pydantic emit an empty ({})
+        # serialization-mode schema, which would blank this model's OpenAPI response docs.
+        # Generate the schema from the plain field definitions instead.
+        return handler({k: v for k, v in core_schema.items() if k != "serialization"})
 
     @field_validator("language")
     @classmethod
