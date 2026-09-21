@@ -118,14 +118,30 @@ class TestMain:
         assert mod.main() == 1
         assert called == []  # never reached the runner, so nothing was overwritten
 
-    def test_KNOWN_GAP_failing_accuracy_gate_still_passes_reproducibility(
-        self, tmp_path, monkeypatch
-    ):
-        """Pins a documented, deliberate behaviour: runner exit 1 (accuracy gate FAIL) counts as
-        a valid regeneration, so this check proves the files are machine-generated -- NOT that
-        the eval passes. ci.yml has no PR-time accuracy gate; eval.yml runs post-merge only."""
+    def test_failing_accuracy_gate_fails_even_though_it_reproduces(self, tmp_path, monkeypatch):
+        """Session 16 (V5c): this was a KNOWN_GAP test asserting exit 0 -- runner exit 1 (gate
+        FAIL) counted as a valid regeneration and a failing eval merged green. It must fail."""
         failing = _payload(overall_score=0.5, passed=False)
         mod = self._setup(
             tmp_path, monkeypatch, committed=failing, regenerated=failing, returncode=1
         )
-        assert mod.main() == 0
+        assert mod.main() == 1
+
+    def test_failing_gate_with_a_zero_runner_exit_still_fails(self, tmp_path, monkeypatch):
+        # Belt and braces: `passed: false` in the artifact alone is enough, whatever the exit.
+        failing = _payload(overall_score=0.5, passed=False)
+        mod = self._setup(
+            tmp_path, monkeypatch, committed=failing, regenerated=failing, returncode=0
+        )
+        assert mod.main() == 1
+
+    def test_a_mismatch_is_still_reported_first(self, tmp_path, monkeypatch, capsys):
+        mod = self._setup(
+            tmp_path,
+            monkeypatch,
+            committed=_payload(overall_score=0.99),
+            regenerated=_payload(overall_score=0.5, passed=False),
+            returncode=1,
+        )
+        assert mod.main() == 1
+        assert "do not reproduce" in capsys.readouterr().out

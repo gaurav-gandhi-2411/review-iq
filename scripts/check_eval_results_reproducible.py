@@ -116,6 +116,18 @@ def main() -> int:
         )
         return 1
 
+    # Session 16 (V5c): reproducing is not passing. eval.runner exits 1 on a genuine accuracy-gate
+    # FAIL, which used to count as a valid regeneration, so a PR that committed a failing eval
+    # (and its matching failing results) went green: ci.yml has no other PR-time accuracy gate
+    # and eval.yml runs only after merge. `passed` is the runner's own overall-gate verdict.
+    if result.returncode == 1 or regenerated_latest.get("passed") is False:
+        print(
+            "FAIL: the results reproduce from the committed cassettes, but the accuracy gate "
+            "FAILS (eval.runner exit 1 / `passed: false`). Reproducibility is necessary, not "
+            "sufficient: a failing eval must not merge as if it were a valid regeneration."
+        )
+        return 1
+
     print(
         "PASS: eval/results.json and eval/results/latest.json reproduce exactly from committed "
         "cassettes (excluding generated_at/git_sha provenance fields) -- the gate-3 "

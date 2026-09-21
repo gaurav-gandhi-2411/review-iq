@@ -57,7 +57,7 @@ from whether the gates around them can pass vacuously); the deployed services.
 | 7 | `check_schema_drift.py` reported "matches production exactly" for two empty snapshots. | Fixed |
 | 8 | `check_undocumented_pg_connects.py` (no tests) missed `import psycopg2 as pg` / `from psycopg2 import connect`, and passed on an empty `app/`. | Fixed, tests added |
 | 9 | `check_contrast.py` passed an empty pair list and a pair with `minRatio` lowered to 1.0. | Fixed |
-| 10 | No PR-time accuracy gate: `ci.yml`'s reproducibility check treats a failing gate as a valid regeneration, and `eval.yml` runs only on push to main (path-filtered) and nightly. | Pinned as a `KNOWN_GAP` test; **GG decision** |
+| 10 | No PR-time accuracy gate: `ci.yml`'s reproducibility check treated a failing gate as a valid regeneration, and `eval.yml` runs only on push to main (path-filtered) and nightly. | **Fixed (Session 16, V5c):** `check_eval_results_reproducible.py` now exits 1 when the regenerated results reproduce but the accuracy gate fails (runner exit 1 or `passed: false`); the `KNOWN_GAP` test became a failing-must-fail test. `eval.yml` still does not run on PRs, but `ci.yml` runs this check on every PR. |
 | 11 | `check_eval_results_reproducible.py` overwrites committed results by running `eval.runner`; without `EVAL_CASSETTE_MODE=replay` it would call live providers. | Fixed (refuses without replay) |
 | 12 | `check_site_deploy_content.py` cannot detect a no-op deploy that leaves an older page with the same markers live. | Pinned; remains |
 | 13 | `model-availability-check.yml` tested only `models.list` membership; a listed model whose `generateContent` returns 404 passed. Related: the failover probe's new `GEMINI_API_KEY` secret 404s/402s on every model (a probe-credential problem, not a code bug). Both verified by the orchestrator. | Fixed in PR #219 (cross-reference, not touched here) |
@@ -156,5 +156,5 @@ README.md site` is empty); branch protection and repository settings were only r
    `eval/consensus/results/consensus_summary.json`) or re-mark the block as historical; then delete
    the allowlist entry in `scripts/render_metrics.py`.
 4. Decide whether the held-out/benchmark overlap (finding 4) matters for the held-out claim.
-5. Decide whether a PR-time accuracy threshold gate is wanted (finding 10).
+5. ~~Decide whether a PR-time accuracy threshold gate is wanted (finding 10).~~ Done in Session 16 (V5c): a reproducible-but-failing gate now fails `ci.yml`. Revert that one condition in `check_eval_results_reproducible.py` if it is not wanted.
 6. Rehearse a restore from a nightly backup; the dump verification is still only a content grep.
