@@ -7,7 +7,7 @@ migrator) and proves four things the unit tests (tests/unit/test_push_postcondit
 connection) cannot:
 
   1. every postcondition of every migration is TRUE on a fresh migrator-built schema;
-  2. no postcondition is vacuous -- for a representative set (35 cases across 25 files) the
+  2. no postcondition is vacuous -- for every migration (UNDO_CASES) the
      effect is undone with real DDL and the condition then evaluates to FALSE (not an error);
   3. the real incident reproduces: a `REVOKE ... ON FUNCTION` by a role that does not own the
      function completes WITHOUT ERROR and changes NOTHING, and push.py's postcondition rejects
@@ -374,6 +374,182 @@ UNDO_CASES: list[tuple[str, str, str]] = [
         "current_org_id_owned_by_migrator",
         "ALTER FUNCTION public.current_org_id() OWNER TO postgres",
     ),
+    # Session 16 (V4b): the 17 migrations that had no undo case (26 of 43 covered before).
+    (
+        "20260511000001_add_key_prefix.sql",
+        "api_keys_key_prefix_column",
+        "ALTER TABLE public.api_keys ALTER COLUMN key_prefix DROP NOT NULL",
+    ),
+    (
+        "20260511000001_add_key_prefix.sql",
+        "api_keys_key_prefix_index",
+        "DROP INDEX public.idx_api_keys_key_prefix",
+    ),
+    (
+        "20260511000003_revoked_at.sql",
+        "api_keys_revoked_at_column",
+        "ALTER TABLE public.api_keys DROP COLUMN revoked_at",
+    ),
+    (
+        "20260511000004_extractions_flat_columns.sql",
+        "extractions_flat_columns",
+        "ALTER TABLE public.extractions DROP COLUMN review_text",
+    ),
+    (
+        "20260511000004_extractions_flat_columns.sql",
+        "extraction_jsonb_column_is_nullable",
+        "ALTER TABLE public.extractions ALTER COLUMN extraction SET NOT NULL",
+    ),
+    (
+        "20260511000004_extractions_flat_columns.sql",
+        "extractions_org_input_hash_unique_and_indexes",
+        "DROP INDEX public.idx_extractions_urgency_org",
+    ),
+    (
+        "20260511000006_batch_jobs.sql",
+        "batch_jobs_columns_and_key",
+        "ALTER TABLE public.batch_jobs DROP COLUMN source_columns",
+    ),
+    (
+        "20260511000006_batch_jobs.sql",
+        "batch_jobs_org_fk_and_index",
+        "DROP INDEX public.idx_batch_jobs_org_id",
+    ),
+    (
+        "20260611000001_authenticity_audits.sql",
+        "authenticity_audits_columns_and_index",
+        "DROP INDEX public.idx_authenticity_audits_org_created",
+    ),
+    (
+        "20260611000001_authenticity_audits.sql",
+        "authenticity_audits_rls_and_policies",
+        "ALTER TABLE public.authenticity_audits DISABLE ROW LEVEL SECURITY",
+    ),
+    (
+        "20260613000001_batch_jobs_rls.sql",
+        "batch_jobs_rls_and_policies",
+        "DROP POLICY batch_jobs_anon_deny ON public.batch_jobs",
+    ),
+    (
+        "20260619000003_corrections.sql",
+        "corrections_columns_and_constraints",
+        "ALTER TABLE public.corrections DROP COLUMN correction_note",
+    ),
+    (
+        "20260619000003_corrections.sql",
+        "corrections_indexes",
+        "DROP INDEX public.idx_corrections_org_review_id",
+    ),
+    (
+        "20260619000003_corrections.sql",
+        "corrections_rls_and_policies",
+        "ALTER TABLE public.corrections DISABLE ROW LEVEL SECURITY",
+    ),
+    (
+        "20260621000001_alerts.sql",
+        "alert_preferences_columns_and_constraints",
+        "DROP INDEX public.idx_alert_prefs_org_id",
+    ),
+    (
+        "20260621000001_alerts.sql",
+        "alert_log_columns_and_indexes",
+        "DROP INDEX public.idx_alert_log_org_review",
+    ),
+    (
+        "20260621000001_alerts.sql",
+        "alert_tables_rls_and_policies",
+        "DROP POLICY alert_log_anon_deny ON public.alert_log",
+    ),
+    (
+        "20260621000002_org_notification_email.sql",
+        "organizations_notification_email_column",
+        "ALTER TABLE public.organizations DROP COLUMN notification_email",
+    ),
+    (
+        "20260702000001_google_business_installations.sql",
+        "google_business_installations_columns_and_constraints",
+        "ALTER TABLE public.google_business_installations DROP COLUMN revoked_at",
+    ),
+    (
+        "20260702000001_google_business_installations.sql",
+        "google_business_installations_indexes",
+        "DROP INDEX public.idx_gbp_inst_org_id",
+    ),
+    (
+        "20260702000001_google_business_installations.sql",
+        "google_business_installations_rls_and_policies",
+        "DROP POLICY gbp_inst_anon_deny ON public.google_business_installations",
+    ),
+    (
+        "20260709000001_batch_job_rows.sql",
+        "batch_job_rows_columns_and_keys",
+        "ALTER TABLE public.batch_job_rows DROP COLUMN error",
+    ),
+    (
+        "20260709000001_batch_job_rows.sql",
+        "batch_job_rows_indexes",
+        "DROP INDEX public.idx_batch_job_rows_org_id",
+    ),
+    (
+        "20260709000001_batch_job_rows.sql",
+        "batch_job_rows_rls_and_policies",
+        "ALTER TABLE public.batch_job_rows DISABLE ROW LEVEL SECURITY",
+    ),
+    (
+        "20260710000001_review_date.sql",
+        "review_date_columns",
+        "ALTER TABLE public.extractions DROP COLUMN review_date",
+    ),
+    (
+        "20260710000001_review_date.sql",
+        "extractions_review_date_partial_index",
+        "DROP INDEX public.idx_extractions_review_date",
+    ),
+    (
+        "20260710235958_capture_extraction_costs.sql",
+        "extraction_costs_columns",
+        "ALTER TABLE public.extraction_costs DROP COLUMN language",
+    ),
+    (
+        "20260710235958_capture_extraction_costs.sql",
+        "extraction_costs_indexes",
+        "DROP INDEX public.idx_extraction_costs_language_tier",
+    ),
+    (
+        "20260710235958_capture_extraction_costs.sql",
+        "extraction_costs_rls_and_policies",
+        "DROP POLICY extraction_costs_anon_deny ON public.extraction_costs",
+    ),
+    (
+        "20260710235959_capture_quota_requests.sql",
+        "quota_requests_columns_and_key",
+        "ALTER TABLE public.quota_requests DROP COLUMN notes",
+    ),
+    (
+        "20260711000002_quota_requests_rls.sql",
+        "quota_requests_rls_and_policies",
+        "ALTER TABLE public.quota_requests DISABLE ROW LEVEL SECURITY",
+    ),
+    (
+        "20260711000002_quota_requests_rls.sql",
+        "quota_requests_grants_narrowed",
+        "GRANT DELETE ON public.quota_requests TO authenticated",
+    ),
+    (
+        "20260731000001_extraction_costs.sql",
+        "extraction_costs_foreign_keys_and_checks",
+        "ALTER TABLE public.extraction_costs DROP CONSTRAINT extraction_costs_tokens_in_check",
+    ),
+    (
+        "20260731000001_extraction_costs.sql",
+        "extraction_costs_rls_and_tenant_policies",
+        "ALTER TABLE public.extraction_costs DISABLE ROW LEVEL SECURITY",
+    ),
+    (
+        "20260817000001_extraction_costs_grant_narrowing.sql",
+        "extraction_costs_grants_narrowed",
+        "GRANT DELETE ON public.extraction_costs TO authenticated",
+    ),
 ]
 
 
@@ -402,8 +578,19 @@ def test_postcondition_goes_false_when_the_migrations_effect_is_undone(
         conn.close()
 
 
-def test_the_undo_set_covers_at_least_ten_distinct_migrations() -> None:
-    assert len({c[0] for c in UNDO_CASES}) >= 10
+def test_every_migration_with_postconditions_has_an_undo_case() -> None:
+    """A postcondition never shown to go FALSE proves nothing. Session 16 found 17 of 43
+    migrations (57 of 92 postconditions) with no undo case at all, behind a ">= 10 distinct
+    migrations" threshold that passed regardless. A new migration must now bring its own case."""
+    covered = {c[0] for c in UNDO_CASES}
+    missing = sorted({fname for fname, _ in _all_postconditions()} - covered)
+    assert not missing, f"migrations with postconditions but no UNDO_CASES entry: {missing}"
+
+
+def test_every_undo_case_names_a_real_postcondition() -> None:
+    real = {(fname, pc.name) for fname, pc in _all_postconditions()}
+    stale = sorted({(c[0], c[1]) for c in UNDO_CASES} - real)
+    assert not stale, f"UNDO_CASES entries naming a postcondition that does not exist: {stale}"
 
 
 # ---------------------------------------------------------------- 3: the real incident
