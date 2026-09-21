@@ -13,106 +13,211 @@
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:image" content="https://review-iq-demo.pages.dev/og-image.png" />
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Session 15c S8b: same brand system as site/index.html. Tokens live once in /tokens.css, two
+       typefaces via a plain stylesheet link, no scripts other than this page's own. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&amp;family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&amp;display=swap" />
+  <link rel="stylesheet" href="/tokens.css" />
   <style>
-    .code-block { position: relative; }
-    .copy-btn {
-      position: absolute;
-      top: 0.5rem;
-      right: 0.5rem;
-      font-size: 0.75rem;
-      padding: 0.25rem 0.6rem;
-      background: #4b5563;
-      color: #e5e7eb;
-      border: none;
-      border-radius: 0.25rem;
-      cursor: pointer;
-    }
-    .copy-btn:hover { background: #6b7280; }
-    /* Sidebar nav active state */
-    .nav-link { display: block; padding: 0.4rem 0.75rem; border-radius: 0.4rem; font-size: 0.875rem; color: #9ca3af; }
-    .nav-link:hover { background: #1f2937; color: #e5e7eb; }
-    .nav-link.active { background: #1e3a8a; color: #93c5fd; font-weight: 600; }
-    /* Method badges */
-    .badge-post { background: #166534; color: #86efac; }
-    .badge-get  { background: #1e3a5f; color: #93c5fd; }
-    .method-badge { font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 0.25rem; font-family: monospace; }
+    /* ==========================================================================
+       BASE
+       ========================================================================== */
+    *, *::before, *::after { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html { -webkit-text-size-adjust: 100%; scroll-padding-top: 5rem; }
+    @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+    body { margin: 0; background: var(--cream); color: var(--ink); font-family: var(--font-body);
+           font-size: var(--step-0); line-height: var(--leading-body); -webkit-font-smoothing: antialiased; }
+    h1, h2, h3, p, ul, ol, pre { margin: 0; }
+    h1, h2 { font-family: var(--font-display); font-optical-sizing: auto; font-weight: 700;
+             letter-spacing: -0.015em; text-wrap: balance; }
+    h1 { font-size: clamp(var(--step-4), 1.5rem + 2.4vw, var(--step-5)); line-height: 1.1; }
+    h2 { font-size: clamp(var(--step-3), 1.4rem + 1vw, var(--step-4)); line-height: 1.15; margin-bottom: var(--space-4); }
+    h3 { font-size: var(--step-1); font-weight: 600; line-height: 1.3; margin-bottom: var(--space-3); }
+    p, li { max-width: var(--measure); }
+    a { color: inherit; text-decoration: underline; text-decoration-color: var(--ember);
+        text-decoration-thickness: 2px; text-underline-offset: 0.2em; }
+    a:hover { text-decoration-color: var(--ink); }
+    code { font-family: var(--font-body); font-weight: 600; font-size: 0.92em; background: var(--cream-3);
+           padding: 0.05em 0.35em; border-radius: var(--r-sm); overflow-wrap: anywhere; }
+    strong { font-weight: 600; }
+    .wrap { max-width: var(--page-width); margin-inline: auto; padding-inline: clamp(1rem, 4vw, 2rem); }
+    .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
+               clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .sr-only:focus { position: static; width: auto; height: auto; margin: 0; padding: var(--space-2) var(--space-4);
+                     clip: auto; display: inline-block; }
+    /* Visible keyboard focus: ink ring on cream (16:1), saffron ring on ink (10:1). */
+    :focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; border-radius: var(--r-sm); }
+    .code-block :focus-visible, .site-footer :focus-visible { outline-color: var(--saffron); }
+    .muted { color: var(--ink-3); font-size: var(--step--1); }
+
+    /* Header */
+    .site-header { position: sticky; top: 0; z-index: 10; background: var(--cream); border-bottom: 1px solid var(--line); }
+    .site-header .wrap { height: 4rem; display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+    .brand { display: inline-flex; align-items: center; gap: var(--space-2); font-weight: 600; text-decoration: none; white-space: nowrap; }
+    .top-links { display: flex; gap: var(--space-5); font-size: 0.9375rem; }
+    .top-links a { color: var(--ink-2); text-decoration: none; padding-block: var(--space-2); }
+    .top-links a:hover { color: var(--ink); text-decoration: underline; text-decoration-color: var(--ember); }
+    .top-links a[aria-current="page"] { color: var(--ink); font-weight: 600; text-decoration: underline;
+                                        text-decoration-color: var(--saffron); text-decoration-thickness: 3px; }
+    @media (max-width: 30rem) { .top-links { gap: var(--space-3); font-size: 0.875rem; } }
+
+    /* Layout: contents sidebar + article column */
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); padding-block: var(--space-6) var(--space-8); }
+    @media (min-width: 64rem) { .layout { grid-template-columns: 14rem minmax(0, 1fr); gap: var(--space-7); padding-block: var(--space-7) var(--space-8); } }
+    .sidebar { display: none; }
+    @media (min-width: 64rem) { .sidebar { display: block; } .toc-mobile { display: none; } }
+    .sidebar nav { position: sticky; top: 5.5rem; display: grid; gap: var(--space-1); }
+    .sidebar .side-title { font-weight: 600; font-size: 0.9375rem; margin-bottom: var(--space-2); }
+    .side-link { display: block; padding: 0.4rem 0.75rem; border-left: 3px solid transparent; font-size: 0.9375rem;
+                 color: var(--ink-2); text-decoration: none; }
+    .side-link:hover { background: var(--cream-2); color: var(--ink); }
+    .side-link.active { background: var(--saffron-tint); border-left-color: var(--ember); color: var(--ink); font-weight: 600; }
+    .toc-mobile { border: 1px solid var(--line); border-radius: var(--r-md); background: var(--cream-2); }
+    .toc-mobile summary { cursor: pointer; padding: var(--space-3) var(--space-4); font-weight: 600; min-height: 44px; }
+    .toc-mobile .side-link { padding-inline: var(--space-4); }
+    .toc-mobile nav { padding-bottom: var(--space-3); }
+
+    /* Article */
+    .article { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-8); }
+    .lede { color: var(--ink-2); font-size: var(--step-1); margin-top: var(--space-3); }
+    section > p { color: var(--ink-2); margin-bottom: var(--space-4); }
+    section > h3 { margin-top: var(--space-6); }
+    .sub-lede { margin-bottom: var(--space-5); }
+
+    /* Code blocks: machine text sits on ink, like the marketing page's output panels. */
+    .code-block { background: var(--ink); color: var(--cream); border-radius: var(--r-md); margin-bottom: var(--space-5); }
+    .code-block .copy-btn { display: block; margin: var(--space-2) var(--space-2) 0 auto; min-height: 36px; padding: 0.3rem 0.8rem;
+                            background: transparent; color: var(--cream); border: 1px solid var(--on-ink-line);
+                            border-radius: var(--r-sm); font: 500 0.875rem var(--font-body); cursor: pointer; }
+    .code-block .copy-btn:hover { background: var(--ink-raised); }
+    .code-block pre { overflow-x: auto; padding: var(--space-2) var(--space-5) var(--space-5); font: 400 0.875rem/1.65 var(--font-body); }
+    .code-block pre code { background: none; padding: 0; font-weight: 400; font-size: inherit; overflow-wrap: normal; }
+
+    /* Tables. Rows in the METRICS block come from scripts/render_metrics.py, which owns its class names. */
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r-md); margin-bottom: var(--space-5); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9375rem; }
+    th { text-align: left; font-weight: 600; background: var(--cream-3); padding: var(--space-3) var(--space-4); white-space: nowrap; }
+    td { padding: var(--space-3) var(--space-4); border-top: 1px solid var(--line); vertical-align: top; }
+    td.path { font-weight: 600; white-space: nowrap; }
+    td.num { font-weight: 600; font-variant-numeric: tabular-nums; }
+    td.ci { color: var(--ink-2); }
+    td.status-fail { background: var(--ember-tint); box-shadow: inset 4px 0 0 var(--ember); }
+    .method { display: inline-block; font-size: 0.75rem; font-weight: 700; padding: 0.1rem 0.5rem; border-radius: 4px; }
+    .method-post { background: var(--ink); color: var(--cream); }
+    .method-get { border: 1.5px solid var(--ink); color: var(--ink); }
+
+    /* Panels, notes */
+    .panel-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); margin-bottom: var(--space-5); }
+    @media (min-width: 48rem) { .panel-row { grid-template-columns: 1fr 1fr; } }
+    .panel { background: var(--cream-2); border: 1px solid var(--line); border-radius: var(--r-md); padding: var(--space-5); min-width: 0; }
+    .panel ul { padding-left: 1.2rem; display: grid; gap: var(--space-1); }
+    .note { padding: var(--space-4) var(--space-5); background: var(--saffron-tint); border-left: 4px solid var(--ember);
+            border-radius: 0 var(--r-md) var(--r-md) 0; margin-bottom: var(--space-5); max-width: none; color: var(--ink); }
+    .note-lead { font-weight: 600; }
+
+    /* Footer */
+    .site-footer { background: var(--ink); color: var(--cream); }
+    .site-footer .wrap { padding-block: var(--space-6); display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-6);
+                         align-items: center; justify-content: space-between; font-size: 0.9375rem; }
+    .site-footer p { max-width: none; color: var(--on-ink-2); }
+    .site-footer strong { color: var(--cream); }
+    .site-footer a { color: var(--cream); text-decoration-color: var(--saffron); }
   </style>
 </head>
-<body class="bg-gray-950 text-gray-100 font-sans antialiased">
+<body>
+  <a href="#main" class="sr-only">Skip to content</a>
 
   <!-- Top nav -->
-  <header class="bg-gray-900 border-b border-gray-800 sticky top-0 z-10">
-    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-      <a href="/" class="text-white font-bold text-lg">Samidha Reviews</a>
-      <nav class="flex gap-6 text-sm">
-        <a href="/" class="text-gray-400 hover:text-white transition-colors">Home</a>
-        <a href="/docs" class="text-blue-400 font-semibold">API Docs</a>
-        <a href="/account" class="text-gray-400 hover:text-white transition-colors">Account</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a href="/" class="brand">
+        <!-- Static mark: only the marketing page's header animates it. -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 110" width="30" height="30" aria-hidden="true" focusable="false">
+          <rect width="110" height="110" rx="26" fill="#1C1A17"/>
+          <g transform="rotate(-14 42 58)"><path d="M42 26 C53 42 58 52 58 61 C58 73 51 80 42 80 C33 80 26 73 26 61 C26 52 31 42 42 26 Z" fill="#F6C042"/></g>
+          <g transform="rotate(14 70 58)"><path d="M70 26 C81 42 86 52 86 61 C86 73 79 80 70 80 C61 80 54 73 54 61 C54 52 59 42 70 26 Z" fill="#E8823A"/></g>
+        </svg>
+        Samidha Reviews
+      </a>
+      <nav class="top-links" aria-label="Primary">
+        <a href="/">Home</a>
+        <a href="/docs" aria-current="page">API Docs</a>
+        <a href="/account">Account</a>
       </nav>
     </div>
   </header>
 
-  <div class="max-w-7xl mx-auto px-6 flex gap-10 py-10">
+  <div class="wrap layout">
 
     <!-- ----------------------------------------------------------------
-         SIDEBAR
+         CONTENTS (sidebar on wide screens, collapsible list on narrow ones)
     ---------------------------------------------------------------- -->
-    <aside class="hidden lg:block w-56 flex-shrink-0">
-      <nav class="sticky top-20 space-y-1">
-        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 mb-2">Contents</p>
-        <a href="#auth" class="nav-link">Authentication</a>
-        <a href="#endpoints" class="nav-link">Endpoints</a>
-        <a href="#response-fields" class="nav-link">Response Fields</a>
-        <a href="#csv-upload" class="nav-link">CSV Upload</a>
-        <a href="#limits" class="nav-link">Rate Limits &amp; Quotas</a>
-        <a href="#languages" class="nav-link">Language Support</a>
+    <aside class="sidebar" aria-label="Contents">
+      <nav>
+        <p class="side-title">Contents</p>
+        <a href="#auth" class="side-link">Authentication</a>
+        <a href="#endpoints" class="side-link">Endpoints</a>
+        <a href="#response-fields" class="side-link">Response Fields</a>
+        <a href="#csv-upload" class="side-link">CSV Upload</a>
+        <a href="#limits" class="side-link">Rate Limits &amp; Quotas</a>
+        <a href="#languages" class="side-link">Language Support</a>
       </nav>
     </aside>
 
-    <!-- ----------------------------------------------------------------
-         MAIN CONTENT
-    ---------------------------------------------------------------- -->
-    <main class="flex-1 min-w-0 space-y-16">
+    <main id="main" class="article">
+
+      <details class="toc-mobile">
+        <summary>On this page</summary>
+        <nav aria-label="On this page">
+          <a href="#auth" class="side-link">Authentication</a>
+          <a href="#endpoints" class="side-link">Endpoints</a>
+          <a href="#response-fields" class="side-link">Response Fields</a>
+          <a href="#csv-upload" class="side-link">CSV Upload</a>
+          <a href="#limits" class="side-link">Rate Limits &amp; Quotas</a>
+          <a href="#languages" class="side-link">Language Support</a>
+        </nav>
+      </details>
 
       <!-- TITLE -->
       <div>
-        <h1 class="text-4xl font-extrabold text-white mb-2">API Documentation</h1>
-        <p class="text-gray-400 text-lg">Samidha Reviews v2 — REST API reference.</p>
+        <h1>API Documentation</h1>
+        <p class="lede">Samidha Reviews v2 — REST API reference.</p>
       </div>
 
       <!-- ============================================================
            AUTH
       ============================================================ -->
       <section id="auth">
-        <h2 class="text-2xl font-bold text-white mb-4">Authentication</h2>
+        <h2>Authentication</h2>
 
-        <p class="text-gray-300 mb-4">
-          All <code class="bg-gray-800 text-blue-300 px-1.5 py-0.5 rounded text-sm">/v2/*</code> and
-          <code class="bg-gray-800 text-blue-300 px-1.5 py-0.5 rounded text-sm">/account/*</code> endpoints
-          require an API key passed in the <code class="bg-gray-800 text-blue-300 px-1.5 py-0.5 rounded text-sm">X-API-Key</code> header.
-          Keys have the prefix <code class="bg-gray-800 text-blue-300 px-1.5 py-0.5 rounded text-sm">riq_live_</code> followed by 32 hex characters.
+        <p>
+          All <code>/v2/*</code> and
+          <code>/account/*</code> endpoints
+          require an API key passed in the <code>X-API-Key</code> header.
+          Keys have the prefix <code>riq_live_</code> followed by 32 hex characters.
         </p>
 
-        <div class="code-block mb-6">
-          <pre class="bg-gray-900 border border-gray-700 rounded-xl p-5 text-sm text-green-300 overflow-x-auto"><code>X-API-Key: riq_live_a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4</code></pre>
-          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <div class="code-block">
+          <button type="button" class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre tabindex="0"><code>X-API-Key: riq_live_a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4</code></pre>
         </div>
 
-        <h3 class="text-lg font-semibold text-white mb-3">Getting your API key</h3>
-        <p class="text-gray-300 mb-4">
+        <h3>Getting your API key</h3>
+        <p>
           Sign in via Supabase Auth (Google or email). On first login, call
-          <code class="bg-gray-800 text-blue-300 px-1.5 py-0.5 rounded text-sm">POST /auth/provision</code>
+          <code>POST /auth/provision</code>
           with your Supabase JWT to provision an org and receive your key. The key is shown exactly once — save it immediately.
         </p>
 
         <div class="code-block">
-          <pre class="bg-gray-900 border border-gray-700 rounded-xl p-5 text-sm text-green-300 overflow-x-auto"><code>curl -X POST https://your-instance.run.app/auth/provision \
+          <button type="button" class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre tabindex="0"><code>curl -X POST https://your-instance.run.app/auth/provision \
   -H "Authorization: Bearer &lt;supabase-jwt&gt;"
 
 # Response (key shown once — copy it now):
 # { "api_key": "riq_live_...", "org_id": "...", "key_prefix": "riq_live_a1b2" }</code></pre>
-          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
         </div>
       </section>
 
@@ -120,84 +225,85 @@
            ENDPOINTS TABLE
       ============================================================ -->
       <section id="endpoints">
-        <h2 class="text-2xl font-bold text-white mb-4">Endpoints</h2>
+        <h2>Endpoints</h2>
 
-        <div class="overflow-x-auto rounded-xl border border-gray-700">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-800 text-gray-300">
+        <div class="table-wrap">
+          <table>
+            <caption class="sr-only">API endpoints</caption>
+            <thead>
               <tr>
-                <th class="px-4 py-3 text-left font-semibold">Method</th>
-                <th class="px-4 py-3 text-left font-semibold">Path</th>
-                <th class="px-4 py-3 text-left font-semibold">Auth</th>
-                <th class="px-4 py-3 text-left font-semibold">Description</th>
+                <th scope="col">Method</th>
+                <th scope="col">Path</th>
+                <th scope="col">Auth</th>
+                <th scope="col">Description</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-700">
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3"><span class="method-badge badge-post">POST</span></td>
-                <td class="px-4 py-3 font-mono text-blue-300 text-xs">/demo/extract</td>
-                <td class="px-4 py-3 text-gray-400">None</td>
-                <td class="px-4 py-3 text-gray-300">Keyless demo (rate-limited)</td>
+            <tbody>
+              <tr>
+                <td><span class="method method-post">POST</span></td>
+                <td class="path">/demo/extract</td>
+                <td>None</td>
+                <td>Keyless demo (rate-limited)</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3"><span class="method-badge badge-post">POST</span></td>
-                <td class="px-4 py-3 font-mono text-blue-300 text-xs">/v2/extract</td>
-                <td class="px-4 py-3 text-yellow-400 text-xs">API key</td>
-                <td class="px-4 py-3 text-gray-300">Single review extraction</td>
+              <tr>
+                <td><span class="method method-post">POST</span></td>
+                <td class="path">/v2/extract</td>
+                <td>API key</td>
+                <td>Single review extraction</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3"><span class="method-badge badge-post">POST</span></td>
-                <td class="px-4 py-3 font-mono text-blue-300 text-xs">/v2/extract/batch</td>
-                <td class="px-4 py-3 text-yellow-400 text-xs">API key</td>
-                <td class="px-4 py-3 text-gray-300">Batch reviews (fire-and-forget)</td>
+              <tr>
+                <td><span class="method method-post">POST</span></td>
+                <td class="path">/v2/extract/batch</td>
+                <td>API key</td>
+                <td>Batch reviews (fire-and-forget)</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3"><span class="method-badge badge-post">POST</span></td>
-                <td class="px-4 py-3 font-mono text-blue-300 text-xs">/v2/ingest/csv</td>
-                <td class="px-4 py-3 text-yellow-400 text-xs">API key</td>
-                <td class="px-4 py-3 text-gray-300">CSV bulk upload</td>
+              <tr>
+                <td><span class="method method-post">POST</span></td>
+                <td class="path">/v2/ingest/csv</td>
+                <td>API key</td>
+                <td>CSV bulk upload</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3"><span class="method-badge badge-get">GET</span></td>
-                <td class="px-4 py-3 font-mono text-blue-300 text-xs">/v2/ingest/{job_id}</td>
-                <td class="px-4 py-3 text-yellow-400 text-xs">API key</td>
-                <td class="px-4 py-3 text-gray-300">Ingest job status</td>
+              <tr>
+                <td><span class="method method-get">GET</span></td>
+                <td class="path">/v2/ingest/{job_id}</td>
+                <td>API key</td>
+                <td>Ingest job status</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3"><span class="method-badge badge-get">GET</span></td>
-                <td class="px-4 py-3 font-mono text-blue-300 text-xs">/v2/ingest/{job_id}/result</td>
-                <td class="px-4 py-3 text-yellow-400 text-xs">API key</td>
-                <td class="px-4 py-3 text-gray-300">Download results (JSON or CSV)</td>
+              <tr>
+                <td><span class="method method-get">GET</span></td>
+                <td class="path">/v2/ingest/{job_id}/result</td>
+                <td>API key</td>
+                <td>Download results (JSON or CSV)</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3"><span class="method-badge badge-get">GET</span></td>
-                <td class="px-4 py-3 font-mono text-blue-300 text-xs">/v2/reviews</td>
-                <td class="px-4 py-3 text-yellow-400 text-xs">API key</td>
-                <td class="px-4 py-3 text-gray-300">List stored extractions</td>
+              <tr>
+                <td><span class="method method-get">GET</span></td>
+                <td class="path">/v2/reviews</td>
+                <td>API key</td>
+                <td>List stored extractions</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3"><span class="method-badge badge-get">GET</span></td>
-                <td class="px-4 py-3 font-mono text-blue-300 text-xs">/v2/insights</td>
-                <td class="px-4 py-3 text-yellow-400 text-xs">API key</td>
-                <td class="px-4 py-3 text-gray-300">Aggregated insights</td>
+              <tr>
+                <td><span class="method method-get">GET</span></td>
+                <td class="path">/v2/insights</td>
+                <td>API key</td>
+                <td>Aggregated insights</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3"><span class="method-badge badge-post">POST</span></td>
-                <td class="px-4 py-3 font-mono text-blue-300 text-xs">/auth/provision</td>
-                <td class="px-4 py-3 text-purple-300 text-xs">Supabase JWT</td>
-                <td class="px-4 py-3 text-gray-300">First-login org + key setup</td>
+              <tr>
+                <td><span class="method method-post">POST</span></td>
+                <td class="path">/auth/provision</td>
+                <td>Supabase JWT</td>
+                <td>First-login org + key setup</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3"><span class="method-badge badge-get">GET</span></td>
-                <td class="px-4 py-3 font-mono text-blue-300 text-xs">/account</td>
-                <td class="px-4 py-3 text-purple-300 text-xs">Supabase JWT</td>
-                <td class="px-4 py-3 text-gray-300">Key prefix + usage</td>
+              <tr>
+                <td><span class="method method-get">GET</span></td>
+                <td class="path">/account</td>
+                <td>Supabase JWT</td>
+                <td>Key prefix + usage</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3"><span class="method-badge badge-post">POST</span></td>
-                <td class="px-4 py-3 font-mono text-blue-300 text-xs">/account/regenerate-key</td>
-                <td class="px-4 py-3 text-purple-300 text-xs">Supabase JWT</td>
-                <td class="px-4 py-3 text-gray-300">Revoke + reissue key</td>
+              <tr>
+                <td><span class="method method-post">POST</span></td>
+                <td class="path">/account/regenerate-key</td>
+                <td>Supabase JWT</td>
+                <td>Revoke + reissue key</td>
               </tr>
             </tbody>
           </table>
@@ -208,105 +314,106 @@
            RESPONSE FIELDS
       ============================================================ -->
       <section id="response-fields">
-        <h2 class="text-2xl font-bold text-white mb-2">Extraction response fields</h2>
-        <p class="text-gray-400 mb-6">
-          All fields except <code class="bg-gray-800 text-blue-300 px-1.5 py-0.5 rounded text-sm">product</code> and
-          <code class="bg-gray-800 text-blue-300 px-1.5 py-0.5 rounded text-sm">extraction_meta</code> may be
-          <code class="bg-gray-800 text-gray-300 px-1.5 py-0.5 rounded text-sm">null</code> when
+        <h2>Extraction response fields</h2>
+        <p class="sub-lede">
+          All fields except <code>product</code> and
+          <code>extraction_meta</code> may be
+          <code>null</code> when
           the information is absent or uninferable from the source review.
         </p>
 
-        <div class="overflow-x-auto rounded-xl border border-gray-700">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-800 text-gray-300">
+        <div class="table-wrap">
+          <table>
+            <caption class="sr-only">Extraction response fields</caption>
+            <thead>
               <tr>
-                <th class="px-4 py-3 text-left font-semibold">Field</th>
-                <th class="px-4 py-3 text-left font-semibold">Type</th>
-                <th class="px-4 py-3 text-left font-semibold">Description</th>
+                <th scope="col">Field</th>
+                <th scope="col">Type</th>
+                <th scope="col">Description</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-700 text-sm">
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3 font-mono text-blue-300">product</td>
-                <td class="px-4 py-3 text-gray-400">string</td>
-                <td class="px-4 py-3 text-gray-300">Product or service name extracted from review. Defaults to <code class="text-gray-400">"unknown product"</code>.</td>
+            <tbody>
+              <tr>
+                <td class="path">product</td>
+                <td class="ci">string</td>
+                <td>Product or service name extracted from review. Defaults to <code>"unknown product"</code>.</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3 font-mono text-blue-300">stars</td>
-                <td class="px-4 py-3 text-gray-400">int | null</td>
-                <td class="px-4 py-3 text-gray-300">Explicit numeric star rating (1–5) stated by the reviewer. Null if not stated.</td>
+              <tr>
+                <td class="path">stars</td>
+                <td class="ci">int | null</td>
+                <td>Explicit numeric star rating (1–5) stated by the reviewer. Null if not stated.</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3 font-mono text-blue-300">stars_inferred</td>
-                <td class="px-4 py-3 text-gray-400">int | null</td>
-                <td class="px-4 py-3 text-gray-300">Star rating inferred from sentiment and language when not explicit.</td>
+              <tr>
+                <td class="path">stars_inferred</td>
+                <td class="ci">int | null</td>
+                <td>Star rating inferred from sentiment and language when not explicit.</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3 font-mono text-blue-300">pros</td>
-                <td class="px-4 py-3 text-gray-400">string[]</td>
-                <td class="px-4 py-3 text-gray-300">List of positive aspects mentioned in the review.</td>
+              <tr>
+                <td class="path">pros</td>
+                <td class="ci">string[]</td>
+                <td>List of positive aspects mentioned in the review.</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3 font-mono text-blue-300">cons</td>
-                <td class="px-4 py-3 text-gray-400">string[]</td>
-                <td class="px-4 py-3 text-gray-300">List of negative aspects or complaints.</td>
+              <tr>
+                <td class="path">cons</td>
+                <td class="ci">string[]</td>
+                <td>List of negative aspects or complaints.</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3 font-mono text-blue-300">buy_again</td>
-                <td class="px-4 py-3 text-gray-400">bool | null</td>
-                <td class="px-4 py-3 text-gray-300">Whether the reviewer indicates intent or willingness to repurchase.</td>
+              <tr>
+                <td class="path">buy_again</td>
+                <td class="ci">bool | null</td>
+                <td>Whether the reviewer indicates intent or willingness to repurchase.</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3 font-mono text-blue-300">sentiment</td>
-                <td class="px-4 py-3 text-gray-400">enum | null</td>
-                <td class="px-4 py-3 text-gray-300">Overall sentiment: <code class="text-gray-400">positive</code> | <code class="text-gray-400">negative</code> | <code class="text-gray-400">neutral</code> | <code class="text-gray-400">mixed</code>.</td>
+              <tr>
+                <td class="path">sentiment</td>
+                <td class="ci">enum | null</td>
+                <td>Overall sentiment: <code>positive</code> | <code>negative</code> | <code>neutral</code> | <code>mixed</code>.</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3 font-mono text-blue-300">urgency</td>
-                <td class="px-4 py-3 text-gray-400">enum</td>
-                <td class="px-4 py-3 text-gray-300">Urgency level for customer-care triage: <code class="text-gray-400">low</code> | <code class="text-gray-400">medium</code> | <code class="text-gray-400">high</code>. Defaults to <code class="text-gray-400">low</code>.</td>
+              <tr>
+                <td class="path">urgency</td>
+                <td class="ci">enum</td>
+                <td>Urgency level for customer-care triage: <code>low</code> | <code>medium</code> | <code>high</code>. Defaults to <code>low</code>.</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3 font-mono text-blue-300">topics</td>
-                <td class="px-4 py-3 text-gray-400">string[]</td>
-                <td class="px-4 py-3 text-gray-300">Product attribute topics discussed (e.g. <code class="text-gray-400">"battery"</code>, <code class="text-gray-400">"sound quality"</code>).</td>
+              <tr>
+                <td class="path">topics</td>
+                <td class="ci">string[]</td>
+                <td>Product attribute topics discussed (e.g. <code>"battery"</code>, <code>"sound quality"</code>).</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3 font-mono text-blue-300">competitor_mentions</td>
-                <td class="px-4 py-3 text-gray-400">string[]</td>
-                <td class="px-4 py-3 text-gray-300">Competitor brands or products mentioned by name.</td>
+              <tr>
+                <td class="path">competitor_mentions</td>
+                <td class="ci">string[]</td>
+                <td>Competitor brands or products mentioned by name.</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3 font-mono text-blue-300">feature_requests</td>
-                <td class="px-4 py-3 text-gray-400">string[]</td>
-                <td class="px-4 py-3 text-gray-300">Explicit feature requests or improvement suggestions from the reviewer.</td>
+              <tr>
+                <td class="path">feature_requests</td>
+                <td class="ci">string[]</td>
+                <td>Explicit feature requests or improvement suggestions from the reviewer.</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3 font-mono text-blue-300">language</td>
-                <td class="px-4 py-3 text-gray-400">string</td>
-                <td class="px-4 py-3 text-gray-300">Detected language code: <code class="text-gray-400">en</code>, <code class="text-gray-400">hi</code>, or <code class="text-gray-400">hi-en</code>.</td>
+              <tr>
+                <td class="path">language</td>
+                <td class="ci">string</td>
+                <td>Detected language code: <code>en</code>, <code>hi</code>, or <code>hi-en</code>.</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3 font-mono text-blue-300">review_length_chars</td>
-                <td class="px-4 py-3 text-gray-400">int | null</td>
-                <td class="px-4 py-3 text-gray-300">Character count of the original (pre-sanitization) review text.</td>
+              <tr>
+                <td class="path">review_length_chars</td>
+                <td class="ci">int | null</td>
+                <td>Character count of the original (pre-sanitization) review text.</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3 font-mono text-blue-300">confidence</td>
-                <td class="px-4 py-3 text-gray-400">float | null</td>
-                <td class="px-4 py-3 text-gray-300">LLM self-reported confidence score (0.0–1.0). May be null if model does not report it.</td>
+              <tr>
+                <td class="path">confidence</td>
+                <td class="ci">float | null</td>
+                <td>LLM self-reported confidence score (0.0–1.0). May be null if model does not report it.</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-4 py-3 font-mono text-blue-300">extraction_meta</td>
-                <td class="px-4 py-3 text-gray-400">object | null</td>
-                <td class="px-4 py-3 text-gray-300">
+              <tr>
+                <td class="path">extraction_meta</td>
+                <td class="ci">object | null</td>
+                <td>
                   Provenance metadata:
-                  <code class="text-gray-400">model</code>,
-                  <code class="text-gray-400">prompt_version</code>,
-                  <code class="text-gray-400">schema_version</code>,
-                  <code class="text-gray-400">extracted_at</code>,
-                  <code class="text-gray-400">latency_ms</code>,
-                  <code class="text-gray-400">input_hash</code>.
+                  <code>model</code>,
+                  <code>prompt_version</code>,
+                  <code>schema_version</code>,
+                  <code>extracted_at</code>,
+                  <code>latency_ms</code>,
+                  <code>input_hash</code>.
                 </td>
               </tr>
             </tbody>
@@ -314,9 +421,10 @@
         </div>
 
         <!-- Example response -->
-        <h3 class="text-lg font-semibold text-white mt-8 mb-3">Example response</h3>
+        <h3>Example response</h3>
         <div class="code-block">
-          <pre class="bg-gray-900 border border-gray-700 rounded-xl p-5 text-sm text-green-300 overflow-x-auto"><code>{
+          <button type="button" class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre tabindex="0"><code>{
   "product": "BoAt Bassheads",
   "stars": null,
   "stars_inferred": 3,
@@ -340,7 +448,6 @@
     "input_hash": "sha256:a1b2c3..."
   }
 }</code></pre>
-          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
         </div>
       </section>
 
@@ -348,44 +455,45 @@
            CSV UPLOAD
       ============================================================ -->
       <section id="csv-upload">
-        <h2 class="text-2xl font-bold text-white mb-4">CSV Upload</h2>
-        <p class="text-gray-300 mb-6">
-          Use <code class="bg-gray-800 text-blue-300 px-1.5 py-0.5 rounded text-sm">POST /v2/ingest/csv</code> to
+        <h2>CSV Upload</h2>
+        <p>
+          Use <code>POST /v2/ingest/csv</code> to
           upload a CSV file for bulk asynchronous extraction. Results are stored per-org and downloadable
-          via <code class="bg-gray-800 text-blue-300 px-1.5 py-0.5 rounded text-sm">GET /v2/ingest/{job_id}/result</code>.
+          via <code>GET /v2/ingest/{job_id}/result</code>.
         </p>
 
-        <div class="grid md:grid-cols-2 gap-6 mb-6">
-          <div class="bg-gray-900 border border-gray-700 rounded-xl p-5">
-            <h3 class="font-semibold text-white mb-3">Column requirements</h3>
-            <ul class="text-sm text-gray-300 space-y-1 list-disc list-inside">
-              <li>Must include a text column named one of: <code class="text-blue-300">review_text</code>, <code class="text-blue-300">review</code>, <code class="text-blue-300">comment</code>, or <code class="text-blue-300">text</code></li>
-              <li>Optional: <code class="text-blue-300">product</code> column for product tagging</li>
+        <div class="panel-row">
+          <div class="panel">
+            <h3>Column requirements</h3>
+            <ul>
+              <li>Must include a text column named one of: <code>review_text</code>, <code>review</code>, <code>comment</code>, or <code>text</code></li>
+              <li>Optional: <code>product</code> column for product tagging</li>
               <li>All other columns are passed through as-is</li>
             </ul>
           </div>
-          <div class="bg-gray-900 border border-gray-700 rounded-xl p-5">
-            <h3 class="font-semibold text-white mb-3">Limits</h3>
-            <ul class="text-sm text-gray-300 space-y-1 list-disc list-inside">
+          <div class="panel">
+            <h3>Limits</h3>
+            <ul>
               <li>Maximum rows: <strong>500</strong></li>
               <li>Maximum file size: <strong>5 MB</strong></li>
-              <li>Content-Type: <code class="text-blue-300">multipart/form-data</code></li>
+              <li>Content-Type: <code>multipart/form-data</code></li>
               <li>Encoding: UTF-8</li>
             </ul>
           </div>
         </div>
 
-        <h3 class="text-lg font-semibold text-white mb-3">Example CSV</h3>
-        <div class="code-block mb-6">
-          <pre class="bg-gray-900 border border-gray-700 rounded-xl p-5 text-sm text-green-300 overflow-x-auto"><code>review_text,product,date
+        <h3>Example CSV</h3>
+        <div class="code-block">
+          <button type="button" class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre tabindex="0"><code>review_text,product,date
 "Great earphones, sound is excellent","BoAt Bassheads","2024-01-15"
 "Battery dies too fast for the price","BoAt Bassheads","2024-01-16"</code></pre>
-          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
         </div>
 
-        <h3 class="text-lg font-semibold text-white mb-3">Upload request + response</h3>
+        <h3>Upload request + response</h3>
         <div class="code-block">
-          <pre class="bg-gray-900 border border-gray-700 rounded-xl p-5 text-sm text-green-300 overflow-x-auto"><code># Upload
+          <button type="button" class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre tabindex="0"><code># Upload
 curl -X POST https://your-instance.run.app/v2/ingest/csv \
   -H "X-API-Key: riq_live_your_key" \
   -F "file=@reviews.csv"
@@ -400,7 +508,6 @@ curl https://your-instance.run.app/v2/ingest/b3f1a2d4-.../  \
 # Download results when status == "done"
 curl https://your-instance.run.app/v2/ingest/b3f1a2d4-.../result \
   -H "X-API-Key: riq_live_your_key"</code></pre>
-          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
         </div>
       </section>
 
@@ -408,89 +515,91 @@ curl https://your-instance.run.app/v2/ingest/b3f1a2d4-.../result \
            LIMITS
       ============================================================ -->
       <section id="limits">
-        <h2 class="text-2xl font-bold text-white mb-4">Rate Limits &amp; Quotas</h2>
+        <h2>Rate Limits &amp; Quotas</h2>
 
-        <div class="overflow-x-auto rounded-xl border border-gray-700 mb-6">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-800 text-gray-300">
+        <div class="table-wrap">
+          <table>
+            <caption class="sr-only">Rate limits and quotas</caption>
+            <thead>
               <tr>
-                <th class="px-5 py-3 text-left font-semibold">Tier / Endpoint</th>
-                <th class="px-5 py-3 text-left font-semibold">Limit</th>
-                <th class="px-5 py-3 text-left font-semibold">Notes</th>
+                <th scope="col">Tier / Endpoint</th>
+                <th scope="col">Limit</th>
+                <th scope="col">Notes</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-700">
-              <tr class="bg-gray-900">
-                <td class="px-5 py-3 text-gray-100">Free tier (all extractions)</td>
-                <td class="px-5 py-3 font-mono text-blue-300">100 / month</td>
-                <td class="px-5 py-3 text-gray-400">429 returned when quota exceeded</td>
+            <tbody>
+              <tr>
+                <td>Free tier (all extractions)</td>
+                <td class="num">100 / month</td>
+                <td class="ci">429 returned when quota exceeded</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-5 py-3 text-gray-100">Demo endpoint (<code class="text-blue-300">/demo/extract</code>)</td>
-                <td class="px-5 py-3 font-mono text-blue-300">5 req / min per IP</td>
-                <td class="px-5 py-3 text-gray-400">No API key required; no results stored</td>
+              <tr>
+                <td>Demo endpoint (<code>/demo/extract</code>)</td>
+                <td class="num">5 req / min per IP</td>
+                <td class="ci">No API key required; no results stored</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-5 py-3 text-gray-100">All other endpoints</td>
-                <td class="px-5 py-3 font-mono text-blue-300">30 req / min (default)</td>
-                <td class="px-5 py-3 text-gray-400">App-wide slowapi limit; configurable per deployment</td>
+              <tr>
+                <td>All other endpoints</td>
+                <td class="num">30 req / min (default)</td>
+                <td class="ci">App-wide slowapi limit; configurable per deployment</td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <div class="bg-gray-900 border border-gray-700 rounded-xl px-5 py-4 text-sm text-gray-300">
+        <p class="note">
           When a rate limit is exceeded, the API returns
-          <code class="bg-gray-800 text-red-400 px-1.5 py-0.5 rounded">HTTP 429 Too Many Requests</code>
-          with a <code class="bg-gray-800 text-gray-300 px-1.5 py-0.5 rounded">Retry-After</code> header
+          <code>HTTP 429 Too Many Requests</code>
+          with a <code>Retry-After</code> header
           indicating seconds until the window resets.
-        </div>
+        </p>
       </section>
 
       <!-- ============================================================
            LANGUAGE SUPPORT
       ============================================================ -->
       <section id="languages">
-        <h2 class="text-2xl font-bold text-white mb-4">Language Support</h2>
-        <p class="text-gray-300 mb-6">
+        <h2>Language Support</h2>
+        <p>
           Language is auto-detected from the review text — no parameter needed.
-          The detected code is returned in the <code class="bg-gray-800 text-blue-300 px-1.5 py-0.5 rounded text-sm">language</code> field of the response.
+          The detected code is returned in the <code>language</code> field of the response.
         </p>
 
-        <div class="mb-6 bg-amber-950/40 border border-amber-800 rounded-lg px-5 py-4 text-sm text-gray-300">
-          <span class="text-amber-400 font-semibold">Re-measured against the models actually deployed: </span>
+        <p class="note">
+          <span class="note-lead">Re-measured against the models actually deployed: </span>
           The accuracy figures below were measured under the models production actually
-          runs today (<code class="text-gray-300">openai/gpt-oss-20b</code> /
-          <code class="text-gray-300">openai/gpt-oss-120b</code>) after Groq deprecated the
+          runs today (<code>openai/gpt-oss-20b</code> /
+          <code>openai/gpt-oss-120b</code>) after Groq deprecated the
           previous models on 2026-08-16 &mdash; see the
-          <a href="/#accuracy" class="underline text-amber-300">full accuracy table</a> for
+          <a href="/#how-it-works">full accuracy table</a> for
           gate status, confidence intervals, and known calibration differences vs. the
           previous models.
-        </div>
+        </p>
 
-        <div class="overflow-x-auto rounded-xl border border-gray-700">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-800 text-gray-300">
+        <div class="table-wrap">
+          <table>
+            <caption class="sr-only">Language support and measured accuracy</caption>
+            <thead>
               <tr>
-                <th class="px-5 py-3 text-left font-semibold">Code</th>
-                <th class="px-5 py-3 text-left font-semibold">Language</th>
-                <th class="px-5 py-3 text-left font-semibold">Script</th>
-                <th class="px-5 py-3 text-left font-semibold">Accuracy</th>
+                <th scope="col">Code</th>
+                <th scope="col">Language</th>
+                <th scope="col">Script</th>
+                <th scope="col">Accuracy</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-700">
+            <tbody>
               <!-- METRICS:START:language_table_html -->
-              <tr class="bg-gray-900">
-                <td class="px-5 py-3 font-mono text-blue-300">en</td>
-                <td class="px-5 py-3 text-gray-100">English</td>
-                <td class="px-5 py-3 text-gray-400">Latin</td>
-                <td class="px-5 py-3 text-green-400">78.2%</td>
+              <tr>
+                <td class="path">en</td>
+                <td>English</td>
+                <td class="ci">Latin</td>
+                <td class="num status-pass">78.2%</td>
               </tr>
-              <tr class="bg-gray-900">
-                <td class="px-5 py-3 font-mono text-blue-300">hi-en</td>
-                <td class="px-5 py-3 text-gray-100">Hinglish</td>
-                <td class="px-5 py-3 text-gray-400">Roman-script code-mix</td>
-                <td class="px-5 py-3 text-green-400">79.3%</td>
+              <tr>
+                <td class="path">hi-en</td>
+                <td>Hinglish</td>
+                <td class="ci">Roman-script code-mix</td>
+                <td class="num status-pass">79.3%</td>
               </tr>
             <!-- METRICS:END -->
             </tbody>
@@ -502,33 +611,39 @@ curl https://your-instance.run.app/v2/ingest/b3f1a2d4-.../result \
   </div>
 
   <!-- FOOTER -->
-  <footer class="border-t border-gray-800 mt-16">
-    <div class="max-w-7xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
-      <span><strong class="text-gray-300">Samidha Reviews</strong> &mdash; MIT License</span>
-      <a href="/" class="text-blue-400 hover:text-blue-300 transition-colors">&larr; Back to home</a>
+  <footer class="site-footer">
+    <div class="wrap">
+      <p><strong>Samidha Reviews</strong> &mdash; MIT License</p>
+      <a href="/">&larr; Back to home</a>
     </div>
   </footer>
 
   <script>
     function copyCode(btn) {
       const pre = btn.parentElement.querySelector("pre");
+      const orig = btn.textContent;
       navigator.clipboard.writeText(pre.textContent).then(function() {
-        const orig = btn.textContent;
         btn.textContent = "Copied!";
+      }).catch(function() {
+        // Clipboard API needs a secure context; say so rather than failing silently.
+        btn.textContent = "Copy failed";
+      }).finally(function() {
         setTimeout(function() { btn.textContent = orig; }, 1500);
       });
     }
 
-    // Sidebar active link on scroll
+    // Contents links: mark the section in view (class for the look, aria-current for assistive tech).
     const sections = document.querySelectorAll("section[id]");
-    const navLinks = document.querySelectorAll(".nav-link");
+    const navLinks = document.querySelectorAll(".side-link");
     window.addEventListener("scroll", function() {
       let current = "";
       sections.forEach(function(s) {
         if (window.scrollY >= s.offsetTop - 120) current = s.id;
       });
       navLinks.forEach(function(a) {
-        a.classList.toggle("active", a.getAttribute("href") === "#" + current);
+        const on = a.getAttribute("href") === "#" + current;
+        a.classList.toggle("active", on);
+        if (on) { a.setAttribute("aria-current", "true"); } else { a.removeAttribute("aria-current"); }
       });
     });
   </script>

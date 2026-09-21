@@ -137,16 +137,21 @@ def required_ratio(size_px: float, weight: int) -> float:
     return 3.0 if size_px >= 24 or (size_px >= 18.66 and weight >= 700) else 4.5
 
 
-def serve() -> tuple[http.server.ThreadingHTTPServer, str]:
-    """Serve site/ on an ephemeral localhost port; returns (server, base_url)."""
+def serve(page_path: str = "index.html") -> tuple[http.server.ThreadingHTTPServer, str]:
+    """Serve site/ on an ephemeral localhost port; returns (server, url of `page_path`)."""
     handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(SITE_DIR))
     server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
-    return server, f"http://127.0.0.1:{server.server_address[1]}/index.html"
+    return server, f"http://127.0.0.1:{server.server_address[1]}/{page_path}"
 
 
-def check_widths(page: Page, url: str, out_dir: Path, label: str) -> list[str]:
-    """Screenshot every viewport and return failure messages for overflow / fold checks."""
+def check_widths(
+    page: Page, url: str, out_dir: Path, label: str, check_fold: bool = True
+) -> list[str]:
+    """Screenshot every viewport and return failure messages for overflow / fold checks.
+
+    `check_fold` is index.html-specific (the hero demo textarea); pass False for other pages.
+    """
     failures: list[str] = []
     for width, height in VIEWPORTS:
         page.set_viewport_size({"width": width, "height": height})
@@ -164,7 +169,7 @@ def check_widths(page: Page, url: str, out_dir: Path, label: str) -> list[str]:
             failures.append(f"{width}px: horizontal scroll ({metrics['sw']} > {metrics['iw']})")
         page.screenshot(path=str(out_dir / f"{label}-{width}-fold.png"))
         page.screenshot(path=str(out_dir / f"{label}-{width}-full.png"), full_page=True)
-        if width in FOLD_CHECKED:
+        if check_fold and width in FOLD_CHECKED:
             box = page.locator("#live-text").bounding_box()
             in_fold = bool(box) and box["y"] >= 0 and box["y"] + box["height"] <= height
             print(
@@ -188,14 +193,18 @@ def check_widths(page: Page, url: str, out_dir: Path, label: str) -> list[str]:
     return failures
 
 
-def check_contrast(page: Page, url: str) -> list[str]:
-    """Measure every visible text node's contrast at desktop + mobile; return failures."""
+def check_contrast(page: Page, url: str, ready_selector: str | None = None) -> list[str]:
+    """Measure every visible text node's contrast at desktop + mobile; return failures.
+
+    `ready_selector` waits for JS-rendered content first (index.html's demo gallery).
+    """
     failures: list[str] = []
     worst: dict[str, float] = {}
     for width, height in ((1280, 800), (390, 844)):
         page.set_viewport_size({"width": width, "height": height})
         page.goto(url, wait_until="networkidle")
-        page.wait_for_selector("#gallery-panels .cat-panel", state="attached", timeout=5000)
+        if ready_selector:
+            page.wait_for_selector(ready_selector, state="attached", timeout=5000)
         records: list[dict[str, Any]] = page.evaluate(COLLECT_TEXT_JS)
         pairs: dict[tuple[Any, ...], float] = {}
         for rec in records:
@@ -440,11 +449,18 @@ def main() -> int:
         action="store_true",
         help="screenshots only (baseline capture of the pre-redesign page)",
     )
+    parser.add_argument(
+        "--page",
+        default="index.html",
+        help="page under site/ to load (default index.html; e.g. docs/index.html). Non-index "
+        "pages get width, overflow and contrast checks only.",
+    )
     args = parser.parse_args()
 
     out_dir = (REPO_ROOT / args.out).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
-    server, url = serve()
+    is_index = args.page == "index.html"
+    server, url = serve(args.page)
     failures: list[str] = []
     try:
         with sync_playwright() as pw:
@@ -461,9 +477,12 @@ def main() -> int:
                     )
                     print(f"captured {args.label} at {width}px")
             else:
-                failures += check_widths(page, url, out_dir, args.label)
-                failures += check_contrast(page, url)
-                failures += check_states(page, url)
+                failures += check_widths(page, url, out_dir, args.label, check_fold=is_index)
+                failures += check_contrast(
+                    page, url, "#gallery-panels .cat-panel" if is_index else None
+                )
+                if is_index:
+                    failures += check_states(page, url)
             browser.close()
     finally:
         server.shutdown()

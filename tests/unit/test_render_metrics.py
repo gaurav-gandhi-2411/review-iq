@@ -220,14 +220,14 @@ class TestRenderLanguageTableHtml:
         assert out.count("<tr") == 2
         assert "Devanagari" not in out
 
-    def test_all_passing_renders_green_everywhere(self):
+    def test_all_passing_marks_every_row_as_passing(self):
         out = render_language_table_html(EXTRACTION_DATA)
-        assert "text-red-400" not in out
+        assert "status-fail" not in out
         assert "below" not in out
 
-    def test_failing_language_renders_red_with_gate_note(self):
+    def test_failing_language_is_marked_with_gate_note(self):
         # Regression test (Session 5 P4, 2026-09-10): same class of bug as
-        # render_extraction_table_html -- the accuracy cell hardcoded text-green-400
+        # render_extraction_table_html -- the accuracy cell hardcoded a green class
         # unconditionally, so a failing language's score would render as if it passed.
         data = {
             **EXTRACTION_DATA,
@@ -242,11 +242,17 @@ class TestRenderLanguageTableHtml:
             },
         }
         out = render_language_table_html(data)
-        assert "text-red-400" in out
+        assert "status-fail" in out
         assert "below 74% gate" in out
-        # hi-en still passes and should stay green, not collateral-damaged red. (hi is no
+        # hi-en still passes and must not be collateral-marked failing. (hi is no
         # longer rendered at all -- see test_renders_two_rows.)
-        assert out.count("text-green-400") == 1
+        assert out.count("status-pass") == 1
+
+    def test_no_tailwind_palette_classes(self):
+        # Session 15c S8b: the docs page shares the marketing page's blue-free palette.
+        out = render_language_table_html(EXTRACTION_DATA)
+        forbidden = ("blue-", "green-", "red-", "amber-", "violet-", "gray-", "slate-")
+        assert [t for t in forbidden if t in out] == []
 
 
 COVERAGE_DATA = {
