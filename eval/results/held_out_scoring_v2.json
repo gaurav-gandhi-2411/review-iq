@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-20T08:57:26Z",
-  "git_sha": "c4dcfcd93e76d8be3b42b3c33c380586645e916c",
+  "generated_at": "2026-09-21T14:55:14Z",
+  "git_sha": "e582d681e7da2c90df6303fbea1fe32637a3ef90",
   "scorer_version": "2026-09-20.free-text-v1",
   "groq_model_small": "openai/gpt-oss-20b",
   "groq_model_large": "openai/gpt-oss-120b",
@@ -67,19 +67,176 @@
     "stars_inferred"
   ],
   "overall_score_headline": {
-    "as_deployed": 0.7239911868038554,
-    "language_forced": 0.7176444853591452
+    "as_deployed": 0.7949258007841227,
+    "language_forced": 0.795880877580582
   },
   "overall_score_headline_ci_95": {
     "as_deployed": {
-      "lower": 0.6983569734199195,
-      "upper": 0.749514825710512,
-      "n": 106
+      "lower": 0.7602832860828673,
+      "upper": 0.8269745693037756,
+      "n": 70
     },
     "language_forced": {
-      "lower": 0.6929747797610498,
-      "upper": 0.7415777283587637,
-      "n": 106
+      "lower": 0.7657333012810994,
+      "upper": 0.8244672794068966,
+      "n": 70
+    }
+  },
+  "headline_policy": {
+    "cell": "unexposed_split_excluded",
+    "exclude_exposed_reviews": true,
+    "exclude_split_gold_pairs": true
+  },
+  "headline_grid": {
+    "all_reviews_all_pairs": {
+      "n": 106,
+      "n_reviews_excluded_as_exposed": 0,
+      "n_split_pairs_excluded": 0,
+      "as_deployed": {
+        "score": 0.7239911868038554,
+        "ci_95": {
+          "lower": 0.6983569734199195,
+          "upper": 0.749514825710512,
+          "n": 106
+        }
+      },
+      "language_forced": {
+        "score": 0.7176444853591452,
+        "ci_95": {
+          "lower": 0.6929747797610498,
+          "upper": 0.7415777283587637,
+          "n": 106
+        }
+      }
+    },
+    "all_reviews_split_excluded": {
+      "n": 106,
+      "n_reviews_excluded_as_exposed": 0,
+      "n_split_pairs_excluded": 102,
+      "as_deployed": {
+        "score": 0.7990525725205646,
+        "ci_95": {
+          "lower": 0.7725647821590385,
+          "upper": 0.8247320424005883,
+          "n": 106
+        }
+      },
+      "language_forced": {
+        "score": 0.7963221144832029,
+        "ci_95": {
+          "lower": 0.7722721084093502,
+          "upper": 0.8200905342388496,
+          "n": 106
+        }
+      }
+    },
+    "unexposed_all_pairs": {
+      "n": 70,
+      "n_reviews_excluded_as_exposed": 36,
+      "n_split_pairs_excluded": 0,
+      "as_deployed": {
+        "score": 0.7321073196620701,
+        "ci_95": {
+          "lower": 0.6992536890129216,
+          "upper": 0.7645494196482421,
+          "n": 70
+        }
+      },
+      "language_forced": {
+        "score": 0.7269501494279151,
+        "ci_95": {
+          "lower": 0.696025812214758,
+          "upper": 0.7565193360118533,
+          "n": 70
+        }
+      }
+    },
+    "unexposed_split_excluded": {
+      "n": 70,
+      "n_reviews_excluded_as_exposed": 36,
+      "n_split_pairs_excluded": 59,
+      "as_deployed": {
+        "score": 0.7949258007841227,
+        "ci_95": {
+          "lower": 0.7602832860828673,
+          "upper": 0.8269745693037756,
+          "n": 70
+        }
+      },
+      "language_forced": {
+        "score": 0.795880877580582,
+        "ci_95": {
+          "lower": 0.7657333012810994,
+          "upper": 0.8244672794068966,
+          "n": 70
+        }
+      }
+    }
+  },
+  "n_exposed_reviews": 36,
+  "exposure_sensitivity": {
+    "n_exposed": 36,
+    "n_unexposed": 70,
+    "exposed_score": 0.8070768508969796,
+    "unexposed_score": 0.7949258007841227,
+    "difference": 0.012151050112856887,
+    "difference_ci_95": {
+      "lower": -0.04150870571891441,
+      "upper": 0.06429642572631533
+    }
+  },
+  "exposure_reasons": {
+    "benchmark_gold": 21,
+    "prompt_visible_dev_fixture": 15
+  },
+  "per_field_split_effect": {
+    "product": {
+      "n": 106,
+      "n_split_gold": 26,
+      "score_all_pairs": 0.5943396226415094,
+      "score_excluding_split": 0.575
+    },
+    "buy_again": {
+      "n": 106,
+      "n_split_gold": 0,
+      "score_all_pairs": 0.7264150943396226,
+      "score_excluding_split": 0.7264150943396226
+    },
+    "sentiment": {
+      "n": 106,
+      "n_split_gold": 0,
+      "score_all_pairs": 0.8679245283018868,
+      "score_excluding_split": 0.8679245283018868
+    },
+    "topics": {
+      "n": 106,
+      "n_split_gold": 25,
+      "score_all_pairs": 0.5424103088919959,
+      "score_excluding_split": 0.6851295400315008
+    },
+    "competitor_mentions": {
+      "n": 106,
+      "n_split_gold": 0,
+      "score_all_pairs": 0.839622641509434,
+      "score_excluding_split": 0.839622641509434
+    },
+    "pros": {
+      "n": 106,
+      "n_split_gold": 30,
+      "score_all_pairs": 0.5388443781659271,
+      "score_excluding_split": 0.7383882116524773
+    },
+    "cons": {
+      "n": 106,
+      "n_split_gold": 21,
+      "score_all_pairs": 0.7012408451087696,
+      "score_excluding_split": 0.8744885833121128
+    },
+    "stars_inferred": {
+      "n": 106,
+      "n_split_gold": 0,
+      "score_all_pairs": 0.9811320754716981,
+      "score_excluding_split": 0.9811320754716981
     }
   },
   "records": [
@@ -87,6 +244,7 @@
       "id": "hien-0001",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -163,12 +321,16 @@
         "overall_score": 0.5700000000000001,
         "overall_score_strict": 0.5700000000000001
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0002",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "cons"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -257,12 +419,16 @@
         "overall_score": 0.5071428571428571,
         "overall_score_strict": 0.5071428571428571
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0003",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "cons"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -337,12 +503,17 @@
         "overall_score": 0.78,
         "overall_score_strict": 0.78
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0004",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "cons",
+        "product"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -419,12 +590,19 @@
         "overall_score": 0.8333333333333333,
         "overall_score_strict": 0.7333333333333333
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "prompt_visible_dev_fixture"
+      ]
     },
     {
       "id": "hien-0005",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "cons",
+        "product"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -503,12 +681,14 @@
         "overall_score": 0.8,
         "overall_score_strict": 0.7
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0006",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -597,12 +777,18 @@
         "overall_score": 0.8133333333333332,
         "overall_score_strict": 0.8133333333333332
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "benchmark_gold"
+      ]
     },
     {
       "id": "hien-0007",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "product"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -679,12 +865,17 @@
         "overall_score": 0.8615384615384615,
         "overall_score_strict": 0.7615384615384615
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0008",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "product",
+        "pros"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -767,12 +958,16 @@
         "overall_score": 0.7857142857142857,
         "overall_score_strict": 0.6571428571428571
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "benchmark_gold"
+      ]
     },
     {
       "id": "hien-0009",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -851,12 +1046,16 @@
         "overall_score": 0.8666666666666668,
         "overall_score_strict": 0.8666666666666668
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0010",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "pros"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -929,12 +1128,14 @@
         "overall_score": 0.65,
         "overall_score_strict": 0.55
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": []
     },
     {
       "id": "hien-0011",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -1005,12 +1206,14 @@
         "overall_score": 0.9,
         "overall_score_strict": 0.8
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": []
     },
     {
       "id": "hien-0012",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -1083,12 +1286,16 @@
         "overall_score": 0.95,
         "overall_score_strict": 0.75
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": []
     },
     {
       "id": "hien-0013",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -1161,12 +1368,17 @@
         "overall_score": 0.8222222222222222,
         "overall_score_strict": 0.7222222222222222
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": []
     },
     {
       "id": "hien-0014",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "product",
+        "pros"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -1255,12 +1467,18 @@
         "overall_score": 0.6,
         "overall_score_strict": 0.6
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "benchmark_gold"
+      ]
     },
     {
       "id": "hien-0015",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "product"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -1331,12 +1549,16 @@
         "overall_score": 0.9416666666666668,
         "overall_score_strict": 0.8416666666666668
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "benchmark_gold"
+      ]
     },
     {
       "id": "hien-0016",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -1411,12 +1633,16 @@
         "overall_score": 0.7909090909090909,
         "overall_score_strict": 0.7909090909090909
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0017",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "pros"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -1502,12 +1728,17 @@
         "overall_score": 0.7444444444444445,
         "overall_score_strict": 0.7444444444444445
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0018",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "cons",
+        "product"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -1585,12 +1816,16 @@
         "overall_score": 0.65,
         "overall_score_strict": 0.6
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0019",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "product"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -1663,12 +1898,14 @@
         "overall_score": 0.9333333333333333,
         "overall_score_strict": 0.8333333333333334
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": []
     },
     {
       "id": "hien-0020",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -1753,12 +1990,14 @@
         "overall_score": 0.8657142857142857,
         "overall_score_strict": 0.8657142857142857
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0021",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -1849,12 +2088,20 @@
         "overall_score": 0.8287356321839081,
         "overall_score_strict": 0.8287356321839081
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "prompt_visible_dev_fixture"
+      ]
     },
     {
       "id": "hien-0022",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "cons",
+        "product",
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -1939,12 +2186,16 @@
         "overall_score": 0.7,
         "overall_score_strict": 0.7
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "benchmark_gold"
+      ]
     },
     {
       "id": "hien-0023",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -2029,12 +2280,16 @@
         "overall_score": 0.9222222222222222,
         "overall_score_strict": 0.9222222222222222
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0024",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "pros"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -2113,12 +2368,18 @@
         "overall_score": 0.74,
         "overall_score_strict": 0.74
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "prompt_visible_dev_fixture"
+      ]
     },
     {
       "id": "hien-0025",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "cons"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -2203,12 +2464,16 @@
         "overall_score": 0.6571428571428571,
         "overall_score_strict": 0.6571428571428571
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0026",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "product"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -2292,12 +2557,19 @@
         "overall_score": 0.8511904761904763,
         "overall_score_strict": 0.7511904761904762
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": [
+        "benchmark_gold"
+      ]
     },
     {
       "id": "hien-0027",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "pros",
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -2378,12 +2650,18 @@
         "overall_score": 0.6,
         "overall_score_strict": 0.6
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "prompt_visible_dev_fixture"
+      ]
     },
     {
       "id": "hien-0028",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "cons"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -2458,12 +2736,17 @@
         "overall_score": 0.7,
         "overall_score_strict": 0.7
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": []
     },
     {
       "id": "hien-0029",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "pros",
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -2542,12 +2825,16 @@
         "overall_score": 0.8,
         "overall_score_strict": 0.8
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "prompt_visible_dev_fixture"
+      ]
     },
     {
       "id": "hien-0030",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -2656,12 +2943,17 @@
         "overall_score": 0.8482620320855615,
         "overall_score_strict": 0.8247326203208555
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0031",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "cons",
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -2743,12 +3035,16 @@
         "overall_score": 0.7857142857142857,
         "overall_score_strict": 0.6857142857142857
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0032",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "pros"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -2825,12 +3121,16 @@
         "overall_score": 0.74,
         "overall_score_strict": 0.7
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0033",
       "gt_language": "en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "product"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -2918,12 +3218,18 @@
         "overall_score": 0.6392592592592593,
         "overall_score_strict": 0.5992592592592592
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": [
+        "prompt_visible_dev_fixture"
+      ]
     },
     {
       "id": "hien-0034",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -2998,12 +3304,16 @@
         "overall_score": 0.9,
         "overall_score_strict": 0.8
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": []
     },
     {
       "id": "hien-0035",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -3093,12 +3403,17 @@
         "overall_score": 0.8866666666666667,
         "overall_score_strict": 0.8866666666666667
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0036",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "product",
+        "pros"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -3181,12 +3496,14 @@
         "overall_score": 0.5800000000000001,
         "overall_score_strict": 0.54
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": []
     },
     {
       "id": "hien-0037",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -3277,12 +3594,16 @@
         "overall_score": 0.7333333333333333,
         "overall_score_strict": 0.6333333333333333
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "benchmark_gold"
+      ]
     },
     {
       "id": "hien-0038",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -3370,12 +3691,14 @@
         "overall_score": 0.8545454545454547,
         "overall_score_strict": 0.8181818181818181
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0039",
       "gt_language": "en",
       "detected_language": "en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -3458,12 +3781,17 @@
         "overall_score": 0.8404761904761905,
         "overall_score_strict": 0.8404761904761905
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": []
     },
     {
       "id": "hien-0040",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "cons",
+        "product"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -3554,12 +3882,16 @@
         "overall_score": 0.4833333333333334,
         "overall_score_strict": 0.4833333333333334
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0041",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -3631,12 +3963,17 @@
         "overall_score": 0.85,
         "overall_score_strict": 0.75
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0042",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "cons",
+        "feature_requests"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -3727,12 +4064,14 @@
         "overall_score": 0.6032967032967033,
         "overall_score_strict": 0.6032967032967033
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0043",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -3805,12 +4144,16 @@
         "overall_score": 0.75,
         "overall_score_strict": 0.75
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": []
     },
     {
       "id": "hien-0044",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "cons"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -3905,12 +4248,18 @@
         "overall_score": 0.7642424242424243,
         "overall_score_strict": 0.7642424242424243
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "benchmark_gold"
+      ]
     },
     {
       "id": "hien-0045",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "pros"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -3985,12 +4334,16 @@
         "overall_score": 0.78,
         "overall_score_strict": 0.74
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "benchmark_gold"
+      ]
     },
     {
       "id": "hien-0046",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -4073,12 +4426,17 @@
         "overall_score": 0.9267080745341614,
         "overall_score_strict": 0.9267080745341614
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0047",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "product",
+        "pros"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -4165,12 +4523,17 @@
         "overall_score": 0.76,
         "overall_score_strict": 0.76
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": []
     },
     {
       "id": "hien-0048",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "pros",
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -4257,12 +4620,16 @@
         "overall_score": 0.7,
         "overall_score_strict": 0.7
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0049",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "product"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -4345,12 +4712,17 @@
         "overall_score": 0.874848484848485,
         "overall_score_strict": 0.7748484848484849
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": []
     },
     {
       "id": "hien-0050",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "pros",
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -4437,12 +4809,18 @@
         "overall_score": 0.5909090909090909,
         "overall_score_strict": 0.5909090909090909
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "prompt_visible_dev_fixture"
+      ]
     },
     {
       "id": "hien-0051",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "pros"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -4522,12 +4900,17 @@
         "overall_score": 0.8800000000000001,
         "overall_score_strict": 0.78
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0052",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "product",
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -4606,12 +4989,19 @@
         "overall_score": 0.875,
         "overall_score_strict": 0.775
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "prompt_visible_dev_fixture"
+      ]
     },
     {
       "id": "hien-0053",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "pros",
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -4686,12 +5076,17 @@
         "overall_score": 0.7,
         "overall_score_strict": 0.7
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0054",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "product",
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -4770,12 +5165,18 @@
         "overall_score": 0.78,
         "overall_score_strict": 0.6799999999999999
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "benchmark_gold"
+      ]
     },
     {
       "id": "hien-0055",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "product"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -4860,12 +5261,14 @@
         "overall_score": 0.9102702702702704,
         "overall_score_strict": 0.8102702702702704
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0056",
       "gt_language": "en",
       "detected_language": "en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -4936,12 +5339,16 @@
         "overall_score": 0.8,
         "overall_score_strict": 0.8
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": []
     },
     {
       "id": "hien-0057",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -5008,12 +5415,14 @@
         "overall_score": 0.75,
         "overall_score_strict": 0.65
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0058",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -5089,12 +5498,17 @@
         "overall_score": 0.8727272727272727,
         "overall_score_strict": 0.8727272727272727
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0059",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "cons",
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -5175,12 +5589,16 @@
         "overall_score": 0.7,
         "overall_score_strict": 0.7
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "benchmark_gold"
+      ]
     },
     {
       "id": "hien-0060",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -5253,12 +5671,14 @@
         "overall_score": 0.768888888888889,
         "overall_score_strict": 0.7288888888888889
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0061",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -5352,12 +5772,14 @@
         "overall_score": 0.6763636363636364,
         "overall_score_strict": 0.6763636363636364
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0062",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -5444,12 +5866,19 @@
         "overall_score": 0.8,
         "overall_score_strict": 0.8
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "prompt_visible_dev_fixture"
+      ]
     },
     {
       "id": "hien-0063",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "product",
+        "pros"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -5520,12 +5949,18 @@
         "overall_score": 0.7,
         "overall_score_strict": 0.6
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "benchmark_gold"
+      ]
     },
     {
       "id": "hien-0064",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "cons"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -5616,12 +6051,18 @@
         "overall_score": 0.6595238095238095,
         "overall_score_strict": 0.6595238095238095
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "benchmark_gold"
+      ]
     },
     {
       "id": "hien-0065",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -5689,12 +6130,14 @@
         "overall_score": 0.64,
         "overall_score_strict": 0.64
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0066",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -5779,12 +6222,16 @@
         "overall_score": 0.7696969696969698,
         "overall_score_strict": 0.7363636363636363
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0067",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "product"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -5870,12 +6317,16 @@
         "overall_score": 0.8746031746031747,
         "overall_score_strict": 0.7746031746031746
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0068",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "pros"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -5959,12 +6410,16 @@
         "overall_score": 0.7402597402597403,
         "overall_score_strict": 0.7402597402597403
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0069",
       "gt_language": "en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "product"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -6047,12 +6502,16 @@
         "overall_score": 0.7142857142857142,
         "overall_score_strict": 0.6857142857142857
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": []
     },
     {
       "id": "hien-0070",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "pros"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -6123,12 +6582,16 @@
         "overall_score": 0.8,
         "overall_score_strict": 0.8
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "benchmark_gold"
+      ]
     },
     {
       "id": "hien-0071",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -6203,12 +6666,14 @@
         "overall_score": 0.8800000000000001,
         "overall_score_strict": 0.78
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0072",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -6284,12 +6749,16 @@
         "overall_score": 0.8357142857142857,
         "overall_score_strict": 0.6857142857142857
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0073",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "cons"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -6372,12 +6841,18 @@
         "overall_score": 0.8333333333333334,
         "overall_score_strict": 0.7
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "prompt_visible_dev_fixture"
+      ]
     },
     {
       "id": "hien-0074",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "pros"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -6452,12 +6927,18 @@
         "overall_score": 0.85,
         "overall_score_strict": 0.75
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "benchmark_gold"
+      ]
     },
     {
       "id": "hien-0075",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "cons"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -6544,12 +7025,16 @@
         "overall_score": 0.6457142857142857,
         "overall_score_strict": 0.6457142857142857
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "prompt_visible_dev_fixture"
+      ]
     },
     {
       "id": "hien-0076",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -6646,12 +7131,18 @@
         "overall_score": 0.6709090909090909,
         "overall_score_strict": 0.6709090909090909
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "benchmark_gold"
+      ]
     },
     {
       "id": "hien-0077",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "pros"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -6724,12 +7215,16 @@
         "overall_score": 0.9,
         "overall_score_strict": 0.7
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0078",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "cons"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -6818,12 +7313,16 @@
         "overall_score": 0.775,
         "overall_score_strict": 0.775
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "benchmark_gold"
+      ]
     },
     {
       "id": "hien-0079",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -6923,12 +7422,16 @@
         "overall_score": 0.8502711323763956,
         "overall_score_strict": 0.8502711323763956
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0080",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "product"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -7011,12 +7514,16 @@
         "overall_score": 0.7142857142857142,
         "overall_score_strict": 0.7142857142857142
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0081",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "cons"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -7101,12 +7608,16 @@
         "overall_score": 0.55,
         "overall_score_strict": 0.55
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "prompt_visible_dev_fixture"
+      ]
     },
     {
       "id": "hien-0082",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -7192,12 +7703,16 @@
         "overall_score": 0.8666666666666668,
         "overall_score_strict": 0.8666666666666668
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0083",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -7272,12 +7787,16 @@
         "overall_score": 0.7615384615384615,
         "overall_score_strict": 0.6615384615384615
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": []
     },
     {
       "id": "hien-0084",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "pros"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -7357,12 +7876,17 @@
         "overall_score": 0.8666666666666668,
         "overall_score_strict": 0.8666666666666668
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0085",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "cons",
+        "pros"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -7453,12 +7977,14 @@
         "overall_score": 0.7,
         "overall_score_strict": 0.6
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": []
     },
     {
       "id": "hien-0086",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -7551,12 +8077,19 @@
         "overall_score": 0.860909090909091,
         "overall_score_strict": 0.8427272727272728
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "benchmark_gold"
+      ]
     },
     {
       "id": "hien-0087",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "pros",
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -7635,12 +8168,18 @@
         "overall_score": 0.8,
         "overall_score_strict": 0.8
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "prompt_visible_dev_fixture"
+      ]
     },
     {
       "id": "hien-0088",
       "gt_language": "en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "pros"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -7731,12 +8270,16 @@
         "overall_score": 0.8545454545454545,
         "overall_score_strict": 0.8363636363636363
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": [
+        "benchmark_gold"
+      ]
     },
     {
       "id": "hien-0089",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -7822,12 +8365,14 @@
         "overall_score": 0.7036363636363637,
         "overall_score_strict": 0.7036363636363637
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0090",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -7894,12 +8439,16 @@
         "overall_score": 0.7523809523809523,
         "overall_score_strict": 0.7523809523809523
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0091",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -7970,12 +8519,14 @@
         "overall_score": 0.8666666666666668,
         "overall_score_strict": 0.7666666666666667
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0092",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -8048,12 +8599,19 @@
         "overall_score": 0.9393939393939394,
         "overall_score_strict": 0.8393939393939395
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "benchmark_gold"
+      ]
     },
     {
       "id": "hien-0093",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "pros",
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -8134,12 +8692,16 @@
         "overall_score": 0.6,
         "overall_score_strict": 0.6
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "benchmark_gold"
+      ]
     },
     {
       "id": "hien-0094",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -8218,12 +8780,17 @@
         "overall_score": 0.819047619047619,
         "overall_score_strict": 0.819047619047619
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0095",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "product",
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -8308,12 +8875,18 @@
         "overall_score": 0.7769230769230769,
         "overall_score_strict": 0.7769230769230769
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "prompt_visible_dev_fixture"
+      ]
     },
     {
       "id": "hien-0096",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "pros"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -8388,12 +8961,16 @@
         "overall_score": 0.9,
         "overall_score_strict": 0.7
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": []
     },
     {
       "id": "hien-0097",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "cons"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -8474,12 +9051,17 @@
         "overall_score": 0.7416666666666667,
         "overall_score_strict": 0.7416666666666667
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0098",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "pros",
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -8556,12 +9138,17 @@
         "overall_score": 0.8,
         "overall_score_strict": 0.7
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0099",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "product",
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -8635,12 +9222,17 @@
         "overall_score": 0.7444444444444445,
         "overall_score_strict": 0.6444444444444445
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0100",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "product",
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -8715,12 +9307,16 @@
         "overall_score": 0.7909090909090909,
         "overall_score_strict": 0.6909090909090909
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0101",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "cons"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -8817,12 +9413,16 @@
         "overall_score": 0.76,
         "overall_score_strict": 0.6599999999999999
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0102",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "pros"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -8897,12 +9497,16 @@
         "overall_score": 0.7,
         "overall_score_strict": 0.7
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0103",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "product"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -8979,12 +9583,14 @@
         "overall_score": 0.8030303030303031,
         "overall_score_strict": 0.703030303030303
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0104",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [],
       "as_deployed": {
         "field_scores": {
           "product": 0.0,
@@ -9069,12 +9675,18 @@
         "overall_score": 0.874074074074074,
         "overall_score_strict": 0.874074074074074
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": [
+        "prompt_visible_dev_fixture"
+      ]
     },
     {
       "id": "hien-0105",
       "gt_language": "hi-en",
       "detected_language": "en",
+      "unresolved_fields": [
+        "pros"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -9146,12 +9758,17 @@
         "overall_score": 0.8,
         "overall_score_strict": 0.7
       },
-      "forced_call_made": true
+      "forced_call_made": true,
+      "exposure": []
     },
     {
       "id": "hien-0106",
       "gt_language": "hi-en",
       "detected_language": "hi-en",
+      "unresolved_fields": [
+        "pros",
+        "topics"
+      ],
       "as_deployed": {
         "field_scores": {
           "product": 1.0,
@@ -9222,7 +9839,8 @@
         "overall_score": 0.7,
         "overall_score_strict": 0.6
       },
-      "forced_call_made": false
+      "forced_call_made": false,
+      "exposure": []
     }
   ]
 }
