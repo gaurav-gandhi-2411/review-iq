@@ -97,3 +97,54 @@ CREATE POLICY "alert_log_authenticated_insert" ON public.alert_log
 
 CREATE POLICY "alert_log_anon_deny" ON public.alert_log
     FOR ALL TO anon USING (false);
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: alert_preferences_columns_and_constraints
+-- SQL: SELECT (SELECT count(*) FROM pg_attribute a WHERE a.attrelid =
+-- SQL: 'public.alert_preferences'::regclass AND a.attnum > 0 AND NOT a.attisdropped AND (a.attname,
+-- SQL: format_type(a.atttypid, a.atttypmod), a.attnotnull) IN (('id', 'uuid', true), ('org_id',
+-- SQL: 'uuid', true), ('event_type', 'text', true), ('enabled', 'boolean', true), ('frequency',
+-- SQL: 'text', true), ('updated_at', 'timestamp with time zone', true))) = 6 AND EXISTS (SELECT 1
+-- SQL: FROM pg_constraint c WHERE c.conrelid = 'public.alert_preferences'::regclass AND c.contype =
+-- SQL: 'u' AND pg_get_constraintdef(c.oid) = 'UNIQUE (org_id, event_type)') AND EXISTS (SELECT 1
+-- SQL: FROM pg_constraint c WHERE c.conrelid = 'public.alert_preferences'::regclass AND c.contype =
+-- SQL: 'c' AND pg_get_constraintdef(c.oid) LIKE '%daily_digest%') AND EXISTS (SELECT 1 FROM
+-- SQL: pg_constraint c WHERE c.conrelid = 'public.alert_preferences'::regclass AND c.contype = 'f'
+-- SQL: AND c.confrelid = 'public.organizations'::regclass AND c.confdeltype = 'c') AND EXISTS
+-- SQL: (SELECT 1 FROM pg_index i WHERE i.indexrelid = to_regclass('public.idx_alert_prefs_org_id')
+-- SQL: AND i.indrelid = 'public.alert_preferences'::regclass)
+
+-- @postcondition: alert_log_columns_and_indexes
+-- SQL: SELECT (SELECT count(*) FROM pg_attribute a WHERE a.attrelid = 'public.alert_log'::regclass
+-- SQL: AND a.attnum > 0 AND NOT a.attisdropped AND (a.attname, format_type(a.atttypid,
+-- SQL: a.atttypmod), a.attnotnull) IN (('id', 'uuid', true), ('org_id', 'uuid', true),
+-- SQL: ('review_id', 'text', false), ('event_type', 'text', true), ('sent_at',
+-- SQL: 'timestamp with time zone', true), ('details', 'jsonb', true))) = 6 AND EXISTS (SELECT 1
+-- SQL: FROM pg_constraint c WHERE c.conrelid = 'public.alert_log'::regclass AND c.contype = 'f' AND
+-- SQL: c.confrelid = 'public.organizations'::regclass AND c.confdeltype = 'c') AND EXISTS (SELECT 1
+-- SQL: FROM pg_index i WHERE i.indexrelid = to_regclass('public.idx_alert_log_org_event_sent') AND
+-- SQL: i.indrelid = 'public.alert_log'::regclass) AND EXISTS (SELECT 1 FROM pg_index i WHERE
+-- SQL: i.indexrelid = to_regclass('public.idx_alert_log_org_review') AND i.indrelid =
+-- SQL: 'public.alert_log'::regclass AND i.indpred IS NOT NULL)
+
+-- @postcondition: alert_tables_rls_and_policies
+-- SQL: SELECT (SELECT count(*) = 2 AND bool_and(c.relrowsecurity) FROM pg_class c WHERE c.oid IN
+-- SQL: ('public.alert_preferences'::regclass, 'public.alert_log'::regclass)) AND (SELECT count(*)
+-- SQL: FROM pg_policies p WHERE p.schemaname = 'public' AND (p.tablename, p.policyname, p.cmd,
+-- SQL: p.roles::text) IN (('alert_preferences', 'alert_prefs_authenticated_all', 'ALL',
+-- SQL: '{authenticated}'), ('alert_preferences', 'alert_prefs_anon_deny', 'ALL', '{anon}'),
+-- SQL: ('alert_log', 'alert_log_authenticated_select', 'SELECT', '{authenticated}'), ('alert_log',
+-- SQL: 'alert_log_authenticated_insert', 'INSERT', '{authenticated}'), ('alert_log',
+-- SQL: 'alert_log_anon_deny', 'ALL', '{anon}'))) = 5 AND (SELECT count(*) FROM pg_policies p WHERE
+-- SQL: p.schemaname = 'public' AND p.policyname IN ('alert_prefs_authenticated_all') AND p.qual
+-- SQL: LIKE '%current_org_id()%' AND p.with_check LIKE '%current_org_id()%') = 1 AND (SELECT
+-- SQL: count(*) FROM pg_policies p WHERE p.schemaname = 'public' AND p.policyname IN
+-- SQL: ('alert_prefs_anon_deny', 'alert_log_anon_deny') AND p.qual = 'false') = 2 AND (SELECT
+-- SQL: count(*) FROM pg_policies p WHERE p.schemaname = 'public' AND p.policyname IN
+-- SQL: ('alert_log_authenticated_select') AND p.qual LIKE '%current_org_id()%') = 1 AND (SELECT
+-- SQL: count(*) FROM pg_policies p WHERE p.schemaname = 'public' AND p.policyname =
+-- SQL: 'alert_log_authenticated_insert' AND p.with_check LIKE '%current_org_id()%') = 1

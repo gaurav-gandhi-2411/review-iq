@@ -28,3 +28,14 @@ ALTER TABLE public.extraction_costs
 
 ALTER TABLE public.extraction_costs
     ALTER COLUMN cost_inr TYPE NUMERIC(14, 6);
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: extraction_costs_cost_columns_have_declared_precision
+-- SQL: SELECT (SELECT count(*) FROM pg_attribute a WHERE a.attrelid =
+-- SQL: 'public.extraction_costs'::regclass AND a.attnum > 0 AND NOT a.attisdropped AND (a.attname,
+-- SQL: format_type(a.atttypid, a.atttypmod), a.attnotnull) IN (('cost_usd', 'numeric(14,8)', true),
+-- SQL: ('cost_inr', 'numeric(14,6)', true))) = 2

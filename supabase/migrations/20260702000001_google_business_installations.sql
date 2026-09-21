@@ -91,3 +91,39 @@ CREATE POLICY "gbp_inst_authenticated_select" ON public.google_business_installa
 -- Anon gets nothing.
 CREATE POLICY "gbp_inst_anon_deny" ON public.google_business_installations
     FOR ALL TO anon USING (false);
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: google_business_installations_columns_and_constraints
+-- SQL: SELECT (SELECT count(*) FROM pg_attribute a WHERE a.attrelid =
+-- SQL: 'public.google_business_installations'::regclass AND a.attnum > 0 AND NOT a.attisdropped AND
+-- SQL: (a.attname, format_type(a.atttypid, a.atttypmod), a.attnotnull) IN (('id', 'uuid', true),
+-- SQL: ('org_id', 'uuid', true), ('google_account_name', 'text', true), ('google_location_name',
+-- SQL: 'text', true), ('refresh_token_enc', 'text', true), ('installed_at',
+-- SQL: 'timestamp with time zone', true), ('revoked_at', 'timestamp with time zone', false))) = 7
+-- SQL: AND EXISTS (SELECT 1 FROM pg_constraint c WHERE c.conrelid =
+-- SQL: 'public.google_business_installations'::regclass AND c.contype = 'u' AND
+-- SQL: pg_get_constraintdef(c.oid) = 'UNIQUE (google_location_name)') AND EXISTS (SELECT 1 FROM
+-- SQL: pg_constraint c WHERE c.conrelid = 'public.google_business_installations'::regclass AND
+-- SQL: c.contype = 'f' AND c.confrelid = 'public.organizations'::regclass AND c.confdeltype = 'c')
+
+-- @postcondition: google_business_installations_indexes
+-- SQL: SELECT EXISTS (SELECT 1 FROM pg_index i WHERE i.indexrelid =
+-- SQL: to_regclass('public.idx_gbp_inst_location_active') AND i.indrelid =
+-- SQL: 'public.google_business_installations'::regclass AND i.indpred IS NOT NULL) AND EXISTS
+-- SQL: (SELECT 1 FROM pg_index i WHERE i.indexrelid = to_regclass('public.idx_gbp_inst_org_id') AND
+-- SQL: i.indrelid = 'public.google_business_installations'::regclass)
+
+-- @postcondition: google_business_installations_rls_and_policies
+-- SQL: SELECT (SELECT count(*) = 1 AND bool_and(c.relrowsecurity) FROM pg_class c WHERE c.oid IN
+-- SQL: ('public.google_business_installations'::regclass)) AND (SELECT count(*) FROM pg_policies p
+-- SQL: WHERE p.schemaname = 'public' AND (p.tablename, p.policyname, p.cmd, p.roles::text) IN
+-- SQL: (('google_business_installations', 'gbp_inst_authenticated_select', 'SELECT',
+-- SQL: '{authenticated}'), ('google_business_installations', 'gbp_inst_anon_deny', 'ALL',
+-- SQL: '{anon}'))) = 2 AND (SELECT count(*) FROM pg_policies p WHERE p.schemaname = 'public' AND
+-- SQL: p.policyname IN ('gbp_inst_authenticated_select') AND p.qual LIKE '%current_org_id()%') = 1
+-- SQL: AND (SELECT count(*) FROM pg_policies p WHERE p.schemaname = 'public' AND p.policyname IN
+-- SQL: ('gbp_inst_anon_deny') AND p.qual = 'false') = 1

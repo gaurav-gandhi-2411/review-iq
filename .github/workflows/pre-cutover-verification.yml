@@ -62,6 +62,8 @@ on:
     paths:
       - "supabase/migrations/**"
       - "supabase/ci/**"
+      - "supabase/push.py"
+      - "supabase/postconditions.py"
       - "app/**"
       - "tests/integration/**"
       - ".github/workflows/pre-cutover-verification.yml"
@@ -129,15 +131,24 @@ jobs:
       - name: Install psql client
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends postgresql-client
 
-      - name: Bootstrap Supabase-platform roles/grants
-        run: psql "postgresql://postgres:ci_postgres_password@localhost:5432/postgres" -v ON_ERROR_STOP=1 -f supabase/ci/bootstrap_supabase_roles.sql
+      # Session 15d: this used to `psql -f` every migration as the `postgres` SUPERUSER, while
+      # production applies them through push.py as the non-superuser review_iq_migrator -- so
+      # an ownership/privilege wall (a non-owner REVOKE that silently changes nothing, the
+      # 20260912000003 incident) could never show up here. supabase/ci/apply_migrations_ci.py
+      # bootstraps the Supabase roles, applies migrations up to and including
+      # 20260801000001 as the superuser (they create the roles and need it), hands object
+      # ownership to review_iq_migrator, then applies EVERY remaining migration through
+      # push.py as review_iq_migrator. push.py runs each file's postconditions before
+      # ledgering it, so a migration whose effect did not happen fails this step.
+      - name: Bootstrap roles, then apply every migration (superuser through 20260801000001, migrator after)
+        run: uv run python supabase/ci/apply_migrations_ci.py
 
-      - name: Apply every migration in order
-        run: |
-          for f in $(ls supabase/migrations/*.sql | sort); do
-            echo "=== $f ==="
-            psql "postgresql://postgres:ci_postgres_password@localhost:5432/postgres" -v ON_ERROR_STOP=1 -f "$f"
-          done
+      # Read-only audit of the finished build: every ledgered file's postconditions, as the
+      # migrator (the same command the orchestrator runs against production).
+      - name: Verify migration postconditions (push.py --verify, read-only)
+        env:
+          SUPABASE_DIRECT_URL: postgresql://review_iq_migrator:ci_migrator_password@localhost:5432/postgres
+        run: uv run python supabase/push.py --verify --target ci
 
       # Item 172/173/177: the S0 BYPASSRLS revocation (statement 4 of 20260801000001) moved
       # to supabase/cutover/, outside supabase/migrations/ -- so it's never a side effect of

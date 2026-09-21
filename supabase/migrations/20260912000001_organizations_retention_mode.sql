@@ -65,3 +65,35 @@ GRANT EXECUTE ON FUNCTION public.list_orgs_with_retained_mode TO review_iq_app;
 -- breaks no one. This verification will NOT hold true forever -- re-check before ever re-running
 -- a migration with this same "safe because nothing real depends on it yet" reasoning once a
 -- real customer has signed up.
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: organizations_retention_columns
+-- SQL: SELECT (SELECT count(*) FROM pg_attribute a WHERE a.attrelid =
+-- SQL: 'public.organizations'::regclass AND a.attnum > 0 AND NOT a.attisdropped AND (a.attname,
+-- SQL: format_type(a.atttypid, a.atttypmod), a.attnotnull) IN (('retention_mode', 'text', true),
+-- SQL: ('retention_days', 'integer', false))) = 2 AND EXISTS (SELECT 1 FROM pg_constraint c WHERE
+-- SQL: c.conrelid = 'public.organizations'::regclass AND c.contype = 'c' AND
+-- SQL: pg_get_constraintdef(c.oid) LIKE '%stateless%' AND pg_get_constraintdef(c.oid) LIKE
+-- SQL: '%retained%') AND EXISTS (SELECT 1 FROM pg_constraint c WHERE c.conrelid =
+-- SQL: 'public.organizations'::regclass AND c.contype = 'c' AND pg_get_constraintdef(c.oid) LIKE
+-- SQL: '%retention_days%' AND pg_get_constraintdef(c.oid) LIKE '%30%' AND
+-- SQL: pg_get_constraintdef(c.oid) LIKE '%90%')
+
+-- @postcondition: organizations_retention_consistent_constraint
+-- SQL: SELECT EXISTS (SELECT 1 FROM pg_constraint c WHERE c.conrelid =
+-- SQL: 'public.organizations'::regclass AND c.conname = 'organizations_retention_consistent' AND
+-- SQL: c.contype = 'c' AND pg_get_constraintdef(c.oid) LIKE '%retention_mode%' AND
+-- SQL: pg_get_constraintdef(c.oid) LIKE '%retention_days IS NULL%')
+
+-- @postcondition: retained_mode_lister_is_hardened_security_definer
+-- SQL: SELECT count(*) = 1 AND bool_and(p.prosecdef AND pg_get_userbyid(p.proowner) =
+-- SQL: 'review_iq_migrator' AND p.proconfig @> ARRAY['search_path=public'] AND
+-- SQL: has_function_privilege('review_iq_app', p.oid, 'EXECUTE') AND NOT
+-- SQL: has_function_privilege('anon', p.oid, 'EXECUTE') AND NOT
+-- SQL: has_function_privilege('authenticated', p.oid, 'EXECUTE') AND NOT
+-- SQL: has_function_privilege('service_role', p.oid, 'EXECUTE')) FROM pg_proc p WHERE p.oid IN
+-- SQL: (to_regprocedure('public.list_orgs_with_retained_mode()'))

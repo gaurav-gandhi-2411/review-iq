@@ -53,3 +53,26 @@ CREATE POLICY "quota_requests_authenticated_all" ON public.quota_requests
 
 CREATE POLICY "quota_requests_anon_deny" ON public.quota_requests
   FOR ALL TO anon USING (false);
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: quota_requests_rls_and_policies
+-- SQL: SELECT (SELECT count(*) = 1 AND bool_and(c.relrowsecurity) FROM pg_class c WHERE c.oid IN
+-- SQL: ('public.quota_requests'::regclass)) AND (SELECT count(*) FROM pg_policies p WHERE
+-- SQL: p.schemaname = 'public' AND (p.tablename, p.policyname, p.cmd, p.roles::text) IN
+-- SQL: (('quota_requests', 'quota_requests_authenticated_all', 'ALL', '{authenticated}'),
+-- SQL: ('quota_requests', 'quota_requests_anon_deny', 'ALL', '{anon}'))) = 2 AND (SELECT count(*)
+-- SQL: FROM pg_policies p WHERE p.schemaname = 'public' AND p.policyname IN
+-- SQL: ('quota_requests_authenticated_all') AND p.qual LIKE '%current_org_id()%' AND p.with_check
+-- SQL: LIKE '%current_org_id()%') = 1 AND (SELECT count(*) FROM pg_policies p WHERE p.schemaname =
+-- SQL: 'public' AND p.policyname IN ('quota_requests_anon_deny') AND p.qual = 'false') = 1
+
+-- @postcondition: quota_requests_grants_narrowed
+-- SQL: SELECT count(*) = 7 AND bool_and((p = ANY (v.ign)) OR has_table_privilege('authenticated',
+-- SQL: 'public.' || v.t, p) = (p = ANY (v.allowed))) AND bool_and(NOT has_table_privilege('anon',
+-- SQL: 'public.' || v.t, p)) FROM (VALUES ('quota_requests', ARRAY['SELECT','INSERT']::text[],
+-- SQL: ARRAY[]::text[])) AS v(t, allowed, ign) CROSS JOIN
+-- SQL: unnest(ARRAY['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER']) AS p

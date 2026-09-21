@@ -53,3 +53,18 @@ GRANT SELECT ON public.shopify_installations         TO authenticated;
 GRANT SELECT, INSERT ON public.batch_job_rows        TO authenticated;
 
 -- anon gets nothing on any of the four -- matches every other tenant table in this schema.
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: wave1_tables_grants_narrowed
+-- SQL: SELECT count(*) = 28 AND bool_and((p = ANY (v.ign)) OR has_table_privilege('authenticated',
+-- SQL: 'public.' || v.t, p) = (p = ANY (v.allowed))) AND bool_and(NOT has_table_privilege('anon',
+-- SQL: 'public.' || v.t, p)) FROM (VALUES ('organization_members', ARRAY[]::text[],
+-- SQL: ARRAY[]::text[]), ('google_business_installations', ARRAY['SELECT']::text[],
+-- SQL: ARRAY[]::text[]), ('shopify_installations', ARRAY['SELECT']::text[], ARRAY[]::text[]),
+-- SQL: ('batch_job_rows', ARRAY['SELECT','INSERT']::text[], ARRAY[]::text[])) AS v(t, allowed, ign)
+-- SQL: CROSS JOIN
+-- SQL: unnest(ARRAY['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER']) AS p

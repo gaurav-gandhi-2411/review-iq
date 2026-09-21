@@ -13,6 +13,13 @@ Usage:
                                                           # content, applied out-of-band
                                                           # (see the module docstring below
                                                           # for why this exists)
+    uv run python supabase/push.py --verify         # READ-ONLY audit: run every ledgered
+                                                      # file's postconditions, print a table,
+                                                      # exit 1 on any FAIL / NO_POSTCONDITION
+    uv run python supabase/push.py --target ci      # `prod` (default) or `ci`: which
+                                                      # `@scope:` postconditions apply
+    uv run python supabase/push.py --through FILE   # apply only pending files <= FILE (the CI
+                                                      # hybrid: supabase/ci/apply_migrations_ci.py)
 
 Reads credentials from .env (direct connection, port 5432).
 
@@ -33,6 +40,26 @@ already recorded, rather than "safe by accident" via each file's own idempotency
 Migrations are applied in filename order. Each file is still expected to be idempotent
 (IF NOT EXISTS / CREATE OR REPLACE / DROP IF EXISTS) as defense in depth, but the ledger
 is now the primary mechanism deciding what runs.
+
+Postconditions (Session 15d): the ledger used to record "this file's SQL ran without error",
+which is not the same as "this file's effect is true". A non-owner REVOKE/GRANT completes
+without error and changes nothing (20260912000003's REVOKE on public.current_org_id(), owned
+by postgres, run as review_iq_migrator) -- the ledger would have said applied while production
+kept the grant. Every migration therefore declares machine-readable postconditions (grammar in
+supabase/postconditions.py's docstring): `-- @postcondition: <name>` followed by
+`-- SQL: <single SELECT returning one boolean>`. Behavior:
+
+  * apply: after a file executes and BEFORE its ledger row is inserted, in the SAME
+    transaction, every applicable postcondition runs. Any FALSE / NULL / error / non-boolean /
+    not-exactly-one-row -> ROLLBACK, no ledger row, exit 1 naming file + postcondition + the
+    returned value. A file with no postcondition is REFUSED (before anything is applied)
+    unless it is in supabase/postconditions.py's ALLOWLIST with a reason.
+  * --mark-applied-all: records nothing for a file whose postconditions do not hold now.
+    --force does NOT override a postcondition failure (it only ever covered the older
+    object-existence heuristics below).
+  * --verify: read-only (READ ONLY session, SAVEPOINT per condition) audit of an existing
+    database, safe to run against production as the migrator. `@scope: prod-only|ci-only`
+    conditions are skipped on the other --target and reported as SKIPPED(scope).
 """
 
 from __future__ import annotations
@@ -41,10 +68,19 @@ import argparse
 import os
 import re
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 import psycopg2
 from dotenv import load_dotenv
+from postconditions import (
+    ALLOWLIST,
+    Postcondition,
+    PostconditionError,
+    applies_to,
+    find_transaction_control,
+    parse_postconditions,
+)
 
 ROOT = Path(__file__).parents[1]
 load_dotenv(ROOT / ".env")
@@ -212,7 +248,204 @@ def _applied_filenames_readonly(conn: psycopg2.extensions.connection) -> set[str
         return {row[0] for row in cur.fetchall()}
 
 
-def main() -> None:
+@dataclass(frozen=True)
+class FilePlan:
+    """What push.py will do about one migration file's postconditions.
+
+    kind: "ok" (>= 1 well-formed postcondition), "allowlisted" (no postcondition, reason in
+    ALLOWLIST), "missing" (none and not allowlisted -- refused) or "malformed" (unparseable,
+    or the file carries its own COMMIT -- refused). `detail` explains "missing"/"malformed"/
+    "allowlisted".
+    """
+
+    kind: str
+    postconditions: tuple[Postcondition, ...] = ()
+    detail: str = ""
+
+
+def plan_file(filename: str, sql_text: str) -> FilePlan:
+    """Parse `sql_text`'s postconditions and decide, fail-closed, whether the file may run."""
+    control = find_transaction_control(sql_text)
+    if control:
+        return FilePlan(
+            "malformed",
+            detail=(
+                f"contains its own transaction control ({control!r}); push.py runs file + "
+                "postconditions + ledger row as one transaction, and an inner COMMIT would "
+                "make the rollback-on-failure guarantee false"
+            ),
+        )
+    try:
+        pcs = parse_postconditions(sql_text)
+    except PostconditionError as exc:
+        return FilePlan("malformed", detail=str(exc))
+    if pcs:
+        return FilePlan("ok", tuple(pcs))
+    if filename in ALLOWLIST:
+        return FilePlan("allowlisted", detail=ALLOWLIST[filename])
+    return FilePlan(
+        "missing",
+        detail=(
+            "declares no '-- @postcondition:' block and is not in supabase/postconditions.py "
+            "ALLOWLIST; every migration must state a machine-checkable effect"
+        ),
+    )
+
+
+@dataclass(frozen=True)
+class PcResult:
+    """Outcome of one postcondition: status is PASS, FAIL or SKIPPED(scope)."""
+
+    name: str
+    status: str
+    detail: str = ""
+
+
+def evaluate_postcondition(cur: psycopg2.extensions.cursor, pc: Postcondition) -> PcResult:
+    """Run one postcondition; PASS only for exactly one row, one column, value True.
+
+    Runs inside a SAVEPOINT that is always rolled back, so (a) a SQL error does not poison the
+    caller's transaction and (b) nothing the SELECT did can survive into the ledgered
+    transaction. NULL, False, zero/many rows, a non-boolean and any exception are all FAIL.
+    """
+    cur.execute("SAVEPOINT pc_eval")
+    try:
+        cur.execute(pc.sql)
+        rows = cur.fetchall()
+        if len(rows) != 1 or len(rows[0]) != 1:
+            return PcResult(pc.name, "FAIL", f"expected exactly 1 row x 1 column, got {rows!r}")
+        value = rows[0][0]
+        if value is True:
+            return PcResult(pc.name, "PASS")
+        return PcResult(pc.name, "FAIL", f"returned {value!r} (must be exactly true)")
+    except Exception as exc:  # noqa: BLE001 -- any error is a failed postcondition, by design
+        return PcResult(pc.name, "FAIL", f"errored: {type(exc).__name__}: {str(exc).strip()}")
+    finally:
+        cur.execute("ROLLBACK TO SAVEPOINT pc_eval")
+        cur.execute("RELEASE SAVEPOINT pc_eval")
+
+
+def run_postconditions(
+    cur: psycopg2.extensions.cursor, pcs: tuple[Postcondition, ...], target: str
+) -> list[PcResult]:
+    """Evaluate every postcondition applicable to `target`; out-of-scope ones are SKIPPED."""
+    results: list[PcResult] = []
+    for pc in pcs:
+        if applies_to(pc, target):
+            results.append(evaluate_postcondition(cur, pc))
+        else:
+            results.append(PcResult(pc.name, "SKIPPED(scope)", f"{pc.scope}: {pc.scope_reason}"))
+    return results
+
+
+def _refusal_lines(filename: str, plan: FilePlan) -> list[str]:
+    return [f"  REFUSED {filename}: {plan.kind}: {plan.detail}"]
+
+
+def _apply_pending(
+    conn: psycopg2.extensions.connection, pending: list[Path], target: str
+) -> tuple[bool, int]:
+    """Apply `pending` in order; each file = execute + postconditions + ledger row, atomically.
+
+    Returns (ok, applied_count). Files lacking usable postconditions are refused up front,
+    before anything is applied. On the first failing postcondition the transaction is rolled
+    back (no ledger row) and (False, n) is returned; earlier files stay committed.
+    """
+    texts = {p.name: p.read_text(encoding="utf-8") for p in pending}
+    plans = {name: plan_file(name, text) for name, text in texts.items()}
+    bad = [(n, pl) for n, pl in plans.items() if pl.kind in ("missing", "malformed")]
+    if bad:
+        for name, plan in bad:
+            for line in _refusal_lines(name, plan):
+                print(line, file=sys.stderr)
+        print(
+            f"\n{len(bad)} pending file(s) lack usable postconditions -- nothing applied "
+            "(fail closed).",
+            file=sys.stderr,
+        )
+        return False, 0
+
+    applied = 0
+    for path in pending:
+        plan = plans[path.name]
+        print(f"  Applying {path.name} …", end=" ", flush=True)
+        with conn.cursor() as cur:
+            cur.execute(texts[path.name])
+            failed = [
+                r
+                for r in run_postconditions(cur, plan.postconditions, target)
+                if r.status == "FAIL"
+            ]
+            if failed:
+                conn.rollback()
+                print("POSTCONDITION FAILED")
+                for r in failed:
+                    print(
+                        f"POSTCONDITION FAILED: {path.name} :: {r.name} -- {r.detail}. "
+                        "Rolled back; NOT recorded in public._migrations.",
+                        file=sys.stderr,
+                    )
+                return False, applied
+            cur.execute("INSERT INTO public._migrations (filename) VALUES (%s)", (path.name,))
+        conn.commit()
+        applied += 1
+        note = " (allowlisted, no postcondition)" if plan.kind == "allowlisted" else ""
+        print(f"OK{note}")
+    return True, applied
+
+
+def _verify(conn: psycopg2.extensions.connection, migration_files: list[Path], target: str) -> int:
+    """Read-only audit: run every ledgered file's postconditions; return the exit code.
+
+    Prints `file | postcondition | status`. Exit 1 on any FAIL or NO_POSTCONDITION (a
+    malformed block counts as FAIL). Files not in the ledger and ledger rows with no file are
+    reported but do not by themselves fail the run.
+    """
+    ledger = _applied_filenames_readonly(conn)
+    by_name = {p.name: p for p in migration_files}
+    rows: list[tuple[str, str, str, str]] = []
+    exit_code = 0
+    with conn.cursor() as cur:
+        for name in sorted(ledger):
+            path = by_name.get(name)
+            if path is None:
+                rows.append((name, "-", "LEDGER_ROW_NO_FILE", "ledger row has no file on disk"))
+                continue
+            plan = plan_file(name, path.read_text(encoding="utf-8"))
+            if plan.kind == "allowlisted":
+                rows.append((name, "-", "ALLOWLISTED", plan.detail))
+            elif plan.kind == "missing":
+                rows.append((name, "-", "NO_POSTCONDITION", plan.detail))
+                exit_code = 1
+            elif plan.kind == "malformed":
+                rows.append((name, "-", "FAIL", f"malformed postcondition block: {plan.detail}"))
+                exit_code = 1
+            else:
+                for r in run_postconditions(cur, plan.postconditions, target):
+                    rows.append((name, r.name, r.status, r.detail))
+                    if r.status == "FAIL":
+                        exit_code = 1
+        conn.rollback()
+    for name in sorted(by_name):
+        if name not in ledger:
+            rows.append((name, "-", "NOT_IN_LEDGER", "file on disk, no ledger row (not verified)"))
+
+    width_f = max([len("file")] + [len(r[0]) for r in rows])
+    width_p = max([len("postcondition")] + [len(r[1]) for r in rows])
+    print(f"{'file':<{width_f}} | {'postcondition':<{width_p}} | status")
+    print(f"{'-' * width_f}-+-{'-' * width_p}-+-------")
+    for name, pc_name, status, detail in rows:
+        suffix = f"  -- {detail}" if detail and status != "PASS" else ""
+        print(f"{name:<{width_f}} | {pc_name:<{width_p}} | {status}{suffix}")
+    counts: dict[str, int] = {}
+    for _, _, status, _ in rows:
+        counts[status] = counts.get(status, 0) + 1
+    print("\nsummary: " + ", ".join(f"{k}={v}" for k, v in sorted(counts.items())))
+    print(f"target={target}; exit {exit_code}")
+    return exit_code
+
+
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--dry-run",
@@ -246,19 +479,55 @@ def main() -> None:
         "what's merged and what's live. Item 248: a merged migration sitting unapplied "
         "against production for 2 days, undetected, is exactly the gap this flag closes.",
     )
-    args = parser.parse_args()
+    parser.add_argument(
+        "--verify",
+        action="store_true",
+        help="Read-only audit (READ ONLY session, safe against production as the migrator): "
+        "run every ledgered file's postconditions and print a file | postcondition | status "
+        "table (PASS/FAIL/NO_POSTCONDITION/SKIPPED(scope)); also lists files not in the "
+        "ledger and ledger rows with no file. Exit 1 on any FAIL or NO_POSTCONDITION.",
+    )
+    parser.add_argument(
+        "--target",
+        choices=("prod", "ci"),
+        default="prod",
+        help="Which `-- @scope:` postconditions apply: `prod` (default) skips ci-only ones, "
+        "`ci` skips prod-only ones. Unscoped postconditions always run.",
+    )
+    parser.add_argument(
+        "--through",
+        metavar="FILENAME",
+        help="Apply only pending files whose name is <= FILENAME (must be a real migration "
+        "file). For the CI hybrid, which applies role-creating migrations as a superuser and "
+        "the rest as the non-superuser migrator (supabase/ci/apply_migrations_ci.py).",
+    )
+    args = parser.parse_args(argv)
+    if args.verify and (args.dry_run or args.mark_applied_all or args.through):
+        parser.error("--verify is read-only and cannot be combined with other actions")
+    if args.through and (args.dry_run or args.mark_applied_all):
+        parser.error("--through only applies to a normal apply run")
 
     direct_url = os.environ["SUPABASE_DIRECT_URL"]
     migration_files = sorted(MIGRATIONS_DIR.glob("*.sql"))
     if not migration_files:
         print("No migration files found.", file=sys.stderr)
         sys.exit(1)
+    if args.through and args.through not in {p.name for p in migration_files}:
+        print(f"--through {args.through!r} is not a file in {MIGRATIONS_DIR}", file=sys.stderr)
+        sys.exit(2)
 
     print("Connecting via SUPABASE_DIRECT_URL (port 5432) …")
     conn = psycopg2.connect(direct_url)
     conn.autocommit = False
 
     try:
+        if args.verify:
+            conn.set_session(readonly=True)
+            code = _verify(conn, migration_files, args.target)
+            if code:
+                sys.exit(code)
+            return
+
         if args.dry_run:
             already_applied = _applied_filenames_readonly(conn)
             pending = [p for p in migration_files if p.name not in already_applied]
@@ -319,6 +588,26 @@ def main() -> None:
                     missing = _missing_objects(cur, expected)
                     grant_states = _expected_grant_states(sql)
                     grant_mismatches = _grant_mismatches(cur, grant_states)
+                    # Postconditions are checked FIRST and are NOT overridable by --force:
+                    # recording a file whose stated effect is false is the exact decorative-
+                    # control failure this feature exists to stop.
+                    plan = plan_file(path.name, sql)
+                    if plan.kind in ("missing", "malformed"):
+                        pc_failures = [f"{plan.kind}: {plan.detail}"]
+                    elif plan.kind == "ok":
+                        pc_failures = [
+                            f"{r.name}: {r.detail}"
+                            for r in run_postconditions(cur, plan.postconditions, args.target)
+                            if r.status == "FAIL"
+                        ]
+                    else:
+                        pc_failures = []
+                    if pc_failures:
+                        refused += 1
+                        print(f"  REFUSED (postcondition failed, not marked): {path.name}")
+                        for failure in pc_failures:
+                            print(f"      {failure}")
+                        continue
                     if (missing or grant_mismatches) and not args.force:
                         refused += 1
                         print(f"  REFUSED (objects missing, not marked): {path.name}")
@@ -345,29 +634,29 @@ def main() -> None:
                     )
                     marked += 1
             conn.commit()
-            print(f"\n{marked} file(s) marked applied, {refused} refused (missing objects).")
+            print(f"\n{marked} file(s) marked applied, {refused} refused.")
             if refused:
                 print(
-                    "Re-run with --force only after confirming why those objects are "
-                    "missing -- do not use --force to silence this without checking."
+                    "--force only overrides the older missing-object/grant-state heuristics; "
+                    "it never overrides a failed postcondition. Investigate why the stated "
+                    "effect is not true before recording anything."
                 )
                 sys.exit(1)
             return
+
+        if args.through:
+            pending = [p for p in pending if p.name <= args.through]
 
         if not pending:
             print("\nNothing to apply -- every migration file is already recorded.")
             return
 
-        for path in pending:
-            sql = path.read_text(encoding="utf-8")
-            print(f"  Applying {path.name} …", end=" ", flush=True)
-            with conn.cursor() as cur:
-                cur.execute(sql)
-                cur.execute("INSERT INTO public._migrations (filename) VALUES (%s)", (path.name,))
-            conn.commit()
-            print("OK")
+        ok, applied = _apply_pending(conn, pending, args.target)
+        if not ok:
+            print(f"\n{applied} migration(s) applied before the failure.", file=sys.stderr)
+            sys.exit(1)
 
-        print(f"\n{len(pending)} migration(s) applied.")
+        print(f"\n{applied} migration(s) applied.")
     except Exception:
         conn.rollback()
         raise

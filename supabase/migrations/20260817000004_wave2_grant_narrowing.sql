@@ -89,3 +89,26 @@ GRANT SELECT, INSERT              ON public.organizations TO review_iq_admin;
 GRANT SELECT, INSERT, UPDATE      ON public.api_keys      TO review_iq_admin;
 
 -- anon gets nothing on any of the six -- matches every other tenant table in this schema.
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: wave2_tables_grants_narrowed
+-- SQL: SELECT count(*) = 42 AND bool_and((p = ANY (v.ign)) OR has_table_privilege('authenticated',
+-- SQL: 'public.' || v.t, p) = (p = ANY (v.allowed))) AND bool_and(NOT has_table_privilege('anon',
+-- SQL: 'public.' || v.t, p)) FROM (VALUES ('organizations', ARRAY['SELECT','DELETE']::text[],
+-- SQL: ARRAY[]::text[]), ('api_keys', ARRAY['SELECT','INSERT','UPDATE']::text[], ARRAY[]::text[]),
+-- SQL: ('extractions', ARRAY['SELECT','INSERT']::text[], ARRAY['DELETE']::text[]),
+-- SQL: ('usage_records', ARRAY['SELECT','INSERT','UPDATE']::text[], ARRAY[]::text[]), ('alert_log',
+-- SQL: ARRAY['SELECT','INSERT']::text[], ARRAY[]::text[]), ('authenticity_audits',
+-- SQL: ARRAY['SELECT','INSERT']::text[], ARRAY[]::text[])) AS v(t, allowed, ign) CROSS JOIN
+-- SQL: unnest(ARRAY['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER']) AS p
+
+-- @postcondition: review_iq_admin_explicit_grants_on_organizations_and_api_keys
+-- SQL: SELECT (SELECT count(*) FROM pg_class c CROSS JOIN LATERAL aclexplode(c.relacl) a WHERE
+-- SQL: c.oid IN ('public.organizations'::regclass, 'public.api_keys'::regclass) AND a.grantee =
+-- SQL: 'review_iq_admin'::regrole::oid AND (c.relname, a.privilege_type) IN (('organizations',
+-- SQL: 'SELECT'), ('organizations', 'INSERT'), ('api_keys', 'SELECT'), ('api_keys', 'INSERT'),
+-- SQL: ('api_keys', 'UPDATE'))) = 5

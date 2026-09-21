@@ -7,6 +7,7 @@ same session. These tests cover the exclusion logic and the overall compare() sh
 
 from __future__ import annotations
 
+import pytest
 from scripts.check_schema_drift import _without_migrations_table, compare
 
 
@@ -20,6 +21,8 @@ def _empty_snapshot() -> dict:
         "functions": [],
         "function_grants": [],
         "table_grants": [],
+        "relation_owners": [],
+        "function_owners": [],
         "roles": [],
     }
 
@@ -93,3 +96,52 @@ class TestCompareIgnoresMigrationsTable:
         diffs = compare(prod, eph)
         assert len(diffs) == 1
         assert "service_role" in diffs[0]
+
+
+class TestObjectOwners:
+    """Session 15d: a non-owner GRANT/REVOKE silently changes nothing, so owner drift matters."""
+
+    def test_relation_owner_mismatch_is_reported(self):
+        prod = _empty_snapshot()
+        eph = _empty_snapshot()
+        prod["relation_owners"] = [{"table_name": "leads", "kind": "r", "owner": "postgres"}]
+        eph["relation_owners"] = [
+            {"table_name": "leads", "kind": "r", "owner": "review_iq_migrator"}
+        ]
+        diffs = compare(prod, eph)
+        assert len(diffs) == 1
+        assert "relation_owners" in diffs[0]
+        assert "postgres" in diffs[0]
+
+    def test_function_owner_mismatch_is_reported(self):
+        prod = _empty_snapshot()
+        eph = _empty_snapshot()
+        row = {"function_name": "current_org_id", "arguments": ""}
+        prod["function_owners"] = [{**row, "owner": "postgres"}]
+        eph["function_owners"] = [{**row, "owner": "review_iq_migrator"}]
+        diffs = compare(prod, eph)
+        assert len(diffs) == 1
+        assert "function_owners" in diffs[0]
+
+    def test_matching_owners_produce_no_diff(self):
+        prod = _empty_snapshot()
+        eph = _empty_snapshot()
+        rel = {"table_name": "leads", "kind": "r", "owner": "review_iq_migrator"}
+        fn = {"function_name": "f", "arguments": "uuid", "owner": "review_iq_migrator"}
+        prod["relation_owners"], eph["relation_owners"] = [rel], [dict(rel)]
+        prod["function_owners"], eph["function_owners"] = [fn], [dict(fn)]
+        assert compare(prod, eph) == []
+
+    def test_object_missing_on_one_side_is_reported(self):
+        prod = _empty_snapshot()
+        eph = _empty_snapshot()
+        prod["relation_owners"] = [
+            {"table_name": "leads", "kind": "r", "owner": "review_iq_migrator"}
+        ]
+        assert len(compare(prod, eph)) == 1
+
+    def test_snapshot_from_an_old_extractor_fails_closed(self):
+        prod = _empty_snapshot()
+        del prod["function_owners"]
+        with pytest.raises(ValueError, match="function_owners"):
+            compare(prod, _empty_snapshot())

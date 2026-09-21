@@ -16,3 +16,16 @@
 -- DELETE to the calling org's own rows once the command-level grant permits it at all.)
 
 GRANT DELETE ON public.extractions TO authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: extractions_authenticated_can_select_insert_delete_only
+-- SQL: SELECT count(*) = 7 AND bool_and((p = ANY (v.ign)) OR has_table_privilege('authenticated',
+-- SQL: 'public.' || v.t, p) = (p = ANY (v.allowed))) AND bool_and(NOT has_table_privilege('anon',
+-- SQL: 'public.' || v.t, p)) FROM (VALUES ('extractions',
+-- SQL: ARRAY['SELECT','INSERT','DELETE']::text[], ARRAY[]::text[])) AS v(t, allowed, ign) CROSS
+-- SQL: JOIN unnest(ARRAY['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER']) AS
+-- SQL: p

@@ -22,3 +22,23 @@ CREATE INDEX IF NOT EXISTS idx_extractions_org_review_id
 
 CREATE INDEX IF NOT EXISTS idx_authenticity_audits_org_review_id
     ON public.authenticity_audits (org_id, review_id);
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: review_id_generated_columns
+-- SQL: SELECT EXISTS (SELECT 1 FROM pg_attribute a WHERE a.attrelid =
+-- SQL: 'public.extractions'::regclass AND a.attname = 'review_id' AND NOT a.attisdropped AND
+-- SQL: a.attgenerated = 's' AND format_type(a.atttypid, a.atttypmod) = 'text') AND EXISTS (SELECT 1
+-- SQL: FROM pg_attribute a WHERE a.attrelid = 'public.authenticity_audits'::regclass AND a.attname
+-- SQL: = 'review_id' AND NOT a.attisdropped AND a.attgenerated = 's' AND format_type(a.atttypid,
+-- SQL: a.atttypmod) = 'text')
+
+-- @postcondition: review_id_indexes
+-- SQL: SELECT EXISTS (SELECT 1 FROM pg_index i WHERE i.indexrelid =
+-- SQL: to_regclass('public.idx_extractions_org_review_id') AND i.indrelid =
+-- SQL: 'public.extractions'::regclass) AND EXISTS (SELECT 1 FROM pg_index i WHERE i.indexrelid =
+-- SQL: to_regclass('public.idx_authenticity_audits_org_review_id') AND i.indrelid =
+-- SQL: 'public.authenticity_audits'::regclass)

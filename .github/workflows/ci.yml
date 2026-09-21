@@ -48,6 +48,12 @@ jobs:
       - name: No migration grants BYPASSRLS (outside allowlist)
         run: uv run python scripts/check_migrations_no_bypassrls_grant.py
 
+      # Session 15d: a migration that "ran without error" is not one whose effect is true (a
+      # non-owner REVOKE silently changes nothing). push.py refuses to apply/ledger a file with
+      # no postcondition; this fails the PR first, statically, with no database.
+      - name: Every migration declares a well-formed postcondition
+        run: uv run python scripts/check_migrations_have_postconditions.py
+
       - name: Unit tests
         # Was `pytest tests/unit/` only -- silently excluded ~9 flat test files directly
         # under tests/ (test_providers.py, test_failover.py, the new test_probe_failover.py,

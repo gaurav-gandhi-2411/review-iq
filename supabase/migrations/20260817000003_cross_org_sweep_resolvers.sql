@@ -74,3 +74,18 @@ COMMENT ON FUNCTION public.list_orgs_with_daily_digest IS
 ALTER FUNCTION public.list_orgs_with_daily_digest OWNER TO review_iq_migrator;
 REVOKE ALL ON FUNCTION public.list_orgs_with_daily_digest FROM PUBLIC, anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.list_orgs_with_daily_digest TO review_iq_app;
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: cross_org_sweep_functions_hardened
+-- SQL: SELECT count(*) = 2 AND bool_and(p.prosecdef AND pg_get_userbyid(p.proowner) =
+-- SQL: 'review_iq_migrator' AND p.proconfig @> ARRAY['search_path=public'] AND
+-- SQL: has_function_privilege('review_iq_app', p.oid, 'EXECUTE') AND NOT
+-- SQL: has_function_privilege('anon', p.oid, 'EXECUTE') AND NOT
+-- SQL: has_function_privilege('authenticated', p.oid, 'EXECUTE') AND NOT
+-- SQL: has_function_privilege('service_role', p.oid, 'EXECUTE')) FROM pg_proc p WHERE p.oid IN
+-- SQL: (to_regprocedure('public.list_orgs_with_dated_extractions()'),
+-- SQL: to_regprocedure('public.list_orgs_with_daily_digest()'))

@@ -134,3 +134,39 @@ CREATE POLICY "members_authenticated_all" ON public.organization_members
 
 CREATE POLICY "members_anon_deny" ON public.organization_members
   FOR ALL TO anon USING (false);
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: current_org_id_is_stable_security_definer_returning_uuid
+-- SQL: SELECT EXISTS (SELECT 1 FROM pg_proc p WHERE p.oid =
+-- SQL: to_regprocedure('public.current_org_id()') AND p.prosecdef AND p.provolatile = 's' AND
+-- SQL: p.prorettype = 'uuid'::regtype)
+
+-- @postcondition: rls_enabled_on_original_tenant_tables
+-- SQL: SELECT (SELECT count(*) = 5 AND bool_and(c.relrowsecurity) FROM pg_class c WHERE c.oid IN
+-- SQL: ('public.organizations'::regclass, 'public.api_keys'::regclass,
+-- SQL: 'public.extractions'::regclass, 'public.usage_records'::regclass,
+-- SQL: 'public.organization_members'::regclass))
+
+-- @postcondition: original_tenant_policies_exist
+-- SQL: SELECT (SELECT count(*) FROM pg_policies p WHERE p.schemaname = 'public' AND (p.tablename,
+-- SQL: p.policyname, p.cmd, p.roles::text) IN (('organizations', 'orgs_authenticated_all', 'ALL',
+-- SQL: '{authenticated}'), ('organizations', 'orgs_anon_deny', 'ALL', '{anon}'), ('api_keys',
+-- SQL: 'api_keys_authenticated_all', 'ALL', '{authenticated}'), ('api_keys', 'api_keys_anon_deny',
+-- SQL: 'ALL', '{anon}'), ('extractions', 'extractions_authenticated_all', 'ALL',
+-- SQL: '{authenticated}'), ('extractions', 'extractions_anon_deny', 'ALL', '{anon}'),
+-- SQL: ('usage_records', 'usage_authenticated_all', 'ALL', '{authenticated}'), ('usage_records',
+-- SQL: 'usage_anon_deny', 'ALL', '{anon}'), ('organization_members', 'members_authenticated_all',
+-- SQL: 'ALL', '{authenticated}'), ('organization_members', 'members_anon_deny', 'ALL', '{anon}')))
+-- SQL: = 10
+
+-- @postcondition: original_tenant_policies_scope_by_org_or_deny
+-- SQL: SELECT (SELECT count(*) FROM pg_policies p WHERE p.schemaname = 'public' AND p.policyname IN
+-- SQL: ('orgs_authenticated_all', 'api_keys_authenticated_all', 'extractions_authenticated_all',
+-- SQL: 'usage_authenticated_all', 'members_authenticated_all') AND p.qual LIKE '%current_org_id()%'
+-- SQL: AND p.with_check LIKE '%current_org_id()%') = 5 AND (SELECT count(*) FROM pg_policies p
+-- SQL: WHERE p.schemaname = 'public' AND p.policyname IN ('orgs_anon_deny', 'api_keys_anon_deny',
+-- SQL: 'extractions_anon_deny', 'usage_anon_deny', 'members_anon_deny') AND p.qual = 'false') = 5

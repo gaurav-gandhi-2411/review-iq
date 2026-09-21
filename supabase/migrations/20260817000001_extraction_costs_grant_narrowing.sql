@@ -27,3 +27,15 @@ REVOKE ALL ON public.extraction_costs FROM PUBLIC;
 GRANT SELECT, INSERT ON public.extraction_costs TO authenticated;
 -- anon gets nothing -- matches the existing extraction_costs_anon_deny RLS policy and
 -- every other tenant table in this schema (mirrors quota_requests exactly).
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: extraction_costs_grants_narrowed
+-- SQL: SELECT count(*) = 7 AND bool_and((p = ANY (v.ign)) OR has_table_privilege('authenticated',
+-- SQL: 'public.' || v.t, p) = (p = ANY (v.allowed))) AND bool_and(NOT has_table_privilege('anon',
+-- SQL: 'public.' || v.t, p)) FROM (VALUES ('extraction_costs', ARRAY['SELECT','INSERT']::text[],
+-- SQL: ARRAY[]::text[])) AS v(t, allowed, ign) CROSS JOIN
+-- SQL: unnest(ARRAY['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER']) AS p

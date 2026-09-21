@@ -132,6 +132,49 @@ def extract_snapshot(dsn: str) -> dict[str, object]:
             """,
         )
 
+        # Session 15d: object OWNERS. A GRANT/REVOKE/ALTER by a non-owner silently changes
+        # nothing, so "who owns it" decides whether every other row in this snapshot can be
+        # trusted to move when a migration says it should (20260912000003's REVOKE on
+        # public.current_org_id(), owned by postgres, was a no-op run as review_iq_migrator).
+        # Excludes extension members and sequences that belong to a table column (they follow
+        # their table's owner and cannot be transferred on their own).
+        relation_owners = _rows(
+            cur,
+            """
+            SELECT c.relname AS table_name, c.relkind::text AS kind,
+                   pg_get_userbyid(c.relowner) AS owner
+            FROM pg_class c
+            JOIN pg_namespace n ON n.oid = c.relnamespace
+            WHERE n.nspname = 'public'
+              AND c.relkind IN ('r', 'p', 'S', 'v', 'm', 'f')
+              AND NOT EXISTS (
+                  SELECT 1 FROM pg_depend d
+                  WHERE d.classid = 'pg_class'::regclass AND d.objid = c.oid AND d.deptype = 'e')
+              AND NOT (c.relkind = 'S' AND EXISTS (
+                  SELECT 1 FROM pg_depend d
+                  WHERE d.classid = 'pg_class'::regclass AND d.objid = c.oid
+                    AND d.deptype IN ('a', 'i')))
+            ORDER BY c.relname
+            """,
+        )
+
+        function_owners = _rows(
+            cur,
+            """
+            SELECT p.proname AS function_name,
+                   pg_get_function_identity_arguments(p.oid) AS arguments,
+                   pg_get_userbyid(p.proowner) AS owner
+            FROM pg_proc p
+            JOIN pg_namespace n ON n.oid = p.pronamespace
+            WHERE n.nspname = 'public'
+              AND p.prokind IN ('f', 'p')
+              AND NOT EXISTS (
+                  SELECT 1 FROM pg_depend d
+                  WHERE d.classid = 'pg_proc'::regclass AND d.objid = p.oid AND d.deptype = 'e')
+            ORDER BY p.proname, arguments
+            """,
+        )
+
         roles = _rows(
             cur,
             """
@@ -154,6 +197,8 @@ def extract_snapshot(dsn: str) -> dict[str, object]:
             "functions": functions,
             "function_grants": function_grants,
             "table_grants": table_grants,
+            "relation_owners": relation_owners,
+            "function_owners": function_owners,
             "roles": roles,
         }
     finally:

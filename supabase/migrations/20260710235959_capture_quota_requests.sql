@@ -32,3 +32,17 @@ CREATE TABLE IF NOT EXISTS public.quota_requests (
 -- exactly the dangerous state 20260711000002_quota_requests_rls.sql was written to fix.
 GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE ON public.quota_requests TO anon;
 GRANT INSERT, SELECT, UPDATE, DELETE, TRUNCATE ON public.quota_requests TO authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: quota_requests_columns_and_key
+-- SQL: SELECT (SELECT count(*) FROM pg_attribute a WHERE a.attrelid =
+-- SQL: 'public.quota_requests'::regclass AND a.attnum > 0 AND NOT a.attisdropped AND (a.attname,
+-- SQL: format_type(a.atttypid, a.atttypmod), a.attnotnull) IN (('id', 'uuid', true), ('org_id',
+-- SQL: 'uuid', true), ('usage_at_request', 'integer', true), ('quota_at_request', 'integer', true),
+-- SQL: ('notes', 'text', false), ('requested_at', 'timestamp with time zone', true))) = 6 AND
+-- SQL: EXISTS (SELECT 1 FROM pg_constraint c WHERE c.conrelid = 'public.quota_requests'::regclass
+-- SQL: AND c.contype = 'p' AND pg_get_constraintdef(c.oid) = 'PRIMARY KEY (id)')

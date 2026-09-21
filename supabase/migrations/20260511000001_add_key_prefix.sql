@@ -11,3 +11,17 @@ ALTER TABLE public.api_keys
 
 CREATE INDEX IF NOT EXISTS idx_api_keys_key_prefix
   ON public.api_keys (key_prefix);
+
+-- ---------------------------------------------------------------------------
+-- Postconditions (Session 15d) -- verified by supabase/push.py before this file is ledgered and by
+-- `push.py --verify`; grammar in supabase/postconditions.py. Each holds against the FINAL
+-- schema state (a later migration must not undo it), in the CI build and in production.
+-- ---------------------------------------------------------------------------
+-- @postcondition: api_keys_key_prefix_column
+-- SQL: SELECT (SELECT count(*) FROM pg_attribute a WHERE a.attrelid = 'public.api_keys'::regclass
+-- SQL: AND a.attnum > 0 AND NOT a.attisdropped AND (a.attname, format_type(a.atttypid,
+-- SQL: a.atttypmod), a.attnotnull) IN (('key_prefix', 'text', true))) = 1
+
+-- @postcondition: api_keys_key_prefix_index
+-- SQL: SELECT EXISTS (SELECT 1 FROM pg_index i WHERE i.indexrelid =
+-- SQL: to_regclass('public.idx_api_keys_key_prefix') AND i.indrelid = 'public.api_keys'::regclass)
