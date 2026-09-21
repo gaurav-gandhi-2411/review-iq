@@ -155,28 +155,50 @@ Eval runs automatically in CI on every push touching prompts, LLM, schema, or fi
 (cassette-replay against `eval/cassettes/cassettes.json` — $0, deterministic, zero live LLM
 calls; see `eval/README.md`). Nightly runs post results to Slack.
 
-### Real-world accuracy (uncontaminated, held-out corpus)
+### Real-world accuracy (held-out corpus, with a disclosed exposure)
 
 The table above is a **regression detector**: it's measured against fixtures the prompt was
 developed and tuned against, so it tells you "did this change break something," not "how
 accurate is this in the real world." The table below is the honest answer to the second
-question — scored against 106 real Indian marketplace reviews mined independently of prompt
-development, never seen by anyone iterating on the prompt.
+question — scored against real Indian marketplace reviews mined independently of prompt
+development. Correction (Session 16): 36 of the 106 corpus reviews turned out to have been
+seen by the development process (details and effect below), so the headline covers only the
+70 that were not.
 
-<!-- METRICS:START:held_out_table -->Measured 2026-09-20T08:57:26Z &middot; `c4dcfcd` &middot; models: openai/gpt-oss-20b / openai/gpt-oss-120b
+<!-- METRICS:START:held_out_table -->Measured 2026-09-21T14:55:14Z &middot; `e582d68` &middot; models: openai/gpt-oss-20b / openai/gpt-oss-120b
 
-| Condition | Score (informative fields only) | 95% CI | n |
+| Condition | Score (headline fields) | 95% CI | n |
 |---|---|---|---|
-| **As actually deployed** (real language routing) | **72.4%** | [69.8%, 75.0%] | 106 |
-| Language routing forced correct | 71.8% | [69.3%, 74.2%] | 106 |
+| **As actually deployed** (real language routing) | **79.5%** | [76.0%, 82.7%] | 70 |
+| Language routing forced correct | 79.6% | [76.6%, 82.4%] | 70 |
 
-**Why the headline excludes `stars` and `language`.** Counting all fields, the same recorded outputs score 72.7% as deployed [70.5%, 74.9%] and 77.4% with language routing forced correct [75.4%, 79.3%]; excluding only `stars` they score 69.7% [67.3%, 72.1%] and 74.9% [72.7%, 77.0%]. `stars` is null in both gold and prediction on all 106 reviews, so it scores 106/106 trivially and carries no information. `language` does not measure extraction: with routing forced the prompt itself states the language, so the field is 100% by echo (which is why the forced row is higher in the all-fields figures), and as deployed it just re-measures the language detector against the corpus's language label: agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error). The headline therefore averages only the 8 remaining informative fields.
+**What this headline is.** The average of 8 fields (`product`, `buy_again`, `sentiment`, `topics`, `competitor_mentions`, `pros`, `cons`, `stars_inferred`) over the 70 of 106 corpus reviews that the prompt-development process had **not** seen, with 59 gold (review, field) pairs excluded because the judge panel split and the stored gold was a default, not a label. `stars` (null everywhere) and `language` (an echo of the detector, agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error)) are excluded as before.
 
-**Headline definition change (Session 15d).** Until Session 15d the headline averaged every field except `stars`; dropping `language` moves the as-deployed headline from 69.7% to 72.4% and the forced row from 74.9% to 71.8%. The recorded model outputs are byte-identical; only which fields are averaged changed.
+**Every cell, same recorded model outputs, as deployed** (the change moves the number up, so all four are shown):
 
-n=106 real Hinglish reviews the prompt has never seen (never used for prompt development), 0 hi (see [ADR 0016](docs/architecture/adr/0016-third-judge-corpus-batch-1-and-sentiment-recheck.md)). Production's own language detector, measured against this corpus's language label: agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error). This is the number to trust for real-world extraction accuracy; the CI-gate table above is a regression detector, not a real-world accuracy claim -- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) (its misrouting-cost finding was corrected in Session 15d).
+| Reviews | Gold pairs | Score | 95% CI | n |
+|---|---|---|---|---|
+| all | all | 72.4% | [69.8%, 75.0%] | 106 |
+| all | split excluded | 79.9% | [77.3%, 82.5%] | 106 |
+| unseen only | all | 73.2% | [69.9%, 76.5%] | 70 |
+| **unseen only (headline)** | **split excluded** | 79.5% | [76.0%, 82.7%] | 70 |
 
-**Scoring note (scorer `2026-09-20.free-text-v1`).** Free-text fields (`product`, `topics`, `competitor_mentions`) are compared after normalization, so different correct spellings of "no product named" (`unknown` vs `unknown product`) and near-identical topic labels (`battery` vs `battery_life`) are no longer scored wrong. Earlier published figures used exact-string matching on the same recorded model outputs and counted all fields (the same basis as the all-fields figures above): as deployed, 68.3% then vs 72.7% now. The model's outputs did not change, only the comparator ([ADR 0030](docs/architecture/adr/0030-free-text-scorers.md)).<!-- METRICS:END -->
+**Why 36 reviews are excluded.** 15 also appear in the prompt-visible development fixtures (`eval/fixtures/hi-en/`; four of the `hi_en` prompt's few-shot examples are rewrites of them) and 21 in the internal benchmark whose adjudicated labels accepted prompt v2.2/v2.3. The builder only excluded already-quarantined text, so nothing stopped this ([ADR 0032](docs/architecture/adr/0032-held-out-exposure-and-split-gold.md)). Exposed reviews score 80.7% vs 79.5% for unseen ones (difference +1.2 pp, 95% CI -4.2 to +6.4): no benefit is detectable at this sample size, but that is absence of evidence, not proof of none.
+
+**Effect of excluding split gold, per field** (as deployed, all reviews; one field goes down):
+
+| Field | Split-gold pairs | Score, all pairs | Score, split excluded |
+|---|---|---|---|
+| `product` | 26 | 59.4% | 57.5% |
+| `buy_again` | 0 | 72.6% | 72.6% |
+| `sentiment` | 0 | 86.8% | 86.8% |
+| `topics` | 25 | 54.2% | 68.5% |
+| `competitor_mentions` | 0 | 84.0% | 84.0% |
+| `pros` | 30 | 53.9% | 73.8% |
+| `cons` | 21 | 70.1% | 87.4% |
+| `stars_inferred` | 0 | 98.1% | 98.1% |
+
+Gold labels are LLM-consensus silver, not human ground truth. Production's own language detector, measured against this corpus's language label: agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error). This is the number to trust for real-world extraction accuracy; the CI-gate table above is a regression detector, not a real-world accuracy claim -- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) (its misrouting-cost finding was corrected in Session 15d).<!-- METRICS:END -->
 
 Reproducible from committed cassettes: `EVAL_CASSETTE_MODE=replay uv run python eval/score_held_out_corpus_v2.py --mode replay` — $0, zero live calls, byte-identical output. See [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) for the full methodology. Its original "misrouting cost" decomposition was corrected in Session 15d (over all fields, the difference between the two routing conditions was the `language` field echoing the forced label, not an extraction cost).
 
@@ -400,7 +422,9 @@ languages.** Both are evaluated against real Indian marketplace reviews: `eval/d
 flipkart_candidates.jsonl`, 14,552 unique reviews mined from three public Kaggle Flipkart
 datasets, yields 106 genuine Hinglish candidates (0.74% of the corpus) feeding both the scored
 eval set and a separate quarantined held-out corpus (`eval/fixtures/_held_out_hindi_hinglish/`,
-23 fixtures so far, used only for uncontaminated measurement — never for prompt development).
+106 fixtures, used for held-out measurement rather than prompt development; 36 of them also
+appear in the prompt-visible eval fixtures or the internal benchmark and are excluded from the
+headline, see [ADR 0032](docs/architecture/adr/0032-held-out-exposure-and-split-gold.md)).
 
 **Devanagari-script Hindi is NOT supported. This is a retired scope, not an experimental one.**
 Real Devanagari-script product reviews are effectively absent from this corpus — of 14,552
