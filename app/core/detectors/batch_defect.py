@@ -91,7 +91,9 @@ class BatchDefectFlag:
         return {
             "product_id": self.product_id,
             "topic": self.topic,
-            "confidence": self.confidence,
+            # Display rounding only: threshold comparisons (alert sweep, min_confidence) use
+            # the full-precision field, never this rounded copy.
+            "confidence": round(self.confidence, 3),
             "evidence": self.evidence,
         }
 
@@ -223,7 +225,7 @@ def scan_batch_defects(reviews: list[AnnotatedReview]) -> list[BatchDefectFlag]:
                 BatchDefectFlag(
                     product_id=product_id,
                     topic=topic,
-                    confidence=round(confidence, 3),
+                    confidence=confidence,
                     evidence=evidence,
                 )
             )
