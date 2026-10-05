@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-21T14:55:14Z",
-  "git_sha": "e582d681e7da2c90df6303fbea1fe32637a3ef90",
+  "generated_at": "2026-09-21T15:32:08Z",
+  "git_sha": "94adf3372f6544a87ccc3b14e3d04c4d4386ddcb",
   "scorer_version": "2026-09-20.free-text-v1",
   "groq_model_small": "openai/gpt-oss-20b",
   "groq_model_large": "openai/gpt-oss-120b",
@@ -67,18 +67,18 @@
     "stars_inferred"
   ],
   "overall_score_headline": {
-    "as_deployed": 0.7949258007841227,
-    "language_forced": 0.795880877580582
+    "as_deployed": 0.7962863450018097,
+    "language_forced": 0.7973774762200379
   },
   "overall_score_headline_ci_95": {
     "as_deployed": {
-      "lower": 0.7602832860828673,
-      "upper": 0.8269745693037756,
+      "lower": 0.7623897281717151,
+      "upper": 0.8276997486806656,
       "n": 70
     },
     "language_forced": {
-      "lower": 0.7657333012810994,
-      "upper": 0.8244672794068966,
+      "lower": 0.7676669859114794,
+      "upper": 0.8252563407743225,
       "n": 70
     }
   },
@@ -112,20 +112,20 @@
     "all_reviews_split_excluded": {
       "n": 106,
       "n_reviews_excluded_as_exposed": 0,
-      "n_split_pairs_excluded": 102,
+      "n_split_pairs_excluded": 104,
       "as_deployed": {
-        "score": 0.7990525725205646,
+        "score": 0.799726426968004,
         "ci_95": {
-          "lower": 0.7725647821590385,
-          "upper": 0.8247320424005883,
+          "lower": 0.773604431882293,
+          "upper": 0.8251617958979844,
           "n": 106
         }
       },
       "language_forced": {
-        "score": 0.7963221144832029,
+        "score": 0.7970858161903008,
         "ci_95": {
-          "lower": 0.7722721084093502,
-          "upper": 0.8200905342388496,
+          "lower": 0.7734914183015545,
+          "upper": 0.8205977095863507,
           "n": 106
         }
       }
@@ -154,20 +154,20 @@
     "unexposed_split_excluded": {
       "n": 70,
       "n_reviews_excluded_as_exposed": 36,
-      "n_split_pairs_excluded": 59,
+      "n_split_pairs_excluded": 60,
       "as_deployed": {
-        "score": 0.7949258007841227,
+        "score": 0.7962863450018097,
         "ci_95": {
-          "lower": 0.7602832860828673,
-          "upper": 0.8269745693037756,
+          "lower": 0.7623897281717151,
+          "upper": 0.8276997486806656,
           "n": 70
         }
       },
       "language_forced": {
-        "score": 0.795880877580582,
+        "score": 0.7973774762200379,
         "ci_95": {
-          "lower": 0.7657333012810994,
-          "upper": 0.8244672794068966,
+          "lower": 0.7676669859114794,
+          "upper": 0.8252563407743225,
           "n": 70
         }
       }
@@ -177,12 +177,12 @@
   "exposure_sensitivity": {
     "n_exposed": 36,
     "n_unexposed": 70,
-    "exposed_score": 0.8070768508969796,
-    "unexposed_score": 0.7949258007841227,
-    "difference": 0.012151050112856887,
+    "exposed_score": 0.8064154752356039,
+    "unexposed_score": 0.7962863450018097,
+    "difference": 0.010129130233794137,
     "difference_ci_95": {
-      "lower": -0.04150870571891441,
-      "upper": 0.06429642572631533
+      "lower": -0.04388218550376233,
+      "upper": 0.061984959633823555
     }
   },
   "exposure_reasons": {
@@ -192,9 +192,9 @@
   "per_field_split_effect": {
     "product": {
       "n": 106,
-      "n_split_gold": 26,
+      "n_split_gold": 28,
       "score_all_pairs": 0.5943396226415094,
-      "score_excluding_split": 0.575
+      "score_excluding_split": 0.5769230769230769
     },
     "buy_again": {
       "n": 106,
@@ -6061,6 +6061,7 @@
       "gt_language": "hi-en",
       "detected_language": "en",
       "unresolved_fields": [
+        "product",
         "topics"
       ],
       "as_deployed": {
@@ -6510,6 +6511,7 @@
       "gt_language": "hi-en",
       "detected_language": "hi-en",
       "unresolved_fields": [
+        "product",
         "pros"
       ],
       "as_deployed": {

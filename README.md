@@ -165,31 +165,31 @@ development. Correction (Session 16): 36 of the 106 corpus reviews turned out to
 seen by the development process (details and effect below), so the headline covers only the
 70 that were not.
 
-<!-- METRICS:START:held_out_table -->Measured 2026-09-21T14:55:14Z &middot; `e582d68` &middot; models: openai/gpt-oss-20b / openai/gpt-oss-120b
+<!-- METRICS:START:held_out_table -->Measured 2026-09-21T15:32:08Z &middot; `94adf33` &middot; models: openai/gpt-oss-20b / openai/gpt-oss-120b
 
 | Condition | Score (headline fields) | 95% CI | n |
 |---|---|---|---|
-| **As actually deployed** (real language routing) | **79.5%** | [76.0%, 82.7%] | 70 |
-| Language routing forced correct | 79.6% | [76.6%, 82.4%] | 70 |
+| **As actually deployed** (real language routing) | **79.6%** | [76.2%, 82.8%] | 70 |
+| Language routing forced correct | 79.7% | [76.8%, 82.5%] | 70 |
 
-**What this headline is.** The average of 8 fields (`product`, `buy_again`, `sentiment`, `topics`, `competitor_mentions`, `pros`, `cons`, `stars_inferred`) over the 70 of 106 corpus reviews that the prompt-development process had **not** seen, with 59 gold (review, field) pairs excluded because the judge panel split and the stored gold was a default, not a label. `stars` (null everywhere) and `language` (an echo of the detector, agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error)) are excluded as before.
+**What this headline is.** The average of 8 fields (`product`, `buy_again`, `sentiment`, `topics`, `competitor_mentions`, `pros`, `cons`, `stars_inferred`) over the 70 of 106 corpus reviews that the prompt-development process had **not** seen, with 60 gold (review, field) pairs excluded because the judge panel split and the stored gold was a default, not a label. `stars` (null everywhere) and `language` (an echo of the detector, agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error)) are excluded as before.
 
 **Every cell, same recorded model outputs, as deployed** (the change moves the number up, so all four are shown):
 
 | Reviews | Gold pairs | Score | 95% CI | n |
 |---|---|---|---|---|
 | all | all | 72.4% | [69.8%, 75.0%] | 106 |
-| all | split excluded | 79.9% | [77.3%, 82.5%] | 106 |
+| all | split excluded | 80.0% | [77.4%, 82.5%] | 106 |
 | unseen only | all | 73.2% | [69.9%, 76.5%] | 70 |
-| **unseen only (headline)** | **split excluded** | 79.5% | [76.0%, 82.7%] | 70 |
+| **unseen only (headline)** | **split excluded** | 79.6% | [76.2%, 82.8%] | 70 |
 
-**Why 36 reviews are excluded.** 15 also appear in the prompt-visible development fixtures (`eval/fixtures/hi-en/`; four of the `hi_en` prompt's few-shot examples are rewrites of them) and 21 in the internal benchmark whose adjudicated labels accepted prompt v2.2/v2.3. The builder only excluded already-quarantined text, so nothing stopped this ([ADR 0032](docs/architecture/adr/0032-held-out-exposure-and-split-gold.md)). Exposed reviews score 80.7% vs 79.5% for unseen ones (difference +1.2 pp, 95% CI -4.2 to +6.4): no benefit is detectable at this sample size, but that is absence of evidence, not proof of none.
+**Why 36 reviews are excluded.** 15 also appear in the prompt-visible development fixtures (`eval/fixtures/hi-en/`; four of the `hi_en` prompt's few-shot examples are rewrites of them) and 21 in the internal benchmark whose adjudicated labels accepted prompt v2.2/v2.3. The builder only excluded already-quarantined text, so nothing stopped this ([ADR 0032](docs/architecture/adr/0032-held-out-exposure-and-split-gold.md)). Exposed reviews score 80.6% vs 79.6% for unseen ones (difference +1.0 pp, 95% CI -4.4 to +6.2): no benefit is detectable at this sample size, but that is absence of evidence, not proof of none.
 
 **Effect of excluding split gold, per field** (as deployed, all reviews; one field goes down):
 
 | Field | Split-gold pairs | Score, all pairs | Score, split excluded |
 |---|---|---|---|
-| `product` | 26 | 59.4% | 57.5% |
+| `product` | 28 | 59.4% | 57.7% |
 | `buy_again` | 0 | 72.6% | 72.6% |
 | `sentiment` | 0 | 86.8% | 86.8% |
 | `topics` | 25 | 54.2% | 68.5% |
