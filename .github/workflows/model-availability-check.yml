@@ -36,7 +36,7 @@ env:
 
 jobs:
   model-availability-check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: unverified on 26.04 (S17 H3); move to ubuntu-latest after a main-branch dry run
     steps:
       - uses: actions/checkout@v7
 
