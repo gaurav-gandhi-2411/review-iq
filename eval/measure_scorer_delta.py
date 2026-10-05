@@ -16,6 +16,15 @@ exact list of fixtures whose score changed with old -> new values, so the change
 rather than trusted. A NEGATIVE flip (a score that went DOWN) would be a red flag for the
 scorer and is counted separately.
 
+Session 17 (W3e): every figure above used to be computed over ALL (fixture, field) pairs, including
+the ones where the three-judge panel split and the stored gold is a schema-valid default (ADR
+0032). For `product` that matters directly: the default is "unknown", which the null rule
+canonicalizes to "no product named", so a prediction of `null` matched the default and the
+"null-canonicalization" step was partly rewarded for agreeing with a placeholder. The artifact
+now carries both bases: `per_field`/`overall`/`product_attribution` (all pairs, unchanged, for
+the ADRs that cite them) and the `*_split_excluded` siblings, which drop every unresolved pair
+(per-fixture mean over the fields that survive; a fixture with none contributes nothing).
+
 Usage: uv run python eval/measure_scorer_delta.py
 """
 
@@ -31,6 +40,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from eval.free_text_scoring import SCORER_VERSION, canonical_product  # noqa: E402
+from eval.heldout_exposure import unresolved_fields  # noqa: E402
 from eval.provenance import get_git_sha, now_iso  # noqa: E402
 from eval.runner import _exact_score, score_fixture  # noqa: E402
 
@@ -135,7 +145,48 @@ def main() -> int:
         prod_old = [strict_scores[i]["product"] for i in ids]
         prod_null = [null_only[i] for i in ids]
         prod_new = [new_scores[i]["product"] for i in ids]
+        unres = {i: set(unresolved_fields(gold[i])) for i in ids}
+        per_field_x: dict[str, Any] = {}
+        for f in fields:
+            keep = [i for i in ids if f not in unres[i]]
+            old_f = [strict_scores[i][f] for i in keep]
+            new_f = [new_scores[i][f] for i in keep]
+            deltas_f = [b - a for a, b in zip(old_f, new_f, strict=True)]
+            lo_f, hi_f = paired_delta_ci(deltas_f) if deltas_f else (0.0, 0.0)
+            per_field_x[f] = {
+                "n": len(keep),
+                "n_split_pairs_excluded": len(ids) - len(keep),
+                "strict_mean": mean(old_f) if old_f else None,
+                "corrected_mean": mean(new_f) if new_f else None,
+                "delta": mean(deltas_f) if deltas_f else None,
+                "delta_ci95": [lo_f, hi_f],
+                "n_up": sum(1 for d in deltas_f if d > 0),
+                "n_down": sum(1 for d in deltas_f if d < 0),
+            }
+        # Per-fixture mean over the fields that survive for THAT fixture (same unit as the
+        # published headline); a fixture whose every field is unresolved contributes nothing.
+        ids_x = [i for i in ids if any(f not in unres[i] for f in fields)]
+        old_x = [mean(strict_scores[i][f] for f in fields if f not in unres[i]) for i in ids_x]
+        new_x = [mean(new_scores[i][f] for f in fields if f not in unres[i]) for i in ids_x]
+        d_x = [b - a for a, b in zip(old_x, new_x, strict=True)]
+        lo_x, hi_x = paired_delta_ci(d_x)
+        keep_p = [i for i in ids if "product" not in unres[i]]
         result["conditions"][cond] = {
+            "overall_split_excluded": {
+                "n_fixtures": len(ids_x),
+                "n_split_pairs_excluded": sum(len(unres[i] & set(fields)) for i in ids),
+                "strict_mean": mean(old_x),
+                "corrected_mean": mean(new_x),
+                "delta": mean(d_x),
+                "delta_ci95": [lo_x, hi_x],
+            },
+            "product_attribution_split_excluded": {
+                "n": len(keep_p),
+                "strict": mean(strict_scores[i]["product"] for i in keep_p),
+                "null_only": mean(null_only[i] for i in keep_p),
+                "corrected": mean(new_scores[i]["product"] for i in keep_p),
+            },
+            "per_field_split_excluded": per_field_x,
             "overall": {
                 "strict_mean": mean(old_overall),
                 "corrected_mean": mean(new_overall),

@@ -13,6 +13,13 @@ eval/score_held_out_corpus.py):
     commits" claim's actual evidence -- flat accuracy blends "hedged" and "wrong" into one
     number and cannot support or refute that claim on its own.
 
+Session 17 (W3): the 106 include 36 reviews the development process had seen (ADR 0032), and
+exposed reviews are NOT scored like unseen ones here -- buy_again coverage is far higher on the
+exposed 36 than on the unseen 70 (the recorded split is in the artifact). The published figures
+are therefore the `unexposed` block (n=70); the all-106 `per_field` block is kept, unchanged, for
+the ADRs that cite it. `sentiment` and `buy_again` have no panel-split gold pairs, so unlike the
+free-text fields these two are not affected by the split-gold defect (ADR 0032).
+
 All on the "as_deployed" condition (real language routing, ADR 0021) -- the number that
 matters for what a customer actually experiences, not the routing-corrected number.
 
@@ -108,6 +115,15 @@ def main() -> None:
         "source": str(IN_PATH.relative_to(ROOT).as_posix()),
         "hedge_fields": HEDGE_FIELDS,
         "per_field": analyze(records, "as_deployed"),
+        # Published (Session 17): reviews the prompt-development process had not seen.
+        "unexposed": {
+            "n_fixtures": sum(1 for r in records if not r.get("exposure")),
+            "per_field": analyze([r for r in records if not r.get("exposure")], "as_deployed"),
+        },
+        "exposed": {
+            "n_fixtures": sum(1 for r in records if r.get("exposure")),
+            "per_field": analyze([r for r in records if r.get("exposure")], "as_deployed"),
+        },
     }
     OUT_PATH.write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
     print(json.dumps(result, indent=2))

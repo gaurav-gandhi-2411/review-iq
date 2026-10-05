@@ -1,0 +1,169 @@
+{
+  "cutoff_normalized_chars": 30,
+  "matchers": {
+    "min_containment_len": 8,
+    "near_dup_ratio": 0.85,
+    "near_dup_len_ratio": 0.6
+  },
+  "sources_scanned": {
+    "dev_fixtures": 43,
+    "benchmark/dataset/gold.jsonl": 43,
+    "benchmark/dataset/candidates_for_review.jsonl": 43,
+    "prompt_text": 8
+  },
+  "n_short_reviews": 17,
+  "reviews": {
+    "hien-0011": {
+      "text": "Bakwaas productREAD MORE",
+      "n_hits": 0,
+      "hits": []
+    },
+    "hien-0012": {
+      "text": "Bakwas .. go for regular",
+      "n_hits": 0,
+      "hits": []
+    },
+    "hien-0013": {
+      "text": "Bakwas haiPlease don't byREAD MORE",
+      "n_hits": 0,
+      "hits": []
+    },
+    "hien-0015": {
+      "text": "Bass thoda kam hai jitna socha tha. 👌READ MORE",
+      "n_hits": 2,
+      "hits": [
+        {
+          "source": "benchmark/dataset/gold.jsonl",
+          "item": "bench-hien-020",
+          "match": "exact",
+          "segment": "Bass thoda kam hai jitna socha tha",
+          "generic": false
+        },
+        {
+          "source": "benchmark/dataset/candidates_for_review.jsonl",
+          "item": "bench-hien-035",
+          "match": "exact",
+          "segment": "Bass thoda kam hai jitna socha tha",
+          "generic": false
+        }
+      ]
+    },
+    "hien-0019": {
+      "text": "bekar hai auto disconnected",
+      "n_hits": 0,
+      "hits": []
+    },
+    "hien-0041": {
+      "text": "Good product..mast chisREAD MORE",
+      "n_hits": 2,
+      "hits": [
+        {
+          "source": "benchmark/dataset/gold.jsonl",
+          "item": "bench-en-002",
+          "match": "contained_by",
+          "segment": "Good product",
+          "generic": true
+        },
+        {
+          "source": "benchmark/dataset/candidates_for_review.jsonl",
+          "item": "bench-en-002",
+          "match": "contained_by",
+          "segment": "Good product",
+          "generic": true
+        }
+      ]
+    },
+    "hien-0043": {
+      "text": "Hard bass yaar love itREAD MORE",
+      "n_hits": 0,
+      "hits": []
+    },
+    "hien-0056": {
+      "text": "Mast fabulousREAD MORE",
+      "n_hits": 0,
+      "hits": []
+    },
+    "hien-0057": {
+      "text": "Mast productREAD MORE",
+      "n_hits": 2,
+      "hits": [
+        {
+          "source": "prompt_text",
+          "item": "app/core/prompts/hi_en.py",
+          "match": "contains",
+          "segment": "<review>Ekdum mast product hai bhai",
+          "generic": true
+        },
+        {
+          "source": "prompt_text",
+          "item": "app/core/prompts/reply.py",
+          "match": "contains",
+          "segment": "\"enthusiastically ('Bhai mast product",
+          "generic": true
+        }
+      ]
+    },
+    "hien-0065": {
+      "text": "Nice h betray backup mast h",
+      "n_hits": 0,
+      "hits": []
+    },
+    "hien-0077": {
+      "text": "Sahi per not excellentREAD MORE",
+      "n_hits": 0,
+      "hits": []
+    },
+    "hien-0083": {
+      "text": "superb product in paisa vasool",
+      "n_hits": 3,
+      "hits": [
+        {
+          "source": "benchmark/dataset/gold.jsonl",
+          "item": "bench-hien-021",
+          "match": "contained_by",
+          "segment": "Paisa vasool",
+          "generic": true
+        },
+        {
+          "source": "benchmark/dataset/candidates_for_review.jsonl",
+          "item": "bench-hien-036",
+          "match": "contained_by",
+          "segment": "Paisa vasool",
+          "generic": true
+        },
+        {
+          "source": "prompt_text",
+          "item": "app/core/prompts/hi_en.py",
+          "match": "contained_by",
+          "segment": "paisa vasool",
+          "generic": true
+        }
+      ]
+    },
+    "hien-0090": {
+      "text": "Ultimate headset Paisa wasoolREAD MORE",
+      "n_hits": 0,
+      "hits": []
+    },
+    "hien-0091": {
+      "text": "Useless products hai yeREAD MORE",
+      "n_hits": 0,
+      "hits": []
+    },
+    "hien-0099": {
+      "text": "Very niceBetter back up mast hai",
+      "n_hits": 0,
+      "hits": []
+    },
+    "hien-0105": {
+      "text": "Ye price me best product h...",
+      "n_hits": 0,
+      "hits": []
+    },
+    "hien-0106": {
+      "text": "Zabardast product 🤩READ MORE",
+      "n_hits": 0,
+      "hits": []
+    }
+  }
+}

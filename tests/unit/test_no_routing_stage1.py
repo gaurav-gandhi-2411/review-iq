@@ -433,6 +433,8 @@ def test_design_expected_tokens_and_sd_come_from_recorded_artifacts() -> None:
     assert d["expected_tokens"]["large_pool"] == pytest.approx(30 * f_large * large)
     # The busiest pool must sit inside the per-model ceiling, else the experiment cannot finish.
     assert d["expected_tokens"]["small_pool"] < exp.TOKEN_CEILING_PER_MODEL
-    # The spec quotes an 11.2pp per-fixture SD of the held-out delta.
-    assert d["delta_sd_held_out"]["all_106"] == pytest.approx(0.112, abs=0.001)
+    # S17: the spec quoted 11.2pp, which scored panel-split defaults as labels (ADR 0032). With
+    # split pairs excluded the per-fixture SD is 12.9pp; the old figure is kept for comparison.
+    assert d["delta_sd_held_out"]["all_106"] == pytest.approx(0.1285, abs=0.001)
+    assert d["delta_sd_held_out"]["all_106_incl_split_defaults"] == pytest.approx(0.112, abs=0.001)
     assert d["delta_sd_held_out"]["nonzero_only"] > d["delta_sd_held_out"]["all_106"]
