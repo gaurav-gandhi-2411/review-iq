@@ -16,11 +16,12 @@ from app.api.v2.insights import (
     _BAND_HEALTHY,
     _BAND_NEEDS_ATTENTION,
     _FORMULA_VERSION,
-    _W_A,
+    _NO_DATA_SCORE,
     _W_S,
     _W_U,
     _assign_band,
     _assign_confidence,
+    compute_health_score,
 )
 from app.auth.api_key import ApiKeyContext, require_api_key
 
@@ -41,8 +42,8 @@ _CTX = ApiKeyContext(
 
 # Raw dict that mirrors what health_score_pg returns for a well-populated org.
 # Values chosen so computed scores are easy to verify by hand:
-#   S = 8/20 = 0.40, U = 1 - 4/20 = 0.80, A = 1 - 2/10 = 0.80
-#   score = 0.50*0.40 + 0.20*0.80 + 0.30*0.80 = 0.20 + 0.16 + 0.24 = 0.60
+#   S = 8/20 = 0.40, U = 1 - 4/20 = 0.80
+#   score = 5/7*0.40 + 2/7*0.80 = 0.2857 + 0.2286 = 0.5143
 _RAW_FULL: dict[str, Any] = {
     "total_extractions": 20,
     "positive_count": 8,
@@ -52,8 +53,6 @@ _RAW_FULL: dict[str, Any] = {
     "high_urgency_count": 4,
     "medium_urgency_count": 6,
     "low_urgency_count": 10,
-    "total_audited": 10,
-    "likely_fake_count": 2,
 }
 
 # Empty org — no extractions, no audits.
@@ -66,12 +65,10 @@ _RAW_EMPTY: dict[str, Any] = {
     "high_urgency_count": 0,
     "medium_urgency_count": 0,
     "low_urgency_count": 0,
-    "total_audited": 0,
-    "likely_fake_count": 0,
 }
 
-# No audits yet — authenticity score must be 1.0.
-_RAW_NO_AUDITS: dict[str, Any] = {
+# Sentiment/urgency-only counts, 15 extractions.
+_RAW_MIXED: dict[str, Any] = {
     "total_extractions": 15,
     "positive_count": 10,
     "negative_count": 3,
@@ -80,8 +77,6 @@ _RAW_NO_AUDITS: dict[str, Any] = {
     "high_urgency_count": 2,
     "medium_urgency_count": 4,
     "low_urgency_count": 9,
-    "total_audited": 0,
-    "likely_fake_count": 0,
 }
 
 
@@ -107,14 +102,42 @@ async def client() -> httpx.AsyncClient:
 
 class TestHealthScoreFormulaGolden:
     def test_formula_golden_input(self) -> None:
-        """Pin the health-score formula — weights (0.50/0.20/0.30) and computation."""
-        # S=0.50, U=0.80, A=0.90 → 0.50*0.50 + 0.20*0.80 + 0.30*0.90
-        s, u, a = 0.50, 0.80, 0.90
-        expected = round(_W_S * s + _W_U * u + _W_A * a, 4)
-        assert expected == 0.6800  # 0.25 + 0.16 + 0.27
+        """Pin the health-score formula — weights (5/7, 2/7) and computation."""
+        # S=0.50, U=0.80 → 5/7*0.50 + 2/7*0.80 = 0.35714 + 0.22857
+        s, u = 0.50, 0.80
+        expected = round(_W_S * s + _W_U * u, 4)
+        assert expected == 0.5857
 
     def test_weights_sum_to_one(self) -> None:
-        assert round(_W_S + _W_U + _W_A, 10) == 1.0
+        assert round(_W_S + _W_U, 10) == 1.0
+
+    def test_score_spans_zero_to_one(self) -> None:
+        """Re-normalisation guard: worst input scores 0, best input scores 1."""
+        worst = {"total_extractions": 10, "positive_count": 0, "high_urgency_count": 10}
+        best = {"total_extractions": 10, "positive_count": 10, "high_urgency_count": 0}
+        assert compute_health_score(worst)[2] == 0.0
+        assert compute_health_score(best)[2] == 1.0
+
+    def test_score_ignores_authenticity_inputs(self) -> None:
+        """The score no longer depends on any authenticity count (W6): extra audit keys in the
+        raw dict change nothing, and the formula version records the removal."""
+        base = {"total_extractions": 20, "positive_count": 8, "high_urgency_count": 4}
+        noisy = {**base, "total_audited": 20, "likely_fake_count": 20}
+        assert compute_health_score(noisy) == compute_health_score(base)
+        assert _FORMULA_VERSION == "2.0"
+
+    def test_band_semantics_after_renormalisation(self) -> None:
+        """needs_attention = mid sentiment (30-67% positive at no high urgency); healthy needs
+        >= 2/3 positive at no high urgency; at_risk is reachable (<30% positive)."""
+
+        def band(pos: int, high: int) -> str:
+            raw = {"total_extractions": 100, "positive_count": pos, "high_urgency_count": high}
+            return _assign_band(compute_health_score(raw)[2])
+
+        assert band(pos=80, high=0) == "healthy"
+        assert band(pos=50, high=0) == "needs_attention"
+        assert band(pos=20, high=0) == "at_risk"
+        assert band(pos=0, high=100) == "at_risk"
 
     def test_band_thresholds_ordered(self) -> None:
         assert _BAND_HEALTHY > _BAND_NEEDS_ATTENTION > 0.0
@@ -187,7 +210,6 @@ class TestHealthScoreHappyPath:
             "window",
             "total_extractions",
             "components",
-            "authenticity_coverage",
             "score",
             "band",
             "confidence",
@@ -201,28 +223,23 @@ class TestHealthScoreHappyPath:
             data = (await client.get("/v2/insights/health-score")).json()
 
         c = data["components"]
-        assert set(c.keys()) == {"sentiment", "urgency", "authenticity"}
+        assert set(c.keys()) == {"sentiment", "urgency"}
         assert set(c["sentiment"].keys()) == {"score", "positive_count", "total", "weight"}
         assert set(c["urgency"].keys()) == {"score", "high_urgency_count", "total", "weight"}
-        assert set(c["authenticity"].keys()) == {
-            "score",
-            "priority_review_count",
-            "total_audited",
-            "weight",
-        }
 
     async def test_score_computed_correctly(self, client: httpx.AsyncClient) -> None:
         """Verify numeric computation against hand-calculated values."""
         with patch("app.api.v2.insights.health_score_pg", return_value=_RAW_FULL):
             data = (await client.get("/v2/insights/health-score")).json()
 
-        # S=8/20=0.40, U=1-4/20=0.80, A=1-2/10=0.80
+        # S=8/20=0.40, U=1-4/20=0.80
         assert data["components"]["sentiment"]["score"] == pytest.approx(0.40, abs=1e-4)
         assert data["components"]["urgency"]["score"] == pytest.approx(0.80, abs=1e-4)
-        assert data["components"]["authenticity"]["score"] == pytest.approx(0.80, abs=1e-4)
-        # 0.50*0.40 + 0.20*0.80 + 0.30*0.80 = 0.20 + 0.16 + 0.24 = 0.60
-        assert data["score"] == pytest.approx(0.60, abs=1e-4)
+        # 5/7*0.40 + 2/7*0.80 = 0.5143
+        assert data["score"] == pytest.approx(0.5143, abs=1e-4)
         assert data["band"] == "needs_attention"
+        assert data["components"]["sentiment"]["weight"] == pytest.approx(0.7143, abs=1e-4)
+        assert data["components"]["urgency"]["weight"] == pytest.approx(0.2857, abs=1e-4)
 
     async def test_raw_counts_reported(self, client: httpx.AsyncClient) -> None:
         with patch("app.api.v2.insights.health_score_pg", return_value=_RAW_FULL):
@@ -231,14 +248,6 @@ class TestHealthScoreHappyPath:
         assert data["total_extractions"] == 20
         assert data["components"]["sentiment"]["positive_count"] == 8
         assert data["components"]["urgency"]["high_urgency_count"] == 4
-        assert data["components"]["authenticity"]["priority_review_count"] == 2
-        assert data["components"]["authenticity"]["total_audited"] == 10
-
-    async def test_authenticity_coverage(self, client: httpx.AsyncClient) -> None:
-        # 10 audited / 20 extractions = 0.50
-        with patch("app.api.v2.insights.health_score_pg", return_value=_RAW_FULL):
-            data = (await client.get("/v2/insights/health-score")).json()
-        assert data["authenticity_coverage"] == pytest.approx(0.50, abs=1e-6)
 
     async def test_formula_version_present(self, client: httpx.AsyncClient) -> None:
         with patch("app.api.v2.insights.health_score_pg", return_value=_RAW_FULL):
@@ -264,34 +273,23 @@ class TestHealthScoreHappyPath:
 
 
 # ---------------------------------------------------------------------------
-# A = 1.0 when total_audited = 0
+# Authenticity is gone from the health-score response (W6)
 # ---------------------------------------------------------------------------
 
 
-class TestAuthenticityScoreWhenUnaudited:
-    async def test_a_score_is_one_when_no_audits(self, client: httpx.AsyncClient) -> None:
-        """Spec: A = 1.0 when total_audited = 0 (no audits yet)."""
-        with patch("app.api.v2.insights.health_score_pg", return_value=_RAW_NO_AUDITS):
+class TestNoAuthenticityInResponse:
+    async def test_no_authenticity_keys_or_words(self, client: httpx.AsyncClient) -> None:
+        with patch("app.api.v2.insights.health_score_pg", return_value=_RAW_MIXED):
             data = (await client.get("/v2/insights/health-score")).json()
+        assert "authenticity_coverage" not in data
+        assert "authenticity" not in data["components"]
+        assert "authenticity" not in str(data).lower()
 
-        assert data["components"]["authenticity"]["score"] == pytest.approx(1.0, abs=1e-6)
-        assert data["components"]["authenticity"]["total_audited"] == 0
-        assert data["components"]["authenticity"]["priority_review_count"] == 0
-
-    async def test_coverage_zero_when_no_audits(self, client: httpx.AsyncClient) -> None:
-        with patch("app.api.v2.insights.health_score_pg", return_value=_RAW_NO_AUDITS):
+    async def test_score_from_sentiment_and_urgency_only(self, client: httpx.AsyncClient) -> None:
+        """S=10/15, U=1-2/15 -> 5/7*S + 2/7*U."""
+        with patch("app.api.v2.insights.health_score_pg", return_value=_RAW_MIXED):
             data = (await client.get("/v2/insights/health-score")).json()
-        assert data["authenticity_coverage"] == pytest.approx(0.0, abs=1e-6)
-
-    async def test_score_uses_a_one_correctly(self, client: httpx.AsyncClient) -> None:
-        """S=10/15≈0.667, U=1-2/15≈0.867, A=1.0 → score≈0.693."""
-        with patch("app.api.v2.insights.health_score_pg", return_value=_RAW_NO_AUDITS):
-            data = (await client.get("/v2/insights/health-score")).json()
-
-        s = 10 / 15
-        u = 1 - 2 / 15
-        a = 1.0
-        expected = round(0.50 * s + 0.20 * u + 0.30 * a, 4)
+        expected = round(5 / 7 * (10 / 15) + 2 / 7 * (1 - 2 / 15), 4)
         assert data["score"] == pytest.approx(expected, abs=1e-4)
 
 
@@ -307,38 +305,17 @@ class TestEmptyOrg:
         assert resp.status_code == 200
 
     async def test_score_is_point_five_for_empty_org(self, client: httpx.AsyncClient) -> None:
-        """Empty org: S=0.0, U=1.0, A=1.0 → score = 0.0+0.20+0.30 = 0.50."""
+        """Empty org: explicit neutral midpoint (not S=0 -> at_risk), confidence low."""
         with patch("app.api.v2.insights.health_score_pg", return_value=_RAW_EMPTY):
             data = (await client.get("/v2/insights/health-score")).json()
 
-        assert data["score"] == pytest.approx(0.50, abs=1e-6)
+        assert data["score"] == pytest.approx(_NO_DATA_SCORE, abs=1e-6)
         assert data["band"] == "needs_attention"
 
     async def test_confidence_low_for_empty_org(self, client: httpx.AsyncClient) -> None:
         with patch("app.api.v2.insights.health_score_pg", return_value=_RAW_EMPTY):
             data = (await client.get("/v2/insights/health-score")).json()
         assert data["confidence"] == "low"
-
-    async def test_coverage_zero_for_empty_org(self, client: httpx.AsyncClient) -> None:
-        with patch("app.api.v2.insights.health_score_pg", return_value=_RAW_EMPTY):
-            data = (await client.get("/v2/insights/health-score")).json()
-        assert data["authenticity_coverage"] == pytest.approx(0.0, abs=1e-6)
-
-
-# ---------------------------------------------------------------------------
-# No raw stored labels in response (precision-first guard)
-# ---------------------------------------------------------------------------
-
-
-class TestPrecisionFirstGuard:
-    async def test_raw_labels_absent_from_response(self, client: httpx.AsyncClient) -> None:
-        """Stored labels (genuine, suspicious, likely_fake) must not appear in the response."""
-        with patch("app.api.v2.insights.health_score_pg", return_value=_RAW_FULL):
-            data = (await client.get("/v2/insights/health-score")).json()
-
-        response_str = str(data)
-        for forbidden in ("likely_fake", "suspicious", "genuine"):
-            assert forbidden not in response_str, f"Raw label {forbidden!r} leaked into response"
 
 
 # ---------------------------------------------------------------------------
