@@ -1,8 +1,8 @@
 """GET /v2/insights/trends, /batch-defects and /health-score — tenant-scoped insight endpoints.
 
-GET /v2/insights/authenticity was removed in Session 15d (D5): the fake-review flag is
-unmeasurable (no authenticity labels exist on the held-out set), so it is no longer a public
-API route. The dashboard's own /bff/insights/authenticity is unaffected.
+GET /v2/insights/authenticity was removed in Session 15d (D5) and the dashboard's
+/bff/insights/authenticity + /bff/authenticity* in Session 17 (W6): the fake-review flag is
+unmeasurable (no authenticity labels exist on the held-out set).
 """
 
 from __future__ import annotations
@@ -296,15 +296,16 @@ async def batch_defects(
 # Health-score endpoint
 # ---------------------------------------------------------------------------
 
-_FORMULA_VERSION = "1.0"
+# 2.0: the authenticity component (weight 0.30) was removed -- the fake-review flag is
+# unmeasurable (no labels), and for unaudited orgs it was a constant +0.30 with no data behind it.
+# The former S/U weights (0.50/0.20) are re-normalised by 1/0.70 so the score still spans [0, 1].
+_FORMULA_VERSION = "2.0"
 
 # Component weights — must sum to 1.0.
-# 0.50 S: sentiment drives score variation most (fake-rate is near-constant and low).
-# 0.20 U: urgency provides a secondary signal without dominating.
-# 0.30 A: authenticity can crater the score on a fake spike; 0.30 preserves that signal.
-_W_S: float = 0.50
-_W_U: float = 0.20
-_W_A: float = 0.30
+# 5/7 S: sentiment drives score variation most.
+# 2/7 U: urgency provides a secondary signal without dominating (same 5:2 ratio as v1.0).
+_W_S: float = 5 / 7
+_W_U: float = 2 / 7
 
 # Band thresholds (score in [0, 1]).  Proposed based on real DB distribution:
 #   gaurav-dev=0.445 → at_risk, 1-review orgs=0.50 → needs_attention,
@@ -319,9 +320,23 @@ _CONFIDENCE_HIGH: int = 50
 _CONFIDENCE_MEDIUM: int = 10
 
 _HS_NOTE = (
-    "Health score is an org-level aggregate and does not label or score any individual review. "
-    "Authenticity signals support human moderation under IS 19000:2022."
+    "Health score is an org-level aggregate and does not label or score any individual review."
 )
+
+# Score reported for an org with no extractions in the window: the formula midpoint, i.e. the
+# `needs_attention` boundary, with confidence "low". Without this, S=0 would read as `at_risk`
+# for an org that simply has no data yet.
+_NO_DATA_SCORE: float = 0.50
+
+
+def compute_health_score(raw: dict[str, Any]) -> tuple[float, float, float]:
+    """Return (sentiment_score, urgency_score, score) from `health_score_pg` raw counts."""
+    total = raw["total_extractions"]
+    if total <= 0:
+        return 0.0, 1.0, _NO_DATA_SCORE
+    s_score = _safe_rate(raw["positive_count"], total)
+    u_score = 1.0 - _safe_rate(raw["high_urgency_count"], total)
+    return s_score, u_score, round(_W_S * s_score + _W_U * u_score, 4)
 
 
 def _assign_band(score: float) -> str:
@@ -342,7 +357,7 @@ def _assign_confidence(total_extractions: int) -> str:
 
 @router.get(
     "/health-score",
-    summary="Org-level health score (sentiment + urgency + authenticity)",
+    summary="Org-level health score (sentiment + urgency)",
     openapi_extra={
         "responses": {
             "200": {
@@ -361,22 +376,15 @@ def _assign_confidence(total_extractions: int) -> str:
                                     "score": 0.7,
                                     "positive_count": 90,
                                     "total": 128,
-                                    "weight": 0.5,
+                                    "weight": 0.7143,
                                 },
                                 "urgency": {
                                     "score": 0.94,
                                     "high_urgency_count": 8,
                                     "total": 128,
-                                    "weight": 0.2,
-                                },
-                                "authenticity": {
-                                    "score": 0.92,
-                                    "priority_review_count": 10,
-                                    "total_audited": 120,
-                                    "weight": 0.3,
+                                    "weight": 0.2857,
                                 },
                             },
-                            "authenticity_coverage": 0.9375,
                             "score": 0.813,
                             "band": "healthy",
                             "confidence": "high",
@@ -399,12 +407,11 @@ async def health_score(
 ) -> dict[str, Any]:
     """Org-level health score for the authenticated org.
 
-    Combines three components into a single [0, 1] score:
-    - **Sentiment (S, weight 0.50):** fraction of positive reviews.
-    - **Urgency (U, weight 0.20):** 1 − fraction of high-urgency reviews.
-    - **Authenticity (A, weight 0.30):** 1 − likely-flagged rate; 1.0 when unaudited.
+    Combines two components into a single [0, 1] score:
+    - **Sentiment (S, weight 5/7):** fraction of positive reviews.
+    - **Urgency (U, weight 2/7):** 1 − fraction of high-urgency reviews.
 
-    ``score = 0.50·S + 0.20·U + 0.30·A``
+    ``score = 5/7·S + 2/7·U`` (formula_version 2.0; see the `_FORMULA_VERSION` comment).
 
     ``confidence`` reflects data volume and is held separate from ``score``
     so callers can weight the band assignment accordingly.
@@ -423,23 +430,12 @@ async def health_score(
 
     total = raw["total_extractions"]
 
-    # --- component scores ---
-    s_score = _safe_rate(raw["positive_count"], total)
-    u_score = 1.0 - _safe_rate(raw["high_urgency_count"], total) if total > 0 else 1.0
-    total_audited = raw["total_audited"]
-    # Spec: A = 1.0 when total_audited = 0; only likely_fake penalises.
-    a_score = (
-        1.0 - _safe_rate(raw["likely_fake_count"], total_audited) if total_audited > 0 else 1.0
-    )
-
-    score = round(_W_S * s_score + _W_U * u_score + _W_A * a_score, 4)
-    authenticity_coverage = _safe_rate(total_audited, total)
+    s_score, u_score, score = compute_health_score(raw)
 
     log.info(
         "insights.health_score",
         org_id=ctx.org_id,
         total_extractions=total,
-        total_audited=total_audited,
         score=score,
         band=_assign_band(score),
     )
@@ -457,23 +453,15 @@ async def health_score(
                 "score": round(s_score, 4),
                 "positive_count": raw["positive_count"],
                 "total": total,
-                "weight": _W_S,
+                "weight": round(_W_S, 4),
             },
             "urgency": {
                 "score": round(u_score, 4),
                 "high_urgency_count": raw["high_urgency_count"],
                 "total": total,
-                "weight": _W_U,
-            },
-            "authenticity": {
-                "score": round(a_score, 4),
-                # Map stored label to precision-first display name.
-                "priority_review_count": raw["likely_fake_count"],
-                "total_audited": total_audited,
-                "weight": _W_A,
+                "weight": round(_W_U, 4),
             },
         },
-        "authenticity_coverage": authenticity_coverage,
         "score": score,
         "band": _assign_band(score),
         "confidence": _assign_confidence(total),
