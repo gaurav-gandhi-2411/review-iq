@@ -18,6 +18,7 @@ DUMP = [
     "ALTER TABLE public.organizations ENABLE ROW LEVEL SECURITY;",
     "CREATE POLICY org_iso ON public.organizations TO authenticated USING (true);",
     "GRANT SELECT ON TABLE public.organizations TO anon, service_role;",
+    "ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON TABLES TO anon;",
     "REVOKE ALL ON FUNCTION public.f() FROM PUBLIC;",
     "COPY public.api_keys (id) FROM stdin;",
     "x\tGRANT ALL ON y TO should_not_count;",
@@ -33,7 +34,7 @@ def test_parse_dump_counts_rows_policies_rls() -> None:
 
 
 def test_roles_found_but_copy_data_ignored() -> None:
-    assert roles_referenced(DUMP) == ["anon", "authenticated", "service_role"]
+    assert roles_referenced(DUMP) == ["anon", "authenticated", "service_role", "supabase_admin"]
 
 
 def test_compare_passes_on_match_and_flags_each_failure_kind() -> None:

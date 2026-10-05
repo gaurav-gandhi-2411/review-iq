@@ -35,9 +35,11 @@ _CREATE_TABLE = re.compile(rf"^CREATE TABLE (?:IF NOT EXISTS )?public\.{_IDENT}\
 _COPY = re.compile(rf"^COPY public\.{_IDENT}\s*\(.*\) FROM stdin;")
 _RLS = re.compile(r"^ALTER TABLE (?:ONLY )?public\.\S+ ENABLE ROW LEVEL SECURITY;")
 _POLICY = re.compile(r"^CREATE POLICY ")
-# Roles appear after OWNER TO / GRANT ... TO / REVOKE ... FROM / CREATE POLICY ... TO.
+# Roles appear after OWNER TO / GRANT ... TO / REVOKE ... FROM / CREATE POLICY ... TO /
+# ALTER DEFAULT PRIVILEGES FOR ROLE (Supabase's supabase_admin: 12 errors in every dump until added).
 _ROLE_REFS = (
     re.compile(r"OWNER TO ([A-Za-z_][A-Za-z0-9_]*);"),
+    re.compile(r"^ALTER DEFAULT PRIVILEGES FOR ROLE ([A-Za-z_][A-Za-z0-9_]*) "),
     re.compile(r"^(?:GRANT|REVOKE) .+? (?:TO|FROM) ([A-Za-z_][A-Za-z0-9_, ]*);"),
     re.compile(r"^CREATE POLICY .+? TO ([A-Za-z_][A-Za-z0-9_, ]*)(?: USING| WITH CHECK|;)"),
 )
