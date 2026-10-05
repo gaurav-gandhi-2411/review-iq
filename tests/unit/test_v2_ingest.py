@@ -377,3 +377,39 @@ def test_get_ingest_result_csv_does_not_corrupt_legitimate_plus_value(
     assert resp.status_code == 200
     assert "A+B Combo Pack" in resp.text
     assert "'A+B Combo Pack" not in resp.text
+
+
+def test_ingest_csv_ignores_stale_include_authenticity_param(client: TestClient) -> None:
+    """Session 17 W6: include_authenticity was removed. An old client still sending the form
+    field must get the normal 202 (FastAPI ignores unknown form fields -- never a 500/422), and
+    the stored job metadata must not carry the flag."""
+    create_job = patch("app.api.v2.ingest.create_batch_job_pg", return_value=None)
+    with (
+        patch(
+            "app.api.v2.ingest.read_and_validate_csv",
+            new=AsyncMock(
+                return_value=([{"text": "Great product!"}], "review_text", None, None, False)
+            ),
+        ),
+        create_job as mock_create,
+        patch("app.api.v2.ingest.enqueue_batch_job_rows_pg", return_value=None),
+        patch("app.api.v2.ingest.update_batch_job_pg", return_value=None),
+        patch("app.api.v2.ingest._drain_until_job_complete", new=AsyncMock()),
+    ):
+        resp = client.post(
+            "/v2/ingest/csv",
+            files={"file": ("reviews.csv", b"review_text\ngreat product\n", "text/csv")},
+            data={"include_authenticity": "true"},
+        )
+
+    assert resp.status_code == 202
+    stored_meta = json.loads(mock_create.call_args.args[3])
+    assert "include_authenticity" not in stored_meta
+
+
+def test_bff_ingest_csv_has_no_include_authenticity_parameter() -> None:
+    import inspect
+
+    from app.api.bff.router import bff_ingest_csv
+
+    assert "include_authenticity" not in inspect.signature(bff_ingest_csv).parameters
