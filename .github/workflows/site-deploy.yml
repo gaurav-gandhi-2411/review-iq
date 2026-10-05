@@ -35,7 +35,7 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: unverified on 26.04 (S17 H3); move to ubuntu-latest after a main-branch dry run
     environment: production
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
