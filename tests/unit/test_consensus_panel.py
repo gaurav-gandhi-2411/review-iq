@@ -7,7 +7,6 @@ only, not here).
 from __future__ import annotations
 
 import pytest
-
 from eval.consensus import panel
 
 

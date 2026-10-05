@@ -71,4 +71,8 @@ About 140 calibration calls + 198 T/V calls (66 reviews x 3 judges) + 30 self-co
 
 ## Deviations
 
-(None before the first live call. Any deviation is appended here, with its reason and the commit that introduced it, before the dependent run.)
+Appended before the first live completion call (commit with `eval/consensus/panel2.py`); any later deviation is appended with its reason before the dependent run.
+
+- **D1 (format leniency, no effect on judgement):** the response parser first tries the panel-1 strict parser, then strips `<think>...</think>` blocks and takes the outermost `{...}` object. It never edits a field value. Reason: reasoning-capable candidates may wrap JSON in prose even with `response_format` set; counting that as a judgement miss would test the wrapper, not the judge.
+- **D2 (agreement-class coding):** closed-set fields (`buy_again`, `sentiment`) use the answer itself as the category (an explicit null answer is its own category); `stars_inferred` is ordinal over 1..5; free-text fields use equivalence-component ids. The pooled figure treats all fields as nominal with field-prefixed categories. This only fixes details the spec left implicit.
+- **D3 (budget accounting):** the 2.00 USD cap is checked against cumulative recorded cost (cassette total), not per process.

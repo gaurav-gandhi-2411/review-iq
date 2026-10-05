@@ -250,3 +250,111 @@ def validate_votes_match_gold(
             if not any(v == gold for v in vs.values()):
                 problems.append(f"{fid}.{field}: no judge vote equals the stored gold {gold!r}")
     return problems
+
+
+def adjudicated_block(
+    records: list[dict[str, Any]],
+    fixtures: dict[str, dict[str, Any]],
+    silver: dict[str, Any],
+    fields: list[str],
+    *,
+    exclude_exposed: bool = True,
+) -> dict[str, Any]:
+    """Narrow the Manski interval with a second panel's silver labels (S17 G6, panel 2).
+
+    `silver` maps "<review_id>.<field>" to the panel-2 silver value for a pair panel 2 resolved
+    (unresolved pairs are simply absent). A NEW function: the published figures in
+    `unscored_block` are untouched.
+
+    Per review, over its headline fields: a panel-1-resolved pair keeps its stored score; an
+    unscored pair that panel 2 resolved is scored as-deployed against the silver value; a pair
+    neither panel resolved is 0 (lower), 1 (upper) or dropped (point estimate). The point estimate
+    is conditional on panel-2 agreement and is a SILVER estimate, never ground truth: the pairs
+    that remain unresolved are, by construction, the ones LLM judges could not agree on, so the
+    selection effect that biases the published headline recurs on them.
+    """
+    from eval.runner import score_fixture
+
+    kept = _published_records(records, exclude_exposed)
+    lower: list[float] = []
+    upper: list[float] = []
+    point: list[float] = []
+    n_unscored = n_resolved = 0
+    per_field: dict[str, dict[str, Any]] = {f: {"unscored": 0, "resolved": 0} for f in fields}
+    resolved_scores: dict[str, list[float]] = {f: [] for f in fields}
+    for r in kept:
+        fx = fixtures[r["id"]]
+        pred = r[CONDITION]["predicted"]
+        skip = _unscored_set(r, fields)
+        base = r[CONDITION]["field_scores"]
+        lo_s: list[float] = []
+        up_s: list[float] = []
+        pt_s: list[float] = []
+        for f in fields:
+            if f not in skip:
+                lo_s.append(base[f])
+                up_s.append(base[f])
+                pt_s.append(base[f])
+                continue
+            n_unscored += 1
+            per_field[f]["unscored"] += 1
+            key = f"{r['id']}.{f}"
+            if key in silver:
+                alt = {**fx, "ground_truth": {**fx["ground_truth"], f: silver[key]}}
+                s = {fr.field: fr.score for fr in score_fixture(alt, pred)}[f]
+                n_resolved += 1
+                per_field[f]["resolved"] += 1
+                resolved_scores[f].append(s)
+                lo_s.append(s)
+                up_s.append(s)
+                pt_s.append(s)
+            else:
+                lo_s.append(0.0)
+                up_s.append(1.0)
+        lower.append(mean(lo_s))
+        upper.append(mean(up_s))
+        point.append(mean(pt_s))
+
+    def cell(values: list[float]) -> dict[str, Any]:
+        lo, hi = bootstrap_ci(values) if values else (0.0, 0.0)
+        return {
+            "score": mean(values) if values else 0.0,
+            "ci_95": {"lower": lo, "upper": hi, "n": len(values)},
+        }
+
+    n_pairs = len(kept) * len(fields)
+    original = unscored_block(records, fields, exclude_exposed=exclude_exposed)["bounds"]
+    return {
+        "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth",
+        "n_pairs": n_pairs,
+        "n_pairs_unscored_by_panel1": n_unscored,
+        "n_resolved_by_panel2": n_resolved,
+        "r_resolved_fraction_of_unscored": n_resolved / n_unscored if n_unscored else 0.0,
+        "n_still_unresolved": n_unscored - n_resolved,
+        "still_unresolved_fraction_of_all_pairs": (n_unscored - n_resolved) / n_pairs
+        if n_pairs
+        else 0.0,
+        "per_field": {
+            f: {
+                **v,
+                "mean_score_on_resolved_vs_silver": mean(resolved_scores[f])
+                if resolved_scores[f]
+                else None,
+            }
+            for f, v in per_field.items()
+        },
+        "original_manski_bounds": {
+            "lower": original["lower_unscored_all_wrong"]["score"],
+            "upper": original["upper_unscored_all_correct"]["score"],
+        },
+        "narrowed_manski_lower_unresolved_all_wrong": cell(lower),
+        "narrowed_manski_upper_unresolved_all_correct": cell(upper),
+        "silver_adjudicated_estimate_conditional_on_panel2_agreement": cell(point),
+        "point_estimate_defensible": False,
+        "point_estimate_note": (
+            "A silver-adjudicated estimate conditional on panel-2 agreement; never ground truth. "
+            "Pairs panel 2 also cannot resolve remain unobserved and are the ambiguous ones, so "
+            "the selection effect repeats on them; only the narrowed Manski interval is "
+            "assumption-free (and even it treats panel-2 silver as the truth on resolved pairs)."
+        ),
+    }
