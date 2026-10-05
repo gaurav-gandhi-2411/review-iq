@@ -391,7 +391,17 @@
               <tr>
                 <td class="path">language</td>
                 <td class="ci">string</td>
-                <td>Detected language code: <code>en</code>, <code>hi</code>, or <code>hi-en</code>.</td>
+                <td>Detected language code: <code>en</code>, <code>hi</code>, or <code>hi-en</code>. A heuristic label, not an accuracy-scored field &mdash; read it together with <code>code_mixed</code> and <code>language_signal_strength</code>.</td>
+              </tr>
+              <tr>
+                <td class="path">code_mixed</td>
+                <td class="ci">bool | null</td>
+                <td><code>true</code> if the text contains Romanized-Hindi vocabulary (any marker from the language detector's lexicons) or Devanagari mixed with Latin letters. Recall-oriented and uncalibrated: it can be <code>true</code> for English text that uses a collision phrase such as "value for money". Always <code>true</code> when <code>language</code> is <code>hi-en</code>. Additive; <code>null</code> where not computed.</td>
+              </tr>
+              <tr>
+                <td class="path">language_signal_strength</td>
+                <td class="ci">"none" | "weak" | "moderate" | "strong" | null</td>
+                <td>Ordinal strength of the detector's Hindi-marker evidence: <code>strong</code> = Devanagari or two or more strong markers; <code>moderate</code> = one strong marker or three or more weak ones; <code>weak</code> = one or two weak markers (near the <code>hi-en</code> decision boundary); <code>none</code> = no marker found. A documented heuristic, <strong>not a probability</strong>, not calibrated against labelled data. <code>none</code> means absence of evidence, not proof the text is English.</td>
               </tr>
               <tr>
                 <td class="path">review_length_chars</td>
@@ -562,7 +572,11 @@ curl https://your-instance.run.app/v2/ingest/b3f1a2d4-.../result \
         <h2>Language Support</h2>
         <p>
           Language is auto-detected from the review text — no parameter needed.
-          The detected code is returned in the <code>language</code> field of the response.
+          The detected code is returned in the <code>language</code> field of the response,
+          together with <code>code_mixed</code> and <code>language_signal_strength</code>.
+          The label is a heuristic: on a held-out corpus its agreement with the corpus label is low, and that label is itself noisy,
+          so treat <code>language</code> as a hint, not a scored accuracy claim
+          (see the README's held-out section for the measured agreement, its confidence interval and the label's inter-rater alpha).
         </p>
 
         <p class="note">

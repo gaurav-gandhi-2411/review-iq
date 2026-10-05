@@ -128,3 +128,13 @@ ADR 0012/0013/0016), now confirmed on genuinely unseen text, not just the CI-gat
   prompt path has a real, unmeasured quality cost the corpus use case doesn't share). Treating
   them as interchangeable would be exactly the "assumed instead of measured" mistake ADR 0014
   itself corrected on the corpus side.
+
+## Correction note (Session 15d)
+
+Dated 2026-09-20. The Alternatives entry above says misrouting genuinely-English text to the
+Hinglish prompt path "has a real, unmeasured quality cost". It has since been measured (S15c-S2,
+`eval/results/routing_cost_n106.json`, recorded predictions, zero live calls): excluding the
+`language` field, forcing the correct routing moves the held-out headline by -0.63pp
+[-2.77, +1.51], so no extraction cost is detectable on this corpus. The unmeasured remainder is
+reply-language and reply-guardrail behaviour under a mislabel. See the Correction sections in
+ADR 0021 and ADR 0023.

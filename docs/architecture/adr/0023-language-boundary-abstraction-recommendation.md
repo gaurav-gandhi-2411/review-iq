@@ -73,3 +73,47 @@ on the same held-out corpus) that is out of scope for this session.
   prompt below some confidence threshold.** Not recommended over the unified-prompt option: it
   still requires picking a threshold with the same evidence gap, and only mitigates the cost
   rather than removing the routing decision's failure mode entirely.
+
+
+## Correction (Session 15d)
+
+Dated 2026-09-20. The sections above are left as written. Evidence:
+`docs/specs/s15c-language-routing.md` (S2), `scripts/measure_routing_cost.py`,
+`eval/results/routing_cost_n106.json` (git_sha `c4dcfcd`, sha256 `5fbca0a8...`), re-derived from
+recorded predictions, zero live calls. GG decision D7 adopted the S2 recommendation. See also the
+Correction section in ADR 0021, which carries the full derivation.
+
+**The 4.6pp cost cited in Context item 3 is circular.** In the forced-routing condition the prompt
+says `language: always "hi-en"`, so the `language` field scores 100% by echo; as deployed it equals
+the detector's agreement with the corpus label. Over all 10 fields that field supplies 111% of the
++4.68pp [+2.87, +6.62] difference. Excluding `stars` (constant) and `language`, forcing the correct
+routing moves the held-out headline by **-0.63pp [-2.77, +1.51]** (72.40% [69.78, 74.94] as
+deployed vs 71.76% [69.36, 74.11] forced): no measurable extraction cost of misrouting.
+
+**Conclusions that no longer stand:**
+
+- Context item 3 and every statement that the routing decision "is the job actually costing 4.6pp".
+- "the 4.6pp misrouting cost disappears by construction" if routing is removed (Recommendation), and
+  "accept the 4.6pp as a permanent cost ... the cost is now precisely quantified" (Alternatives).
+  There is no measured extraction cost to remove. The unified-prompt experiment is therefore no
+  longer motivated by a 4.6pp recovery; if run at all it is a simplification test (can the router
+  be deleted without loss), staged and budgeted in `docs/specs/s15c-language-routing.md`
+  (S2c, and its Stage 1 design section), not a cost-recovery test.
+- Reading the 48.1% disagreement as detector error. It is agreement with the corpus label
+  (95% CI 38.8-57.5) and that label has alpha 0.380 (Context item 1), so the figure partly measures
+  label noise. Never call it accuracy.
+
+**What stands:**
+
+- Context items 1 and 2 as measurements: alpha 0.380 on `language` (quoted from ADR 0019, not
+  recomputed) and 55/106 detector-vs-label disagreement. Together they still show the en/hi-en
+  boundary is not well defined for many reviews.
+- The recommendation not to sharpen the boundary or invest in a better detector: strengthened,
+  because sharpening it now has no measurable extraction benefit either (D7: no detector
+  investment).
+- The "graded code-mixing score" alternative: no longer needs to wait for the unified-prompt
+  experiment. It shipped in a deliberately minimal form as additive response fields
+  (`code_mixed`, `language_signal_strength`) that report the detector's own rule-hit evidence; the
+  strength is an ordinal heuristic, not a probability, and is not calibrated. Routing is unchanged.
+- The classification of the label's two jobs: as a reporting category it is now handled by
+  excluding `language` from the headline and reporting agreement (never accuracy) beside its alpha.

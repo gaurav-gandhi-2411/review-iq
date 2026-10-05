@@ -27,6 +27,14 @@ A pure connection factory (a function whose body has no `.cursor(`/`cur.execute`
 of its own -- e.g. `_db_connect() -> return psycopg2.connect(...)`) is not a
 call site itself and is never flagged; the guard follows local calls to these
 factories transparently.
+
+SURFACE (what a clean run does NOT prove): it is structural. Any call to `_set_tenant` in
+the function body satisfies it -- including one placed AFTER the query, on a dead branch, or
+with the wrong org -- so it proves the convention was remembered, not applied correctly (the
+RLS integration tests are the behavioural check). It recognises `psycopg2.connect`, an
+`import psycopg2 as X` alias and `from psycopg2 import connect`; a function handed an
+already-open connection, a connection pool, or another driver (psycopg 3, asyncpg) is not
+seen. Only app/**/*.py is scanned -- not scripts/, eval/ or benchmark/.
 """
 
 from __future__ import annotations
@@ -155,13 +163,41 @@ def _walk_own_body(func_node: ast.AST) -> list[ast.AST]:
     return result
 
 
-def _is_psycopg2_connect_call(node: ast.Call) -> bool:
+def _psycopg2_aliases(tree: ast.Module) -> tuple[set[str], set[str]]:
+    """Names this file binds to the psycopg2 module, and to its `connect` function.
+
+    The name-contains-"psycopg2" test below only matched `psycopg2.connect(...)` (and
+    `_psycopg2.connect`). `import psycopg2 as pg; pg.connect(...)` and `from psycopg2 import
+    connect` opened an unscoped connection the guard never saw.
+    """
+    modules: set[str] = set()
+    functions: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name == "psycopg2" or alias.name.startswith("psycopg2."):
+                    modules.add(alias.asname or alias.name.split(".")[0])
+        elif (
+            isinstance(node, ast.ImportFrom)
+            and node.module
+            and (node.module == "psycopg2" or node.module.startswith("psycopg2."))
+        ):
+            for alias in node.names:
+                if alias.name == _CONNECT_ATTR:
+                    functions.add(alias.asname or alias.name)
+    return modules, functions
+
+
+def _is_psycopg2_connect_call(
+    node: ast.Call, aliases: tuple[set[str], set[str]] = (set(), set())
+) -> bool:
+    modules, functions = aliases
     func = node.func
     if isinstance(func, ast.Attribute) and func.attr == _CONNECT_ATTR:
         value = func.value
-        if isinstance(value, ast.Name) and "psycopg2" in value.id:
+        if isinstance(value, ast.Name) and ("psycopg2" in value.id or value.id in modules):
             return True
-    return False
+    return isinstance(func, ast.Name) and func.id in functions
 
 
 def _calls_name(func_node: ast.AST, name: str) -> bool:
@@ -182,10 +218,12 @@ def _has_cursor_usage(func_node: ast.AST) -> bool:
     return False
 
 
-def _connects_directly_or_via_factory(func_node: ast.AST, factory_names: set[str]) -> bool:
+def _connects_directly_or_via_factory(
+    func_node: ast.AST, factory_names: set[str], aliases: tuple[set[str], set[str]]
+) -> bool:
     for node in _walk_own_body(func_node):
         if isinstance(node, ast.Call):
-            if _is_psycopg2_connect_call(node):
+            if _is_psycopg2_connect_call(node, aliases):
                 return True
             called = node.func
             if isinstance(called, ast.Name) and called.id in factory_names:
@@ -198,12 +236,13 @@ def _find_factory_names(tree: ast.Module) -> set[str]:
     calls psycopg2.connect(...) somewhere in its body (typically a bare `return
     psycopg2.connect(dsn)`, but tolerant of a couple of statements around it)."""
     factories: set[str] = set()
+    aliases = _psycopg2_aliases(tree)
     for node in ast.walk(tree):
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             if _has_cursor_usage(node):
                 continue
             for inner in _walk_own_body(node):
-                if isinstance(inner, ast.Call) and _is_psycopg2_connect_call(inner):
+                if isinstance(inner, ast.Call) and _is_psycopg2_connect_call(inner, aliases):
                     factories.add(node.name)
                     break
     return factories
@@ -215,6 +254,7 @@ def check_file(path: Path, factory_names: set[str]) -> list[str]:
         return []
     source = path.read_text(encoding="utf-8")
     tree = ast.parse(source, filename=rel)
+    aliases = _psycopg2_aliases(tree)
 
     failures: list[str] = []
     for node in ast.walk(tree):
@@ -224,7 +264,7 @@ def check_file(path: Path, factory_names: set[str]) -> list[str]:
             continue  # the factory itself issues no queries -- nothing to scope
         if not _has_cursor_usage(node):
             continue  # opens no cursor -- not a real call site (e.g. a pure helper)
-        if not _connects_directly_or_via_factory(node, factory_names):
+        if not _connects_directly_or_via_factory(node, factory_names, aliases):
             continue  # doesn't open a DB connection at all -- not in scope for this guard
         if _calls_name(node, _SET_TENANT_NAME):
             continue  # tenant-scoped -- OK
@@ -239,6 +279,10 @@ def check_file(path: Path, factory_names: set[str]) -> list[str]:
 
 def main() -> int:
     paths = sorted(APP_DIR.rglob("*.py"))
+    if not paths:
+        # An empty scan used to fall through to the OK line below (renamed/moved app dir).
+        print(f"FAIL: no .py files under {APP_DIR} -- refusing to pass a scan of nothing.")
+        return 1
 
     # Factory names must be collected GLOBALLY, across every file, before checking any
     # single file's call sites -- a factory function (e.g. _db_connect) can be defined

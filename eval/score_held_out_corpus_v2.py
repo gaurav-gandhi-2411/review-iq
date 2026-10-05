@@ -23,6 +23,10 @@ measures both:
     exactly like the CI-gate set's own methodology. This isolates contamination/prompt-quality
     from language-misrouting: the delta between the two conditions is misrouting cost, not
     contamination (P3b).
+    CORRECTED in Session 15d: over all fields that delta is almost entirely the `language`
+    field itself (100% by echo when forced), NOT an extraction effect -- excluding `language`
+    the paired delta is -0.63pp [-2.77, +1.51] (eval/results/routing_cost_n106.json; ADR
+    0021 / ADR 0023 "Correction" sections). The published headline therefore excludes it.
 
 Only fixtures where detect_language() disagrees with the ground-truth language need a SEPARATE
 call for the language_forced condition (same-language items reuse the as_deployed result --
@@ -53,12 +57,24 @@ from eval.bootstrap import bootstrap_ci  # noqa: E402
 from eval.free_text_scoring import SCORER_VERSION  # noqa: E402
 from eval.provenance import get_git_sha, now_iso  # noqa: E402
 from eval.runner import score_fixture  # noqa: E402
+from eval.wilson import wilson_ci  # noqa: E402
 
 QUARANTINE_DIR = ROOT / "eval" / "fixtures" / "_held_out_hindi_hinglish"
 HELD_OUT_CASSETTES_PATH = ROOT / "eval" / "cassettes" / "held_out_cassettes.json"
 OUT_PATH = ROOT / "eval" / "results" / "held_out_scoring_v2.json"
 
 DELAY_SECONDS = 2.0  # courtesy pacing on production's own shared org quota
+
+# Session 15d (D7): fields excluded from the headline for being echo/label-noise rather than
+# extraction signal (see summarize()).
+HEADLINE_ECHO_FIELDS = ("language",)
+# Inter-rater Krippendorff alpha on `language` in this corpus. QUOTED from ADR 0023, NOT
+# recomputed here -- carried in the artifact with its source so the renderer never hand-types it.
+LANGUAGE_LABEL_ALPHA = 0.380
+LANGUAGE_LABEL_ALPHA_SOURCE = (
+    "docs/architecture/adr/0023-language-boundary-abstraction-recommendation.md (quoted, "
+    "not recomputed)"
+)
 
 
 def load_quarantined_fixtures() -> list[dict[str, Any]]:
@@ -180,8 +196,32 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
         lo, hi = bootstrap_ci(v)
         overall_excl_ci[c] = {"lower": lo, "upper": hi, "n": len(v)}
 
+    # Session 15d (D7): the published headline ALSO drops `language`. Not "constant" in the
+    # sense above (as deployed it varies), but it carries no extraction signal: in the forced
+    # condition the prompt says `language: always "hi-en"` so the field is 100% by echo, and as
+    # deployed it equals detector-vs-corpus-label agreement exactly, against a label whose
+    # inter-rater alpha is 0.380 (scripts/measure_routing_cost.py asserts both per fixture;
+    # eval/results/routing_cost_n106.json). Kept in the all-fields and stars-only figures below,
+    # which stay disclosed beside the headline.
+    echo_fields = [f for f in HEADLINE_ECHO_FIELDS if f in informative]
+    headline_fields = [f for f in informative if f not in echo_fields]
+    headline_per_record = {
+        c: [mean(r[c]["field_scores"][f] for f in headline_fields) for r in records]
+        for c in conditions
+    }
+    headline = {c: mean(v) for c, v in headline_per_record.items()} if headline_fields else {}
+    headline_ci: dict[str, dict[str, float]] = {}
+    for c, v in headline_per_record.items():
+        if not headline_fields:
+            break
+        lo, hi = bootstrap_ci(v)
+        headline_ci[c] = {"lower": lo, "upper": hi, "n": len(v)}
+
     settings = get_settings()
     n_mismatched = sum(1 for r in records if r["detected_language"] != r["gt_language"])
+    n = len(records)
+    agreement = 1 - (n_mismatched / n) if n else None
+    agreement_ci = wilson_ci(agreement, n) if agreement is not None else None
     return {
         "generated_at": now_iso(),
         "git_sha": get_git_sha(),
@@ -190,14 +230,29 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
         "groq_model_large": settings.groq_model_large,
         "n_fixtures": len(records),
         "n_language_mismatched": n_mismatched,
-        "language_detection_accuracy": 1 - (n_mismatched / len(records)) if records else None,
+        # Renamed from `language_detection_accuracy` (Session 15d): the value is the detector's
+        # AGREEMENT with the corpus's language label, not accuracy. That label is itself noisy
+        # (inter-rater alpha 0.380), so this partly measures label noise, not detector error.
+        "language_label_agreement": agreement,
+        "language_label_agreement_wilson_95": (
+            {"lower": agreement_ci[0], "upper": agreement_ci[1], "n": n} if agreement_ci else None
+        ),
+        "language_label_alpha": LANGUAGE_LABEL_ALPHA,
+        "language_label_alpha_source": LANGUAGE_LABEL_ALPHA_SOURCE,
         "as_deployed": cond_summary("as_deployed"),
         "language_forced": cond_summary("language_forced"),
         "constant_fields": constant_fields,
+        # Stars-only-excluded figure (the pre-D7 headline), kept as a disclosed, not published,
+        # number: it still counts the `language` field.
         "overall_score_excluding_constant_fields": overall_excl,
         # Bootstrap CI (10,000 resamples, seed 42, eval/bootstrap.py defaults) over the
-        # per-review means excluding constant fields -- the interval for the headline figure.
+        # per-review means excluding constant fields.
         "overall_score_excluding_constant_fields_ci_95": overall_excl_ci,
+        # The published headline (D7): excludes constant fields AND the echo/label-noise fields.
+        "headline_echo_fields": echo_fields,
+        "headline_fields": headline_fields,
+        "overall_score_headline": headline,
+        "overall_score_headline_ci_95": headline_ci,
     }
 
 

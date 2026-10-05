@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-09-20T07:07:41Z",
-  "git_sha": "049c8c9a1afd210243a8248f408e73a550ae0090",
+  "generated_at": "2026-09-20T08:57:30Z",
+  "git_sha": "c4dcfcd93e76d8be3b42b3c33c380586645e916c",
   "predictions_source": "eval/results/held_out_scoring_v2.json",
-  "predictions_git_sha": "5c5c8e0205e97ffbb1e4d3a6dd3d174fed7e3f3b",
+  "predictions_git_sha": "c4dcfcd93e76d8be3b42b3c33c380586645e916c",
   "scorer_version": "2026-09-20.free-text-v1",
   "method": {
     "bootstrap": "percentile, paired, 10000 resamples, seed 42, unclamped",
@@ -54,8 +54,8 @@
     "n_mismatched": 55,
     "n_mismatch_gt_hi_en_detected_en": 53,
     "n_mismatch_gt_en_detected_hi_en": 2,
-    "detector_accuracy_vs_corpus_label": 0.4811320754716981,
-    "detector_accuracy_wilson95": [
+    "detector_agreement_with_corpus_label": 0.4811320754716981,
+    "detector_agreement_wilson95": [
       0.3883495495648823,
       0.5752343749227435
     ]
@@ -675,8 +675,8 @@
   },
   "detector_baselines": {
     "always_hi_en": {
-      "accuracy": 0.9528301886792453,
-      "accuracy_wilson95": [
+      "agreement_with_corpus_label": 0.9528301886792453,
+      "agreement_wilson95": [
         0.8942995856883567,
         0.9796862266086237
       ],
@@ -688,8 +688,8 @@
       "n_pred_hi_en": 106
     },
     "always_en": {
-      "accuracy": 0.04716981132075472,
-      "accuracy_wilson95": [
+      "agreement_with_corpus_label": 0.04716981132075472,
+      "agreement_wilson95": [
         0.020313773391376265,
         0.10570041431164334
       ],
@@ -701,8 +701,8 @@
       "n_pred_hi_en": 0
     },
     "production_detect_language": {
-      "accuracy": 0.4811320754716981,
-      "accuracy_wilson95": [
+      "agreement_with_corpus_label": 0.4811320754716981,
+      "agreement_wilson95": [
         0.3883495495648823,
         0.5752343749227435
       ],
@@ -714,8 +714,8 @@
       "n_pred_hi_en": 50
     },
     "strong_regex_only": {
-      "accuracy": 0.4716981132075472,
-      "accuracy_wilson95": [
+      "agreement_with_corpus_label": 0.4716981132075472,
+      "agreement_wilson95": [
         0.37932593057045705,
         0.5660499561609816
       ],
@@ -727,8 +727,8 @@
       "n_pred_hi_en": 49
     },
     "strong_or_any_weak_marker": {
-      "accuracy": 0.9528301886792453,
-      "accuracy_wilson95": [
+      "agreement_with_corpus_label": 0.9528301886792453,
+      "agreement_wilson95": [
         0.8942995856883567,
         0.9796862266086237
       ],
@@ -740,8 +740,8 @@
       "n_pred_hi_en": 106
     },
     "strong_or_2plus_weak_markers": {
-      "accuracy": 0.5188679245283019,
-      "accuracy_wilson95": [
+      "agreement_with_corpus_label": 0.5188679245283019,
+      "agreement_wilson95": [
         0.42476562507725646,
         0.6116504504351177
       ],

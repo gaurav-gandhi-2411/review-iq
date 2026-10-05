@@ -1,0 +1,162 @@
+{
+  "generated_at": "2026-09-20T09:11:25Z",
+  "git_sha": "26c454928a2353992fbca5eee0bc680ae3685100",
+  "inputs": [
+    "eval/results/held_out_scoring_v2.json",
+    "eval/results/token_cost_measurement_n106.json"
+  ],
+  "n_calls": 30,
+  "expected_tokens": {
+    "small_pool": 75743.02325581395,
+    "large_pool": 42682.92452830188,
+    "note": "an escalated call charges both pools; the per-pool maximum is the small pool",
+    "ceiling_per_model": 95000
+  },
+  "delta_sd_held_out": {
+    "all_106": 0.11169499538298344,
+    "nonzero_only": 0.1584593076671478,
+    "n_nonzero": 53
+  },
+  "verdict_probabilities_by_true_effect": {
+    "-8pp": {
+      "sd_all_106": {
+        "futility": 0.9293706974598896,
+        "non_inferior": 5.124151943092237e-06,
+        "not_decided": 0.07062417838816726
+      },
+      "sd_nonzero_only": {
+        "futility": 0.8501239320913573,
+        "non_inferior": 0.0001128897253296346,
+        "not_decided": 0.14976317818331308
+      }
+    },
+    "-6pp": {
+      "sd_all_106": {
+        "futility": 0.6880651555220719,
+        "non_inferior": 0.0003005470628961726,
+        "not_decided": 0.3116342974150319
+      },
+      "sd_nonzero_only": {
+        "futility": 0.6351990055600418,
+        "non_inferior": 0.0013634097728999484,
+        "not_decided": 0.3634375846670582
+      }
+    },
+    "-5pp": {
+      "sd_all_106": {
+        "futility": 0.5,
+        "non_inferior": 0.0016371101596324156,
+        "not_decided": 0.4983628898403676
+      },
+      "sd_nonzero_only": {
+        "futility": 0.5,
+        "non_inferior": 0.0040090100000304,
+        "not_decided": 0.4959909899999696
+      }
+    },
+    "-4pp": {
+      "sd_all_106": {
+        "futility": 0.31193484447792796,
+        "non_inferior": 0.007135406659011467,
+        "not_decided": 0.6809297488630606
+      },
+      "sd_nonzero_only": {
+        "futility": 0.36480099443995806,
+        "non_inferior": 0.010564958055325091,
+        "not_decided": 0.6246340475047168
+      }
+    },
+    "-3pp": {
+      "sd_all_106": {
+        "futility": 0.1633588045837212,
+        "non_inferior": 0.024997895148220373,
+        "not_decided": 0.8116433002680584
+      },
+      "sd_nonzero_only": {
+        "futility": 0.24468535952209808,
+        "non_inferior": 0.024997895148220373,
+        "not_decided": 0.7303167453296815
+      }
+    },
+    "-2pp": {
+      "sd_all_106": {
+        "futility": 0.0706293025401103,
+        "non_inferior": 0.07083145731106155,
+        "not_decided": 0.8585392401488281
+      },
+      "sd_nonzero_only": {
+        "futility": 0.14987606790864272,
+        "non_inferior": 0.053226309776644,
+        "not_decided": 0.7968976223147133
+      }
+    },
+    "-1pp": {
+      "sd_all_106": {
+        "futility": 0.024910733127840146,
+        "non_inferior": 0.16372744897399305,
+        "not_decided": 0.8113618178981667
+      },
+      "sd_nonzero_only": {
+        "futility": 0.08339069209758998,
+        "non_inferior": 0.10227583369250426,
+        "not_decided": 0.8143334742099058
+      }
+    },
+    "+0pp": {
+      "sd_all_106": {
+        "futility": 0.007105858018198019,
+        "non_inferior": 0.31246340922112736,
+        "not_decided": 0.6804307327606747
+      },
+      "sd_nonzero_only": {
+        "futility": 0.04196945584906159,
+        "non_inferior": 0.17799450153008745,
+        "not_decided": 0.780036042620851
+      }
+    },
+    "+1pp": {
+      "sd_all_106": {
+        "futility": 0.0016292339973366654,
+        "non_inferior": 0.50059587570653,
+        "not_decided": 0.4977748902961333
+      },
+      "sd_nonzero_only": {
+        "futility": 0.019042899587975393,
+        "non_inferior": 0.2818414229373477,
+        "not_decided": 0.6991156774746768
+      }
+    },
+    "+2pp": {
+      "sd_all_106": {
+        "futility": 0.0002988963986986781,
+        "non_inferior": 0.6885933332645621,
+        "not_decided": 0.3111077703367392
+      },
+      "sd_nonzero_only": {
+        "futility": 0.007769110848575678,
+        "non_inferior": 0.4083758523795694,
+        "not_decided": 0.5838550367718549
+      }
+    },
+    "+3pp": {
+      "sd_all_106": {
+        "futility": 4.372888540976616e-05,
+        "non_inferior": 0.8370093001814077,
+        "not_decided": 0.16294697093318244
+      },
+      "sd_nonzero_only": {
+        "futility": 0.002844044805560997,
+        "non_inferior": 0.5453534144947715,
+        "not_decided": 0.4518025406996675
+      }
+    }
+  },
+  "se_at_n30": {
+    "sd_all_106": 0.02039262284389847,
+    "sd_nonzero_only": 0.028930579085316058
+  },
+  "min_observed_mean_to_certify": {
+    "sd_all_106": 0.009969540774041004,
+    "sd_nonzero_only": 0.026703935007219466
+  }
+}
