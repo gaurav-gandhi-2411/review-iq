@@ -131,23 +131,20 @@ for why the gate is what it is and how the prompt version history got out of syn
 file in the past.
 
 > **Re-measured against the models actually deployed, then corrected again:** the original
-> published figures (86.2/80.9/80.7/83.8) were measured under the now-deprecated
-> `llama-3.1-8b-instant`/`llama-3.3-70b-versatile`. The 2026-09-05 re-record against
-> `openai/gpt-oss-20b`/`openai/gpt-oss-120b` first measured 77.6/75.0/80.6/81.3 (English and
-> Overall below their gates) — then a scoring-harness bug fix (a fixture was being hard-zeroed
+> published figures were measured under the now-deprecated
+> `llama-3.1-8b-instant`/`llama-3.3-70b-versatile` (retired; see the Historical releases block
+> below). The 2026-09-05 re-record against
+> `openai/gpt-oss-20b`/`openai/gpt-oss-120b` first measured English and Overall below their
+> gates — then a scoring-harness bug fix (a fixture was being hard-zeroed
 > on a mislabeled security failure even when an injection attempt had zero effect) raised that
-> to the numbers below. Nothing was tuned to recover a number at either step; both were real
+> to the headline figure below. Nothing was tuned to recover a number at either step; both were real
 > measurement corrections. 95% CIs are paired bootstrap over the fixture set. (Which specific
 > API key recorded the original re-record is not recoverable from the committed artifacts —
 > the cassette format does not capture caller identity; see `ops/runbooks/eval-cassette-rerecord.md`.)
 
-<!-- METRICS:START:extraction_table -->**Prompt v2.3** &middot; `5c5c8e0` &middot; measured 2026-09-19T21:59:11Z &middot; mode: direct (local LLM)
+<!-- METRICS:START:extraction_table -->**Prompt v2.3** &middot; `5c5c8e0` &middot; mode: direct (local LLM)
 
-| Language | Score | 95% CI | Gate | Status |
-|---|---|---|---|---|
-| en | 78.2% | [73.7%, 82.3%] | ≥77% | PASS |
-| hi-en | 79.3% | [66.8%, 87.7%] | ≥75% | PASS |
-| **Overall** | **78.6%** | [73.2%, 82.9%] | ≥76% | PASS |
+**Headline accuracy: 78.6% (95% CI 73–83%, n=43, eval 2026-09-19)** -- CI gate ≥76%: PASS.
 
 n=43 fixtures (27 en, 16 hi-en). Tiered routing is ON by default in production and in this eval run (`ENABLE_TIERED_ROUTING` defaults `true`, unset in CI) -- a same-cassette `--routed` comparison produced byte-identical scores to the numbers above; there is currently no distinct *unrouted* measurement to report separately (see [ADR 0001](docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md)).<!-- METRICS:END -->
 
@@ -157,7 +154,7 @@ calls; see `eval/README.md`). Nightly runs post results to Slack.
 
 ### Real-world accuracy (uncontaminated, held-out corpus)
 
-The table above is a **regression detector**: it's measured against fixtures the prompt was
+The headline figure above is a **regression detector**: it's measured against fixtures the prompt was
 developed and tuned against, so it tells you "did this change break something," not "how
 accurate is this in the real world." The table below is the honest answer to the second
 question — scored against 106 real Indian marketplace reviews mined independently of prompt
@@ -174,7 +171,7 @@ development, never seen by anyone iterating on the prompt.
 
 **Headline definition change (Session 15d).** Until Session 15d the headline averaged every field except `stars`; dropping `language` moves the as-deployed headline from 69.7% to 72.4% and the forced row from 74.9% to 71.8%. The recorded model outputs are byte-identical; only which fields are averaged changed.
 
-n=106 real Hinglish reviews the prompt has never seen (never used for prompt development), 0 hi (see [ADR 0016](docs/architecture/adr/0016-third-judge-corpus-batch-1-and-sentiment-recheck.md)). Production's own language detector, measured against this corpus's language label: agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error). This is the number to trust for real-world extraction accuracy; the CI-gate table above is a regression detector, not a real-world accuracy claim -- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) (its misrouting-cost finding was corrected in Session 15d).
+n=106 real Hinglish reviews the prompt has never seen (never used for prompt development), 0 hi (see [ADR 0016](docs/architecture/adr/0016-third-judge-corpus-batch-1-and-sentiment-recheck.md)). Production's own language detector, measured against this corpus's language label: agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error). This is the number to trust for real-world extraction accuracy; the CI-gate headline above is a regression detector, not a real-world accuracy claim -- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) (its misrouting-cost finding was corrected in Session 15d).
 
 **Scoring note (scorer `2026-09-20.free-text-v1`).** Free-text fields (`product`, `topics`, `competitor_mentions`) are compared after normalization, so different correct spellings of "no product named" (`unknown` vs `unknown product`) and near-identical topic labels (`battery` vs `battery_life`) are no longer scored wrong. Earlier published figures used exact-string matching on the same recorded model outputs and counted all fields (the same basis as the all-fields figures above): as deployed, 68.3% then vs 72.7% now. The model's outputs did not change, only the comparator ([ADR 0030](docs/architecture/adr/0030-free-text-scorers.md)).<!-- METRICS:END -->
 
@@ -351,7 +348,7 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 **Phase 2.0b** ✓ (shipped May 2026):
 - Language detection — Devanagari regex + Hinglish keyword heuristics + lingua-py confidence
 - Language-branched prompts (v2.0) — en / hi-en / hi, each with explicit English-output instruction
-- 46-fixture eval suite — 25 English + 16 Hinglish (Claude Sonnet auto-labeled) + 6 Hindi (synthetic + verified, experimental — see [Corpus and language scope](#corpus-and-language-scope))
+- 46-fixture eval suite — 25 English + 16 Hinglish (Claude Sonnet auto-labeled) + 6 Hindi as shipped (synthetic; later retired from scoring — Devanagari Hindi is not supported, see [Corpus and language scope](#corpus-and-language-scope) and [ADR 0022](docs/architecture/adr/0022-hindi-retirement.md))
 - Per-language CI gate — <!-- METRICS:HISTORICAL -->overall ≥ 85%, each language ≥ 80%<!-- /METRICS:HISTORICAL --> as shipped (lowered to the current threshold on 2026-06-14 — see [ADR 0001](docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md) and [Eval results](#eval-results))
 - Nightly Slack drift alerts — eval results posted to channel after every scheduled run
 

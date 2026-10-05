@@ -15,6 +15,7 @@ from scripts.render_metrics import (
     render_extraction_table_md,
     render_file,
     render_gate_summary_md,
+    render_headline_accuracy,
     render_held_out_table_md,
     render_known_gaps_html,
     render_language_table_html,
@@ -60,23 +61,33 @@ EXTRACTION_DATA = {
 
 
 class TestRenderExtractionTableMd:
-    def test_contains_all_languages_and_overall(self):
+    def test_headline_is_the_single_sanctioned_string(self):
+        # GG display rule (2026-10-05): point estimate + whole-percent CI + n + eval date, together.
         out = render_extraction_table_md(EXTRACTION_DATA)
-        assert "en |" in out
-        assert "hi-en |" in out
-        assert "**Overall**" in out
-        assert "83.8%" in out
-        assert "PASS" in out
+        assert "83.8% (95% CI 71–92%, n=49, eval 2026-07-30)" in out
+        assert render_headline_accuracy(EXTRACTION_DATA) in out
 
-    def test_language_order_matches_repo_convention(self):
+    def test_no_per_language_scores_or_table(self):
         out = render_extraction_table_md(EXTRACTION_DATA)
-        # en, then hi-en, then hi -- not alphabetical.
-        assert out.index("| en |") < out.index("| hi-en |") < out.index("| hi |")
+        assert "| Language |" not in out
+        assert "86.2%" not in out  # en score
+        assert "80.9%" not in out  # hi-en score
+        # per-language fixture counts are sample sizes, not accuracy, and stay.
+        assert "27 en" in out
+
+    def test_headline_values_follow_the_data_not_constants(self):
+        data = {
+            **EXTRACTION_DATA,
+            "overall_score": 0.786,
+            "overall_ci_95": {"n": 43, "lower": 0.732, "upper": 0.829},
+            "generated_at": "2026-09-19T21:59:11Z",
+        }
+        assert render_headline_accuracy(data) == "78.6% (95% CI 73–83%, n=43, eval 2026-09-19)"
 
     def test_fail_status_shown_when_not_passed(self):
         data = {**EXTRACTION_DATA, "passed": False}
         out = render_extraction_table_md(data)
-        assert "**FAIL**" in out or "FAIL |" in out
+        assert "FAIL" in out and "PASS" not in out
 
     def test_routing_note_present_when_tiered_routing_on(self):
         out = render_extraction_table_md(EXTRACTION_DATA)
@@ -136,39 +147,30 @@ class TestRenderGateSummaryMd:
 
 
 class TestRenderExtractionTableHtml:
-    def test_renders_a_row_per_language_plus_overall(self):
+    def test_renders_one_headline_row_and_no_per_language_rows(self):
+        # GG display rule (2026-10-05): a single headline row; per-language scores not shown.
         out = render_extraction_table_html(EXTRACTION_DATA)
-        assert out.count("<tr") == 4  # 3 languages + overall
-        assert "86.2%" in out
-        assert "83.8%" in out
+        assert out.count("<tr") == 1
+        assert render_headline_accuracy(EXTRACTION_DATA) in out
+        assert "86.2%" not in out  # en score
+        assert "80.9%" not in out  # hi-en score
+        assert "Hinglish" not in out
 
-    def test_all_passing_renders_green_pass_everywhere(self):
+    def test_all_passing_renders_pass(self):
         out = render_extraction_table_html(EXTRACTION_DATA)
-        assert out.count("PASS") == 4
+        assert out.count("PASS") == 1
         assert "FAIL" not in out
         assert "status-fail" not in out
 
-    def test_failing_language_renders_red_fail_not_green_pass(self):
-        # Regression test (Session 5 P4, 2026-09-10): every row used to hardcode the
-        # green PASS badge unconditionally, ignoring info["passed"]/data["passed"] --
-        # found on review-iq's own committed site/index.html, which was claiming PASS
-        # for English and Overall while both were actually below their gate.
-        data = {
-            **EXTRACTION_DATA,
-            "overall_score": 0.776,
-            "passed": False,
-            "per_language": {
-                **EXTRACTION_DATA["per_language"],
-                "en": {**EXTRACTION_DATA["per_language"]["en"], "score": 0.750, "passed": False},
-            },
-        }
+    def test_failing_overall_renders_fail_not_green_pass(self):
+        # Regression test (Session 5 P4, 2026-09-10): the badge used to be hardcoded green
+        # PASS regardless of data["passed"] -- found on the committed site/index.html.
+        data = {**EXTRACTION_DATA, "overall_score": 0.776, "passed": False}
         out = render_extraction_table_html(data)
-        assert out.count("FAIL") == 2  # en row + overall row
-        assert out.count("PASS") == 2  # hi + hi-en rows only
-        # Session 15c C8: FAIL is carried by the status-fail class (glyph + weight), since
-        # the page palette has no red hue -- the count still proves it is per-row, not global.
-        assert out.count("status-fail") == 2
-        assert out.count("status-pass") == 2
+        assert out.count("FAIL") == 1
+        assert "PASS" not in out
+        assert "status-fail" in out
+        assert "status-pass" not in out
 
 
 class TestSiteIndexBlocksAreBrandPaletteOnly:
@@ -220,33 +222,14 @@ class TestRenderLanguageTableHtml:
         assert out.count("<tr") == 2
         assert "Devanagari" not in out
 
-    def test_all_passing_marks_every_row_as_passing(self):
+    def test_no_per_language_accuracy_is_rendered(self):
+        # GG display rule (2026-10-05): this table lists supported languages only.
         out = render_language_table_html(EXTRACTION_DATA)
-        assert "status-fail" not in out
-        assert "below" not in out
-
-    def test_failing_language_is_marked_with_gate_note(self):
-        # Regression test (Session 5 P4, 2026-09-10): same class of bug as
-        # render_extraction_table_html -- the accuracy cell hardcoded a green class
-        # unconditionally, so a failing language's score would render as if it passed.
-        data = {
-            **EXTRACTION_DATA,
-            "per_language": {
-                **EXTRACTION_DATA["per_language"],
-                "en": {
-                    **EXTRACTION_DATA["per_language"]["en"],
-                    "score": 0.750,
-                    "passed": False,
-                    "threshold": 0.74,
-                },
-            },
-        }
-        out = render_language_table_html(data)
-        assert "status-fail" in out
-        assert "below 74% gate" in out
-        # hi-en still passes and must not be collateral-marked failing. (hi is no
-        # longer rendered at all -- see test_renders_two_rows.)
-        assert out.count("status-pass") == 1
+        assert "%" not in out
+        assert "86.2" not in out
+        assert "80.9" not in out
+        assert "English" in out
+        assert "Hinglish" in out
 
     def test_no_tailwind_palette_classes(self):
         # Session 15c S8b: the docs page shares the marketing page's blue-free palette.
