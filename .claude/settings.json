@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.local)",
+      "Read(**/.env.*.local)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell|Read|Grep|Glob",
+        "hooks": [
+          { "type": "command", "command": "python scripts/hook_guard_secrets.py", "timeout": 10 }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|PowerShell|Read|Grep",
+        "hooks": [
+          { "type": "command", "command": "python scripts/hook_guard_secrets.py", "timeout": 10 }
+        ]
+      }
+    ]
+  }
+}

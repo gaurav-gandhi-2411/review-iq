@@ -69,32 +69,38 @@ def _fmt_pct(x: float, decimals: int = 1) -> str:
     return f"{x * 100:.{decimals}f}%"
 
 
+def render_headline_accuracy(data: dict[str, Any]) -> str:
+    """The one sanctioned display of headline accuracy (GG display rule, 2026-10-05).
+
+    Always "78.6% (95% CI 73-83%, n=43, eval 2026-09-19)" -- point estimate, whole-percent CI,
+    sample size and eval date together, never a bare number and never split per language.
+    Everything is read from the eval JSON so it cannot be hand-typed or drift.
+    """
+    ci = data["overall_ci_95"]
+    return (
+        f"{_fmt_pct(data['overall_score'])} "
+        f"(95% CI {ci['lower'] * 100:.0f}–{ci['upper'] * 100:.0f}%, "
+        f"n={ci['n']}, eval {data['generated_at'][:10]})"
+    )
+
+
 def render_extraction_table_md(data: dict[str, Any]) -> str:
-    """Render the current extraction-eval summary as a Markdown table + prose (README.md)."""
+    """Render the current extraction-eval summary as the headline line + prose (README.md).
+
+    Name kept for the `extraction_table` marker block. Per-language scores are deliberately
+    not rendered: n=27/n=16 slices carry CIs too wide to headline (hi-en 66.8%-87.7%).
+    """
     per_lang = data["per_language"]
     langs = _ordered_languages(per_lang)
+    overall_status = "PASS" if data["passed"] else "FAIL"
     lines = [
         f"**Prompt {data['prompt_version']}**"
         + (f" &middot; `{data['git_sha'][:7]}`" if data.get("git_sha") else "")
-        + f" &middot; measured {data['generated_at']} &middot; mode: {data['mode']}",
+        + f" &middot; mode: {data['mode']}",
         "",
-        "| Language | Score | 95% CI | Gate | Status |",
-        "|---|---|---|---|---|",
+        f"**Headline accuracy: {render_headline_accuracy(data)}** -- "
+        f"CI gate ≥{data['threshold']:.0%}: {overall_status}.",
     ]
-    for lang in langs:
-        info = per_lang[lang]
-        status = "PASS" if info["passed"] else "FAIL"
-        lines.append(
-            f"| {lang} | {_fmt_pct(info['score'])} "
-            f"| [{_fmt_pct(info['ci_95']['lower'])}, {_fmt_pct(info['ci_95']['upper'])}] "
-            f"| ≥{info['threshold']:.0%} | {status} |"
-        )
-    overall_status = "PASS" if data["passed"] else "FAIL"
-    lines.append(
-        f"| **Overall** | **{_fmt_pct(data['overall_score'])}** "
-        f"| [{_fmt_pct(data['overall_ci_95']['lower'])}, {_fmt_pct(data['overall_ci_95']['upper'])}] "
-        f"| ≥{data['threshold']:.0%} | {overall_status} |"
-    )
 
     n_total = data["overall_ci_95"]["n"]
     lang_counts = ", ".join(f"{per_lang[lang]['n']} {lang}" for lang in langs)
@@ -257,7 +263,7 @@ def render_held_out_table_md(data: dict[str, Any]) -> str:
         f"prompt development), 0 hi (see [ADR 0016](docs/architecture/adr/0016-third-judge-corpus-batch-1-and-sentiment-recheck.md)). "
         f"Production's own language detector, measured against this corpus's language label: "
         f"{agreement_text}. This is the number to trust for real-world extraction accuracy; "
-        f"the CI-gate table above is a regression detector, not a real-world accuracy claim "
+        f"the CI-gate headline above is a regression detector, not a real-world accuracy claim "
         f"-- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) "
         f"(its misrouting-cost finding was corrected in Session 15d).",
     ]
@@ -467,61 +473,34 @@ def _status_badge_html(passed: bool) -> str:
 
 
 def render_extraction_table_html(data: dict[str, Any]) -> str:
-    """Render the accuracy `<tbody>` rows for site/index.html.
+    """Render the single headline-accuracy `<tbody>` row for site/index.html.
 
-    Bug fix (Session 5 P4, 2026-09-10): every row previously hardcoded the green PASS
-    badge unconditionally, regardless of `info["passed"]`/`data["passed"]` -- found while
-    resetting the gate thresholds, before it ever had a chance to silently render a FAIL
-    result as PASS. Also adds the 95% CI column and per-fixture-n label to match the
-    hand-authored fix this generator would otherwise clobber on the next run.
+    GG display rule (2026-10-05): one headline string, no per-language rows. History: Session 5
+    P4 fixed a hardcoded green PASS badge on every row -- the overall status still comes from
+    `data["passed"]`, never a constant.
     """
-    per_lang = data["per_language"]
-    # Session 11 P4d: "hi" (Devanagari) retired from this gate entirely (ADR 0022) -- no
-    # longer a row here at all, not even an "experimental" one. See render_language_table_html
-    # for the matching change on the other table this same source data feeds.
-    lang_labels = {"en": "English", "hi-en": "Hinglish"}
-    lang_scope_note: dict[str, str] = {}
-    rows: list[str] = []
-    for lang in sorted(per_lang):
-        info = per_lang[lang]
-        label = lang_labels.get(lang, lang)
-        scope_note = lang_scope_note.get(lang, "")
-        rows.append(
-            "            <tr>\n"
-            f"              <td>{label} "
-            f'<span class="muted">({lang}, n={info["n"]}{scope_note})</span></td>\n'
-            f'              <td class="num">{_fmt_pct(info["score"])}</td>\n'
-            f'              <td class="ci">'
-            f"[{_fmt_pct(info['ci_95']['lower'])}, {_fmt_pct(info['ci_95']['upper'])}]</td>\n"
-            f'              <td class="gate">&ge;{info["threshold"]:.0%}</td>\n'
-            f"              {_status_badge_html(info['passed'])}\n"
-            "            </tr>"
-        )
-    rows.append(
+    return (
+        "\n"
         '            <tr class="row-total">\n'
-        f"              <td>Overall "
-        f'<span class="muted">(n={data["overall_ci_95"]["n"]})</span></td>\n'
-        f'              <td class="num">{_fmt_pct(data["overall_score"])}</td>\n'
-        f'              <td class="ci">'
-        f"[{_fmt_pct(data['overall_ci_95']['lower'])}, {_fmt_pct(data['overall_ci_95']['upper'])}]</td>\n"
+        "              <td>Overall extraction accuracy</td>\n"
+        f'              <td class="num">{render_headline_accuracy(data)}</td>\n'
         f'              <td class="gate">&ge;{data["threshold"]:.0%}</td>\n'
         f"              {_status_badge_html(data['passed'])}\n"
-        "            </tr>"
+        "            </tr>\n"
+        "          "
     )
-    return "\n" + "\n".join(rows) + "\n          "
 
 
 def render_language_table_html(data: dict[str, Any]) -> str:
-    """Render the language-support accuracy `<tbody>` rows for site/docs/index.html.
+    """Render the language-support `<tbody>` rows for site/docs/index.html (no scores).
 
-    Bug fix (Session 5 P4, 2026-09-10): the accuracy cell previously hardcoded
-    text-green-400 unconditionally -- same class of bug as render_extraction_table_html,
-    found the same session. A failing language is now marked with its gate noted inline.
-    Session 15c S8b: emits semantic classes (`path`, `ci`, `num`, `status-pass`/`status-fail`)
-    defined in site/docs/index.html's own stylesheet, not Tailwind palette classes -- the docs
-    page shares the marketing page's palette, which has no blue/green/red.
+    GG display rule (2026-10-05): per-language accuracy is not displayed; headline accuracy
+    lives only in `render_headline_accuracy`.
+
+    Session 15c S8b: emits semantic classes (`path`, `ci`) defined in site/docs/index.html's
+    own stylesheet, not Tailwind palette classes -- the docs page shares the marketing page's
+    palette, which has no blue/green/red.
     """
-    per_lang = data["per_language"]
     # Session 11 P4d: Devanagari Hindi retired from this gate entirely (ADR 0022) -- real
     # Devanagari-script review yield in the largest corpus available to this project is
     # zero, not just thin. Not listed as a language row at all anymore (not even as
@@ -532,15 +511,11 @@ def render_language_table_html(data: dict[str, Any]) -> str:
     ]
     rows: list[str] = []
     for code, label, script in rows_spec:
-        info = per_lang[code]
-        status = "status-pass" if info["passed"] else "status-fail"
-        suffix = "" if info["passed"] else f" (below {info['threshold']:.0%} gate)"
         rows.append(
             "              <tr>\n"
             f'                <td class="path">{code}</td>\n'
             f"                <td>{label}</td>\n"
             f'                <td class="ci">{script}</td>\n'
-            f'                <td class="num {status}">{_fmt_pct(info["score"])}{suffix}</td>\n'
             "              </tr>"
         )
     return "\n" + "\n".join(rows) + "\n            "
