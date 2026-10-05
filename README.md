@@ -131,12 +131,13 @@ for why the gate is what it is and how the prompt version history got out of syn
 file in the past.
 
 > **Re-measured against the models actually deployed, then corrected again:** the original
-> published figures (86.2/80.9/80.7/83.8) were measured under the now-deprecated
-> `llama-3.1-8b-instant`/`llama-3.3-70b-versatile`. The 2026-09-05 re-record against
-> `openai/gpt-oss-20b`/`openai/gpt-oss-120b` first measured 77.6/75.0/80.6/81.3 (English and
-> Overall below their gates) — then a scoring-harness bug fix (a fixture was being hard-zeroed
+> published figures were measured under the now-deprecated
+> `llama-3.1-8b-instant`/`llama-3.3-70b-versatile` (retired; see the Historical releases block
+> below). The 2026-09-05 re-record against
+> `openai/gpt-oss-20b`/`openai/gpt-oss-120b` first measured English and Overall below their
+> gates — then a scoring-harness bug fix (a fixture was being hard-zeroed
 > on a mislabeled security failure even when an injection attempt had zero effect) raised that
-> to the numbers below. Nothing was tuned to recover a number at either step; both were real
+> to the headline figure below. Nothing was tuned to recover a number at either step; both were real
 > measurement corrections. 95% CIs are paired bootstrap over the fixture set. (Which specific
 > API key recorded the original re-record is not recoverable from the committed artifacts —
 > the cassette format does not capture caller identity; see `ops/runbooks/eval-cassette-rerecord.md`.)
@@ -347,7 +348,7 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 **Phase 2.0b** ✓ (shipped May 2026):
 - Language detection — Devanagari regex + Hinglish keyword heuristics + lingua-py confidence
 - Language-branched prompts (v2.0) — en / hi-en / hi, each with explicit English-output instruction
-- 46-fixture eval suite — 25 English + 16 Hinglish (Claude Sonnet auto-labeled) + 6 Hindi (synthetic + verified, experimental — see [Corpus and language scope](#corpus-and-language-scope))
+- 46-fixture eval suite — 25 English + 16 Hinglish (Claude Sonnet auto-labeled) + 6 Hindi as shipped (synthetic; later retired from scoring — Devanagari Hindi is not supported, see [Corpus and language scope](#corpus-and-language-scope) and [ADR 0022](docs/architecture/adr/0022-hindi-retirement.md))
 - Per-language CI gate — <!-- METRICS:HISTORICAL -->overall ≥ 85%, each language ≥ 80%<!-- /METRICS:HISTORICAL --> as shipped (lowered to the current threshold on 2026-06-14 — see [ADR 0001](docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md) and [Eval results](#eval-results))
 - Nightly Slack drift alerts — eval results posted to channel after every scheduled run
 
