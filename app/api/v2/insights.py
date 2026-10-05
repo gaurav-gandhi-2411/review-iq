@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 from datetime import UTC, datetime, timedelta
+from fractions import Fraction
 from typing import Any
 
 import structlog
@@ -347,6 +348,23 @@ def _assign_band(score: float) -> str:
     return "at_risk"
 
 
+def health_band(raw: dict[str, Any]) -> str:
+    """Band for the raw counts, computed EXACTLY (integer arithmetic) -- never from the rounded
+    score. compute_health_score rounds S/U to 6 dp and the score to 4 dp for display; banding
+    that rounded value flipped e.g. 466 positive of 717 (exact 0.74995) from needs_attention to
+    healthy. S17 X5b."""
+    total = raw["total_extractions"]
+    if total <= 0:
+        return _assign_band(_NO_DATA_SCORE)
+    # score = 5/7 * pos/total + 2/7 * (1 - high/total) = (5*pos + 2*(total-high)) / (7*total)
+    exact = Fraction(5 * raw["positive_count"] + 2 * (total - raw["high_urgency_count"]), 7 * total)
+    if exact >= Fraction(_BAND_HEALTHY):
+        return "healthy"
+    if exact >= Fraction(_BAND_NEEDS_ATTENTION):
+        return "needs_attention"
+    return "at_risk"
+
+
 def _assign_confidence(total_extractions: int) -> str:
     if total_extractions >= _CONFIDENCE_HIGH:
         return "high"
@@ -437,7 +455,7 @@ async def health_score(
         org_id=ctx.org_id,
         total_extractions=total,
         score=score,
-        band=_assign_band(score),
+        band=health_band(raw),
     )
 
     return {
@@ -463,7 +481,7 @@ async def health_score(
             },
         },
         "score": score,
-        "band": _assign_band(score),
+        "band": health_band(raw),
         "confidence": _assign_confidence(total),
         "formula_version": _FORMULA_VERSION,
         "moderation_note": _HS_NOTE,

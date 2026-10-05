@@ -48,9 +48,9 @@ from app.api.v2.insights import (
     _HS_NOTE,
     _W_S,
     _W_U,
-    _assign_band,
     _assign_confidence,
     compute_health_score,
+    health_band,
 )
 from app.auth.api_key import ApiKeyContext
 from app.auth.keygen import insert_api_key_with_retry
@@ -433,7 +433,10 @@ async def bff_list_reviews(
     sentiment: Sentiment | None = Query(None),
     urgency: Urgency | None = Query(None),
     has_competitor_mention: bool | None = Query(None),
-    topic: str | None = Query(None),
+    topic: str | None = Query(
+        None,
+        description="Exact (case-sensitive) match against one entry of the topics list",
+    ),
     since: datetime | None = Query(None),
     until: datetime | None = Query(None),
     limit: int = Query(50, ge=1, le=200),
@@ -742,7 +745,7 @@ async def bff_health_score(
             },
         },
         "score": score,
-        "band": _assign_band(score),
+        "band": health_band(raw),
         "confidence": _assign_confidence(total),
         "formula_version": _FORMULA_VERSION,
         "moderation_note": _HS_NOTE,
