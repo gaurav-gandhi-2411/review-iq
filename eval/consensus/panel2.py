@@ -85,6 +85,8 @@ HEADLINE_FIELDS: tuple[str, ...] = (
     "cons",
     "stars_inferred",
 )
+# Amendment A1 (post-hoc, see the spec): the v2 gate counts only these control-set fields.
+SCOPED_FIELDS: tuple[str, ...] = (*HEADLINE_FIELDS, "stars")
 LIST_FIELDS = ("topics", "competitor_mentions", "pros", "cons")
 CALIBRATION_MAX_MISSES = calibration.MAX_ALLOWED_MISSES
 BUDGET_HARD_CAP_USD = 2.00
@@ -441,7 +443,27 @@ async def run_calibration(runner: Runner, zdr_models: set[str] | None) -> dict[s
             "call_errors": call_errors[m][:5],
             "mean_cost_per_call": cost / calls,
         }
-    active = select_active_panel(results)
+    # v1 gate (pre-registered): every checked field. v2 gate (POST-HOC amendment, written after
+    # seeing the v1 results; see spec Amendment A1): only the headline fields plus `stars`.
+    scoped_checks = sum(
+        1
+        for i in items
+        for f in (*i.get("expected", {}), *i.get("expected_list_contains", {}))
+        if f in SCOPED_FIELDS
+    )
+    for r in results.values():
+        details = [
+            {"item_id": d["item_id"], "fields": [f for f in d["fields"] if f in SCOPED_FIELDS]}
+            for d in r["miss_details"]
+        ]
+        r["v2_scoped_miss_details"] = [d for d in details if d["fields"]]
+        r["v2_scoped_misses"] = sum(len(d["fields"]) for d in details)
+        r["v2_scoped_passed"] = r["v2_scoped_misses"] <= CALIBRATION_MAX_MISSES
+        r["v2_scoped_n_checks"] = scoped_checks
+    active_v1 = select_active_panel(results)
+    active_v2 = select_active_panel(
+        {m: {**r, "misses": r["v2_scoped_misses"]} for m, r in results.items()}
+    )
     for r in results.values():
         r["mean_cost_per_call"] = round(r["mean_cost_per_call"], 8)
     return {
@@ -452,10 +474,20 @@ async def run_calibration(runner: Runner, zdr_models: set[str] | None) -> dict[s
         "max_allowed_misses": CALIBRATION_MAX_MISSES,
         "candidates": results,
         "dropped_no_zdr": dropped,
-        "active_panel": active,
-        "gate_outcome": "pass"
-        if active
-        else "FAIL: fewer than 3 passing candidates from 3 vendors",
+        "active_panel_v1": active_v1,
+        "gate_outcome_v1": "pass"
+        if active_v1
+        else "FAIL: fewer than 3 passing candidates from 3 vendors (pre-registered gate)",
+        "v2_scoped_gate": {
+            "status": "POST-HOC amendment A1, written AFTER the v1 calibration results were seen",
+            "scope": list(SCOPED_FIELDS),
+            "n_checks_per_candidate": scoped_checks,
+            "max_allowed_misses": CALIBRATION_MAX_MISSES,
+        },
+        "active_panel": active_v2,
+        "gate_outcome_v2": "pass"
+        if active_v2
+        else "FAIL: fewer than 3 passing candidates from 3 vendors (scoped gate)",
         "cost": runner.ledger.summary(),
     }
 
@@ -878,7 +910,8 @@ async def amain(args: argparse.Namespace) -> int:
             print(json.dumps({k: v for k, v in cal.items() if k != "candidates"}, indent=1))
             for m, r in cal["candidates"].items():
                 print(
-                    f"  {m}: misses={r['misses']} passed={r['passed']} items={[d['item_id'] for d in r['miss_details']]}"
+                    f"  {m}: v1 misses={r['misses']} passed={r['passed']}; "
+                    f"v2 scoped misses={r['v2_scoped_misses']} passed={r['v2_scoped_passed']}"
                 )
             if not cal["active_panel"]:
                 print("STOP: calibration gate failed (fewer than 3 passing, 3 vendors).")

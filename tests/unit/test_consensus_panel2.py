@@ -369,3 +369,25 @@ class TestAdjudicatedBlock:
         assert block["silver_adjudicated_estimate_conditional_on_panel2_agreement"]["score"] == 1.0
         assert block["point_estimate_defensible"] is False
         assert "NOT ground truth" in block["label"]
+
+
+class TestScopedGateA1:
+    def test_scoped_fields_exclude_language_and_urgency_but_include_stars(self):
+        assert "language" not in panel2.SCOPED_FIELDS
+        assert "urgency" not in panel2.SCOPED_FIELDS
+        assert "stars" in panel2.SCOPED_FIELDS
+        assert set(panel2.HEADLINE_FIELDS) <= set(panel2.SCOPED_FIELDS)
+
+    def test_selection_on_scoped_misses_breaks_ties_by_cost(self):
+        results = {
+            "deepseek/deepseek-v4-flash": {"misses": 0, "mean_cost_per_call": 0.0001},
+            "nvidia/nemotron-3-super-120b-a12b": {"misses": 0, "mean_cost_per_call": 0.0002},
+            "thinkingmachines/inkling-small": {"misses": 0, "mean_cost_per_call": 0.0005},
+            "z-ai/glm-4.7-flash": {"misses": 2, "mean_cost_per_call": 0.00006},
+            "mistralai/mistral-small-2603": {"misses": 2, "mean_cost_per_call": 0.0001},
+        }
+        assert panel2.select_active_panel(results) == [
+            "deepseek/deepseek-v4-flash",
+            "nvidia/nemotron-3-super-120b-a12b",
+            "thinkingmachines/inkling-small",
+        ]

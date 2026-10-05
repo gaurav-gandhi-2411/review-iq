@@ -14,7 +14,11 @@
       "passed": true,
       "parse_failures_or_errors": 0,
       "call_errors": [],
-      "mean_cost_per_call": 6.041e-05
+      "mean_cost_per_call": 6.041e-05,
+      "v2_scoped_miss_details": [],
+      "v2_scoped_misses": 0,
+      "v2_scoped_passed": true,
+      "v2_scoped_n_checks": 35
     },
     "nvidia/nemotron-3-super-120b-a12b": {
       "vendor_family": "nvidia",
@@ -38,7 +42,11 @@
       "passed": true,
       "parse_failures_or_errors": 0,
       "call_errors": [],
-      "mean_cost_per_call": 0.00010081
+      "mean_cost_per_call": 0.00010081,
+      "v2_scoped_miss_details": [],
+      "v2_scoped_misses": 0,
+      "v2_scoped_passed": true,
+      "v2_scoped_n_checks": 35
     },
     "mistralai/mistral-small-2603": {
       "vendor_family": "mistral",
@@ -98,7 +106,24 @@
       "passed": false,
       "parse_failures_or_errors": 0,
       "call_errors": [],
-      "mean_cost_per_call": 0.0001013
+      "mean_cost_per_call": 0.0001013,
+      "v2_scoped_miss_details": [
+        {
+          "item_id": "cal-010",
+          "fields": [
+            "stars"
+          ]
+        },
+        {
+          "item_id": "cal-011",
+          "fields": [
+            "stars"
+          ]
+        }
+      ],
+      "v2_scoped_misses": 2,
+      "v2_scoped_passed": true,
+      "v2_scoped_n_checks": 35
     },
     "z-ai/glm-4.7-flash": {
       "vendor_family": "zhipu",
@@ -134,7 +159,24 @@
       "passed": false,
       "parse_failures_or_errors": 0,
       "call_errors": [],
-      "mean_cost_per_call": 6.521e-05
+      "mean_cost_per_call": 6.521e-05,
+      "v2_scoped_miss_details": [
+        {
+          "item_id": "cal-010",
+          "fields": [
+            "stars"
+          ]
+        },
+        {
+          "item_id": "cal-011",
+          "fields": [
+            "stars"
+          ]
+        }
+      ],
+      "v2_scoped_misses": 2,
+      "v2_scoped_passed": true,
+      "v2_scoped_n_checks": 35
     },
     "thinkingmachines/inkling-small": {
       "vendor_family": "thinkingmachines",
@@ -164,12 +206,38 @@
       "passed": false,
       "parse_failures_or_errors": 0,
       "call_errors": [],
-      "mean_cost_per_call": 0.00024493
+      "mean_cost_per_call": 0.00024493,
+      "v2_scoped_miss_details": [],
+      "v2_scoped_misses": 0,
+      "v2_scoped_passed": true,
+      "v2_scoped_n_checks": 35
     }
   },
   "dropped_no_zdr": [],
-  "active_panel": [],
-  "gate_outcome": "FAIL: fewer than 3 passing candidates from 3 vendors",
+  "active_panel_v1": [],
+  "gate_outcome_v1": "FAIL: fewer than 3 passing candidates from 3 vendors (pre-registered gate)",
+  "v2_scoped_gate": {
+    "status": "POST-HOC amendment A1, written AFTER the v1 calibration results were seen",
+    "scope": [
+      "product",
+      "buy_again",
+      "sentiment",
+      "topics",
+      "competitor_mentions",
+      "pros",
+      "cons",
+      "stars_inferred",
+      "stars"
+    ],
+    "n_checks_per_candidate": 35,
+    "max_allowed_misses": 2
+  },
+  "active_panel": [
+    "deepseek/deepseek-v4-flash",
+    "nvidia/nemotron-3-super-120b-a12b",
+    "thinkingmachines/inkling-small"
+  ],
+  "gate_outcome_v2": "pass",
   "cost": {
     "total_cost_usd": 0.016035,
     "total_tokens_in": 88234,
