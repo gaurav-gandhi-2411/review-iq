@@ -74,7 +74,7 @@ async def predict(text: str, replay_mode: bool) -> dict[str, str | None]:
 
     try:
         llm_output, _model, _latency_ms, _tin, _tout, _degraded = await extract_with_llm(
-            user_prompt, allow_gemini_fallback=False
+            user_prompt
         )
         extraction = llm_output.model_dump()
         return {

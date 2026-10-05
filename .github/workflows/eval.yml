@@ -68,7 +68,7 @@ jobs:
     env:
       # Eval CI replays recorded cassettes — ZERO live LLM calls, deterministic, $0, and
       # immune to free-tier daily-quota exhaustion (which takes down a live eval). No
-      # GROQ/GEMINI key is provided on purpose: a missing cassette then fails LOUDLY
+      # GROQ key is provided on purpose: a missing cassette then fails LOUDLY
       # instead of silently making a live call. Re-record when prompts change — see
       # eval/README.md (standing rule).
       EVAL_CASSETTE_MODE: replay

@@ -61,16 +61,32 @@ class TestAssertNoSelfJudging:
     def test_deepseek_accepted(self):
         panel.assert_no_self_judging(_roster("deepseek/deepseek-v4-flash"))
 
-    def test_current_panel1_gemini_judge_now_trips_the_guard(self):
-        # S17 G6a disclosure: panel 1's gemini-3.5-flash-lite shares a vendor with the dormant
-        # Gemini fallback, so the hardened guard rejects the panel-1 roster as a whole.
-        with pytest.raises(ValueError, match="gemini-3.5-flash-lite"):
-            panel.assert_no_self_judging()
+    def test_real_panel1_roster_passes_after_the_google_judge_was_retired(self, monkeypatch):
+        # S17 X3: the real JUDGE_MODELS must pass the guard against the REAL Settings.
+        monkeypatch.undo()
+        panel.assert_no_self_judging()
+        assert all(m["provider"] != "gemini" for m in panel.JUDGE_MODELS)
 
-    def test_panel1_minus_gemini_is_clean(self):
-        panel.assert_no_self_judging(
-            tuple(m for m in panel.JUDGE_MODELS if m["provider"] != "gemini")
-        )
+    def test_retired_google_judge_is_data_only_and_would_be_rejected_if_google_returns(self):
+        # Data-driven guard: if a Google model is a production path again, the retired judge
+        # is rejected without anyone editing the guard.
+        assert [m["id"] for m in panel.RETIRED_JUDGE_MODELS] == ["gemini-3.5-flash-lite"]
+        with pytest.raises(ValueError, match="gemini-3.5-flash-lite"):
+            panel.assert_no_self_judging(panel.RETIRED_JUDGE_MODELS)  # FakeSettings has gemini
+
+    def test_production_model_ids_is_settings_driven(self, monkeypatch):
+        class S(FakeSettings):
+            some_new_provider_model = "acme/brand-new-1"
+
+        monkeypatch.setattr("app.core.config.get_settings", lambda: S())
+        ids = panel.production_model_ids()
+        assert ids["some_new_provider_model"] == "acme/brand-new-1"
+        assert ids["gemini_model"] == "gemini-2.5-flash"
+
+    def test_real_settings_have_no_gemini_field(self):
+        from app.core.config import Settings
+
+        assert not [f for f in Settings.model_fields if "gemini" in f.lower()]
 
     @pytest.mark.parametrize(
         "bad",

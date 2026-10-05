@@ -19,7 +19,6 @@ class Settings(BaseSettings):
 
     # LLM providers
     groq_api_key: str = Field(default="", alias="GROQ_API_KEY")
-    gemini_api_key: str = Field(default="", alias="GEMINI_API_KEY")
 
     # Auth
     api_key: str = Field(default="", alias="API_KEY")
@@ -63,14 +62,6 @@ class Settings(BaseSettings):
     groq_model: str = Field(
         default="openai/gpt-oss-120b",
         alias="GROQ_MODEL",
-    )
-    gemini_model: str = Field(
-        # gemini-2.0-flash was deprecated and shut down by Google on 2026-06-01
-        # (live-verified 2026-07-31 against ai.google.dev/gemini-api/docs/pricing) --
-        # this fallback path was silently dead for 2 months with nothing detecting it.
-        # gemini-2.5-flash is the current stable (non-preview) replacement.
-        default="gemini-2.5-flash",
-        alias="GEMINI_MODEL",
     )
 
     # Extraction limits
@@ -116,8 +107,6 @@ class Settings(BaseSettings):
     # Admin HTTP Basic auth
     admin_username: str = Field(default="admin", alias="ADMIN_USERNAME")
     admin_password_hash: str = Field(default="", alias="ADMIN_PASSWORD_HASH")
-    # LLM privacy: set True only on v1/demo path; v2 org-key path is always Groq-only
-    enable_gemini_fallback: bool = Field(default=False, alias="ENABLE_GEMINI_FALLBACK")
 
     # Tiered routing: en-only small tier; hi+hi-en routed to large.
     # Enabled after v0.5.1 routed eval: en 86.2 / hi 86.1 / hi-en 83.6 / overall 85.3%.

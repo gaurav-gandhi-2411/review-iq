@@ -1,8 +1,8 @@
 name: Failover Probe
 
-# Wave 1 Section F ("Reliability"): nightly REAL live-call probe of both LLM
-# failover paths (Gemini fallback + the SecondaryProvider/OpenRouter ZDR-only
-# path). "A config fix without the probe is not a fix" -- see
+# Wave 1 Section F ("Reliability"): nightly REAL live-call probe of the LLM failover
+# path (the SecondaryProvider/OpenRouter ZDR-only path; the Gemini fallback was retired
+# in S17, ADR 0035). "A config fix without the probe is not a fix" -- see
 # docs/specs/wave1-commercialization.md Section 4.F and scripts/probe_failover.py's
 # module docstring. Mirrors eval.yml's nightly-cron + conditional-Slack-notify
 # convention (the established house pattern for scheduled jobs in this repo) --
@@ -11,18 +11,12 @@ name: Failover Probe
 # Session 15c D4: each path is PASS / FAIL / NOT CONFIGURED (three-state); an unconfigured
 # path is reported loudly on every run, never silently skipped -- see the probe docstring.
 #
-# Cost: 2 tiny live calls/night (~150-250 tokens total) against Gemini + OpenRouter.
-# Negligible against both providers' free/low tiers.
+# Cost: 1 tiny live call/night (~100 tokens) against OpenRouter.
 
 on:
   schedule:
     - cron: "30 2 * * *"
   workflow_dispatch:
-    inputs:
-      gemini_model:
-        description: "Try this Gemini model id for THIS manual run only (e.g. after a 404 'no longer available'). Blank = the app default."
-        required: false
-        type: string
 
 permissions:
   contents: read
@@ -38,7 +32,6 @@ jobs:
       contents: read
       issues: write # only used by the scheduled-run failure-alert step below
     env:
-      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       SECONDARY_PROVIDER_API_KEY: ${{ secrets.SECONDARY_PROVIDER_API_KEY }}
       SECONDARY_PROVIDER_MODEL: ${{ vars.SECONDARY_PROVIDER_MODEL }}
       API_KEY: ci-key
@@ -62,18 +55,12 @@ jobs:
         id: probe
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          # GG decision D4 (2026-09-20): only GEMINI_API_KEY is configured; the OpenRouter
-          # secondary path is DELIBERATELY left unconfigured. The probe still reports it
-          # every run (console line + ::warning:: + step-summary row) -- this only stops it
-          # failing the job. Any other unconfigured path (e.g. a missing GEMINI_API_KEY)
-          # is not listed here and still exits 1. See scripts/probe_failover.py.
+          # GG decision D4 (2026-09-20): the OpenRouter secondary path is DELIBERATELY left
+          # unconfigured in CI. The probe still reports it every run (console line +
+          # ::warning:: + step-summary row) -- this only stops it failing the job. Any other
+          # unconfigured path is not listed here and still exits 1. See scripts/probe_failover.py.
           FAILOVER_ACKNOWLEDGED_UNCONFIGURED: secondary
-          # Manual-run override only (workflow_dispatch input); blank on scheduled runs.
-          GEMINI_MODEL_OVERRIDE: ${{ inputs.gemini_model }}
         run: |
-          # Only export GEMINI_MODEL when an override was given: an empty GEMINI_MODEL would
-          # otherwise shadow the app default with an empty string.
-          if [ -n "$GEMINI_MODEL_OVERRIDE" ]; then export GEMINI_MODEL="$GEMINI_MODEL_OVERRIDE"; fi
           # Free-tier-friendly: probe still runs and fails the job (exit 1) without a
           # webhook -- Slack notification is a bonus, not the pass/fail signal itself.
           if [ -z "$SLACK_WEBHOOK_URL" ]; then
@@ -91,10 +78,10 @@ jobs:
           status: ${{ job.status == 'success' && 'success' || 'failure' }}
           title: "Failover probe is failing"
           details: |
-            `failover-probe.yml` makes a real live call to each LLM failover path (Gemini
-            fallback and the SecondaryProvider/OpenRouter path). Path states this run:
+            `failover-probe.yml` makes a real live call to the LLM failover path
+            (the SecondaryProvider/OpenRouter path). Path states this run:
             `${{ steps.probe.outputs.states }}`. A path is FAIL (configured but broken) or
             NOT CONFIGURED without acknowledgement (secret/var absent and not listed in
-            FAILOVER_ACKNOWLEDGED_UNCONFIGURED). Check the GEMINI_API_KEY and
-            SECONDARY_PROVIDER_API_KEY secrets and the SECONDARY_PROVIDER_MODEL variable, and
+            FAILOVER_ACKNOWLEDGED_UNCONFIGURED). Check the
+            SECONDARY_PROVIDER_API_KEY secret and the SECONDARY_PROVIDER_MODEL variable, and
             see scripts/probe_failover.py.

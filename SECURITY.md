@@ -64,7 +64,7 @@ Four layers are intended to guard against prompt injection attacks: two pre-filt
 
 **Secondary failover provider:** A configurable secondary provider can be wired via `SECONDARY_PROVIDER_API_KEY` / `SECONDARY_PROVIDER_MODEL`. The code enforces a data-handling check at the call site via `assert_privacy_safe()` — any provider whose `trains_on_input` property is `True` raises `PrivacyViolation` before the prompt is sent, making it impossible to accidentally route client data to a training-on-input provider on the org-key path. This check is unconditional; it cannot be bypassed by configuration.
 
-**Gemini (Google Gemini 2.0 Flash):** Removed from the v2 (client-data) path entirely. `allow_gemini_fallback=False` is hardcoded on every `/v2/extract` call. Gemini is reachable only on the legacy `/v1` demo path, and only when `ENABLE_GEMINI_FALLBACK=true` is explicitly set (default: `false`). This restriction exists because the Gemini free tier uses inputs for training and is therefore unsuitable for client review data.
+**Gemini (Google Gemini):** Retired (S17, ADR 0035). The Gemini fallback code, its `GEMINI_API_KEY` / `GEMINI_MODEL` / `ENABLE_GEMINI_FALLBACK` settings and the privacy flag that gated it were removed from the application; it was already excluded from the v2 (client-data) path and dormant in production. Every Groq provider is now asserted privacy-safe unconditionally, and OpenRouter (ZDR-only) is the only failover.
 
 All review text is PII-redacted before being sent to any provider.
 
@@ -110,7 +110,7 @@ Two independent rate limits apply:
 
 ## 8. Secret Management
 
-All secrets (`GROQ_API_KEY`, `ADMIN_PASSWORD_HASH`, `SUPABASE_DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY`) are stored in Google Cloud Secret Manager. The Cloud Run service account is granted `secretAccessor` on a per-secret basis — not project-wide.
+All secrets (`GROQ_API_KEY`, `ADMIN_PASSWORD_HASH`, `SUPABASE_DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`) are stored in Google Cloud Secret Manager. The Cloud Run service account is granted `secretAccessor` on a per-secret basis — not project-wide.
 
 No plaintext secrets exist in source code or committed environment files. `.env` is gitignored. `.env.example` contains only placeholder values.
 

@@ -312,7 +312,7 @@ Interactive docs at `/docs` (Swagger) and `/redoc`.
 |---|---|
 | API | FastAPI + Pydantic v2 |
 | LLM (primary) | Groq — tiered routing, `openai/gpt-oss-20b` (small) / `openai/gpt-oss-120b` (large) |
-| LLM (fallback) | Google Gemini 2.0 Flash |
+| LLM (failover) | OpenRouter, ZDR-only, optional (the Gemini fallback was retired, ADR 0035) |
 | Auth | argon2id-hashed API keys (per-org, per-tenant) |
 | Auth (self-serve) | Supabase Auth · magic-link email · JWT verification |
 | Storage (v2) | Supabase Postgres + psycopg2 · RLS tenant isolation |
@@ -330,7 +330,7 @@ The production deployment runs on Google Cloud Run (free tier, `asia-south1`). T
 
 1. **Provision Supabase** — create a project, run the migrations in `supabase/migrations/` (includes `batch_jobs` table), enable Email auth provider and add magic-link redirect URLs in the Supabase dashboard
 2. **Create GCP project** — enable `run`, `secretmanager`, `artifactregistry`, `cloudbuild` APIs
-3. **Store secrets** in Secret Manager: `groq-api-key`, `gemini-api-key`, `supabase-database-url`, `supabase-url`, `supabase-service-role-key`, `admin-password-hash`
+3. **Store secrets** in Secret Manager: `groq-api-key`, `supabase-database-url`, `supabase-url`, `supabase-service-role-key`, `admin-password-hash`
 4. **Build and deploy** — follow [`ops/runbooks/cloud-run-deploy.md`](ops/runbooks/cloud-run-deploy.md)
 
 Cost at free-tier traffic: **₹0.00/mo** (Cloud Run + Artifact Registry well within Always Free quotas). See [`ops/runbooks/cloud-run-cost-check.md`](ops/runbooks/cloud-run-cost-check.md) for the weekly cost-check procedure.

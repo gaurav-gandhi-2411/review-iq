@@ -616,7 +616,7 @@ async def test_concurrent_drain_rows_never_double_processes_a_row(
 
     call_log: list[str] = []
 
-    async def _stub(prompt: str, allow_gemini_fallback: bool = False) -> tuple:
+    async def _stub(prompt: str) -> tuple:
         # Option A gate genuinely exercised (not bypassed) — see fast_bulk_limiter.
         async with llm_call_slot():
             match = re.search(r"distinct-row-(\d+)", prompt)
@@ -660,7 +660,7 @@ async def test_resume_after_partial_drain_and_zero_cost_dedup(
 
     call_count = 0
 
-    async def _counting_stub(prompt: str, allow_gemini_fallback: bool = False) -> tuple:
+    async def _counting_stub(prompt: str) -> tuple:
         nonlocal call_count
         if run_marker in prompt:
             call_count += 1
@@ -787,7 +787,7 @@ class TestBffEntryPoint:
 
         call_count = 0
 
-        async def _counting_stub(prompt: str, allow_gemini_fallback: bool = False) -> tuple:
+        async def _counting_stub(prompt: str) -> tuple:
             nonlocal call_count
             call_count += 1
             return _canned_llm_tuple()

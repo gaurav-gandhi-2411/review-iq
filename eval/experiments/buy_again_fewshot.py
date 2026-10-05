@@ -138,7 +138,7 @@ async def run_day(day: int, mode: str) -> None:
                 break
         prompt = build_variant_prompt(wrap_for_llm(clean))
         out, model, t_in, t_out, escalated, degraded = await route_extraction(
-            prompt, _SYSTEM_PROMPT, allow_gemini_fallback=False, settings=settings
+            prompt, _SYSTEM_PROMPT, settings=settings
         )
         final = out.model_dump()
         used[model] = used.get(model, 0) + t_in + t_out
