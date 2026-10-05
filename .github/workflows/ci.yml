@@ -179,9 +179,10 @@ jobs:
 
       # Blocking gate: fail the build on any HIGH/CRITICAL-severity CVE. MODERATE/LOW
       # findings remain informational only, matching the Python gate's own threshold.
-      - name: npm audit (blocking on high/critical CVEs)
-        working-directory: web
-        run: npm audit --audit-level=high
+      # S17: scripts/npm_audit_gate.py == `npm audit --audit-level=high` except for a dated,
+      # reasoned allowlist (braces GHSA-vfj7-8cjw-p6xm: no patched 3.x, dev-only via tailwind 3).
+      - name: npm audit (blocking on high/critical CVEs, dated allowlist)
+        run: python3 scripts/npm_audit_gate.py
 
   web-build:
     # Session 15c S3: web/ had NO lint/typecheck/build gate. npm-audit above only runs
