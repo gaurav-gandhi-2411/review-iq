@@ -184,7 +184,87 @@ JUDGE_MODELS: tuple[dict[str, str], ...] = (
 )
 
 
-def assert_no_self_judging(judge_models: tuple[dict[str, str], ...] = JUDGE_MODELS) -> None:
+# Models review-iq is documented to fail over to even when the env var is unset locally:
+# docs recommend SECONDARY_PROVIDER_MODEL=meta-llama/llama-3.3-70b-instruct (app/core/config.py).
+# Always checked so a local environment without that env var cannot silently weaken the guard.
+KNOWN_FAILOVER_MODELS: tuple[str, ...] = ("meta-llama/llama-3.3-70b-instruct",)
+
+# Vendor family by the organisation prefix of an OpenRouter/Groq style id ("org/model").
+_ORG_FAMILY: dict[str, str] = {
+    "openai": "openai",
+    "meta-llama": "meta",
+    "meta": "meta",
+    "google": "google",
+    "qwen": "alibaba",
+    "alibaba": "alibaba",
+    "deepseek": "deepseek",
+    "deepseek-ai": "deepseek",
+    "nvidia": "nvidia",
+    "mistralai": "mistral",
+    "z-ai": "zhipu",
+    "zhipu": "zhipu",
+    "thinkingmachines": "thinkingmachines",
+    "anthropic": "anthropic",
+    "x-ai": "xai",
+    "moonshotai": "moonshot",
+    "microsoft": "microsoft",
+    "cohere": "cohere",
+    "allenai": "allenai",
+    "minimax": "minimax",
+}
+# Vendor family for bare ids with no organisation prefix (Gemini API, Groq legacy ids).
+_ID_PREFIX_FAMILY: tuple[tuple[str, str], ...] = (
+    ("gemini", "google"),
+    ("gemma", "google"),
+    ("llama", "meta"),
+    ("gpt-", "openai"),
+    ("allam", "sdaia"),
+    ("qwen", "alibaba"),
+    ("mistral", "mistral"),
+    ("deepseek", "deepseek"),
+)
+
+
+def model_family(model_id: str) -> str:
+    """Vendor family of a model id; raises ValueError (fail closed) if not in the mapping."""
+    mid = model_id.strip().lower()
+    if "/" in mid:
+        org = mid.split("/", 1)[0]
+        if org in _ORG_FAMILY:
+            return _ORG_FAMILY[org]
+    else:
+        for prefix, family in _ID_PREFIX_FAMILY:
+            if mid.startswith(prefix):
+                return family
+    raise ValueError(
+        f"Unknown vendor family for model id {model_id!r}: add its organisation to _ORG_FAMILY "
+        "(or its bare-id prefix to _ID_PREFIX_FAMILY) in eval/consensus/panel.py. Failing "
+        "closed: an unmapped model could be a production vendor under a name this guard "
+        "does not know."
+    )
+
+
+def production_model_ids() -> dict[str, str]:
+    """{source: model_id} for every model review-iq can serve from, read at runtime."""
+    from app.core.config import get_settings
+
+    settings = get_settings()
+    ids = {
+        "groq_model_small": settings.groq_model_small,
+        "groq_model_large": settings.groq_model_large,
+        "secondary_provider_model": settings.secondary_provider_model,
+        "gemini_model": settings.gemini_model,
+    }
+    for i, mid in enumerate(KNOWN_FAILOVER_MODELS):
+        ids[f"known_failover_model_{i}"] = mid
+    return {k: v for k, v in ids.items() if v}
+
+
+def assert_no_self_judging(
+    judge_models: tuple[dict[str, str], ...] = JUDGE_MODELS,
+    *,
+    extra_forbidden_families: dict[str, str] | None = None,
+) -> None:
     """Raises if any candidate judge IS review-iq's own current production model.
 
     Session 8 P2 incident, found by direct verification (not assumed): this exact
@@ -210,24 +290,40 @@ def assert_no_self_judging(judge_models: tuple[dict[str, str], ...] = JUDGE_MODE
     judge's id matches the CURRENT production groq_model_small/groq_model_large. A
     future model migration will raise here immediately rather than silently
     reintroducing the same conflict under a new model name.
-    """
-    # Imported lazily (not at module top) so this module stays importable without a
-    # full app/ settings environment for callers that only need JUDGE_MODELS/prompts,
-    # matching this file's existing lazy-import-at-use-site style (see call_judge()).
-    from app.core.config import get_settings
 
-    settings = get_settings()
-    production_models = {settings.groq_model_small, settings.groq_model_large}
-    conflicts = [m for m in judge_models if m["id"] in production_models]
+    S17 G6a hardening: the original check compared judge ids to the two Groq production ids
+    EXACTLY, which missed (a) the OpenRouter failover model (Llama) and the dormant Gemini
+    fallback model, and (b) any sibling checkpoint of a production vendor (a judge
+    `llama-3.1-8b-instruct` is not the string `meta-llama/llama-3.3-70b-instruct` but is the
+    same vendor family as the failover). It now reads ALL production model ids at runtime
+    (groq small/large, secondary provider model, Gemini fallback model, plus
+    KNOWN_FAILOVER_MODELS) and compares VENDOR FAMILY via `model_family()`. A model whose
+    family is not in the explicit mapping fails closed (add it to _ORG_FAMILY/_ID_PREFIX_FAMILY).
+    Side effect, disclosed: the panel-1 judge `gemini-3.5-flash-lite` (Google) now trips this
+    check because Google is the vendor of the dormant Gemini fallback; panel-1 labels already
+    exist and are unchanged, but a fresh panel-1 labeling run fails loud until the roster or
+    the fallback decision changes.
+    """
+    # `extra_forbidden_families` ({family: reason}) lets a runner add families beyond
+    # production (panel 2 forbids the panel-1 vendors for independence).
+    forbidden: dict[str, str] = {}
+    for source, mid in production_model_ids().items():
+        forbidden.setdefault(model_family(mid), f"production {source}={mid}")
+    for fam, reason in (extra_forbidden_families or {}).items():
+        forbidden.setdefault(fam, reason)
+
+    conflicts: list[str] = []
+    for m in judge_models:
+        fam = model_family(m["id"])  # raises (fail closed) on an unknown family
+        if fam in forbidden:
+            conflicts.append(f"{m['id']} (family {fam!r}; conflicts with {forbidden[fam]})")
     if conflicts:
-        conflict_ids = [m["id"] for m in conflicts]
         raise ValueError(
-            f"Self-judging conflict: judge candidate(s) {conflict_ids} are review-iq's own "
-            f"current production model(s) ({sorted(production_models)}). A judge must never "
-            "be the same model the extraction pipeline under test actually runs -- remove "
-            "the conflicting candidate(s) from JUDGE_MODELS, or replace them, before running "
-            "any consensus labeling. See this function's docstring and docs/architecture/"
-            "adr/0013-*.md for the incident this check exists to prevent from recurring."
+            f"Self-judging conflict: judge candidate(s) {conflicts}. A judge must never be the "
+            "same model, or the same vendor family, as a model the extraction pipeline under "
+            "test can run (Groq tiers, OpenRouter failover, Gemini fallback) -- remove the "
+            "conflicting candidate(s) from the roster before running any consensus labeling. "
+            "See this function's docstring and docs/architecture/adr/0013-*.md."
         )
 
 
