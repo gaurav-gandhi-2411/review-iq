@@ -56,6 +56,12 @@ sys.path.insert(0, str(ROOT))
 from eval.bootstrap import bootstrap_ci  # noqa: E402
 from eval.free_text_scoring import SCORER_VERSION  # noqa: E402
 from eval.heldout_exposure import held_out_exposure, unresolved_fields  # noqa: E402
+from eval.heldout_unscored import (  # noqa: E402
+    judge_sensitivity,
+    load_judge_votes,
+    unscored_block,
+    validate_votes_match_gold,
+)
 from eval.provenance import get_git_sha, now_iso  # noqa: E402
 from eval.runner import score_fixture  # noqa: E402
 from eval.wilson import wilson_ci  # noqa: E402
@@ -378,6 +384,9 @@ def summarize(records: list[dict[str, Any]]) -> dict[str, Any]:
             for reason in sorted({x for r in records for x in r.get("exposure", ())})
         },
         "per_field_split_effect": _per_field_split_effect(records, headline_fields),
+        # Session 17 (W3): the headline is accuracy WHERE THE PANEL AGREED; this is how much of
+        # the published cell was not scored, and the assumption-free bounds around the number.
+        "unscored": unscored_block(records, headline_fields) if headline_fields else None,
     }
 
 
@@ -422,6 +431,17 @@ async def main() -> None:
         rec["exposure"] = exposure.get(rec["id"], [])
 
     summary = summarize(records)
+    if summary.get("unscored"):
+        fx_by_id = {fx["id"]: fx for fx in fixtures}
+        votes = load_judge_votes()
+        problems = validate_votes_match_gold(
+            fx_by_id, votes, {r["id"]: set(r["unresolved_fields"]) for r in records}
+        )
+        if problems:
+            raise SystemExit("judge votes do not match the committed gold:\n" + "\n".join(problems))
+        summary["unscored"]["judge_sensitivity"] = judge_sensitivity(
+            records, fx_by_id, votes, summary["headline_fields"]
+        )
     summary["records"] = records
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")

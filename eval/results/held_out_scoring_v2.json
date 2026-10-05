@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-21T15:32:08Z",
-  "git_sha": "94adf3372f6544a87ccc3b14e3d04c4d4386ddcb",
+  "generated_at": "2026-10-05T08:50:17Z",
+  "git_sha": "8186d0dff3024ecd7bf65ed309ff6b493b7519d6",
   "scorer_version": "2026-09-20.free-text-v1",
   "groq_model_small": "openai/gpt-oss-20b",
   "groq_model_large": "openai/gpt-oss-120b",
@@ -237,6 +237,194 @@
       "n_split_gold": 0,
       "score_all_pairs": 0.9811320754716981,
       "score_excluding_split": 0.9811320754716981
+    }
+  },
+  "unscored": {
+    "definition": "A field-pair is one (review, headline field) cell on the reviews in the published cell; it is unscored when the three-judge panel did not reach unanimous/majority agreement on that field for that review, so the stored gold is a default, not a label.",
+    "cell": "unexposed_split_excluded",
+    "condition": "as_deployed",
+    "fields": [
+      "product",
+      "buy_again",
+      "sentiment",
+      "topics",
+      "competitor_mentions",
+      "pros",
+      "cons",
+      "stars_inferred"
+    ],
+    "n_reviews": 70,
+    "n_pairs": 560,
+    "n_pairs_unscored": 60,
+    "unscored_fraction": 0.10714285714285714,
+    "n_reviews_with_any_unscored_pair": 46,
+    "n_reviews_with_every_pair_unscored": 0,
+    "per_field": {
+      "product": {
+        "pairs": 70,
+        "unscored": 16,
+        "unscored_fraction": 0.22857142857142856
+      },
+      "buy_again": {
+        "pairs": 70,
+        "unscored": 0,
+        "unscored_fraction": 0.0
+      },
+      "sentiment": {
+        "pairs": 70,
+        "unscored": 0,
+        "unscored_fraction": 0.0
+      },
+      "topics": {
+        "pairs": 70,
+        "unscored": 15,
+        "unscored_fraction": 0.21428571428571427
+      },
+      "competitor_mentions": {
+        "pairs": 70,
+        "unscored": 0,
+        "unscored_fraction": 0.0
+      },
+      "pros": {
+        "pairs": 70,
+        "unscored": 17,
+        "unscored_fraction": 0.24285714285714285
+      },
+      "cons": {
+        "pairs": 70,
+        "unscored": 12,
+        "unscored_fraction": 0.17142857142857143
+      },
+      "stars_inferred": {
+        "pairs": 70,
+        "unscored": 0,
+        "unscored_fraction": 0.0
+      }
+    },
+    "scored_only": {
+      "score": 0.7962863450018097,
+      "ci_95": {
+        "lower": 0.7623897281717151,
+        "upper": 0.8276997486806656,
+        "n": 70
+      }
+    },
+    "bounds": {
+      "method": "Manski worst/best case: every unscored pair scored 0 (lower) or 1 (upper); per-review mean over all headline fields, averaged over reviews (the headline's unit). Valid for any true labels, as each pair score lies in [0, 1].",
+      "lower_unscored_all_wrong": {
+        "score": 0.7088930339477844,
+        "ci_95": {
+          "lower": 0.6761718754794275,
+          "upper": 0.7402536824582007,
+          "n": 70
+        }
+      },
+      "upper_unscored_all_correct": {
+        "score": 0.8160358910906416,
+        "ci_95": {
+          "lower": 0.7843615392129961,
+          "upper": 0.8451933848604474,
+          "n": 70
+        }
+      },
+      "per_field": {
+        "product": {
+          "scored_only": 0.6111111111111112,
+          "lower_unscored_all_wrong": 0.4714285714285714,
+          "upper_unscored_all_correct": 0.7
+        },
+        "buy_again": {
+          "scored_only": 0.6714285714285714,
+          "lower_unscored_all_wrong": 0.6714285714285714,
+          "upper_unscored_all_correct": 0.6714285714285714
+        },
+        "sentiment": {
+          "scored_only": 0.8714285714285714,
+          "lower_unscored_all_wrong": 0.8714285714285714,
+          "upper_unscored_all_correct": 0.8714285714285714
+        },
+        "topics": {
+          "scored_only": 0.6946537182366059,
+          "lower_unscored_all_wrong": 0.5457993500430476,
+          "upper_unscored_all_correct": 0.7600850643287619
+        },
+        "competitor_mentions": {
+          "scored_only": 0.8809523809523809,
+          "lower_unscored_all_wrong": 0.880952380952381,
+          "upper_unscored_all_correct": 0.880952380952381
+        },
+        "pros": {
+          "scored_only": 0.7314787264523382,
+          "lower_unscored_all_wrong": 0.5538338928853418,
+          "upper_unscored_all_correct": 0.7966910357424847
+        },
+        "cons": {
+          "scored_only": 0.8506742299845748,
+          "lower_unscored_all_wrong": 0.7048443619872191,
+          "upper_unscored_all_correct": 0.8762729334157905
+        },
+        "stars_inferred": {
+          "scored_only": 0.9714285714285714,
+          "lower_unscored_all_wrong": 0.9714285714285714,
+          "upper_unscored_all_correct": 0.9714285714285714
+        }
+      }
+    },
+    "defaults_scored_as_labels_reference": {
+      "score": 0.7321073196620701,
+      "ci_95": {
+        "lower": 0.6992536890129216,
+        "upper": 0.7645494196482421,
+        "n": 70
+      }
+    },
+    "point_estimate_identifiable": false,
+    "identifiability_note": "Not identifiable from this data: whether an unscored pair is answered correctly is the unobserved quantity, and unscored pairs are by construction the ones the panel could not agree on, so scored-only accuracy is accuracy where the panel agreed. Only an independent adjudication of the unscored pairs, or an assumption stated and defended outside this data, yields a point estimate.",
+    "judge_sensitivity": {
+      "assumption": "The true label of each unscored pair is one of the three judges' answers. NOT verified (all three can be wrong); a sensitivity analysis, not an estimate.",
+      "n_unscored_pairs_scored": 60,
+      "scored_against_each_judge": {
+        "gemini-3.5-flash-lite": {
+          "score": 0.7560495665077474,
+          "ci_95": {
+            "lower": 0.7225850035245768,
+            "upper": 0.7875362131845755,
+            "n": 70
+          }
+        },
+        "qwen/qwen3.6-27b": {
+          "score": 0.742758705959953,
+          "ci_95": {
+            "lower": 0.710568175521569,
+            "upper": 0.7731614731526275,
+            "n": 70
+          }
+        },
+        "qwen/qwen3.8-27b": {
+          "score": 0.7481517191817848,
+          "ci_95": {
+            "lower": 0.7155073493128918,
+            "upper": 0.7789844146559372,
+            "n": 70
+          }
+        }
+      },
+      "envelope_min_over_judges": {
+        "score": 0.7316075688923604,
+        "ci_95": {
+          "lower": 0.6991697109763858,
+          "upper": 0.7627161161298053,
+          "n": 70
+        }
+      },
+      "envelope_max_over_judges": {
+        "score": 0.7727951402448486,
+        "ci_95": {
+          "lower": 0.7394849056338898,
+          "upper": 0.8038174456538841,
+          "n": 70
+        }
+      }
     }
   },
   "records": [
