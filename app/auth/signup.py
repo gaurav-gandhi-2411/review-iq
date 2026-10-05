@@ -36,7 +36,11 @@ def _get_supabase_admin() -> Any:  # supabase Client type is untyped
     from supabase import create_client  # local import keeps startup fast when creds absent
 
     s = get_settings()
-    return create_client(s.supabase_url, s.supabase_service_role_key)
+    # `auth.get_user(jwt)` only needs a key that passes GoTrue's apikey gate; the anon key does
+    # (verified against the live project, S17). Prefer it so the RLS-bypassing service-role key has
+    # no consumer and can be revoked (ops/runbooks/service-role-key-rotation.md). The fallback keeps
+    # a deploy of this change behaviour-neutral until SUPABASE_ANON_KEY is set on the service.
+    return create_client(s.supabase_url, s.supabase_anon_key or s.supabase_service_role_key)
 
 
 async def verify_supabase_jwt(jwt: str) -> Any:
