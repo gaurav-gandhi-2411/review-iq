@@ -574,7 +574,7 @@ curl https://your-instance.run.app/v2/ingest/b3f1a2d4-.../result \
           Language is auto-detected from the review text — no parameter needed.
           The detected code is returned in the <code>language</code> field of the response,
           together with <code>code_mixed</code> and <code>language_signal_strength</code>.
-          The label is a heuristic: on a held-out corpus its agreement with the corpus label is low, and that label is itself noisy,
+          The label is a heuristic: on a corpus of real reviews its agreement with the corpus label is low, and that label is itself noisy,
           so treat <code>language</code> as a hint, not a scored accuracy claim
           (see the README's held-out section for the measured agreement, its confidence interval and the label's inter-rater alpha).
         </p>

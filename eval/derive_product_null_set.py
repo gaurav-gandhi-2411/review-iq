@@ -9,6 +9,12 @@ which strings were treated as "no product named" and confirm none is a real prod
 The dev-set gold is reported separately as an INDEPENDENT check: the null vocabulary was not
 built from it, so a value classified null there that is a real product would be a false-null.
 
+Session 17 (W3e): `held_out_gold` counted every fixture's stored `product`, including the ones
+where the judge panel split and the builder wrote the default "unknown" (ADR 0032). Those are not
+labels, so the null counts in that section partly measure the builder's placeholder, not what the
+panel thought. `held_out_gold_resolved_only` drops them and is the section to read for "which gold
+strings were treated as no-product"; `held_out_gold` is kept unchanged for comparison.
+
 Usage: uv run python eval/derive_product_null_set.py
 """
 
@@ -26,6 +32,7 @@ from eval.free_text_scoring import (  # noqa: E402
     SCORER_VERSION,
     canonical_product,
 )
+from eval.heldout_exposure import unresolved_fields  # noqa: E402
 from eval.provenance import get_git_sha, now_iso  # noqa: E402
 
 HELD_OUT_DIR = ROOT / "eval" / "fixtures" / "_held_out_hindi_hinglish"
@@ -34,11 +41,13 @@ PREDICTIONS = ROOT / "eval" / "results" / "held_out_scoring_v2.json"
 OUT_PATH = ROOT / "eval" / "results" / "product_null_inventory.json"
 
 
-def _gold(paths: list[Path]) -> Counter[str | None]:
+def _gold(paths: list[Path], *, resolved_only: bool = False) -> Counter[str | None]:
     counts: Counter[str | None] = Counter()
     for path in paths:
         data = json.loads(path.read_text(encoding="utf-8"))
         if "review_text" in data:
+            if resolved_only and "product" in unresolved_fields(data):
+                continue
             counts[data.get("ground_truth", {}).get("product")] += 1
     return counts
 
@@ -53,6 +62,8 @@ def main() -> int:
     held_out_gold = _gold(
         sorted(p for p in HELD_OUT_DIR.glob("*.json") if not p.name.startswith("."))
     )
+    held_out_paths = sorted(p for p in HELD_OUT_DIR.glob("*.json") if not p.name.startswith("."))
+    held_out_resolved = _gold(held_out_paths, resolved_only=True)
     dev_paths = sorted(p for d in DEV_DIRS for p in d.glob("*.json") if not p.name.startswith("."))
     dev_gold = _gold(dev_paths)
     preds = json.loads(PREDICTIONS.read_text(encoding="utf-8"))["records"]
@@ -61,6 +72,7 @@ def main() -> int:
 
     sections = {
         "held_out_gold": held_out_gold,
+        "held_out_gold_resolved_only": held_out_resolved,
         "held_out_pred_as_deployed": pred_as_deployed,
         "held_out_pred_language_forced": pred_forced,
         "dev_gold_independent_check": dev_gold,

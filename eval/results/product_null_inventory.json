@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-09-19T22:00:57Z",
-  "git_sha": "68f21b736d43c205d1ea38dd29a8588cccc1f811",
+  "generated_at": "2026-10-05T09:01:35Z",
+  "git_sha": "8186d0dff3024ecd7bf65ed309ff6b493b7519d6",
   "scorer_version": "2026-09-20.free-text-v1",
   "null_tokens": [
     "a",
@@ -137,6 +137,151 @@
         ],
         [
           "Osm products",
+          1
+        ],
+        [
+          "neck band",
+          1
+        ],
+        [
+          "Headphone",
+          1
+        ],
+        [
+          "Boat Rockerz 400",
+          1
+        ],
+        [
+          "rockerz bluetooth headphones",
+          1
+        ],
+        [
+          "OnePlus Bullets Wireless Z Bluetooth Headset",
+          1
+        ],
+        [
+          "U&i Bluetooth device",
+          1
+        ],
+        [
+          "boat",
+          1
+        ]
+      ]
+    },
+    "held_out_gold_resolved_only": {
+      "n": 78,
+      "n_distinct": 34,
+      "n_null": 22,
+      "classified_null": [
+        [
+          "product",
+          18
+        ],
+        [
+          "Product",
+          2
+        ],
+        [
+          "unknown",
+          1
+        ],
+        [
+          "products",
+          1
+        ]
+      ],
+      "classified_named": [
+        [
+          "headphones",
+          9
+        ],
+        [
+          "earphone",
+          7
+        ],
+        [
+          "headphone",
+          5
+        ],
+        [
+          "earphones",
+          4
+        ],
+        [
+          "audio device",
+          3
+        ],
+        [
+          "headset",
+          2
+        ],
+        [
+          "Bluetooth speaker",
+          2
+        ],
+        [
+          "speaker",
+          2
+        ],
+        [
+          "earbuds",
+          1
+        ],
+        [
+          "OnePlus Bluetooth",
+          1
+        ],
+        [
+          "BassDesign",
+          1
+        ],
+        [
+          "11mm neckband",
+          1
+        ],
+        [
+          "BoAt 235v2 bluetooth headset",
+          1
+        ],
+        [
+          "OnePlus Bullets Wireless Z",
+          1
+        ],
+        [
+          "gadget",
+          1
+        ],
+        [
+          "Realme headset",
+          1
+        ],
+        [
+          "wireless earphone",
+          1
+        ],
+        [
+          "buds",
+          1
+        ],
+        [
+          "OnePlus product",
+          1
+        ],
+        [
+          "wireless earbuds",
+          1
+        ],
+        [
+          "Mivi collar wireless",
+          1
+        ],
+        [
+          "realme phone",
+          1
+        ],
+        [
+          "Boat earphone",
           1
         ],
         [
