@@ -480,3 +480,78 @@ class TestRetentionModes:
         mock_save.assert_not_called()
         mock_cost.assert_called_once()
         assert mock_cost.call_args.args[1] is None  # extraction_id positional arg
+
+
+# ---------------------------------------------------------------------------
+# Session 15d (D7) -- additive language-evidence fields
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_fresh_extraction_carries_language_evidence_and_keeps_detector_label() -> None:
+    """`language` stays the detector's label (backward compatible); the new fields ride along."""
+    from app.api.v2.extract import _run_extraction_v2
+
+    text = "A bit uncomfortable on ears but bass is mast"  # 1 weak marker: label en, weak evidence
+    with (
+        patch("app.api.v2.extract.get_by_hash_pg", return_value=None),
+        patch("app.api.v2.extract.save_extraction_pg", return_value=str(uuid.uuid4())),
+        patch(
+            "app.api.v2.extract.extract_with_llm",
+            new=AsyncMock(return_value=(_LLM_OUTPUT.model_copy(), "mock-model", 42, 1, 1, False)),
+        ),
+        patch("app.api.v2.extract.update_usage_tokens"),
+    ):
+        result = await _run_extraction_v2(ReviewRequest(text=text), _CTX)
+
+    assert result.language == "en"
+    assert result.code_mixed is True
+    assert result.language_signal_strength == "weak"
+    body = result.model_dump()
+    assert {"language", "code_mixed", "language_signal_strength"} <= set(body)
+
+
+@pytest.mark.asyncio
+async def test_cache_hit_is_enriched_with_the_same_language_evidence() -> None:
+    """The fields are not persisted; a cache hit must not return nulls for the same review."""
+    from datetime import datetime
+
+    from app.api.v2.extract import _run_extraction_v2
+    from app.core.schemas import ExtractionMetaV2, ReviewExtractionV2
+
+    cached = ReviewExtractionV2(
+        product="Test Widget",
+        language="hi-en",
+        extraction_meta=ExtractionMetaV2(
+            model="mock",
+            prompt_version="v1",
+            schema_version="1.0.0",
+            extracted_at=datetime.now(tz=UTC),
+            input_hash="sha256:abc",
+            org_id=_ORG_ID,
+        ),
+    )
+    assert cached.code_mixed is None  # what the DB round-trip yields
+
+    with patch("app.api.v2.extract.get_by_hash_pg", return_value=cached):
+        result = await _run_extraction_v2(
+            ReviewRequest(text="bahut kharab product, nahi lena"), _CTX
+        )
+
+    assert result.language == "hi-en"
+    assert result.code_mixed is True
+    assert result.language_signal_strength == "strong"
+    assert cached.code_mixed is None  # the cached object itself was not mutated
+
+
+def test_openapi_documents_the_new_fields_on_the_extraction_schema() -> None:
+    from app.main import create_app
+
+    schemas = create_app().openapi()["components"]["schemas"]
+    props = schemas["ReviewExtractionV2"]["properties"]
+    assert "code_mixed" in props
+    assert "language_signal_strength" in props
+    assert "NOT a probability" in props["language_signal_strength"]["description"]
+    # Additive: neither field is required, so existing clients and stored payloads stay valid.
+    required = set(schemas["ReviewExtractionV2"].get("required", []))
+    assert not ({"code_mixed", "language_signal_strength"} & required)

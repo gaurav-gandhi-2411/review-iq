@@ -3,6 +3,15 @@
 **Status: DRAFT. Not yet published to any public surface. GG reviews before this goes live
 anywhere (README, blog, site).**
 
+> **Correction (Session 15d, 2026-09-20): the "language-routing bug (4.6pp)" below is wrong.**
+> The 4.6pp is the `language` output field scoring 100% by echo when routing is forced (the
+> forced prompt states the label), versus the detector's agreement with a noisy corpus label as
+> deployed. Excluding `language`, forcing the correct routing moves the held-out headline by
+> -0.63pp [-2.77, +1.51]: no measurable extraction cost of misrouting
+> (`eval/results/routing_cost_n106.json`). The 4.6 + 7.8 = 12.4pp decomposition therefore does
+> not hold; the 7.8pp is not re-derived. Details: the Correction sections of ADR 0021 and ADR
+> 0023. The text and numbers below are kept as originally written, as a record of the claim.
+
 ## TL;DR
 
 This product's published accuracy numbers were, for most of this project's history, measured
@@ -11,7 +20,8 @@ fall into as training-test leakage in any ML system, just less discussed for pro
 LLM products. We built a held-out corpus specifically to measure without that contamination,
 and the gap was real: **12.3 percentage points, 95% CI [6.5pp, 17.4pp], n=106** (68.3% held-out
 vs. 80.6% published, before this session's fixes). We then decomposed that gap into two
-independently-measurable causes — a language-routing bug (4.6pp) and genuine prompt-quality
+independently-measurable causes — a language-routing bug (4.6pp; WITHDRAWN, see the Session 15d
+correction above) and genuine prompt-quality
 contamination (7.8pp) — and made the measurement itself reproducible from committed cassettes,
 so this number, unlike every one before it, can be independently re-derived rather than taken
 on faith.
@@ -162,7 +172,8 @@ cassette mechanism the CI-gate eval already uses, pointed at its own separate ca
 | Currently published hi-en (fixtures the prompt was tuned against) | 80.6% | — | 15 |
 
 **The contamination gap decomposes into two separately-measured, additive effects, not one
-blended number:**
+blended number (SUPERSEDED: the first effect below is the `language` echo, not a routing cost --
+see the Session 15d correction at the top of this document):**
 
 - **Language misrouting cost: 4.6 percentage points, 95% CI [2.8pp, 6.4pp]** (paired bootstrap,
   same 106 items scored under both routing conditions) — what the production language detector

@@ -491,7 +491,9 @@ class TestHeldOutScoringDisclosure:
         "groq_model_small": "s",
         "groq_model_large": "l",
         "n_fixtures": 106,
-        "language_detection_accuracy": 0.48,
+        "language_label_agreement": 0.48,
+        "language_label_agreement_wilson_95": {"lower": 0.39, "upper": 0.575, "n": 106},
+        "language_label_alpha": 0.38,
         "as_deployed": {
             "n": 106,
             "overall_score": 0.727,
@@ -563,3 +565,60 @@ class TestHeldOutScoringDisclosure:
         md = render_held_out_table_md(self.DATA)
         assert "| **As actually deployed** (real language routing) | **72.7%** " in md
         assert "Why the headline excludes" not in md
+
+
+class TestHeldOutHeadlineExcludesLanguage:
+    """Session 15d (D7): the headline excludes `stars` (constant) AND `language` (echo / label
+    noise), with every higher figure and the reason disclosed beside it, all from the artifact."""
+
+    WITH_ECHO = {
+        **TestHeldOutScoringDisclosure.WITH_CONSTANT,
+        "headline_echo_fields": ["language"],
+        "headline_fields": ["product", "sentiment", "topics"],
+        "overall_score_headline": {"as_deployed": 0.724, "language_forced": 0.718},
+        "overall_score_headline_ci_95": {
+            "as_deployed": {"lower": 0.698, "upper": 0.750, "n": 106},
+            "language_forced": {"lower": 0.693, "upper": 0.742, "n": 106},
+        },
+        "scorer_version": "v-test",
+    }
+
+    def test_headline_rows_are_the_ex_stars_ex_language_figures_with_their_own_cis(self):
+        md = render_held_out_table_md(self.WITH_ECHO)
+        assert "| **As actually deployed** (real language routing) | **72.4%** " in md
+        assert "| [69.8%, 75.0%] | 106 |" in md
+        assert "| Language routing forced correct | 71.8% | [69.3%, 74.2%] | 106 |" in md
+        headline_row = next(ln for ln in md.splitlines() if "As actually deployed" in ln)
+        assert "69.7%" not in headline_row  # the stars-only figure is not the headline
+        assert "72.7%" not in headline_row  # nor the all-fields one
+
+    def test_all_fields_and_stars_only_figures_disclosed_with_reasons(self):
+        md = render_held_out_table_md(self.WITH_ECHO)
+        assert "**Why the headline excludes `stars` and `language`.**" in md
+        assert "72.7% as deployed [70.5%, 74.9%]" in md
+        assert "77.4% with language routing forced correct" in md
+        assert "excluding only `stars` they score 69.7% [67.1%, 72.2%]" in md
+        assert "`stars` is null in both gold and prediction on all 106 reviews" in md
+        assert "the field is 100% by echo" in md
+        assert "the 3 remaining informative fields" in md
+
+    def test_definition_change_is_disclosed_with_old_and_new_headline(self):
+        # Rule 65c: the change raised the as-deployed headline, so it is stated, generated.
+        md = render_held_out_table_md(self.WITH_ECHO)
+        assert "from 69.7% to 72.4%" in md
+        assert "from 74.9% to 71.8%" in md
+        assert "byte-identical" in md
+
+    def test_agreement_is_never_called_accuracy_and_carries_ci_and_alpha(self):
+        md = render_held_out_table_md(self.WITH_ECHO)
+        assert (
+            "agreement with the corpus label 48.0% (95% CI 39.0-57.5; label alpha 0.380, "
+            "so this partly measures label noise, not detector error)"
+        ) in md
+        assert "detection accuracy" not in md.lower()
+        assert "language detector agreed" not in md
+
+    def test_echo_fields_without_headline_figures_fail_loudly(self):
+        broken = {k: v for k, v in self.WITH_ECHO.items() if k != "overall_score_headline"}
+        with pytest.raises(KeyError):
+            render_held_out_table_md(broken)

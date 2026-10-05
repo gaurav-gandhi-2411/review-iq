@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import copy
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -61,6 +62,17 @@ def strip_provenance(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def main() -> int:
+    if os.environ.get("EVAL_CASSETTE_MODE", "").strip().lower() != "replay":
+        # This check OVERWRITES the two committed result files by running eval.runner. Without
+        # replay mode the runner makes live LLM calls (real cost, quota, non-determinism) and
+        # the comparison below would be between the committed file and a different live run --
+        # or, if the calls fail, a clobbered results file. ci.yml sets replay; refuse without it.
+        print(
+            "FAIL: EVAL_CASSETTE_MODE=replay is required (this check regenerates the committed "
+            "eval result files; without replay it would call live providers)."
+        )
+        return 1
+
     if not LATEST_RESULTS_PATH.exists():
         print(f"FAIL: {LATEST_RESULTS_PATH} does not exist -- nothing to verify against.")
         return 1
@@ -101,6 +113,18 @@ def main() -> int:
             "This file must be machine-generated only. If you edited it by hand, revert your "
             "edit and re-run `uv run python -m eval.runner` instead. If prompts/fixtures "
             "genuinely changed, re-run the eval and commit the real regenerated output."
+        )
+        return 1
+
+    # Session 16 (V5c): reproducing is not passing. eval.runner exits 1 on a genuine accuracy-gate
+    # FAIL, which used to count as a valid regeneration, so a PR that committed a failing eval
+    # (and its matching failing results) went green: ci.yml has no other PR-time accuracy gate
+    # and eval.yml runs only after merge. `passed` is the runner's own overall-gate verdict.
+    if result.returncode == 1 or regenerated_latest.get("passed") is False:
+        print(
+            "FAIL: the results reproduce from the committed cassettes, but the accuracy gate "
+            "FAILS (eval.runner exit 1 / `passed: false`). Reproducibility is necessary, not "
+            "sufficient: a failing eval must not merge as if it were a valid regeneration."
         )
         return 1
 

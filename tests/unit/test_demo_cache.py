@@ -219,3 +219,21 @@ def test_cache_miss_returns_valid_extraction(client: TestClient) -> None:
     assert body["product"] == "Demo Widget"
     assert body["sentiment"] == "positive"
     assert "extraction_meta" in body
+
+
+def test_demo_response_carries_language_evidence(client: TestClient) -> None:
+    """Session 15d (D7): /demo/extract returns code_mixed + language_signal_strength additively,
+    and a cache-served repeat returns the same values."""
+    text = "bahut kharab product, paisa vasool nahi hai"
+    with patch(
+        "app.api.demo.extract_with_llm",
+        new=AsyncMock(return_value=(_LLM_OUTPUT, "mock-model", 50, 0, 0, False)),
+    ):
+        first = client.post("/demo/extract", json={"text": text}).json()
+        second = client.post("/demo/extract", json={"text": text}).json()
+
+    assert first["code_mixed"] is True
+    assert first["language_signal_strength"] == "strong"
+    assert second["code_mixed"] == first["code_mixed"]
+    assert second["language_signal_strength"] == first["language_signal_strength"]
+    assert first["language"] == "en"  # the model's own report is untouched (no routing change)

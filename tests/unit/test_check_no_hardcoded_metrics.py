@@ -110,3 +110,35 @@ class TestFindViolationsHtml:
             encoding="utf-8",
         )
         assert find_violations(path) == []
+
+
+class TestShapesTheScannerDoesNotSee:
+    """Pins the regex heuristic's documented blind spots (module docstring: "catches the class
+    of bug we've had three times, not every possible one"). A number written in any of these
+        shapes is an unmarked accuracy claim that passes CI. If the scanner learns one, move the
+        case to a passing-detection test."""
+
+    def test_percent_sign_claim_is_detected(self, tmp_path: Path):
+        path = tmp_path / "doc.md"
+        path.write_text("Overall accuracy is 78.6%.\n", encoding="utf-8")
+        assert len(find_violations(path)) == 1
+
+    def test_KNOWN_GAP_decimal_fraction_claim_passes(self, tmp_path: Path):
+        path = tmp_path / "doc.md"
+        path.write_text("Overall accuracy is 0.786 on the gate set.\n", encoding="utf-8")
+        assert find_violations(path) == []
+
+    def test_KNOWN_GAP_spelled_out_percent_passes(self, tmp_path: Path):
+        path = tmp_path / "doc.md"
+        path.write_text("Overall accuracy is 78.6 percent.\n", encoding="utf-8")
+        assert find_violations(path) == []
+
+    def test_KNOWN_GAP_any_unrendered_marker_block_is_exempt(self, tmp_path: Path):
+        # The scanner blanks every METRICS:START..END span whatever its name; only
+        # render_metrics.py --check (marker_problems) notices a span nothing renders.
+        path = tmp_path / "doc.md"
+        path.write_text(
+            "<!-- METRICS:START:nothing_renders_this -->accuracy 78.6%<!-- METRICS:END -->\n",
+            encoding="utf-8",
+        )
+        assert find_violations(path) == []

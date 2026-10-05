@@ -31,6 +31,13 @@ from dataclasses import dataclass
 
 TIMEOUT_SECONDS = 30.0
 
+# urllib's default "Python-urllib/3.x" User-Agent is rejected with HTTP 403 by Groq's edge, while
+# the identical request via curl or with any explicit UA returns 200 (verified 2026-09-21: this
+# check's first real run on main failed 403 on all three models, and the list step, which uses
+# curl, passed with the same key). A 403 caused by client identity is indistinguishable, in the
+# verdict, from a genuinely revoked key -- so the identity must be set explicitly.
+USER_AGENT = "review-iq-model-availability-check/1.0"
+
 
 @dataclass(frozen=True)
 class Verdict:
@@ -49,7 +56,11 @@ def _request(provider: str, model: str, key: str) -> urllib.request.Request:
         return urllib.request.Request(
             "https://api.groq.com/openai/v1/chat/completions",
             data=json.dumps(body).encode(),
-            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            headers={
+                "Authorization": f"Bearer {key}",
+                "Content-Type": "application/json",
+                "User-Agent": USER_AGENT,
+            },
             method="POST",
         )
     if provider == "gemini":
@@ -60,7 +71,11 @@ def _request(provider: str, model: str, key: str) -> urllib.request.Request:
         return urllib.request.Request(
             f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
             data=json.dumps(body).encode(),
-            headers={"x-goog-api-key": key, "Content-Type": "application/json"},
+            headers={
+                "x-goog-api-key": key,
+                "Content-Type": "application/json",
+                "User-Agent": USER_AGENT,
+            },
             method="POST",
         )
     raise ValueError(f"unknown provider {provider!r}")

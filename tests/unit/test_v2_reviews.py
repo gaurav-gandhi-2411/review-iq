@@ -60,3 +60,24 @@ class TestV2Insights:
         data = response.json()
         assert data["org_id"] == _ORG_ID
         assert data["total_extractions"] == 0
+
+
+class TestV2ListReviewsLanguageEvidence:
+    """Session 15d (D7): batch results are read back here, so rows get the same evidence fields."""
+
+    async def test_rows_get_evidence_derived_from_stored_text(
+        self, client: httpx.AsyncClient
+    ) -> None:
+        rows = [
+            {"id": 1, "review_text": "bahut kharab product, nahi lena", "language": "hi-en"},
+            {"id": 2, "review_text": "Great sound quality.", "language": "en"},
+            {"id": 3, "review_text": None, "language": "en"},
+        ]
+        with patch("app.api.v2.reviews.list_extractions_pg", return_value=rows):
+            data = (await client.get("/v2/reviews")).json()
+        by_id = {r["id"]: r for r in data["results"]}
+        assert by_id[1]["language"] == "hi-en"  # stored label untouched
+        assert by_id[1]["code_mixed"] is True
+        assert by_id[1]["language_signal_strength"] == "strong"
+        assert (by_id[2]["code_mixed"], by_id[2]["language_signal_strength"]) == (False, "none")
+        assert (by_id[3]["code_mixed"], by_id[3]["language_signal_strength"]) == (None, None)
