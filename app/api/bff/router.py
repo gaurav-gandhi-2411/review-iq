@@ -48,9 +48,9 @@ from app.api.v2.insights import (
     _HS_NOTE,
     _W_S,
     _W_U,
-    _assign_band,
     _assign_confidence,
     compute_health_score,
+    health_band,
 )
 from app.auth.api_key import ApiKeyContext
 from app.auth.keygen import insert_api_key_with_retry
@@ -745,7 +745,7 @@ async def bff_health_score(
             },
         },
         "score": score,
-        "band": _assign_band(score),
+        "band": health_band(raw),
         "confidence": _assign_confidence(total),
         "formula_version": _FORMULA_VERSION,
         "moderation_note": _HS_NOTE,
