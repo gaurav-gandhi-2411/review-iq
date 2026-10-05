@@ -141,13 +141,9 @@ file in the past.
 > API key recorded the original re-record is not recoverable from the committed artifacts —
 > the cassette format does not capture caller identity; see `ops/runbooks/eval-cassette-rerecord.md`.)
 
-<!-- METRICS:START:extraction_table -->**Prompt v2.3** &middot; `5c5c8e0` &middot; measured 2026-09-19T21:59:11Z &middot; mode: direct (local LLM)
+<!-- METRICS:START:extraction_table -->**Prompt v2.3** &middot; `5c5c8e0` &middot; mode: direct (local LLM)
 
-| Language | Score | 95% CI | Gate | Status |
-|---|---|---|---|---|
-| en | 78.2% | [73.7%, 82.3%] | ≥77% | PASS |
-| hi-en | 79.3% | [66.8%, 87.7%] | ≥75% | PASS |
-| **Overall** | **78.6%** | [73.2%, 82.9%] | ≥76% | PASS |
+**Headline accuracy: 78.6% (95% CI 73–83%, n=43, eval 2026-09-19)** -- CI gate ≥76%: PASS.
 
 n=43 fixtures (27 en, 16 hi-en). Tiered routing is ON by default in production and in this eval run (`ENABLE_TIERED_ROUTING` defaults `true`, unset in CI) -- a same-cassette `--routed` comparison produced byte-identical scores to the numbers above; there is currently no distinct *unrouted* measurement to report separately (see [ADR 0001](docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md)).<!-- METRICS:END -->
 
@@ -157,7 +153,7 @@ calls; see `eval/README.md`). Nightly runs post results to Slack.
 
 ### Real-world accuracy (uncontaminated, held-out corpus)
 
-The table above is a **regression detector**: it's measured against fixtures the prompt was
+The headline figure above is a **regression detector**: it's measured against fixtures the prompt was
 developed and tuned against, so it tells you "did this change break something," not "how
 accurate is this in the real world." The table below is the honest answer to the second
 question — scored against 106 real Indian marketplace reviews mined independently of prompt
@@ -174,7 +170,7 @@ development, never seen by anyone iterating on the prompt.
 
 **Headline definition change (Session 15d).** Until Session 15d the headline averaged every field except `stars`; dropping `language` moves the as-deployed headline from 69.7% to 72.4% and the forced row from 74.9% to 71.8%. The recorded model outputs are byte-identical; only which fields are averaged changed.
 
-n=106 real Hinglish reviews the prompt has never seen (never used for prompt development), 0 hi (see [ADR 0016](docs/architecture/adr/0016-third-judge-corpus-batch-1-and-sentiment-recheck.md)). Production's own language detector, measured against this corpus's language label: agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error). This is the number to trust for real-world extraction accuracy; the CI-gate table above is a regression detector, not a real-world accuracy claim -- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) (its misrouting-cost finding was corrected in Session 15d).
+n=106 real Hinglish reviews the prompt has never seen (never used for prompt development), 0 hi (see [ADR 0016](docs/architecture/adr/0016-third-judge-corpus-batch-1-and-sentiment-recheck.md)). Production's own language detector, measured against this corpus's language label: agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error). This is the number to trust for real-world extraction accuracy; the CI-gate headline above is a regression detector, not a real-world accuracy claim -- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) (its misrouting-cost finding was corrected in Session 15d).
 
 **Scoring note (scorer `2026-09-20.free-text-v1`).** Free-text fields (`product`, `topics`, `competitor_mentions`) are compared after normalization, so different correct spellings of "no product named" (`unknown` vs `unknown product`) and near-identical topic labels (`battery` vs `battery_life`) are no longer scored wrong. Earlier published figures used exact-string matching on the same recorded model outputs and counted all fields (the same basis as the all-fields figures above): as deployed, 68.3% then vs 72.7% now. The model's outputs did not change, only the comparator ([ADR 0030](docs/architecture/adr/0030-free-text-scorers.md)).<!-- METRICS:END -->
 
