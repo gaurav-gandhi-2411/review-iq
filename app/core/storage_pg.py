@@ -1215,9 +1215,8 @@ def health_score_pg(
 ) -> dict[str, Any]:
     """Return raw counts for computing the org-level health score.
 
-    Two queries are issued inside a single RLS-scoped transaction:
-      1. Extraction counts — sentiment + urgency breakdown.
-      2. Authenticity audit counts — total audited + likely_fake count.
+    One RLS-scoped query: extraction counts — sentiment + urgency breakdown. (Authenticity
+    audit counts were removed in Session 17 W6; the table itself is untouched.)
 
     The API layer is responsible for applying weights, deriving component
     scores, and assigning a band.  This function returns only raw integers
@@ -1232,7 +1231,7 @@ def health_score_pg(
         dict with keys:
           total_extractions, positive_count, negative_count, neutral_count,
           mixed_count, high_urgency_count, medium_urgency_count,
-          low_urgency_count, total_audited, likely_fake_count.
+          low_urgency_count.
     """
     time_parts: list[str] = []
     time_params: list[Any] = []
@@ -1278,17 +1277,6 @@ def health_score_pg(
             else (0, 0, 0, 0, 0, 0, 0, 0)
         )
 
-        # 2. Authenticity: total_audited + likely_fake count only.
-        #    suspicious reviews do NOT penalise the score (spec: only likely_fake penalises).
-        cur.execute(
-            f"SELECT COUNT(*), "
-            f"COUNT(*) FILTER (WHERE label = 'likely_fake') "
-            f"FROM public.authenticity_audits WHERE org_id = %s{time_clause}",
-            [org_id, *time_params],
-        )
-        audit_row = cur.fetchone()
-        total_audited, likely_fake = (int(audit_row[0]), int(audit_row[1])) if audit_row else (0, 0)
-
         conn.commit()
         return {
             "total_extractions": total,
@@ -1299,8 +1287,6 @@ def health_score_pg(
             "high_urgency_count": high_urg,
             "medium_urgency_count": med_urg,
             "low_urgency_count": low_urg,
-            "total_audited": total_audited,
-            "likely_fake_count": likely_fake,
         }
     except Exception:
         conn.rollback()

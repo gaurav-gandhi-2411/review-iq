@@ -37,7 +37,6 @@ import psycopg2
 import structlog
 
 from app.auth.api_key import ApiKeyContext
-from app.core.alerts.engine import alert_on_review_event
 from app.core.config import get_settings
 from app.core.ratelimit import set_bulk_call_class
 from app.core.schemas import ReviewRequest
@@ -94,13 +93,6 @@ async def _claim_one_row() -> tuple[str, str, bool] | None:
         job_id, row_index, org_id_raw, text, product, review_date = row
         org_id = str(org_id_raw)
 
-        include_authenticity = False
-        job = await asyncio.to_thread(get_batch_job_pg, org_id, job_id)
-        if job and job.get("source_columns"):
-            with contextlib.suppress(json.JSONDecodeError):
-                meta = json.loads(job["source_columns"])
-                include_authenticity = bool(meta.get("include_authenticity", False))
-
         # Row-level ctx: attribute this extraction to THIS ROW's org_id only —
         # never the caller's org, never a default. api_key_id=None +
         # usage_record_id="" mirrors the existing system-triggered-extraction
@@ -139,9 +131,6 @@ async def _claim_one_row() -> tuple[str, str, bool] | None:
                 error=error,
             )
 
-        if ok and include_authenticity:
-            await _score_authenticity(ctx, job_id, text)
-
         await asyncio.to_thread(
             cur.execute,
             "SELECT public.settle_batch_job_row(%s, %s, %s, %s, %s)",
@@ -154,35 +143,6 @@ async def _claim_one_row() -> tuple[str, str, bool] | None:
         raise
     finally:
         await asyncio.to_thread(conn.close)
-
-
-async def _score_authenticity(ctx: ApiKeyContext, job_id: str, text: str) -> None:
-    """Run authenticity scoring for one row — behavior carried over from the
-    retired fire-and-forget ingest path (app.api.v2.ingest._process_ingest_job,
-    deleted 2026-07-09 once the BFF endpoint moved to this queue).
-
-    Best-effort: a scoring failure is logged and swallowed, never affects the
-    row's extraction outcome (the extraction already succeeded by the time
-    this is called).
-    """
-    from app.core.authenticity import engine as auth_engine
-    from app.core.storage_pg import save_authenticity_audit_pg
-
-    try:
-        auth_result = await auth_engine.score_single(text, stars=None, settings=get_settings())
-        await asyncio.to_thread(
-            save_authenticity_audit_pg,
-            ctx.org_id,
-            auth_result.review_hash,
-            auth_result.score,
-            auth_result.label.value,
-            [f.value for f in auth_result.flags],
-        )
-        await alert_on_review_event(
-            org_id=ctx.org_id, review_id=auth_result.review_hash, auth=auth_result
-        )
-    except Exception as exc:  # noqa: BLE001
-        log.warning("ingest_worker.authenticity_failed", job_id=job_id, error=str(exc))
 
 
 async def _sync_job_progress(org_id: str, job_id: str) -> bool:

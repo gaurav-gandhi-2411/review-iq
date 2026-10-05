@@ -23,7 +23,7 @@ _SAMPLE_RECORD: dict[str, object] = {
     "extracted_at": "2026-06-13T12:00:00",
     "created_at": "2026-06-13T12:00:00",
     "extraction": {"product": "Widget", "sentiment": "positive"},
-    "authenticity": {"score": 0.9, "label": "genuine", "flags": []},
+    "authenticity": None,
     "corrections": [],
 }
 
@@ -120,3 +120,50 @@ class TestExportDataset:
         """Missing API key on export endpoint returns 401."""
         resp = client_no_auth.get("/v2/dataset/export")
         assert resp.status_code == 401
+
+
+class TestAuthenticityDeprecated:
+    def test_authenticity_key_present_and_null(self, client: TestClient) -> None:
+        """Old clients still find the key; it is null."""
+        with patch(
+            "app.api.v2.dataset.get_dataset_page",
+            new=MagicMock(return_value=[_SAMPLE_RECORD]),
+        ):
+            body = client.get("/v2/dataset").json()
+        assert "authenticity" in body["records"][0]
+        assert body["records"][0]["authenticity"] is None
+
+    def test_openapi_marks_authenticity_deprecated(self, client: TestClient) -> None:
+        """OpenAPI carries the deprecation, the removal policy, and no stale summary."""
+        op = client.get("/openapi.json").json()["paths"]["/v2/dataset"]["get"]
+        assert "authenticity" not in op["summary"]
+        field = op["responses"]["200"]["content"]["application/json"]["schema"]["properties"][
+            "records"
+        ]["items"]["properties"]["authenticity"]
+        assert field["deprecated"] is True
+        assert (
+            "removed in a future versioned change; not before 2027-01-01." in (field["description"])
+        )
+        example = op["responses"]["200"]["content"]["application/json"]["example"]
+        # FastAPI drops JSON nulls when rendering openapi.json, so the null example key is
+        # omitted there; what matters is that no stale score object is advertised.
+        assert not isinstance(example["records"][0].get("authenticity"), dict)
+
+    def test_builder_never_queries_audits_and_returns_null(self) -> None:
+        """Stored authenticity_audits rows are not read; every record gets authenticity=None."""
+        from app.core.dataset import builder
+
+        cur = MagicMock()
+        executed: list[str] = []
+        cur.execute.side_effect = lambda sql, *a: executed.append(sql)
+        extraction_row = (
+            "id1", _ORG, "rid1", "text", "Widget", None, 4, True, "positive", "low", "en",
+            4, 0.9, [], [], [], [], [], "m", "2.3", "1", 10, "2026-01-01", "2026-01-01", False,
+        )  # fmt: skip
+        cur.fetchall.side_effect = [[extraction_row], []]
+        conn = MagicMock()
+        conn.cursor.return_value = cur
+        with patch.object(builder, "_db_connect", return_value=conn):
+            records = builder.get_dataset_page(_ORG, 10, 0)
+        assert records[0]["authenticity"] is None
+        assert not any("authenticity_audits" in q for q in executed)
