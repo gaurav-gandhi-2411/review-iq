@@ -21,7 +21,7 @@ _AUTHENTICITY_DEPRECATION = (
 )
 
 
-_EXAMPLE_DATASET_RECORD = {
+_EXAMPLE_DATASET_RECORD: dict[str, Any] = {
     "review_id": "9f2c1a...",
     "review_text": "Great sound quality but the battery dies after 3 hours.",
     "extracted_at": "2026-07-07T12:00:00Z",
