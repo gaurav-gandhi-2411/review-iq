@@ -24,32 +24,48 @@ is the dashboard login check for `app/api/account.py`, `app/auth/session.py`, `g
 Finding that changes the plan: `get_user(jwt)` does not need a privileged key. Verified 2026-10-05
 against the live project: `GET /auth/v1/user` with the **anon** key as `apikey` passes the API-key gate
 (HTTP 403 "invalid JWT" for a garbage bearer), while a bogus `apikey` gets 401 "Invalid API key". Using
-the anon key for token verification is the standard supabase-js flow. Not yet verified: a real user
-token through the deployed service (do step B3 below).
+the anon key for token verification is the standard supabase-js flow. Not yet verified end to end: a real user
+token through the deployed service (Plan A step 3 below is that test).
 
-## 2. Plan A (recommended): remove the consumer, then revoke. No swap, no downtime.
+## 2. Plan A (applies; confirmed 2026-10-05): remove the consumer, then disable the legacy keys
 
-The key never needs a replacement, so there is no window in which production lacks access.
+**Correction found 2026-10-05 (S17 F2): the leaked key is a LEGACY JWT, not an `sb_secret_` key.**
+Secret Manager `supabase-service-role-key` holds a legacy `service_role` JWT (starts `eyJ`, `role`
+claim `service_role`, exp 2094; checked by shape, value not printed). The project also shows the
+new key system. Deleting an `sb_secret_` key does nothing to a legacy JWT: the leaked key stays valid
+until the **legacy API keys are disabled** in the dashboard (or the legacy JWT secret is rotated). The
+local `.env` anon keys (`SUPABASE_ANON_KEY`, `VITE_SUPABASE_ANON_KEY`) are legacy JWTs too, and the
+Vercel one is BELIEVED to be (value is encrypted; not decrypted), so disabling legacy keys also breaks
+the anon key until the web app and the API are moved to the `sb_publishable_` key. Order matters:
 
-1. Merge and deploy the PR that makes `_get_supabase_admin()` prefer `SUPABASE_ANON_KEY` and fall
-   back to the service-role key when it is unset (behaviour unchanged at deploy time).
-2. Set the env var on the public service (the anon key is public by design, so a plain env var is
-   fine, no secret needed):
-   `gcloud run services update review-iq --region=asia-south1 --project=reviewiq-prod-260813 --account=gaurav.gandhi1129@gmail.com --update-env-vars=SUPABASE_ANON_KEY=<anon key from the dashboard>`
-   (`--update-env-vars` merges; never `--set-env-vars`, which drops every other variable.)
-3. Verify on the running service: log in at https://app.samidhareviews.xyz with a real account, load
-   the dashboard (a BFF call), and check Cloud Run logs for 401s on `/bff/*` for 10 minutes.
-4. Remove the dependency: `gcloud run services update review-iq ... --remove-secrets=SUPABASE_SERVICE_ROLE_KEY`
-   (new revision; repeat step 3).
-5. Revoke the key in Supabase (section 4). Nothing in production reads it any more.
-6. Disable the Secret Manager version: `gcloud secrets versions disable 1 --secret=supabase-service-role-key --project=reviewiq-prod-260813 --account=gaurav.gandhi1129@gmail.com`
-   (never leave an enabled version of a revoked secret; see secret-rotation.md for the quota rule).
-7. Delete the local `.env` line.
+1. DONE (2026-10-05): #250 merged and deployed (Cloud Run revision `review-iq-00044-svc`, image
+   `sha-4d729ba...`): `_get_supabase_admin()` prefers `SUPABASE_ANON_KEY`, falls back to the
+   service-role key while it is unset. Baseline: 23 `/bff/*` requests, all 200, on that revision.
+2. Dashboard: copy the `sb_publishable_...` key (Project Settings -> API Keys). It is public by design.
+3. Cloud Run, API verification path:
+   `gcloud run services update review-iq --region=asia-south1 --project=reviewiq-prod-260813 --account=gaurav.gandhi1129@gmail.com --update-env-vars=SUPABASE_ANON_KEY=<sb_publishable key>`
+   (`--update-env-vars` merges; never `--set-env-vars`). Log in at https://app.samidhareviews.xyz, load
+   the dashboard, then check Cloud Run logs: `/bff/*` all 200, no 401, for 10 minutes. If 401
+   appears, unset the variable (`--remove-env-vars=SUPABASE_ANON_KEY`): the service-role fallback
+   resumes. Not yet verified: that GoTrue accepts a `sb_publishable_` key on `/auth/v1/user` through
+   supabase-py 2.31 (the client constructor accepts the format; verified). This step is that test.
+4. Vercel project `samidha-reviews-web`: set `VITE_SUPABASE_ANON_KEY` to the `sb_publishable_` key
+   (Production and Preview), redeploy, log in again at the app.
+5. Cloud Run: remove the service-role binding:
+   `gcloud run services update review-iq ... --remove-secrets=SUPABASE_SERVICE_ROLE_KEY`; repeat the
+   step 3 check.
+6. Dashboard: disable the legacy API keys (the control that actually kills the leaked JWT).
+   See section 4 for the exact path. Then PROVE it: a request with the old service-role key must
+   return 401 (CC can run this check without printing the key).
+7. Disable the Secret Manager version: `gcloud secrets versions disable 1 --secret=supabase-service-role-key --project=reviewiq-prod-260813 --account=gaurav.gandhi1129@gmail.com`; replace the three
+   legacy values in the local `.env` / `web/.env.local` with the new-style ones.
+8. Follow-up PR: delete the fallback and the `SUPABASE_SERVICE_ROLE_KEY` setting from the code so the
+   key cannot be reintroduced silently.
 
-Rollback: before step 4, nothing was removed, so rollback is `gcloud run services update-traffic review-iq --to-revisions=<previous>=100`.
-After step 4, rollback is `--update-secrets=SUPABASE_SERVICE_ROLE_KEY=supabase-service-role-key:latest`
-(only valid while the key is not yet revoked; after step 5 there is nothing to roll back to, which is
-why step 3 must pass first).
+Rollback: before step 6 everything is reversible (unset the env var; re-add the secret binding with
+`--update-secrets=SUPABASE_SERVICE_ROLE_KEY=supabase-service-role-key:latest`). After step 6 the
+legacy keys are off; re-enabling them re-validates the leaked key, so do not roll back that step,
+fix forward with the publishable key instead.
 
 ## 3. Plan B: keep the consumer, swap the key (only if Plan A is not taken)
 
@@ -65,21 +81,16 @@ Order, so production never loses access: **issue new -> update every consumer ->
 Rollback: until step 5 the old key still works, so re-point `supabase-service-role-key:latest` by disabling
 the new version and redeploying. After step 5 only a freshly issued key can restore service.
 
-## 4. Issuing and revoking in Supabase (UNVERIFIED, written from documentation, not from the dashboard)
+## 4. Disabling the legacy keys in Supabase (UNVERIFIED: written from documentation, I have no dashboard access)
 
-Supabase has two key systems and which one this project shows decides the procedure. Check in
-Project Settings -> API Keys:
-
-* **New keys** (`sb_publishable_...` / `sb_secret_...`): create a new secret key, later delete the old
-  one; each revoked independently. Plan B step 1 and 5 are exactly that.
-* **Legacy keys** (JWT `anon` / `service_role`): the service-role JWT cannot be revoked on its own. It
-  is invalidated by rotating the project **JWT secret** (Project Settings -> JWT Keys / JWT Settings),
-  which also invalidates the legacy anon key and signs out every user session. Do this in a quiet
-  window, then update `VITE_SUPABASE_ANON_KEY` in Vercel (redeploy the web app) and `SUPABASE_ANON_KEY`
-  on Cloud Run in the same pass. Under Plan A this is the whole procedure.
-
-What CC needs from GG to finish: which of the two key systems the project shows, and, for Plan A, the
-anon/publishable key value pasted to the Cloud Run command only (never into chat), or GG runs step 2.
+GG confirmed the project shows the new key system (`sb_publishable_` / `sb_secret_`). Individual
+`sb_secret_` keys revoke one by one without touching the anon key or signing anyone out, but that
+does not help here because the leaked key is the legacy JWT (section 2). Path, as documented:
+Project Settings -> API Keys -> the "Legacy anon, service_role API keys" tab -> disable the legacy
+keys. Disabling is meant to be reversible, which is why it is the step to do last and check. Does it
+sign users out? BELIEVED no (user sessions are signed with the JWT signing key, a separate setting);
+UNVERIFIED. If the dashboard instead offers only "rotate JWT secret", that signs everyone out: tell
+CC before pressing it.
 
 ## 5. The postgres password reset (checked 2026-10-05)
 
