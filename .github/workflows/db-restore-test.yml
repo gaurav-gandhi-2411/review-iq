@@ -11,6 +11,8 @@ name: DB Restore Test
 # review-iq-db-20260919-194921.sql.gz.gpg") to test older dumps. Weekly schedule tests the newest.
 
 on:
+  push:
+    branches: [fix/s17-backup-stderr-and-restore-test] # TRIAL ONLY, reverted before PR
   schedule:
     - cron: "0 21 * * 0" # Sundays 21:00 UTC, three hours after the nightly dump
   workflow_dispatch:
@@ -64,6 +66,9 @@ jobs:
             exit 1
           fi
           REPO="${{ github.repository }}"
+          if [ -z "${REQUESTED}" ] && [ "${{ github.event_name }}" = "push" ]; then
+            REQUESTED="review-iq-db-20261005-095954.sql.gz.gpg review-iq-db-20260920-200256.sql.gz.gpg review-iq-db-20260919-194921.sql.gz.gpg review-iq-db-20260820-182559.sql.gz.gpg review-iq-db-20260731-191139.sql.gz.gpg review-iq-db-20260711-184839.sql.gz.gpg review-iq-db-20260710-191736.sql.gz"
+          fi
           if [ -z "${REQUESTED}" ]; then
             REQUESTED=$(gh api "repos/${REPO}/actions/artifacts?per_page=100" \
               --jq '[.artifacts[] | select((.name | startswith("review-iq-db-")) and (.expired | not))] | .[0].name')
