@@ -53,7 +53,7 @@ corrected (see that row).
 | `resend-api-key` | `RESEND_API_KEY` | Resend transactional email API key |
 | `resend-from-email` | `RESEND_FROM_EMAIL` | Verified sender address for alert/digest emails |
 | `supabase-url` | `SUPABASE_URL` | Supabase project REST URL (used for JWT verification) |
-| `supabase-service-role-key` | `SUPABASE_SERVICE_ROLE_KEY` | Bypasses RLS — highest-sensitivity secret in this table. Rotate first if any compromise is suspected. |
+| `supabase-service-role-key` | `SUPABASE_SERVICE_ROLE_KEY` | Bypasses RLS — highest-sensitivity secret in this table. Rotate first if any compromise is suspected. Consumers, order and rollback: `ops/runbooks/service-role-key-rotation.md`. |
 | `unsubscribe-signing-key` | `UNSUBSCRIBE_SIGNING_KEY` | HMAC key signing one-click unsubscribe tokens |
 | `leads-ip-hash-salt` | `LEADS_IP_HASH_SALT` | Added 2026-09-21 (Session 16). HMAC-SHA256 key for `leads.source_ip_hash` on the marketing-site lead form (`app/api/leads.py`). Attached with `gcloud run services update --update-secrets` (never `--set-secrets`, which would drop every other secret). Unset means the hash column is stored NULL (fail-safe). Rotating it makes older hashes unlinkable to new ones, which is acceptable: the hash exists only for abuse correlation. Runtime service account `review-iq-runner` holds `secretAccessor` on it. |
 | `supabase-direct-url` | *(none — never referenced by any deployed service)* | Added 2026-08-01, for running migrations that need `CREATEROLE` (`review_iq_app`/`review_iq_migrator` don't have it). Connects as `postgres`. Highest-sensitivity secret in this table alongside `supabase-service-role-key` — never grant any Cloud Run service account access to it. |
