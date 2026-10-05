@@ -730,7 +730,12 @@ def build_silver(
 
     fixtures = targets["fixtures"]
     fields = targets["headline_fields"]
-    main_out = outputs_by_review(votes, "main_")
+    # Judge order = active-panel order, so tie-breaks (first agreeing pair, representative value)
+    # are identical on every run; arrival order of concurrent live calls must not leak in.
+    main_out = {
+        rid: {m: outs.get(m) for m in active}
+        for rid, outs in outputs_by_review(votes, "main_").items()
+    }
     t_ids, v_ids = targets["T"], targets["V"]
 
     def level_counts(ids: list[str], variant: str, only_unscored: bool) -> dict[str, Any]:

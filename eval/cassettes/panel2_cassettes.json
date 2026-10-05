@@ -1,4 +1,22 @@
 {
+ "00227649bacce36433fa20e188bb84de953a3d5e5e6f6532568fd0b53ac7d047": {
+  "cost_usd": 4.86927e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"boAt 235v2 bluetooth headset\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"best performance\", \"best for movie\", \"best for ultra hd sound\", \"best for gaming\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"sound_quality\", \"gaming\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 687,
+  "tokens_out": 113
+ },
+ "007e7507357256085f827500fb2a8b68e206472c229833d3d80eccd4020ca963": {
+  "cost_usd": 0.0002195,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"unknown product\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"poor quality\",\n    \"not worth buying\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"quality\",\n    \"value\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 598,
+  "tokens_out": 108
+ },
  "026a984e47087bb863cb89c4c4a2e3f1ceb97bba9a14b7e19ecaa4ad88fcb28e": {
   "cost_usd": 0.00024065,
   "model": "thinkingmachines/inkling-small",
@@ -80,6 +98,15 @@
   "tokens_in": 627,
   "tokens_out": 97
  },
+ "062c6c30aadbebf35694af6d7f68555ef1ddf6540909f6d464d1868169507c77": {
+  "cost_usd": 0.00023255,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"Realme device\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"good quality\",\n    \"good battery backup\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"build_quality\",\n    \"battery\",\n    \"brand\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 611,
+  "tokens_out": 114
+ },
  "06791e4595d7ac55459bdb9046c2e91eea65d7b7f1b4da45b4104e95129b3873": {
   "cost_usd": 0.00024695,
   "model": "thinkingmachines/inkling-small",
@@ -97,6 +124,15 @@
   "status": 200,
   "tokens_in": 679,
   "tokens_out": 125
+ },
+ "0863b1a1b4849631c62589efc1294c29195fb30388be42f6c348b08b0f03d319": {
+  "cost_usd": 8.694e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"headphones or speaker (audio device) based on sound quality mention\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"very good sound quality\", \"very balanced sound\", \"superb\", \"money satisfaction in its first song\"], \"cons\": [\"cable management issue\", \"cable might come out with force\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"sound_quality\", \"design\", \"cable_management\", \"value_for_money\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 682,
+  "tokens_out": 142
  },
  "0876efae710cf985293065444c8c0a688f249ad4b55e68f13fff46447705a0cc": {
   "cost_usd": 0.00016893,
@@ -116,6 +152,42 @@
   "tokens_in": 609,
   "tokens_out": 121
  },
+ "0a4019ad84b537dfc2f1041ab8a285e729c1f1592721fa2163c8cf3f71e1298d": {
+  "cost_usd": 0.0002714,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"U&i Bluetooth device\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"3-day battery life\",\n    \"good voice clarity\",\n    \"good value for money\"\n  ],\n  \"cons\": [\n    \"bass is not very high\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"battery\",\n    \"voice_quality\",\n    \"bass\",\n    \"value_for_money\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 628,
+  "tokens_out": 140
+ },
+ "0a98ffab1fa0ca8a952065acc96c7bcd264b33b32932077e376675ca5fa9f6d0": {
+  "cost_usd": 4.34749e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"headphone\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [\"sound quality is best\", \"battery is good\"], \"cons\": [\"bluetooth range is less\", \"doesn't work at long distance\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"bluetooth_range\", \"sound_quality\", \"battery\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 629,
+  "tokens_out": 115
+ },
+ "0b44e32c5b2ec1e0e6a7900d9fdc114317195c51834909b769eb259a521b0c48": {
+  "cost_usd": 0.00019055,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"unknown product\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"neutral\",\n  \"topics\": [],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 595,
+  "tokens_out": 85
+ },
+ "0d3d26e48ba17f62c81d24433dee0c55d52666865283098cac623dd0b666fabb": {
+  "cost_usd": 0.00011546,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"headphone\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"great bass\",\n    \"great battery life\",\n    \"good for all types of music\",\n    \"value for money\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"battery_life\",\n    \"value_for_money\",\n    \"music_compatibility\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 676,
+  "tokens_out": 145
+ },
  "0d51db7a253febd30d387d9d6f723f6869525b85f386b357f40843650dd0aa8e": {
   "cost_usd": 7.11e-05,
   "model": "mistralai/mistral-small-2603",
@@ -134,6 +206,15 @@
   "tokens_in": 625,
   "tokens_out": 110
  },
+ "0e2c2b281fa1f3436d4ab1cc4cc6f45f09f53f458545293945de0df1d944409b": {
+  "cost_usd": 3.0816e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"Mast product\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [], \"cons\": [], \"buy_again\": null, \"sentiment\": \"neutral\", \"topics\": [], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 600,
+  "tokens_out": 76
+ },
  "10a0b59220de18079334cd851e22a5bff0dc65339f63946aa8d6f61b9c6f1b1c": {
   "cost_usd": 7.695e-05,
   "model": "mistralai/mistral-small-2603",
@@ -142,6 +223,15 @@
   "status": 200,
   "tokens_in": 629,
   "tokens_out": 88
+ },
+ "110023bfd6ca665b86529834fb283b1ab7d00972b41e290d58037f751a18e5dc": {
+  "cost_usd": 4.3956e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"headphones or speaker (based on sound quality mention) or unspecified audio product\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [\"good sound quality\", \"full paisa vasul (value for money)\"], \"cons\": [\"material lacks elasticity\", \"needs more super bass\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"sound_quality\", \"build_material\", \"bass\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [\"improve material elasticity\", \"add more super bass\"], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 618,
+  "tokens_out": 140
  },
  "12015aef78efd06572fcae1cbab8b5fef1399fc20baa248258fdb5922c444249": {
   "cost_usd": 0.0001473,
@@ -152,6 +242,15 @@
   "tokens_in": 622,
   "tokens_out": 90
  },
+ "125bed27f039e6ed5a2043012666002b1099eb171d2f293bbb9afdd21bdb6f53": {
+  "cost_usd": 9.635e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\"sound quality deteriorates after 20 days\"],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\"sound_quality\", \"durability\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 630,
+  "tokens_out": 107
+ },
  "1320264de1c1fa55c4eef7afb4c6398be7f727b942fc983120253c983cc0b10b": {
   "cost_usd": 3.8826e-05,
   "model": "deepseek/deepseek-v4-flash",
@@ -160,6 +259,24 @@
   "status": 200,
   "tokens_in": 623,
   "tokens_out": 109
+ },
+ "138aa170121614fb6c38bab0f12c0760bd586091a295ad9e4c75a2f5811da137": {
+  "cost_usd": 0.000239,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"speaker\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"great bass\",\n    \"worth the price\",\n    \"recommended purchase\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"price\",\n    \"value_for_money\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 612,
+  "tokens_out": 119
+ },
+ "139b5c663c44c25350fc64426c181e8451950f5eb98cc0c07db428080607b915": {
+  "cost_usd": 3.9186e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"unknown product\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"worth product\", \"paisa wasol (value for money)\", \"look wise great\", \"good deal\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"value_for_money\", \"design\", \"deal\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 625,
+  "tokens_out": 110
  },
  "1435e0c20146a2081015a570c85cd39f31614581377cd28b277d756e09870fdc": {
   "cost_usd": 0.00010935,
@@ -179,6 +296,24 @@
   "tokens_in": 656,
   "tokens_out": 137
  },
+ "15327d5cf567c176739427b026ed9776c8019af3c08d8e42ea6f460c49972007": {
+  "cost_usd": 9.309e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"Hard bass\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"hard bass\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"sound_quality\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 618,
+  "tokens_out": 97
+ },
+ "15e551f17e6925ebc7d95e7e23475cc6d83201d637d852d8cb17ce5349c5c0eb": {
+  "cost_usd": 3.3966e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"unknown product\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"sometimes its break sounds\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"sound_quality\", \"build_quality\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 607,
+  "tokens_out": 90
+ },
  "189befaf2b47d10d2d67edd8b7ffec3832bd38d40b640ac6e86ed3dd2db776be": {
   "cost_usd": 0.00015795,
   "model": "mistralai/mistral-small-2603",
@@ -187,6 +322,15 @@
   "status": 200,
   "tokens_in": 625,
   "tokens_out": 107
+ },
+ "18d285deed5d718637e8ef692fa5339e67340cfbbfba4e5853a74cffda8631c6": {
+  "cost_usd": 0.00024875,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"Realme product\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"super fast delivery\",\n    \"super bass\",\n    \"super sound\",\n    \"nice product\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"delivery\",\n    \"sound_quality\",\n    \"bass\",\n    \"build_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 607,
+  "tokens_out": 129
  },
  "1a8ea957e9f102415b9b708ba73195da9769387f753803eac6b995b2d25882c8": {
   "cost_usd": 0.00024965,
@@ -224,6 +368,24 @@
   "tokens_in": 629,
   "tokens_out": 94
  },
+ "1c9790ae827108b629cf61fdbb6b61c226bab340ec662987ab859634de54d6d6": {
+  "cost_usd": 4.1616e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"headphones or earphones (best guess based on sound mention) or unspecified audio device\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [\"good for 2 hour use\", \"very good sound for the price range\"], \"cons\": [\"not comfortable for long time use\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"comfort\", \"sound_quality\", \"price\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 624,
+  "tokens_out": 124
+ },
+ "1d30a54bd25410f5f688ea2c4a1c363db7fe8850566921081f343077a4fd2ccb": {
+  "cost_usd": 3.3516e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"chis\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"good product\", \"mast\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"overall_satisfaction\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 604,
+  "tokens_out": 89
+ },
  "1d3b1ebc4b814b92ae8e852f37bcc2bab840442bc59dc4a34205d0c6c5196ea3": {
   "cost_usd": 5.252e-05,
   "model": "z-ai/glm-4.7-flash",
@@ -242,6 +404,15 @@
   "tokens_in": 632,
   "tokens_out": 111
  },
+ "1dc6cd90a2ca86188389b606ad169f74cc4dfac5e64bc369f224ba71d9800fa1": {
+  "cost_usd": 0.0002615,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"sound device\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"good sound quality\",\n    \"best at its range\",\n    \"good value for money\"\n  ],\n  \"cons\": [\n    \"music not clear at full volume\"\n  ],\n  \"buy_again\": true,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"sound_quality\",\n    \"volume\",\n    \"value_for_money\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 622,
+  "tokens_out": 134
+ },
  "1ef89cc76a2d5467421e4c359231f4db401bdd966313ce4a1b6f952d694ee429": {
   "cost_usd": 5.71e-05,
   "model": "z-ai/glm-4.7-flash",
@@ -250,6 +421,15 @@
   "status": 200,
   "tokens_in": 670,
   "tokens_out": 114
+ },
+ "1f650b8abf5e96653f94fdf363e654b0638314d28d5706d53ea232f0bf108f93": {
+  "cost_usd": 0.0002375,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"unspecified product\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"excellent quality\",\n    \"worth the money\",\n    \"loved it\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"value_for_money\",\n    \"quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 614,
+  "tokens_out": 117
  },
  "20199f2b799da6feb9370dce7ab65411ca41ae0ed2096f8688a342739b075cd9": {
   "cost_usd": 5.593e-05,
@@ -260,6 +440,24 @@
   "tokens_in": 659,
   "tokens_out": 113
  },
+ "20921e23407587cd9ef1b273e5457e6c58244690376d21e217a5a1be0964f23a": {
+  "cost_usd": 0.0002171,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"headset\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [],\n  \"cons\": [\n    \"poor value for money\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"value_for_money\",\n    \"price\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 598,
+  "tokens_out": 106
+ },
+ "20f01b5659efe7783451d0e69daa749e542f49a6786c06053c788253d6f1b89c": {
+  "cost_usd": 3.7656e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"product\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"nice product\", \"fast delivery\", \"good sound\", \"good bass\", \"good design\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"sound_quality\", \"bass\", \"design\", \"delivery\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 610,
+  "tokens_out": 109
+ },
  "217d6b8c86c908139fa733aae4c543aa255e05203b8d4ac9b5ff00876c359561": {
   "cost_usd": 0.0001675,
   "model": "deepseek/deepseek-v4-flash",
@@ -268,6 +466,15 @@
   "status": 200,
   "tokens_in": 626,
   "tokens_out": 100
+ },
+ "21dc90f740057a8df26c21d594d92c543f267165ce13bfdec3bb19908f7725ff": {
+  "cost_usd": 0.0002261,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"unknown\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"voice quality\",\n    \"battery backup\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"voice_quality\",\n    \"battery\",\n    \"sound_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 602,
+  "tokens_out": 112
  },
  "220c99753f9bef9e06cca15935a5f816df7dde241d835f99bf32adc616226edf": {
   "cost_usd": 5.602e-05,
@@ -278,6 +485,78 @@
   "tokens_in": 666,
   "tokens_out": 112
  },
+ "238a1ddd916fb16d1d966d78fbb94a4392f51eb723dd0f9d3de0f3284836b32d": {
+  "cost_usd": 0.00022175,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"unknown device\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"auto disconnects\",\n    \"poor quality\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"connectivity\",\n    \"reliability\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"medium\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 595,
+  "tokens_out": 111
+ },
+ "238e0da23463bc3148fb23641fb410da35cde266640992112f7d185f0bddf488": {
+  "cost_usd": 3.69222e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"headphones\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [\"mast hai (great otherwise)\"], \"cons\": [\"uncomfortable on ears\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"comfort\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 607,
+  "tokens_out": 92
+ },
+ "23c0f2d00d096b185dc3250880a3d8cf77c78589f2933cdc64ca0eecdd2ed1a2": {
+  "cost_usd": 3.63447e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"headphone\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"best sound\", \"stylish\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"sound_quality\", \"design\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 607,
+  "tokens_out": 89
+ },
+ "24513d25f7ade1a83e9cf668621323cad7869fbeeb9da7a2dc3a1b2f2e75e4e4": {
+  "cost_usd": 3.52842e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"product\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"Bakwaas product\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"overall_quality\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 602,
+  "tokens_out": 86
+ },
+ "26a6c53bf83d54ca058b357b38b6abee11fd4cdd88f5bde9658e56031b338435": {
+  "cost_usd": 0.00023915,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"unknown product\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"poor sound quality after 20 days\",\n    \"wasted money\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"sound_quality\",\n    \"durability\",\n    \"value_for_money\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"medium\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 607,
+  "tokens_out": 121
+ },
+ "26c1fae107216b15016793c413e6cbe07b4de9d280d14398d74078f68059b07d": {
+  "cost_usd": 0.00025385,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"headphones\",\n\n  \"stars\": null,\n\n  \"stars_inferred\": 2,\n\n  \"pros\": [\"good build quality\"],\n\n  \"cons\": [\"poor sound quality\", \"poor comfort\", \"ear pain after 15 minutes\"],\n\n  \"buy_again\": false,\n\n  \"sentiment\": \"mixed\",\n\n  \"topics\": [\"build_quality\", \"sound_quality\", \"comfort\", \"ear_pain\"],\n\n  \"competitor_mentions\": [],\n\n  \"urgency\": \"medium\",\n\n  \"feature_requests\": [],\n\n  \"language\": \"hi-en\"\n\n}",
+  "status": 200,
+  "tokens_in": 629,
+  "tokens_out": 125
+ },
+ "28111eb54ef75560cd39c9c15cbea7ca2035d2e8d161272a89c48c1dd1546e3c": {
+  "cost_usd": 4.0356e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"speaker\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"sound quality is good\", \"best in its range\", \"full paisa wasool\"], \"cons\": [\"at full volume music might not be that clear\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"sound_quality\", \"value_for_money\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 630,
+  "tokens_out": 114
+ },
+ "283701807b0fec57f09a2b0eea9b7ff3483f0309184e36d6c731831f71412daf": {
+  "cost_usd": 0.00022865,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"speaker\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"awesome bass\",\n    \"super sound\",\n    \"good sound quality\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"bass\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 605,
+  "tokens_out": 113
+ },
  "28f9836a9c9d77e2f19373d80ff404b4bd67438d22ed3bfd402a70065e009a4f": {
   "cost_usd": 0.0002438,
   "model": "thinkingmachines/inkling-small",
@@ -287,6 +566,15 @@
   "tokens_in": 612,
   "tokens_out": 123
  },
+ "29951e26ba1689cc2d517121de2d5f7b6d019c1a81330bf0ab767f3b41e0d788": {
+  "cost_usd": 0.00012076,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"one plus\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"sound was excellent\",\n    \"bass was fadu\",\n    \"battery backup is best\",\n    \"10 min charging gives 10 hours use\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"bass\",\n    \"battery\",\n    \"charging\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 677,
+  "tokens_out": 148
+ },
  "2a75f0589305c110118568bac30d43198e069e53b4683a43de469dbf3fd33021": {
   "cost_usd": 3.6666e-05,
   "model": "deepseek/deepseek-v4-flash",
@@ -295,6 +583,15 @@
   "status": 200,
   "tokens_in": 629,
   "tokens_out": 94
+ },
+ "2c0beace3a4931996d3e1bfb5774883509ba85e922601a225abc90769451fdd3": {
+  "cost_usd": 0.00010371,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"realme\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"super fast delivery\", \"super bass\", \"super sound\", \"nice product\"],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"delivery\", \"bass\", \"sound\", \"product_quality\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 627,
+  "tokens_out": 119
  },
  "2c3ec78ec2ddc3c51573bbf67dbc518516b5291935ef0b98ff654c6d6edb60c7": {
   "cost_usd": 8.747e-05,
@@ -314,6 +611,15 @@
   "tokens_in": 617,
   "tokens_out": 103
  },
+ "2d111b365c21cf566110840f9dbc369416b4396d2d8d68c7decbdff4f19758df": {
+  "cost_usd": 0.0003737,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"Realme headset\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"Good value for price\",\n    \"Good bass\",\n    \"Good sound quality\",\n    \"Simple and good design\",\n    \"Comfortable around neck\",\n    \"Good battery backup\",\n    \"Magnet switch saves battery\",\n    \"Built-in mic is clear\",\n    \"Overall best budget headset\"\n  ],\n  \"cons\": [\n    \"Thin line texture on yellow wire\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"price\",\n    \"build_quality\",\n    \"sound_quality\",\n    \"bass\",\n    \"design\",\n    \"comfort\",\n    \"battery\",\n    \"microphone\",\n    \"warranty\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 690,
+  "tokens_out": 202
+ },
  "2e31998d61177d09fef8cfdb5661ff317319cb22f46738407e16e80143019ed6": {
   "cost_usd": 5.804e-05,
   "model": "z-ai/glm-4.7-flash",
@@ -322,6 +628,24 @@
   "status": 200,
   "tokens_in": 712,
   "tokens_out": 109
+ },
+ "2e985302ec961e790774de65b7a24e5535350627d891b560de80cc5b824b54b8": {
+  "cost_usd": 9.489e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"Useless products\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\"Useless products\"],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\"product_quality\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 618,
+  "tokens_out": 101
+ },
+ "2edcdc07c26ca1c49c0a901048df320d0bcd3948daa7cbf1ef226acb1c2895c7": {
+  "cost_usd": 0.0002384,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"battery\",\n  \"stars\": null,\n  \"stars_inferred\": 2,\n  \"pros\": [\n    \"all is good\"\n  ],\n  \"cons\": [\n    \"battery is worst\",\n    \"battery only lasts 1 month\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"battery\",\n    \"durability\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"medium\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 608,
+  "tokens_out": 120
  },
  "30a4b2660fb3cc0cb69b7387d6bab5cb02808ca2c9fe58288c51746782eb049e": {
   "cost_usd": 0.00010868,
@@ -341,6 +665,15 @@
   "tokens_in": 640,
   "tokens_out": 117
  },
+ "31ba47a5d348ff4eb32dd7af252332537f91f12ff0a2f5c1c044d9e2d4db3525": {
+  "cost_usd": 4.02927e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"headphones or speaker (unclear) based on 'bass' and 'sound'\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"awesome bass\", \"super sound\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"bass\", \"sound_quality\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 612,
+  "tokens_out": 107
+ },
  "31ff810ad6ca248490d60481cdfc9de4d7484a6ac8546371bbe45918f49b59c4": {
   "cost_usd": 9.2265e-05,
   "model": "nvidia/nemotron-3-super-120b-a12b",
@@ -349,6 +682,24 @@
   "status": 200,
   "tokens_in": 629,
   "tokens_out": 97
+ },
+ "3229e32c17763c124fd133079007dca009806923db25753ddb4cbb3cd1f0fda7": {
+  "cost_usd": 4.69511e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"headphone\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"great bass\", \"great for all kinds of music\", \"great battery life\", \"great buy\", \"paisa vasool\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"bass\", \"battery_life\", \"music_compatibility\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 661,
+  "tokens_out": 117
+ },
+ "32fbadca0a63b6e8f9cb00e115a54a8aee0261856447469743bb16b53dc6bf6a": {
+  "cost_usd": 9.614e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"speaker\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"awesome bass\", \"super sound\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"sound_quality\", \"bass\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 628,
+  "tokens_out": 102
  },
  "350510ed8469b091070224fdc63243baca781ac2fc378187620b64a9ae184f8c": {
   "cost_usd": 0.0002324,
@@ -359,6 +710,33 @@
   "tokens_in": 616,
   "tokens_out": 112
  },
+ "35080d059b9337acbff3885ab1070c1bdfc0abb3626d34826c6f3ef0511e81a3": {
+  "cost_usd": 0.0002687,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"headphone\",\n  \"stars\": null,\n  \"stars_inferred\": 2,\n  \"pros\": [\n    \"very good product\",\n    \"good sound quality\"\n  ],\n  \"cons\": [\n    \"ear pain after using for an hour\",\n    \"uncomfortable to wear for extended periods\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"sound_quality\",\n    \"comfort\",\n    \"build_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"high\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 630,
+  "tokens_out": 137
+ },
+ "3521543de8e94d93b19e367615daa32a42fee00321552d47ec6c605434e87f68": {
+  "cost_usd": 0.00026015,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\n    \"good battery backup\",\n    \"good product overall\"\n  ],\n  \"cons\": [\n    \"battery drops from 100% to 80% directly\",\n    \"battery drops to 30% quickly\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"battery\",\n    \"performance\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 619,
+  "tokens_out": 134
+ },
+ "378cd45d8e052b301bd1dbc2beb62f5cb1c550c21262c232b2e0f31846032a76": {
+  "cost_usd": 9.505e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"unknown product\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\"Bakwas hai\", \"Please don't buy\"],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 620,
+  "tokens_out": 101
+ },
  "38a4c8ff7c9a577cd1788c6ec035c578bbd2002c5cfaba443370674395361663": {
   "cost_usd": 8.919e-05,
   "model": "mistralai/mistral-small-2603",
@@ -367,6 +745,15 @@
   "status": 200,
   "tokens_in": 621,
   "tokens_out": 114
+ },
+ "38ecc261fddcb56e6d6fea0bf6cc151ac239e0b17b5a91f76cfe9647e1ba7aba": {
+  "cost_usd": 3.80807e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"realme product\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"good quality\", \"good battery backup\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"quality\", \"battery_backup\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 617,
+  "tokens_out": 93
  },
  "39231e1ffa956f74b247a0ecb3c4cefa79f44bd0af58cac2618d6a1c501a8b8e": {
   "cost_usd": 0.00023015,
@@ -377,6 +764,51 @@
   "tokens_in": 611,
   "tokens_out": 112
  },
+ "39e988726c8ff8f4ed1ec87661b7a8604d81b74c6808893b63131b02ff6e3a54": {
+  "cost_usd": 0.00027515,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"Boat Rockerz 400\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"Best from Boat Company\",\n    \"Can connect to PC\",\n    \"Good for PUBG on PC\",\n    \"Works without a mic\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"compatibility\",\n    \"gaming\",\n    \"microphone\",\n    \"brand\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 639,
+  "tokens_out": 139
+ },
+ "3e65ac8122163512e837b01c180fe059a35bedc827592d500a8a8b87a5df161f": {
+  "cost_usd": 0.00012397,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"earphone\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"bass is awesome\",\n    \"sound is very clear on high volume\",\n    \"build quality is very nice\",\n    \"best in this range\",\n    \"very good\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"bass\",\n    \"build_quality\",\n    \"value_for_money\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 689,
+  "tokens_out": 153
+ },
+ "3f7781952131a66db90de9071f219a3f5548049bb1c95f74be5ddf832774d153": {
+  "cost_usd": 0.00021995,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"Zabardast product\",\n    \"Highly praised with excitement\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"general_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 599,
+  "tokens_out": 108
+ },
+ "401b742dcfe62e7adf2428dfa7e0ca0e1ceb8835ec0e1ad468f98d22fcc9d562": {
+  "cost_usd": 9.5235e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"realme brand\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\"quality\", \"battery backup\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"quality\", \"battery\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 631,
+  "tokens_out": 104
+ },
+ "40932ad4f08ed91f749de4d93281850ecfa680e20a477ac7995372bfed762975": {
+  "cost_usd": 9.55e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"Ultimate headset\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\"Paisa wasool\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"value_for_money\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 620,
+  "tokens_out": 102
+ },
  "40b5bfe6841b119851e021b820ba91096cce14819a4f993e6f6fbda38b9ef547": {
   "cost_usd": 5.85e-05,
   "model": "z-ai/glm-4.7-flash",
@@ -385,6 +817,15 @@
   "status": 200,
   "tokens_in": 650,
   "tokens_out": 121
+ },
+ "40b7d7447f72a138c94fd3c7ca05e4b4a1bec7640a8156780d820c5ff9fd1509": {
+  "cost_usd": 0.00010632,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"earphones\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\"good comfort\", \"no stress to ears\", \"great sound when volume is adequate\"],\n  \"cons\": [\"sound is a little bit low\"],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"sound_quality\", \"comfort\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 654,
+  "tokens_out": 120
  },
  "4143718e1dc5dc9aaaa98a70a57ac79186a84644fc01a2d47876c3f27d1a9a04": {
   "cost_usd": 0.0004335,
@@ -395,6 +836,15 @@
   "tokens_in": 622,
   "tokens_out": 128
  },
+ "43132a2a7d63ba31776ce5911ac5ab1cac067a8e1be83723f0b1232a86c96903": {
+  "cost_usd": 4.1436e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"boat earphones\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [\"good product\"], \"cons\": [\"bass is not like wings and Philip's earphones\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"bass\", \"comparison\"], \"competitor_mentions\": [\"wings\", \"Philip's\", \"Intex\"], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 650,
+  "tokens_out": 110
+ },
  "435ea22caa21340115b6cfadcca52b5d726c89883c66be95a9d5a5f57a243a7a": {
   "cost_usd": 9.932e-05,
   "model": "nvidia/nemotron-3-super-120b-a12b",
@@ -403,6 +853,51 @@
   "status": 200,
   "tokens_in": 632,
   "tokens_out": 114
+ },
+ "43c8854d030f48d02eb00972b8ee4777d659ce05893375ea2cf315fdaa528948": {
+  "cost_usd": 0.0002207,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"unspecified product\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"poor quality\",\n    \"not worth buying\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"quality\",\n    \"value\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 598,
+  "tokens_out": 109
+ },
+ "441755c79c239d9a2ca846fdcb55f13f00ed8e14536781520b60159921d1e228": {
+  "cost_usd": 0.00035375,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"headphones\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"works with both Bluetooth and aux cable\",\n    \"good voice quality\",\n    \"connectivity working fine\",\n    \"good bass\",\n    \"good build and looks\",\n    \"good value for price\"\n  ],\n  \"cons\": [\n    \"tight fit causes ear pain after 30-45 minutes\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"connectivity\",\n    \"comfort\",\n    \"sound_quality\",\n    \"build_quality\",\n    \"value_for_money\",\n    \"design\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 715,
+  "tokens_out": 176
+ },
+ "44d7d78f4a258c66e5a700a786fee6bceec788fc173b96903ea28fdc328859a2": {
+  "cost_usd": 3.7026e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"realme\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"super fast delivery\", \"super bass\", \"super sound\", \"nice product\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"delivery\", \"sound_quality\", \"bass\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 613,
+  "tokens_out": 104
+ },
+ "46a75287492da8e0b36ff23d88f5e93b4e8a68b5a846067202b71d1c8722ff08": {
+  "cost_usd": 3.1896e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"unknown product\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"auto disconnected\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"connectivity\"], \"competitor_mentions\": [], \"urgency\": \"medium\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 600,
+  "tokens_out": 82
+ },
+ "470a9b6f3d5176801184b50326d0a342e8e1bd419bae10df44d8cdfbfee260c0": {
+  "cost_usd": 9.971e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"Voice quality and battery backup\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"Voice quality\", \"Battery backup\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"voice_quality\", \"battery_backup\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 622,
+  "tokens_out": 111
  },
  "473dba053de3ed4551ef263668937ff14253cec2eca339e71a89458a7bf1279f": {
   "cost_usd": 0.00014565,
@@ -413,6 +908,33 @@
   "tokens_in": 619,
   "tokens_out": 88
  },
+ "481443915bed58387790dfcf558028e1b4dc31057d9aa19a717ebc094c5fc1f5": {
+  "cost_usd": 0.00026465,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"OnePlus phone\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"Excellent value for money\",\n    \"Love OnePlus brand\"\n  ],\n  \"cons\": [\n    \"No redialing feature\"\n  ],\n  \"buy_again\": true,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"value_for_money\",\n    \"brand\",\n    \"redialing\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [\n    \"Add redialing feature\"\n  ],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 613,
+  "tokens_out": 140
+ },
+ "4827781bf5c3f90d4f35df5b37263bca49dafb2d2b6bc43188045ef020819a7e": {
+  "cost_usd": 0.00028655,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"Boat wireless earphones\",\n  \"stars\": null,\n  \"stars_inferred\": 2,\n  \"pros\": [],\n  \"cons\": [\n    \"bass is not like Wings and Philips earphones\",\n    \"last in comparison to Wings, Philips, and Intex\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"sound_quality\",\n    \"bass\",\n    \"comparison\"\n  ],\n  \"competitor_mentions\": [\n    \"Wings\",\n    \"Philips\",\n    \"Intex\"\n  ],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 643,
+  "tokens_out": 147
+ },
+ "489d3e43598b97b9c6b8572a54ec892b4f894e4dfd29557fa6b969fdbb2220bf": {
+  "cost_usd": 3.53829e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"unknown product\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"quality sound\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"sound_quality\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 609,
+  "tokens_out": 83
+ },
  "498d4938c2e54cbb39c698dcda6b6af940dd70bb7dc18430d1444d4a6d910a2d": {
   "cost_usd": 0.0002264,
   "model": "thinkingmachines/inkling-small",
@@ -421,6 +943,33 @@
   "status": 200,
   "tokens_in": 608,
   "tokens_out": 110
+ },
+ "49e0071b3fa3a1add1e710b3c97bca2f478ad964e559f6d863ae178c7e4eceb6": {
+  "cost_usd": 0.00022025,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"backup mast\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"Very nice\",\n    \"Better back up mast\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"performance\",\n    \"quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 597,
+  "tokens_out": 109
+ },
+ "4a693dab0fd639c56ac0f24ab9d57792218d6aaea51be8bcb743ebc3b4219997": {
+  "cost_usd": 3.48033e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"unknown product\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"hard bass\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"sound_quality\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 603,
+  "tokens_out": 83
+ },
+ "4aeb19f21e63d6b08c8f680206d733cec8cf0a8ffac68a0e58743f18176f3720": {
+  "cost_usd": 0.00014407,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"Bluetooth and aux cable earphones\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"works with both bluetooth and aux cable\",\n    \"good voice quality\",\n    \"good connectivity\",\n    \"good bass\",\n    \"good build and looks\"\n  ],\n  \"cons\": [\n    \"tight fit causing ear pain after 30-45 minutes\"\n  ],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"connectivity\",\n    \"comfort\",\n    \"sound_quality\",\n    \"bass\",\n    \"build_quality\",\n    \"design\",\n    \"value_for_money\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 749,
+  "tokens_out": 187
  },
  "4b30181e278d650eb70a8c54ca5755a55dcbecda71689d90574996d742f8f8f1": {
   "cost_usd": 7.95e-05,
@@ -431,6 +980,15 @@
   "tokens_in": 614,
   "tokens_out": 96
  },
+ "4b5b7d5136ddc3d38dabae2adbbe7b2d009ece9f260183540183e190ac92621a": {
+  "cost_usd": 3.4866e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"product\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"Excellent product\", \"Paisa wasul (value for money)\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"value_for_money\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 607,
+  "tokens_out": 95
+ },
  "4c5540b34defe53621216969b4552ac857217e37170640541d042bde41749571": {
   "cost_usd": 7.76041e-05,
   "model": "deepseek/deepseek-v4-flash",
@@ -440,6 +998,15 @@
   "tokens_in": 626,
   "tokens_out": 89
  },
+ "4cb94077f096947a1f4dfc3eb3543ad1c614784e0a796ab3789f0ef76ef7d98f": {
+  "cost_usd": 4.2516e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"OnePlus\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"excellent sound\", \"fadu bass\", \"best battery backup\", \"10 min charging gives 10 hours use\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"sound_quality\", \"battery\", \"charging\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 660,
+  "tokens_out": 111
+ },
  "4e47457cbde3a2b532fbed34de4d22838e9dac12b4e5124f3f1a4f68b1eeea1a": {
   "cost_usd": 5.986e-05,
   "model": "z-ai/glm-4.7-flash",
@@ -448,6 +1015,15 @@
   "status": 200,
   "tokens_in": 658,
   "tokens_out": 123
+ },
+ "4f33cfd5548b83c89a36f837d96789f49b26b1d8a298f63fac623e55b0a26109": {
+  "cost_usd": 4.3596e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"earphone\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"bass is awesome\", \"sound is very clear on high volume\", \"build quality is very nice\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"bass\", \"sound_quality\", \"build_quality\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 674,
+  "tokens_out": 110
  },
  "4fde4e90e3d80d707911f5d1655c5d2c78eb044d64925705cebf645f429af581": {
   "cost_usd": 0.00021065,
@@ -467,6 +1043,33 @@
   "tokens_in": 613,
   "tokens_out": 93
  },
+ "519b8bc99f10930b4cb504521853e621c555e1c39864bb27500653b2f2b733c7": {
+  "cost_usd": 3.51876e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"product\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"best product for the price\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"price\", \"value\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 601,
+  "tokens_out": 86
+ },
+ "528b3b8f1338cad02cdab82436705a5abf69adfef6d4a76d458fd71ed9a109af": {
+  "cost_usd": 8.9415e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\"good product\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 619,
+  "tokens_out": 92
+ },
+ "52d8fa44601ed480f3ad24f722413b5d8102a2c9c4cca96f98939806ed66b826": {
+  "cost_usd": 3.6126e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"battery\", \"stars\": null, \"stars_inferred\": 2, \"pros\": [\"all is good\"], \"cons\": [\"battery is worst\", \"battery only lasted 1 month\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"battery_life\"], \"competitor_mentions\": [], \"urgency\": \"medium\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 613,
+  "tokens_out": 99
+ },
  "533d20136386a8c6a0ba6aaec29c8b922db2d60380496391cf123e69ee3b4aaf": {
   "cost_usd": 3.5136e-05,
   "model": "deepseek/deepseek-v4-flash",
@@ -484,6 +1087,24 @@
   "status": 200,
   "tokens_in": 655,
   "tokens_out": 96
+ },
+ "543efab989f1244199d1df6368709134e18dc9a52530a2a58e981d505f72c54f": {
+  "cost_usd": 3.92343e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"sounds quality\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"sounds quality becomes bad after 20 days\", \"waste of money\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"sound_quality\", \"durability\"], \"competitor_mentions\": [], \"urgency\": \"medium\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 613,
+  "tokens_out": 101
+ },
+ "5480ecf14f69992ff81e9c4c8076c8708d2ecec8e9500836fb9c272e05bc78bc": {
+  "cost_usd": 3.4596e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"speaker\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"awesome bass\", \"super sound\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"bass\", \"sound_quality\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 612,
+  "tokens_out": 91
  },
  "54a1e553c9442c44ccaa42a736603dd7402093d7aeec24e11ba7ec191dc3794e": {
   "cost_usd": 0.0002513,
@@ -503,6 +1124,15 @@
   "tokens_in": 622,
   "tokens_out": 98
  },
+ "5514dad879d63f2612c18bd857f4f83b9d7211be45e6e97193c8f838fffef5e4": {
+  "cost_usd": 0.00016378,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Relace",
+  "raw": "{\n  \"product\": \"headphone\",\n  \"stars\": null,\n  \"stars_inferred\": 2,\n  \"pros\": [\"good product\", \"good sound quality\"],\n  \"cons\": [\"ear hurts after an hour of use\"],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\"sound_quality\", \"comfort\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"medium\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 638,
+  "tokens_out": 113
+ },
  "560904e50d41496ef5f3bd458fac365b73dde87afc223f91e736e7e177aa21df": {
   "cost_usd": 3.3786e-05,
   "model": "deepseek/deepseek-v4-flash",
@@ -512,6 +1142,78 @@
   "tokens_in": 615,
   "tokens_out": 85
  },
+ "576253685f775451f4bea6587c925a6b37362e56d66bf861bd8f089ebcaf1f18": {
+  "cost_usd": 5.5836e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"headphones or earphones (likely wireless with wire option) or speaker (bass and battery backup mentioned) - best plain description: wireless earphones/headphones with wire option\", \"stars\": \"4.5\", \"stars_inferred\": 5, \"pros\": [\"superb bass\", \"extremely good battery backup\", \"can watch almost two movies at a time\", \"comes with a wire for continued use\", \"good value for money\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"bass\", \"battery_backup\", \"value_for_money\", \"wired_option\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 692,
+  "tokens_out": 169
+ },
+ "58ddb604b02a0964d7ec952674ee0d29362e96d52d51fa97f8775a6f857a0db1": {
+  "cost_usd": 3.61543e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"900\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [\"good value for money\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"price\", \"value\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 613,
+  "tokens_out": 85
+ },
+ "59dec1351754bc4bd58b923d3c4c8257e0930ff573a95d79260c1a75e36d0c7c": {
+  "cost_usd": 0.00010109,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"battery\",\n  \"stars\": null,\n  \"stars_inferred\": 2,\n  \"pros\": [\"all is good\"],\n  \"cons\": [\"battery is worst\", \"only 1 month chli hai battery\"],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\"battery\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 628,
+  "tokens_out": 113
+ },
+ "5b20cbbda4ec259583e2f08775a2fd2f555326102a6602092f47d5ee93c74d8e": {
+  "cost_usd": 0.00012649,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"speaker\",\n  \"stars\": null,\n  \"stars_inferred\": 2,\n  \"pros\": [\n    \"design was good\",\n    \"battery backup is good\",\n    \"very nice for slow songs lover\"\n  ],\n  \"cons\": [\n    \"sound quality is not so good\",\n    \"received damaged speaker\",\n    \"base is low\",\n    \"volume is very low for gym class or exercise\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"sound_quality\",\n    \"build_quality\",\n    \"battery\",\n    \"volume\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 674,
+  "tokens_out": 173
+ },
+ "5c772043dd8e9ec5f491573cf5d64b421284d804246a3a130947495afd5c7bc4": {
+  "cost_usd": 0.0003062,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"speaker or audio device\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"superb bass\",\n    \"extremely good battery backup\",\n    \"can watch almost two movies at a time\",\n    \"includes wire\",\n    \"great value for the price\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"bass\",\n    \"battery\",\n    \"value_for_money\",\n    \"build_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 684,
+  "tokens_out": 148
+ },
+ "5d045af5b11d5fc57f271cbdacbc9a0ba440ae24d005a29f29bf7ce56b2f406f": {
+  "cost_usd": 0.0002459,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"bluetooth headset\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"awesome bass\",\n    \"good battery backup\",\n    \"worth the price\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"battery\",\n    \"value_for_money\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 622,
+  "tokens_out": 121
+ },
+ "5d4f6d90c36b58cefc9bc056c49df91bce231cdcd2ca8e9de742e637db2f2424": {
+  "cost_usd": 3.5226e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"Item\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"good product\", \"value for money\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"value_for_money\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 625,
+  "tokens_out": 88
+ },
+ "5dbbbd7c93ba91b9edde73a662aa1e850d901803c93dd80b390937b40cf58b88": {
+  "cost_usd": 0.00022595,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"unknown product\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"sound quality is bad after 20 days\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"sound_quality\",\n    \"durability\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"medium\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 607,
+  "tokens_out": 110
+ },
  "5ebe7895bb6498c70b06f085910979a34231439366892cbeac19158544dcbb76": {
   "cost_usd": 3.5676e-05,
   "model": "deepseek/deepseek-v4-flash",
@@ -520,6 +1222,114 @@
   "status": 200,
   "tokens_in": 616,
   "tokens_out": 95
+ },
+ "5ec90c3e53fb1000a69d2fecf0b39348a67a9ee3e0401498f4e28f2c2be01ec6": {
+  "cost_usd": 0.0002123,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"useless product\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"quality\",\n    \"value\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 598,
+  "tokens_out": 102
+ },
+ "5edce309e11029de50f98017c90e03c5f70546ca5065d8e91fbab70f5a3c0743": {
+  "cost_usd": 0.000136415,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"earphones\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\n    \"Crispy clear sound\",\n    \"Great for music and streaming\",\n    \"Great for calls\"\n  ],\n  \"cons\": [\n    \"Bass is good but because of plastic body it's misses boom effect\",\n    \"Not suitable for gaming like PUBG\",\n    \"Clip issue (unclear due to typo)\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"sound_quality\",\n    \"bass\",\n    \"build_quality\",\n    \"gaming_performance\",\n    \"clip\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 739,
+  "tokens_out": 184
+ },
+ "5fd1cc74a72a12a5dc24b212bc310094838e8a67e5fbe348d8fe2b574b46fa4d": {
+  "cost_usd": 9.709e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"headphone\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"Mast sound\", \"stylish\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"sound_quality\", \"design\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 623,
+  "tokens_out": 105
+ },
+ "6166ba1e7c623ece5d172782a8509d65a04728819edb289d98effb4fb1117eb0": {
+  "cost_usd": 0.00028625,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"OnePlus product\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"Sound was excellent\",\n    \"Bass was great\",\n    \"Battery backup is best\",\n    \"10 min charging gives 10 hours use\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"bass\",\n    \"battery\",\n    \"charging\",\n    \"value_for_money\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 653,
+  "tokens_out": 143
+ },
+ "617ab8c5569d350e25e6e7c338e07b67a586abd0657e8e601333fba87078e10e": {
+  "cost_usd": 0.00032345,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"speaker\",\n  \"stars\": null,\n  \"stars_inferred\": 2,\n  \"pros\": [\n    \"design is good\",\n    \"battery backup is good\",\n    \"good for slow songs\"\n  ],\n  \"cons\": [\n    \"sound quality is not so good\",\n    \"received speaker damaged\",\n    \"base is low\",\n    \"volume is very low\",\n    \"not suitable for gym class or exercise\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"sound_quality\",\n    \"build_quality\",\n    \"design\",\n    \"battery\",\n    \"volume\",\n    \"damage\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"high\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 653,
+  "tokens_out": 174
+ },
+ "61960f0be8cf23da779a54da99dca719191a94ad002deb91daa1d7069aa3dde8": {
+  "cost_usd": 0.00022745,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"BassDesign\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"Sound quality\",\n    \"Battery backup\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"battery\",\n    \"brand\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 605,
+  "tokens_out": 112
+ },
+ "62bb40688f9efb0513ce020e7a4eb215108fd76e677bdb6adac31d77213d22cd": {
+  "cost_usd": 9.685e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"Bluetooth oneplus\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\"good quality\", \"liked\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"bluetooth\", \"oneplus\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 620,
+  "tokens_out": 105
+ },
+ "63b51960cfb6aa712c83a8f4cd2e4e40c84573c2ce5ef7d3a7e5723c66003311": {
+  "cost_usd": 0.00022985,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"speaker\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"awesome bass\",\n    \"super sound quality\",\n    \"good overall sound\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"bass\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 605,
+  "tokens_out": 114
+ },
+ "63c7bd99a130955d5334c2ea62c5873a8f37917108f1f56151fa3cecc19ee8ab": {
+  "cost_usd": 0.00012603,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"boAt 235v2 bluetooth headset\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"awesome\",\n    \"best performance\",\n    \"best for movie\",\n    \"best for ultra hd sound\",\n    \"best for gaming\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"gaming\",\n    \"movie_watching\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 726,
+  "tokens_out": 151
+ },
+ "64418cfd688e8116f91356f537c469a648088266b0d7f54568d413662dd84370": {
+  "cost_usd": 4.0806e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"Ekach Number\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"Not irritated at high volume\", \"Fast delivery\", \"Nice packaging\", \"Original product with warranty card and manual\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"sound_quality\", \"delivery\", \"packaging\", \"authenticity\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 631,
+  "tokens_out": 116
+ },
+ "647b68f1c922d59332664fe703c9d5e53a323dd568e9239073c1ad6ddbf0ee72": {
+  "cost_usd": 0.0001073,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"headphone\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\n    \"good sound quality\"\n  ],\n  \"cons\": [\n    \"ear hurts after one hour of use\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"sound_quality\",\n    \"comfort\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 655,
+  "tokens_out": 122
+ },
+ "6528c83fabaa3c2762f6cdd274bc72429b68369ab9326c7d97e39543c7b1f078": {
+  "cost_usd": 4.11684e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"earphones\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"good comfort\", \"no stress to ears\"], \"cons\": [\"sound is a little bit low\"], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"sound_quality\", \"comfort\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 639,
+  "tokens_out": 98
  },
  "670462e2fa7aeb762b841696546b3c13949495268fa71ea17f0e2632d7c913ec": {
   "cost_usd": 5.957e-05,
@@ -548,6 +1358,69 @@
   "tokens_in": 621,
   "tokens_out": 91
  },
+ "67c0ff39049bf49bebcb8cfffc4dbe1b55833a63fe7b6a8afe2a99c87b70c1cd": {
+  "cost_usd": 0.00011326,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Parasail",
+  "raw": "{\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"full paisa wasool\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"value_for_money\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 609,
+  "tokens_out": 100
+ },
+ "67ea7ad4b761c4021253f4d71780fb2742eceb3d9326b240a901b010bf6bc8ea": {
+  "cost_usd": 3.2796e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"Bluetooth oneplus\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"achcha\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"bluetooth\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 606,
+  "tokens_out": 84
+ },
+ "67ff4d7761877ac607e1f5872bd1fdfc706181d8e512e4a938d98d75633de096": {
+  "cost_usd": 0.0002258,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"speaker or audio device\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"great bass\",\n    \"good quality sound\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"bass\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 604,
+  "tokens_out": 111
+ },
+ "68c8e79e66120cb12d935426e95ac54bee2f4cf57d964a9f8aff3d4ab5b3cf7c": {
+  "cost_usd": 0.0002258,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"backup device\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\n    \"nice\"\n  ],\n  \"cons\": [\n    \"betrayal / reliability issue\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"reliability\",\n    \"performance\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 596,
+  "tokens_out": 114
+ },
+ "6934b597aa81e7758175dca41e46102f20fd13a316a7c43d3a26609fbf64b272": {
+  "cost_usd": 9.113e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"regular\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\"Bakwas\"],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 616,
+  "tokens_out": 93
+ },
+ "6aae91a95ee6d91234e64633c33e295bcbfe122e089a05d5203e5a6141e8a9ba": {
+  "cost_usd": 3.7566e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"product\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"good quality\", \"value for money\"], \"cons\": [\"long delivery time of 11 days\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"delivery_time\", \"value_for_money\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 625,
+  "tokens_out": 101
+ },
+ "6dc3cfe7ca0226179885ba6ce71180bc43004af3c6ebd88d29aa0d0a21c1f6b8": {
+  "cost_usd": 4.6836e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"wireless earphone\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"excellent sound quality\", \"excellent bass quality\", \"good calling experience\", \"battery backup 12-15 hours\", \"overall best in price range\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"sound_quality\", \"bass_quality\", \"calling_experience\", \"battery_life\", \"price\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 654,
+  "tokens_out": 138
+ },
  "6dd21feed754c0be14ac3d436eb07513406a57026f08813d4ba0dd4166248423": {
   "cost_usd": 9.818e-05,
   "model": "nvidia/nemotron-3-super-120b-a12b",
@@ -556,6 +1429,24 @@
   "status": 200,
   "tokens_in": 628,
   "tokens_out": 112
+ },
+ "6f6ecba5bddbf75927f59c8618537f1e91bb4fe17402cfe35a7f8d802f3c0d48": {
+  "cost_usd": 0.00010885,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"headphones\",\n  \"stars\": null,\n  \"stars_inferred\": 2,\n  \"pros\": [\"built quality is good\"],\n  \"cons\": [\"sound is not so good\", \"comfort is not so good\", \"ears hurt a lot after 15 minutes of use\"],\n  \"buy_again\": false,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\"build_quality\", \"sound_quality\", \"comfort\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 650,
+  "tokens_out": 134
+ },
+ "704e06e07e877f8a308f9a94c5169061c72226f19fc6583879164208e0b159f2": {
+  "cost_usd": 9.465e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\"best product\", \"good price\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"price\", \"quality\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 615,
+  "tokens_out": 101
  },
  "70a057adf1208e08ab350b04f3adfa1f46347b075954029712082c672c4272d8": {
   "cost_usd": 9.5285e-05,
@@ -566,6 +1457,33 @@
   "tokens_in": 641,
   "tokens_out": 102
  },
+ "70c56f57f3f119cbd2168db8c476aba8754fcaf56d37091a7086cc7819cdcec9": {
+  "cost_usd": 0.00011398,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"buds\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"good color\",\n    \"good battery backup\",\n    \"good sound\",\n    \"light weight\",\n    \"good design\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"color\",\n    \"battery\",\n    \"sound_quality\",\n    \"weight\",\n    \"design\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 626,
+  "tokens_out": 142
+ },
+ "714f6cfdaa578049dc24ae92605fd086802cdc8b463171286286f12f2d6d814f": {
+  "cost_usd": 0.00010854,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"U&i Bluetooth device\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\"3 days charge\", \"voice clarity\"],\n  \"cons\": [\"bass is not enough\"],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\"battery_life\", \"sound_quality\", \"bass\", \"value_for_money\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 648,
+  "tokens_out": 126
+ },
+ "73eb98bba2a7a90444fb22c5e35609ee6f263d5560cf73e5c664f52ef2f72142": {
+  "cost_usd": 0.0002528,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"Headphone\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"Superb design\",\n    \"Great battery\",\n    \"Outstanding bass\",\n    \"Great features\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"design\",\n    \"battery\",\n    \"bass\",\n    \"features\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 624,
+  "tokens_out": 126
+ },
  "743202b0b7d7131879b9ac8409b1bcb286fd54b544fbd8b759c47c21769c8e57": {
   "cost_usd": 8.175e-05,
   "model": "mistralai/mistral-small-2603",
@@ -575,6 +1493,15 @@
   "tokens_in": 633,
   "tokens_out": 95
  },
+ "76c8fec92b7e845dfa60bd5a541373604b15adce1b62b40875ddf8c10209f463": {
+  "cost_usd": 9.881e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"headphone\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"great\", \"fully paisa wasool\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"sound_quality\", \"value_for_money\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 622,
+  "tokens_out": 109
+ },
  "785178a9287d7f5445dc33953f25d28c5d2b9e93e963e9e37862ca88a491400d": {
   "cost_usd": 7.903e-05,
   "model": "z-ai/glm-4.7-flash",
@@ -583,6 +1510,24 @@
   "status": 200,
   "tokens_in": 609,
   "tokens_out": 91
+ },
+ "79c1c5ff44cd476ee395ac1cdb74c4acbcb6dee9db2d9331b05d9e1e7c6a1c4d": {
+  "cost_usd": 3.47081e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"headset\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"value for money\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"value\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 606,
+  "tokens_out": 81
+ },
+ "79c30d46ed0bd201054bb848eee5dcc0763ece05d61c64026bc172b52e5d19f4": {
+  "cost_usd": 9.55e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"Bluetooth oneplus\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"good bluetooth\", \"liked it\"],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"bluetooth\", \"oneplus\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 620,
+  "tokens_out": 107
  },
  "79df044f9598b3bd3cb01f3bb07d759f826862f57fc303ab9426d97bd113494b": {
   "cost_usd": 9.015e-05,
@@ -610,6 +1555,33 @@
   "status": 200,
   "tokens_in": 612,
   "tokens_out": 114
+ },
+ "7b34a14881aed4d7e72dc75fed53c33d0bac42e29cda4d2663761b2a6a4719e9": {
+  "cost_usd": 8.9875e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"Mast fabulous\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"Mast fabulous\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 615,
+  "tokens_out": 94
+ },
+ "7c182e73022ec72bc39454ca0c788b3243eea8c6776a343486bed6c8a2b67689": {
+  "cost_usd": 4.96454e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"speaker\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [\"design was good\", \"battery backup is good\"], \"cons\": [\"sound quality is not so good\", \"speaker damaged on arrival\", \"base is low\", \"volume is very low\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"sound_quality\", \"design\", \"battery_backup\", \"volume\", \"damage\"], \"competitor_mentions\": [], \"urgency\": \"medium\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 659,
+  "tokens_out": 132
+ },
+ "7c68f924eb3da6f3282e90735470b6733a6d56d89b3a2d61fcc2927339a66e1c": {
+  "cost_usd": 0.00015029,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"Realme headset\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"good price range\",\n    \"innovation\",\n    \"good quality\",\n    \"good bass\",\n    \"good sound quality\",\n    \"simple yet good design\",\n    \"comfortable around neck\",\n    \"good battery backup\",\n    \"magnet switch saves battery\",\n    \"built-in mic is good and clear\",\n    \"6 months warranty\"\n  ],\n  \"cons\": [\n    \"thin line texture on the yellow wire\"\n  ],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"price\",\n    \"innovation\",\n    \"build_quality\",\n    \"sound_quality\",\n    \"design\",\n    \"comfort\",\n    \"battery\",\n    \"microphone\",\n    \"warranty\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 714,
+  "tokens_out": 224
  },
  "7c76168ced5c08670bbf0e309e6e4779aed651c3d19618dde8371a18e76b637d": {
   "cost_usd": 0.0002384,
@@ -674,6 +1646,24 @@
   "tokens_in": 620,
   "tokens_out": 127
  },
+ "802902fb08916d4bbfe3ddee6769d12bfae93f8b0649e3560dc10d1ee919d66a": {
+  "cost_usd": 0.000106425,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"headphone\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\"sound quality is best\", \"battery is also good\"],\n  \"cons\": [\"bluetooth range kaam hai long distance is doesn't work\"],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\"bluetooth_range\", \"sound_quality\", \"battery\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 645,
+  "tokens_out": 129
+ },
+ "8049603ca18cbc0aeb14a920718107a813494afd3b05b323223af1e85d6460aa": {
+  "cost_usd": 0.00022445,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"headphone\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"great headphone\",\n    \"worth the money\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"value_for_money\",\n    \"sound_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 601,
+  "tokens_out": 111
+ },
  "80df3dab9032b8e830fd29f27900a7639f03e95093dacfb6a51296f6e9cf6547": {
   "cost_usd": 7.797e-05,
   "model": "z-ai/glm-4.7-flash",
@@ -710,6 +1700,15 @@
   "tokens_in": 631,
   "tokens_out": 126
  },
+ "8591dd1f05cbdb21ace0ba3bf86384d3034f4be92065fe9f0bccb37aa8d4f329": {
+  "cost_usd": 0.000263,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"headphone\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"sound quality is best\",\n    \"battery is good\"\n  ],\n  \"cons\": [\n    \"bluetooth range is low\",\n    \"does not work at long distance\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"bluetooth_range\",\n    \"sound_quality\",\n    \"battery\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"medium\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 620,
+  "tokens_out": 136
+ },
  "859723def6e4ff40213193cfcad02176458b49bab394adffe7f7ad116e388011": {
   "cost_usd": 9.77e-05,
   "model": "nvidia/nemotron-3-super-120b-a12b",
@@ -718,6 +1717,24 @@
   "status": 200,
   "tokens_in": 625,
   "tokens_out": 106
+ },
+ "86061ca73370864122b6071f1def26c48f19ac4d07ff782f0d28cbe75b72eb6c": {
+  "cost_usd": 3.9456e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"real me bluetooth headset\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"awesome bass\", \"good battery backup\", \"totally worth the money\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"bass\", \"battery_backup\", \"value_for_money\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 628,
+  "tokens_out": 110
+ },
+ "874f859c9bbff9ac6fd9170d9aa92183533df839fca5a9d2130c9361353dad49": {
+  "cost_usd": 0.0002384,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"battery\",\n  \"stars\": null,\n  \"stars_inferred\": 2,\n  \"pros\": [\n    \"all is good\"\n  ],\n  \"cons\": [\n    \"battery is worst\",\n    \"battery only lasts 1 month\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"battery\",\n    \"durability\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"medium\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 608,
+  "tokens_out": 120
  },
  "876b58827edf1f3ff96f1d301dd7393d8eb563bf9b99ff58e9221fa21fef2851": {
   "cost_usd": 3.4686e-05,
@@ -746,6 +1763,15 @@
   "tokens_in": 611,
   "tokens_out": 97
  },
+ "8a7751728c86377bfda1665d74311c18d6ce646789eab20145de2919eb730842": {
+  "cost_usd": 9.549e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"bass speaker\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"great bass\", \"worth for price\"],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"sound_quality\", \"price\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 634,
+  "tokens_out": 104
+ },
  "8a8a8928b0ed9d97949d7099bb2d8f268c62b8a394f4f578a0e7fb67f421fc5f": {
   "cost_usd": 0.0002372,
   "model": "thinkingmachines/inkling-small",
@@ -763,6 +1789,87 @@
   "status": 200,
   "tokens_in": 631,
   "tokens_out": 128
+ },
+ "8c1429b812f67ad19fad0afaf4fe840c4c2f614c719029f3bb8847c3dc5dab6a": {
+  "cost_usd": 8.02998e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"speaker\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"awesome sound quality\", \"beautiful bass\", \"best in price range\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"sound_quality\", \"bass\", \"price\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 628,
+  "tokens_out": 102
+ },
+ "8c8559d12a7f74d4d0eb1015e27d77df1cd6e3fe3dda0a77567175d3b9d50028": {
+  "cost_usd": 3.0996e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"unknown product\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [], \"cons\": [], \"buy_again\": null, \"sentiment\": \"neutral\", \"topics\": [], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 602,
+  "tokens_out": 76
+ },
+ "8ca32abb8410e23c45ef7a43bd72d837dd79abb2ecddd7afb39e7821ecdb1c30": {
+  "cost_usd": 0.0002174,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"poor quality\",\n    \"not worth buying\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"quality\",\n    \"value\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 596,
+  "tokens_out": 107
+ },
+ "8d06a3d9a15355ac32f9b9173c86c5e85d8229d686de55db73119a80d02f0092": {
+  "cost_usd": 3.4321e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"unknown product\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"auto disconnected\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"connectivity\"], \"competitor_mentions\": [], \"urgency\": \"medium\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 600,
+  "tokens_out": 82
+ },
+ "8d848df8fedd340b585c18f93cd12cf14632a68a57f005b102929fe9b28bb116": {
+  "cost_usd": 0.000114485,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"Everything thing is good in it\",\n    \"Nice product\",\n    \"Paisa vasul product\"\n  ],\n  \"cons\": [\n    \"Delivery took very long time of 11 days\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"delivery_time\",\n    \"value_for_money\",\n    \"general_satisfaction\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 641,
+  "tokens_out": 150
+ },
+ "8dd91060f5f8b1d124e824553ecf6ceacf6679818cf50d9f472a419083b1f59c": {
+  "cost_usd": 0.00010217,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"blue tooth headset from real me\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"awesome bass\", \"good battery backup\", \"worth every paisa\"],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"sound_quality\", \"battery\", \"value\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 642,
+  "tokens_out": 119
+ },
+ "8e42c25343f2d3a472a21f6908dc48e910098bede4b109c32ffeb781952c2f16": {
+  "cost_usd": 0.00022535,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"Very good product\",\n    \"Worth the money\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"value_for_money\",\n    \"overall_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 603,
+  "tokens_out": 111
+ },
+ "8e47bec19a7a2479090833adcff9f8ec78dcb7947394f85197878f59d262326d": {
+  "cost_usd": 0.00010835,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\"worth product\", \"paisa wasool\", \"look wise great\", \"deal\", \"will make you more happy\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"value\", \"appearance\", \"price\", \"satisfaction\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 640,
+  "tokens_out": 127
+ },
+ "8e71565699a943dab5518330b9365170245af5365eb37ea6fa4b164b8edd5dbc": {
+  "cost_usd": 0.0001114,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"earphones\",\n  \"stars\": null,\n  \"stars_inferred\": 2,\n  \"pros\": [\"built quality is good\"],\n  \"cons\": [\"sound is not so good\", \"comfort is not so good\", \"ears hurt after 15 minutes of use\"],\n  \"buy_again\": false,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\"build_quality\", \"sound_quality\", \"comfort\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 650,
+  "tokens_out": 132
  },
  "8ed0a34b675aec055bea62e328844524e300b8c0b326bd4542cafcca23710224": {
   "cost_usd": 0.00010102,
@@ -782,6 +1889,24 @@
   "tokens_in": 613,
   "tokens_out": 91
  },
+ "8fd234286fcb61d9c1a63990a0f83696ec5d39f00f3d79ad0f454b0fcd0493bb": {
+  "cost_usd": 0.0002186,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"poor quality\",\n    \"waste of money\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"quality\",\n    \"value\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 596,
+  "tokens_out": 108
+ },
+ "8fd682c4225277ced4e9646007d96bd584042f593da004b84a28162bb7963510": {
+  "cost_usd": 0.00026015,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"Everything is good\",\n    \"Nice product\",\n    \"Good value for money\"\n  ],\n  \"cons\": [\n    \"Delivery took very long time of 11 days\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"value_for_money\",\n    \"delivery\",\n    \"quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 619,
+  "tokens_out": 134
+ },
  "90480dba18e1c458c3ba1de4607ca260667c37ef5c367ac11f51f4096ca17b9c": {
   "cost_usd": 7.38e-05,
   "model": "deepseek/deepseek-v4-flash",
@@ -800,6 +1925,69 @@
   "tokens_in": 619,
   "tokens_out": 102
  },
+ "90c7d829a0cd12691e215557eceb33f19274c6868520deeee741f6a0a8d32a11": {
+  "cost_usd": 9.823e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"BassDesign\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\"good sound quality\", \"good battery backup\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"sound_quality\", \"battery\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 626,
+  "tokens_out": 107
+ },
+ "91d4f951cc2ed6d1a25dbbe07926d61e94a5a58890f41adb196205d128c2d720": {
+  "cost_usd": 3.2166e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"h betray backup\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"good backup\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"backup\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 601,
+  "tokens_out": 83
+ },
+ "91feb67358c4651c94e605a14dd5eff1fe3912ddd5c988c75ccd7751b55ff70d": {
+  "cost_usd": 0.000107855,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"battery backup\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\"battery backup is good\"],\n  \"cons\": [\"battery drops from 100% to 80% directly, then to 30% quickly\"],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\"battery_backup\", \"battery_performance\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 643,
+  "tokens_out": 133
+ },
+ "928d2cf329e89d1f5a18fcbcebc63a25b7bfa44fc7e1150e91e84476e1449a65": {
+  "cost_usd": 0.00021245,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"excellent product\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"value\",\n    \"quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 601,
+  "tokens_out": 101
+ },
+ "9357e8f034045c74453a85fb0aaf34fb533e356413784388885f74a124d0c387": {
+  "cost_usd": 9.505e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"unknown product\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\"Bakwas hai\", \"Please don't buy\"],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 620,
+  "tokens_out": 101
+ },
+ "939ca93b5598176de12d78f38f0a7d7ec8d113d77981183b00a76ea0aeba3315": {
+  "cost_usd": 0.0002567,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"headphones\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"awesome sound quality\",\n    \"beautiful bass\",\n    \"makes you feel the music properly\",\n    \"best in this price range\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"bass\",\n    \"price\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 622,
+  "tokens_out": 130
+ },
+ "948e031394dbf283881419faecca614656cbabb6cd7de622c4c71b9316854401": {
+  "cost_usd": 0.00022805,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"earphones\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\n    \"sound quality is great\"\n  ],\n  \"cons\": [\n    \"uncomfortable on ears\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"comfort\",\n    \"sound_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 601,
+  "tokens_out": 114
+ },
  "954e3de07aff437f7d7e54435ac53013dfda23be17d7f61a3e2dba8ac2ea8d36": {
   "cost_usd": 8.745e-05,
   "model": "mistralai/mistral-small-2603",
@@ -808,6 +1996,42 @@
   "status": 200,
   "tokens_in": 623,
   "tokens_out": 107
+ },
+ "9639bcdcf406e9fff12fe9466c5ee604e0e368f6392fc0911861e7d827dbcfb4": {
+  "cost_usd": 0.00012892,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"earphone\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"bass is awesome\",\n    \"sound is very clear on high volume\",\n    \"build quality is very nice\",\n    \"best in this range\",\n    \"love realme\",\n    \"love flipkart\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"bass\",\n    \"build_quality\",\n    \"brand\",\n    \"retailer\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 689,
+  "tokens_out": 164
+ },
+ "969f5bd247101f8e2a235009f2c168eddf027bb449e74497274c9a5e259b3040": {
+  "cost_usd": 0.0003155,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"wireless earphone\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"excellent sound and bass quality\",\n    \"excellent calling experience\",\n    \"battery backup 12-15 hours\",\n    \"best wireless earphone in this price range\",\n    \"no problem with Realme 6i\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"call_quality\",\n    \"battery\",\n    \"price\",\n    \"compatibility\"\n  ],\n  \"competitor_mentions\": [\n    \"Realme 6i\"\n  ],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 646,
+  "tokens_out": 170
+ },
+ "9716e9a40a7bc199b97fabe92f94348ad93e53c3eb049548366622a0180ba287": {
+  "cost_usd": 9.415e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"Zabardast product\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"Zabardast product\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 620,
+  "tokens_out": 99
+ },
+ "9733f502126c3a3a5e336e0234638ca7fef75d76e4712c2f61b59b4853b2e3ae": {
+  "cost_usd": 0.000106205,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"oneplus\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\"Excellent\", \"Paisa wasool\", \"I love oneplus\"],\n  \"cons\": [\"no redialing\"],\n  \"buy_again\": true,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\"build_quality\", \"value_for_money\", \"call_functionality\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [\"redialing feature\"],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 633,
+  "tokens_out": 131
  },
  "98b719d986fb1dff4c508d95a1dbe33f9c98abed1f39c16727a84791c1503671": {
   "cost_usd": 0.00015405,
@@ -818,6 +2042,33 @@
   "tokens_in": 619,
   "tokens_out": 102
  },
+ "98fce44d7e286581b542c808a40ac643672fce0799e4b1efdd02e6c6d050f273": {
+  "cost_usd": 7.45164e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"product\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"excellent quality\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"overall_quality\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 604,
+  "tokens_out": 84
+ },
+ "999d214805d4e7ff8e2bb42f9585f854ac29f115c33644cf25804d1fd495ffe2": {
+  "cost_usd": 0.00026795,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"buds\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"good overall value\",\n    \"good color\",\n    \"good battery backup\",\n    \"good sound\",\n    \"light weight\",\n    \"good design\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"value\",\n    \"color\",\n    \"battery\",\n    \"sound_quality\",\n    \"weight\",\n    \"design\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 607,
+  "tokens_out": 145
+ },
+ "99fd433b672670005c5d669289db7a720667255b9d15af35801086523f567560": {
+  "cost_usd": 0.0002753,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"headphone\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"great bass\",\n    \"great for all kinds of music\",\n    \"great battery life\",\n    \"great buy\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"bass\",\n    \"battery_life\",\n    \"music_quality\",\n    \"value_for_money\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 650,
+  "tokens_out": 135
+ },
  "9a5f3efa170b1b4ced66cfe6029ecaa407863c5e27c0cdcc6499496b3c654aea": {
   "cost_usd": 0.00011147,
   "model": "deepseek/deepseek-v4-flash",
@@ -826,6 +2077,69 @@
   "status": 200,
   "tokens_in": 627,
   "tokens_out": 107
+ },
+ "9bac3c399926ff97d97a39b83237f44b88b1db176258415af9233affdf47e1e2": {
+  "cost_usd": 5.5566e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"headphones (bluetooth and aux cable)\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"works with bluetooth and aux cable\", \"good voice\", \"good connectivity\", \"good bass\", \"good build quality\", \"good value for money at 1399\"], \"cons\": [\"tight fit\", \"ears pain after 30-45 minutes\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"connectivity\", \"comfort\", \"sound_quality\", \"build_quality\", \"value\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 729,
+  "tokens_out": 149
+ },
+ "9dca3f99402dd4b07fae30cc51ae3fc5c2f8d19a19e7c060dbf8d38308f123a6": {
+  "cost_usd": 0.00024305,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"fast delivery\",\n    \"good sound\",\n    \"good bass\",\n    \"good design\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"bass\",\n    \"design\",\n    \"delivery\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 605,
+  "tokens_out": 125
+ },
+ "9f87710b3cca8fa17ca8465ec7c7d632bacdef176aeab754b45e62337630129a": {
+  "cost_usd": 9.418e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"speaker\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"awesome bass\", \"good sound\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"sound_quality\", \"bass\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 628,
+  "tokens_out": 102
+ },
+ "a091718853895b2f48652d0fc350357de3d48139252d4a6f9f003cbb94cf468d": {
+  "cost_usd": 0.00012231,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"speaker\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"very good sound quality\",\n    \"very balanced sound\",\n    \"superb\",\n    \"money satisfaction\"\n  ],\n  \"cons\": [\n    \"design issue\",\n    \"not properly cable management\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"sound_quality\",\n    \"design\",\n    \"cable_management\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 702,
+  "tokens_out": 147
+ },
+ "a164921b205225e7b02897814e5f609cac15d538f5f3ebcfc251f7495e5bab32": {
+  "cost_usd": 0.00028265,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"speaker or audio device\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"Good sound quality\",\n    \"Good value for money\"\n  ],\n  \"cons\": [\n    \"Material needs more elasticity\",\n    \"Needs super bass improvement\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"sound_quality\",\n    \"build_quality\",\n    \"bass\",\n    \"value_for_money\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [\n    \"Make material more elastic\",\n    \"Improve super bass\"\n  ],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 613,
+  "tokens_out": 155
+ },
+ "a28d916f0e7ab3876011147523095f69a61503bcecdb4bee67efe7dd0c8e0e99": {
+  "cost_usd": 0.00029165,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"boAt 228 wired earphone\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"best performance\",\n    \"best for movie\",\n    \"best for ultra HD sound\",\n    \"best for gaming (PUBG lovers)\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"gaming\",\n    \"movies\",\n    \"brand\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 673,
+  "tokens_out": 140
+ },
+ "a397b7ba80e2a6a0134579360c5fa511689b7ce16d2746c172cb5e1eb7bd371e": {
+  "cost_usd": 3.90418e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"battery\", \"stars\": null, \"stars_inferred\": 2, \"pros\": [\"all is good\"], \"cons\": [\"battery is worst\", \"only 1 month chli hai battery\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"battery_life\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 613,
+  "tokens_out": 100
  },
  "a45e9f9c4b64037388dddb36c07e2f541d6ca3b7261a3b809a6f52451eb1baa2": {
   "cost_usd": 0.000227,
@@ -863,6 +2177,87 @@
   "tokens_in": 652,
   "tokens_out": 121
  },
+ "a5fbc0cb1e4e255b02d6cbc4e398c2502cb2520e5df6be1f380193cb7dcc4964": {
+  "cost_usd": 0.0003467,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"earphones/headphones\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\n    \"Crispy clear sound\",\n    \"Great for music and streaming\",\n    \"Great for calls\"\n  ],\n  \"cons\": [\n    \"Bass misses boom effect due to plastic body\",\n    \"Not suitable for gaming (e.g., PUBG)\",\n    \"Clip broken / missing\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"sound_quality\",\n    \"bass\",\n    \"build_quality\",\n    \"gaming\",\n    \"calls\",\n    \"durability\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"medium\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 710,
+  "tokens_out": 172
+ },
+ "a6b2c2dd0f49e6dcc3cd2c2f855a5ddca38b3e3279c77a83fd391a930786b12e": {
+  "cost_usd": 0.0002941,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"headphones\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"very good sound quality\",\n    \"very balanced sound\",\n    \"superb overall\",\n    \"money satisfaction from first song\"\n  ],\n  \"cons\": [\n    \"poor cable management\",\n    \"cable seems like it will come out\",\n    \"requires force to keep cable in\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"sound_quality\",\n    \"build_quality\",\n    \"cable_management\",\n    \"design\",\n    \"value_for_money\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [\n    \"improve cable management\"\n  ],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 674,
+  "tokens_out": 179
+ },
+ "a7460494b31bdcd494e0a570b83ff4acd40ca59daa8d02dead6000f80f5e1958": {
+  "cost_usd": 9.856e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"excellent\", \"ful paisa vasol\"],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"value_for_money\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 647,
+  "tokens_out": 104
+ },
+ "a7cc46889bf0e169417d4b11190950f9918f4edc16702d66ccb9536d73d9df0e": {
+  "cost_usd": 0.00010484,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"boat earphones\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\"good product\"],\n  \"cons\": [\"bass is not like wings and Philip's earphones\"],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\"sound_quality\"],\n  \"competitor_mentions\": [\"wings\", \"Philip's\", \"Intex\"],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 664,
+  "tokens_out": 121
+ },
+ "a87a4e7b5d374673eb5f5a7202e802ed6c9364e0ed5c581d0ed210d49794eb80": {
+  "cost_usd": 0.0002681,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"speaker\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"Not irritated at high volume\",\n    \"Fast delivery during knockdown\",\n    \"Nice packaging\",\n    \"Original product with warranty card and manual\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"delivery\",\n    \"packaging\",\n    \"build_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 626,
+  "tokens_out": 138
+ },
+ "a8811eb56437537a7822f6360435a92cca91913e71f7df3d3b461728093efb42": {
+  "cost_usd": 3.6126e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"unknown product\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"sound quality becomes bad after 20 days\", \"waste of money\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"sound_quality\", \"durability\"], \"competitor_mentions\": [], \"urgency\": \"medium\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 613,
+  "tokens_out": 99
+ },
+ "a8e9e506767f31e757015e1f749f12792096f47753e5d5067e380eed66ecc04d": {
+  "cost_usd": 0.0002162,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"unspecified product\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"best product at this price\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"price\",\n    \"value\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 596,
+  "tokens_out": 106
+ },
+ "a939a853a67fef5f3f062b7dec6d827e042513d5bef5da6bd9c20c68913adcb1": {
+  "cost_usd": 9.0445e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"Sahi per not excellent\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\"not excellent\"],\n  \"buy_again\": null,\n  \"sentiment\": \"negative\",\n  \"topics\": [],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 617,
+  "tokens_out": 95
+ },
+ "a9ce6a4590eb721ff140f1d511eeed159edc3825ae9c70f7fc1db97bed4b419d": {
+  "cost_usd": 0.00012249,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"wireless earphone\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"Excellent sound and base quality\",\n    \"Calling experience excellence\",\n    \"Battery backup 12-15 hours depending on volume\",\n    \"No problem facing with Realme 6i\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"call_quality\",\n    \"battery_life\",\n    \"compatibility\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 674,
+  "tokens_out": 163
+ },
  "aba9090a038d06ecb1f676932b550c266af8d2d147e32490607a3a5ee14cdf82": {
   "cost_usd": 0.000109515,
   "model": "nvidia/nemotron-3-super-120b-a12b",
@@ -871,6 +2266,15 @@
   "status": 200,
   "tokens_in": 639,
   "tokens_out": 138
+ },
+ "abe949611c09be9f4a0fe8594c5e6b3c10e87339857770d688a2947961c0a227": {
+  "cost_usd": 3.52856e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"Bluetooth oneplus\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"achcha\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"bluetooth\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 606,
+  "tokens_out": 84
  },
  "ad234b2b10cb2aee2136e66092081277294ae50993539ad3dcd299bef0ee4d7e": {
   "cost_usd": 0.00011499,
@@ -908,6 +2312,51 @@
   "tokens_in": 623,
   "tokens_out": 114
  },
+ "b0cd9c3c37756cab08052a0315e47359f97fd532ded3893e447095292283fcb3": {
+  "cost_usd": 0.00022835,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"unspecified product\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"good value for money\",\n    \"nice product\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"price\",\n    \"value_for_money\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 607,
+  "tokens_out": 112
+ },
+ "b0d44a82b7332fadf81563cd85fb8e5d7d48cbda9d04ba5dfd3dd4c21edd6521": {
+  "cost_usd": 3.2166e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"unknown product\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"Bakwas hai\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 605,
+  "tokens_out": 81
+ },
+ "b112f531e642ee004f3f0086ed6f2aac14eb31af966c95440acb7d311dd36d11": {
+  "cost_usd": 0.0001126,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"Headphone\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"Superb design\",\n    \"Excellent battery\",\n    \"Outstanding bass\",\n    \"Great features\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"design\",\n    \"battery\",\n    \"bass\",\n    \"features\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 665,
+  "tokens_out": 132
+ },
+ "b1d4207779fe8b262af502e9af574bbc84ef6ef1dd9f21c97126bc3257aa96b1": {
+  "cost_usd": 5.91962e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"earphones or speaker (likely a clip-on device) based on context\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [\"Crispy clear sound\", \"Great for music and streaming\", \"Great for calls\"], \"cons\": [\"Bass misses boom effect due to plastic body\", \"Not good for gaming like PUBG\", \"Clip broke or missing\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"sound_quality\", \"bass\", \"build_quality\", \"gaming\", \"clip\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 722,
+  "tokens_out": 150
+ },
+ "b202568eb62d744bb2de1be3b868786a09353cbc8ee2fea5ee265303d5cc9295": {
+  "cost_usd": 3.86547e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"voice quality aur battery backup\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"voice quality is excellent\", \"battery backup is excellent\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"voice_quality\", \"battery_backup\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 607,
+  "tokens_out": 101
+ },
  "b2ba86b4c1dd1f7d3bd2da643e66d201dfc4b89586c5d8eb4844ab69637cbf1c": {
   "cost_usd": 0.00010012,
   "model": "nvidia/nemotron-3-super-120b-a12b",
@@ -926,6 +2375,33 @@
   "tokens_in": 641,
   "tokens_out": 98
  },
+ "b69304b731466063f59b62f4fc907cf0582c3706437dedeb5b3c691cc67de44f": {
+  "cost_usd": 0.00012286,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"Mast Ekach Number\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"Not irritated at high volume\",\n    \"Fast delivery\",\n    \"Nice packaging\",\n    \"Original product\",\n    \"Warranty card and manual included\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"delivery_speed\",\n    \"packaging\",\n    \"authenticity\",\n    \"warranty\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 647,
+  "tokens_out": 158
+ },
+ "b6f2b68265e911cccb755a1cdba47f67259ad4012cd08f2edf57af6e2d2dd52f": {
+  "cost_usd": 0.000239,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"item\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"Very good product\",\n    \"Worth the money\",\n    \"Highly recommended\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"value_for_money\",\n    \"recommendation\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 620,
+  "tokens_out": 116
+ },
+ "b7bcb0732626e9df9973cf9eb72f6ec8ea0877c31bbbf1d89095b81176d1a6eb": {
+  "cost_usd": 9.858e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"battery\",\n  \"stars\": null,\n  \"stars_inferred\": 2,\n  \"pros\": [\"all is good\"],\n  \"cons\": [\"battery is worst\", \"only 1 month chli hai battery\"],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\"battery\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 628,
+  "tokens_out": 113
+ },
  "b90be3d8e7b09dac5b2a0bc3d65a0d836dfe91200406b3c3393a2951111aa502": {
   "cost_usd": 0.00027065,
   "model": "thinkingmachines/inkling-small",
@@ -935,6 +2411,24 @@
   "tokens_in": 621,
   "tokens_out": 142
  },
+ "bc039be6c06611604804520f0764ff25937bbe0eaafca4c7cd24ef18fbebba9d": {
+  "cost_usd": 3.3786e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"product\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"superb product\", \"paisa vasool\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"value_for_money\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 603,
+  "tokens_out": 91
+ },
+ "bc550c9274fbb3a7e5e20f28160392add722961a7f92496d4b620b88e94e931e": {
+  "cost_usd": 9.926e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"earphones\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\"mast hai\"],\n  \"cons\": [\"uncomfortable on ears\"],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\"comfort\", \"overall_satisfaction\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 622,
+  "tokens_out": 110
+ },
  "bd01b52370b8ba0c95fb69a6ae75da83f0d9948cb357bd55a690fc340ec77fab": {
   "cost_usd": 5.722e-05,
   "model": "z-ai/glm-4.7-flash",
@@ -942,6 +2436,24 @@
   "raw": "\n{\n  \"product\": \"Product\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\n    \"Delivery time\",\n    \"Packing\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"neutral\",\n  \"topics\": [\n    \"delivery\",\n    \"packing\",\n    \"product_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}\n",
   "status": 200,
   "tokens_in": 666,
+  "tokens_out": 115
+ },
+ "bd7a5c79c85d101ff9a2752d70b06b932d8fa75e156f5034b3111c06299ad178": {
+  "cost_usd": 0.0001071,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"unspecified product\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"sound quality deteriorates after 20 days\",\n    \"waste of money\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"sound_quality\",\n    \"value_for_money\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 630,
+  "tokens_out": 126
+ },
+ "c0559e1ad63a7803b929a631a3b45e2faa4c1443939a61b2b89d218701bfd0b7": {
+  "cost_usd": 0.00022925,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"unknown product\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"sometimes breaks\",\n    \"makes break sounds\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"durability\",\n    \"sound_quality\",\n    \"build_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"medium\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 601,
   "tokens_out": 115
  },
  "c1fa7f715b7e11d53f813f7452e4fd9232229c52cffda8cf9c46a98e0dc1759a": {
@@ -971,6 +2483,15 @@
   "tokens_in": 619,
   "tokens_out": 128
  },
+ "c3b57e0d47fa0f1e3c0a8645a7dfefb219dfad015a1859110d111499df8b1c0d": {
+  "cost_usd": 0.0001198,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"this product\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"superb bass\",\n    \"extremely good battery backup\",\n    \"can watch almost two movies at a time\",\n    \"includes wire\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"battery\",\n    \"accessories\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 710,
+  "tokens_out": 140
+ },
  "c3e834dca86c28fa4b5b883e7fb0c1530fc23f2f54840523d57458099c63f8b7": {
   "cost_usd": 0.0002387,
   "model": "thinkingmachines/inkling-small",
@@ -979,6 +2500,24 @@
   "status": 200,
   "tokens_in": 614,
   "tokens_out": 118
+ },
+ "c4c8f702f35326d3a2b37286d163a7ef0d0bd488771f7259a6cbd666e00856ff": {
+  "cost_usd": 9.187e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"unknown product\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\"auto disconnected\"],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\"connectivity\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 614,
+  "tokens_out": 95
+ },
+ "c5ef6869d2a7baa59f869c6a7a00a17362b2151b43b72fffba23db7a1c16b5e5": {
+  "cost_usd": 0.00024215,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"Digest\",\n  \"@id\": \"https://example.org/1\",\n  \"product\": \"unknown product\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"fabulous quality\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 595,
+  "tokens_out": 128
  },
  "c66cd8621d4887ab290ce2f0ceb824181b611597470b86fc93f8e269edb482a8": {
   "cost_usd": 0.00023255,
@@ -989,6 +2528,15 @@
   "tokens_in": 603,
   "tokens_out": 117
  },
+ "c6dd88df2fa09feb127a2178cc0268d048c3faeb3f0bf94b7b6b50c57f86c0f9": {
+  "cost_usd": 9.868e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\"very good\", \"full paisa wasool\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"value_for_money\", \"satisfaction\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 626,
+  "tokens_out": 108
+ },
  "c7031d2191baeff769c07cf1f7c091e1f6d739f56a5b9ef665e2384be239f4a5": {
   "cost_usd": 5.913e-05,
   "model": "z-ai/glm-4.7-flash",
@@ -998,6 +2546,33 @@
   "tokens_in": 659,
   "tokens_out": 121
  },
+ "c7d8ccb187a66129c36392dedafd52becfb4bf427eda554aa8f803a57e6e9941": {
+  "cost_usd": 0.00025385,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"headphones\",\n\n  \"stars\": null,\n\n  \"stars_inferred\": 2,\n\n  \"pros\": [\"good build quality\"],\n\n  \"cons\": [\"poor sound quality\", \"poor comfort\", \"ear pain after 15 minutes\"],\n\n  \"buy_again\": false,\n\n  \"sentiment\": \"mixed\",\n\n  \"topics\": [\"build_quality\", \"sound_quality\", \"comfort\", \"ear_pain\"],\n\n  \"competitor_mentions\": [],\n\n  \"urgency\": \"medium\",\n\n  \"feature_requests\": [],\n\n  \"language\": \"hi-en\"\n\n}",
+  "status": 200,
+  "tokens_in": 629,
+  "tokens_out": 125
+ },
+ "c82234c5986ad47e41690e78db28ac94a8964a7e691cbe3b7d7ecf1c8334cf33": {
+  "cost_usd": 9.984e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\"fast delivery\", \"good sound\", \"good bass\", \"good design\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"delivery\", \"sound_quality\", \"bass\", \"design\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 624,
+  "tokens_out": 117
+ },
+ "c9e00bd1c325d43558f0ff3137d64990f74c6574e0802b6882d3b89e0685d0ea": {
+  "cost_usd": 0.00022565,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"Bluetooth oneplus\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"Very good quality\",\n    \"Liked the product\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"build_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 601,
+  "tokens_out": 112
+ },
  "ca0488c719a8b20107ea3a3a663a47ed72af6bee1cd9954bd35c82d70f60f0fb": {
   "cost_usd": 6.281e-05,
   "model": "z-ai/glm-4.7-flash",
@@ -1006,6 +2581,24 @@
   "status": 200,
   "tokens_in": 661,
   "tokens_out": 130
+ },
+ "ca0cbbfbeddc0920ce015eb4a844ccb65dbad1411ed8cb6b6260f0fa7089cb08": {
+  "cost_usd": 0.0002183,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"speaker\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"hard bass\",\n    \"love it\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"bass\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 598,
+  "tokens_out": 107
+ },
+ "ca4188b862ba53660b984021e10034af594c07165bfccb51ec7d07a8ffdb12a3": {
+  "cost_usd": 9.346e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"Bakwaas product\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\"Bakwaas product\"],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 617,
+  "tokens_out": 98
  },
  "ca71b89f2f594ec704c318979c806762048154810fdf98fd6468c017d4969cb6": {
   "cost_usd": 0.00023045,
@@ -1025,6 +2618,15 @@
   "tokens_in": 686,
   "tokens_out": 114
  },
+ "cc98f5c7df49b8fcacfd3549a53ec6af4ccaa62d2dcaa93879cf8b5b858faed5": {
+  "cost_usd": 3.46115e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"unknown product\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"Bakwas hai\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 605,
+  "tokens_out": 81
+ },
  "ccfae0d96d8a0a8995910b1168cab42bdedbf442365f630251f11353cc355557": {
   "cost_usd": 3.5316e-05,
   "model": "deepseek/deepseek-v4-flash",
@@ -1033,6 +2635,15 @@
   "status": 200,
   "tokens_in": 618,
   "tokens_out": 92
+ },
+ "ce9544992011a6cbaa27ca9b798a4a2b5630694c9e61f20d01bebbb036f3d42d": {
+  "cost_usd": 3.4416e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"product\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"ful paisa vasol\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"value_for_money\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 620,
+  "tokens_out": 86
  },
  "ced23cb04083b2e3cbb830a62e6d4642e6da135fc5940a0400dfc5a6b059d2bf": {
   "cost_usd": 3.7926e-05,
@@ -1043,6 +2654,24 @@
   "tokens_in": 637,
   "tokens_out": 97
  },
+ "cf09ef01638b70a20e6f55e6a6debc7b3cddd56b4767351be06651d06d5b019e": {
+  "cost_usd": 3.2346e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"unknown product\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"useless product\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"usability\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 603,
+  "tokens_out": 83
+ },
+ "cf3e55e272296118f21169b616a1bb007d5338a9c7d3daaff4bbb7eff5493e93": {
+  "cost_usd": 3.9546e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"battery backup device\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [\"good battery backup\"], \"cons\": [\"battery drops from 100% to 80% directly\", \"then drops to 30% after some use\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"battery\", \"performance\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 625,
+  "tokens_out": 112
+ },
  "d1873072c4caa010a531f551e8ef0d5f28e8ea71588df516f2df6cf531798bf5": {
   "cost_usd": 0.00015315,
   "model": "mistralai/mistral-small-2603",
@@ -1051,6 +2680,51 @@
   "status": 200,
   "tokens_in": 621,
   "tokens_out": 100
+ },
+ "d293277e19a6b53eeed8100c1f1259372d3e4f55c5d0952b5f623d2615ebe52e": {
+  "cost_usd": 0.0001169,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"earphones\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\n    \"good sound\",\n    \"best for 2 hour use\",\n    \"good for price range\"\n  ],\n  \"cons\": [\n    \"not comfortable for long time use\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"comfort\",\n    \"sound_quality\",\n    \"price\",\n    \"usage_duration\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 640,
+  "tokens_out": 146
+ },
+ "d32bc31758a421a99639c9e786b9bb50a91d467765845eab44c27e5c92e96521": {
+  "cost_usd": 4.2322e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"U&i Bluetooth device\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [\"3 days charge\", \"voice clarity\"], \"cons\": [\"bass not enough\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"battery\", \"sound_quality\", \"value_for_money\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 635,
+  "tokens_out": 106
+ },
+ "d44985a83a1ae82da50e2cf40a7d27e30adadfbd861f4740444f032103174e5b": {
+  "cost_usd": 9.007e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"Excellent product\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 622,
+  "tokens_out": 93
+ },
+ "d568cd8903b0fddc949b91d05c62766ca129baed377bb334702c912043be4a4e": {
+  "cost_usd": 0.0002717,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"earphones\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"good comfort\",\n    \"no stress to ears\",\n    \"great overall\"\n  ],\n  \"cons\": [\n    \"sound is a little bit low\"\n  ],\n  \"buy_again\": true,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"sound_quality\",\n    \"comfort\",\n    \"volume\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [\n    \"higher sound volume\"\n  ],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 634,
+  "tokens_out": 138
+ },
+ "d5ed919ce3e11abaa1e705cd827f5918e084bd9dd2b3a86f3272444cf8b06a61": {
+  "cost_usd": 4.11635e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"battery\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [\"good battery backup\"], \"cons\": [\"battery drops from 100% to 80% directly\", \"then drops to 30% quickly\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"battery\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 625,
+  "tokens_out": 105
  },
  "d66373385f4d34e70e2b8f9f67fe4e57aad33e92f8213a97c202e5a4dca7a3e3": {
   "cost_usd": 3.3426e-05,
@@ -1088,6 +2762,15 @@
   "tokens_in": 629,
   "tokens_out": 97
  },
+ "d71a7da8e9d5fe8b6a96894c5e53fffe3a1569ba08998956f845479374963de2": {
+  "cost_usd": 3.29735e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"unknown product\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 600,
+  "tokens_out": 75
+ },
  "d7c233adf6adebe48f5f88e2292f6ae9e4a198aa704a33e8844ba047feebfc72": {
   "cost_usd": 0.00023945,
   "model": "thinkingmachines/inkling-small",
@@ -1106,6 +2789,42 @@
   "tokens_in": 667,
   "tokens_out": 125
  },
+ "da7569b0303ff53f112f94e7e0383928fbbfdc7c62bb1e55e513c7fed1918dbb": {
+  "cost_usd": 3.56692e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"unknown product\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"Bakwas (bad)\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"overall_quality\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 602,
+  "tokens_out": 88
+ },
+ "da7cf0f4065a817b58b8186827b32c5384d0b0d61ecfdf2ff32814b48e5ed862": {
+  "cost_usd": 9.187e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"unknown product\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\"auto disconnected\"],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\"connectivity\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 614,
+  "tokens_out": 95
+ },
+ "dab172457f7eea5d65e181060b11bb3bb3a3b212354a41a5a7985ad1150a6c52": {
+  "cost_usd": 0.0001137,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"this\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"good sound quality\",\n    \"best in its range\",\n    \"full paisa wasool\"\n  ],\n  \"cons\": [\n    \"music not clear at full sound\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"sound_quality\",\n    \"value_for_money\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 645,
+  "tokens_out": 138
+ },
+ "dad8141c06816f8c7c0ddc06debadc52092f3d251381a6000a1075c8088279ae": {
+  "cost_usd": 0.00012231,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"speaker\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"very good sound quality\",\n    \"very balanced sound\",\n    \"superb\",\n    \"money satisfaction\"\n  ],\n  \"cons\": [\n    \"design issue\",\n    \"not properly cable management\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"sound_quality\",\n    \"design\",\n    \"cable_management\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 702,
+  "tokens_out": 147
+ },
  "dc23fb4fa03631375e6468f5b4ebe341096d4f2b69da6e8dc4a3b98c83982f8e": {
   "cost_usd": 7.455e-05,
   "model": "mistralai/mistral-small-2603",
@@ -1114,6 +2833,15 @@
   "status": 200,
   "tokens_in": 633,
   "tokens_out": 83
+ },
+ "dd7650588033b502297075dd523df3f5ce89ee9d129b594aa0b004b58cf899dc": {
+  "cost_usd": 9.751e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"superb\", \"paisa vasool\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"value_for_money\", \"quality\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 617,
+  "tokens_out": 107
  },
  "dfb98f4c4653acfafef8a174a3cb86358d9631e569c49603f666bf41a1aacef1": {
   "cost_usd": 0.00010385,
@@ -1124,6 +2852,24 @@
   "tokens_in": 640,
   "tokens_out": 117
  },
+ "dfccfbfe70192c8538c483e37c1b5a39373828a202e381e7269edebd54e87833": {
+  "cost_usd": 3.3966e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"headphone\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"great\", \"paisa wasool\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"value_for_money\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 607,
+  "tokens_out": 90
+ },
+ "e0c9fa6e69685933edcf015d7b674f6ef3d32314b44db5707cc433c815e95fb5": {
+  "cost_usd": 0.00025259,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "OpenInference",
+  "raw": "{\n  \"product\": \"earphone\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"bass is awesome\",\n    \"sound is very clear on high volume\",\n    \"build quality is very nice\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"bass\",\n    \"sound_quality\",\n    \"build_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 674,
+  "tokens_out": 136
+ },
  "e0f4de12c77270fcdf556001597708f752e72ba8c127b975b27f46d673fda027": {
   "cost_usd": 5.49e-05,
   "model": "z-ai/glm-4.7-flash",
@@ -1133,6 +2879,24 @@
   "tokens_in": 650,
   "tokens_out": 112
  },
+ "e10150d5a4073af09c0ca70eaa9d716c71708f1b02d06bda70f7e605b0bce091": {
+  "cost_usd": 9.951e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"headphones\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"awesome sound quality\", \"beautiful bass\"],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"sound_quality\", \"bass\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 642,
+  "tokens_out": 107
+ },
+ "e217ea63dca9db0edbfe573f28f5b7de2cfa38bd7a7310fa450c25910304f1f6": {
+  "cost_usd": 3.78889e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"unknown product\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"great bass\", \"good value for price\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"bass\", \"price\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 619,
+  "tokens_out": 91
+ },
  "e254d733748b3f5a5845caf3e6c697b3789410d9baf7b09edb0c78746028db8e": {
   "cost_usd": 7.17e-05,
   "model": "mistralai/mistral-small-2603",
@@ -1141,6 +2905,15 @@
   "status": 200,
   "tokens_in": 610,
   "tokens_out": 84
+ },
+ "e2968de183a88c1c74037b665513ee6ae61842ea319f6d9666a56ef9a9c54659": {
+  "cost_usd": 0.0002303,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"superb product\",\n    \"paisa vasool (good value for money)\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"value_for_money\",\n    \"overall_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 598,
+  "tokens_out": 117
  },
  "e3aec4a9a7c87a5f02a4535ab63ff3066e3d29c7ea29e1a09e52cf3e791e2f2e": {
   "cost_usd": 0.0002606,
@@ -1160,6 +2933,24 @@
   "tokens_in": 621,
   "tokens_out": 95
  },
+ "e5ec19b0f20985a37d667a2a7facad3842918d86b9472a6f6c9fe6e69ba2330e": {
+  "cost_usd": 9.24e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"backup\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\"unclear or nonsensical content\"],\n  \"buy_again\": null,\n  \"sentiment\": \"negative\",\n  \"topics\": [],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 615,
+  "tokens_out": 96
+ },
+ "e61bc2d6fc9d38c78f8596260bd5006aa8a630afbfc5ecfd928b08b0ddae2422": {
+  "cost_usd": 0.0002521,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"Realme earphones\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"Awesome bass\",\n    \"Clear sound at high volume\",\n    \"Good build quality\",\n    \"Highly recommended\",\n    \"Great value in this range\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"bass\",\n    \"build_quality\",\n    \"value_for_money\",\n    \"brand\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 666,
+  "tokens_out": 147
+ },
  "e625ed886ad6da79d962cc8a74001b3ffe3c8fe1afb6dbba31f948746e6e686a": {
   "cost_usd": 8.126e-05,
   "model": "z-ai/glm-4.7-flash",
@@ -1168,6 +2959,15 @@
   "status": 200,
   "tokens_in": 618,
   "tokens_out": 95
+ },
+ "e6d23683b6c1139ee4102dca0b82d27a8a1f7b3631f75a58e7a37bf998a6026d": {
+  "cost_usd": 0.00020585,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"unknown\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\n    \"good quality\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 597,
+  "tokens_out": 97
  },
  "e6d7190e2bc40761605b48b29e3cc9d344b20ec1f4932848e88411d14773588d": {
   "cost_usd": 9.937e-05,
@@ -1178,6 +2978,60 @@
   "tokens_in": 629,
   "tokens_out": 109
  },
+ "e7122217ada0349591ae095c8dcb7b119814690f273ac5d4a5c48876e3699406": {
+  "cost_usd": 0.00022565,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"Bluetooth oneplus\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"Very good quality\",\n    \"Liked the product\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"build_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 601,
+  "tokens_out": 112
+ },
+ "e9702f17d182557ad0f9e759e0f77b712dfd037976fae8b0f63e53b52787aa5e": {
+  "cost_usd": 0.00022175,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"unknown device\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"auto disconnects\",\n    \"poor quality\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"connectivity\",\n    \"reliability\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"medium\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 595,
+  "tokens_out": 111
+ },
+ "ead1c7c17a9f0fb75a0f7f1c3914536e8527be0a6eba5198a6a49d082b41fc5c": {
+  "cost_usd": 5.8611e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"Realme headset\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"good quality at less price\", \"good bass\", \"good sound quality\", \"simple yet good design\", \"comfortable around neck\", \"good battery backup\", \"magnet switch saves battery\", \"built-in mic is good and clear\"], \"cons\": [\"thin line texture on the yellow wire\"], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"price\", \"sound_quality\", \"design\", \"battery\", \"build_quality\", \"mic_quality\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 700,
+  "tokens_out": 158
+ },
+ "ecd84f53a51dbb3c681c48d8962eefb88742acd83f7f10026a897e12573c2977": {
+  "cost_usd": 4.0446e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"Boat Rockerz 400\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"good for PC gaming\", \"can connect to PC\", \"good for PUBG\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"pc_compatibility\", \"gaming\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 647,
+  "tokens_out": 106
+ },
+ "ed0988981b4fe7c44b5b053a8d99ed12c9eddd8a914a5bffe72c6a7ce02b84db": {
+  "cost_usd": 0.000107405,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"headphones\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\"good sound quality\"],\n  \"cons\": [\"material not elastic enough\", \"insufficient super bass\"],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\"sound_quality\", \"build_material\", \"bass_performance\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [\"improve making material to be more elastic\", \"add more super bass\"],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 633,
+  "tokens_out": 134
+ },
+ "ede8cb33dff3b3ea9267550a404e4d5cd360b525b55fae656221d20f4765747b": {
+  "cost_usd": 3.74045e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"BassDesign\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"sound quality\", \"battery backup\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"sound_quality\", \"battery\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 610,
+  "tokens_out": 93
+ },
  "edebca8e7e2793ea5fa0073b2e6d74a84aab0ae7855281f72b72b483e0e16fcd": {
   "cost_usd": 0.00023105,
   "model": "thinkingmachines/inkling-small",
@@ -1186,6 +3040,42 @@
   "status": 200,
   "tokens_in": 605,
   "tokens_out": 115
+ },
+ "ef4197b0a4484143e13a12f4d2e4c8f35e81f4394a0d30663270c91a32722d6e": {
+  "cost_usd": 9.802e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"sound quality\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\"mast bass\", \"good quality sound\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"sound_quality\", \"bass\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 629,
+  "tokens_out": 106
+ },
+ "f03387e7fa1c4985fd672a61303af50c4edf292ce3bcf7dcbdd6a8cd51942a06": {
+  "cost_usd": 0.0003329,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"headphones\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"Very good sound quality\",\n    \"Very balanced sound\",\n    \"Superb overall\",\n    \"Good value for money\"\n  ],\n  \"cons\": [\n    \"Poor cable management\",\n    \"Cable seems like it will come out\",\n    \"Requires force to keep cable in place\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"sound_quality\",\n    \"build_quality\",\n    \"cable_management\",\n    \"value_for_money\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [\n    \"Improve cable management design\"\n  ],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 674,
+  "tokens_out": 174
+ },
+ "f04865d8a7b26fffd9a9b55626be59edb23eb154a2ec05d4cac69f88a72dfb88": {
+  "cost_usd": 0.000104655,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"battery backup\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\"battery backup is good\"],\n  \"cons\": [\"battery drops from 100% to 80% directly, then to 30% quickly\"],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\"battery\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 643,
+  "tokens_out": 125
+ },
+ "f0cea574b98c1f159255e94ae178a1fdf281fe88ae8350b9aa7164048a6d2c21": {
+  "cost_usd": 0.0002573,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"headphones\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"good for 2 hour use\",\n    \"very good sound in this price range\"\n  ],\n  \"cons\": [\n    \"not comfortable for long time use\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"comfort\",\n    \"sound_quality\",\n    \"price\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 618,
+  "tokens_out": 132
  },
  "f0f9a25e242d62a3fa79be9277b19e5ec01a77f2caaaebfcc9a860e95e267e4b": {
   "cost_usd": 9.517e-05,
@@ -1196,6 +3086,24 @@
   "tokens_in": 644,
   "tokens_out": 97
  },
+ "f34802c4acdae0e15e30d0a8abd367ec332c7ca5b39e5af09f41086831be83f4": {
+  "cost_usd": 3.2796e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"back up mast\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"very nice\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"overall_satisfaction\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 602,
+  "tokens_out": 86
+ },
+ "f3ae83217ae039996a5a354f20f9af1add0734216238ed5e6bc3d77f10d9e8d5": {
+  "cost_usd": 0.00023285,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"headphone\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"great sound\",\n    \"stylish design\",\n    \"best product\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"sound_quality\",\n    \"design\",\n    \"style\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 601,
+  "tokens_out": 118
+ },
  "f541e30886e108bb6b45342db811e50aa457a167760d7dcdb91de7f4e3ada9e3": {
   "cost_usd": 9.609e-05,
   "model": "nvidia/nemotron-3-super-120b-a12b",
@@ -1204,6 +3112,60 @@
   "status": 200,
   "tokens_in": 633,
   "tokens_out": 101
+ },
+ "f5ddab827a3ec31652462e818aa9e726a5637a472a3c5d895b94354cb5048dbd": {
+  "cost_usd": 0.000109955,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"Boat Rockerz 400\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"good for PUBG on PC\", \"can connect to PC\", \"thankful to Boat and Flipkart\"],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"connectivity\", \"gaming_use\", \"brand_appreciation\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 663,
+  "tokens_out": 134
+ },
+ "f5efdddb90536e4cca0d4dd393752bbc1baf412c75cf4017a1a54f6207826124": {
+  "cost_usd": 9.33e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"Mast product\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"Mast product\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"product_quality\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 615,
+  "tokens_out": 98
+ },
+ "f660507faea88be428d205a0857e9e435ffb37c20c89671f2610f92e70b5190f": {
+  "cost_usd": 5.01347e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"headphones\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"very good sound quality\", \"balanced sound\", \"superb\", \"money satisfaction\"], \"cons\": [\"cable management issue\", \"cable might come out with force\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"sound_quality\", \"design\", \"cable_management\", \"value\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 682,
+  "tokens_out": 123
+ },
+ "f68ad42ad82416f32605e0f7902da30e739f66185b6b55f61a77d8fdba1b2e2c": {
+  "cost_usd": 0.00021665,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"good product\",\n    \"mast chis\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"quality\",\n    \"value\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 597,
+  "tokens_out": 106
+ },
+ "f76de06be71c4a349bede9886315c852790879d0ca7953eacb6a4db8b39b3855": {
+  "cost_usd": 4.11656e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"headphone\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"design\", \"battery\", \"bass\", \"features\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"design\", \"battery\", \"bass\", \"features\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 631,
+  "tokens_out": 102
+ },
+ "f7d9cbc7b3f1ec3005bb46eef66d7b7e1cd2142d05aea840b66dd7229c970be7": {
+  "cost_usd": 4.1076e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"headphones\", \"stars\": null, \"stars_inferred\": 2, \"pros\": [\"built quality is good\"], \"cons\": [\"sound is not so good\", \"comfort is not so good\", \"ears hurt after 15 minutes of use\"], \"buy_again\": false, \"sentiment\": \"mixed\", \"topics\": [\"build_quality\", \"sound_quality\", \"comfort\"], \"competitor_mentions\": [], \"urgency\": \"medium\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 634,
+  "tokens_out": 116
  },
  "f7ff753d4f12eb439852b470451bbd2a45b242ae27244d21300a9137af8ba058": {
   "cost_usd": 6.275e-05,
@@ -1223,6 +3185,42 @@
   "tokens_in": 614,
   "tokens_out": 86
  },
+ "fa85b939c52b02efdeaa94fde282155eafeb589858ea76df19306d70cce4c941": {
+  "cost_usd": 8.02942e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"buds\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"color\", \"battery backup\", \"sound\", \"light weight\", \"design\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"color\", \"battery\", \"sound_quality\", \"weight\", \"design\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 612,
+  "tokens_out": 110
+ },
+ "fa8aedc660c512d4eeb5e3d5f9f0c8959757ce108df7b688ec71da09d59b8ed7": {
+  "cost_usd": 0.00026015,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\n    \"good battery backup\",\n    \"good product overall\"\n  ],\n  \"cons\": [\n    \"battery drops from 100% to 80% directly\",\n    \"battery drops to 30% quickly\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"battery\",\n    \"performance\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 619,
+  "tokens_out": 134
+ },
+ "fae00320ab54b1ac286a72405cbcc7f59362447982e70aac88d8f20596cc22cb": {
+  "cost_usd": 0.0002993,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"Realme earphones\",\n\n  \"stars\": null,\n\n  \"stars_inferred\": 5,\n\n  \"pros\": [\n\n    \"Bass is awesome\",\n\n    \"Sound is very clear on high volume\",\n\n    \"Build quality is very nice\",\n\n    \"Very good in this price range\"\n\n  ],\n\n  \"cons\": [],\n\n  \"buy_again\": true,\n\n  \"sentiment\": \"positive\",\n\n  \"topics\": [\n\n    \"sound_quality\",\n\n    \"bass\",\n\n    \"build_quality\",\n\n    \"price\",\n\n    \"volume\"\n\n  ],\n\n  \"competitor_mentions\": [],\n\n  \"urgency\": \"low\",\n\n  \"feature_requests\": [],\n\n  \"language\": \"hi-en\"\n\n}",
+  "status": 200,
+  "tokens_in": 666,
+  "tokens_out": 149
+ },
+ "fb0d5d9def514fd08b5ed149b27031e6fdf23123c0dd5b843eacbf94ea5ad99a": {
+  "cost_usd": 0.00025415,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"unspecified product\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"worth the money\",\n    \"great look\",\n    \"good deal\",\n    \"makes you happy\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"value\",\n    \"appearance\",\n    \"price\",\n    \"satisfaction\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 619,
+  "tokens_out": 129
+ },
  "fb4a7a5a9ea019bd55a5375ad40569037b41ec24f71ca78c5f93785af944a3c1": {
   "cost_usd": 7.344e-05,
   "model": "mistralai/mistral-small-2603",
@@ -1241,6 +3239,42 @@
   "tokens_in": 628,
   "tokens_out": 100
  },
+ "fc040eb1b56060d14bada014539414f11a6799e7297b05495bdc728f8da21a6e": {
+  "cost_usd": 0.00010328,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"Better back up\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\"Very nice\", \"Better back up\", \"Mast hai\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"build_quality\", \"battery_life\", \"general_satisfaction\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 616,
+  "tokens_out": 120
+ },
+ "fcfcc17bcd9c48cbbb16237ec71c589c3f7beea3fa0d775692b4c337efdb77b6": {
+  "cost_usd": 9.89e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"very good\", \"worth the money\"],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"value_for_money\", \"satisfaction\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 640,
+  "tokens_out": 106
+ },
+ "fe2210a7b5fd0147809ed274735f5cfb095a765c5ef1c65815bfea8d0d1abde7": {
+  "cost_usd": 3.7926e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"OnePlus\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"excellent\", \"value for money\", \"love the brand\"], \"cons\": [\"no redialing\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"value\", \"redialing\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [\"add redialing\"], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 619,
+  "tokens_out": 106
+ },
+ "fed2a5aa34d3b10a00a3859479562de3a011c03ba0e3d74baf9c18c35a5764dd": {
+  "cost_usd": 9.693e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\"breaks sometimes\", \"makes break sounds\"],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\"durability\", \"noise\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 621,
+  "tokens_out": 105
+ },
  "ff3f3ac859245d88665fa09abbe36aad26308f7f4cfc609625357f94ca89dd19": {
   "cost_usd": 3.6936e-05,
   "model": "deepseek/deepseek-v4-flash",
@@ -1250,6 +3284,15 @@
   "tokens_in": 626,
   "tokens_out": 97
  },
+ "ff425e7a5e5f0da51c431515a71edbc7e2403163d9a34cbb41f3d2d1b3680929": {
+  "cost_usd": 9.037e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"neutral\",\n  \"topics\": [],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 629,
+  "tokens_out": 89
+ },
  "ff5ebaa718f15d7de68fb428477fd1e1589d67a65114e1351f7aac80b46e9264": {
   "cost_usd": 0.0002333,
   "model": "thinkingmachines/inkling-small",
@@ -1258,5 +3301,14 @@
   "status": 200,
   "tokens_in": 618,
   "tokens_out": 112
+ },
+ "ffda0f976b7e2055e38176055fb0315432d566813733c21cb476dcf4f98ae6d0": {
+  "cost_usd": 4.70379e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"headphones or earphones (based on sound and comfort mention) or unspecified audio device\", \"stars\": null, \"stars_inferred\": 2, \"pros\": [\"built quality is good\"], \"cons\": [\"sound is not so good\", \"comfort is not so good\", \"ears hurt after 15 minutes of use\"], \"buy_again\": false, \"sentiment\": \"mixed\", \"topics\": [\"build_quality\", \"sound_quality\", \"comfort\"], \"competitor_mentions\": [], \"urgency\": \"medium\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 634,
+  "tokens_out": 131
  }
 }
