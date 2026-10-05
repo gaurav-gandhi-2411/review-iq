@@ -12,6 +12,34 @@ anywhere (README, blog, site).**
 > not hold; the 7.8pp is not re-derived. Details: the Correction sections of ADR 0021 and ADR
 > 0023. The text and numbers below are kept as originally written, as a record of the claim.
 
+> **Correction (Session 16, 2026-09-21): the held-out corpus was not clean.** 36 of its 106
+> reviews were also in prompt-visible development sets: all 15 `eval/fixtures/hi-en/` fixtures and
+> all 21 reviews of the benchmark's `hi-en` slice (no review is in both). Four `hi_en.py` few-shot
+> examples are rewrites of the dev fixtures. The builder excluded only already-quarantined text,
+> and the leakage check compared only the first 40 characters against prompt text, so nothing
+> failed. Separately, 102 (review, field) gold pairs were a judge-panel split stored as a default
+> and scored as a label. The published headline now covers the 70 unseen reviews with split gold
+> excluded: 79.5% [76.0, 82.7], against 72.4% [69.8, 75.0] for all 106 with defaults scored. The
+> exposed reviews score no better than the unseen ones (+1.2 pp, 95% CI [-4.2, +6.4]), which is
+> absence of a detected effect, not proof of none. The "12.3 pp gap" and "68.3% held-out" figures
+> below were measured on the full 106 and are kept as originally written. Details and evidence:
+> ADR 0032.
+
+<!-- METRICS:HISTORICAL -->
+> **Correction (Session 17, 2026-10-05): the Session 16 correction above is itself stale, and the
+> headline it quotes is not overall accuracy.** (1) The artifact now reads 79.6% [76.2, 82.8] on
+> n=70 (60 split pairs, 104 over all 106), not 79.5% [76.0, 82.7] / 102; the exposed-vs-unseen
+> difference is +1.0 pp [-4.4, +6.2]. (2) Excluding split-gold pairs is right but is a selection
+> effect: they are the reviews the panel found hardest, so the number is accuracy *where the
+> three-judge panel agreed*. 10.7% of the published cell's field-pairs (60 of 560) are unscored;
+> no point estimate of overall accuracy is identifiable; the assumption-free interval is
+> [70.9%, 81.6%] and a judge-by-judge sensitivity (an unverified assumption) gives about 74-76%.
+> (3) Several figures derived from the same corpus were re-cut: buy_again coverage is 24.3% on the
+> 70 unseen reviews (43.4% on all 106; 80.6% on the 36 seen), and the language-misrouting finding
+> is unchanged (+0.11 pp [-3.39, +3.80] on the 70). Details, provenance and what could not be
+> fixed: ADR 0033. The text and numbers below are kept as originally written.
+<!-- /METRICS:HISTORICAL -->
+
 ## TL;DR
 
 This product's published accuracy numbers were, for most of this project's history, measured

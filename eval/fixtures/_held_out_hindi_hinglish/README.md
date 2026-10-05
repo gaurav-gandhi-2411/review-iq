@@ -28,6 +28,16 @@ disjoint-family judge panel documented in `docs/architecture/adr/0013-*.md` and
 `docs/architecture/adr/0015-*.md`. Source reviews: `eval/data/flipkart_candidates.jsonl`,
 `language == "hi-en" or "hi"` (106 + 2 = 108 candidates, `docs/architecture/adr/0014-*.md`).
 
+## Known exposure (Session 16) -- read before citing this corpus
+
+The quarantine above kept prompt *files* from quoting this directory. It did not keep this
+directory from containing text the development process had already seen: 36 of the 106 fixtures
+are also in `eval/fixtures/hi-en/` (15) or the benchmark gold (21), and four `hi_en.py` few-shot
+examples are rewrites of dev fixtures that are in here. They are listed in
+`eval/heldout_exposure_ack.json`, excluded from the published headline, and any new overlap fails
+`scripts/check_no_heldout_leakage.py`. Separately, `labeling_meta.unresolved_fields` names gold
+values that are a judge-panel split stored as a default, not a label. See ADR 0032.
+
 ## What this directory is NOT for
 
 - Not a source of few-shot prompt examples, ever.
