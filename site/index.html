@@ -557,7 +557,12 @@
         <div class="subsection">
           <h3>The honest accuracy story</h3>
           <p>
-            Field-level scoring (exact match + fuzzy + set F1) on held-out CI fixtures.
+            Field-level scoring (exact match + fuzzy + set F1) on the CI regression fixtures.
+            These are the fixtures the prompt was developed and tuned against, so this table
+            is a change detector, not a measure of accuracy on unseen reviews; the held-out
+            figure, with the exposure history of that corpus and the share of it that could
+            not be scored, is in
+            <a href="https://github.com/gaurav-gandhi-2411/review-iq#real-world-accuracy-held-out-corpus-with-a-disclosed-exposure">the README</a>.
             Prompt v2.3, measured under the models production actually runs
             (<code>openai/gpt-oss-20b</code> /
             <code>openai/gpt-oss-120b</code>). 95% CIs are paired
@@ -619,7 +624,7 @@
           <div class="note">
             <!-- METRICS:START:known_gaps_html -->
         <strong class="note-lead">Known gaps: </strong>
-        English `sentiment` and `buy_again` hedge (return "mixed"/null) far more often under the current models than the previous ones — accuracy on the answers the model DOES commit to is unchanged, but it commits less often, and flat accuracy charges that the same as a wrong answer. Hinglish shows the opposite pattern. On the 27 short reviews (under 10 words) in our held-out test set, when the model says a field is unclear, that call is right 93.3% of the time — the information usually genuinely isn't in the text. The real short-review issue is different: it commits to a value that does not match the reference labels on 48 of 324 field checks, most often on `language` (13), `topics` (11), `pros` (6). Only 10 of 324 were genuine silent misses. Separately: sarcastic or backhanded phrasing is rare in real marketplace reviews — 3 of 106 in our held-out set — too few to measure reliably, so we don't claim a number for it either way.
+        English `sentiment` and `buy_again` hedge (return "mixed"/null) far more often under the current models than the previous ones — accuracy on the answers the model DOES commit to is unchanged, but it commits less often, and flat accuracy charges that the same as a wrong answer. Hinglish shows the opposite pattern. On the 25 short reviews (under 10 words) among the held-out reviews the development process had not seen (23 field checks left out where the judge panel split on the label), when the model says a field is unclear, that call is right 93.1% of the time — the information usually genuinely isn't in the text. The real short-review issue is different: it commits to a value that does not match the reference labels on 31 of 277 field checks, most often on `language` (13), `product` (5), `buy_again` (4). Only 9 of 277 were genuine silent misses. Separately: sarcastic or backhanded phrasing is rare in real marketplace reviews — 3 of 106 in the whole corpus (seen and unseen reviews alike) — too few to measure reliably, so we don't claim a number for it either way.
       <!-- METRICS:END -->
           </div>
         </div>
@@ -628,7 +633,9 @@
           <h3>It doesn't guess when it's unsure</h3>
           <p>
             Two fields (sentiment, buy-again) are allowed to say "unclear" rather than commit to a
-            wrong answer. Measured on 106 real, never-prompt-tuned marketplace reviews:
+            wrong answer. Measured on real marketplace reviews that the prompt-development
+            process had not seen (the review count, and what was excluded and why, are in the
+            last row of the table):
           </p>
           <div class="table-wrap">
             <table>
@@ -645,15 +652,18 @@
                 <!-- METRICS:START:coverage_metrics_table_html -->
             <tr>
               <td class="cap">sentiment</td>
-              <td class="num">77.4% <span class="muted">[68.9%, 84.9%]</span></td>
-              <td class="num">87.8% <span class="muted">[80.5%, 93.9%]</span></td>
-              <td class="ci">10/82 = 12.2%</td>
+              <td class="num">71.4% <span class="muted">[60.0%, 81.4%]</span></td>
+              <td class="num">88.0% <span class="muted">[78.0%, 96.0%]</span></td>
+              <td class="ci">6/50 = 12.0%</td>
             </tr>
             <tr>
               <td class="cap">buy again</td>
-              <td class="num">43.4% <span class="muted">[34.0%, 52.8%]</span></td>
-              <td class="num">76.1% <span class="muted">[63.0%, 87.0%]</span></td>
-              <td class="ci">11/46 = 23.9%</td>
+              <td class="num">24.3% <span class="muted">[14.3%, 34.3%]</span></td>
+              <td class="num">70.6% <span class="muted">[47.1%, 88.2%]</span></td>
+              <td class="ci">5/17 = 29.4%</td>
+            </tr>
+            <tr>
+              <td class="muted" colspan="4">n=70 reviews the prompt-development process had not seen; the 36 of 106 it had seen are excluded (ADR 0032). Over all 106 (the earlier published basis): sentiment coverage 77.4% / accuracy-on-answered 87.8%, buy again coverage 43.4% / accuracy-on-answered 76.1%. On the 36 seen reviews alone buy-again coverage is 80.6%, against 24.3% on the unseen ones, so including them flattered it.</td>
             </tr>
           <!-- METRICS:END -->
               </tbody>
@@ -662,14 +672,14 @@
           <div class="stat-row">
             <!-- METRICS:START:committed_accuracy_headline_html -->
             <div class="stat-card">
-              <div class="stat-num">87.8%</div>
+              <div class="stat-num">88.0%</div>
               <div class="stat-label">accurate when it commits to a sentiment call</div>
-              <div class="stat-note">95% CI [80.5%, 93.9%], n=106. Separately, it abstains (&ldquo;unclear&rdquo;) on 15.1%&ndash;31.1% of all reviews rather than commit to any answer.</div>
+              <div class="stat-note">95% CI [78.0%, 96.0%], n=70 unseen reviews. Separately, it abstains (&ldquo;unclear&rdquo;) on 18.6%&ndash;40.0% of all reviews rather than commit to any answer.</div>
             </div>
             <div class="stat-card">
-              <div class="stat-num">76.1%</div>
+              <div class="stat-num">70.6%</div>
               <div class="stat-label">accurate when it commits to a buy-again call</div>
-              <div class="stat-note">95% CI [63.0%, 87.0%], n=106. Separately, it abstains (&ldquo;unclear&rdquo;) on 47.2%&ndash;66.0% of all reviews rather than commit to any answer.</div>
+              <div class="stat-note">95% CI [47.1%, 88.2%], n=70 unseen reviews. Separately, it abstains (&ldquo;unclear&rdquo;) on 65.7%&ndash;85.7% of all reviews rather than commit to any answer.</div>
             </div>
           <!-- METRICS:END -->
           </div>
