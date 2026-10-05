@@ -1,0 +1,1262 @@
+{
+ "026a984e47087bb863cb89c4c4a2e3f1ceb97bba9a14b7e19ecaa4ad88fcb28e": {
+  "cost_usd": 0.00024065,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"unknown product\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"broke on day one\",\n    \"worst purchase ever\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"durability\",\n    \"defect\",\n    \"refund\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"high\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 621,
+  "tokens_out": 117
+ },
+ "0280144c924ba1aeff28b98a3f5477fb23ff572328062466552a56a606910353": {
+  "cost_usd": 0.00023855,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"unknown product\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"would not buy again\",\n    \"wasted money\",\n    \"damaged packaging\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"packaging\",\n    \"value_for_money\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"medium\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 611,
+  "tokens_out": 119
+ },
+ "02c078573cc936932b0ea6c7954fd0f048b6a729ed2d12b28d5dfe888c24d252": {
+  "cost_usd": 0.00010349,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"will not buy again\",\n    \"money wasted\",\n    \"packaging was broken\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"packaging\",\n    \"value_for_money\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 634,
+  "tokens_out": 124
+ },
+ "02ec4722c6843477709920d49b7cf97e13f41a6a1aac5a5e915a6bc274418245": {
+  "cost_usd": 7.326e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"Bluetooth device\", \"stars\": null, \"stars_inferred\": 2, \"pros\": [\"sound quality is fine\"], \"cons\": [\"Bluetooth connection keeps dropping every few minutes\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"bluetooth_connection\", \"sound_quality\"], \"competitor_mentions\": [], \"urgency\": \"medium\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 614,
+  "tokens_out": 100
+ },
+ "034034e037fe9ea3e3c5f851cf9a46e599d17c97d1873b020fff51d51ae19047": {
+  "cost_usd": 0.0001813,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Azure",
+  "raw": "{\"product\": \"unknown product\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"broke on day one\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"build_quality\", \"durability\"], \"competitor_mentions\": [], \"urgency\": \"high\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 626,
+  "tokens_out": 89
+ },
+ "03ba7b08fbff7808dd0d45d66593d43411841522334ff46c72b1370c4b3a09c8": {
+  "cost_usd": 0.0001925,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\"{\"   \t: \"unknown\", \"stars\": 5, \"stars_inferred\": 5, \"pros\": [\"does the job perfectly\", \"no complaints\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"performance\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 602,
+  "tokens_out": 84
+ },
+ "0421d8057ea17d9675a400c6b00a354a430352afc4e208afcf9fcca7ffde092d": {
+  "cost_usd": 3.5946e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"unknown product\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"waste of money\", \"broken packaging\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"packaging\", \"value_for_money\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 621,
+  "tokens_out": 94
+ },
+ "0469b9fa742eb2ac5416802f744384332b386b5766468437ce5ee1ff50707e26": {
+  "cost_usd": 9.2785e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"product\",\n  \"stars\": 5,\n  \"stars_inferred\": 5,\n  \"pros\": [\"Does the job perfectly\", \"no complaints at all\"],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 621,
+  "tokens_out": 100
+ },
+ "0504e1897f71af71d77880d39dfa81203b1b9eb937db5c7d2548f960a290ae4f": {
+  "cost_usd": 0.00010867,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "SiliconFlow",
+  "raw": "{\"product\": \"blender\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"blends smoothly\", \"easy to clean\", \"powerful motor\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"performance\", \"cleaning\", \"motor\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 627,
+  "tokens_out": 97
+ },
+ "06791e4595d7ac55459bdb9046c2e91eea65d7b7f1b4da45b4104e95129b3873": {
+  "cost_usd": 0.00024695,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"Solid and reliable\",\n    \"Does exactly what it promises\",\n    \"Ordered a second one as a gift\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"reliability\",\n    \"build_quality\",\n    \"value\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 611,
+  "tokens_out": 126
+ },
+ "0730e034cc0e27456d11813026c29cc586dc88154aa115c3b3605945c7763516": {
+  "cost_usd": 6.213e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "\n{\n  \"product\": \"geyser\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"electric shock\",\n    \"pain in hand\",\n    \"hazardous\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"electricity\",\n    \"safety\",\n    \"pain\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"high\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}\n",
+  "status": 200,
+  "tokens_in": 679,
+  "tokens_out": 125
+ },
+ "0876efae710cf985293065444c8c0a688f249ad4b55e68f13fff46447705a0cc": {
+  "cost_usd": 0.00016893,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Relace",
+  "raw": "{\n  \"product\": \"उत्पाद\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"बहुत बढ़िया\", \"बहुत पसंद आया\"],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"overall_satisfaction\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi\"\n}",
+  "status": 200,
+  "tokens_in": 639,
+  "tokens_out": 117
+ },
+ "0a23b734a5d09c428b64cd5a167b1cee1b3b0f2565a35d1a286bba79048e3260": {
+  "cost_usd": 0.00024005,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"Bluetooth device\",\n  \"stars\": null,\n  \"stars_inferred\": 2,\n  \"pros\": [\n    \"sound quality is fine\"\n  ],\n  \"cons\": [\n    \"Bluetooth connection keeps dropping every few minutes\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"bluetooth\",\n    \"connection\",\n    \"sound_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"medium\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 609,
+  "tokens_out": 121
+ },
+ "0d51db7a253febd30d387d9d6f723f6869525b85f386b357f40843650dd0aa8e": {
+  "cost_usd": 7.11e-05,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"product\", \"stars\": null, \"stars_inferred\": 2, \"pros\": [], \"cons\": [\"not what I needed\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"fit\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 618,
+  "tokens_out": 81
+ },
+ "0d740e37c2d038027e88dfec648fdf08c13a1a3a61f79bb3aaccfb51646e02a8": {
+  "cost_usd": 9.7125e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"product\",\n  \"stars\": 1,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\"completely unusable\", \"stopped working after two days\"],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\"reliability\", \"functionality\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"medium\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 625,
+  "tokens_out": 110
+ },
+ "10a0b59220de18079334cd851e22a5bff0dc65339f63946aa8d6f61b9c6f1b1c": {
+  "cost_usd": 7.695e-05,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"product\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [\"delivery time\", \"packing\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"neutral\", \"topics\": [\"delivery\", \"packaging\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 629,
+  "tokens_out": 88
+ },
+ "12015aef78efd06572fcae1cbab8b5fef1399fc20baa248258fdb5922c444249": {
+  "cost_usd": 0.0001473,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"product\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"great overall\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"portability\", \"accessories\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [\"carrying case for travel\"], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 622,
+  "tokens_out": 90
+ },
+ "1320264de1c1fa55c4eef7afb4c6398be7f727b942fc983120253c983cc0b10b": {
+  "cost_usd": 3.8826e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"headphones or speaker (audio device) based on sound quality mention\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [\"sound quality is excellent\"], \"cons\": [\"battery only lasts two hours\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"sound_quality\", \"battery_life\"], \"competitor_mentions\": [], \"urgency\": \"medium\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 623,
+  "tokens_out": 109
+ },
+ "1435e0c20146a2081015a570c85cd39f31614581377cd28b277d756e09870fdc": {
+  "cost_usd": 0.00010935,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"vacuum cleaner\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"performs just as well as Dyson V8\",\n    \"half the price\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"performance\",\n    \"price\"\n  ],\n  \"competitor_mentions\": [\n    \"Dyson V8\"\n  ],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 630,
+  "tokens_out": 131
+ },
+ "1530e0502297c2940bda2c18a45e498d9d32c53454918d0148d1367e4844be1c": {
+  "cost_usd": 6.532e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "\n{\n  \"product\": \"Dyson V8\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"performs as well as Dyson V8\",\n    \"half the price\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"performance\",\n    \"price\",\n    \"competitor_comparison\"\n  ],\n  \"competitor_mentions\": [\n    \"Dyson V8\"\n  ],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}\n",
+  "status": 200,
+  "tokens_in": 656,
+  "tokens_out": 137
+ },
+ "189befaf2b47d10d2d67edd8b7ffec3832bd38d40b640ac6e86ed3dd2db776be": {
+  "cost_usd": 0.00015795,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"speaker or audio device\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [\"sound quality is excellent\"], \"cons\": [\"battery life is only two hours\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"sound_quality\", \"battery_life\"], \"competitor_mentions\": [], \"urgency\": \"medium\", \"feature_requests\": [\"improve battery life\"], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 625,
+  "tokens_out": 107
+ },
+ "1a8ea957e9f102415b9b708ba73195da9769387f753803eac6b995b2d25882c8": {
+  "cost_usd": 0.00024965,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"charger\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"wire overheated and burned\",\n    \"sparks emitted\",\n    \"fire hazard in home\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"safety\",\n    \"build_quality\",\n    \"wire\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"high\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 625,
+  "tokens_out": 123
+ },
+ "1ae4b00a10b0940e90af904455c7d9873b349e9906dea37056abdee589a817af": {
+  "cost_usd": 4.869e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "\n{\n  \"product\": null,\n  \"stars\": \"5 stars\",\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"Does the job perfectly\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}\n",
+  "status": 200,
+  "tokens_in": 647,
+  "tokens_out": 97
+ },
+ "1ae9656045fe80f05708dc4831f17ca3382ef936b6f72953364ef26e8382a463": {
+  "cost_usd": 0.0001584,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"blender\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"blends everything smoothly\", \"cleans in seconds\", \"powerful motor\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"blending_performance\", \"cleaning_ease\", \"motor_power\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 632,
+  "tokens_out": 106
+ },
+ "1b3ef1077f87119bdf40497e719a23aaaadc886fd9cc165703420d678eedcf95": {
+  "cost_usd": 8.055e-05,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"मिक्सर\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"खराब हो गया\", \"दो दिन में ही खराब\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"durability\"], \"competitor_mentions\": [], \"urgency\": \"high\", \"feature_requests\": [], \"language\": \"hi\"}",
+  "status": 200,
+  "tokens_in": 629,
+  "tokens_out": 94
+ },
+ "1d3b1ebc4b814b92ae8e852f37bcc2bab840442bc59dc4a34205d0c6c5196ea3": {
+  "cost_usd": 5.252e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "\n{\n  \"product\": null,\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"Solid\",\n    \"Reliable\",\n    \"Does exactly what it promises\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}\n",
+  "status": 200,
+  "tokens_in": 656,
+  "tokens_out": 105
+ },
+ "1d41aae6d31f43e2092fa785fe5c9ddc3ec4feb68a4ea641d21c38d31f5a71c6": {
+  "cost_usd": 9.812e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"यह उत्पाद\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"बहुत बढ़िया है\", \"बहुत पसंद आया\"],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"overall_satisfaction\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi\"\n}",
+  "status": 200,
+  "tokens_in": 632,
+  "tokens_out": 111
+ },
+ "1ef89cc76a2d5467421e4c359231f4db401bdd966313ce4a1b6f952d694ee429": {
+  "cost_usd": 5.71e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "\n{\n  \"product\": \"mixer grinder\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"chalta hai bahut badhiya\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"performance\",\n    \"recommendation\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}\n",
+  "status": 200,
+  "tokens_in": 670,
+  "tokens_out": 114
+ },
+ "20199f2b799da6feb9370dce7ab65411ca41ae0ed2096f8688a342739b075cd9": {
+  "cost_usd": 5.593e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "\n{\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"Great product overall\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"product_overall\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [\n    \"add carrying case for travel\"\n  ],\n  \"language\": \"en\"\n}\n",
+  "status": 200,
+  "tokens_in": 659,
+  "tokens_out": 113
+ },
+ "217d6b8c86c908139fa733aae4c543aa255e05203b8d4ac9b5ff00876c359561": {
+  "cost_usd": 0.0001675,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Mancer 2",
+  "raw": "{\"product\": \"space heater\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"caught fire\", \"burned a hole in carpet\", \"extremely dangerous\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"safety\", \"fire_hazard\"], \"competitor_mentions\": [], \"urgency\": \"high\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 626,
+  "tokens_out": 100
+ },
+ "220c99753f9bef9e06cca15935a5f816df7dde241d835f99bf32adc616226edf": {
+  "cost_usd": 5.602e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "\n{\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"quality mast hai\",\n    \"price reasonable hai\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"quality\",\n    \"price\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}\n",
+  "status": 200,
+  "tokens_in": 666,
+  "tokens_out": 112
+ },
+ "28f9836a9c9d77e2f19373d80ff404b4bd67438d22ed3bfd402a70065e009a4f": {
+  "cost_usd": 0.0002438,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"book\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"very good quality\",\n    \"children liked it\",\n    \"worth the money\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"quality\",\n    \"value_for_money\",\n    \"appeal_to_children\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 612,
+  "tokens_out": 123
+ },
+ "2a75f0589305c110118568bac30d43198e069e53b4683a43de469dbf3fd33021": {
+  "cost_usd": 3.6666e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"camera\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [\"camera is great\"], \"cons\": [\"battery drains quickly\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"battery\", \"camera_quality\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi\"}",
+  "status": 200,
+  "tokens_in": 629,
+  "tokens_out": 94
+ },
+ "2c3ec78ec2ddc3c51573bbf67dbc518516b5291935ef0b98ff654c6d6edb60c7": {
+  "cost_usd": 8.747e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "{\"product\": null, \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"broke on day one\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"durability\", \"refund\"], \"competitor_mentions\": [], \"urgency\": \"high\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 621,
+  "tokens_out": 110
+ },
+ "2d0426ef8b0d2bd61302e8bcb644a404130dff60f3c0faf7674ae9f408ad6d77": {
+  "cost_usd": 0.00015435,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"headphones or speaker with Bluetooth\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [\"sound quality is fine\"], \"cons\": [\"Bluetooth connection keeps dropping every few minutes\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"bluetooth_connectivity\", \"sound_quality\"], \"competitor_mentions\": [], \"urgency\": \"medium\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 617,
+  "tokens_out": 103
+ },
+ "2e31998d61177d09fef8cfdb5661ff317319cb22f46738407e16e80143019ed6": {
+  "cost_usd": 5.804e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "\n{\n  \"product\": \"mixer\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"broke within two days\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"durability\",\n    \"performance\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi\"\n}\n",
+  "status": 200,
+  "tokens_in": 712,
+  "tokens_out": 109
+ },
+ "30a4b2660fb3cc0cb69b7387d6bab5cb02808ca2c9fe58288c51746782eb049e": {
+  "cost_usd": 0.00010868,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"charger\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"wire overheated and caught fire\",\n    \"sparks emitted\",\n    \"fire hazard in home\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"safety\",\n    \"build_quality\",\n    \"overheating\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"high\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 648,
+  "tokens_out": 134
+ },
+ "3111cc0a487339837894281e9556716c63a72c3badc6c2e2712118f1f6dc54bb": {
+  "cost_usd": 0.0001012,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"brand\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"broke on day one\",\n    \"worst purchase ever\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"durability\",\n    \"customer_service\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"high\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 640,
+  "tokens_out": 117
+ },
+ "31ff810ad6ca248490d60481cdfc9de4d7484a6ac8546371bbe45918f49b59c4": {
+  "cost_usd": 9.2265e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 2,\n  \"pros\": [],\n  \"cons\": [\n    \"not what I needed\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 629,
+  "tokens_out": 97
+ },
+ "350510ed8469b091070224fdc63243baca781ac2fc378187620b64a9ae184f8c": {
+  "cost_usd": 0.0002324,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"mixer\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"broke within two days\",\n    \"poor quality\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"durability\",\n    \"build_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"medium\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 616,
+  "tokens_out": 112
+ },
+ "38a4c8ff7c9a577cd1788c6ec035c578bbd2002c5cfaba443370674395361663": {
+  "cost_usd": 8.919e-05,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"camera\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [\"outstanding camera quality\", \"professional-looking photos\"], \"cons\": [\"battery life is poor (lasts only two hours)\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"camera_quality\", \"battery_life\"], \"competitor_mentions\": [], \"urgency\": \"medium\", \"feature_requests\": [\"longer battery life\"], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 621,
+  "tokens_out": 114
+ },
+ "39231e1ffa956f74b247a0ecb3c4cefa79f44bd0af58cac2618d6a1c501a8b8e": {
+  "cost_usd": 0.00023015,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"bag\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"zipper broke the first time used\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"durability\",\n    \"zipper\",\n    \"defect\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"high\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 611,
+  "tokens_out": 112
+ },
+ "40b5bfe6841b119851e021b820ba91096cce14819a4f993e6f6fbda38b9ef547": {
+  "cost_usd": 5.85e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "\n{\n  \"product\": null,\n  \"stars\": \"1 out of 5\",\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"stopped working after two days\",\n    \"completely unusable\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"usability\",\n    \"reliability\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"high\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}\n",
+  "status": 200,
+  "tokens_in": 650,
+  "tokens_out": 121
+ },
+ "4143718e1dc5dc9aaaa98a70a57ac79186a84644fc01a2d47876c3f27d1a9a04": {
+  "cost_usd": 0.0004335,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"blender\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"blends everything smoothly\",\n    \"cleans in seconds\",\n    \"powerful motor\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"performance\",\n    \"ease_of_cleaning\",\n    \"motor\",\n    \"build_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 622,
+  "tokens_out": 128
+ },
+ "435ea22caa21340115b6cfadcca52b5d726c89883c66be95a9d5a5f57a243a7a": {
+  "cost_usd": 9.932e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"kurte\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"soft fabric\",\n    \"perfect fit\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"fabric\",\n    \"fit\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 632,
+  "tokens_out": 114
+ },
+ "473dba053de3ed4551ef263668937ff14253cec2eca339e71a89458a7bf1279f": {
+  "cost_usd": 0.00014565,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"product\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"reliable\", \"does exactly what it promises\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"reliability\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 619,
+  "tokens_out": 88
+ },
+ "498d4938c2e54cbb39c698dcda6b6af940dd70bb7dc18430d1444d4a6d910a2d": {
+  "cost_usd": 0.0002264,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 2,\n  \"pros\": [],\n  \"cons\": [\n    \"not what I needed\",\n    \"would not buy again\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"value\",\n    \"expectations\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 608,
+  "tokens_out": 110
+ },
+ "4b30181e278d650eb70a8c54ca5755a55dcbecda71689d90574996d742f8f8f1": {
+  "cost_usd": 7.95e-05,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"product\", \"stars\": \"1 out of 5\", \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"completely unusable\", \"stopped working after two days\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"reliability\"], \"competitor_mentions\": [], \"urgency\": \"high\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 614,
+  "tokens_out": 96
+ },
+ "4c5540b34defe53621216969b4552ac857217e37170640541d042bde41749571": {
+  "cost_usd": 7.76041e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "Venice",
+  "raw": "{\"product\": \"product\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"quality is great\", \"price is reasonable\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"quality\", \"price\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 626,
+  "tokens_out": 89
+ },
+ "4e47457cbde3a2b532fbed34de4d22838e9dac12b4e5124f3f1a4f68b1eeea1a": {
+  "cost_usd": 5.986e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "\n{\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\n    \"includes charging cable\",\n    \"includes printed instruction manual\",\n    \"shipped in plain cardboard box\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"neutral\",\n  \"topics\": [\n    \"packaging\",\n    \"included_items\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}\n",
+  "status": 200,
+  "tokens_in": 658,
+  "tokens_out": 123
+ },
+ "4fde4e90e3d80d707911f5d1655c5d2c78eb044d64925705cebf645f429af581": {
+  "cost_usd": 0.00021065,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"unknown product\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"neutral\",\n  \"topics\": [\n    \"packaging\",\n    \"contents\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 613,
+  "tokens_out": 95
+ },
+ "5052d0f085c2d64d966ec1c80f4d4fcd6aaab24078bfce033bc311457bab1103": {
+  "cost_usd": 8.011e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "{\"product\": \"camera\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [\"outstanding camera quality\", \"photos look professional\"], \"cons\": [\"battery barely lasts two hours\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"camera_quality\", \"battery_life\"], \"competitor_mentions\": [], \"urgency\": \"medium\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 613,
+  "tokens_out": 93
+ },
+ "533d20136386a8c6a0ba6aaec29c8b922db2d60380496391cf123e69ee3b4aaf": {
+  "cost_usd": 3.5136e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"mixer grinder\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"works very well\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"performance\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 632,
+  "tokens_out": 84
+ },
+ "5361fe9d04af7016b831247b517b636d55e24bf1496ff132340a866a4a11279d": {
+  "cost_usd": 4.885e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "\n{\n  \"product\": null,\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [],\n  \"cons\": [\n    \"not really what I needed\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}\n",
+  "status": 200,
+  "tokens_in": 655,
+  "tokens_out": 96
+ },
+ "54a1e553c9442c44ccaa42a736603dd7402093d7aeec24e11ba7ec191dc3794e": {
+  "cost_usd": 0.0002513,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"vacuum cleaner\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"performs just as well as Dyson V8\",\n    \"half the price\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"performance\",\n    \"price\",\n    \"value_for_money\"\n  ],\n  \"competitor_mentions\": [\n    \"Dyson V8\"\n  ],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 610,
+  "tokens_out": 130
+ },
+ "54ccfb173ae0fbfb92018ade7eb4db156a0180e92d80c8be8cfa6cf07d893430": {
+  "cost_usd": 8.274e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "{\"product\": null, \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"sturdy packaging\", \"arrived in perfect condition\", \"quick setup\", \"works as described\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"packaging\", \"setup\", \"quality\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 622,
+  "tokens_out": 98
+ },
+ "560904e50d41496ef5f3bd458fac365b73dde87afc223f91e736e7e177aa21df": {
+  "cost_usd": 3.3786e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"product\", \"stars\": null, \"stars_inferred\": 2, \"pros\": [], \"cons\": [\"not what I needed\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"overall_satisfaction\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 615,
+  "tokens_out": 85
+ },
+ "5ebe7895bb6498c70b06f085910979a34231439366892cbeac19158544dcbb76": {
+  "cost_usd": 3.5676e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"unknown product\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"solid\", \"reliable\", \"does exactly what it promises\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"reliability\", \"quality\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 616,
+  "tokens_out": 95
+ },
+ "670462e2fa7aeb762b841696546b3c13949495268fa71ea17f0e2632d7c913ec": {
+  "cost_usd": 5.957e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "\n{\n  \"product\": \"phone\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"screen broken within three days\",\n    \"product is useless\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"screen_quality\",\n    \"durability\",\n    \"refund\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"high\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}\n",
+  "status": 200,
+  "tokens_in": 671,
+  "tokens_out": 120
+ },
+ "6716f94ce0fd7f8f75a75a079ac63500e441dff02f4e96651f41f69db4c5894f": {
+  "cost_usd": 9.4435e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"bag\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\"zipper broke on first use\"],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\"durability\", \"zipper\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"high\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 631,
+  "tokens_out": 102
+ },
+ "6741dc6f1523504e4ce0205867a3182fa7d46f0630bcd585b7ae3c19048c8ce1": {
+  "cost_usd": 0.00014775,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"kurta\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"soft fabric\", \"perfect fitting\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"fabric_quality\", \"fit\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi\"}",
+  "status": 200,
+  "tokens_in": 621,
+  "tokens_out": 91
+ },
+ "6dd21feed754c0be14ac3d436eb07513406a57026f08813d4ba0dd4166248423": {
+  "cost_usd": 9.818e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"Bluetooth device\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\"sound quality is fine\"],\n  \"cons\": [\"Bluetooth connection keeps dropping every few minutes\"],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\"bluetooth_connection\", \"sound_quality\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"medium\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 628,
+  "tokens_out": 112
+ },
+ "70a057adf1208e08ab350b04f3adfa1f46347b075954029712082c672c4272d8": {
+  "cost_usd": 9.5285e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"good quality\", \"reasonable price\"],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"quality\", \"price\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 641,
+  "tokens_out": 102
+ },
+ "743202b0b7d7131879b9ac8409b1bcb286fd54b544fbd8b759c47c21769c8e57": {
+  "cost_usd": 8.175e-05,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"phone\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"screen failure within three days\", \"poor quality\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"build_quality\", \"screen\", \"refund\"], \"competitor_mentions\": [], \"urgency\": \"high\", \"feature_requests\": [], \"language\": \"hi\"}",
+  "status": 200,
+  "tokens_in": 633,
+  "tokens_out": 95
+ },
+ "785178a9287d7f5445dc33953f25d28c5d2b9e93e963e9e37862ca88a491400d": {
+  "cost_usd": 7.903e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "{\"product\": \"Bluetooth headphones\", \"stars\": null, \"stars_inferred\": 2, \"pros\": [\"sound quality is fine\"], \"cons\": [\"Bluetooth connection keeps dropping every few minutes\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"bluetooth\", \"sound_quality\"], \"competitor_mentions\": [], \"urgency\": \"medium\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 609,
+  "tokens_out": 91
+ },
+ "79df044f9598b3bd3cb01f3bb07d759f826862f57fc303ab9426d97bd113494b": {
+  "cost_usd": 9.015e-05,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"charger\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"wire overheating and burning\", \"sparking hazard\", \"potential fire risk in home\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"safety\", \"build_quality\", \"wire_durability\"], \"competitor_mentions\": [], \"urgency\": \"high\", \"feature_requests\": [], \"language\": \"hi\"}",
+  "status": 200,
+  "tokens_in": 637,
+  "tokens_out": 108
+ },
+ "7a4fdd3401429f8200b36abb2b6ffddfba688d66443e67dbda018abae7cc8c3a": {
+  "cost_usd": 7.65e-05,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"smartphone\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [\"camera quality\"], \"cons\": [\"battery life\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"battery\", \"camera\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi\"}",
+  "status": 200,
+  "tokens_in": 618,
+  "tokens_out": 90
+ },
+ "7adadc4c6aebe6de547971d83fdb6a93de9b0fb7f9af74c871458c66e44979e9": {
+  "cost_usd": 0.000233,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"kurte\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"fabric is very soft\",\n    \"perfect fitting\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"fabric\",\n    \"fit\",\n    \"softness\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 612,
+  "tokens_out": 114
+ },
+ "7c76168ced5c08670bbf0e309e6e4779aed651c3d19618dde8371a18e76b637d": {
+  "cost_usd": 0.0002384,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"earbuds or headphones\",\n  \"stars\": null,\n  \"stars_inferred\": 2,\n  \"pros\": [\n    \"sound quality is excellent\"\n  ],\n  \"cons\": [\n    \"battery lasts only two hours\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"sound_quality\",\n    \"battery\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"medium\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 616,
+  "tokens_out": 117
+ },
+ "7cd09ff616386d4f581e1e4355c9e59c0d1fa59f91deca0da0fadbf3c671973b": {
+  "cost_usd": 6.327e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "\n{\n  \"product\": null,\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"बहुत बढ़िया है\",\n    \"मुझे बहुत पसंद आया\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}\n",
+  "status": 200,
+  "tokens_in": 701,
+  "tokens_out": 124
+ },
+ "7cf065ba9fa1137129aaf632a248f840e16ef7af2afd7e702f085b13bbeee35b": {
+  "cost_usd": 6.065e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "\n{\n  \"product\": \"Charger\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"wire got hot and caught fire\",\n    \"potential fire hazard in the house\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"safety\",\n    \"product_defect\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"high\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}\n",
+  "status": 200,
+  "tokens_in": 675,
+  "tokens_out": 122
+ },
+ "7dff724e958386dc7792dbbcbfdc34411ed56f784391d9d3dd33baba8dd5a6d4": {
+  "cost_usd": 3.6036e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"phone\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"screen broke within three days\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"screen_quality\", \"durability\"], \"competitor_mentions\": [], \"urgency\": \"high\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 632,
+  "tokens_out": 89
+ },
+ "7f8e3a3b422462f4e740bd8215769a3abbeb33a39155f5c94b73da28bd2a1bd4": {
+  "cost_usd": 7.95e-05,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"product\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"quality\", \"price\", \"recommendation\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"build_quality\", \"price\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 630,
+  "tokens_out": 92
+ },
+ "7f9bb738f8ca1284a23e8bf8282de390a19f662b8b0737322a84a43bf5917fca": {
+  "cost_usd": 9.858e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"earphones\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\"sound quality\"],\n  \"cons\": [\"battery life\"],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\"sound_quality\", \"battery\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 636,
+  "tokens_out": 106
+ },
+ "7fcc2c5a432a85e2664d36ccca2a73caf9c1f2861bf1c377e3720b802c319412": {
+  "cost_usd": 4.1796e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"kitaab (book) or children's book\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"acchi hai (good)\", \"bachchon ko pasand aayi (children liked it)\", \"paisa vasool (value for money)\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"value_for_money\", \"child_friendliness\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 620,
+  "tokens_out": 127
+ },
+ "80df3dab9032b8e830fd29f27900a7639f03e95093dacfb6a51296f6e9cf6547": {
+  "cost_usd": 7.797e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "{\"product\": \"bag\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"zipper broke on first use\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"zipper\", \"build_quality\", \"return_policy\"], \"competitor_mentions\": [], \"urgency\": \"high\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 611,
+  "tokens_out": 88
+ },
+ "8186b710ee81f8ca2a86b4f245c624fbb18bcd60ec38297f5a06d6af88e757b7": {
+  "cost_usd": 8.31e-05,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"book\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"very good\", \"children liked it\", \"value for money\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"content_quality\", \"child_appeal\", \"price\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi\"}",
+  "status": 200,
+  "tokens_in": 622,
+  "tokens_out": 100
+ },
+ "8419b569f4afa7cddb7bdccf893e84c20a3872391aaa9daf60b4fd5f0a47d4d2": {
+  "cost_usd": 0.0001032,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"Product\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\n    \"Delivery time was good\",\n    \"Packing was good\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"neutral\",\n  \"topics\": [\n    \"delivery\",\n    \"packaging\",\n    \"product_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 640,
+  "tokens_out": 122
+ },
+ "851b7c05969a71b5dbb51521a528a7c6367df2cf2cef1768c16eaf7f5ff36a09": {
+  "cost_usd": 0.00010005,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"item\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"sturdy packaging\", \"item arrived in perfect condition\", \"easy setup (ten minutes)\", \"works exactly as described\", \"very happy with purchase\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"packaging\", \"condition\", \"setup\", \"functionality\", \"overall_satisfaction\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 631,
+  "tokens_out": 126
+ },
+ "859723def6e4ff40213193cfcad02176458b49bab394adffe7f7ad116e388011": {
+  "cost_usd": 9.77e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"Bluetooth device\",\n  \"stars\": null,\n  \"stars_inferred\": 2,\n  \"pros\": [],\n  \"cons\": [\"Bluetooth keeps disconnecting repeatedly\", \"Very irritating\"],\n  \"buy_again\": null,\n  \"sentiment\": \"negative\",\n  \"topics\": [\"bluetooth_connectivity\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"medium\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 625,
+  "tokens_out": 106
+ },
+ "876b58827edf1f3ff96f1d301dd7393d8eb563bf9b99ff58e9221fa21fef2851": {
+  "cost_usd": 3.4686e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"bag\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"zipper broke on first use\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"build_quality\", \"durability\"], \"competitor_mentions\": [], \"urgency\": \"high\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 617,
+  "tokens_out": 89
+ },
+ "884e15c37e15c50e5b5f5be48ce2c47db6888127682b3c86bfce9f54831c44fa": {
+  "cost_usd": 3.5046e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"Bluetooth device\", \"stars\": null, \"stars_inferred\": 2, \"pros\": [], \"cons\": [\"Bluetooth repeatedly disconnects\", \"very irritating\"], \"buy_again\": null, \"sentiment\": \"negative\", \"topics\": [\"bluetooth_connectivity\"], \"competitor_mentions\": [], \"urgency\": \"medium\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 611,
+  "tokens_out": 94
+ },
+ "891799be2e970a552989e391ab11a453b4e900feff9214531422f61910a3f01d": {
+  "cost_usd": 3.5586e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"unknown product\", \"stars\": 1, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"stopped working after two days\", \"completely unusable\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"reliability\", \"durability\"], \"competitor_mentions\": [], \"urgency\": \"medium\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 611,
+  "tokens_out": 97
+ },
+ "8a8a8928b0ed9d97949d7099bb2d8f268c62b8a394f4f578a0e7fb67f421fc5f": {
+  "cost_usd": 0.0002372,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"mixer grinder\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"works very well\",\n    \"would buy again\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"performance\",\n    \"repurchase_intent\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 624,
+  "tokens_out": 113
+ },
+ "8a9738eba5f16a57c042f9cfb8b9adf110d1933c547771173a7983b689b8962c": {
+  "cost_usd": 0.00025835,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"Geyser\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"Electric shock upon turning on\",\n    \"Hand pain/injury\",\n    \"Dangerous product\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"safety\",\n    \"electrical_hazard\",\n    \"build_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"high\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 631,
+  "tokens_out": 128
+ },
+ "8ed0a34b675aec055bea62e328844524e300b8c0b326bd4542cafcca23710224": {
+  "cost_usd": 0.00010102,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"phone\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\"screen broke within three days\", \"poor quality\"],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\"screen\", \"build_quality\", \"refund\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"high\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 644,
+  "tokens_out": 110
+ },
+ "8f3b6687279c6677934f00ff7ea8f5bfbcbc519d0880cb968266724efe8b9c73": {
+  "cost_usd": 7.931e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "{\"product\": \"kurta\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"soft fabric\", \"perfect fitting\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"fabric\", \"fit\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 613,
+  "tokens_out": 91
+ },
+ "90480dba18e1c458c3ba1de4607ca260667c37ef5c367ac11f51f4096ca17b9c": {
+  "cost_usd": 7.38e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"vacuum cleaner\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"performs just as well as Dyson V8\", \"half the price\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"performance\", \"price\"], \"competitor_mentions\": [\"Dyson V8\"], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 616,
+  "tokens_out": 102
+ },
+ "909a9156e87b69405e69753acf028f3c55617c53be4f208e4230114bc37942c1": {
+  "cost_usd": 3.7206e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"product\", \"stars\": null, \"stars_inferred\": 4, \"pros\": [\"Great product overall\"], \"cons\": [\"No carrying case for travel\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"carrying_case\", \"travel\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [\"Add a carrying case for travel in the next version\"], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 619,
+  "tokens_out": 102
+ },
+ "954e3de07aff437f7d7e54435ac53013dfda23be17d7f61a3e2dba8ac2ea8d36": {
+  "cost_usd": 8.745e-05,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"product\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"paise barbaad (money wasted)\", \"packaging tooti hui thi (packaging was broken)\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"packaging\", \"value_for_money\"], \"competitor_mentions\": [], \"urgency\": \"medium\", \"feature_requests\": [], \"language\": \"hi\"}",
+  "status": 200,
+  "tokens_in": 623,
+  "tokens_out": 107
+ },
+ "98b719d986fb1dff4c508d95a1dbe33f9c98abed1f39c16727a84791c1503671": {
+  "cost_usd": 0.00015405,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"vacuum cleaner\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"performs as well as Dyson V8\", \"half the price\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"performance\", \"price\"], \"competitor_mentions\": [\"Dyson V8\"], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 619,
+  "tokens_out": 102
+ },
+ "9a5f3efa170b1b4ced66cfe6029ecaa407863c5e27c0cdcc6499496b3c654aea": {
+  "cost_usd": 0.00011147,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "SiliconFlow",
+  "raw": "{\"product\": \"item\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"sturdy packaging\", \"arrived in perfect condition\", \"easy setup\", \"works as described\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"packaging\", \"delivery\", \"setup\", \"performance\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 627,
+  "tokens_out": 107
+ },
+ "a45e9f9c4b64037388dddb36c07e2f541d6ca3b7261a3b809a6f52451eb1baa2": {
+  "cost_usd": 0.000227,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"camera\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\n    \"camera is excellent\"\n  ],\n  \"cons\": [\n    \"battery drains very quickly\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"battery\",\n    \"camera_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 604,
+  "tokens_out": 112
+ },
+ "a4c6c5bef45d1eae1bac53030997229906356174a1c8e808fd3aadcb1cc3b1e4": {
+  "cost_usd": 0.000101855,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"blender\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"blends everything smoothly\", \"cleans in seconds\", \"motor is powerful\"],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"performance\", \"ease_of_cleaning\", \"motor_power\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 643,
+  "tokens_out": 118
+ },
+ "a5e4e24bdc57b81b6995ac17cd12a6ac0224c9a997537cefa1584e46c72ab4e9": {
+  "cost_usd": 3.5226e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"kurta\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"soft fabric\", \"perfect fitting\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"fabric_quality\", \"fit\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 619,
+  "tokens_out": 91
+ },
+ "a5f187ba01ccb600b57920de5ed78b09376a35dab9c134db1e46598041cbf1ae": {
+  "cost_usd": 0.00010382,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"geyser\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"electric shock\",\n    \"hand pain\",\n    \"very dangerous\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"safety\",\n    \"electrical_hazard\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"high\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 652,
+  "tokens_out": 121
+ },
+ "aba9090a038d06ecb1f676932b550c266af8d2d147e32490607a3a5ee14cdf82": {
+  "cost_usd": 0.000109515,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"space heater\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"caught fire\",\n    \"burned a hole in carpet\",\n    \"extremely dangerous\",\n    \"risk of serious injury\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"safety\",\n    \"fire_hazard\",\n    \"build_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"high\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 639,
+  "tokens_out": 138
+ },
+ "ad234b2b10cb2aee2136e66092081277294ae50993539ad3dcd299bef0ee4d7e": {
+  "cost_usd": 0.00011499,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"Yeh kitaab\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"bahut acchi hai\",\n    \"bachchon ko pasand aayi\",\n    \"paisa vasool\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"content_quality\",\n    \"child_appeal\",\n    \"value_for_money\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 633,
+  "tokens_out": 143
+ },
+ "ad93d9bdd194123e3502a0bb17609d8a0f3bcedabbfe583886165e965dbcc9be": {
+  "cost_usd": 9.995e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"Solid, reliable, does exactly what it promises\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"solid\", \"reliable\", \"does exactly what it promises\"],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"reliability\", \"performance\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 630,
+  "tokens_out": 116
+ },
+ "ae87936cd885e487f74f63e07f726c79a129de1e3d863ca64f214734cd0fecc2": {
+  "cost_usd": 0.00011497,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"item\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"sturdy packaging\",\n    \"arrived in perfect condition\",\n    \"setup took about ten minutes\",\n    \"everything works exactly as described\",\n    \"very happy with this purchase\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"packaging\",\n    \"setup\",\n    \"functionality\",\n    \"satisfaction\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 642,
+  "tokens_out": 151
+ },
+ "affe8897d928c6cac8e3a0dc85f3e13e02c581bc84cf1857c46457deb9f02322": {
+  "cost_usd": 0.00023795,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"phone\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"screen broke within three days\",\n    \"poor quality\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"screen\",\n    \"build_quality\",\n    \"refund\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"high\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 623,
+  "tokens_out": 114
+ },
+ "b2ba86b4c1dd1f7d3bd2da643e66d201dfc4b89586c5d8eb4844ab69637cbf1c": {
+  "cost_usd": 0.00010012,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"camera\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\"outstanding camera quality\", \"photos look professional\"],\n  \"cons\": [\"battery barely lasts two hours\"],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\"camera_quality\", \"battery_life\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 632,
+  "tokens_out": 116
+ },
+ "b61c0aabc0853494f795393e3e44e1fa139b571909adc554ea4f72990e1ba2ef": {
+  "cost_usd": 8.475e-05,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"geyser\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"electric shock hazard\", \"pain after use\", \"safety risk\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"safety\", \"electrical_hazard\"], \"competitor_mentions\": [], \"urgency\": \"high\", \"feature_requests\": [], \"language\": \"hi\"}",
+  "status": 200,
+  "tokens_in": 641,
+  "tokens_out": 98
+ },
+ "b90be3d8e7b09dac5b2a0bc3d65a0d836dfe91200406b3c3393a2951111aa502": {
+  "cost_usd": 0.00027065,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"item\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"Sturdy packaging\",\n    \"Arrived in perfect condition\",\n    \"Quick setup (about ten minutes)\",\n    \"Works exactly as described\",\n    \"Very happy with purchase\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"packaging\",\n    \"shipping\",\n    \"setup\",\n    \"functionality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 621,
+  "tokens_out": 142
+ },
+ "bd01b52370b8ba0c95fb69a6ae75da83f0d9948cb357bd55a690fc340ec77fab": {
+  "cost_usd": 5.722e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "\n{\n  \"product\": \"Product\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\n    \"Delivery time\",\n    \"Packing\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"neutral\",\n  \"topics\": [\n    \"delivery\",\n    \"packing\",\n    \"product_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}\n",
+  "status": 200,
+  "tokens_in": 666,
+  "tokens_out": 115
+ },
+ "c1fa7f715b7e11d53f813f7452e4fd9232229c52cffda8cf9c46a98e0dc1759a": {
+  "cost_usd": 3.8376e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"mixer\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"खराब हो गया (broke down within two days)\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"durability\"], \"competitor_mentions\": [], \"urgency\": \"medium\", \"feature_requests\": [], \"language\": \"hi\"}",
+  "status": 200,
+  "tokens_in": 648,
+  "tokens_out": 94
+ },
+ "c2ba71c2672f7e0a015743a20704a27deaea1def5aa69194a636c4c657c9d233": {
+  "cost_usd": 9.212e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DeepInfra",
+  "raw": "{\n  \"product\": \"charging cable\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"neutral\",\n  \"topics\": [\"packaging\", \"contents\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 632,
+  "tokens_out": 96
+ },
+ "c3b392b4384d47663370ff41af53452fce03a58b82d5294661de70d25c940176": {
+  "cost_usd": 0.00025295,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\n    \"delivery time was okay\",\n    \"packing was good\"\n  ],\n  \"cons\": [\n    \"product is average, neither very good nor bad\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"neutral\",\n  \"topics\": [\n    \"delivery\",\n    \"packaging\",\n    \"quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 619,
+  "tokens_out": 128
+ },
+ "c3e834dca86c28fa4b5b883e7fb0c1530fc23f2f54840523d57458099c63f8b7": {
+  "cost_usd": 0.0002387,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\n    \"Great product overall\"\n  ],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"travel\",\n    \"accessories\",\n    \"build_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [\n    \"Add a carrying case for travel\"\n  ],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 614,
+  "tokens_out": 118
+ },
+ "c66cd8621d4887ab290ce2f0ceb824181b611597470b86fc93f8e269edb482a8": {
+  "cost_usd": 0.00023255,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"Bluetooth device\",\n  \"stars\": null,\n  \"stars_inferred\": 2,\n  \"pros\": [],\n  \"cons\": [\n    \"Bluetooth disconnects repeatedly\",\n    \"very irritating\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"bluetooth\",\n    \"connectivity\",\n    \"reliability\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"medium\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 603,
+  "tokens_out": 117
+ },
+ "c7031d2191baeff769c07cf1f7c091e1f6d739f56a5b9ef665e2384be239f4a5": {
+  "cost_usd": 5.913e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "\n{\n  \"product\": \"book\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"good quality\",\n    \"children liked it\",\n    \"value for money\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"quality\",\n    \"children\",\n    \"price\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}\n",
+  "status": 200,
+  "tokens_in": 659,
+  "tokens_out": 121
+ },
+ "ca0488c719a8b20107ea3a3a663a47ed72af6bee1cd9954bd35c82d70f60f0fb": {
+  "cost_usd": 6.281e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "\n{\n  \"product\": null,\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"Main isse dobara nahi lunga\",\n    \"Paise barbaad\",\n    \"Packaging tooti hui thi\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"packaging\",\n    \"value\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}\n",
+  "status": 200,
+  "tokens_in": 661,
+  "tokens_out": 130
+ },
+ "ca71b89f2f594ec704c318979c806762048154810fdf98fd6468c017d4969cb6": {
+  "cost_usd": 0.00023045,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"very good product\",\n    \"liked it very much\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"overall_quality\",\n    \"repurchase_intent\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 609,
+  "tokens_out": 113
+ },
+ "cb1c3bd6ad3d0774ba077aec8642773a86c8b85358c7e70777f86891afcac131": {
+  "cost_usd": 5.822e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "\n{\n  \"product\": null,\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\n    \"camera is amazing\"\n  ],\n  \"cons\": [\n    \"battery drains very quickly\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"battery\",\n    \"camera\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}\n",
+  "status": 200,
+  "tokens_in": 686,
+  "tokens_out": 114
+ },
+ "ccfae0d96d8a0a8995910b1168cab42bdedbf442365f630251f11353cc355557": {
+  "cost_usd": 3.5316e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"unknown product\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [\"includes charging cable\", \"includes printed instruction manual\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"neutral\", \"topics\": [\"packaging\", \"accessories\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 618,
+  "tokens_out": 92
+ },
+ "ced23cb04083b2e3cbb830a62e6d4642e6da135fc5940a0400dfc5a6b059d2bf": {
+  "cost_usd": 3.7926e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"geyser\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"electric shock\", \"pain in hand\", \"dangerous product\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"safety\", \"electric_shock\"], \"competitor_mentions\": [], \"urgency\": \"high\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 637,
+  "tokens_out": 97
+ },
+ "d1873072c4caa010a531f551e8ef0d5f28e8ea71588df516f2df6cf531798bf5": {
+  "cost_usd": 0.00015315,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"charging cable\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [\"includes charging cable\", \"includes instruction manual\", \"ships in cardboard box\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"neutral\", \"topics\": [\"packaging\", \"included_accessories\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 621,
+  "tokens_out": 100
+ },
+ "d66373385f4d34e70e2b8f9f67fe4e57aad33e92f8213a97c202e5a4dca7a3e3": {
+  "cost_usd": 3.3426e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"unknown product\", \"stars\": 5, \"stars_inferred\": 5, \"pros\": [\"does the job perfectly\", \"no complaints\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"performance\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 607,
+  "tokens_out": 87
+ },
+ "d6777370b3eadf0dca212bd33ab18bc2e5a799847d8e0f2d5d2e9dd072623e64": {
+  "cost_usd": 3.8106e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"charger\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"wire overheated and caught fire\", \"sparks emitted\", \"fire hazard\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"safety\", \"build_quality\"], \"competitor_mentions\": [], \"urgency\": \"high\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 633,
+  "tokens_out": 100
+ },
+ "d6efa9757e1f253c8f6c80fb51c2ecc65feb0737d0f80bfc56dcc7876284a423": {
+  "cost_usd": 3.7296e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"camera\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [\"outstanding camera quality\", \"professional-looking photos\"], \"cons\": [\"battery barely lasts two hours\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"camera_quality\", \"battery_life\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 618,
+  "tokens_out": 103
+ },
+ "d70797ad8ed58e96a8cf52a9f0b98b2aa01681645f36e97e19c4eb32ab6d6d1a": {
+  "cost_usd": 8.019e-05,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"unknown product\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"broke on day one\", \"demanding a full refund immediately\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"reliability\", \"refund\"], \"competitor_mentions\": [], \"urgency\": \"high\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 629,
+  "tokens_out": 97
+ },
+ "d7c233adf6adebe48f5f88e2292f6ae9e4a198aa704a33e8844ba047feebfc72": {
+  "cost_usd": 0.00023945,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"camera\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\n    \"camera quality is outstanding\",\n    \"photos look professional\"\n  ],\n  \"cons\": [\n    \"battery barely lasts two hours\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\n    \"camera_quality\",\n    \"battery\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 613,
+  "tokens_out": 119
+ },
+ "da59d145333c86ac0a27fe7cfdd704bafd16e269de42589476934b70136fe01e": {
+  "cost_usd": 9.657e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "\n{\n  \"product\": \"blender\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"blends everything smoothly\",\n    \"cleans in seconds\",\n    \"powerful motor\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"performance\",\n    \"cleaning\",\n    \"motor\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}\n",
+  "status": 200,
+  "tokens_in": 667,
+  "tokens_out": 125
+ },
+ "dc23fb4fa03631375e6468f5b4ebe341096d4f2b69da6e8dc4a3b98c83982f8e": {
+  "cost_usd": 7.455e-05,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"mixer grinder\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"very good performance\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"performance\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 633,
+  "tokens_out": 83
+ },
+ "dfb98f4c4653acfafef8a174a3cb86358d9631e569c49603f666bf41a1aacef1": {
+  "cost_usd": 0.00010385,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"mixer\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"very poor quality\",\n    \"broke within two days\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"durability\",\n    \"quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 640,
+  "tokens_out": 117
+ },
+ "e0f4de12c77270fcdf556001597708f752e72ba8c127b975b27f46d673fda027": {
+  "cost_usd": 5.49e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "\n{\n  \"product\": null,\n  \"stars\": null,\n  \"stars_inferred\": 2,\n  \"pros\": [],\n  \"cons\": [\n    \"Bluetooth disconnects repeatedly\",\n    \"Irritating behavior\"\n  ],\n  \"buy_again\": null,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"bluetooth_connectivity\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"medium\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}\n",
+  "status": 200,
+  "tokens_in": 650,
+  "tokens_out": 112
+ },
+ "e254d733748b3f5a5845caf3e6c697b3789410d9baf7b09edb0c78746028db8e": {
+  "cost_usd": 7.17e-05,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"unknown product\", \"stars\": \"5 stars\", \"stars_inferred\": 5, \"pros\": [\"does the job perfectly\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"positive\", \"topics\": [\"performance\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 610,
+  "tokens_out": 84
+ },
+ "e3aec4a9a7c87a5f02a4535ab63ff3066e3d29c7ea29e1a09e52cf3e791e2f2e": {
+  "cost_usd": 0.0002606,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"space heater\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"caught fire while in use\",\n    \"burned a hole in carpet\",\n    \"extremely dangerous\",\n    \"risk of serious injury\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"safety\",\n    \"fire_hazard\",\n    \"build_quality\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"high\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 620,
+  "tokens_out": 134
+ },
+ "e3ede4e790563e43da09f89c88cc699ad2737e37cd869e8855c61a93aa1408ed": {
+  "cost_usd": 7.995e-05,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"उत्पाद\", \"stars\": null, \"stars_inferred\": 5, \"pros\": [\"बहुत बढ़िया\", \"पसंद आया\"], \"cons\": [], \"buy_again\": true, \"sentiment\": \"positive\", \"topics\": [\"overall_satisfaction\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi\"}",
+  "status": 200,
+  "tokens_in": 621,
+  "tokens_out": 95
+ },
+ "e625ed886ad6da79d962cc8a74001b3ffe3c8fe1afb6dbba31f948746e6e686a": {
+  "cost_usd": 8.126e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "{\"product\": \"bluetooth earphones\", \"stars\": null, \"stars_inferred\": 2, \"pros\": [\"great sound quality\"], \"cons\": [\"battery lasts only two hours\"], \"buy_again\": null, \"sentiment\": \"mixed\", \"topics\": [\"sound_quality\", \"battery\"], \"competitor_mentions\": [], \"urgency\": \"medium\", \"feature_requests\": [\"improve battery life\"], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 618,
+  "tokens_out": 95
+ },
+ "e6d7190e2bc40761605b48b29e3cc9d344b20ec1f4932848e88411d14773588d": {
+  "cost_usd": 9.937e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"smartphone\",\n  \"stars\": null,\n  \"stars_inferred\": 3,\n  \"pros\": [\"camera is excellent\"],\n  \"cons\": [\"battery drains very quickly\"],\n  \"buy_again\": null,\n  \"sentiment\": \"mixed\",\n  \"topics\": [\"battery\", \"camera\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 629,
+  "tokens_out": 109
+ },
+ "edebca8e7e2793ea5fa0073b2e6d74a84aab0ae7855281f72b72b483e0e16fcd": {
+  "cost_usd": 0.00023105,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"product\",\n  \"stars\": 1,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"completely unusable\",\n    \"stopped working after two days\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"reliability\",\n    \"durability\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"high\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 605,
+  "tokens_out": 115
+ },
+ "f0f9a25e242d62a3fa79be9277b19e5ec01a77f2caaaebfcc9a860e95e267e4b": {
+  "cost_usd": 9.517e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"mixer grinder\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\"works very well\"],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"performance\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 644,
+  "tokens_out": 97
+ },
+ "f541e30886e108bb6b45342db811e50aa457a167760d7dcdb91de7f4e3ada9e3": {
+  "cost_usd": 9.609e-05,
+  "model": "nvidia/nemotron-3-super-120b-a12b",
+  "provider": "DekaLLM",
+  "raw": "{\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 4,\n  \"pros\": [\"Great product overall\"],\n  \"cons\": [],\n  \"buy_again\": null,\n  \"sentiment\": \"positive\",\n  \"topics\": [\"accessories\"],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [\"carrying case for travel\"],\n  \"language\": \"en\"\n}",
+  "status": 200,
+  "tokens_in": 633,
+  "tokens_out": 101
+ },
+ "f7ff753d4f12eb439852b470451bbd2a45b242ae27244d21300a9137af8ba058": {
+  "cost_usd": 6.275e-05,
+  "model": "z-ai/glm-4.7-flash",
+  "provider": "Novita",
+  "raw": "\n{\n  \"product\": \"space heater\",\n  \"stars\": null,\n  \"stars_inferred\": 1,\n  \"pros\": [],\n  \"cons\": [\n    \"caught fire\",\n    \"burned a hole in carpet\",\n    \"extremely dangerous\"\n  ],\n  \"buy_again\": false,\n  \"sentiment\": \"negative\",\n  \"topics\": [\n    \"safety\",\n    \"fire_hazard\",\n    \"product_defect\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"high\",\n  \"feature_requests\": [],\n  \"language\": \"en\"\n}\n",
+  "status": 200,
+  "tokens_in": 665,
+  "tokens_out": 129
+ },
+ "f8274de402d62c9b222aaa70599b63dd842c56e5bb16c48970da286a90d1408e": {
+  "cost_usd": 7.35e-05,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"bluetooth device\", \"stars\": null, \"stars_inferred\": 2, \"pros\": [], \"cons\": [\"bluetooth disconnects frequently\"], \"buy_again\": null, \"sentiment\": \"negative\", \"topics\": [\"connectivity\"], \"competitor_mentions\": [], \"urgency\": \"medium\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 614,
+  "tokens_out": 86
+ },
+ "fb4a7a5a9ea019bd55a5375ad40569037b41ec24f71ca78c5f93785af944a3c1": {
+  "cost_usd": 7.344e-05,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"bag\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"zipper broke on first use\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"durability\", \"return_policy\"], \"competitor_mentions\": [], \"urgency\": \"high\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 620,
+  "tokens_out": 88
+ },
+ "fbcaa2bf213add1c76fd9aed833109671602b83e1c91e5f406059205f19ff7eb": {
+  "cost_usd": 8.4e-05,
+  "model": "mistralai/mistral-small-2603",
+  "provider": "Mistral",
+  "raw": "{\"product\": \"space heater\", \"stars\": null, \"stars_inferred\": 1, \"pros\": [], \"cons\": [\"caught fire\", \"burned a hole in carpet\", \"extremely dangerous\"], \"buy_again\": false, \"sentiment\": \"negative\", \"topics\": [\"safety\", \"fire_hazard\"], \"competitor_mentions\": [], \"urgency\": \"high\", \"feature_requests\": [], \"language\": \"en\"}",
+  "status": 200,
+  "tokens_in": 628,
+  "tokens_out": 100
+ },
+ "ff3f3ac859245d88665fa09abbe36aad26308f7f4cfc609625357f94ca89dd19": {
+  "cost_usd": 3.6936e-05,
+  "model": "deepseek/deepseek-v4-flash",
+  "provider": "DeepInfra",
+  "raw": "{\"product\": \"unknown product\", \"stars\": null, \"stars_inferred\": 3, \"pros\": [\"delivery on time\", \"good packing\"], \"cons\": [], \"buy_again\": null, \"sentiment\": \"neutral\", \"topics\": [\"delivery\", \"packaging\", \"product_quality\"], \"competitor_mentions\": [], \"urgency\": \"low\", \"feature_requests\": [], \"language\": \"hi-en\"}",
+  "status": 200,
+  "tokens_in": 626,
+  "tokens_out": 97
+ },
+ "ff5ebaa718f15d7de68fb428477fd1e1589d67a65114e1351f7aac80b46e9264": {
+  "cost_usd": 0.0002333,
+  "model": "thinkingmachines/inkling-small",
+  "provider": "DeepInfra",
+  "raw": "{\n\n\n  \"product\": \"product\",\n  \"stars\": null,\n  \"stars_inferred\": 5,\n  \"pros\": [\n    \"good quality\",\n    \"reasonable price\",\n    \"highly recommended\"\n  ],\n  \"cons\": [],\n  \"buy_again\": true,\n  \"sentiment\": \"positive\",\n  \"topics\": [\n    \"quality\",\n    \"price\"\n  ],\n  \"competitor_mentions\": [],\n  \"urgency\": \"low\",\n  \"feature_requests\": [],\n  \"language\": \"hi-en\"\n}",
+  "status": 200,
+  "tokens_in": 618,
+  "tokens_out": 112
+ }
+}

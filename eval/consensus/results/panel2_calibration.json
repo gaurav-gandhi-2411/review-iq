@@ -1,0 +1,211 @@
+{
+  "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth",
+  "prompt_hash": "b9b066d4358e",
+  "control_items": 28,
+  "total_checks_per_candidate": 69,
+  "max_allowed_misses": 2,
+  "candidates": {
+    "deepseek/deepseek-v4-flash": {
+      "vendor_family": "deepseek",
+      "owner": "DeepSeek",
+      "misses": 0,
+      "miss_details": [],
+      "n_checks": 69,
+      "passed": true,
+      "parse_failures_or_errors": 0,
+      "call_errors": [],
+      "mean_cost_per_call": 6.041e-05
+    },
+    "nvidia/nemotron-3-super-120b-a12b": {
+      "vendor_family": "nvidia",
+      "owner": "NVIDIA",
+      "misses": 2,
+      "miss_details": [
+        {
+          "item_id": "calh-004",
+          "fields": [
+            "language"
+          ]
+        },
+        {
+          "item_id": "calh-010",
+          "fields": [
+            "language"
+          ]
+        }
+      ],
+      "n_checks": 69,
+      "passed": true,
+      "parse_failures_or_errors": 0,
+      "call_errors": [],
+      "mean_cost_per_call": 0.00010081
+    },
+    "mistralai/mistral-small-2603": {
+      "vendor_family": "mistral",
+      "owner": "Mistral AI",
+      "misses": 8,
+      "miss_details": [
+        {
+          "item_id": "cal-010",
+          "fields": [
+            "stars"
+          ]
+        },
+        {
+          "item_id": "cal-011",
+          "fields": [
+            "stars"
+          ]
+        },
+        {
+          "item_id": "calh-002",
+          "fields": [
+            "language"
+          ]
+        },
+        {
+          "item_id": "calh-003",
+          "fields": [
+            "language"
+          ]
+        },
+        {
+          "item_id": "calh-007",
+          "fields": [
+            "language"
+          ]
+        },
+        {
+          "item_id": "calh-008",
+          "fields": [
+            "language"
+          ]
+        },
+        {
+          "item_id": "calh-009",
+          "fields": [
+            "language"
+          ]
+        },
+        {
+          "item_id": "calh-012",
+          "fields": [
+            "language"
+          ]
+        }
+      ],
+      "n_checks": 69,
+      "passed": false,
+      "parse_failures_or_errors": 0,
+      "call_errors": [],
+      "mean_cost_per_call": 0.0001013
+    },
+    "z-ai/glm-4.7-flash": {
+      "vendor_family": "zhipu",
+      "owner": "Zhipu AI",
+      "misses": 4,
+      "miss_details": [
+        {
+          "item_id": "cal-004",
+          "fields": [
+            "language"
+          ]
+        },
+        {
+          "item_id": "cal-010",
+          "fields": [
+            "stars"
+          ]
+        },
+        {
+          "item_id": "cal-011",
+          "fields": [
+            "stars"
+          ]
+        },
+        {
+          "item_id": "calh-010",
+          "fields": [
+            "language"
+          ]
+        }
+      ],
+      "n_checks": 69,
+      "passed": false,
+      "parse_failures_or_errors": 0,
+      "call_errors": [],
+      "mean_cost_per_call": 6.521e-05
+    },
+    "thinkingmachines/inkling-small": {
+      "vendor_family": "thinkingmachines",
+      "owner": "Thinking Machines",
+      "misses": 3,
+      "miss_details": [
+        {
+          "item_id": "cal-004",
+          "fields": [
+            "language"
+          ]
+        },
+        {
+          "item_id": "calh-004",
+          "fields": [
+            "language"
+          ]
+        },
+        {
+          "item_id": "calh-010",
+          "fields": [
+            "language"
+          ]
+        }
+      ],
+      "n_checks": 69,
+      "passed": false,
+      "parse_failures_or_errors": 0,
+      "call_errors": [],
+      "mean_cost_per_call": 0.00024493
+    }
+  },
+  "dropped_no_zdr": [],
+  "active_panel": [],
+  "gate_outcome": "FAIL: fewer than 3 passing candidates from 3 vendors",
+  "cost": {
+    "total_cost_usd": 0.016035,
+    "total_tokens_in": 88234,
+    "total_tokens_out": 15077,
+    "total_calls": 140,
+    "per_model": {
+      "deepseek/deepseek-v4-flash": {
+        "calls": 28,
+        "cost_usd": 0.001692,
+        "tokens_in": 17453,
+        "tokens_out": 2721
+      },
+      "mistralai/mistral-small-2603": {
+        "calls": 28,
+        "cost_usd": 0.002836,
+        "tokens_in": 17477,
+        "tokens_out": 2709
+      },
+      "nvidia/nemotron-3-super-120b-a12b": {
+        "calls": 28,
+        "cost_usd": 0.002823,
+        "tokens_in": 17785,
+        "tokens_out": 3221
+      },
+      "thinkingmachines/inkling-small": {
+        "calls": 28,
+        "cost_usd": 0.006858,
+        "tokens_in": 17203,
+        "tokens_out": 3296
+      },
+      "z-ai/glm-4.7-flash": {
+        "calls": 28,
+        "cost_usd": 0.001826,
+        "tokens_in": 18316,
+        "tokens_out": 3130
+      }
+    }
+  }
+}

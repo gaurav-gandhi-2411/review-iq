@@ -5,6 +5,8 @@
 **Success metric:** the share r of the 60 pairs a second, vendor-disjoint panel resolves; the resulting narrowed Manski interval; panel-2 inter-rater agreement (Krippendorff alpha, Fleiss kappa) and concordance with panel 1 on pairs panel 1 already resolved.
 **Who pays:** GG (portfolio credibility); OpenRouter spend authorised up to about 1 USD, hard cap 2.00 USD.
 
+Outcome (appended after the calibration run; the pre-registration below is unchanged): the calibration gate FAILED (2 of 5 candidates passed, deepseek 0 misses and nemotron 2; mistral 8, glm 4, inkling 3). Per decision rule 1 the target sets were not run. See ADR 0034.
+
 Status: PRE-REGISTRATION. Committed before any completion call to a panel-2 candidate. The only network calls made before this commit were free metadata GETs (`/api/v1/models`, `/api/v1/endpoints/zdr`) confirming the five candidates exist and have ZDR endpoints.
 
 ## Context

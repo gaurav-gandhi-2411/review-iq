@@ -841,7 +841,8 @@ def _write_json(path: Path, obj: Any) -> None:
 def _write_votes(votes: list[dict[str, Any]]) -> None:
     VOTES_PATH.parent.mkdir(parents=True, exist_ok=True)
     with VOTES_PATH.open("w", encoding="utf-8") as fh:
-        for v in votes:
+        # Sorted: concurrent calls complete in nondeterministic order; replay must be byte-stable.
+        for v in sorted(votes, key=lambda x: (x["phase"], x["unit_id"], x["model"], x["rep"])):
             fh.write(json.dumps(v, ensure_ascii=False, sort_keys=True) + "\n")
 
 
