@@ -433,7 +433,10 @@ async def bff_list_reviews(
     sentiment: Sentiment | None = Query(None),
     urgency: Urgency | None = Query(None),
     has_competitor_mention: bool | None = Query(None),
-    topic: str | None = Query(None),
+    topic: str | None = Query(
+        None,
+        description="Exact (case-sensitive) match against one entry of the topics list",
+    ),
     since: datetime | None = Query(None),
     until: datetime | None = Query(None),
     limit: int = Query(50, ge=1, le=200),
