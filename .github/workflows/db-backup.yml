@@ -29,7 +29,7 @@ concurrency:
 
 jobs:
   dump:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       contents: read # for the alert step's checkout (needed to load the local composite action)
       issues: write # only used by the failure-alert step at the end of this job

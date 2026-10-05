@@ -8,7 +8,7 @@ on:
 
 jobs:
   lint-and-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
 
@@ -117,7 +117,7 @@ jobs:
         run: uv run python scripts/check_grounding_check_reproducible.py
 
   pip-audit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
 
@@ -144,7 +144,7 @@ jobs:
     # committed artifact behind it can silently drift from what the portfolio
     # site shows, with nobody able to tell -- this is a build failure, not a
     # warning. See gg-portfolio's provenance.md wave 19 section.
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
 
@@ -162,7 +162,7 @@ jobs:
     # (once PR #33/#27's blocking pip-audit lands) -- unlike pip-audit, npm's own
     # `--audit-level` flag natively distinguishes severity, so no custom gate script
     # is needed here the way pip_audit_gate.py was for pip-audit's severity-blind JSON.
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -192,7 +192,7 @@ jobs:
     # has shipped before. Typecheck and vite build are separate steps (rather than one
     # `npm run build`) so the failing step names which of them broke. No `paths:` filter
     # on purpose: a lockfile-only or workflow-only change must still run this.
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     # Job-level (not workflow-level) so the existing jobs' behaviour is untouched. Cancel
     # superseded PR runs only; a push to main always runs to completion.
     concurrency:

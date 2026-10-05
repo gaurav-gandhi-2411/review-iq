@@ -60,7 +60,7 @@ permissions:
 
 jobs:
   eval:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     # Job-level so push/schedule behaviour is untouched: cancel superseded PR runs only.
     concurrency:
       group: eval-${{ github.workflow }}-${{ github.ref }}

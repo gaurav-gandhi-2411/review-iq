@@ -38,7 +38,7 @@ on:
 
 jobs:
   bypassrls-check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     environment: Production
     permissions:
       contents: read
