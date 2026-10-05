@@ -112,6 +112,25 @@ def render_extraction_table_md(data: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def _label_agreement_text(data: dict[str, Any]) -> str:
+    """The one sanctioned phrasing of the detector-vs-corpus-label figure (never "accuracy").
+
+    The corpus label is noisy (inter-rater alpha 0.380), so the agreement partly measures label
+    noise rather than detector error. Rendered from the artifact so the number, its CI and the
+    alpha cannot drift apart or be hand-typed.
+    """
+    agreement = data.get("language_label_agreement")
+    if agreement is None:
+        return "n/a"
+    ci = data["language_label_agreement_wilson_95"]
+    alpha = data["language_label_alpha"]
+    return (
+        f"agreement with the corpus label {_fmt_pct(agreement)} "
+        f"(95% CI {ci['lower'] * 100:.1f}-{ci['upper'] * 100:.1f}; label alpha {alpha:.3f}, "
+        "so this partly measures label noise, not detector error)"
+    )
+
+
 def render_held_out_table_md(data: dict[str, Any]) -> str:
     """Render the real-world, uncontaminated held-out measurement (README.md).
 
@@ -127,14 +146,20 @@ def render_held_out_table_md(data: dict[str, Any]) -> str:
     models = f"{data['groq_model_small']} / {data['groq_model_large']}"
     sha = data.get("git_sha")
     constant = data.get("constant_fields") or []
-    if constant:
+    # Session 15d (D7): the headline also excludes echo/label-noise fields (`language`).
+    echo = data.get("headline_echo_fields") or []
+    if constant or echo:
         # The headline excludes fields that carry no information (constant across the whole
         # corpus): a field that scores 100% on every review adds a free 100% to one of the
         # equal-weighted fields and flatters the overall. Indexed directly, not .get(): an
-        # artifact that names constant fields but lacks the excluded score/CI must fail loudly
+        # artifact that names excluded fields but lacks the matching score/CI must fail loudly
         # rather than silently fall back to the flattering all-fields figure.
-        excl = data["overall_score_excluding_constant_fields"]
-        excl_ci = data["overall_score_excluding_constant_fields_ci_95"]
+        if echo:
+            excl = data["overall_score_headline"]
+            excl_ci = data["overall_score_headline_ci_95"]
+        else:
+            excl = data["overall_score_excluding_constant_fields"]
+            excl_ci = data["overall_score_excluding_constant_fields_ci_95"]
         head = {
             "as_deployed": (excl["as_deployed"], excl_ci["as_deployed"]),
             "language_forced": (excl["language_forced"], excl_ci["language_forced"]),
@@ -163,7 +188,44 @@ def render_held_out_table_md(data: dict[str, Any]) -> str:
         f"| {forced['n']} |",
     ]
     n_total = data["n_fixtures"]
-    if constant:
+    agreement_text = _label_agreement_text(data)
+    if echo:
+        # Session 15d (D7). Disclosed directly beside the headline, like the stars-only case
+        # below: both higher figures are shown with the reason each field is excluded.
+        stars_only = data["overall_score_excluding_constant_fields"]
+        stars_only_ci = data["overall_score_excluding_constant_fields_ci_95"]
+        names = " and ".join(f"`{f}`" for f in [*constant, *echo])
+        lines += [
+            "",
+            f"**Why the headline excludes {names}.** Counting all fields, the same recorded "
+            f"outputs score {_fmt_pct(as_dep['overall_score'])} as deployed "
+            f"[{_fmt_pct(as_dep['ci_95']['lower'])}, {_fmt_pct(as_dep['ci_95']['upper'])}] and "
+            f"{_fmt_pct(forced['overall_score'])} with language routing forced correct "
+            f"[{_fmt_pct(forced['ci_95']['lower'])}, {_fmt_pct(forced['ci_95']['upper'])}]; "
+            f"excluding only `stars` they score {_fmt_pct(stars_only['as_deployed'])} "
+            f"[{_fmt_pct(stars_only_ci['as_deployed']['lower'])}, "
+            f"{_fmt_pct(stars_only_ci['as_deployed']['upper'])}] and "
+            f"{_fmt_pct(stars_only['language_forced'])} "
+            f"[{_fmt_pct(stars_only_ci['language_forced']['lower'])}, "
+            f"{_fmt_pct(stars_only_ci['language_forced']['upper'])}]. "
+            f"`stars` is null in both gold and prediction on all {n_total} reviews, so it "
+            f"scores {n_total}/{n_total} trivially and carries no information. `language` does "
+            "not measure extraction: with routing forced the prompt itself states the language, "
+            "so the field is 100% by echo (which is why the forced row is higher in the "
+            "all-fields figures), and as deployed it just re-measures the language detector "
+            f"against the corpus's language label: {agreement_text}. The headline therefore averages only "
+            f"the {len(data['headline_fields'])} remaining informative fields.",
+            "",
+            # Rule 65c: this definition change RAISES the as-deployed headline, so say so, by
+            # how much, and that no model output moved -- generated from the same artifact.
+            "**Headline definition change (Session 15d).** Until Session 15d the headline "
+            "averaged every field except `stars`; dropping `language` moves the as-deployed "
+            f"headline from {_fmt_pct(stars_only['as_deployed'])} to {_fmt_pct(dep_score)} and "
+            f"the forced row from {_fmt_pct(stars_only['language_forced'])} to "
+            f"{_fmt_pct(frc_score)}. The recorded model outputs are byte-identical; only which "
+            "fields are averaged changed.",
+        ]
+    elif constant:
         # Disclosed directly beside the headline (not in a trailing note): the all-fields
         # figure is the larger one, and the reader must see both and why it is not the headline.
         names = ", ".join(f"`{f}`" for f in constant)
@@ -189,16 +251,15 @@ def render_held_out_table_md(data: dict[str, Any]) -> str:
             f"{inflation_pts} points. The headline therefore averages only the informative "
             "fields.",
         ]
-    lang_acc = data.get("language_detection_accuracy")
-    lang_acc_str = _fmt_pct(lang_acc) if lang_acc is not None else "n/a"
     lines += [
         "",
         f"n={n_total} real Hinglish reviews the prompt has never seen (never used for "
         f"prompt development), 0 hi (see [ADR 0016](docs/architecture/adr/0016-third-judge-corpus-batch-1-and-sentiment-recheck.md)). "
-        f"Production's own language detector agreed with this corpus's language label on "
-        f"{lang_acc_str} of fixtures. This is the number to trust for real-world accuracy; "
+        f"Production's own language detector, measured against this corpus's language label: "
+        f"{agreement_text}. This is the number to trust for real-world extraction accuracy; "
         f"the CI-gate table above is a regression detector, not a real-world accuracy claim "
-        f"-- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md).",
+        f"-- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) "
+        f"(its misrouting-cost finding was corrected in Session 15d).",
     ]
     strict = as_dep.get("overall_score_strict_exact_match")
     if strict is not None and data.get("scorer_version"):
@@ -682,6 +743,54 @@ TARGET_FILES: tuple[Path, ...] = (
 )
 
 
+# (repo-relative file, block name) -> why a marker block exists WITHOUT a renderer. Such a block
+# is exempt from check_no_hardcoded_metrics.py (which blanks every METRICS:START..END span) yet
+# is never regenerated or drift-checked here, so it is a hand-typed number zone. Only add an
+# entry with a reason a reviewer can check; the right fix is a renderer, not an entry.
+UNRENDERED_BLOCK_ALLOWLIST: dict[tuple[str, str], str] = {
+    ("README.md", "consensus_labeling"): (
+        "Added by 1599de2 with no renderer; ADR 0002 says a `consensus_labeling` renderer "
+        "exists in this file, but none was ever committed. eval/consensus/run_consensus.py "
+        "writes the source data (eval/consensus/results/consensus_summary.json, 'for the "
+        "README render block') and the hand-typed block currently matches it. REMAINS "
+        "UNVERIFIED against future re-runs -- see docs/decorative-control-sweep.md."
+    ),
+}
+
+_START_TOKEN_RE = re.compile(r"<!--\s*METRICS:START")
+
+
+def marker_problems(rel_path: str, text: str) -> list[str]:
+    """Return problems that make a file's METRICS markers silently unchecked.
+
+    render_file() deliberately leaves an unknown block name alone, so on its own `--check`
+    reports OK for a typo'd name, an unnamed `<!-- METRICS:START -->`, or a START with no END
+    -- while check_no_hardcoded_metrics.py still exempts the span from its hand-typed-number
+    scan. Each such span is a number nobody verifies. A block name with no renderer must be
+    listed in UNRENDERED_BLOCK_ALLOWLIST with a reason; a stale allowlist entry is a problem too.
+    """
+    problems: list[str] = []
+    matches = list(BLOCK_RE.finditer(text))
+    n_starts = len(_START_TOKEN_RE.findall(text))
+    if n_starts != len(matches):
+        problems.append(
+            f"{rel_path}: {n_starts} METRICS:START marker(s) but only {len(matches)} complete "
+            "`START:<name> ... END` block(s) -- an unnamed, unterminated or nested marker is "
+            "exempt from the hand-typed-number scan but never rendered or drift-checked"
+        )
+    seen = {m.group("name") for m in matches}
+    for name in sorted(seen):
+        if name not in BLOCK_RENDERERS and (rel_path, name) not in UNRENDERED_BLOCK_ALLOWLIST:
+            problems.append(
+                f"{rel_path}: block {name!r} has no renderer in BLOCK_RENDERERS and is not in "
+                "UNRENDERED_BLOCK_ALLOWLIST -- a typo'd name is silently never checked"
+            )
+    for file_, name in UNRENDERED_BLOCK_ALLOWLIST:
+        if file_ == rel_path and name not in seen:
+            problems.append(f"{rel_path}: stale UNRENDERED_BLOCK_ALLOWLIST entry {name!r}")
+    return problems
+
+
 def render_file(path: Path) -> tuple[str, bool]:
     """Return (new_content, changed) for `path` with every recognised block regenerated."""
     original = path.read_text(encoding="utf-8")
@@ -702,10 +811,19 @@ def render_file(path: Path) -> tuple[str, bool]:
 def main() -> int:
     check_only = "--check" in sys.argv[1:]
     any_changed = False
+    any_problem = False
 
     for path in TARGET_FILES:
+        rel_path = path.relative_to(REPO_ROOT).as_posix()
         if not path.exists():
+            # A renamed/deleted target used to be skipped silently, so --check stayed green
+            # while the numbers it protected were no longer verified anywhere.
+            print(f"PROBLEM: target file {rel_path} does not exist -- nothing verifies it")
+            any_problem = True
             continue
+        for problem in marker_problems(rel_path, path.read_text(encoding="utf-8")):
+            print(f"PROBLEM: {problem}")
+            any_problem = True
         new_content, changed = render_file(path)
         if changed:
             any_changed = True
@@ -730,10 +848,16 @@ def main() -> int:
                 PORTFOLIO_METRICS_PATH.write_text(new_portfolio, encoding="utf-8")
                 print(f"Regenerated: {rel}")
 
+    for (file_, name), reason in UNRENDERED_BLOCK_ALLOWLIST.items():
+        print(
+            f"WARN: {file_} block {name!r} is hand-typed, not rendered or drift-checked: {reason}"
+        )
+
     if check_only:
-        if any_changed:
+        if any_changed or any_problem:
             print(
-                "\nFAIL: one or more files are stale relative to the eval JSON.\n"
+                "\nFAIL: one or more files are stale relative to the eval JSON, or carry "
+                "METRICS markers this script cannot verify (see PROBLEM lines above).\n"
                 "Run `uv run python scripts/render_metrics.py` and commit the result."
             )
             return 1

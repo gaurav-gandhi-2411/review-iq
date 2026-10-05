@@ -163,20 +163,22 @@ accurate is this in the real world." The table below is the honest answer to the
 question — scored against 106 real Indian marketplace reviews mined independently of prompt
 development, never seen by anyone iterating on the prompt.
 
-<!-- METRICS:START:held_out_table -->Measured 2026-09-20T07:03:35Z &middot; `0ba938d` &middot; models: openai/gpt-oss-20b / openai/gpt-oss-120b
+<!-- METRICS:START:held_out_table -->Measured 2026-09-20T08:57:26Z &middot; `c4dcfcd` &middot; models: openai/gpt-oss-20b / openai/gpt-oss-120b
 
 | Condition | Score (informative fields only) | 95% CI | n |
 |---|---|---|---|
-| **As actually deployed** (real language routing) | **69.7%** | [67.3%, 72.1%] | 106 |
-| Language routing forced correct | 74.9% | [72.7%, 77.0%] | 106 |
+| **As actually deployed** (real language routing) | **72.4%** | [69.8%, 75.0%] | 106 |
+| Language routing forced correct | 71.8% | [69.3%, 74.2%] | 106 |
 
-**Why the headline excludes `stars`.** Counting all fields, the same recorded outputs score 72.7% as deployed [70.5%, 74.9%] and 77.4% with language routing forced correct [75.4%, 79.3%]. `stars` is null in both gold and prediction on all 106 reviews, so it scores 106/106 trivially and carries no information, and it inflates the overall by about 3 points. The headline therefore averages only the informative fields.
+**Why the headline excludes `stars` and `language`.** Counting all fields, the same recorded outputs score 72.7% as deployed [70.5%, 74.9%] and 77.4% with language routing forced correct [75.4%, 79.3%]; excluding only `stars` they score 69.7% [67.3%, 72.1%] and 74.9% [72.7%, 77.0%]. `stars` is null in both gold and prediction on all 106 reviews, so it scores 106/106 trivially and carries no information. `language` does not measure extraction: with routing forced the prompt itself states the language, so the field is 100% by echo (which is why the forced row is higher in the all-fields figures), and as deployed it just re-measures the language detector against the corpus's language label: agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error). The headline therefore averages only the 8 remaining informative fields.
 
-n=106 real Hinglish reviews the prompt has never seen (never used for prompt development), 0 hi (see [ADR 0016](docs/architecture/adr/0016-third-judge-corpus-batch-1-and-sentiment-recheck.md)). Production's own language detector agreed with this corpus's language label on 48.1% of fixtures. This is the number to trust for real-world accuracy; the CI-gate table above is a regression detector, not a real-world accuracy claim -- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md).
+**Headline definition change (Session 15d).** Until Session 15d the headline averaged every field except `stars`; dropping `language` moves the as-deployed headline from 69.7% to 72.4% and the forced row from 74.9% to 71.8%. The recorded model outputs are byte-identical; only which fields are averaged changed.
+
+n=106 real Hinglish reviews the prompt has never seen (never used for prompt development), 0 hi (see [ADR 0016](docs/architecture/adr/0016-third-judge-corpus-batch-1-and-sentiment-recheck.md)). Production's own language detector, measured against this corpus's language label: agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error). This is the number to trust for real-world extraction accuracy; the CI-gate table above is a regression detector, not a real-world accuracy claim -- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) (its misrouting-cost finding was corrected in Session 15d).
 
 **Scoring note (scorer `2026-09-20.free-text-v1`).** Free-text fields (`product`, `topics`, `competitor_mentions`) are compared after normalization, so different correct spellings of "no product named" (`unknown` vs `unknown product`) and near-identical topic labels (`battery` vs `battery_life`) are no longer scored wrong. Earlier published figures used exact-string matching on the same recorded model outputs and counted all fields (the same basis as the all-fields figures above): as deployed, 68.3% then vs 72.7% now. The model's outputs did not change, only the comparator ([ADR 0030](docs/architecture/adr/0030-free-text-scorers.md)).<!-- METRICS:END -->
 
-Reproducible from committed cassettes: `EVAL_CASSETTE_MODE=replay uv run python eval/score_held_out_corpus_v2.py --mode replay` — $0, zero live calls, byte-identical output. See [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) for the full methodology, including the misrouting-vs-contamination decomposition of the gap between this table and the one above.
+Reproducible from committed cassettes: `EVAL_CASSETTE_MODE=replay uv run python eval/score_held_out_corpus_v2.py --mode replay` — $0, zero live calls, byte-identical output. See [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) for the full methodology. Its original "misrouting cost" decomposition was corrected in Session 15d (over all fields, the difference between the two routing conditions was the `language` field echoing the forced label, not an extraction cost).
 
 **Flat accuracy alone is the weakest possible framing of an extractor that's allowed to hedge.**
 Two fields in this schema may legitimately abstain (`sentiment` → `"mixed"`, `buy_again` →

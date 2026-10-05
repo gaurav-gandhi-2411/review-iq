@@ -224,6 +224,29 @@ def compare(prod: dict[str, Any], eph: dict[str, Any]) -> list[str]:
     return diffs
 
 
+# Sections a real application database can never have empty. compare() is a diff, so two
+# snapshots that are BOTH empty (extraction pointed at the wrong/empty database, or a role
+# that sees no catalog rows) compare as identical and would print the "matches exactly" OK.
+_MUST_BE_NON_EMPTY = (
+    "columns",
+    "constraints",
+    "indexes",
+    "rls_enabled",
+    "policies",
+    "functions",
+    "roles",
+)
+
+
+def snapshot_problems(label: str, snapshot: dict[str, Any]) -> list[str]:
+    """Return one message per core section that is missing or empty in `snapshot`."""
+    return [
+        f"{label} snapshot has no `{section}` rows -- it was not taken from a real schema"
+        for section in _MUST_BE_NON_EMPTY
+        if not snapshot.get(section)
+    ]
+
+
 def main() -> int:
     if len(sys.argv) != 3:
         print(
@@ -234,6 +257,12 @@ def main() -> int:
 
     prod = _load(sys.argv[1])
     eph = _load(sys.argv[2])
+    problems = snapshot_problems("production", prod) + snapshot_problems("ephemeral", eph)
+    if problems:
+        print("FAIL: refusing to compare -- an empty snapshot proves nothing:\n", file=sys.stderr)
+        for p in problems:
+            print(f"  {p}", file=sys.stderr)
+        return 1
     diffs = compare(prod, eph)
 
     if diffs:

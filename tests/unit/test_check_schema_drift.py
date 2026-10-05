@@ -145,3 +145,48 @@ class TestObjectOwners:
         del prod["function_owners"]
         with pytest.raises(ValueError, match="function_owners"):
             compare(prod, _empty_snapshot())
+
+
+class TestEmptySnapshotsAreRefused:
+    """Two empty snapshots diff as identical; the gate must not report that as a match."""
+
+    def _write(self, tmp_path, name, snapshot):
+        import json
+
+        path = tmp_path / name
+        path.write_text(json.dumps(snapshot), encoding="utf-8")
+        return str(path)
+
+    def test_compare_alone_cannot_tell_empty_from_matching(self):
+        # Pins the hole: this is why main() needs snapshot_problems().
+        assert compare(_empty_snapshot(), _empty_snapshot()) == []
+
+    def test_snapshot_problems_flags_every_core_section_when_empty(self):
+        from scripts.check_schema_drift import _MUST_BE_NON_EMPTY, snapshot_problems
+
+        assert len(snapshot_problems("x", _empty_snapshot())) == len(_MUST_BE_NON_EMPTY)
+
+    def test_main_returns_1_for_two_empty_snapshots(self, tmp_path, monkeypatch, capsys):
+        import scripts.check_schema_drift as mod
+
+        a = self._write(tmp_path, "prod.json", _empty_snapshot())
+        b = self._write(tmp_path, "eph.json", _empty_snapshot())
+        monkeypatch.setattr("sys.argv", ["check_schema_drift.py", a, b])
+        assert mod.main() == 1
+        assert "empty snapshot proves nothing" in capsys.readouterr().err
+
+    def test_main_returns_0_for_two_identical_populated_snapshots(self, tmp_path, monkeypatch):
+        import scripts.check_schema_drift as mod
+
+        snap = _empty_snapshot()
+        snap["columns"] = [{"table_name": "t", "column_name": "id"}]
+        snap["constraints"] = [{"table_name": "t", "conname": "t_pkey"}]
+        snap["indexes"] = [{"table_name": "t", "indexname": "t_pkey"}]
+        snap["rls_enabled"] = [{"table_name": "t", "rls_enabled": True}]
+        snap["policies"] = [{"table_name": "t", "policyname": "p"}]
+        snap["functions"] = [{"function_name": "f", "arguments": ""}]
+        snap["roles"] = [{"rolname": "review_iq_app"}]
+        a = self._write(tmp_path, "prod.json", snap)
+        b = self._write(tmp_path, "eph.json", snap)
+        monkeypatch.setattr("sys.argv", ["check_schema_drift.py", a, b])
+        assert mod.main() == 0

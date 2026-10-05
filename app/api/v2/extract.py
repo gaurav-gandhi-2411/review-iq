@@ -18,7 +18,7 @@ from app.core.injection_controls import (
     controlled_input,
 )
 from app.core.injection_guard import classify_injection_risk
-from app.core.language import detect_language
+from app.core.language import detect_language, language_signal
 from app.core.llm import extract_with_llm
 from app.core.metrics import EXTRACTION_LATENCY, EXTRACTIONS_TOTAL
 from app.core.pricing import UnknownModelError, price_extraction
@@ -80,7 +80,12 @@ async def _run_extraction_v2(
         # this alert wiring existed, so it may never have been checked for alert-worthiness.
         # Cheap to re-check — alert_log dedupe short-circuits if it really was already alerted.
         await alert_on_review_event(org_id=ctx.org_id, review_id=input_hash, extraction=cached)
-        return cached
+        # The signal is a pure function of the text, so a cache hit is enriched to match a
+        # fresh response rather than returning nulls for the same review (not persisted).
+        signal = language_signal(request.text)
+        return cached.model_copy(
+            update={"code_mixed": signal.code_mixed, "language_signal_strength": signal.strength}
+        )
 
     # S15d input control (flag off => ctl.text is request.text, byte-identical). Runs on the RAW
     # text before sanitize(): the rules were measured on raw text. Language detection, the
@@ -88,6 +93,7 @@ async def _run_extraction_v2(
     # own payload is neither routed on nor accepted as "grounding".
     ctl = controlled_input(request.text, log_context={"input_hash": input_hash})
     detected_lang = detect_language(ctl.text)
+    signal = language_signal(ctl.text)
     clean_text, regex_suspicious = sanitize(ctl.text)
     # Session 13 P4a: a real, model-based pre-filter alongside the regex layer -- see
     # app/core/injection_guard.py's module docstring for what it catches that the regex
@@ -154,6 +160,8 @@ async def _run_extraction_v2(
     )
     extraction = ReviewExtractionV2(
         **llm_output.model_dump(),
+        code_mixed=signal.code_mixed,
+        language_signal_strength=signal.strength,
         review_length_chars=len(request.text),
         review_date=request.review_date,
         extraction_meta=meta,
@@ -267,6 +275,8 @@ _EXAMPLE_EXTRACTION_RESPONSE = {
     "urgency": "low",
     "feature_requests": [],
     "language": "en",
+    "code_mixed": False,
+    "language_signal_strength": "none",
     "review_length_chars": 96,
     "confidence": 0.91,
     "extraction_meta": {
@@ -307,6 +317,12 @@ async def extract_single(
 
     Identical review text (same org) is served from cache — no LLM call, no
     quota spent, but still re-checked for alert-worthiness.
+
+    `language` is the language detector's label (it overrides the model's own report), not a
+    scored model output. Read it together with `code_mixed` and `language_signal_strength`: the
+    detector agrees with a human-labelled corpus only 48.1% of the time (95% CI 38.8-57.5; the
+    corpus label itself is noisy, alpha 0.380), mostly on English-looking reviews containing a
+    single Hindi word. `language_signal_strength` is a documented heuristic, not a probability.
     """
     try:
         return await _run_extraction_v2(body, ctx)
@@ -367,7 +383,10 @@ async def extract_batch(
     rows persist in batch_job_rows before processing starts, so a Cloud Run
     restart mid-batch is resumed by POST /internal/ingest/tick rather than
     silently dropping the remainder. Poll GET /v2/ingest/{job_id} for status,
-    or query GET /v2/reviews once processing completes.
+    or query GET /v2/reviews once processing completes. Each processed review carries the same
+    `language` / `code_mixed` / `language_signal_strength` triple as POST /v2/extract (see that
+    endpoint's description for what they do and do not mean); this 202 response has no
+    per-review fields itself.
     """
     import asyncio
     import uuid
