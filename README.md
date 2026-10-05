@@ -260,8 +260,6 @@ full history instead of comparing these rows to the current table directly.
 
 Interactive docs at `/docs` (Swagger) and `/redoc`.
 
-> `POST /v2/ingest/csv` accepts an optional `include_authenticity=true` form field — adds `authenticity_score`, `authenticity_label`, and `authenticity_flags` columns to the ingest result.
-
 ---
 
 ## Tech stack
@@ -374,9 +372,9 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 **Phase 2.2** ✓ (shipped June 2026 — v0.6.0):
 - Review authenticity scoring — heuristic signals (incentivized phrases, brevity, repetition, rating-text mismatch) + LLM signal (Groq, language-aware)
 - Batch-level signals — near-duplicate detection (word k-shingles + Jaccard), review burst detection
-- `POST /v2/authenticity` (single + batch), `include_authenticity` option on CSV ingest — **Superseded (Session 15d, D5):** the `/v2/authenticity*` and `GET /v2/insights/authenticity` public API routes were removed because the flag is unmeasurable; `include_authenticity` on CSV ingest and the dashboard's own authenticity views are unchanged
-- `authenticity_audits` table — org-scoped compliance audit trail with RLS
-- IS 19000:2022 support posture — flags incentivized/fake reviews for human-administrator decision; see `docs/compliance.md`
+- `POST /v2/authenticity` (single + batch), `include_authenticity` option on CSV ingest — **Removed:** the `/v2/authenticity*` and `GET /v2/insights/authenticity` routes (Session 15d, D5) and the dashboard's `/bff/authenticity*` routes, Authenticity/Flagged pages, `include_authenticity` ingest option and the 0.30 health-score term (Session 17, W6) were all removed because the flag is unmeasurable. The health score is now sentiment + urgency only (`formula_version` 2.0)
+- `authenticity_audits` table — org-scoped audit trail with RLS; no longer written or read by any API route (table kept, historical rows only)
+- IS 19000:2022 support posture (historical) — see `docs/compliance.md`
 - Not measured: no authenticity labels exist for the held-out set, so the authenticity scoring above has no published accuracy figure
 
 **Phase 2.x** (planned):
