@@ -14,6 +14,12 @@ from app.core.dataset.builder import get_dataset_page, iter_dataset_jsonl
 router = APIRouter(prefix="/v2", tags=["v2"])
 log = structlog.get_logger(__name__)
 
+_AUTHENTICITY_DEPRECATION = (
+    "DEPRECATED. Authenticity scoring was removed; this key is always null. It is kept only "
+    "so existing clients keep parsing the response. It will be removed in a future versioned "
+    "change; not before 2027-01-01."
+)
+
 
 _EXAMPLE_DATASET_RECORD = {
     "review_id": "9f2c1a...",
@@ -39,19 +45,42 @@ _EXAMPLE_DATASET_RECORD = {
         "prompt_version": "2.3",
         "is_suspicious": False,
     },
-    "authenticity": {"score": 0.88, "label": "genuine", "flags": []},
+    "authenticity": None,  # DEPRECATED: always null (see field description)
     "corrections": [],
 }
 
 
 @router.get(
     "/dataset",
-    summary="Structured review dataset, paginated (extraction + authenticity + corrections)",
+    summary="Structured review dataset, paginated (extraction + corrections)",
+    description=(
+        "Paginated structured review dataset: one record per review with its extraction and "
+        "any human corrections. The per-record `authenticity` key is deprecated and always "
+        "null. " + _AUTHENTICITY_DEPRECATION
+    ),
     openapi_extra={
         "responses": {
             "200": {
                 "content": {
                     "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "records": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "authenticity": {
+                                                "deprecated": True,
+                                                "nullable": True,
+                                                "description": _AUTHENTICITY_DEPRECATION,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
                         "example": {
                             "org_id": "5b6c1e2a-....",
                             "count": 1,
