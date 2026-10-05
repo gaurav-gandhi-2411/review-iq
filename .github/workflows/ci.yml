@@ -231,9 +231,24 @@ jobs:
         working-directory: web
         run: npx tsc -b
 
+      # S17 G3f: web/ had no test runner. Vitest covers the dashboard logic (range scoping,
+      # trend and concern classification, last-visit persistence) and component states, and
+      # tokens.test.ts fails if tailwind.config.js drifts from design/tokens.json.
+      - name: Unit tests (vitest)
+        working-directory: web
+        run: npm test
+
       - name: Build (vite build)
         working-directory: web
         run: npx vite build
+
+      # The dashboard dev preview (src/dev, fixture reviews) is guarded by import.meta.env.DEV.
+      # If that guard ever stops working, fixture text would ship to customers; fail loudly.
+      - name: Dev preview must not be in the production bundle
+        run: |
+          if grep -rqE "Ordered this as a gift three weeks ago|__preview/dashboard" web/dist; then
+            echo "dev preview fixtures leaked into web/dist"; exit 1
+          fi
 
       # An empty or partial build must not pass: index.html has to exist and reference at
       # least one hashed JS asset that is actually on disk.
