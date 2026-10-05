@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,10 +7,24 @@
 * { box-sizing: border-box; }
 
 body {
-  font-family: "DM Sans", system-ui, sans-serif;
-  background-color: #F7F6F2;
-  color: #18181B;
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  background-color: theme('colors.cream.DEFAULT');
+  color: theme('colors.ink.DEFAULT');
   -webkit-font-smoothing: antialiased;
 }
 
-.font-display { font-family: "DM Serif Display", Georgia, serif; }
+.font-display { font-family: Fraunces, Georgia, serif; }
+
+/* Brand focus ring: the browser default is a blue/white ring, and the brand has no blue.
+   Ink on light surfaces, saffron on the ink (dark) surfaces. */
+:focus-visible {
+  outline: 2px solid theme('colors.ink.DEFAULT');
+  outline-offset: 2px;
+}
+.on-ink :focus-visible {
+  outline-color: theme('colors.saffron.DEFAULT');
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
