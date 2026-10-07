@@ -1,10 +1,16 @@
+import { describeWait, parseRetryAfter } from './retryAfter'
 import { supabase } from './supabase'
 
 const API_URL = import.meta.env.VITE_API_URL as string
 
 // ---- Error types ----
 export class ServiceWarmingError extends Error {
-  constructor() { super('Service is warming up. Please try again in 30 seconds.') }
+  // Seconds from the server's Retry-After header (null when absent/unreadable).
+  retryAfterSeconds: number | null
+  constructor(retryAfterSeconds: number | null = null) {
+    super(`Service is busy -- ${describeWait(retryAfterSeconds ?? 30)}.`)
+    this.retryAfterSeconds = retryAfterSeconds
+  }
 }
 export class QuotaError extends Error {
   constructor() { super('Monthly review limit reached.') }
@@ -38,7 +44,11 @@ async function bff<T>(path: string, init: RequestInit = {}): Promise<T> {
       ...init.headers,
     },
   })
-  if (res.status === 503 || res.status === 502) throw new ServiceWarmingError()
+  // Retry-After is readable cross-origin only because the API lists it in
+  // Access-Control-Expose-Headers (app/main.py); null when absent.
+  if (res.status === 503 || res.status === 502) {
+    throw new ServiceWarmingError(parseRetryAfter(res.headers.get('Retry-After')))
+  }
   if (res.status === 429) throw new QuotaError()
   if (!res.ok) {
     const detail = await res.json().catch(() => ({ detail: 'Unknown error' }))
@@ -83,7 +93,11 @@ export async function demoExtract(text: string): Promise<DemoExtraction> {
     body: JSON.stringify({ text }),
   })
   if (res.status === 429) throw new DemoRateLimitError()
-  if (res.status === 503 || res.status === 502) throw new ServiceWarmingError()
+  // Retry-After is readable cross-origin only because the API lists it in
+  // Access-Control-Expose-Headers (app/main.py); null when absent.
+  if (res.status === 503 || res.status === 502) {
+    throw new ServiceWarmingError(parseRetryAfter(res.headers.get('Retry-After')))
+  }
   if (!res.ok) {
     const detail = await res.json().catch(() => ({ detail: 'Unknown error' }))
     throw new BffError(res.status, detail?.detail ?? `Error ${res.status}`)

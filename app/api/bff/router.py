@@ -34,6 +34,7 @@ from fastapi import (
     UploadFile,
     status,
 )
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 # _drain_until_job_complete is defined in app.api.v2.ingest alongside the
@@ -69,6 +70,7 @@ from app.core.detectors.batch_defect import WINDOW_DAYS as BATCH_DEFECT_WINDOW_D
 from app.core.detectors.batch_defect import annotated_reviews_from_rows, scan_batch_defects
 from app.core.metrics import CORRECTIONS_SUBMITTED, REPLY_CACHE_HIT_TOTAL
 from app.core.reply.engine import VernacularModelUnavailableError, draft_reply
+from app.core.reply.errors import error_response, unexpected_error_response
 from app.core.reply.schema import ReplyDraft, ReplyRequest
 from app.core.schemas import Sentiment, Urgency
 from app.core.storage_pg import (
@@ -505,12 +507,18 @@ async def bff_export_reviews(
     )
 
 
+_REPLY_BUSY_MESSAGE = "Reply service temporarily unavailable. Please try again shortly."
+
+
 @router.post("/reply", response_model=ReplyDraft)
 async def bff_draft_reply(
     body: ReplyRequest,
     ctx: Annotated[ApiKeyContext, Depends(require_session)],
-) -> ReplyDraft:
-    """Draft a vernacular-native reply for a single review (BFF path)."""
+) -> ReplyDraft | JSONResponse:
+    """Draft a vernacular-native reply for a single review (BFF path).
+
+    Failures use the typed contract in app/core/reply/errors.py (detail + code + correlation_id).
+    """
     cache_key = f"{ctx.org_id}:{body.cache_key()}"
     cached = _DRAFT_CACHE.get(cache_key)
     if cached is not None:
@@ -521,17 +529,18 @@ async def bff_draft_reply(
     try:
         draft, tokens_in, tokens_out = await draft_reply(body)
     except VernacularModelUnavailableError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Reply service temporarily unavailable. Please try again shortly.",
-            headers={"Retry-After": str(exc.retry_after)},
-        ) from exc
+        return error_response(
+            503, "reply_quota_capped", _REPLY_BUSY_MESSAGE, retry_after=exc.retry_after
+        )
     except RuntimeError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Reply service temporarily unavailable. Please try again shortly.",
-            headers={"Retry-After": str(getattr(exc, "retry_after", 30))},
-        ) from exc
+        return error_response(
+            503,
+            "reply_upstream_unavailable",
+            _REPLY_BUSY_MESSAGE,
+            retry_after=getattr(exc, "retry_after", 30),
+        )
+    except Exception as exc:  # noqa: BLE001 -- boundary: typed 5xx instead of a bare 500
+        return unexpected_error_response(exc, org_id=ctx.org_id)
 
     await asyncio.to_thread(
         update_usage_tokens, ctx.org_id, ctx.usage_record_id, tokens_in, tokens_out
