@@ -360,3 +360,34 @@ class TestWindowParams:
 
         resp = await client.get("/v2/insights/health-score?days=366")
         assert resp.status_code == 422
+
+
+# ---------------------------------------------------------------------------
+# Band must be assigned from the UNROUNDED score (S17 X5b). 466 positive of 717, zero high
+# urgency -> exact score 0.749950 (< 0.75, needs_attention); round(..., 4) gives 0.7500 and the
+# band used to flip to healthy while the exact score said otherwise.
+# ---------------------------------------------------------------------------
+
+_RAW_JUST_BELOW_HEALTHY: dict[str, Any] = {
+    "total_extractions": 717,
+    "positive_count": 466,
+    "high_urgency_count": 0,
+}
+
+
+class TestBandUsesUnroundedScore:
+    async def test_v2_band_not_flipped_by_display_rounding(self, client: httpx.AsyncClient) -> None:
+        with patch("app.api.v2.insights.health_score_pg", return_value=_RAW_JUST_BELOW_HEALTHY):
+            data = (await client.get("/v2/insights/health-score")).json()
+        assert data["score"] == 0.75  # display value is rounded...
+        assert data["band"] == "needs_attention"  # ...the band is not derived from it
+
+    def test_health_band_exact_at_extremes_and_near_miss(self) -> None:
+        from app.api.v2.insights import health_band
+
+        assert health_band(_RAW_JUST_BELOW_HEALTHY) == "needs_attention"
+        assert health_band({"total_extractions": 0}) == "needs_attention"
+        at_top = {"total_extractions": 10, "positive_count": 10, "high_urgency_count": 0}
+        assert health_band(at_top) == "healthy"
+        at_bottom = {"total_extractions": 10, "positive_count": 0, "high_urgency_count": 10}
+        assert health_band(at_bottom) == "at_risk"
