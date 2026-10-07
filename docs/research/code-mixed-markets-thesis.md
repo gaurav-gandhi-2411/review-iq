@@ -1,6 +1,6 @@
 # Thesis: code-mixed markets the incumbents can't read
 
-Date: 2026-10-07. Method: public web only (WebSearch/WebFetch, unauthenticated Apple iTunes RSS), no outreach.
+Date: 2026-10-07; ICP section, N3b and N3c added 2026-10-08. Method: public web only (WebSearch/WebFetch, unauthenticated Apple iTunes RSS), no outreach.
 Labels: **VERIFIED** = I fetched/ran it and saw it; **SNIPPET** = seen only in a search summary; **BELIEVED** = my inference.
 Sources are in the table at the end (S-numbers). R-numbers are in-repo docs that live on unmerged branches (PRs #283, #284).
 
@@ -10,6 +10,79 @@ The headline "code-mixed markets the incumbents cannot read" is **not yet suppor
 evidence supports is narrower: code-mixing is real and measurable in the Philippines, probably Malaysia and Indonesia, and
 barely visible in the Gulf and East Africa; and "nobody handles it" is false for India. No market has a measured
 incumbent failure, because **no vendor product was tested** (BELIEVED gap, not a finding).
+
+## ICP update (2026-10-08): Shopify D2C brands in India first, agencies second
+
+This supersedes the agency-first framing in the earlier drafts of this doc. Labels as above. ICP evidence comes from
+`docs/research/shopify-icp-evidence.md` (PR #299, unmerged when written, R6), `docs/research/n5-research-gaps.md` (R7),
+`docs/research/m3-feature-scoping.md` (R8) and `docs/runbooks/shopify-first-install.md` (R9).
+
+### Why Shopify first: ingestion legality, not market size
+
+| Channel | What a SaaS can legally pull | Label |
+|---|---|---|
+| Amazon | SP-API Customer Feedback returns aggregated topics and trends, not review text; India is not among the listed marketplaces (US, UK, FR, IT, DE, ES, JP) (R8) | VERIFIED (Amazon doc, fetched in R8) |
+| Flipkart | Seller API documents Listing, Order, Report, Notification sections and no ratings/reviews endpoint (R8) | VERIFIED (fetched in R8) |
+| Scraping either site | Believed prohibited by both sites' terms. The ToS wording was not read: Amazon's page returned HTTP 403 and Flipkart's URL returned a search shell (R7) | BELIEVED |
+| Shopify | Merchant installs our app (OAuth) or issues a token; reviews sit in their review app. The only self-serve, sanctioned path found | BELIEVED, from the rows above plus R6/R9 |
+
+Absence caveat (rule 101a): "no endpoint found" is bounded by the docs read. A partner programme or a seller CSV export
+could still exist; CSV upload stays in the product as the fallback.
+
+### What it changes
+
+- Self-serve onboarding (install, backfill, done) replaces the sales-led agency motion as the primary path.
+- Distribution through the Shopify App Store becomes a real channel and a real dependency (app review).
+- Ingestion becomes per-review-app, because most Shopify brands do not keep reviews in Shopify itself (see below).
+- Agencies stay as the second ICP: one agency multiplies installs, but the demand evidence for them is thin (R1, R2).
+
+### What it costs
+
+- Shopify app review is calendar time outside our control (R8: Partner app and review not started).
+- Compliance webhooks are not built: no `app/uninstalled` handler (so `revoked_at` is never set automatically) and none of the
+  GDPR topics (`customers/data_request`, `customers/redact`, `shop/redact`) (R8, VERIFIED from the repo at a08fff0). That they
+  are mandatory for public apps is BELIEVED; confirm in the app-review docs. About 1 engineering day (R8 estimate).
+- Revenue share: the premise "20% only above $1M" is not what shopify.dev says. The page (fetched 2026-10-08) lists the first
+  USD 1,000,000 of annual app revenue at 0% and anything above at 15%, plus a 2.9% processing fee on earnings; the 0% tier does
+  not apply at USD 20M+ app revenue or USD 100M+ company revenue. A search summary says the default for developers who
+  have not registered for the reduced plan is 20% (SNIPPET, not on the fetched page). Either way it is irrelevant at our
+  scale, provided we register for the reduced plan. Source: https://shopify.dev/docs/apps/launch/distribution/revenue-share
+  (S14; read through a summarising fetch tool, so exact wording of the registration step was not seen).
+
+### New evidence, stated plainly
+
+| Question | Finding | Provenance |
+|---|---|---|
+| Hinglish share in Indian Shopify D2C reviews | 6 of 200 = 3.0% (Wilson 95% CI 1.4-6.4%), 180 English (90%), 0 Devanagari. 9 brands, all Judge.me public widget, widget default order, one rater | R6, own sample, unmerged PR #299 |
+| Is that a floor? | Probably. The brand list is the author's own and skews English-forward and urban; categories skew skincare/audio/mattress; 6 more brands were rate-limited (HTTP 429) and not sampled. The two mass-market-leaning brands had 8-9% on n of 37 and 23 (wide CIs). A higher share elsewhere is BELIEVED, untested | R6 |
+| Marketplaces, same question | Flipkart 0 of 50; Amazon.in 0 of 16 (underpowered); Amazon.ae 0 of 50, Arabizi 0 of 50. Sort order and category bias toward English | R7, own samples |
+| Which review app | Judge.me dominates: 2,520 of Koala's tracked stores vs Loox 768, Yotpo 117, Okendo 78 (data dated 2026-08-24; the discontinued native app still shows 804) | R6, partly SNIPPET |
+| Can our metaobject connector read reviews? | shopify.dev describes the Standard Product Review metaobject as "a restricted definition available to approved product review apps". Whether a non-review app can read it was NOT established and not tested on a dev store | R6, open question |
+
+### Risk to the already-built Shopify connector (PRs #291-#293)
+
+The connector, its backfill and the Connect page all read `metaobjects(type:"product_review")` with `read_metaobjects`
+(R8, R9). If Shopify's restriction blocks non-review apps, that path returns nothing for us, and even where it works it
+covers only merchants whose app syndicates into the metaobject. Per-app connectors using a merchant-issued API token are
+the documented alternative: Judge.me first (REST `api/v1/reviews`, token created by the merchant in Judge.me admin; SNIPPET
+in R6), then Yotpo and Stamped. **Recommendation (BELIEVED): do not build further on the metaobject connector until a
+dev-store test settles the read question; that test is blocked on GG (R9).** PRs #291-#293 are not wrong, but they may be
+reading an empty source.
+
+### What this does to the moat claim
+
+On current evidence **the Hinglish moat does not carry to the Shopify ICP**: about 3% of reviews, itself a floor, is an edge
+case a product handles, not the reason a brand buys. The positioning the evidence does support:
+
+1. Measurement and abstention discipline (published interval, unscored fields stated, coverage reported).
+2. Fake/hostile-review detection and separating delivery noise from product feedback (the strongest first-person pain in R7,
+   including the one Hinglish-writing D2C founder).
+3. Code-mixed robustness as a feature: **unproven** against plain models.
+
+The deciding moat test **N1b has NOT been run**: plain frontier models vs Samidha on the 70 unseen held-out reviews (harness
+in PR #289, `eval/experiments/moat_test_baseline.py`, dry-run only). It is blocked on a permission decision (review text
+leaving the machine to a third-party model API, plus spend). Until it runs, any claim that we beat plain models is
+unsupported; the published held-out result measures our pipeline alone.
 
 ## Evidence per market
 
@@ -67,6 +140,90 @@ reviews. Raw reviews are third-party text and are not committed.
 5. Evidence that the buying agencies purchase solicitation and star-rating monitoring, not text analysis, which is what
    their public pages describe (R1, R2).
 
+## What the public site should say under each outcome (N3b)
+
+`site/` is NOT edited by this change. Two unknowns decide the hero: the moat test N1b (not run) and N2d (done: Hinglish about
+3% in Shopify D2C reviews, floor-biased).
+
+| Outcome of N1b on the 70 held-out reviews | Shopify brands mostly English (current N2d reading) | If Shopify brands prove Hinglish-heavy (needs a larger sample) |
+|---|---|---|
+| (i) A plain frontier model matches Samidha within the noise floor | Do not lead with Hinglish. Hero: "Read every review. Know which ones need you. Error bars shown." Positioning: measurement/abstention discipline plus workflow (reply drafting, alerts, delivery-vs-product split) | No reading claim at all; hero: "The review workflow for brands whose customers write Hinglish" |
+| (ii) Samidha beats plain models by more than the noise floor | Do not lead with Hinglish; second line only: "Reviews, read honestly. Hinglish included, with the published numbers" (figures only via the metrics-injection system) | Lead with it: "Hinglish reviews, read accurately: measured against plain GPT, Claude and Gemini prompts, numbers published" |
+| (iii) Mixed (wins some fields, ties or loses others) | Hero as in (i); name only the fields we win and link the full table | Same, with the claim limited to the winning fields |
+
+Reading rule (BELIEVED): "beats" needs a paired comparison on the same 70 items against the existing noise floor, not two
+point estimates. With 70 reviews and 10.7% of field-pairs unscored, only a large gap would clear it.
+
+### Current site claims that would need to change (grep of `site/index.html` for Hinglish/vernacular wording)
+
+| Line | Text | Problem |
+|---|---|---|
+| 9 | `...sentiment and urgency, in English and Hinglish. Stateless by default...` (meta description) | Fine under (ii), reword under (i) |
+| 17, 23 | og/twitter description: `...in English and Hinglish.` | Same |
+| 392 | `Built for Indian e-commerce · English & Hinglish · Early access` | Hinglish in the kicker; "Indian e-commerce" implies marketplaces we cannot legally ingest |
+| 395 | `You manage reviews across a dozen brand storefronts, in a mix of English and Hinglish.` | Agency-first framing and an unmeasured mix; N2d says about 3% for Shopify D2C |
+| 463-467 | `Half your reviews aren't in English` / `Real Indian marketplace reviews mix English and romanized Hindi in the same sentence — Hinglish. Off-the-shelf sentiment tools built for English miss the actual complaint buried in the Hinglish half.` | Contradicted by the samples: 0 of 50 Flipkart, 0 of 16 Amazon.in, 6 of 200 Shopify. "Half" has no evidence. "Off-the-shelf tools miss it" is what N1b would test and has not. Highest priority under every outcome |
+| 536-537 | `...or connect Shopify/Google directly. English or Hinglish, no pre-translation needed.` | Shopify connect is not yet reachable by users (R8, R9) |
+| 908 | footer: `MIT License · evaluation-driven · built for Indian e-commerce` | Same as 392 |
+
+Line 1035 (demo template printing counts of English and Hinglish mentions) is data-driven, not a claim; leave it.
+
+## The Philippines (Taglish) deciding test, concretely (N3c)
+
+Goal: does the pipeline beat a plain LLM and a lexicon tool on Taglish product reviews? S8 suggests the LLM gap is small.
+
+### Data
+
+- FiReCS (Filipino-English code-switched reviews): Hugging Face `ccosme/FiReCS`, **CC-BY-4.0**, no gating, 10,487 reviews
+  (7,340 train / 3,147 test), taken from Google Maps and Shopee Philippines. VERIFIED (dataset card and file listing fetched
+  2026-10-08, S13). Attribution is required; the licence permits our use. Labels are **sentiment only (3 classes), with no
+  aspect annotations**, so FiReCS can test sentiment, not aspect extraction.
+- Aspect extraction needs aspect labels: about 200 Taglish product reviews from a seller export, labelled by two raters (or
+  by the three-judge panel, which is LLM-consensus silver and carries that caveat). No such export exists today.
+
+### Exact comparison
+
+1. Sentiment, FiReCS test split (n=3,147), three systems on the same items: VADER, a plain-prompt LLM (the PR #289 plain
+   prompt adapted to Taglish), and our pipeline. Report macro F-score and share correct with bootstrap intervals, against
+   the 34.5% majority-class rate.
+2. Aspect extraction, 200 seller-export reviews: our `topics`/`pros`/`cons` vs the same plain LLM, through the existing
+   `score_fixture` path (field-level, consensus-only). VADER produces no aspects, so it is excluded.
+3. Decision rule fixed before running: if the plain LLM is within the interval of ours on both, the Taglish wedge is a
+   prompt, not a product (falsifier 2 above).
+
+### Cost (arithmetic on the PR #289 price table dated 2026-10-08; my estimate, not measured)
+
+Assumes about 350 input tokens and 400 output tokens (1,500 for reasoning models) per review, 200 reviews.
+
+| Model | Price per million tokens in / out (USD) | 200 reviews |
+|---|---|---|
+| anthropic/claude-haiku-5.5 | 0.10 / 0.50 | about $0.05 |
+| openai/gpt-5-mini (reasoning) | 0.25 / 2.00 | about $0.62 |
+| openai/gpt-5.5 (reasoning) | 5.00 / 30.00 | about $9.35 |
+| our pipeline (production tier) | free-tier path | $0 marginal, but needs quota |
+
+Running all 3,147 FiReCS items costs about 15.7 times those figures. The harness cannot be pointed at Taglish today: it is
+tied to the 70 held-out Hinglish fixtures and the Hinglish prompt, so a loader and a prompt are needed (small).
+
+### Can it run today with no spend and no seller export?
+
+- Aspect extraction: **No.** No labelled Taglish aspect data exists, and it needs LLM calls.
+- LLM sentiment arms (plain and ours): **No.** They need live LLM calls (spend or free-tier quota) and send third-party review
+  text to a model API, which is the open permission decision behind N1b.
+- **VADER on FiReCS: yes, and it was run.** $0, CC-BY-4.0, local, no review text left the machine. Throwaway venv containing
+  only `vaderSentiment`; test CSV downloaded from Hugging Face; compound >= 0.05 positive, <= -0.05 negative, else neutral
+  (the standard VADER cutoffs).
+
+| System | n | Share correct | Macro F-score | Per-class F-score (neg / neu / pos) |
+|---|---|---|---|---|
+| VADER (English lexicon) | 3,147 | 47.1% | 0.450 | 0.535 / 0.253 / 0.560 |
+| Majority class (neutral) | 3,147 | 34.5% | n/a | n/a |
+
+Provenance: run 2026-10-08 by an uncommitted ad-hoc script in a scratchpad venv; FiReCS `FiReCS_test_set.csv` (453,641 bytes);
+repo commit fa0292f. Deterministic single run, no interval. Meaning: an English lexicon tool sits 12.6 points above the
+majority rate on Taglish and is weak on the neutral class, consistent with S8's finding that lexicon tools degrade. It is
+**not** a result about our pipeline or about LLMs; it is the floor of the comparison and nothing more.
+
 ## Sources
 
 | ID | Source | Label |
@@ -87,4 +244,10 @@ reviews. Raw reviews are third-party text and are not committed.
 | S9 | https://arxiv.org/abs/2601.01827 (Taglish aspect extraction, macro-F1 0.91) | VERIFIED (abstract) |
 | S10 | https://www.stork.ai/compare/brandwatch-vs-talkwalker (language counts; third-party) | SNIPPET |
 | S11 | https://jurnal.umpp.ac.id/index.php/surya_informatika/article/view/2181 (one of several Indonesian Shopee sentiment papers) | SNIPPET |
+| R6 | `docs/research/shopify-icp-evidence.md` on branch `docs/s19-shopify-icp-evidence` (PR #299, unmerged) | VERIFIED (in-repo) |
+| R7 | `docs/research/n5-research-gaps.md` (main) | VERIFIED (in-repo) |
+| R8 | `docs/research/m3-feature-scoping.md` (main) | VERIFIED (in-repo) |
+| R9 | `docs/runbooks/shopify-first-install.md` (main) | VERIFIED (in-repo) |
+| S13 | https://huggingface.co/datasets/ccosme/FiReCS (licence, size, labels) | VERIFIED (fetch-tool summary) |
+| S14 | https://shopify.dev/docs/apps/launch/distribution/revenue-share | VERIFIED (fetch-tool summary) |
 | S12 | Own sample: iTunes RSS `https://itunes.apple.com/{cc}/rss/customerreviews/page=N/id=<app>/sortby=mostrecent/json`, n=30 per market, seed 42, one rater | VERIFIED (my method, unreproducible exactly: feed rolls forward) |
