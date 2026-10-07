@@ -1687,7 +1687,7 @@ def update_lead_email_status_pg(lead_id: str, email_status: str) -> bool:
 def get_last_seen_pg(user_id: str) -> datetime | None:
     """Return the user's stored last_seen_at, or None (never seen / no member row).
 
-    User-scoped, not org-scoped, so deliberately no _set_tenant(): organization_members is
+    Cross-org query (user-scoped, pre-tenant: no org_id is known or needed), so deliberately no _set_tenant(): organization_members is
     closed to every app role (20260817000002) and is reached only through the narrow
     SECURITY DEFINER function public.get_last_seen(uuid) (20261007000001), which takes the
     user_id and returns only the timestamp -- no org_id is involved.
@@ -1711,7 +1711,7 @@ def touch_last_seen_pg(user_id: str) -> datetime | None:
     """Set the user's last_seen_at to now() (debounced to once per 60s in SQL) and return the
     value now stored; None if the user has no member row (nothing is changed or raised).
 
-    Same scoping note as get_last_seen_pg: user-scoped, via public.touch_last_seen(uuid).
+    Cross-org query, same scoping note as get_last_seen_pg: user-scoped, via public.touch_last_seen(uuid).
     """
     conn = _db_connect()
     try:
