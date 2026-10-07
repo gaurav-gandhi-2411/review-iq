@@ -151,7 +151,7 @@ tokens/model/day" figure in the brief is the self-imposed 50%-of-pool ceiling us
 1. Fixtures: grow `eval/reply/fixtures` from 15 to at least 60 (20 per language), drawn from the held-out corpus with a category mix: praise, mild, harsh, refund demand, safety/legal, sarcasm, injection attempt. One JSON file per case.
 2. Metrics: (a) structural guardrail pass rate (existing); (b) rubric score 1-5 on tone fit, specificity (addresses the actual complaint), no invented commitment, language/register, safe to post - rated by two judges (a different model family from the drafter, plus GG on a 20-case sample) with agreement reported as kappa; (c) a hard-fail rate for fabricated commitments on a seeded set with a vernacular-aware detector.
 3. Statistics: n=60 gives a binomial 95% half-width near 12 points at a 50% rate, so report intervals and only claim differences above the noise floor (`eval/results/noise_floor_baseline.json` pattern); cassette-record once per prompt version, replay in CI.
-4. Gate: add `eval.yml` job with thresholds set from the first measured run, not before; bump `REPLY_PROMPT_VERSION` and document in `PROMPTS.md` on any prompt change.
+4. CI check: add `eval.yml` job with thresholds set from the first measured run, not before; bump `REPLY_PROMPT_VERSION` and document in `PROMPTS.md` on any prompt change.
 5. Quota: recording 60 drafts is about 105K tokens on the large pool; split across two days under the 100K working budget, never during a customer-heavy window.
 
 Effort to "real" feature: eval + vernacular guardrails + per-org rate limit + cost row: about 4-6 days; no new UI required.
