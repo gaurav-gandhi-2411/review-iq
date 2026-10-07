@@ -164,19 +164,24 @@ prompt are rewrites of them, and prompt v2.2/v2.3 were accepted against benchmar
 a benchmark that contains 21 of them), so the headline covers only the 70 that were not.
 Correction (Session 17): that headline is accuracy **where the three-judge panel agreed**, not
 overall accuracy; the
-share of field-pairs with no consensus is printed beside it and no point estimate of overall
-accuracy is identifiable (details below).
+share of field-pairs with no consensus is printed beside it, no assumption-free point estimate
+of overall accuracy is identifiable, and an exploratory second-panel read of the unscored pairs
+(LLM-judged, not human-verified) is printed with it (details below).
 
-<!-- METRICS:START:held_out_table -->Measured 2026-10-05T08:50:17Z &middot; `8186d0d` &middot; models: openai/gpt-oss-20b / openai/gpt-oss-120b
+<!-- METRICS:START:held_out_table -->Measured 2026-10-07T12:10:52Z &middot; `831a45b` &middot; models: openai/gpt-oss-20b / openai/gpt-oss-120b
 
-**79.6% [76.2%, 82.8%] on 70 unseen reviews, scored where the three-judge panel reached consensus; 10.7% of field-pairs (60 of 560) had no consensus and are unscored.**
+**79.6% [76.2%, 82.8%] on 70 unseen reviews, scored only where the three-judge panel agreed. 10.7% of field-pairs (60 of 560) had no consensus and are unscored. Those are the hardest cases: on the 29 of them a second, independent LLM panel could settle, the model scores 47-71% depending on the field. So overall accuracy is probably lower than the headline, in roughly the mid-70s (exploratory, LLM-judged, not human-verified).**
+
+Second-panel scores by field on those pairs (LLM-consensus silver, not ground truth; `product` 62.5% (n=8), `topics` 47.3% (n=10), `pros` 50.5% (n=8), `cons` 71.2% (n=3)): small samples, so each is a rough indication only.
+
+**`pros` reported separately: soft recall 69.4% [58.7%, 79.2%] on 46 resolved gold pairs (threshold 0.5, pre-registered; validation V-a: FAIL, V-b: FAIL; NOT validated).** The headline above still scores `pros` with the existing token-level F1 scorer, not with this: the same pairs scored by an item-level phrase matcher swing 27.2 points across matcher thresholds (18.6 between 0.3 and 0.7), and the soft recall itself moves 6.2 points between thresholds 0.4 and 0.6 (pre-registered limit 5.0 points). 7 further resolved pairs have an empty gold list and are excluded. Soft recall on the 8 unresolved `pros` pairs a second panel could settle: 30.7% (n=7 scored, silver labels). Definition, criteria and outcome: [docs/specs/s18-pros-soft-recall.md](docs/specs/s18-pros-soft-recall.md).
 
 | Condition | Score (headline fields) | 95% CI | n | Field-pairs unscored |
 |---|---|---|---|---|
 | **As actually deployed** (real language routing) | **79.6%** | [76.2%, 82.8%] | 70 | 60 of 560 (10.7%) |
 | Language routing forced correct | 79.7% | [76.8%, 82.5%] | 70 | 60 of 560 (10.7%) |
 
-**This is accuracy where the panel agreed, not overall accuracy.** A *field-pair* is one (review, field) cell: 70 reviews x 8 fields = 560. A pair is unscored when the three judges split and the stored gold is a default, not a label. Those are the reviews the panel found hardest or most ambiguous, so scoring only the agreed pairs is a selection effect: it is why `pros` reads 73.8% with them excluded against 53.9% with the defaults scored (all reviews). 46 of 70 reviews have at least one unscored pair. **No point estimate of overall accuracy is identifiable from this data.** The assumption-free interval (every unscored pair all wrong / all right) is [70.9%, 81.6%]; that is a bound, not a result.
+**This is accuracy where the panel agreed, not overall accuracy.** A *field-pair* is one (review, field) cell: 70 reviews x 8 fields = 560. A pair is unscored when the three judges split and the stored gold is a default, not a label. Those are the reviews the panel found hardest or most ambiguous, so scoring only the agreed pairs is a selection effect: it is why `pros` reads 73.8% with them excluded against 53.9% with the defaults scored (all reviews). 46 of 70 reviews have at least one unscored pair. **No assumption-free point estimate of overall accuracy is identifiable from this data.** The assumption-free interval (every unscored pair all wrong / all right) is [70.9%, 81.6%]; that is a bound, not a result.
 
 **What this headline is.** The average of 8 fields (`product`, `buy_again`, `sentiment`, `topics`, `competitor_mentions`, `pros`, `cons`, `stars_inferred`) over the 70 of 106 corpus reviews that the prompt-development process had **not** seen, with 60 gold (review, field) pairs excluded because the judge panel split and the stored gold was a default, not a label. `stars` (null everywhere) and `language` (an echo of the detector, agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error)) are excluded as before.
 
