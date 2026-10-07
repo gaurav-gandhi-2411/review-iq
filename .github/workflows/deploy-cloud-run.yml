@@ -52,7 +52,7 @@ env:
 jobs:
   build-and-deploy:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: unverified on 26.04 (S17 H3); move to ubuntu-latest after a main-branch dry run
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
@@ -163,7 +163,7 @@ jobs:
 
   scheduled-drift-check:
     if: github.event_name == 'schedule'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: unverified on 26.04 (S17 H3); move to ubuntu-latest after a main-branch dry run
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -194,7 +194,7 @@ jobs:
   scheduled-drift-alert:
     if: always() && !cancelled() && github.event_name == 'schedule'
     needs: [scheduled-drift-check]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: unverified on 26.04 (S17 H3); move to ubuntu-latest after a main-branch dry run
     permissions:
       contents: read
       issues: write

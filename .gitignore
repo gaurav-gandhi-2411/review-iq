@@ -74,7 +74,10 @@ outputs/
 # HF / Docker build artifacts
 
 # Claude Code
-.claude/
+.claude/*
+# The project hook + deny rules that keep secret values out of transcripts (S17 W1e) travel with
+# the repo; everything else under .claude/ (settings.local.json, worktrees/) stays local.
+!.claude/settings.json
 
 # Web frontend local env — contains real Supabase/API keys
 web/.env.local
