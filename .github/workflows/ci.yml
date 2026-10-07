@@ -77,6 +77,11 @@ jobs:
       - name: Held-out corpus leakage check
         run: uv run python scripts/check_no_heldout_leakage.py
 
+      # S17: this repo is public; an Actions artifact is a publication. No dump-shaped upload
+      # may be unencrypted, and db-backup.yml's upload path is pinned (see the script).
+      - name: No unencrypted dump artifact uploads
+        run: uv run python scripts/check_artifact_uploads.py
+
       # Catches the exact 2026-08-16/22 incident class: a config-only model-name
       # change silently invalidating eval/results.json's claim, undetected because
       # nothing re-ran the eval. See scripts/check_eval_model_matches_config.py.
