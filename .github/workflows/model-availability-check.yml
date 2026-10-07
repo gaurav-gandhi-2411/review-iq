@@ -124,7 +124,7 @@ jobs:
 
       - name: Open/update alert issue on failure
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const label = process.env.ALERT_LABEL;
@@ -141,7 +141,7 @@ jobs:
 
       - name: Close alert issue on recovery
         if: success()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const label = process.env.ALERT_LABEL;

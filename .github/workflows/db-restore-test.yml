@@ -41,6 +41,20 @@ jobs:
       - name: Install dependencies
         run: uv sync --frozen
 
+      - name: Assert no plaintext backup artifact exists (detective, public repo)
+        # S17: plaintext dumps from before 2026-07-11 stayed downloadable for ~90 days. Any
+        # unexpired review-iq-db-* artifact that is not .gpg fails the job (and the weekly alert).
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BAD=$(gh api "repos/${{ github.repository }}/actions/artifacts?per_page=100" --paginate \
+            --jq '.artifacts[] | select((.name | startswith("review-iq-db-")) and (.name | endswith(".gpg") | not) and (.expired | not)) | .name')
+          if [ -n "${BAD}" ]; then
+            echo "::error::Unencrypted backup artifact(s) are publicly downloadable: ${BAD}"
+            exit 1
+          fi
+          echo "no plaintext review-iq-db-* artifacts"
+
       - name: Start throwaway postgres:17
         run: |
           docker run -d --name pgrestore -e POSTGRES_PASSWORD=restore_test \
