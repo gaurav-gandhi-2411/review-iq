@@ -251,3 +251,161 @@ def test_missing_token_is_an_error_without_network(capsys: pytest.CaptureFixture
 
 def test_redact() -> None:
     assert mod.redact(f"boom {TOKEN} boom", TOKEN) == "boom *** boom"
+
+
+# --- --run: one command, one typed confirmation ---
+
+PHRASE = "DELETE 2 DEPLOYMENTS 0.02 GB"  # seeded(): d2 + d1, 10 MB each = 20 MB = 0.0195 GB
+
+
+def run_single(
+    tmp_path: Path, f: FakeVercel, typed: str | None, extra: list[str] | None = None
+) -> int:
+    import io
+
+    argv = [
+        "--run",
+        "--plan-out",
+        str(tmp_path / "plan.json"),
+        "--report-out",
+        str(tmp_path / "report.json"),
+        *(extra or []),
+    ]
+    stdin = io.StringIO("" if typed is None else typed + "\n")  # None = EOF with no input
+    return mod.run(argv, {"VERCEL_TOKEN": TOKEN}, make(f), stdin)
+
+
+def deleted_ids(f: FakeVercel) -> list[str]:
+    return [p.rsplit("/", 1)[1] for m, p in f.calls if m == "DELETE"]
+
+
+def test_run_exact_confirmation_deletes_only_the_plan_and_writes_report(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    f = seeded()
+    assert run_single(tmp_path, f, PHRASE) == 0
+    assert sorted(deleted_ids(f)) == ["d1", "d2"]
+    report = json.loads((tmp_path / "report.json").read_text())
+    assert report["confirmed"] is True
+    assert sorted(report["deleted"]) == ["d1", "d2"]
+    assert report["planned_delete_count"] == 2
+    assert report["freed_bytes"] == 20 * MB
+    assert json.loads((tmp_path / "plan.json").read_text())["delete_ids"]
+    out = capsys.readouterr()
+    assert PHRASE in out.out
+    assert TOKEN not in out.out + out.err + (tmp_path / "report.json").read_text()
+
+
+@pytest.mark.parametrize(
+    "typed",
+    [
+        "",
+        "yes",
+        "delete 2 deployments 0.02 gb",
+        "DELETE 2 DEPLOYMENTS 0.02 GB.",
+        "DELETE 3 DEPLOYMENTS 0.02 GB",
+        "DELETE 2 DEPLOYMENTS 0.03 GB",
+        " DELETE 2 DEPLOYMENTS 0.02 GB",
+    ],
+)
+def test_run_confirmation_mismatch_deletes_nothing(tmp_path: Path, typed: str) -> None:
+    f = seeded()
+    assert run_single(tmp_path, f, typed) == 1
+    assert deleted_ids(f) == []
+    report = json.loads((tmp_path / "report.json").read_text())
+    assert report["confirmed"] is False
+    assert report["deleted"] == []
+
+
+def test_run_eof_on_stdin_deletes_nothing(tmp_path: Path) -> None:
+    f = seeded()
+    assert run_single(tmp_path, f, None) == 1
+    assert deleted_ids(f) == []
+
+
+def test_run_defaults_to_the_real_stdin_so_an_unattended_run_deletes_nothing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import io
+
+    monkeypatch.setattr(mod.sys, "stdin", io.StringIO(""))
+    f = seeded()
+    argv = [
+        "--run",
+        "--plan-out",
+        str(tmp_path / "p.json"),
+        "--report-out",
+        str(tmp_path / "r.json"),
+    ]
+    assert mod.run(argv, {"VERCEL_TOKEN": TOKEN}, make(f)) == 1
+    assert deleted_ids(f) == []
+
+
+def test_run_keeps_every_protection_after_confirmation(tmp_path: Path) -> None:
+    f = seeded()
+    assert run_single(tmp_path, f, PHRASE) == 0
+    assert PROTECTED not in deleted_ids(f)
+    assert "d4" not in deleted_ids(f)  # current production
+    assert "d3" not in deleted_ids(f)  # aliased
+
+
+def test_run_deletes_only_the_intersection_when_state_changes_after_the_plan(
+    tmp_path: Path,
+) -> None:
+    f = seeded()
+    real_input = f.__call__
+    state = {"plans": 0}
+
+    def drifting(method: str, url: str, headers: dict[str, str], timeout: float):
+        # After the first full listing (the plan), d2 gains an alias and a newer deploy appears.
+        if method == "GET" and url.split("?")[0].endswith("/v10/projects"):
+            state["plans"] += 1
+            if state["plans"] == 2:
+                f.aliases["d2"] = ["samidhareviews.xyz"]
+        return real_input(method, url, headers, timeout)
+
+    import io
+
+    argv = [
+        "--run",
+        "--plan-out",
+        str(tmp_path / "p.json"),
+        "--report-out",
+        str(tmp_path / "r.json"),
+    ]
+    client = mod.Client(TOKEN, "team_x", transport=drifting, sleep=lambda _s: None)
+    rc = mod.run(argv, {"VERCEL_TOKEN": TOKEN}, client, io.StringIO(PHRASE + "\n"))
+    assert rc == 0
+    assert deleted_ids(f) == ["d1"]
+    report = json.loads((tmp_path / "r.json").read_text())
+    assert report["skipped"] == ["d2"]
+
+
+def test_run_stops_and_still_reports_on_unexpected_delete_response(tmp_path: Path) -> None:
+    f = seeded()
+    f.delete_response = (403, {"error": {}})
+    assert run_single(tmp_path, f, PHRASE) == 2
+    assert len(deleted_ids(f)) == 1
+    report = json.loads((tmp_path / "report.json").read_text())
+    assert report["confirmed"] is True
+    assert report["deleted"] == []
+    assert "unexpected response" in report["error"]
+
+
+def test_run_with_nothing_to_delete_asks_nothing(tmp_path: Path) -> None:
+    f = FakeVercel()
+    f.add("only", 100)
+    assert run_single(tmp_path, f, None) == 0
+    assert deleted_ids(f) == []
+    assert json.loads((tmp_path / "report.json").read_text())["planned_delete_count"] == 0
+
+
+def test_run_cannot_be_combined_with_apply(tmp_path: Path) -> None:
+    with pytest.raises(SystemExit):
+        mod.run(["--run", "--apply", "--approved-list", "x.json"], {"VERCEL_TOKEN": TOKEN}, None)
+
+
+def test_run_missing_token_is_an_error_before_any_prompt(tmp_path: Path) -> None:
+    import io
+
+    assert mod.run(["--run"], {}, None, io.StringIO(PHRASE + "\n")) == 2

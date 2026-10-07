@@ -110,13 +110,29 @@ or token in this task). If a menu name differs, search settings for the quoted l
    ```
    Then start Claude Code from that shell so it inherits the variables. Delete the token in
    Account Settings -> Tokens when the sweep is done.
-7. Sweep, two separate runs (rule 55d):
+7. Sweep, ONE command and ONE approval:
+   ```powershell
+   python scripts/vercel_deployment_sweep.py --run
+   ```
+   It (1) runs the dry run and prints/saves the plan to `reports/vercel-sweep-plan.json`, (2)
+   prints the totals and waits on stdin for the exact string `DELETE <N> DEPLOYMENTS <GB> GB`
+   (for example `DELETE 41 DEPLOYMENTS 7.35 GB`, N and GB taken from the plan, GB to two
+   decimals), (3) only on an exact match recomputes the DELETE set and deletes the intersection of
+   the plan and the fresh set (never `dpl_Bbe7PvBVd2rcSmLAQAmUc3jyk3LA`, never aliased, current
+   production, in-flight or unknown-size deployments), (4) writes `reports/vercel-sweep-report.json`
+   (deleted ids, skipped ids, bytes freed, any error). Any other input, or end of input (for
+   example when run unattended or with stdin closed), deletes nothing and still writes the report.
+   There is no flag to skip the prompt; the confirmation can only be typed. Exit codes: 0 done or
+   nothing to delete, 1 confirmation not given, 2 error (the report records what was deleted before
+   the stop).
+
+   Two-invocation mode (CI-like use, rule 55d: the check and the delete are separate commands):
    ```powershell
    python scripts/vercel_deployment_sweep.py                # dry run, writes reports/vercel-sweep-plan.json
    # read the report; edit delete_ids in the plan file to what you approve
    python scripts/vercel_deployment_sweep.py --apply --approved-list reports/vercel-sweep-plan.json
    ```
-   The first run ends with `DRY RUN ... Nothing deleted`. Any deployment printed `size unknown`
+   The dry run ends with `DRY RUN ... Nothing deleted`. Any deployment printed `size unknown`
    was NOT sized and will not be deleted.
 
 ## The sweep tool (V1d)

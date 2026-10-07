@@ -4,12 +4,18 @@ Why: the team hit Functions Storage 10.93 GB / 10 GB on the Hobby plan. Old depl
 removed by retention (30 days default) with exceptions that keep recent ones, so this tool lists
 every deployment per project, sizes it, and proposes a KEEP / DELETE plan.
 
-Two separate invocations, per CLAUDE rule 55d (the check and the delete never share a command):
+Two ways to run, both ending in the same delete rule (only IDs present in BOTH the approved plan
+and the freshly recomputed DELETE set, so a stale approval cannot delete something that has since
+become current):
 
-  1. dry run (default)  -> prints the report, writes reports/vercel-sweep-plan.json, deletes nothing
-  2. --apply --approved-list <plan.json>  -> deletes only IDs present in BOTH the approved plan and
-     the freshly recomputed DELETE set, so a stale approval cannot delete something that has since
-     become current.
+  A. one command, one human confirmation:  --run
+     dry run -> prints and saves the plan -> prompts for the exact string
+     `DELETE <N> DEPLOYMENTS <GB> GB` on stdin (no flag skips it; EOF or any mismatch deletes
+     nothing) -> recomputes, deletes the intersection -> writes reports/vercel-sweep-report.json.
+  B. two separate invocations (CI-like use, per CLAUDE rule 55d):
+     1. dry run (default)  -> prints the report, writes reports/vercel-sweep-plan.json, deletes
+        nothing
+     2. --apply --approved-list <plan.json>
 
 Auth: VERCEL_TOKEN from the environment only (never an argument, never printed, redacted in
 errors). Team: --team or VERCEL_TEAM_ID. All API shapes below are from the Vercel REST docs
@@ -33,7 +39,7 @@ from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, TextIO
 
 API = "https://api.vercel.com"
 TIMEOUT_S = 30
@@ -45,6 +51,7 @@ KEEP_NEWEST = 2
 PROTECTED_IDS = frozenset({"dpl_Bbe7PvBVd2rcSmLAQAmUc3jyk3LA"})
 IN_FLIGHT = frozenset({"BUILDING", "QUEUED", "INITIALIZING"})
 DEFAULT_PLAN_PATH = Path("reports/vercel-sweep-plan.json")
+DEFAULT_REPORT_PATH = Path("reports/vercel-sweep-report.json")
 MB = 1024 * 1024
 GB = 1024 * MB
 
@@ -86,6 +93,10 @@ class Client:
         self._transport = transport
         self._sleep = sleep
         self._rng = random.Random(42)  # deterministic jitter
+
+    @property
+    def token_for_redaction(self) -> str:
+        return self._token
 
     def request(
         self, method: str, path: str, params: dict[str, str] | None = None
@@ -306,13 +317,23 @@ def load_approved(path: Path) -> set[str]:
 
 
 def apply_deletes(
-    client: Client, rows: list[Row], approved: set[str], out: Callable[[str], None] = print
+    client: Client,
+    rows: list[Row],
+    approved: set[str],
+    out: Callable[[str], None] = print,
+    result: dict[str, Any] | None = None,
 ) -> int:
-    """Delete rows that are DELETE now AND approved. Stops on the first unexpected response."""
+    """Delete rows that are DELETE now AND approved. Stops on the first unexpected response.
+
+    `result` (optional) is filled as it goes, so a caller can still write a report after a stop.
+    """
+    result = result if result is not None else {}
+    result.update(deleted=[], skipped=[], freed_bytes=0)
     fresh = {r.id: r for r in rows if r.action == "DELETE"}
     todo = [fresh[i] for i in fresh if i in approved]
     for skipped in sorted(approved - set(fresh)):
         out(f"SKIP {skipped}: no longer in the recomputed DELETE set")
+        result["skipped"].append(skipped)
     freed = 0
     for r in todo:
         if r.id in PROTECTED_IDS:  # belt and braces; policy already excludes it
@@ -322,16 +343,116 @@ def apply_deletes(
         if not ok or data.get("uid") != r.id or data.get("state") != "DELETED":
             raise SweepError(f"unexpected response deleting {r.id}: status {status}; stopping")
         freed += r.size_bytes or 0
+        result["deleted"].append(r.id)
+        result["freed_bytes"] = freed
         out(f"DELETED {r.id} ({r.project}) freed {(r.size_bytes or 0) / MB:.1f} MB")
     out(f"deleted {len(todo)} deployments, freed {freed / GB:.2f} GB")
     return len(todo)
 
 
-def run(argv: list[str], env: dict[str, str], client: Client | None = None) -> int:
+def compute_rows(client: Client, only: list[str], relax: bool) -> list[Row]:
+    rows: list[Row] = []
+    for project in list_projects(client, only):
+        rows += collect_rows(client, project)
+    for name in {r.project for r in rows}:
+        apply_policy([r for r in rows if r.project == name], relax)
+    return rows
+
+
+def delete_totals(rows: list[Row]) -> tuple[int, float]:
+    """(number of DELETE rows, their size in GB). DELETE rows always have a known size."""
+    doomed = [r for r in rows if r.action == "DELETE"]
+    return len(doomed), sum(r.size_bytes or 0 for r in doomed) / GB
+
+
+def confirmation_phrase(n: int, gb: float) -> str:
+    return f"DELETE {n} DEPLOYMENTS {gb:.2f} GB"
+
+
+def write_report(path: Path, body: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(body, indent=2), encoding="utf-8")
+
+
+def run_single(
+    client: Client,
+    args: argparse.Namespace,
+    stdin: TextIO,
+    out: Callable[[str], None] = print,
+) -> int:
+    """--run: dry run, one typed confirmation, delete the plan-intersect-fresh set, write report."""
+    rows = compute_rows(client, args.project, args.relax_branch_aliases)
+    print_report(rows, out)
+    write_plan(rows, args.plan_out, args.team)
+    n, gb = delete_totals(rows)
+    plan_ids = {r.id for r in rows if r.action == "DELETE"}
+    out(f"\nPlan saved to {args.plan_out}.")
+    report: dict[str, Any] = {
+        "finished_at": "",
+        "plan_path": str(args.plan_out),
+        "planned_delete_count": n,
+        "planned_delete_gb": round(gb, 2),
+        "confirmed": False,
+        "deleted": [],
+        "skipped": [],
+        "freed_bytes": 0,
+        "error": "",
+    }
+
+    def finish(code: int) -> int:
+        report["finished_at"] = datetime.now(UTC).isoformat()
+        write_report(args.report_out, report)
+        out(f"Report written to {args.report_out}.")
+        return code
+
+    if n == 0:
+        out("Nothing to delete.")
+        return finish(0)
+    phrase = confirmation_phrase(n, gb)
+    out(f"\nThis will PERMANENTLY delete {n} deployments ({gb:.2f} GB).")
+    out(f"To proceed type exactly:  {phrase}")
+    out("Anything else (including end of input) aborts and deletes nothing.")
+    typed = stdin.readline().rstrip("\r\n")  # empty string on EOF
+    if typed != phrase:
+        out("Confirmation did not match. Nothing deleted.")
+        return finish(1)
+    report["confirmed"] = True
+    result: dict[str, Any] = {}
+    try:
+        # Recompute: the delete set is plan INTERSECT fresh, every protection re-applied.
+        fresh_rows = compute_rows(client, args.project, args.relax_branch_aliases)
+        apply_deletes(client, fresh_rows, plan_ids, out, result)
+    except SweepError as exc:
+        report["error"] = redact(str(exc), client.token_for_redaction)
+        report.update(
+            deleted=result.get("deleted", []),
+            skipped=result.get("skipped", []),
+            freed_bytes=result.get("freed_bytes", 0),
+        )
+        finish(2)
+        raise
+    report.update(
+        deleted=result["deleted"], skipped=result["skipped"], freed_bytes=result["freed_bytes"]
+    )
+    return finish(0)
+
+
+def run(
+    argv: list[str],
+    env: dict[str, str],
+    client: Client | None = None,
+    stdin: TextIO | None = None,
+) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--team", default=env.get("VERCEL_TEAM_ID", ""))
     ap.add_argument("--project", action="append", default=[], help="name or id; repeatable")
     ap.add_argument("--plan-out", type=Path, default=DEFAULT_PLAN_PATH)
+    ap.add_argument("--report-out", type=Path, default=DEFAULT_REPORT_PATH)
+    ap.add_argument(
+        "--run",
+        action="store_true",
+        help="one command: dry run, a typed confirmation on stdin, delete, then a report file",
+    )
     ap.add_argument("--apply", action="store_true")
     ap.add_argument("--approved-list", type=Path)
     ap.add_argument(
@@ -340,6 +461,8 @@ def run(argv: list[str], env: dict[str, str], client: Client | None = None) -> i
         help="non-production deployments holding only *.vercel.app aliases may be deleted",
     )
     args = ap.parse_args(argv)
+    if args.run and (args.apply or args.approved_list):
+        ap.error("--run is its own mode; do not combine it with --apply/--approved-list")
     if args.apply and not args.approved_list:
         ap.error("--apply requires --approved-list")
     if args.approved_list and not args.apply:
@@ -347,12 +470,10 @@ def run(argv: list[str], env: dict[str, str], client: Client | None = None) -> i
     token = env.get("VERCEL_TOKEN", "")
     try:
         client = client or Client(token, args.team)
+        if args.run:
+            return run_single(client, args, stdin if stdin is not None else sys.stdin)
         approved = load_approved(args.approved_list) if args.apply else set()
-        rows: list[Row] = []
-        for project in list_projects(client, args.project):
-            rows += collect_rows(client, project)
-        for project in {r.project for r in rows}:
-            apply_policy([r for r in rows if r.project == project], args.relax_branch_aliases)
+        rows = compute_rows(client, args.project, args.relax_branch_aliases)
         print_report(rows)
         if not args.apply:
             write_plan(rows, args.plan_out, args.team)
