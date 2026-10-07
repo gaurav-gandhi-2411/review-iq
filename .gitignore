@@ -97,3 +97,6 @@ ops/budget-killswitch/.build/
 # Local scratch/raw datasets for prompt-tuning work (large Kaggle downloads + derived
 # intermediates) — mirrors eval/data/.gitignore's raw/generated-candidate exclusion pattern.
 /data/
+
+# Vercel sweep plan (S18 V1d): local review artifact, never committed
+reports/vercel-sweep-plan.json
