@@ -25,9 +25,7 @@ over-spend burns the shared quota that production draws on.
 
 from __future__ import annotations
 
-import argparse
 import json
-import sys
 import time
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
@@ -253,36 +251,3 @@ def preflight(
             "Groq headroom check REFUSED the batch:\n" + report.summary(), report
         )
     return report
-
-
-def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description="Refuse-or-pass Groq headroom check for a batch.")
-    ap.add_argument("--est", action="append", required=True, metavar="MODEL=TOKENS")
-    ap.add_argument(
-        "--prod-used",
-        action="append",
-        default=[],
-        metavar="MODEL=TOKENS",
-        help="same-UTC-day prod usage from extraction_costs (read-only query)",
-    )
-    ap.add_argument("--ledger", action="append", default=[], type=Path)
-    a = ap.parse_args(argv)
-
-    def kv(items: list[str]) -> dict[str, int]:
-        return {k: int(v) for k, v in (i.rsplit("=", 1) for i in items)}
-
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    from app.core.config import get_settings
-
-    used = merge_usage(kv(a.prod_used), ledger_used(a.ledger))
-    try:
-        report = preflight(kv(a.est), local_used_by_model=used, api_key=get_settings().groq_api_key)
-    except HeadroomRefusedError as exc:
-        print(exc)
-        return 1
-    print("Headroom OK:\n" + report.summary())
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
