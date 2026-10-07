@@ -113,6 +113,9 @@
     .nav-links a { color: var(--ink-2); text-decoration: none; padding-block: var(--space-2); }
     .nav-links a:hover { color: var(--ink); text-decoration: underline; text-decoration-color: var(--ember); }
     @media (min-width: 48rem) { .nav-links { display: flex; } }
+    .nav-actions { display: flex; align-items: center; gap: var(--space-4); }
+    .nav-signin { color: var(--ink-2); font-size: 0.9375rem; text-decoration: none; padding-block: var(--space-2); }
+    .nav-signin:hover { color: var(--ink); text-decoration: underline; text-decoration-color: var(--ember); }
 
     /* The animated mark lives in the site header only (Session 13 P5b); prefers-reduced-motion
        switches it off. Every other use of the mark on the page is static. */
@@ -373,7 +376,10 @@
         <a href="#pricing">Pricing</a>
         <a href="#contact">Contact</a>
       </div>
-      <button type="button" class="btn btn-ember btn-sm" data-lead-open>Request access</button>
+      <div class="nav-actions">
+        <a href="https://app.samidhareviews.xyz" class="nav-signin">Sign in</a>
+        <button type="button" class="btn btn-ember btn-sm" data-lead-open>Request access</button>
+      </div>
     </div>
   </nav>
 
