@@ -1,6 +1,7 @@
 """S18 D1/D2: the published held-out headline copy is rendered from artifacts, the per-field
-range is computed, the narrowed Manski interval is never user-facing, the "mid-70s" clause is
-guarded, and `pros` is reported separately."""
+range is computed, the narrowed Manski interval is never user-facing (only its lower endpoint
+appears, as one end of the stated independent-estimate range), the overall-accuracy range
+endpoints are rendered from artifacts and guarded, and `pros` is reported separately."""
 
 from __future__ import annotations
 
@@ -12,9 +13,8 @@ from typing import Any
 
 import pytest
 from scripts.render_metrics import (
-    MID_SEVENTIES_BAND,
-    MidSeventiesGuardError,
-    mid_seventies_clause,
+    OverallRangeGuardError,
+    overall_range_clause,
     render_held_out_table_md,
 )
 
@@ -56,8 +56,10 @@ def test_headline_copy_is_exactly_the_approved_wording_from_artifacts() -> None:
         "Those are the hardest cases: on the "
         f"{nb['n_resolved_by_panel2']} of them a second, independent LLM panel could settle, the "
         f"model scores {min(vals)}-{max(vals)}% depending on the field. So overall accuracy is "
-        "probably lower than the headline, in roughly the mid-70s (exploratory, LLM-judged, "
-        "not human-verified).**"
+        "probably lower than the headline \u2014 independent estimates range "
+        f"{nb['narrowed_manski_lower_unresolved_all_wrong']['score'] * 100:.1f}% to "
+        f"{nb['silver_adjudicated_estimate_conditional_on_panel2_agreement']['score'] * 100:.1f}% "
+        "(exploratory, LLM-judged, not human-verified).**"
     )
     assert _headline(_render()) == expected
 
@@ -97,41 +99,61 @@ def test_narrowed_manski_interval_is_not_in_the_rendered_block_readme_or_site() 
         assert f"[{lo}, {hi}]" not in text
         # the narrowed bounds are also never printed one at a time as a bound
         assert not re.search(rf"narrowed[^\n]{{0,80}}({re.escape(lo)}|{re.escape(hi)})%", text)
+        # the narrowed UPPER bound never appears at all; the lower one legitimately appears
+        # only as the left endpoint of the stated range ("73.7% to 78.0%"), never as a pair
+        assert f"{hi}%" not in text
 
 
-def test_mid_seventies_clause_is_printed_only_inside_the_band() -> None:
-    lo, hi = MID_SEVENTIES_BAND
-    assert (lo, hi) == (0.730, 0.780)
-    ev = {"a": 0.743, "b": 0.75, "c": 0.756, "narrowed lower bound": 0.737}
-    clause, ok = mid_seventies_clause(ev, 0.7805, 0.796)
-    assert ok
-    assert clause == "in roughly the mid-70s"
+def test_overall_range_endpoints_are_rendered_from_the_panel2_artifact() -> None:
+    nb = PANEL2["narrowed_bounds"]
+    lo = nb["narrowed_manski_lower_unresolved_all_wrong"]["score"]
+    hi = nb["silver_adjudicated_estimate_conditional_on_panel2_agreement"]["score"]
+    pub = HELD["headline_grid"][HELD["headline_policy"]["cell"]]["as_deployed"]["score"]
+    assert lo < hi < pub  # the guard's invariant holds on the committed artifacts
+    assert f"{lo * 100:.1f}% to {hi * 100:.1f}%" in _headline(_render())
+    assert overall_range_clause(0.737, 0.7805, 0.796) == "73.7% to 78.0%"
 
 
 @pytest.mark.parametrize(
-    ("evidence", "silver", "headline"),
+    ("lower", "upper", "headline"),
     [
-        ({"a": 0.70, "b": 0.75}, 0.76, 0.796),  # a judge-sensitivity value below the band
-        ({"a": 0.79, "b": 0.75}, 0.76, 0.796),  # above the band
-        ({"a": 0.75, "b": 0.75}, 0.72, 0.796),  # silver estimate below the band floor
-        ({"a": 0.75, "b": 0.75}, 0.80, 0.796),  # silver estimate not below the headline
-        ({}, 0.76, 0.796),  # no evidence at all is not evidence
+        (0.78, 0.75, 0.796),  # lower >= upper
+        (0.75, 0.75, 0.796),  # degenerate range
+        (0.74, 0.80, 0.796),  # upper not strictly below the headline
+        (0.74, 0.796, 0.796),  # upper equals the headline
+        (0.80, 0.81, 0.796),  # both above the headline
     ],
 )
-def test_mid_seventies_guard_degrades_the_clause_when_inputs_leave_the_band(
-    evidence: dict[str, float], silver: float, headline: float
+def test_overall_range_guard_fails_when_endpoints_are_inconsistent(
+    lower: float, upper: float, headline: float
 ) -> None:
-    clause, ok = mid_seventies_clause(evidence, silver, headline)
-    assert not ok
-    assert clause == "lower than the headline"
+    with pytest.raises(OverallRangeGuardError, match="inconsistent") as exc:
+        overall_range_clause(lower, upper, headline)
+    # the message names the offending values
+    assert f"{lower * 100:.1f}%" in str(exc.value)
+    assert f"{headline * 100:.1f}%" in str(exc.value)
 
 
-def test_render_fails_loudly_when_the_guard_fails() -> None:
-    held = copy.deepcopy(HELD)
-    js = held["unscored"]["judge_sensitivity"]["scored_against_each_judge"]
-    next(iter(js.values()))["score"] = 0.66
-    with pytest.raises(MidSeventiesGuardError, match="no longer supported"):
-        _render(held=held)
+@pytest.mark.parametrize(
+    "missing",
+    [
+        "narrowed_manski_lower_unresolved_all_wrong",
+        "silver_adjudicated_estimate_conditional_on_panel2_agreement",
+    ],
+)
+def test_render_fails_when_an_endpoint_is_missing_from_the_artifact(missing: str) -> None:
+    panel2 = copy.deepcopy(PANEL2)
+    del panel2["narrowed_bounds"][missing]
+    with pytest.raises(OverallRangeGuardError, match="missing"):
+        _render(panel2=panel2)
+
+
+def test_render_fails_loudly_when_an_endpoint_reaches_the_headline() -> None:
+    panel2 = copy.deepcopy(PANEL2)
+    nb = panel2["narrowed_bounds"]
+    nb["silver_adjudicated_estimate_conditional_on_panel2_agreement"]["score"] = 0.80
+    with pytest.raises(OverallRangeGuardError, match="inconsistent"):
+        _render(panel2=panel2)
 
 
 def test_pros_is_reported_separately_and_headline_scorer_is_disclosed() -> None:

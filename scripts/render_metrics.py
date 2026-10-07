@@ -139,36 +139,28 @@ def _label_agreement_text(data: dict[str, Any]) -> str:
     )
 
 
-# S18 D1: the overall-accuracy clause is an editorial claim ("roughly the mid-70s"), so it is
-# derived, not typed. It is printed only while every piece of evidence sits inside this band and
-# below the headline; otherwise rendering fails loudly rather than letting a stale sentence ship.
-MID_SEVENTIES_BAND = (0.730, 0.780)
-MID_SEVENTIES_CLAUSE = "in roughly the mid-70s"
-LOWER_THAN_HEADLINE_CLAUSE = "lower than the headline"
+# D6 (2026-10-07): the overall-accuracy clause states a RANGE whose two endpoints are read from the
+# panel-2 artifact (narrowed Manski lower bound, silver adjudicated estimate), never typed. The
+# guard below checks the endpoints themselves, not a phrase: both present, ordered, and strictly
+# below the headline (the sentence says overall accuracy is "probably lower than the headline").
+class OverallRangeGuardError(ValueError):
+    """The independent-estimate endpoints are missing or inconsistent with the headline."""
 
 
-class MidSeventiesGuardError(ValueError):
-    """The evidence behind "roughly the mid-70s" left the band the sentence is tied to."""
-
-
-def mid_seventies_clause(
-    evidence: dict[str, float], silver_estimate: float, headline: float
-) -> tuple[str, bool]:
-    """(clause, guard_ok). `evidence` maps a label to a fraction in [0, 1].
-
-    Evidence = the three panel-1 judge-sensitivity scores and the narrowed Manski lower bound (the
-    inputs the sentence is justified by; the narrowed interval itself is never printed). Guard
-    passes iff every one lies in MID_SEVENTIES_BAND and below the headline, and the silver
-    adjudicated estimate lies at or above the band floor and below the headline. On failure the
-    clause degrades to "lower than the headline" and the caller must fail the build.
-    """
-    lo, hi = MID_SEVENTIES_BAND
-    ok = (
-        bool(evidence)
-        and all(lo <= v <= hi and v < headline for v in evidence.values())
-        and lo <= silver_estimate < headline
-    )
-    return (MID_SEVENTIES_CLAUSE if ok else LOWER_THAN_HEADLINE_CLAUSE), ok
+def overall_range_clause(lower: float | None, upper: float | None, headline: float) -> str:
+    """Render "73.7% to 78.1%"-shaped text from two fractions in [0, 1]; fail loudly otherwise."""
+    if lower is None or upper is None:
+        raise OverallRangeGuardError(
+            f"overall-accuracy range endpoints missing from the artifacts: lower={lower}, "
+            f"upper={upper}; re-run the panel-2 analysis"
+        )
+    if not (lower < upper < headline):
+        raise OverallRangeGuardError(
+            f"overall-accuracy range is inconsistent: lower={lower * 100:.1f}%, "
+            f"upper={upper * 100:.1f}%, headline={headline * 100:.1f}%; required lower < upper "
+            "< headline, otherwise the sentence 'probably lower than the headline' is false"
+        )
+    return f"{_fmt_pct(lower)} to {_fmt_pct(upper)}"
 
 
 def _adjudicated_headline_parts(data: dict[str, Any], panel2: dict[str, Any]) -> dict[str, Any]:
@@ -191,26 +183,14 @@ def _adjudicated_headline_parts(data: dict[str, Any], panel2: dict[str, Any]) ->
         raise ValueError("panel2_silver.json has no per-field scores on resolved pairs")
     ints = [round(v["mean_score_on_resolved_vs_silver"] * 100) for v in per_field.values()]
     pub = data["headline_grid"][data["headline_policy"]["cell"]]["as_deployed"]["score"]
-    js = un["judge_sensitivity"]["scored_against_each_judge"]
-    evidence = {f"judge {j}": v["score"] for j, v in js.items()}
-    evidence["narrowed lower bound"] = nb["narrowed_manski_lower_unresolved_all_wrong"]["score"]
-    silver = nb["silver_adjudicated_estimate_conditional_on_panel2_agreement"]["score"]
-    clause, ok = mid_seventies_clause(evidence, silver, pub)
-    if not ok:
-        lo, hi = MID_SEVENTIES_BAND
-        raise MidSeventiesGuardError(
-            f'"{MID_SEVENTIES_CLAUSE}" is no longer supported: evidence '
-            + ", ".join(f"{k}={v * 100:.1f}%" for k, v in evidence.items())
-            + f", silver estimate={silver * 100:.1f}%, headline={pub * 100:.1f}%; required: each "
-            f"evidence value in [{lo * 100:.1f}%, {hi * 100:.1f}%] and below the headline, silver "
-            f"in [{lo * 100:.1f}%, headline). The sentence would have to read "
-            f'"{LOWER_THAN_HEADLINE_CLAUSE}"; fix the copy and the guard deliberately.'
-        )
+    lower = nb.get("narrowed_manski_lower_unresolved_all_wrong", {}).get("score")
+    upper = nb.get("silver_adjudicated_estimate_conditional_on_panel2_agreement", {}).get("score")
+    range_text = overall_range_clause(lower, upper, pub)
     return {
         "n_resolved": nb["n_resolved_by_panel2"],
         "range": (min(ints), max(ints)),
         "per_field": per_field,
-        "clause": clause,
+        "overall_range": range_text,
     }
 
 
@@ -289,8 +269,8 @@ def _render_held_out_grid_md(
         "unscored. Those are the hardest cases: on the "
         f"{adj['n_resolved']} of them a second, independent LLM panel could settle, the model "
         f"scores {adj['range'][0]}-{adj['range'][1]}% depending on the field. So overall "
-        f"accuracy is probably lower than the headline, {adj['clause']} (exploratory, "
-        "LLM-judged, not human-verified).**",
+        f"accuracy is probably lower than the headline — independent estimates range "
+        f"{adj['overall_range']} (exploratory, LLM-judged, not human-verified).**",
         "",
         "Second-panel scores by field on those pairs (LLM-consensus silver, not ground truth; "
         + ", ".join(

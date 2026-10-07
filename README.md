@@ -170,7 +170,7 @@ of overall accuracy is identifiable, and an exploratory second-panel read of the
 
 <!-- METRICS:START:held_out_table -->Measured 2026-10-07T12:10:52Z &middot; `831a45b` &middot; models: openai/gpt-oss-20b / openai/gpt-oss-120b
 
-**79.6% [76.2%, 82.8%] on 70 unseen reviews, scored only where the three-judge panel agreed. 10.7% of field-pairs (60 of 560) had no consensus and are unscored. Those are the hardest cases: on the 29 of them a second, independent LLM panel could settle, the model scores 47-71% depending on the field. So overall accuracy is probably lower than the headline, in roughly the mid-70s (exploratory, LLM-judged, not human-verified).**
+**79.6% [76.2%, 82.8%] on 70 unseen reviews, scored only where the three-judge panel agreed. 10.7% of field-pairs (60 of 560) had no consensus and are unscored. Those are the hardest cases: on the 29 of them a second, independent LLM panel could settle, the model scores 47-71% depending on the field. So overall accuracy is probably lower than the headline — independent estimates range 73.7% to 78.0% (exploratory, LLM-judged, not human-verified).**
 
 Second-panel scores by field on those pairs (LLM-consensus silver, not ground truth; `product` 62.5% (n=8), `topics` 47.3% (n=10), `pros` 50.5% (n=8), `cons` 71.2% (n=3)): small samples, so each is a rough indication only.
 
