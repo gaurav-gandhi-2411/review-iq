@@ -330,7 +330,7 @@ def _scan_topic_polarity(
         # Needs a clean upward shape (correlation) AND a meaningful absolute rise AND a sustained,
         # spread-out shape (guards in _sustained_rise) -- none alone is a strong signal.
         confidence = min(1.0, correlation) * min(1.0, rise / rise_saturation)
-        confidence = round(max(0.0, confidence), 3)
+        confidence = max(0.0, confidence)  # full precision; rounded only for output (S19)
 
         evidence: dict[str, Any] = {
             "phase_counts": phase_counts,
@@ -405,7 +405,7 @@ def _scan_aggregate_polarity(
         return None
 
     confidence = min(1.0, correlation) * min(1.0, rise / RATIO_RISE_SATURATION)
-    confidence = round(max(0.0, confidence), 3)
+    confidence = max(0.0, confidence)  # full precision; rounded only for output (S19)
 
     evidence: dict[str, Any] = {
         "phase_ratios": [round(r, 3) for r in ratios],
@@ -510,7 +510,7 @@ def _trend_flag_to_dict(flag: TrendFlag) -> dict[str, Any]:
         "product_id": flag.product_id,
         "trend_type": flag.trend_type,
         "topic": flag.topic,
-        "confidence": flag.confidence,
+        "confidence": round(flag.confidence, 3),
         "evidence": flag.evidence,
     }
 
@@ -530,7 +530,7 @@ def write_report(flags: list[TrendFlag], path: Path) -> None:
         label = f"{flag.product_id} / {flag.trend_type}"
         if flag.topic is not None:
             label += f" / {flag.topic!r}"
-        lines.append(f"## {i}. confidence={flag.confidence} -- {label}")
+        lines.append(f"## {i}. confidence={round(flag.confidence, 3)} -- {label}")
         lines.append("")
         if "phase_counts" in flag.evidence:
             counts_str = " -> ".join(str(c) for c in flag.evidence["phase_counts"])

@@ -127,12 +127,13 @@ def score_product(
     rating_contribution = rating_signal * (
         1.0 if text_signal > 0 else NO_TEXT_EVIDENCE_RATING_DISCOUNT
     )
-    confidence = round(
-        TEXT_SIGNAL_WEIGHT * text_signal + RATING_SIGNAL_WEIGHT * rating_contribution, 3
-    )
+    # Full precision for the reporting-bar comparison; rounded to 3 dp only for the output record
+    # (S19: a raw 0.15004 used to round to 0.15 and fail `> 0.15`, mirroring the #265 detector fix).
+    confidence_exact = TEXT_SIGNAL_WEIGHT * text_signal + RATING_SIGNAL_WEIGHT * rating_contribution
+    confidence = round(confidence_exact, 3)
 
     has_residual_cluster = len(breakdown.residual_clusters) > 0
-    if confidence <= CONFIDENCE_REPORT_THRESHOLD and not has_residual_cluster:
+    if confidence_exact <= CONFIDENCE_REPORT_THRESHOLD and not has_residual_cluster:
         return None
 
     residual_sorted = sorted(
@@ -165,6 +166,9 @@ def score_product(
         "raw_product_name_variants": raw_variants,
         "n_reviews": n_reviews,
         "confidence": confidence,
+        # Private (underscore): stripped by output_record() before anything is serialised, so the
+        # recorded JSONL shape is unchanged. Lets main() count > bar on the exact value.
+        "_confidence_exact": confidence_exact,
         "text_signal": round(text_signal, 3),
         "rating_signal": round(rating_signal, 3),
         # Unsaturated, for ranking only: text_signal caps at 1.0 past 5x enrichment, which ties
@@ -216,6 +220,8 @@ def build_flagged_records(records: list[dict]) -> tuple[list[dict[str, Any]], in
         if record is not None:
             flagged.append(record)
 
+    # Sort key deliberately uses the 3 dp confidence: ties at that granularity are broken by
+    # max_enrichment (see score_product). This is an ordering, not a threshold comparison.
     flagged.sort(key=lambda r: (r["confidence"], r["max_enrichment"]), reverse=True)
     return flagged, n_considered
 
@@ -235,6 +241,16 @@ def _format_examples(clusters: list[dict[str, Any]], limit: int = 2) -> str:
             f"ratings={cluster['ratings']}{enrichment_note}) {text_preview!r}"
         )
     return "\n".join(lines) if lines else "    (none)"
+
+
+def output_record(record: dict[str, Any]) -> dict[str, Any]:
+    """The record as serialised to flagged_products.jsonl: private (underscore) keys dropped."""
+    return {k: v for k, v in record.items() if not k.startswith("_")}
+
+
+def count_above_bar(flagged: list[dict[str, Any]]) -> int:
+    """How many records clear the reporting bar, judged on the exact (unrounded) confidence."""
+    return sum(1 for r in flagged if r["_confidence_exact"] > CONFIDENCE_REPORT_THRESHOLD)
 
 
 def write_report(flagged: list[dict[str, Any]], path: Path, top_n: int = 25) -> None:
@@ -287,13 +303,13 @@ def main() -> None:
     jsonl_path = out_dir / "flagged_products.jsonl"
     with jsonl_path.open("w", encoding="utf-8") as f:
         for record in flagged:
-            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+            f.write(json.dumps(output_record(record), ensure_ascii=False) + "\n")
 
     report_path = out_dir / "TOP_FLAGGED_REPORT.md"
     write_report(flagged, report_path)
 
     confidences = [r["confidence"] for r in flagged]
-    n_above_bar = sum(1 for c in confidences if c > CONFIDENCE_REPORT_THRESHOLD)
+    n_above_bar = count_above_bar(flagged)
     buckets = defaultdict(int)
     for c in confidences:
         bucket = min(int(c * 10) / 10, 0.9)
