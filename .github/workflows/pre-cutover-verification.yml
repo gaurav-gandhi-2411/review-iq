@@ -25,17 +25,17 @@ name: Pre-Cutover Verification (ephemeral Postgres)
 # in supabase/migrations/ -- without it, three RLS tests fail with a hard
 # InsufficientPrivilege instead of the expected "0 rows, RLS-denied" outcome).
 #
-# Excluded, and why (none of these can run against a local container regardless of
-# migration correctness):
+# Excluded, and why (the ONLY exclusions; tests/unit/test_workflow_controls.py fails on any
+# other --deselect / --ignore / -k "not" in a pytest step):
 #   - tests/integration/test_resend_e2e.py: sends real email via a real Resend API key.
-#   - test_adversarial_cross_tenant.py::TestVector2ForgedJWT::
-#     test_garbage_jwt_rejected_by_real_supabase_verification: calls the real, hosted
-#     Supabase Auth API (a separate service Postgres alone cannot replicate).
-#   - test_v2_multi_tenant.py::test_v2_extract_token_counts_recorded_in_db: makes a real,
-#     unmocked Groq call to assert real tokens_in/tokens_out get recorded -- deliberately
-#     not mocked like this file's other tests, since it exists specifically to prove
-#     non-mocked token accounting. No GROQ_API_KEY secret is configured for this job;
-#     same exclusion class as test_resend_e2e.py above, not an isolation concern.
+#   - test_admin.py / test_account_deletion.py: need SERVICE_ROLE=admin; run in the separate
+#     admin-service step below.
+# S19 Z10 (audit F9): three tests used to be --deselect'ed here and so ran NOWHERE, one of them
+# the forged-JWT tenant-isolation vector. All three are reselected: the forged-JWT test now runs
+# against a local signature-verifying stand-in for Supabase Auth (the app code is unmodified; see
+# local_supabase_auth in test_adversarial_cross_tenant.py), the token-accounting test stubs the
+# LLM boundary (it proves the DB accounting path, not Groq), and the batch-resume test passed
+# reselected. Do not deselect a test here again; fix it.
 #
 # /admin/* routes only mount when SERVICE_ROLE=admin (ADR 0006) -- app.main.app is a
 # module-level singleton keyed off that env var at import time, so admin-dependent
@@ -175,19 +175,10 @@ jobs:
             exit 1
           fi
 
-      # test_resume_after_partial_drain_and_zero_cost_dedup deselected: a
-      # pre-existing, unrelated test-isolation flake (confirmed 2026-08-01 --
-      # the actual feature under test works correctly, all 5 rows processed
-      # and the job completes; only the test's own LLM-call-counting closure
-      # intermittently reports 0 instead of 5) reproducing in real GitHub
-      # Actions, not fixed as part of this pass. Not a BYPASSRLS regression.
       - name: Public-service tests (SERVICE_ROLE unset)
         run: |
           uv run pytest tests/integration/ -v -m integration --no-cov \
             --ignore=tests/integration/test_resend_e2e.py \
-            --deselect "tests/integration/test_adversarial_cross_tenant.py::TestVector2ForgedJWT::test_garbage_jwt_rejected_by_real_supabase_verification" \
-            --deselect "tests/integration/test_batch_job_rows_isolation.py::test_resume_after_partial_drain_and_zero_cost_dedup" \
-            --deselect "tests/integration/test_v2_multi_tenant.py::test_v2_extract_token_counts_recorded_in_db" \
             --ignore=tests/integration/test_admin.py \
             --ignore=tests/integration/test_account_deletion.py
 
