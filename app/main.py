@@ -27,6 +27,7 @@ from app.api.internal.ingest_tick import router as internal_ingest_tick_router
 from app.api.internal.retention import router as internal_retention_router
 from app.api.leads import LEADS_ALLOWED_ORIGINS, LEADS_PATH, leads_rate_limit_response
 from app.api.leads import router as leads_router
+from app.api.ops import root_router as ops_root_router
 from app.api.ops import router as ops_router
 from app.api.query import router as query_router
 from app.api.shopify_auth import router as shopify_auth_router
@@ -233,6 +234,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # Ops (health + metrics) — always mounted, unauthenticated (Cloud Run readiness probes
     # need /health regardless of which service this is).
     _app.include_router(ops_router)
+    if settings.deploy_target == "cloud-run":
+        _app.include_router(ops_root_router)
 
     # Wave 1 S0 remediation (ADR 0006): the admin service mounts ONLY ops + admin — no
     # public-facing surface at all, so a misconfigured IAM binding has nothing else to
