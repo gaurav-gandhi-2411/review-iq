@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { isValidShop, normalizeShop } from './shopDomain'
 
 const API_URL = import.meta.env.VITE_API_URL as string
 
@@ -284,4 +285,61 @@ export async function revokeApiKey(id: string): Promise<void> {
     const detail = await res.json().catch(() => ({ detail: 'Unknown error' }))
     throw new BffError(res.status, detail?.detail ?? `Error ${res.status}`)
   }
+}
+
+// ---- Shopify connector ----
+// Typed errors: the API returns detail = {code, message} for this router.
+export class ShopifyApiError extends Error {
+  status: number
+  code: string
+  constructor(status: number, code: string, message: string) {
+    super(message)
+    this.status = status
+    this.code = code
+  }
+}
+
+export interface ShopifyInstallation {
+  shop_domain: string
+  installed_at: string | null
+  revoked_at: string | null
+}
+
+export interface ShopifyStatus {
+  enabled: boolean
+  installations: ShopifyInstallation[]
+}
+
+export { isValidShop, normalizeShop }
+
+async function shopifyFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const jwt = await getJwt()
+  const res = await fetch(`${API_URL}/auth/shopify${path}`, {
+    ...init,
+    headers: { 'Authorization': `Bearer ${jwt}`, 'Content-Type': 'application/json' },
+  })
+  if (!res.ok) {
+    const body = await res.json().catch(() => null)
+    const detail = body?.detail
+    throw new ShopifyApiError(
+      res.status,
+      typeof detail === 'object' && detail?.code ? detail.code : 'unknown',
+      typeof detail === 'object' && detail?.message ? detail.message : `Error ${res.status}`,
+    )
+  }
+  return res.json()
+}
+
+export function getShopifyStatus(): Promise<ShopifyStatus> {
+  return shopifyFetch('/status')
+}
+
+export function beginShopifyInstall(shop: string): Promise<{ state: string; redirect_url: string }> {
+  return shopifyFetch(`/begin?shop=${encodeURIComponent(normalizeShop(shop))}`)
+}
+
+// `params` is every query param Shopify put on the redirect, forwarded verbatim: Shopify's hmac
+// covers all of them (including `host`), so dropping any makes a genuine callback fail.
+export function completeShopifyInstall(params: Record<string, string>): Promise<{ status: string; shop: string }> {
+  return shopifyFetch('/callback', { method: 'POST', body: JSON.stringify(params) })
 }
