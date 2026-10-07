@@ -15,9 +15,11 @@ interface Props {
   now: number
   /** 'dark' rows sit on the ink panel, 'light' rows on cream. */
   tone: 'dark' | 'light'
+  /** The review belongs to a detected bulk import (see dashboardModel.ts): label it. */
+  fromImport?: boolean
 }
 
-export default function ReviewRow({ review, now, tone }: Props) {
+export default function ReviewRow({ review, now, tone, fromImport = false }: Props) {
   const dark = tone === 'dark'
   const ts = reviewTime(review)
   const hash = review.input_hash.replace('sha256:', '')
@@ -37,6 +39,15 @@ export default function ReviewRow({ review, now, tone }: Props) {
         >
           {URGENCY_LABEL[review.urgency] ?? review.urgency}
         </span>
+        {fromImport && (
+          <span
+            className={`rounded border px-1.5 py-0.5 text-xs ${
+              dark ? 'border-cream-soft text-cream-soft' : 'border-ink-soft text-ink-soft'
+            }`}
+          >
+            From import
+          </span>
+        )}
         <time
           className={`${dark ? 'text-cream-soft' : 'text-ink-soft'} sm:ml-auto`}
           dateTime={ts === null ? undefined : new Date(ts).toISOString()}

@@ -49,6 +49,11 @@ export interface FixtureSpec {
   /** Reviews placed after FIXTURE_PREVIOUS_VISIT (the "new since last visit" set), of which urgentNew are urgent. */
   newSinceVisit?: number
   urgentNew?: number
+  /**
+   * A CSV upload with no customer dates: `count` reviews all analysed inside `spanMs`, the last
+   * one `endedAgoMs` before `now`. Of these, `urgent` are high urgency. They have no review_date.
+   */
+  bulkImport?: { count: number; urgent: number; endedAgoMs: number; spanMs: number }
 }
 
 function hex(n: number): string {
@@ -109,6 +114,12 @@ export function makeReviews(spec: FixtureSpec, now = FIXTURE_NOW): Review[] {
   for (let i = 0; i < (spec.newSinceVisit ?? 0); i++) {
     push(rnd() * sinceVisitMs * 0.95, i < (spec.urgentNew ?? 0))
   }
+  if (spec.bulkImport) {
+    const b = spec.bulkImport
+    for (let i = 0; i < b.count; i++) {
+      push(b.endedAgoMs + (b.spanMs * (b.count - 1 - i)) / Math.max(1, b.count - 1), i < b.urgent)
+    }
+  }
   return out.sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))
 }
 
@@ -117,6 +128,13 @@ export const FIXTURES = {
     makeReviews({ count: 110, spanDays: 60, urgentShare: 0.05, positiveShare: 0.6, recentUrgent: 3, newSinceVisit: 7, urgentNew: 2, risingTopic: 'delivery_delay' }),
   'urgent-heavy': () =>
     makeReviews({ count: 70, spanDays: 45, urgentShare: 0.08, positiveShare: 0.4, recentUrgent: 14, newSinceVisit: 12, urgentNew: 6, risingTopic: 'fabric_quality' }),
+  // A 140-review undated CSV analysed over 6 minutes, 3 hours ago, on top of a normal account:
+  // without grouping it would read as 140 reviews that "arrived" and bury the live ones.
+  'bulk-import': () =>
+    makeReviews({
+      count: 60, spanDays: 45, urgentShare: 0.04, positiveShare: 0.6, newSinceVisit: 4, urgentNew: 1,
+      bulkImport: { count: 140, urgent: 4, endedAgoMs: 3 * HOUR, spanMs: 6 * 60 * 1000 },
+    }),
   'range-empty': () =>
     makeReviews({ count: 30, spanDays: 40, urgentShare: 0.1, positiveShare: 0.6, startDaysAgo: 75 }),
   empty: () => [] as Review[],

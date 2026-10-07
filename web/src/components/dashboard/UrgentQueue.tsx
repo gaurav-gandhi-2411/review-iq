@@ -8,10 +8,12 @@ interface Props {
   reviews: Review[] // already urgent-only, newest first
   rangeLabel: string
   now: number
+  /** Ids of reviews that came from a detected bulk import; they stay in the queue, labelled. */
+  importIds?: ReadonlySet<number>
 }
 
 // The one dark slab on the page: the reviews that need a person, readable in place.
-export default function UrgentQueue({ reviews, rangeLabel, now }: Props) {
+export default function UrgentQueue({ reviews, rangeLabel, now, importIds }: Props) {
   const [expanded, setExpanded] = useState(false)
   const shown = expanded ? reviews : reviews.slice(0, URGENT_QUEUE_PREVIEW)
   const hidden = reviews.length - shown.length
@@ -40,7 +42,7 @@ export default function UrgentQueue({ reviews, rangeLabel, now }: Props) {
         <>
           <ul className="mt-6">
             {shown.map(r => (
-              <ReviewRow key={r.id} review={r} now={now} tone="dark" />
+              <ReviewRow key={r.id} review={r} now={now} tone="dark" fromImport={importIds?.has(r.id) ?? false} />
             ))}
           </ul>
           {reviews.length > URGENT_QUEUE_PREVIEW && (

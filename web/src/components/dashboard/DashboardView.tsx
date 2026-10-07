@@ -56,7 +56,7 @@ export default function DashboardView(p: DashboardViewProps) {
             {m.total === 0 ? (
               <RangeEmptyState rangeLabel={spec.label} olderCount={m.allTotal} />
             ) : (
-              <UrgentQueue reviews={m.urgent} rangeLabel={spec.label} now={p.now} />
+              <UrgentQueue reviews={m.urgent} rangeLabel={spec.label} now={p.now} importIds={m.importIds} />
             )}
             <NewSinceVisit fresh={m.fresh} now={p.now} />
             {m.total > 0 && (
