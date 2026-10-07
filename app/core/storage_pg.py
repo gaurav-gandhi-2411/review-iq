@@ -580,6 +580,28 @@ def create_batch_job_pg(
         conn.close()
 
 
+def existing_input_hashes_pg(org_id: str, hashes: list[str]) -> set[str]:
+    """Return the subset of `hashes` that already have an extraction row for this org.
+
+    Used by connector backfills to skip reviews that were already extracted, so a re-install
+    or re-run enqueues (and pays for) nothing it has already done. Org-scoped via RLS.
+    """
+    if not hashes:
+        return set()
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+        cur.execute(
+            "SELECT input_hash FROM public.extractions WHERE org_id = %s AND input_hash = ANY(%s)",
+            (org_id, hashes),
+        )
+        return {str(r[0]) for r in cur.fetchall()}
+    finally:
+        conn.rollback()
+        conn.close()
+
+
 def get_batch_job_pg(org_id: str, job_id: str) -> dict[str, Any] | None:
     """Return a batch job row for this org, or None if not found / wrong org."""
     conn = _db_connect()

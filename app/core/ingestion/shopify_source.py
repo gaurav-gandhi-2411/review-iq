@@ -10,7 +10,7 @@ RESEARCH FINDING (2026):
     1. The seller's store has a review app (e.g. Judge.me free tier) that participates
        in the Syndication Program and writes reviews to the metaobject.
     2. The review-iq Shopify app is installed on the seller's store with OAuth scopes:
-         write_product_reviews, read_metaobjects, read_products, read_customers
+         read_metaobjects, read_products (read-only; see app/api/shopify_auth.py)
     3. The seller's OAuth access_token is stored (per-org) and passed here.
 
   Real-time webhooks use topic METAOBJECTS_CREATE filtered by type:product_review.
@@ -21,7 +21,7 @@ WHAT GG MUST SET UP (escalation items):
   - Create a Shopify app → get SHOPIFY_CLIENT_ID + SHOPIFY_CLIENT_SECRET
   - Configure OAuth redirect URL (https://<your-api-domain>/auth/shopify/callback)
   - Configure webhook URL (https://<your-api-domain>/webhooks/shopify/reviews)
-  - Required OAuth scopes: write_product_reviews read_metaobjects read_products
+  - Required OAuth scopes: read_metaobjects read_products
   - Development store + a free review app (e.g. Judge.me) to test with real review data
   - Optionally apply for the Standard Product Review Syndication Program if Shopify
     requires it for reading (may only be required for apps WRITING to the metaobject)
@@ -43,7 +43,7 @@ log = structlog.get_logger(__name__)
 # resolved inline (avoids a second round-trip per review).
 _REVIEW_QUERY = """
 query GetProductReviews($after: String) {
-  metaobjects(type: "product_review", first: 50, after: $after, sortKey: UPDATED_AT) {
+  metaobjects(type: "product_review", first: 50, after: $after, sortKey: UPDATED_AT, reverse: true) {
     pageInfo {
       hasNextPage
       endCursor
@@ -153,8 +153,11 @@ class ShopifySource:
     def source_type(self) -> str:
         return "shopify"
 
-    async def fetch_reviews(self) -> list[ReviewRow]:
-        """Fetch all product_review metaobjects via paginated GraphQL queries.
+    async def fetch_reviews(self, limit: int | None = None) -> list[ReviewRow]:
+        """Fetch product_review metaobjects (newest first) via paginated GraphQL queries.
+
+        `limit`: stop paging once this many non-empty rows are collected (the post-install
+        backfill caps cost; the newest reviews are the ones worth extracting first).
 
         Raises SourceError on HTTP or GraphQL-level failure so callers can
         distinguish a retrieval failure from empty results.
@@ -209,6 +212,9 @@ class ShopifySource:
                     running_total=len(rows),
                 )
 
+                if limit is not None and len(rows) >= limit:
+                    rows = rows[:limit]
+                    break
                 if not page_info.get("hasNextPage"):
                     break
                 cursor = page_info.get("endCursor")
