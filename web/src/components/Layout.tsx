@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { Upload, BarChart2, LogOut, MessageSquare, Key, X, ArrowUpRight, CheckCircle2 } from 'lucide-react'
+import { Upload, BarChart2, LogOut, MessageSquare, Key, Store, X, ArrowUpRight, CheckCircle2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { getAccount, requestQuotaIncrease } from '../lib/api'
 import LogoMark from './LogoMark'
 
 const QUOTA_WARN_THRESHOLD = 0.8
 
-interface Props { children: React.ReactNode; active?: 'upload' | 'dashboard' | 'reviews' | 'keys' }
+interface Props { children: React.ReactNode; active?: 'upload' | 'dashboard' | 'reviews' | 'keys' | 'integrations' }
 
 export default function Layout({ children, active }: Props) {
   const navigate = useNavigate()
@@ -86,6 +86,9 @@ export default function Layout({ children, active }: Props) {
             </NavLink>
             <NavLink href="/upload" active={active === 'upload'} icon={<Upload size={15} />}>
               Upload
+            </NavLink>
+            <NavLink href="/integrations/shopify" active={active === 'integrations'} icon={<Store size={15} />}>
+              Integrations
             </NavLink>
             <NavLink href="/keys" active={active === 'keys'} icon={<Key size={15} />}>
               API keys
