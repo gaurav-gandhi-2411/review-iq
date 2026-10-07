@@ -173,7 +173,7 @@ def main() -> None:
         )
         print(
             f"  {flag.product_id} / {flag.trend_type} / {flag.topic}: "
-            f"confidence={flag.confidence} {shape} correlation={flag.evidence['correlation']}"
+            f"confidence={round(flag.confidence, 3)} {shape} correlation={flag.evidence['correlation']}"
         )
 
 
