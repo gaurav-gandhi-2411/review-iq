@@ -63,23 +63,25 @@ Total cost per tier = (quota × $0.000534/extraction) + $18.47 (fixed, 5-custome
 
 | Tier | Quota | Price | Variable cost | Fixed alloc | Payment | Total cost | Margin |
 |---|---|---|---|---|---|---|---|
-| Starter | 10,000 | $59 | $5.34 | $18.47 | $2.09 | $25.90 | **56.1%** |
-| Growth | 50,000 | $99 | $26.70 | $18.47 | $3.51 | $48.68 | **50.8%** |
-| Agency | 200,000 | $249 | $106.80 | $18.47 | $8.82 | $134.09 | **46.1%** |
+| Starter | 5,000 | $59 | $2.67 | $18.47 | $2.09 | $23.23 | **60.6%** |
+| Growth | 25,000 | $99 | $13.35 | $18.47 | $3.50 | $35.32 | **64.3%** |
+| Agency | 200,000 | $249 | $106.80 | $18.47 | $8.81 | $134.08 | **46.2%** |
 
-**All three international tiers land inside or very close to the 45-55% band as-is.** No
-correction needed.
+Quotas follow the live pricing page (`site/index.html` lines 763, 771, 785: Starter 5,000,
+Growth 25,000, Agency 200,000+ reviews/mo). Starter and Growth now sit above the 45-55% band
+(more margin than targeted); Agency sits just above its floor. No correction needed for the
+international tiers.
 
 ### India (INR)
 
 | Tier | Quota | Price | Variable cost | Fixed alloc | Payment | Total cost | Margin |
 |---|---|---|---|---|---|---|---|
-| Starter | 10,000 | ₹2,999 ($31.34) | $5.34 | $18.47 | $1.11 | $24.92 | **20.5%** |
-| Growth | 50,000 | ₹6,999 ($73.14) | $26.70 | $18.47 | $2.59 | $47.76 | **34.7%** |
-| Agency | 200,000 | ₹19,999 ($208.98) | $106.80 | $18.47 | $7.40 | $132.67 | **36.5%** |
+| Starter | 5,000 | ₹2,999 ($31.34) | $2.67 | $18.47 | $1.11 | $22.25 | **29.0%** |
+| Growth | 25,000 | ₹6,999 ($73.14) | $13.35 | $18.47 | $2.59 | $34.41 | **53.0%** |
+| Agency | 200,000 | ₹19,999 ($208.99) | $106.80 | $18.47 | $7.40 | $132.67 | **36.5%** |
 
-**None of the three India tiers clear the 45-55% band at the 5-customer allocation — all three
-are materially below it, by 8.5–24.5 points.** This is not a small rounding gap. The India
+**At the 5-customer allocation India Growth clears the 45-55% band; India Starter and Agency do
+not, by 16.0 and 8.5 points respectively.** This is not a small rounding gap. The India
 tiers are priced at roughly half the USD-equivalent of the international tiers for the *same
 quota* (e.g. Starter: $59 international vs. $31.34-equivalent India), while the underlying
 Groq/infra costs are identical regardless of the customer's currency — so the India tiers
@@ -90,16 +92,16 @@ absorb the full cost base against a smaller revenue number.
 
 | Tier | Current | Price needed for 45% margin | Increase |
 |---|---|---|---|
-| Starter | ₹2,999 | **₹4,414** | +47% |
-| Growth | ₹6,999 | **₹8,387** | +20% |
-| Agency | ₹19,999 | **₹23,283** | +16% |
+| Starter | ₹2,999 | **₹3,931** | +31% |
+| Growth | ₹6,999 | **₹5,917** | none (current price already clears; -15%) |
+| Agency | ₹19,999 | **₹23,295** | +16% |
 
 **This is reported, not decided.** D2 explicitly labels this "early access pricing," and
 deliberately pricing below the margin target to acquire initial customers is a legitimate,
 common go-to-market choice — the gap may be intentional. What this section adds is the exact
 size of that gap in real numbers, so it's a stated tradeoff rather than an unmeasured one:
-**at 5 India customers on current prices, the blended India-tier margin runs roughly 20-37%,
-not 45-55%** — GG's call on whether "early access" already prices that in, or whether the
+**at 5 India customers on current prices, the India-tier margin runs roughly 29-53% (Growth
+inside the band, Starter and Agency below it)** — GG's call on whether "early access" already prices that in, or whether the
 correction above should apply now.
 
 ## 5. Frontier-model "Precision tier" option (P4e)
@@ -112,7 +114,7 @@ pass returned fabricated model names, discarded before use):
 **$0.02622/extraction** — roughly **49x** the current Groq blended cost ($0.000534).
 
 At this rate, a Precision tier cannot use the same quota tiers as the Groq-backed product
-(50,000 extractions/month would cost **$1,310.75** in LLM spend alone, before any margin) — it
+(25,000 extractions/month would cost **$655.50** in LLM spend alone, before any margin) — it
 needs its own, much smaller quota, positioned for customers who want the highest accuracy on a
 curated subset of reviews (e.g. only escalated/high-urgency ones), not bulk volume.
 
@@ -196,56 +198,76 @@ F = Supabase $25 + Cloud Run $47.34 + Vercel $20 + Resend $0 + Secret Manager $0
 $0.07 = **$92.89/month** (was $92.34). Cloud Run is still the min-instances=1 projection, not
 today's scale-to-zero. Resend stays $0 only while sends stay under 3,000/month and 100/day.
 
-### 7.3 Margin per tier at 1, 5, 10, 20 customers
+### 7.3 Margin per tier at 1, 5, 10, 20, 40 customers
+
+Quotas as on the live pricing page (`site/index.html` lines 763, 771, 785): Starter 5,000,
+Growth 25,000, Agency 200,000. An earlier revision of this table used 10,000 / 50,000; that was
+wrong and is corrected here (S19 N6).
 
 Formulas (all customers assumed on the same tier, 100% quota use, which is the worst case):
 
-- fixed per customer = F / N
+- fixed per customer = F / N, F = $92.89 (7.2)
 - variable = quota x $0.000534 (blended cost per extraction, section 1)
 - payment = 3.54% x price (3% + 18% GST on the fee)
 - margin = (price - variable - F/N - payment) / price
 
-| Tier | Price (USD) | Variable | 1 cust | 5 cust | 10 cust | 20 cust |
-|---|---|---|---|---|---|---|
-| Starter intl (10K) | $59 | $5.34 | -70.0% | 55.9% | 71.7% | 79.5% |
-| Growth intl (50K) | $99 | $26.70 | -24.3% | 50.7% | 60.1% | 64.8% |
-| Agency intl (200K) | $249 | $106.80 | 16.3% | 46.1% | 49.8% | 51.7% |
-| Starter IN (10K) | Rs 2,999 = $31.34 | $5.34 | -217.0% | 20.1% | 49.8% | 64.6% |
-| Growth IN (50K) | Rs 6,999 = $73.14 | $26.70 | -67.1% | 34.6% | 47.3% | 53.6% |
-| Agency IN (200K) | Rs 19,999 = $208.99 | $106.80 | 0.9% | 36.5% | 40.9% | 43.1% |
+| Tier | Price (USD) | Variable | 1 cust | 5 cust | 10 cust | 20 cust | 40 cust |
+|---|---|---|---|---|---|---|---|
+| Starter intl (5K) | $59 | $2.67 | -65.5% | 60.4% | 76.2% | 84.1% | 88.0% |
+| Growth intl (25K) | $99 | $13.35 | -10.9% | 64.2% | 73.6% | 78.3% | 80.6% |
+| Agency intl (200K) | $249 | $106.80 | 16.3% | 46.1% | 49.8% | 51.7% | 52.6% |
+| Starter IN (5K) | Rs 2,999 = $31.34 | $2.67 | -208.5% | 28.7% | 58.3% | 73.1% | 80.5% |
+| Growth IN (25K) | Rs 6,999 = $73.14 | $13.35 | -48.8% | 52.8% | 65.5% | 71.9% | 75.0% |
+| Agency IN (200K) | Rs 19,999 = $208.99 | $106.80 | 0.9% | 36.5% | 40.9% | 43.1% | 44.2% |
 
-Worked check (Starter intl, 5): 5.34 + 92.89/5 + 0.0354 x 59 = 5.34 + 18.58 + 2.09 = 26.01;
-(59 - 26.01)/59 = 55.9%. The 0.2-point drop from section 4's 56.1% is the added $0.55 of F.
+Worked check (Starter intl, 5): 2.67 + 92.89/5 + 0.0354 x 59 = 2.67 + 18.58 + 2.09 = 23.34;
+(59 - 23.34)/59 = 60.4%. Worked check (Growth intl, 40): 13.35 + 92.89/40 + 0.0354 x 99 =
+13.35 + 2.32 + 3.50 = 19.17; (99 - 19.17)/99 = 80.6%.
 FX: Rs 95.6943/USD (`pricing.py`, 2026-07-31). Prices are treated as GST-exclusive, as before.
-Fixed per customer: $92.89 / $18.58 / $9.29 / $4.64.
+Fixed per customer: $92.89 / $18.58 / $9.29 / $4.64 / $2.32.
 
-Reading: all three international tiers clear 45% at 5 customers (Agency barely, 46.1%). India
-Starter and Growth clear it at 10 customers (49.8%, 47.3%); India Agency does not clear it even at
-20 (43.1%). At 1 customer every tier except Agency intl is at or below break-even, so a single early
-customer is carried by running paid-tier infrastructure ahead of revenue.
+Resend: the 40-customer column keeps Resend at $0 (3,000 emails/month, 100/day). Whether 40
+customers' alert and digest email fits under that cap is unmeasured; if Resend Pro ($20/month)
+is needed, F = $112.89 and the 40-customer column becomes: Starter intl 87.2%, Growth intl 80.1%,
+Agency intl 52.4%, Starter IN 78.9%, Growth IN 74.3%, Agency IN 44.0%.
+
+Reading: Starter and Growth intl and Growth IN clear 45% at 5 customers; Agency intl clears it
+(46.1%) barely. Starter IN clears it at 10 customers (58.3%) but not at 5 (28.7%). Agency IN does
+not clear it at any count up to 40 (44.2%). At 1 customer every tier except Agency intl is at or
+below break-even, so a single early customer is carried by running paid-tier infrastructure ahead
+of revenue.
+
+Note: the live pricing page lists different prices from the ones modelled above ($29 / Rs 1,499
+Starter, $79 / Rs 4,999 Growth, a $199 / Rs 12,999 100,000-review Scale tier, Agency "Talk to us";
+`site/index.html` lines 764-785), and `docs/payments-readiness.md` records the same figures. This
+section's prices ($59 / $99 / $249 and the Rs equivalents) are the D2 planning prices, not the
+site's, and are left as they were; only quotas were reconciled in S19 N6. Re-run this table at the
+site's prices before quoting a margin externally.
 
 ### 7.4 Starter at $15 / Rs 999 at 45% margin (S19 M4b)
 
 Solve 45% for N: price x (1 - 0.0354 - 0.45) - variable = F/N, so N = F / (price x 0.5146 - variable).
+Quota is 5,000 (live pricing page). Rs 999 = $10.44 at Rs 95.6943/USD.
 
 | Case | Price | Quota | Room for fixed cost per customer | Customers needed (F = $92.89) | If Resend Pro is needed (F = $112.89) |
 |---|---|---|---|---|---|
-| Starter at $15 | $15.00 | 10,000 | 15 x 0.5146 - 5.34 = $2.379 | **40** (39.05) | 48 (47.45) |
-| Starter at Rs 999 | $10.44 | 10,000 | $0.032 | ~2,900 (not feasible) | ~3,500 |
-| $15, quota cut to 5,000 | $15.00 | 5,000 | $5.049 | 19 (18.4) | 23 |
-| Rs 999, quota cut to 5,000 | $10.44 | 5,000 | $2.702 | 35 (34.4) | 42 |
+| Starter at $15 | $15.00 | 5,000 | 15 x 0.5146 - 2.67 = $5.049 | **19** (18.4) | 23 (22.4) |
+| Starter at Rs 999 | $10.44 | 5,000 | 10.44 x 0.5146 - 2.67 = $2.702 | **35** (34.4) | 42 (41.8) |
+| $15, 10,000 quota (superseded) | $15.00 | 10,000 | $2.379 | 40 (39.05) | 48 (47.45) |
+| Rs 999, 10,000 quota (superseded) | $10.44 | 10,000 | $0.032 | ~2,900 (not feasible) | ~3,500 |
 
 Assumptions: every customer is on this tier at full quota use; F as in 7.2; blended
 $0.000534/extraction; no discounts, taxes beyond the 3.54%, or support cost; cost per extraction
-does not fall with volume.
+does not fall with volume; the Groq paid plan is live (see below).
 
-Conclusion: **$15 works at 40 customers on a 10,000 quota; Rs 999 does not work at 10,000** because
-variable cost alone ($5.34) is 51% of the rupee price. The honest levers are a 5,000 quota (note
-section 6 already calls Starter 5,000/month; this doc's tables use 10,000 - reconcile before
-quoting) or a cheaper per-extraction cost (route more traffic to the small tier: at 100% small,
-c = $0.000363, variable $3.63, Rs 999 needs N = 92.89/(5.372 - 3.63) = 54).
-Hard prerequisite at 40 customers: 400,000 extractions/month vs the ~4,217/month free-tier ceiling
-(section 6), so the Groq Developer plan must be live, and its limits are still unverified.
+Conclusion: on the 5,000 quota both prices reach 45% margin: **$15 at 19 customers, Rs 999 at 35
+customers** (23 and 42 if Resend Pro is needed). The earlier 40-customer / not-feasible result came
+from modelling a 10,000 quota that the site does not offer. A cheaper per-extraction cost lowers
+the Rs 999 figure further: at 100% small-tier routing (c = $0.000363, variable $1.82) Rs 999 needs
+N = 92.89 / (5.372 - 1.82) = 26.
+Hard prerequisite: at 35 customers on Starter that is 175,000 extractions/month (19 customers:
+95,000) against the ~4,217/month free-tier ceiling (section 6), so the Groq Developer plan must be
+live, and its limits are still unverified.
 
 ## Provenance
 
