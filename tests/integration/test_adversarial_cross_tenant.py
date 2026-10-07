@@ -164,16 +164,158 @@ class TestVector1ValidKeyWrongOrg:
         )
 
 
+# --- Local stand-in for Supabase Auth's GET /auth/v1/user (S19 Z10) -----------------------
+# The forged-JWT vector used to call the REAL hosted Supabase Auth API, which CI cannot reach,
+# so it was deselected and ran nowhere. A stub that merely answered 401 to everything would
+# prove nothing, so this one does what GoTrue does: verify the token's HS256 signature against
+# a locally generated secret and answer 200 + the user for a genuine token, 401 otherwise.
+# The real app code under test (verify_supabase_jwt -> supabase client -> HTTP -> our 401
+# mapping -> resolve_org_for_user -> RLS) runs unmodified; only the identity provider is local.
+
+_LOCAL_JWT_SECRET = "z10-local-test-secret-" + uuid.uuid4().hex  # generated per run, never reused
+
+
+def _b64(raw: bytes) -> str:
+    import base64
+
+    return base64.urlsafe_b64encode(raw).rstrip(b"=").decode()
+
+
+def _unb64(part: str) -> bytes:
+    import base64
+
+    return base64.urlsafe_b64decode(part + "=" * (-len(part) % 4))
+
+
+def _mint_token(sub: str, secret: str) -> str:
+    import hashlib
+    import hmac
+    import json
+
+    head = _b64(json.dumps({"alg": "HS256", "typ": "JWT"}).encode())
+    body = _b64(json.dumps({"sub": sub, "aud": "authenticated", "role": "authenticated"}).encode())
+    sig = hmac.new(secret.encode(), f"{head}.{body}".encode(), hashlib.sha256).digest()
+    return f"{head}.{body}.{_b64(sig)}"
+
+
+def _local_gotrue_user(authorization: str) -> dict[str, object] | None:
+    """What GoTrue's /user does: valid HS256 signature under the project secret -> user."""
+    import hashlib
+    import hmac
+    import json
+
+    if not authorization.startswith("Bearer "):
+        return None
+    parts = authorization[len("Bearer ") :].split(".")
+    if len(parts) != 3:
+        return None
+    try:
+        expected = hmac.new(
+            _LOCAL_JWT_SECRET.encode(), f"{parts[0]}.{parts[1]}".encode(), hashlib.sha256
+        ).digest()
+        if not hmac.compare_digest(expected, _unb64(parts[2])):
+            return None
+        sub = json.loads(_unb64(parts[1]))["sub"]
+    except (ValueError, KeyError, TypeError):
+        return None
+    return {
+        "id": sub,
+        "aud": "authenticated",
+        "app_metadata": {},
+        "user_metadata": {},
+        "created_at": "2026-01-01T00:00:00Z",
+    }
+
+
+@pytest.fixture(scope="module")
+def local_supabase_auth() -> Iterator[None]:
+    """Serve the stand-in on 127.0.0.1 and point app.auth.signup at it."""
+    import json
+    import threading
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+
+    class _Handler(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:  # noqa: N802 -- stdlib handler API
+            user = (
+                _local_gotrue_user(self.headers.get("Authorization", ""))
+                if self.path.startswith("/auth/v1/user")
+                else None
+            )
+            payload = user or {"code": 401, "msg": "invalid JWT"}
+            data = json.dumps(payload).encode()
+            self.send_response(200 if user else 401)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+
+        def log_message(self, *args: object) -> None:  # keep test output quiet
+            pass
+
+    server = HTTPServer(("127.0.0.1", 0), _Handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    import app.auth.signup as signup_mod
+
+    real = signup_mod.get_settings()
+    local = real.model_copy(
+        update={
+            "supabase_url": f"http://127.0.0.1:{server.server_address[1]}",
+            "supabase_anon_key": "local-anon-key",
+        }
+    )
+    try:
+        with patch.object(signup_mod, "get_settings", return_value=local):
+            yield
+    finally:
+        server.shutdown()
+        thread.join(timeout=5)
+
+
+@pytest.fixture
+def org_member_users(
+    two_orgs_with_keys: tuple[_OrgFixture, _OrgFixture],
+) -> Iterator[tuple[str, str]]:
+    """One real organization_members row per org: (user_a_id, user_b_id)."""
+    org_a, org_b = two_orgs_with_keys
+    user_a, user_b = str(uuid.uuid4()), str(uuid.uuid4())
+    conn = _superuser_conn()
+    try:
+        cur = conn.cursor()
+        for org, user in ((org_a, user_a), (org_b, user_b)):
+            cur.execute(
+                "INSERT INTO public.organization_members (org_id, user_id) VALUES (%s, %s)",
+                (org["org_id"], user),
+            )
+        conn.commit()
+    finally:
+        conn.close()
+    try:
+        yield user_a, user_b
+    finally:
+        conn = _superuser_conn()
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                "DELETE FROM public.organization_members WHERE user_id IN (%s, %s)",
+                (user_a, user_b),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+
 @pytest.mark.integration
 class TestVector2ForgedJWT:
     """A forged/tampered/garbage JWT presented to the BFF session-auth path must be
     rejected, and org_id must never be derivable from unverified token claims."""
 
     @pytest.mark.asyncio
-    async def test_garbage_jwt_rejected_by_real_supabase_verification(self) -> None:
-        """Live call against the real Supabase auth API (not mocked) with a token that
-        is not a real Supabase-issued session -- proves rejection end-to-end, not just
-        that our own code would reject a token IF Supabase said it was invalid."""
+    async def test_garbage_jwt_rejected_by_verification(self, local_supabase_auth: None) -> None:
+        """A token that is not a real signed session is rejected end-to-end: the app's
+        real client -> HTTP -> identity provider -> our 401 mapping, not a mocked verifier.
+        (Renamed from ..._by_real_supabase_verification: the provider is now a local
+        signature-verifying stand-in, see local_supabase_auth.)"""
         from app.auth.signup import verify_supabase_jwt
         from fastapi import HTTPException
 
@@ -181,6 +323,53 @@ class TestVector2ForgedJWT:
         with pytest.raises(HTTPException) as exc_info:
             await verify_supabase_jwt(forged)
         assert exc_info.value.status_code == 401
+
+    @pytest.mark.asyncio
+    async def test_forged_tokens_for_org_b_user_never_resolve_org_b(
+        self,
+        local_supabase_auth: None,
+        two_orgs_with_keys: tuple[_OrgFixture, _OrgFixture],
+        org_member_users: tuple[str, str],
+    ) -> None:
+        """The attack: an attacker with a legitimate org A session wants org B's data.
+        (1) tamper the `sub` claim of their genuine token to org B's user id, keeping the
+        original signature; (2) mint a token for org B's user signed with the wrong secret;
+        (3) alg=none token claiming org B's user. Each must be 401 through the real
+        require_session_read dependency. The control (a genuinely signed token) must
+        resolve to the right org, so the 401s cannot be the stub rejecting everything."""
+        import json
+
+        import app.auth.session as session_mod
+        from fastapi import HTTPException
+        from fastapi.security import HTTPAuthorizationCredentials
+
+        org_a, org_b = two_orgs_with_keys
+        user_a, user_b = org_member_users
+
+        async def _resolve(token: str) -> str:
+            creds = HTTPAuthorizationCredentials(scheme="Bearer", credentials=token)
+            ctx = await session_mod.require_session_read(bearer=creds)
+            return str(ctx.org_id)
+
+        # Control: genuine tokens resolve to their own org, and only that org.
+        assert await _resolve(_mint_token(user_a, _LOCAL_JWT_SECRET)) == org_a["org_id"]
+        assert await _resolve(_mint_token(user_b, _LOCAL_JWT_SECRET)) == org_b["org_id"]
+
+        genuine_a = _mint_token(user_a, _LOCAL_JWT_SECRET)
+        head, _, sig = genuine_a.split(".")
+        tampered_body = _b64(
+            json.dumps({"sub": user_b, "aud": "authenticated", "role": "authenticated"}).encode()
+        )
+        none_head = _b64(json.dumps({"alg": "none", "typ": "JWT"}).encode())
+        forged = {
+            "tampered sub claim, original signature": f"{head}.{tampered_body}.{sig}",
+            "org B user signed with the wrong secret": _mint_token(user_b, "attacker-secret"),
+            "alg=none, org B user, empty signature": f"{none_head}.{tampered_body}.",
+        }
+        for label, token in forged.items():
+            with pytest.raises(HTTPException) as exc_info:
+                await _resolve(token)
+            assert exc_info.value.status_code == 401, label
 
     @pytest.mark.asyncio
     async def test_require_session_never_derives_org_from_unverified_claims(
