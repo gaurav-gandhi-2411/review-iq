@@ -255,10 +255,6 @@ PYTEST_SKIP_ALLOWLIST: dict[tuple[str, str], str] = {
     ("ci.yml", "tests/integration"): (
         "needs a live Postgres; run by the pre-cutover-verification.yml job (ephemeral Postgres)"
     ),
-    ("ci.yml", "tests/benchmark"): (
-        "S19 audit TS-10: the benchmark suite does not run in CI at all today -- recorded, not "
-        "endorsed; remove this entry when it is wired in"
-    ),
     ("security-bypassrls-check.yml", "-k not ..."): (
         "TestCrossOrgSweepFunctionsSeeEveryOrg needs a superuser connection this job must not "
         "hold; the class runs in pre-cutover-verification.yml's public-service pass"
