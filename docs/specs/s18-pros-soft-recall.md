@@ -45,3 +45,7 @@ For one review, gold pros `G` (list of phrases) and predicted pros `P` (list of 
 - V-b's `D` is a coarse binary; with a high base rate of `D = 1` concordance is easy. The base rate and kappa are reported for that reason.
 - The validation-arm reviews can include reviews the development process had seen; V-b uses the recorded model outputs only to compare decisions, not to score the model.
 - Threshold 0.5 was set by GG before this analysis; the 0.3 to 0.7 sweep cannot override it, and a V-a failure is a finding about the scorer, not a reason to pick another threshold.
+
+## Amendment A1 (after the first computation; wording only, no definition or criterion changed)
+
+The Pain point line and Decision rule 3 above call the headline scorer for `pros` "exact-phrase". That is inaccurate: `eval.runner._fuzzy_list_score` is a token-level F1 over the pooled token sets of all phrases in each list (current scorer: 73.1% on the 53 resolved pros pairs, `eval/results/pros_gold_analysis.json`). The 27.2-point swing in ADR 0034 is that of an ITEM-level soft-F1 matcher over the same pairs across thresholds 0.2 to 1.0 (18.6 points between 0.3 and 0.7), not a swing of the current scorer. The rendered text says exactly this. Definition, threshold, V-a, V-b, V-c and the decision rules are unchanged; no number was affected.

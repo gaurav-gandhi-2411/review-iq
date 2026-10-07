@@ -272,5 +272,7 @@ def pros_soft_recall_block(
             },
             "validated": v_a_pass and all_pass,
         },
-        "headline_scorer_for_pros": "exact-phrase (eval.runner._fuzzy_list_score), unchanged",
+        "headline_scorer_for_pros": (
+            "token-level F1 over the pooled token sets (eval.runner._fuzzy_list_score), unchanged"
+        ),
     }
