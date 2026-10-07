@@ -129,7 +129,9 @@ class CampaignFlag:
         """Flatten to the JSON output record shape."""
         return {
             "product_id": self.product_id,
-            "confidence": self.confidence,
+            # Display rounding only: threshold comparisons (alert sweep, min_confidence) use
+            # the full-precision field, never this rounded copy.
+            "confidence": round(self.confidence, 4),
             "evidence": self.evidence,
         }
 
@@ -370,7 +372,7 @@ def scan_product(
         "top_reviewer_ids": top_reviewer_ids,
         "top_texts": top_texts,
     }
-    return CampaignFlag(product_id=product_id, confidence=round(confidence, 4), evidence=evidence)
+    return CampaignFlag(product_id=product_id, confidence=confidence, evidence=evidence)
 
 
 def scan_corpus(reviews: list[Review]) -> list[CampaignFlag]:

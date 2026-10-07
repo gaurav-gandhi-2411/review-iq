@@ -99,3 +99,42 @@ def test_scan_batch_defects_no_flags_on_steady_baseline() -> None:
     flags = scan_batch_defects(steady_reviews)
 
     assert flags == []
+
+
+def test_flag_confidence_is_not_rounded_before_threshold_comparisons() -> None:
+    """S17 X5b: the flag used to carry round(confidence, 3), so an exact 0.69996 (below the 0.7
+    alert threshold and any ?min_confidence=0.7 filter) compared as 0.7 and passed. The dataclass
+    keeps full precision; only the serialised dict is rounded for display."""
+    from unittest.mock import patch
+
+    from app.core.detectors import batch_defect as bd
+
+    reviews = [
+        AnnotatedReview(
+            review_id=f"s-{i}",
+            product_id="Widget Pro",
+            reviewer_id="",
+            timestamp=_NOW + timedelta(hours=i * 6),
+            rating=0,
+            topics=["battery"],
+            sentiment="negative",
+            urgency="",
+        )
+        for i in range(6)
+    ]
+    ratio = bd.SPIKE_RATIO_THRESHOLD + 0.69996 * (bd.SATURATION_RATIO - bd.SPIKE_RATIO_THRESHOLD)
+    best = {
+        "window_start": _NOW,
+        "window_end": _NOW + timedelta(days=bd.WINDOW_DAYS),
+        "window_count": 6,
+        "baseline_rate_per_day": 0.1,
+        "expected_count": 1.0,
+        "ratio": ratio,
+        "outside_count": 0,
+        "review_ids": ["s-0"],
+    }
+    with patch.object(bd, "_best_window_for_topic", return_value=best):
+        (flag,) = scan_batch_defects(reviews)
+
+    assert flag.confidence < 0.7
+    assert flag.to_dict()["confidence"] == 0.7  # display rounding unchanged

@@ -824,3 +824,65 @@ def test_aggregate_extraction_costs_pg_applies_since_filter() -> None:
     sql, params = cur.execute.call_args_list[-1][0]
     assert "WHERE created_at >= %s" in sql
     assert params == (since,)
+
+
+# ---------------------------------------------------------------------------
+# list_extractions_pg -- each filter must constrain its OWN column (S17 X5a).
+# `topic` once filtered competitor_mentions (copy-paste from the competitor filter), so
+# GET /v2/reviews?topic=battery returned only reviews that mentioned a competitor called "battery".
+# ---------------------------------------------------------------------------
+
+
+def _select_where(**filters: object) -> tuple[str, list[object]]:
+    """Run list_extractions_pg against a mock cursor; return (WHERE clause, bound params)."""
+    conn, cur = _make_conn()
+    cur.fetchall.return_value = []
+    with patch("app.core.storage_pg._db_connect", return_value=conn):
+        list_extractions_pg(_ORG_ID, **filters)  # type: ignore[arg-type]
+    select_call = [c for c in cur.execute.call_args_list if "SELECT" in (c[0][0] or "")]
+    sql, params = select_call[0][0][0], list(select_call[0][0][1])
+    where = sql.split("WHERE", 1)[1].split("ORDER BY", 1)[0]
+    return where, params
+
+
+def test_topic_filter_constrains_topics_column_not_competitor_mentions() -> None:
+    where, params = _select_where(topic="battery")
+    assert "topics @>" in where
+    assert "competitor_mentions" not in where
+    assert json.dumps(["battery"]) in params
+
+
+def test_competitor_filter_constrains_competitor_mentions_only() -> None:
+    where, _ = _select_where(has_competitor_mention=True)
+    assert "jsonb_array_length(competitor_mentions) > 0" in where
+    assert "topics" not in where
+    where, _ = _select_where(has_competitor_mention=False)
+    assert "jsonb_array_length(competitor_mentions) = 0" in where
+    assert "topics" not in where
+
+
+def test_topic_and_competitor_filters_combine_independently() -> None:
+    where, params = _select_where(topic="battery", has_competitor_mention=True)
+    assert "topics @>" in where
+    assert "jsonb_array_length(competitor_mentions) > 0" in where
+    assert params.count(json.dumps(["battery"])) == 1
+
+
+def test_scalar_filters_hit_their_own_columns() -> None:
+    since = datetime(2026, 1, 1, tzinfo=UTC)
+    until = datetime(2026, 2, 1, tzinfo=UTC)
+    where, params = _select_where(
+        product="Widget",
+        sentiment=Sentiment.negative,
+        urgency=Urgency.high,
+        since=since,
+        until=until,
+    )
+    assert "product ILIKE %s" in where
+    assert "sentiment = %s" in where
+    assert "urgency = %s" in where
+    assert "created_at >= %s" in where
+    assert "created_at <= %s" in where
+    assert "topics" not in where
+    assert "competitor_mentions" not in where
+    assert params[:6] == [_ORG_ID, "%Widget%", "negative", "high", since, until]

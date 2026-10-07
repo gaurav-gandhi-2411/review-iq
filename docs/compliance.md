@@ -2,7 +2,7 @@
 
 This document describes how review-iq supports IS 19000:2022 ("Online Consumer Reviews") moderation workflows. Read this before integrating the authenticity scoring feature into any compliance process.
 
-> **Superseded (Session 15d, D5):** the public `POST /v2/authenticity`, `POST /v2/authenticity/batch` and `GET /v2/insights/authenticity` API routes described below were removed (the flag is unmeasurable; see the accuracy note at the end of this document). The `authenticity_audits` table, CSV-ingest `include_authenticity` scoring and the dashboard's own authenticity views are unchanged.
+> **Superseded (Session 15d D5 + Session 17 W6):** the public `POST /v2/authenticity`, `POST /v2/authenticity/batch` and `GET /v2/insights/authenticity` API routes described below were removed in 15d, and the dashboard's `/bff/authenticity*` routes, Authenticity/Flagged pages, CSV-ingest `include_authenticity` scoring and the health-score authenticity term were removed in Session 17 (the flag is unmeasurable; see the accuracy note at the end of this document). Nothing scores reviews for authenticity any more; the `authenticity_audits` table is retained (historical rows only, schema untouched).
 
 ---
 

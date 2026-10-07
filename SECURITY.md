@@ -118,6 +118,8 @@ No plaintext secrets exist in source code or committed environment files. `.env`
 
 ## 10. Authenticity Audit Trail
 
+> Session 17 (W6): no API route or ingest path writes or reads this table any more (the authenticity feature was removed as unmeasurable). The table, its RLS policies and its historical rows are retained unchanged; the controls below still apply to that stored data.
+
 The `authenticity_audits` table is subject to the same RLS tenant-isolation as `extractions` and `batch_jobs`. Each row stores `org_id`, `review_hash` (SHA-256 of the review text, not the plaintext), `score`, `label`, and `flags`. Plaintext review content is never persisted in the audit table.
 
 Row-Level Security policies enforce that:
