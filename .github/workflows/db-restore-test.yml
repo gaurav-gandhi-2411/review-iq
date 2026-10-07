@@ -1,0 +1,107 @@
+name: DB Restore Test
+
+# A backup nobody has restored is not a backup (S17 H2). db-backup.yml only proves that pg_dump
+# produced something that looks like a dump. This job proves the encrypted artifact can be
+# decrypted and RESTORED into a throwaway postgres:17 container (never Supabase), then compares
+# the restored database with the dump itself (tables, per-table row counts, RLS, policies) via
+# scripts/verify_restore.py. It never connects to production.
+#
+# Manual: Actions -> DB Restore Test -> Run workflow. Leave `artifact_names` empty for the newest
+# backup, or give space-separated artifact names (e.g. "review-iq-db-20260920-200256.sql.gz.gpg
+# review-iq-db-20260919-194921.sql.gz.gpg") to test older dumps. Weekly schedule tests the newest.
+
+on:
+  schedule:
+    - cron: "0 21 * * 0" # Sundays 21:00 UTC, three hours after the nightly dump
+  workflow_dispatch:
+    inputs:
+      artifact_names:
+        description: "Space-separated artifact names to restore (blank = newest review-iq-db-* artifact)"
+        required: false
+        type: string
+
+concurrency:
+  group: db-restore-test
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  actions: read # download the backup artifact
+  issues: write # failure alert (scheduled runs only)
+
+jobs:
+  restore:
+    # Pinned, not ubuntu-latest: needs docker + gpg + gh, all stable on 24.04; the ubuntu-latest
+    # move to 26.04 (2026-10-19) must not be able to silently break the one control that proves
+    # backups are restorable.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Start throwaway postgres:17
+        run: |
+          docker run -d --name pgrestore -e POSTGRES_PASSWORD=restore_test \
+            -p 127.0.0.1:5432:5432 postgres:17 >/dev/null
+          for i in $(seq 1 30); do
+            docker exec pgrestore pg_isready -U postgres -q && break
+            sleep 2
+          done
+          docker exec pgrestore pg_isready -U postgres
+
+      - name: Restore and verify
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DB_BACKUP_ENCRYPTION_KEY: ${{ secrets.DB_BACKUP_ENCRYPTION_KEY }}
+          REQUESTED: ${{ inputs.artifact_names }}
+        run: |
+          set -uo pipefail
+          export DB_BACKUP_ENCRYPTION_KEY GH_TOKEN
+          if [ -z "${DB_BACKUP_ENCRYPTION_KEY}" ]; then
+            echo "::error::DB_BACKUP_ENCRYPTION_KEY is not set; cannot decrypt backups."
+            exit 1
+          fi
+          REPO="${{ github.repository }}"
+          if [ -z "${REQUESTED}" ]; then
+            REQUESTED=$(gh api "repos/${REPO}/actions/artifacts?per_page=100" \
+              --jq '[.artifacts[] | select((.name | startswith("review-iq-db-")) and (.expired | not))] | .[0].name')
+          fi
+          if [ -z "${REQUESTED}" ] || [ "${REQUESTED}" = "null" ]; then
+            echo "::error::No unexpired review-iq-db-* artifact found."
+            exit 1
+          fi
+          echo "Artifacts to test: ${REQUESTED}"
+          FAILED=0
+          N=0
+          {
+            echo "## DB restore test"
+            echo
+            echo "| artifact | result |"
+            echo "|---|---|"
+          } >> "$GITHUB_STEP_SUMMARY"
+          for NAME in ${REQUESTED}; do
+            N=$((N + 1))
+            echo "::group::${NAME}"
+            if REPO="${REPO}" bash scripts/restore_one.sh "${NAME}" "${N}"; then
+              RESULT="RESTORED + VERIFIED"
+            else
+              RESULT="FAILED"
+              FAILED=1
+            fi
+            echo "::endgroup::"
+            echo "| ${NAME} | ${RESULT} |" >> "$GITHUB_STEP_SUMMARY"
+          done
+          exit "${FAILED}"
+
+      - name: Alert on failure / close alert on recovery (scheduled runs only)
+        if: always() && !cancelled() && github.event_name == 'schedule'
+        uses: ./.github/actions/schedule-failure-alert
+        with:
+          status: ${{ job.status == 'success' && 'success' || 'failure' }}
+          title: "Weekly DB restore test is failing"
+          details: |
+            `db-restore-test.yml` decrypts the newest db-backup artifact, restores it into a
+            throwaway postgres:17 and compares tables, row counts, RLS and policies with the dump.
+            A failure means the newest backup may not be restorable. See ops/runbooks/db-restore.md.

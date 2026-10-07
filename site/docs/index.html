@@ -574,31 +574,30 @@ curl https://your-instance.run.app/v2/ingest/b3f1a2d4-.../result \
           Language is auto-detected from the review text — no parameter needed.
           The detected code is returned in the <code>language</code> field of the response,
           together with <code>code_mixed</code> and <code>language_signal_strength</code>.
-          The label is a heuristic: on a held-out corpus its agreement with the corpus label is low, and that label is itself noisy,
+          The label is a heuristic: on a corpus of real reviews its agreement with the corpus label is low, and that label is itself noisy,
           so treat <code>language</code> as a hint, not a scored accuracy claim
           (see the README's held-out section for the measured agreement, its confidence interval and the label's inter-rater alpha).
         </p>
 
         <p class="note">
           <span class="note-lead">Re-measured against the models actually deployed: </span>
-          The accuracy figures below were measured under the models production actually
+          The headline accuracy figure was measured under the models production actually
           runs today (<code>openai/gpt-oss-20b</code> /
           <code>openai/gpt-oss-120b</code>) after Groq deprecated the
           previous models on 2026-08-16 &mdash; see the
-          <a href="/#how-it-works">full accuracy table</a> for
-          gate status, confidence intervals, and known calibration differences vs. the
-          previous models.
+          <a href="/#how-it-works">headline accuracy</a> for
+          its confidence interval, sample size, gate status and known calibration differences
+          vs. the previous models.
         </p>
 
         <div class="table-wrap">
           <table>
-            <caption class="sr-only">Language support and measured accuracy</caption>
+            <caption class="sr-only">Supported languages</caption>
             <thead>
               <tr>
                 <th scope="col">Code</th>
                 <th scope="col">Language</th>
                 <th scope="col">Script</th>
-                <th scope="col">Accuracy</th>
               </tr>
             </thead>
             <tbody>
@@ -607,13 +606,11 @@ curl https://your-instance.run.app/v2/ingest/b3f1a2d4-.../result \
                 <td class="path">en</td>
                 <td>English</td>
                 <td class="ci">Latin</td>
-                <td class="num status-pass">78.2%</td>
               </tr>
               <tr>
                 <td class="path">hi-en</td>
                 <td>Hinglish</td>
                 <td class="ci">Roman-script code-mix</td>
-                <td class="num status-pass">79.3%</td>
               </tr>
             <!-- METRICS:END -->
             </tbody>

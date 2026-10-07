@@ -56,6 +56,17 @@
       "topics": "majority",
       "feature_requests": "unanimous",
       "competitor_mentions": "unanimous"
+    },
+    "unresolved_fields": [
+      "product",
+      "pros"
+    ],
+    "adjudication": {
+      "field": "product",
+      "action": "removed from scoring (unresolved); no replacement label chosen",
+      "reason": "gold `Osm products` is the reviewer's own slang ('Osm' = awesome) copied as a product name; two of three judges (same vendor) said it, the third said `sound system / speaker`. No product is named; a category ('audio device') is defensible only under the unadopted category-inference policy.",
+      "adjudicated_by": "PENDING: needs a native Hinglish speaker (GG); proposed by an LLM session, so not independent of the judge panel's failure mode",
+      "session": "S16 V2d"
     }
   }
 }

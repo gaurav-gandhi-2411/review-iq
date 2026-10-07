@@ -46,6 +46,13 @@ jobs:
             echo "(The direct db.<ref>.supabase.co host is IPv6-only — unreachable from GitHub Actions.)"
             exit 1
           fi
+          # Shape check, never printing the value. An unencoded '@', ':', '/', '?' or '#' in the
+          # password makes the URL parse to the wrong host/user, and the failure then surfaces as
+          # a misleading auth/DNS error (the 2026-09-21..10-05 outage was an unencoded '@').
+          if ! printf '%s' "$SUPABASE_DIRECT_URL" | grep -Eq '^postgres(ql)?://[^:/@]+:[^@/]+@[^@/:]+:[0-9]+/[^@]*$'; then
+            echo "::error::SUPABASE_DIRECT_URL is malformed (value not shown). Percent-encode special characters in the password (@ -> %40, : -> %3A, / -> %2F, ? -> %3F, # -> %23)."
+            exit 1
+          fi
         env:
           SUPABASE_DIRECT_URL: ${{ secrets.SUPABASE_DIRECT_URL }}
 
@@ -73,9 +80,21 @@ jobs:
           # (-e), referenced inside the container with single-quoted sh -c so the
           # outer shell never sees it in argv. The container shares the runner's
           # IPv4 network, so it reaches the session-mode pooler.
-          docker run --rm -e DBURL="$SUPABASE_DIRECT_URL" postgres:17 \
+          # pipefail + a stderr file: without them a pg_dump failure (auth, DNS, malformed URL)
+          # produced an empty gzip and the job reported the SYMPTOM ("Dump is missing expected
+          # token 'CREATE TABLE'") while pg_dump's own stderr, the cause, was discarded.
+          set -o pipefail
+          if ! docker run --rm -e DBURL="$SUPABASE_DIRECT_URL" postgres:17 \
             sh -c 'pg_dump --no-password --clean --if-exists --schema=public "$DBURL"' \
-            | gzip -9 > "${FILENAME}"
+            2> pg_dump.err | gzip -9 > "${FILENAME}"; then
+            echo "::error::pg_dump failed. Its stderr (credentials redacted) is:"
+            sed -E 's#(://)[^@[:space:]]*@#\1***@#g' pg_dump.err
+            exit 1
+          fi
+          if [ -s pg_dump.err ]; then
+            echo "pg_dump warnings (credentials redacted):"
+            sed -E 's#(://)[^@[:space:]]*@#\1***@#g' pg_dump.err
+          fi
 
           echo "Dump written: ${FILENAME}  ($(du -h "${FILENAME}" | cut -f1))"
 

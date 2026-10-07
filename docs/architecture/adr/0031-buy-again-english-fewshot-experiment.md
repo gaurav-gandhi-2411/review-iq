@@ -202,3 +202,56 @@ example-prior the baseline repeat keeps ~19/19; under noise it loses a comparabl
 4. **A SUCCESS on the target field is not a promotion decision** while a non-target field has
    moved; promotion needs the dev-set re-record and a fresh eval, and here also the noise-floor
    arm. Recommendation: hold promotion (production behaviour change, GG's call).
+
+## Amendment (Session 17, 2026-10-05): the noise floor, the re-judged verdict, and a new rule
+
+**Why this amendment exists.** The rule above returned SUCCESS (coverage 2 -> 4, wrong-committed
+1 -> 1). The count held only because one wrong commit dropped and another appeared, McNemar
+p = 0.625, and `sentiment` moved on 8 of 56 fixtures with no same-prompt noise floor ever measured.
+The rule was satisfied; the rule was underpowered, because it compared the variant to a single
+recorded run of the baseline and never asked how far the *unchanged* prompt moves between runs.
+
+**Promotion is held** (GG decision, S17 W4a). `app/core/prompts/en.py` is unchanged and the variant
+is not shipped.
+
+**The control.** `eval/experiments/noise_floor_baseline.py` re-ran the unmodified production prompt
+(`en.build_prompt`) once, live, on 34 of the 56 fixtures, and compared it with the recorded baseline
+(`held_out_scoring_v2.json`, recorded 2026-09-20 at `c4dcfcd`) and with the recorded variant on the
+same fixtures. Result: `eval/results/noise_floor_baseline.json` (git sha `d8c478a`, 2026-10-05,
+cassette `eval/cassettes/noise_floor_cassettes.json`, replayable at zero quota). Subset: every
+fixture where either arm committed `buy_again` or the variant changed `sentiment` (12), every
+baseline-`mixed` fixture, then seed-42 gold-decidable fixtures up to 34. The 22 left out are
+non-decidable, non-mixed and never committed. 56 fixtures cost ~142K tokens on the small model,
+over the 100K per-model-per-day ceiling, so a full 56 needed two days; the subset is boundary-
+enriched, so the floor it gives is an upper bound for all 56 (conservative for judging the variant).
+
+| On the same 34 fixtures | Recorded baseline | Same-prompt repeat | Variant |
+|---|---|---|---|
+| `buy_again` committed | 2 | **1** | 4 |
+| wrong-committed (count) | 1 | **0** | 1 |
+| commit/null state differs from baseline | - | **3** | 4 |
+| `sentiment` differs from baseline | - | **7** | 8 |
+| baseline-`mixed` (n=19) that left `mixed` | - | **5** | 6 |
+
+Variant vs same-prompt repeat, exact Fisher: commit-state changes 4/34 vs 3/34 (p = 1.000);
+sentiment changes 8/34 vs 7/34 (p = 1.000).
+
+**Re-judged verdict: the observed effect does not exceed the noise floor.** The unchanged prompt
+moved `sentiment` on 7 of 34 fixtures (variant: 8) and left `mixed` on 5 of 19 (variant: 6), so the
+"example-prior" reading of the sentiment shift is not supported; it is indistinguishable from
+run-to-run variation. Coverage went the *other* way under no change (2 -> 1), the baseline's own
+wrong commit (hien-0038) disappeared in the repeat, and 3 fixtures changed commit state with no
+prompt change at all. The 2 -> 4 coverage gain is therefore within the range the baseline itself
+produces. The pre-registered rule's SUCCESS stands as a literal reading and is **not evidence of an
+improvement**. Limits: one repeat (a point estimate of the floor, not a distribution); 34 of 56
+fixtures; the baseline was recorded 15 days earlier, so provider-side drift is part of what
+"noise" means here (the relevant noise for a production prompt).
+
+**New rule for every future prompt experiment (binding).** A verdict may not be issued until a
+same-prompt noise floor has been measured on the same fixtures and is stated in the verdict:
+(1) pre-register the noise-floor arm (same prompt, same fixtures, at least one repeat) alongside the
+variant; (2) pre-register an effect threshold in terms of the floor (the variant's change must
+exceed the repeat's change, tested exactly, not merely beat a recorded count); (3) report every
+output field's change against the floor, not only the target field; (4) SUCCESS requires both the
+count rule and clearing the floor, otherwise the verdict is INCONCLUSIVE. An underpowered
+pre-registered rule is still underpowered; writing it down in advance does not fix that.

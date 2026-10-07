@@ -2,13 +2,11 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import {
   ArrowLeft, Copy, Check, Loader2, RefreshCw,
-  ShieldCheck, AlertTriangle, AlertOctagon,
 } from 'lucide-react'
 import Layout from '../components/Layout'
-import ErrorBox from '../components/ErrorBox'
 import {
-  scoreAuthenticity, draftReply,
-  type Review, type AuthenticityResult, type ReplyDraft, type ReplyTone,
+  draftReply,
+  type Review, type ReplyDraft, type ReplyTone,
   QuotaError, ServiceWarmingError,
 } from '../lib/api'
 import { useFilterContext } from '../lib/filterContext'
@@ -20,43 +18,6 @@ const TONE_LABELS: Record<ReplyTone, string> = {
   apologetic: 'Apologetic',
   professional: 'Professional',
   appreciative: 'Appreciative',
-}
-
-const DISPOSITION_CONFIG: Record<string, {
-  label: string
-  icon: typeof ShieldCheck
-  className: string
-  badgeClass: string
-}> = {
-  genuine: {
-    label: 'Clear',
-    icon: ShieldCheck,
-    className: 'text-green',
-    badgeClass: 'bg-green-light text-green',
-  },
-  suspicious: {
-    label: 'Flagged for review',
-    icon: AlertTriangle,
-    className: 'text-yellow-600',
-    badgeClass: 'bg-yellow-50 text-yellow-700',
-  },
-  likely_fake: {
-    label: 'Priority review',
-    icon: AlertOctagon,
-    className: 'text-amber',
-    badgeClass: 'bg-amber-light text-amber',
-  },
-}
-
-const FLAG_LABELS: Record<string, string> = {
-  incentivized_phrase: 'Disclosed incentive detected',
-  rating_text_mismatch: "Rating doesn't match text sentiment",
-  generic_low_info: 'Very generic, low information',
-  excessive_brevity: 'Unusually short review',
-  promotional_tone: 'Promotional language detected',
-  near_duplicate: 'Similar to another review',
-  review_burst: 'Part of a sudden review burst',
-  repetitive_content: 'Templated or repeated content',
 }
 
 const SENTIMENT_LABEL: Record<string, string> = {
@@ -78,10 +39,6 @@ export default function ReviewDetailPage() {
   // Review comes from navigation state (no extra fetch needed)
   const review: Review | undefined = location.state?.review
 
-  const [authResult, setAuthResult] = useState<AuthenticityResult | null>(null)
-  const [authLoading, setAuthLoading] = useState(false)
-  const [authError, setAuthError] = useState<Error | null>(null)
-
   const [selectedTone, setSelectedTone] = useState<ReplyTone>('professional')
   const [draft, setDraft] = useState<ReplyDraft | null>(null)
   const [draftLoading, setDraftLoading] = useState(false)
@@ -101,19 +58,6 @@ export default function ReviewDetailPage() {
   // r is guaranteed non-null here — TypeScript can't narrow across async closures,
   // so we capture the narrowed value explicitly.
   const r = review
-
-  async function loadAuthenticity() {
-    setAuthLoading(true)
-    setAuthError(null)
-    try {
-      const result = await scoreAuthenticity(r.review_text, r.stars)
-      setAuthResult(result)
-    } catch (err) {
-      setAuthError(err instanceof Error ? err : new Error('Authenticity scoring failed'))
-    } finally {
-      setAuthLoading(false)
-    }
-  }
 
   async function handleDraftReply() {
     setDraftLoading(true)
@@ -248,74 +192,6 @@ export default function ReviewDetailPage() {
                   </li>
                 ))}
               </ul>
-            </div>
-          )}
-        </div>
-
-        {/* Authenticity section */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-card p-6 mb-4">
-          <div className="flex items-center justify-between">
-            <h2 className="font-sans font-semibold text-charcoal text-sm">Authenticity check</h2>
-            {!authResult && !authLoading && (
-              <button
-                onClick={loadAuthenticity}
-                className="text-xs font-sans text-green hover:text-green-muted transition-colors"
-              >
-                Run check
-              </button>
-            )}
-          </div>
-
-          {!authResult && !authLoading && !authError && (
-            <p className="text-xs text-charcoal-light font-sans mt-2">
-              Check for signals that suggest this review warrants closer review.
-            </p>
-          )}
-
-          {authLoading && (
-            <div className="flex items-center gap-2 mt-3">
-              <Loader2 size={14} className="animate-spin text-charcoal-light" />
-              <span className="text-sm font-sans text-charcoal-light">Checking signals…</span>
-            </div>
-          )}
-
-          {authError && (
-            <div className="mt-3">
-              <ErrorBox error={authError} onRetry={loadAuthenticity} />
-            </div>
-          )}
-
-          {authResult && (
-            <div className="mt-3">
-              {(() => {
-                const cfg = DISPOSITION_CONFIG[authResult.label] ?? DISPOSITION_CONFIG.genuine
-                const Icon = cfg.icon
-                return (
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className={`inline-flex items-center gap-1.5 text-sm font-sans font-medium px-3 py-1 rounded-full ${cfg.badgeClass}`}>
-                      <Icon size={13} /> {cfg.label}
-                    </span>
-                    <span className="text-xs text-charcoal-light font-sans">
-                      {Math.round(authResult.score * 100)}% genuine signal
-                    </span>
-                  </div>
-                )
-              })()}
-
-              {authResult.flags.length > 0 && (
-                <div className="space-y-1 mb-3">
-                  {authResult.flags.map(flag => (
-                    <div key={flag} className="flex items-center gap-2 text-xs font-sans text-charcoal-light">
-                      <span className="w-1 h-1 bg-amber rounded-full shrink-0" />
-                      {FLAG_LABELS[flag] ?? flag}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <p className="text-xs text-charcoal-light/70 font-sans italic border-t border-gray-50 pt-2">
-                Signals support human moderation under IS 19000:2022. This is a priority indicator, not a verdict.
-              </p>
             </div>
           )}
         </div>

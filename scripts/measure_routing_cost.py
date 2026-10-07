@@ -26,6 +26,14 @@ lexicon variants built ONLY from the production regexes) so S2c's claims about w
 detector" could reach rest on numbers, not belief. Those are diagnostics on the same 106 texts,
 not tuned proposals.
 
+Session 17 (W3e): the `headline` block (and its `share_of_gap` figures) averaged every field
+against the stored gold, including the (review, field) pairs where the judge panel split and the
+gold is a default, not a label (ADR 0032). Both routing conditions are scored against the SAME
+default, so the paired delta is a difference of two scores against a non-label rather than a clean
+extraction effect. `headline_split_excluded` recomputes the same quantities per review over the
+fields that survive, on all 106 reviews and on the 70 the development process had not seen; the
+original `headline` block is kept unchanged for the ADRs that cite it.
+
 Usage: uv run python scripts/measure_routing_cost.py
 """
 
@@ -356,6 +364,38 @@ def main() -> int:
             "share_of_gap_ci95": boot_fraction_ci(d, a),
             "share_of_gap_residual": 1 - mean(d) / gap,
         }
+
+    # ---- Session 17: same headline, split-gold pairs excluded (per-review mean over survivors) ----
+    def _resolved_mean(r: dict[str, Any], cond: str, flds: list[str]) -> float | None:
+        used = [f for f in flds if f not in r.get("unresolved_fields", ())]
+        return mean(r[cond]["field_scores"][f] for f in used) if used else None
+
+    result["headline_split_excluded"] = {}
+    for cut, cut_recs in (
+        ("all_106", recs),
+        ("unseen_70", [r for r in recs if not r.get("exposure")]),
+    ):
+        block_x: dict[str, Any] = {}
+        for name, flds in heads.items():
+            keep = [r for r in cut_recs if _resolved_mean(r, "as_deployed", flds) is not None]
+            a = [_resolved_mean(r, "as_deployed", flds) for r in keep]
+            f_ = [_resolved_mean(r, "language_forced", flds) for r in keep]
+            d = [y - x for x, y in zip(a, f_, strict=True)]
+            block_x[name] = {
+                "fields": flds,
+                "n": len(keep),
+                "n_split_pairs_excluded": sum(
+                    len(set(r.get("unresolved_fields", ())) & set(flds)) for r in cut_recs
+                ),
+                "as_deployed_mean": mean(a),
+                "as_deployed_ci95": boot_mean_ci(a),
+                "language_forced_mean": mean(f_),
+                "language_forced_ci95": boot_mean_ci(f_),
+                "paired_delta": _stat(d),
+                "share_of_gap_attributable_to_misrouting": mean(d) / (1 - mean(a)),
+                "share_of_gap_ci95": boot_fraction_ci(d, a),
+            }
+        result["headline_split_excluded"][cut] = block_x
 
     # ---- per-field deltas (all 10 fields), whole corpus and the 55 mismatched ----
     for label, subset in (

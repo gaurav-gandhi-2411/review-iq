@@ -131,23 +131,20 @@ for why the gate is what it is and how the prompt version history got out of syn
 file in the past.
 
 > **Re-measured against the models actually deployed, then corrected again:** the original
-> published figures (86.2/80.9/80.7/83.8) were measured under the now-deprecated
-> `llama-3.1-8b-instant`/`llama-3.3-70b-versatile`. The 2026-09-05 re-record against
-> `openai/gpt-oss-20b`/`openai/gpt-oss-120b` first measured 77.6/75.0/80.6/81.3 (English and
-> Overall below their gates) — then a scoring-harness bug fix (a fixture was being hard-zeroed
+> published figures were measured under the now-deprecated
+> `llama-3.1-8b-instant`/`llama-3.3-70b-versatile` (retired; see the Historical releases block
+> below). The 2026-09-05 re-record against
+> `openai/gpt-oss-20b`/`openai/gpt-oss-120b` first measured English and Overall below their
+> gates — then a scoring-harness bug fix (a fixture was being hard-zeroed
 > on a mislabeled security failure even when an injection attempt had zero effect) raised that
-> to the numbers below. Nothing was tuned to recover a number at either step; both were real
+> to the headline figure below. Nothing was tuned to recover a number at either step; both were real
 > measurement corrections. 95% CIs are paired bootstrap over the fixture set. (Which specific
 > API key recorded the original re-record is not recoverable from the committed artifacts —
 > the cassette format does not capture caller identity; see `ops/runbooks/eval-cassette-rerecord.md`.)
 
-<!-- METRICS:START:extraction_table -->**Prompt v2.3** &middot; `5c5c8e0` &middot; measured 2026-09-19T21:59:11Z &middot; mode: direct (local LLM)
+<!-- METRICS:START:extraction_table -->**Prompt v2.3** &middot; `5c5c8e0` &middot; mode: direct (local LLM)
 
-| Language | Score | 95% CI | Gate | Status |
-|---|---|---|---|---|
-| en | 78.2% | [73.7%, 82.3%] | ≥77% | PASS |
-| hi-en | 79.3% | [66.8%, 87.7%] | ≥75% | PASS |
-| **Overall** | **78.6%** | [73.2%, 82.9%] | ≥76% | PASS |
+**Headline accuracy: 78.6% (95% CI 73–83%, n=43, eval 2026-09-19)** -- CI gate ≥76%: PASS.
 
 n=43 fixtures (27 en, 16 hi-en). Tiered routing is ON by default in production and in this eval run (`ENABLE_TIERED_ROUTING` defaults `true`, unset in CI) -- a same-cassette `--routed` comparison produced byte-identical scores to the numbers above; there is currently no distinct *unrouted* measurement to report separately (see [ADR 0001](docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md)).<!-- METRICS:END -->
 
@@ -155,28 +152,75 @@ Eval runs automatically in CI on every push touching prompts, LLM, schema, or fi
 (cassette-replay against `eval/cassettes/cassettes.json` — $0, deterministic, zero live LLM
 calls; see `eval/README.md`). Nightly runs post results to Slack.
 
-### Real-world accuracy (uncontaminated, held-out corpus)
+### Real-world accuracy (held-out corpus, with a disclosed exposure)
 
-The table above is a **regression detector**: it's measured against fixtures the prompt was
+The headline figure above is a **regression detector**: it's measured against fixtures the prompt was
 developed and tuned against, so it tells you "did this change break something," not "how
 accurate is this in the real world." The table below is the honest answer to the second
-question — scored against 106 real Indian marketplace reviews mined independently of prompt
-development, never seen by anyone iterating on the prompt.
+question — scored against real Indian marketplace reviews. The corpus was meant to be held
+out from prompt development and was not, fully. Correction (Session 16): 36 of its 106
+reviews had been seen by the development process (all four few-shot examples in the `hi_en`
+prompt are rewrites of them, and prompt v2.2/v2.3 were accepted against benchmark labels from
+a benchmark that contains 21 of them), so the headline covers only the 70 that were not.
+Correction (Session 17): that headline is accuracy **where the three-judge panel agreed**, not
+overall accuracy; the
+share of field-pairs with no consensus is printed beside it and no point estimate of overall
+accuracy is identifiable (details below).
 
-<!-- METRICS:START:held_out_table -->Measured 2026-09-20T08:57:26Z &middot; `c4dcfcd` &middot; models: openai/gpt-oss-20b / openai/gpt-oss-120b
+<!-- METRICS:START:held_out_table -->Measured 2026-10-05T08:50:17Z &middot; `8186d0d` &middot; models: openai/gpt-oss-20b / openai/gpt-oss-120b
 
-| Condition | Score (informative fields only) | 95% CI | n |
+**79.6% [76.2%, 82.8%] on 70 unseen reviews, scored where the three-judge panel reached consensus; 10.7% of field-pairs (60 of 560) had no consensus and are unscored.**
+
+| Condition | Score (headline fields) | 95% CI | n | Field-pairs unscored |
+|---|---|---|---|---|
+| **As actually deployed** (real language routing) | **79.6%** | [76.2%, 82.8%] | 70 | 60 of 560 (10.7%) |
+| Language routing forced correct | 79.7% | [76.8%, 82.5%] | 70 | 60 of 560 (10.7%) |
+
+**This is accuracy where the panel agreed, not overall accuracy.** A *field-pair* is one (review, field) cell: 70 reviews x 8 fields = 560. A pair is unscored when the three judges split and the stored gold is a default, not a label. Those are the reviews the panel found hardest or most ambiguous, so scoring only the agreed pairs is a selection effect: it is why `pros` reads 73.8% with them excluded against 53.9% with the defaults scored (all reviews). 46 of 70 reviews have at least one unscored pair. **No point estimate of overall accuracy is identifiable from this data.** The assumption-free interval (every unscored pair all wrong / all right) is [70.9%, 81.6%]; that is a bound, not a result.
+
+**What this headline is.** The average of 8 fields (`product`, `buy_again`, `sentiment`, `topics`, `competitor_mentions`, `pros`, `cons`, `stars_inferred`) over the 70 of 106 corpus reviews that the prompt-development process had **not** seen, with 60 gold (review, field) pairs excluded because the judge panel split and the stored gold was a default, not a label. `stars` (null everywhere) and `language` (an echo of the detector, agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error)) are excluded as before.
+
+**Every cell, same recorded model outputs, as deployed** (the change moves the number up, so all four are shown):
+
+| Reviews | Gold pairs | Score | 95% CI | n |
+|---|---|---|---|---|
+| all | all | 72.4% | [69.8%, 75.0%] | 106 |
+| all | split excluded | 80.0% | [77.4%, 82.5%] | 106 |
+| unseen only | all | 73.2% | [69.9%, 76.5%] | 70 |
+| **unseen only (headline)** | **split excluded** | 79.6% | [76.2%, 82.8%] | 70 |
+
+**Why 36 reviews are excluded.** 15 also appear in the prompt-visible development fixtures (`eval/fixtures/hi-en/`; four of the `hi_en` prompt's few-shot examples are rewrites of them) and 21 in the internal benchmark whose adjudicated labels accepted prompt v2.2/v2.3. The builder only excluded already-quarantined text, so nothing stopped this ([ADR 0032](docs/architecture/adr/0032-held-out-exposure-and-split-gold.md)). Exposed reviews score 80.6% vs 79.6% for unseen ones (difference +1.0 pp, 95% CI -4.4 to +6.2): no benefit is detectable at this sample size, but that is absence of evidence, not proof of none.
+
+**Effect of excluding split gold, per field** (as deployed, all reviews; one field goes down):
+
+| Field | Split-gold pairs | Score, all pairs | Score, split excluded |
 |---|---|---|---|
-| **As actually deployed** (real language routing) | **72.4%** | [69.8%, 75.0%] | 106 |
-| Language routing forced correct | 71.8% | [69.3%, 74.2%] | 106 |
+| `product` | 28 | 59.4% | 57.7% |
+| `buy_again` | 0 | 72.6% | 72.6% |
+| `sentiment` | 0 | 86.8% | 86.8% |
+| `topics` | 25 | 54.2% | 68.5% |
+| `competitor_mentions` | 0 | 84.0% | 84.0% |
+| `pros` | 30 | 53.9% | 73.8% |
+| `cons` | 21 | 70.1% | 87.4% |
+| `stars_inferred` | 0 | 98.1% | 98.1% |
 
-**Why the headline excludes `stars` and `language`.** Counting all fields, the same recorded outputs score 72.7% as deployed [70.5%, 74.9%] and 77.4% with language routing forced correct [75.4%, 79.3%]; excluding only `stars` they score 69.7% [67.3%, 72.1%] and 74.9% [72.7%, 77.0%]. `stars` is null in both gold and prediction on all 106 reviews, so it scores 106/106 trivially and carries no information. `language` does not measure extraction: with routing forced the prompt itself states the language, so the field is 100% by echo (which is why the forced row is higher in the all-fields figures), and as deployed it just re-measures the language detector against the corpus's language label: agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error). The headline therefore averages only the 8 remaining informative fields.
+**Unscored field-pairs and bounds, per field** (as deployed, the 70 unseen reviews; each bound gives every unscored pair of that field the score 0 or 1):
 
-**Headline definition change (Session 15d).** Until Session 15d the headline averaged every field except `stars`; dropping `language` moves the as-deployed headline from 69.7% to 72.4% and the forced row from 74.9% to 71.8%. The recorded model outputs are byte-identical; only which fields are averaged changed.
+| Field | Unscored pairs | Unscored | Score on scored pairs | Bound, unscored all wrong | Bound, unscored all right |
+|---|---|---|---|---|---|
+| `product` | 16 of 70 | 22.9% | 61.1% | 47.1% | 70.0% |
+| `buy_again` | 0 of 70 | 0.0% | 67.1% | 67.1% | 67.1% |
+| `sentiment` | 0 of 70 | 0.0% | 87.1% | 87.1% | 87.1% |
+| `topics` | 15 of 70 | 21.4% | 69.5% | 54.6% | 76.0% |
+| `competitor_mentions` | 0 of 70 | 0.0% | 88.1% | 88.1% | 88.1% |
+| `pros` | 17 of 70 | 24.3% | 73.1% | 55.4% | 79.7% |
+| `cons` | 12 of 70 | 17.1% | 85.1% | 70.5% | 87.6% |
+| `stars_inferred` | 0 of 70 | 0.0% | 97.1% | 97.1% | 97.1% |
+| **all 8 (per-review mean)** | **60 of 560** | **10.7%** | **79.6%** | **70.9%** | **81.6%** |
 
-n=106 real Hinglish reviews the prompt has never seen (never used for prompt development), 0 hi (see [ADR 0016](docs/architecture/adr/0016-third-judge-corpus-batch-1-and-sentiment-recheck.md)). Production's own language detector, measured against this corpus's language label: agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error). This is the number to trust for real-world extraction accuracy; the CI-gate table above is a regression detector, not a real-world accuracy claim -- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) (its misrouting-cost finding was corrected in Session 15d).
+**Sensitivity, conditional on an assumption that is not verified** (the true label of an unscored pair is one of the three judges' own answers): scoring each unscored pair against each judge in turn gives 74.3% to 75.6% overall, and the per-pair worst/best over the judges gives [73.2%, 77.3%] -- all below the headline. A sensitivity analysis, not an estimate: all three judges can be wrong, and the unscored pairs have never been adjudicated.
 
-**Scoring note (scorer `2026-09-20.free-text-v1`).** Free-text fields (`product`, `topics`, `competitor_mentions`) are compared after normalization, so different correct spellings of "no product named" (`unknown` vs `unknown product`) and near-identical topic labels (`battery` vs `battery_life`) are no longer scored wrong. Earlier published figures used exact-string matching on the same recorded model outputs and counted all fields (the same basis as the all-fields figures above): as deployed, 68.3% then vs 72.7% now. The model's outputs did not change, only the comparator ([ADR 0030](docs/architecture/adr/0030-free-text-scorers.md)).<!-- METRICS:END -->
+Gold labels are LLM-consensus silver, not human ground truth. Production's own language detector, measured against this corpus's language label: agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error). That agreement figure is the number to trust for routing; the held-out headline above is real-world extraction accuracy only where the panel agreed, and the CI-gate table above is a regression detector, not a real-world accuracy claim -- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) (its misrouting-cost finding was corrected in Session 15d).<!-- METRICS:END -->
 
 Reproducible from committed cassettes: `EVAL_CASSETTE_MODE=replay uv run python eval/score_held_out_corpus_v2.py --mode replay` — $0, zero live calls, byte-identical output. See [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) for the full methodology. Its original "misrouting cost" decomposition was corrected in Session 15d (over all fields, the difference between the two routing conditions was the `language` field echoing the forced label, not an extraction cost).
 
@@ -187,16 +231,16 @@ and how often that committed answer is right or wrong.
 
 <!-- METRICS:START:coverage_metrics_table -->| Field | Coverage | Accuracy-on-answered | Wrong-committed |
 |---|---|---|---|
-| sentiment | 77.4% [68.9%, 84.9%] | 87.8% [80.5%, 93.9%] | 10/82 = 12.2% [6.1%, 19.5%] |
-| buy_again | 43.4% [34.0%, 52.8%] | 76.1% [63.0%, 87.0%] | 11/46 = 23.9% [13.0%, 37.0%] |
+| sentiment | 71.4% [60.0%, 81.4%] | 88.0% [78.0%, 96.0%] | 6/50 = 12.0% [4.0%, 22.0%] |
+| buy_again | 24.3% [14.3%, 34.3%] | 70.6% [47.1%, 88.2%] | 5/17 = 29.4% [11.8%, 52.9%] |
 
-n=106, `as_deployed` condition (real language routing). **"Rarely wrong when it commits" does not hold as a single claim across both fields** -- buy_again's committed-answer error rate is materially higher than sentiment's; see [ADR 0026](docs/architecture/adr/0026-coverage-accuracy-on-answered-wrong-committed-n106.md) for the full analysis, including why a blended claim would misrepresent buy_again.<!-- METRICS:END -->
+n=70 reviews the prompt-development process had not seen; the 36 of 106 it had seen are excluded (ADR 0032). Over all 106 (the earlier published basis): sentiment coverage 77.4% / accuracy-on-answered 87.8%, buy again coverage 43.4% / accuracy-on-answered 76.1%. On the 36 seen reviews alone buy-again coverage is 80.6%, against 24.3% on the unseen ones, so including them flattered it. `as_deployed` condition (real language routing). **"Rarely wrong when it commits" does not hold as a single claim across both fields** -- buy_again's committed-answer error rate is materially higher than sentiment's; see [ADR 0026](docs/architecture/adr/0026-coverage-accuracy-on-answered-wrong-committed-n106.md) for the full analysis, including why a blended claim would misrepresent buy_again.<!-- METRICS:END -->
 
 Reproducible from the same committed cassettes, zero additional quota: `uv run python eval/analyze_coverage_metrics.py`.
 
 **The single headline claim this data supports** (Session 13 P1b — see [ADR 0027](docs/architecture/adr/0027-n23-discrepancy-resolved-and-headline-claim.md) for why a blended "rarely wrong when it commits" claim is not published):
 
-<!-- METRICS:START:committed_accuracy_headline -->**When it commits to an answer, this model is correct 87.8% of the time for sentiment (95% CI 80.5%–93.9%, n=106) and 76.1% of the time for buy-again (95% CI 63.0%–87.0%, n=106) -- rates divergent enough that a single blended "rarely wrong when it commits" claim would misrepresent buy-again.** See [ADR 0027](docs/architecture/adr/0027-n23-discrepancy-resolved-and-headline-claim.md) for why this is reported per-field, never blended into one number, and for the separate (and separately true) abstention-rate figures.<!-- METRICS:END -->
+<!-- METRICS:START:committed_accuracy_headline -->**When it commits to an answer, this model is correct 88.0% of the time for sentiment (95% CI 78.0%–96.0%, n=70 unseen reviews) and 70.6% of the time for buy-again (95% CI 47.1%–88.2%, n=70 unseen reviews) -- rates divergent enough that a single blended "rarely wrong when it commits" claim would misrepresent buy-again.** See [ADR 0027](docs/architecture/adr/0027-n23-discrepancy-resolved-and-headline-claim.md) for why this is reported per-field, never blended into one number, and for the separate (and separately true) abstention-rate figures.<!-- METRICS:END -->
 
 <details>
 <summary>Historical releases (frozen at time of measurement — each predates the current
@@ -259,8 +303,6 @@ full history instead of comparing these rows to the current table directly.
 | `GET` | `/insights` | `X-API-Key` | Aggregated analytics |
 
 Interactive docs at `/docs` (Swagger) and `/redoc`.
-
-> `POST /v2/ingest/csv` accepts an optional `include_authenticity=true` form field — adds `authenticity_score`, `authenticity_label`, and `authenticity_flags` columns to the ingest result.
 
 ---
 
@@ -351,7 +393,7 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 **Phase 2.0b** ✓ (shipped May 2026):
 - Language detection — Devanagari regex + Hinglish keyword heuristics + lingua-py confidence
 - Language-branched prompts (v2.0) — en / hi-en / hi, each with explicit English-output instruction
-- 46-fixture eval suite — 25 English + 16 Hinglish (Claude Sonnet auto-labeled) + 6 Hindi (synthetic + verified, experimental — see [Corpus and language scope](#corpus-and-language-scope))
+- 46-fixture eval suite — 25 English + 16 Hinglish (Claude Sonnet auto-labeled) + 6 Hindi as shipped (synthetic; later retired from scoring — Devanagari Hindi is not supported, see [Corpus and language scope](#corpus-and-language-scope) and [ADR 0022](docs/architecture/adr/0022-hindi-retirement.md))
 - Per-language CI gate — <!-- METRICS:HISTORICAL -->overall ≥ 85%, each language ≥ 80%<!-- /METRICS:HISTORICAL --> as shipped (lowered to the current threshold on 2026-06-14 — see [ADR 0001](docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md) and [Eval results](#eval-results))
 - Nightly Slack drift alerts — eval results posted to channel after every scheduled run
 
@@ -374,9 +416,9 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 **Phase 2.2** ✓ (shipped June 2026 — v0.6.0):
 - Review authenticity scoring — heuristic signals (incentivized phrases, brevity, repetition, rating-text mismatch) + LLM signal (Groq, language-aware)
 - Batch-level signals — near-duplicate detection (word k-shingles + Jaccard), review burst detection
-- `POST /v2/authenticity` (single + batch), `include_authenticity` option on CSV ingest — **Superseded (Session 15d, D5):** the `/v2/authenticity*` and `GET /v2/insights/authenticity` public API routes were removed because the flag is unmeasurable; `include_authenticity` on CSV ingest and the dashboard's own authenticity views are unchanged
-- `authenticity_audits` table — org-scoped compliance audit trail with RLS
-- IS 19000:2022 support posture — flags incentivized/fake reviews for human-administrator decision; see `docs/compliance.md`
+- `POST /v2/authenticity` (single + batch), `include_authenticity` option on CSV ingest — **Removed:** the `/v2/authenticity*` and `GET /v2/insights/authenticity` routes (Session 15d, D5) and the dashboard's `/bff/authenticity*` routes, Authenticity/Flagged pages, `include_authenticity` ingest option and the 0.30 health-score term (Session 17, W6) were all removed because the flag is unmeasurable. The health score is now sentiment + urgency only (`formula_version` 2.0)
+- `authenticity_audits` table — org-scoped audit trail with RLS; no longer written or read by any API route (table kept, historical rows only)
+- IS 19000:2022 support posture (historical) — see `docs/compliance.md`
 - Not measured: no authenticity labels exist for the held-out set, so the authenticity scoring above has no published accuracy figure
 
 **Phase 2.x** (planned):
@@ -400,7 +442,12 @@ languages.** Both are evaluated against real Indian marketplace reviews: `eval/d
 flipkart_candidates.jsonl`, 14,552 unique reviews mined from three public Kaggle Flipkart
 datasets, yields 106 genuine Hinglish candidates (0.74% of the corpus) feeding both the scored
 eval set and a separate quarantined held-out corpus (`eval/fixtures/_held_out_hindi_hinglish/`,
-23 fixtures so far, used only for uncontaminated measurement — never for prompt development).
+106 fixtures, intended for held-out measurement rather than prompt development, but 36 of
+them also appear in the prompt-visible eval fixtures or the internal benchmark, so the prompt
+development process had seen them; the headline excludes them and covers only the 70 unseen
+reviews, and only where the judge panel agreed, see
+[ADR 0032](docs/architecture/adr/0032-held-out-exposure-and-split-gold.md) and
+[ADR 0033](docs/architecture/adr/0033-unscored-fraction-beside-the-headline.md)).
 
 **Devanagari-script Hindi is NOT supported. This is a retired scope, not an experimental one.**
 Real Devanagari-script product reviews are effectively absent from this corpus — of 14,552

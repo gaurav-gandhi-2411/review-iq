@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-09-20T08:57:30Z",
-  "git_sha": "c4dcfcd93e76d8be3b42b3c33c380586645e916c",
+  "generated_at": "2026-10-05T09:00:18Z",
+  "git_sha": "8186d0dff3024ecd7bf65ed309ff6b493b7519d6",
   "predictions_source": "eval/results/held_out_scoring_v2.json",
-  "predictions_git_sha": "c4dcfcd93e76d8be3b42b3c33c380586645e916c",
+  "predictions_git_sha": "8186d0dff3024ecd7bf65ed309ff6b493b7519d6",
   "scorer_version": "2026-09-20.free-text-v1",
   "method": {
     "bootstrap": "percentile, paired, 10000 resamples, seed 42, unclamped",
@@ -963,6 +963,178 @@
             1.0
           ]
         }
+      }
+    }
+  },
+  "headline_split_excluded": {
+    "all_106": {
+      "ex_stars": {
+        "fields": [
+          "product",
+          "buy_again",
+          "sentiment",
+          "language",
+          "topics",
+          "competitor_mentions",
+          "pros",
+          "cons",
+          "stars_inferred"
+        ],
+        "n": 106,
+        "n_split_pairs_excluded": 104,
+        "as_deployed_mean": 0.7605774950769337,
+        "as_deployed_ci95": [
+          0.7342471524275155,
+          0.7865974168193358
+        ],
+        "language_forced_mean": 0.822405533648304,
+        "language_forced_ci95": [
+          0.8014511598380563,
+          0.8429432312326741
+        ],
+        "paired_delta": {
+          "n": 106,
+          "mean": 0.061828038571370376,
+          "ci95": [
+            0.03889125606381862,
+            0.08663402252423581
+          ],
+          "ci_informative": true,
+          "n_up": 40,
+          "n_down": 13,
+          "n_zero": 53
+        },
+        "share_of_gap_attributable_to_misrouting": 0.2582382077709763,
+        "share_of_gap_ci95": [
+          0.17197369223243064,
+          0.34075586383674017
+        ]
+      },
+      "ex_stars_ex_language": {
+        "fields": [
+          "product",
+          "buy_again",
+          "sentiment",
+          "topics",
+          "competitor_mentions",
+          "pros",
+          "cons",
+          "stars_inferred"
+        ],
+        "n": 106,
+        "n_split_pairs_excluded": 104,
+        "as_deployed_mean": 0.799726426968004,
+        "as_deployed_ci95": [
+          0.7732383804322078,
+          0.8256740869655098
+        ],
+        "language_forced_mean": 0.7970858161903008,
+        "language_forced_ci95": [
+          0.7731956724961823,
+          0.8204815144842099
+        ],
+        "paired_delta": {
+          "n": 106,
+          "mean": -0.002640610777703119,
+          "ci95": [
+            -0.026728233118025142,
+            0.022397582767167763
+          ],
+          "ci_informative": true,
+          "n_up": 25,
+          "n_down": 29,
+          "n_zero": 52
+        },
+        "share_of_gap_attributable_to_misrouting": -0.013185018560992325,
+        "share_of_gap_ci95": [
+          -0.14461082206096298,
+          0.10357966829646963
+        ]
+      }
+    },
+    "unseen_70": {
+      "ex_stars": {
+        "fields": [
+          "product",
+          "buy_again",
+          "sentiment",
+          "language",
+          "topics",
+          "competitor_mentions",
+          "pros",
+          "cons",
+          "stars_inferred"
+        ],
+        "n": 70,
+        "n_split_pairs_excluded": 60,
+        "as_deployed_mean": 0.729620526775203,
+        "as_deployed_ci95": [
+          0.6964930075469408,
+          0.761553700838479
+        ],
+        "language_forced_mean": 0.8223422485653986,
+        "language_forced_ci95": [
+          0.7966987764521515,
+          0.8470313910286639
+        ],
+        "paired_delta": {
+          "n": 70,
+          "mean": 0.09272172179019567,
+          "ci95": [
+            0.0598930730314674,
+            0.12741845626400763
+          ],
+          "ci_informative": true,
+          "n_up": 38,
+          "n_down": 12,
+          "n_zero": 20
+        },
+        "share_of_gap_attributable_to_misrouting": 0.34293180870688955,
+        "share_of_gap_ci95": [
+          0.23868191533464514,
+          0.43811136999642153
+        ]
+      },
+      "ex_stars_ex_language": {
+        "fields": [
+          "product",
+          "buy_again",
+          "sentiment",
+          "topics",
+          "competitor_mentions",
+          "pros",
+          "cons",
+          "stars_inferred"
+        ],
+        "n": 70,
+        "n_split_pairs_excluded": 60,
+        "as_deployed_mean": 0.7962863450018097,
+        "as_deployed_ci95": [
+          0.7627371880013726,
+          0.8282667453895813
+        ],
+        "language_forced_mean": 0.7973774762200379,
+        "language_forced_ci95": [
+          0.7682079128373436,
+          0.8253280953658061
+        ],
+        "paired_delta": {
+          "n": 70,
+          "mean": 0.001091131218228119,
+          "ci95": [
+            -0.03388400073699994,
+            0.03804976554958613
+          ],
+          "ci_informative": true,
+          "n_up": 25,
+          "n_down": 26,
+          "n_zero": 19
+        },
+        "share_of_gap_attributable_to_misrouting": 0.005356200683934576,
+        "share_of_gap_ci95": [
+          -0.18466139740224963,
+          0.1670310579533175
+        ]
       }
     }
   },
