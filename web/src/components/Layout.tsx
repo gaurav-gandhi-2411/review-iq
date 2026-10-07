@@ -4,6 +4,7 @@ import { Upload, BarChart2, LogOut, MessageSquare, Key, X, ArrowUpRight, CheckCi
 import { supabase } from '../lib/supabase'
 import { getAccount, requestQuotaIncrease } from '../lib/api'
 import LogoMark from './LogoMark'
+import SiteLinks from './SiteLinks'
 
 const QUOTA_WARN_THRESHOLD = 0.8
 
@@ -101,6 +102,9 @@ export default function Layout({ children, active }: Props) {
         </div>
       </header>
       <main className="max-w-5xl mx-auto px-6 py-10">{children}</main>
+      <footer className="max-w-5xl mx-auto px-6 pb-10">
+        <SiteLinks />
+      </footer>
     </div>
   )
 }
