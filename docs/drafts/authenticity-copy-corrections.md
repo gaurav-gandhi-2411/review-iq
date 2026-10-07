@@ -1,14 +1,22 @@
 # DRAFT - not approved - do not publish
 
-Task S17 F3c. Proposed corrections to legal, data-ownership and API copy that still describe
-authenticity (fake-review) scoring after the surface was removed (PR #217 removed `/v2`
-authenticity routes; PR #251, DRAFT, removes `/bff/authenticity*`, the web pages,
-`include_authenticity` on CSV ingest and the 0.30 health-score term). Reason for removal: the flag
-is unmeasurable (ADR 0030 context, S15d D5; `docs/compliance.md` accuracy note). The
-`authenticity_audits` table and its historical rows remain; no DDL planned.
+Task S17 F3c, revision 2 (2026-10-07, after GG decisions relayed by the orchestrator). Proposed
+corrections to legal, data-ownership and API copy that still describe authenticity (fake-review)
+scoring after the surface was removed (PR #217 removed `/v2` authenticity routes; PR #251, now
+merged, removed `/bff/authenticity*`, the web pages, `include_authenticity` on CSV ingest and the
+0.30 health-score term). Reason for removal: the flag is unmeasurable (ADR 0030 context, S15d D5;
+`docs/compliance.md` accuracy note). The `authenticity_audits` table and its historical rows
+remain; no DDL planned.
 
-Baseline read: `origin/main` @ cf3b425. Line numbers are from that commit. Nothing here is
-published or applied; GG approves final text. All wording is a suggestion only.
+Baseline: line numbers in the per-document sections are from `origin/main` @ cf3b425; this branch
+has since merged `origin/main` (merge commit 274f7b6) and the legal/ and data-ownership files were
+unchanged by that merge (verified by `git diff cf3b425 HEAD --stat`), so those line numbers still
+hold. Nothing here is published or applied; GG approves final text. Wording is a proposal.
+
+Status of decisions (GG, relayed by the orchestrator): Q1-Q8 are DECIDED and the decided wording
+replaces the earlier open-question form (see "Decisions" near the end). Q5 (API) is implemented on
+main. Sections A (Gemini retirement) and B (per-user `last_seen_at`) are NEW and are for GG to
+approve; I do not decide them.
 
 Classification key: **W** = wording fix (text made true to current behavior, no change to what we do
 with data); **S** = substantive (a processing purpose, output or data category is described as
@@ -23,7 +31,7 @@ substantive, depends on a fact I could not verify.
 | 2 | legal/terms-of-service.md:94 | W | Keep ownership of historical scores, drop forward-looking wording |
 | 3 | legal/terms-of-service.md:135,137 | W | Remove authenticity outputs from warranty disclaimer |
 | 4 | legal/privacy-policy.md:33 | S? | Drop "authenticity score/label/flags" from output category |
-| 5 | legal/privacy-policy.md:36 | S | Keep row, reword as historical; retention is an OPEN QUESTION |
+| 5 | legal/privacy-policy.md:36 | S | Keep row, reword as historical (decided Q3/Q4) |
 | 6 | legal/privacy-policy.md:57 | W | Drop "and authenticity signal" |
 | 7 | legal/privacy-policy.md:68 | W | Reword stored-data list (historical records only) |
 | 8 | legal/dpa-template.md:22 | S | Remove purpose "authenticity scoring" |
@@ -35,9 +43,9 @@ substantive, depends on a fact I could not verify.
 | 14 | legal/dpa-template.md:152-153 | S | Audit-trail control no longer a current control |
 | 15 | legal/sub-processors.md:30 | S | Groq "what it processes" |
 | 16 | legal/sub-processors.md:55 | S | Supabase "what it processes" |
-| 17 | legal/sub-processors.md:76 | S? | Resend alert types (likely-fake, fake-cluster, fake-campaign): VERIFY |
+| 17 | legal/sub-processors.md:76 | S? | Resend alert types: say "not active", not "removed" (decided Q6) |
 | 18 | legal/data-retention-and-deletion.md:77 | none | KEEP (cascade list still true) |
-| 19 | legal/data-retention-and-deletion.md:91 | S | Retention row: keep, mark historical, OPEN QUESTION |
+| 19 | legal/data-retention-and-deletion.md:91 | S | Retention row: keep, mark historical, retained until purged (decided Q3) |
 | 20 | legal/compliance-posture.md:37 | W | Remove "supports IS 19000" claim, keep no-certification statement |
 | 21 | docs/data-ownership.md:18 | none | KEEP (RLS still covers the table) |
 | 22 | docs/data-ownership.md:55,59 | W | Mark table historical |
@@ -68,8 +76,16 @@ Current: "returns structured extraction (sentiment, topics, pros/cons, competito
 signals), authenticity scoring, and aggregate insights."
 Proposed: "returns structured extraction (sentiment, topics, pros/cons, competitor mentions, urgency
 signals) and aggregate insights."
-Reason: the Service no longer offers authenticity scoring. Removing a feature may engage a ToS
-clause on material changes; Q1.
+Reason: the Service no longer offers authenticity scoring. DECIDED (Q1): ToS section 10 ("Changes
+to these Terms", lines 180-185) says material changes are reflected by an updated "Effective date"
+and, where practicable, notice to registered accounts. All registered accounts are internal/test
+(14 orgs on or before 2026-07-10, all internal/test by name; 19 orgs now, per GG), so: add a dated
+changelog line and update the "Effective date" at publication; no notice period; revisit at the
+first external customer. Proposed changelog line: "2026-10-07 - Removed 'authenticity scoring'
+from the service description (section 1) and the warranty disclaimer (section 9); the feature was
+withdrawn." (section numbers to be confirmed against the ToS before publishing). Fact limit:
+the 19-org figure, and that the 5 orgs created after 2026-07-10 are internal, are from the
+orchestrator's instruction and were NOT checked by me (no DB access).
 
 **TOS-2, line 94. Class W.**
 Current: "any resulting structured extraction, authenticity score, or insight generated from it."
@@ -100,14 +116,18 @@ Reason: no longer generated; historical rows are disclosed under PP-2.
 Current: "Authenticity audit records | `org_id`, a SHA-256 hash of the review text (not the
 plaintext), score, label, flags, timestamp. | Generated when authenticity scoring runs
 (`authenticity_audits` table) - see `SECURITY.md` section 10, `docs/compliance.md`"
-Proposed: "Historical authenticity audit records | `org_id`, a SHA-256 hash of the review text (not
-the plaintext), score, label, flags, timestamp. | Generated by an authenticity-scoring feature that
-has been withdrawn; no new records are created. Existing records remain in the
-`authenticity_audits` table and are deleted when the organization is deleted. [OPEN QUESTION FOR GG:
-whether to state a purge date, Q3.]"
+Proposed (decided Q3/Q4): "Historical authenticity audit records | `org_id`, a SHA-256 hash of the
+review text (not the plaintext), score, label, flags, timestamp. | Historical records only: the
+authenticity-scoring feature was withdrawn and no new rows are created (no new authenticity records
+since 2026-07-26). Existing rows remain in the `authenticity_audits` table until purged and are
+deleted when the organization is deleted."
 Reason: the table and rows still exist, so the category must stay disclosed; "Generated when ...
-runs" becomes false. "No new records are created" is UNVERIFIED: re-check every writer of
-`authenticity_audits` on the post-#251 tree (`grep -rn authenticity_audits app/`) before approving.
+runs" is false now. Writer re-check on current origin/main (this revision, `git grep` over `app/`):
+the only INSERT into `authenticity_audits` is `save_authenticity_audit_pg` (`app/core/storage_pg.py`
+line 847, INSERT near 862); it has NO caller in `app/` (callers exist only in tests: an integration
+isolation test, and `tests/unit/test_ingest_worker.py` which asserts it is NOT called). So no code
+path writes new rows. Reader paths remain in `app/core/alerts/` (digest) and `storage_pg.py`
+(count/summary/list helpers). Limit: static grep of the merged tree, not a runtime check.
 
 **PP-3, line 57. Class W.**
 Current: "...to generate the structured extraction and authenticity signal."
@@ -125,8 +145,12 @@ Reason: keeps the disclosure true without implying the data is still generated.
 ## legal/dpa-template.md
 
 All DPA items are class S: subject matter, nature and purpose are the Article 28(3) description of
-instructed processing. Narrowing is normally customer-favorable, but the template may exist as
-executed copies. Q2.
+instructed processing. Narrowing is normally customer-favorable. DECIDED (Q2): no executed DPA
+found and none believed to exist (`docs/payments-readiness.md` line 7: first customers are invoiced
+manually; no external orgs in the DB, per GG), so narrow the purposes, nature and data description
+now (DPA-1 to DPA-7 below, apply as written). Add at the top of the DPA template's internal notes
+(not customer-facing text): "Re-check before the first customer signs: confirm this template still
+matches the processing actually performed." I did not search for executed DPAs outside the repo.
 
 **DPA-1, line 22.** Current: "review text extraction, authenticity scoring, and aggregate insights"
 Proposed: "review text extraction and aggregate insights"
@@ -184,10 +208,16 @@ lands.
 **SP-3, line 76 (Resend role). Class S?**
 Current: "urgency, likely-fake, fake-cluster, topic-spike, batch-defect, and fake-campaign
 notifications".
-"likely-fake", "fake-cluster" and "fake-campaign" are fake-review-adjacent alert types. UNVERIFIED
-whether they were removed by #217/#251 (I did not trace `app/core/alerts/`). Do not edit until GG
-confirms which alert kinds still send; if removed, delete those names. The sub-processor identity
-(Resend) and its role are unchanged either way. Q6.
+"likely-fake", "fake-cluster" and "fake-campaign" are fake-review-adjacent alert types. DECIDED
+(Q6), facts per orchestrator verification: `ENABLE_FAKE_CAMPAIGN_DETECTOR=false` and
+`ENABLE_BATCH_DEFECT_DETECTOR=false` in production, `alert_log` has 0 fake-type rows, but the code
+for LIKELY_FAKE / FAKE_CAMPAIGN alerts still exists. So the alert types are "not active", NOT
+"removed". Proposed (batch-defect is also behind a disabled flag in production, so it is listed as
+not active too): "Alert types: urgency and topic-spike notifications are the active types sent to
+an organization's registered recipient; likely-fake, fake-cluster, fake-campaign and batch-defect
+alert types exist in code but are not currently active." Removing the dead alert code is a separate later decision
+for GG. The sub-processor identity (Resend) and its role are unchanged. I did not verify the
+flag values or alert_log myself.
 
 ## legal/data-retention-and-deletion.md
 
@@ -202,10 +232,11 @@ Proposed (minimal, keeps the existing schedule true): "Historical authenticity a
 (`authenticity_audits`; no longer generated) | Retained indefinitely while the account is active
 (existing schedule, unchanged); stores a SHA-256 hash of review text, not the plaintext
 (`SECURITY.md` section 10). | Deleted immediately, same cascade."
-OPEN QUESTION FOR GG (Q3): the existing schedule says "retained indefinitely" and states no period I
-could rely on, so I invented none. A table with no live writer and indefinite retention is a
-data-minimisation smell; a bounded period or one-time purge would be a new commitment and a
-deletion (irreversible, out of scope for this draft).
+Revised per decision Q3 (replaces the proposal above): "Historical authenticity audit records
+(`authenticity_audits`) | Historical records only; no new rows are created. Retained until purged;
+stores a SHA-256 hash of review text, not the plaintext (`SECURITY.md` section 10). | Deleted
+immediately, same cascade." No retention period is stated or invented. The purge itself is a later
+data-deletion step that GG approves separately (not part of this draft; no DDL, no deletion done).
 
 ## legal/compliance-posture.md
 
@@ -213,8 +244,9 @@ deletion (irreversible, out of scope for this draft).
 Current: "None held. The authenticity-scoring feature *supports* IS 19000:2022 moderation workflows -
 it does not certify compliance with that standard, and must not be described as doing so."
 Proposed: "None held. Samidha Reviews does not certify, and must not be described as certifying,
-compliance with IS 19000:2022 or any other standard." Update the Evidence cell
-(`docs/compliance.md`) once that file is superseded (Q7).
+compliance with IS 19000:2022 or any other standard." The Evidence cell may keep pointing at
+`docs/compliance.md`, which is KEPT as a historical record (decided Q7; banner text under
+"Decisions" below).
 Reason: the feature that "supported" IS 19000 moderation is gone; the no-certification statement is
 the load-bearing part and is kept.
 
@@ -223,86 +255,193 @@ the load-bearing part and is kept.
 - **DO-1, line 18.** Keep: RLS still covers the table.
 - **DO-2, lines 55 and 59. Class W.** Relabel row 55 "Authenticity audit (historical, no longer
   generated)". Line 59 stays factually true (generated column on both tables).
-- **DO-3, line 63. Class W,** follows the dataset API decision. Option (a): "`GET /v2/dataset` -
-  paginated per-review records linking extraction + corrections (an `authenticity` key is retained
-  for pre-withdrawal reviews and is null otherwise; deprecated)". Option (b): "...linking
-  extraction + corrections".
+- **DO-3, line 63. Class W,** matches the implemented dataset API (decision Q5): current "paginated
+  per-review records linking extraction + authenticity + corrections." Proposed: "`GET /v2/dataset`
+  - paginated per-review records linking extraction + corrections. The `authenticity` key is
+  deprecated and always null (removal not before 2027-01-01)."
 
-## API surfaces (contract, not legal text)
+## API surfaces (IMPLEMENTED on main; decision Q5 accepted)
 
-External customers: UNVERIFIED. DB-free evidence only: `docs/payments-readiness.md:7` says "Today
-first customers are invoiced manually" (suggests few or no external customers, does not say none);
-`PLAN.md` lines 326 and 863 refer to "the first paying client" as a future event. I found no
-evidence of external consumers of `GET /v2/dataset` or of `source_type=authenticity` corrections,
-and no evidence against. Q5.
+Checked against the merged tree (this branch after merging origin/main), not against a proposal.
 
-**Dataset: `app/api/v2/dataset.py:42,49` and `app/core/dataset/builder.py` (1, 111, 116, 129, 201,
-262).** The summary reads "(extraction + authenticity + corrections)", the example response carries
-`"authenticity": {"score": 0.88, "label": "genuine", "flags": []}`, and the builder joins
-`authenticity_audits` onto each record (`auth_by_review_id.get(rid)`).
-- (a) Deprecate: keep the `authenticity` key, document it as deprecated and "present only for
-  reviews scored before the feature was withdrawn, otherwise null", unvalidated, with no accuracy
-  figure. Summary becomes "extraction + corrections (+ deprecated authenticity)". Example shows
-  `"authenticity": null`. No contract break; keeps the historical join live.
-  Cost: keeps an unmeasurable score in exports that a reader may take as a quality signal.
-- (b) Remove: drop the key and the `authenticity_audits` query. Breaking for any client parsing the
-  key; `docs/data-ownership.md` calls the JSONL export format "stable and self-describing", which
-  argues for deprecate-first.
-- **Recommendation: (a)** now, with removal in a later versioned change (`/v2` is the only version
-  present, so removal means a new version or a dated deprecation window). Risk: low to moderate,
-  UNVERIFIED.
+**Dataset (`GET /v2/dataset`, `app/api/v2/dataset.py`, `app/core/dataset/builder.py`).** The route
+keeps the `authenticity` key, always `null`, documented as deprecated. The code carries the text:
+"DEPRECATED. Authenticity scoring was removed; this key is always null. It is kept only so existing
+clients keep parsing the response. It will be removed in a future versioned change; not before
+2027-01-01." The example response shows `"authenticity": None`. The builder no longer joins
+`authenticity_audits` (builder.py shrank by about 60 lines in the merge).
+Copy consequence: DO-3 above and the `docs/data-ownership.md` line 63 text follow this; any public
+API reference should say "deprecated, always null, removal not before 2027-01-01".
 
-**Corrections enum: `app/core/corrections/schema.py:11,32` and `app/api/v2/corrections.py:92`.**
-`SourceType.authenticity` accepts writes for `score|label|flags`, and the docstring advertises it.
-- **Recommendation: deprecate, do not delete.** Keep the enum member so stored `corrections` rows
-  with `source_type='authenticity'` still deserialize and still appear in dataset/export; reject
-  NEW writes with `422` and a message naming the withdrawal; remove "authenticity (score, label,
-  flags)" from the docstring at `corrections.py:92`; mark the enum value deprecated in OpenAPI and
-  add a changelog entry. Removing the member would break reads of any existing authenticity
-  corrections (count UNVERIFIED, no DB access) and any client sending the value.
-- Breaking-change risk: writes of this value become `422`; reads unaffected. Likely zero external
-  callers (UNVERIFIED). Versioning: this narrows accepted input within `/v2`; per rule 110 either
-  (i) announce deprecation and keep accepting writes for a stated window, or (ii) accept it because
-  the producing surface is already gone and no external consumer is known. GG decides (Q5).
+**Corrections (`app/api/v2/corrections.py`, `app/core/corrections/schema.py`).** The enum member
+`SourceType.authenticity` is kept (schema.py lines 11 and 32), so reads and stored rows keep
+working. A request validator (corrections.py lines 30-36) rejects new writes with
+`source_type='authenticity'` with 422: "source_type 'authenticity' is deprecated and no longer
+accepted; authenticity scoring was removed". The docstring (line 105) states this.
+
+Breaking-change risk: writes of that value now return 422 (breaking for any caller still sending
+it); reads unaffected. External customers: none known (UNVERIFIED beyond the evidence in
+decisions Q1/Q2: first customers invoiced manually, no external orgs in the DB per GG; I have no DB
+access). Versioning: removal of the dataset key is a later versioned change, not before 2027-01-01.
 
 ## Stragglers (README.md, SECURITY.md, docs/compliance.md)
 
 Sweep scope, stated so it can be falsified: patterns `authenticit`, `fake[- ]review`,
 `fake-campaign` (case-insensitive) over `README.md`, `SECURITY.md`, `docs/compliance.md`, `legal/`,
 `docs/data-ownership.md` and the four named API files. NOT swept: other files under `docs/`, `web/`,
-`site/`, `app/` beyond the four files, `eval/`, `ops/`. Expect more hits there; this draft does not
-claim completeness.
+`site/`, `app/` beyond the four files, `eval/`, `ops/`. This draft does not claim completeness.
 
-- README.md:260 (`include_authenticity=true` form field), :372-377 (features list; :374 says
-  `include_authenticity` and the dashboard views are "unchanged"; :376 "IS 19000:2022 support
-  posture"; :377 "Not measured").
-- SECURITY.md:119-129, section 10 "Authenticity Audit Trail" (line 129: scorer "supports / assists"
-  moderation workflows). The :121-127 table/RLS/isolation statements stay true for the historical
-  table.
-- docs/compliance.md: title "Review Authenticity Compliance Posture", lines 3, 5 (supersede banner
-  says CSV ingest and dashboard are "unchanged"), 11, 15, 48, 60, 68-69, 76.
+Update after merging origin/main: PR #251 has merged and already edited all three. README.md
+changed (about 94 lines), SECURITY.md section 10 now carries a Session 17 (W6) note that no API
+route or ingest path writes or reads the table, and `docs/compliance.md` line 5's superseded banner
+now says the dashboard routes and CSV-ingest option were removed too. SECURITY.md line 131 still
+says the scorer "supports / assists" moderation workflows (stale, same issue as CP-1) and
+`docs/compliance.md` still opens "Read this before integrating the authenticity scoring feature".
+Both are inside the decided Q7 treatment below; do not double-edit.
 
-Per its commit titles #251 touches all three; reconcile against that diff, do not double-edit.
+---
 
-## OPEN QUESTIONS FOR GG
+## Decisions (GG, relayed by the orchestrator; replaces the former OPEN QUESTIONS list)
 
-1. Is removing "authenticity scoring" from the ToS service description (TOS-1) a material change to
-   the Service under the ToS change clause, requiring notice? (I did not read that clause for this
-   draft; not decided.)
-2. DPA: does any customer hold an executed DPA built from this template? Do the narrowed purposes
-   (DPA-1..7) and the sub-processor "what it processes" rows (SP-1, SP-2) require notice? The
-   sub-processor LIST itself (Groq, Supabase, OpenRouter, Resend) does not change in this draft.
-3. Historical `authenticity_audits` rows: keep "indefinite" (DR-2 unchanged), set a bounded period,
-   or purge? A purge is a deletion and a new retention commitment; I proposed none and invented no
-   period.
-4. Are the 33 historical rows truly all internal orgs with none in the last 30 days? (From the
-   task brief; I have no DB access.) If any belong to an external org, PP-2/DR-2 disclosure and
-   possibly a customer notice become required rather than optional.
-5. Dataset `authenticity` key: (a) deprecate-null (recommended) or (b) remove? Corrections: reject
-   new writes now (recommended) or announce a deprecation window first? Are there any external API
-   consumers (UNVERIFIED)?
-6. Resend alert types (SP-3): were likely-fake / fake-cluster / fake-campaign alerts removed?
-7. Retire `docs/compliance.md` or keep it as a historical record with a banner? Affects CP-1's
-   evidence cell and the PP-2 cross-reference.
-8. Sequencing: apply only after #251 merges; statements such as "no new records are created" depend
-   on its code state.
+### Q1. ToS service-description change - DECIDED
+Facts: ToS section 10 (lines 180-185) requires "an updated Effective date" and, where practicable,
+notice to registered accounts. All registered accounts are internal/test (14 orgs on or before
+2026-07-10, internal/test by name; 19 orgs now).
+Decision: dated changelog line plus updated Effective date; no notice period; revisit at the first
+external customer. Before/after quote: see TOS-1 (before: "...urgency signals), authenticity
+scoring, and aggregate insights." after: "...urgency signals) and aggregate insights."). Not
+verified by me: the org counts and names.
+
+### Q2. Executed DPAs - DECIDED
+None found, none believed to exist (`docs/payments-readiness.md` line 7; no external orgs in the
+DB, per GG). Narrow the DPA purposes, nature and data description now (DPA-1 to DPA-7). Add the
+internal line: "Re-check before the first customer signs." Before/after quotes: see DPA-1 to DPA-7.
+
+### Q3. Historical `authenticity_audits` rows - DECIDED
+Keep the table (no DDL). Retention wording: "historical records only; no new rows are created;
+retained until purged". No retention period invented. The purge is a later data-deletion step that
+GG approves separately. Before/after quotes: PP-2 and DR-2 above. DPA-6, SP-2 and DO-2 carry the
+same "historical" wording.
+
+### Q4. Verified facts about the rows - DECIDED
+The 33 audit rows span 10 orgs; last created 2026-07-26 (71 days before 2026-10-05). Use the
+sentence "no new authenticity records since 2026-07-26" (used in PP-2). The earlier phrase "all
+internal" is DROPPED: 5 of the 10 orgs were created after 2026-07-10 and were not checked. Counts
+are from the orchestrator; I did not query the DB.
+
+### Q5. API choices - DECIDED AND IMPLEMENTED
+Dataset: key kept, always null, deprecated, removal not before 2027-01-01. Corrections: reads keep
+working, new `authenticity` writes return 422. See "API surfaces" above.
+
+### Q6. Fake alerts - DECIDED
+Wording says these alert types are "not active", not "removed". See SP-3. Removing the dead alert
+code (LIKELY_FAKE / FAKE_CAMPAIGN) is a separate later decision. Facts (orchestrator-verified, not
+rechecked by me): `ENABLE_FAKE_CAMPAIGN_DETECTOR=false` and `ENABLE_BATCH_DEFECT_DETECTOR=false` in
+production; `alert_log` has 0 fake-type rows.
+
+### Q7. docs/compliance.md - DECIDED: keep with a historical-record banner
+Current banner (line 5, merged): "> **Superseded (Session 15d D5 + Session 17 W6):** the public
+`POST /v2/authenticity`, ... were removed ...". Proposed replacement banner, placed directly under
+the title and the opening sentence at line 3 reworded:
+
+> **HISTORICAL RECORD - not a description of the current product.** The authenticity (fake-review)
+> scoring feature described below has been withdrawn: its API routes, dashboard pages, CSV-ingest
+> option and health-score term no longer exist, and no new authenticity records are created (none
+> since 2026-07-26). It was withdrawn because the flag could not be measured (see the accuracy note
+> at the end of this document). This file is kept only to document what the product previously did
+> and for the historical `authenticity_audits` records that remain until purged. It must not be
+> relied on, cited, or presented as a compliance claim: Samidha Reviews does not certify compliance
+> with IS 19000:2022 or any other standard.
+
+Line 3 before: "This document describes how review-iq supports IS 19000:2022 ('Online Consumer
+Reviews') moderation workflows. Read this before integrating the authenticity scoring feature into
+any compliance process." After: "This document records how review-iq previously supported IS
+19000:2022 ('Online Consumer Reviews') moderation workflows, for the historical record only." The
+same file-level treatment applies to SECURITY.md line 131 ("supports / assists ... moderation
+workflows"): suggest "Historical: the authenticity scorer ... (withdrawn); see docs/compliance.md".
+
+### Q8. Sequencing / writer re-check - DONE
+Apply text only after the code state is on main: for #251 it is. Writer re-grep on current
+origin/main (recorded under PP-2): no caller of `save_authenticity_audit_pg` in `app/`. For
+sections A and B below the gating is stated per section.
+
+---
+
+## SECTION A (for GG to approve; NOT decided): Gemini retirement - apply only after #262 is deployed
+
+PR #262 (pending merge) removes the Gemini fallback. I did not read #262. Every sentence below still
+describes Gemini as excluded or gated behind `ENABLE_GEMINI_FALLBACK`. Proposed replacement text
+requested by the coordinator: "no Gemini or Google model is used or retained as a sub-processor".
+
+Caution on that exact wording: `legal/sub-processors.md` (line 61 onward) and
+`legal/privacy-policy.md` (line 145) list Google Cloud Run (and Secret Manager) as Google
+infrastructure, "listed for transparency". A flat "no Google ... sub-processor" sentence would
+contradict that. Suggested safe variant used below: "no Gemini or other Google generative model
+is used or retained". GG to choose between the two.
+
+| # | File:line | Current text | Proposed replacement |
+|---|---|---|---|
+| A1 | legal/privacy-policy.md:66 | "Google Gemini is excluded from the customer-data (`/v2`) path entirely." | "No Gemini or other Google generative model is used for any Customer data." (delete if GG prefers silence) |
+| A2 | legal/sub-processors.md:86-90 ("Not currently in use" list) | "**Google Gemini** - explicitly excluded from the customer-data (`/v2`) path. `SECURITY.md` section 3: `allow_gemini_fallback=False` is hardcoded on every `/v2/extract` call; Gemini is reachable only on the legacy `/v1` demo path, gated behind `ENABLE_GEMINI_FALLBACK` (default `false`), because the Gemini free tier uses inputs for training ... Listed here explicitly so it is clear this was a deliberate exclusion, not an oversight." | "**Google Gemini** - not used. No Gemini or Google model is used or retained as a sub-processor; the fallback was removed (date to be filled after #262 deploys)." Keep the Google Cloud Run entry (line 61) unchanged. |
+| A3 | SECURITY.md:67 | "**Gemini (Google Gemini 2.0 Flash):** Removed from the v2 (client-data) path entirely. `allow_gemini_fallback=False` is hardcoded ... reachable only on the legacy `/v1` demo path, and only when `ENABLE_GEMINI_FALLBACK=true` ..." | "**Gemini:** removed. No Gemini or Google model is used or retained as a sub-processor." |
+| A4 | SECURITY.md:113 | secrets list includes `GEMINI_API_KEY` | drop `GEMINI_API_KEY` from the list once the secret is deleted (secret deletion is a separate GG-approved step) |
+| A5 | README.md:315 | "LLM (fallback) \| Google Gemini 2.0 Flash" | remove the row (or name the actual fallback) |
+| A6 | README.md:333 | "Store secrets in Secret Manager: `groq-api-key`, `gemini-api-key`, ..." | drop `gemini-api-key` |
+
+Judged historical, left alone: `docs/decorative-control-sweep.md` lines 63, 112, 114 (records of a
+past sweep, including the failover probe's `GEMINI_API_KEY`; note the failover probe and
+`model-availability-check.yml` reference Gemini and will need their own change in #262),
+`docs/specs/wave1-commercialization.md:24` ("Gemini banned on org path", shipped record),
+`docs/specs/s15c-language-routing.md:234`. Eval-only use is a different question:
+`docs/eval-contamination-and-the-honest-number.md:138`, `docs/specs/s15d-gold-label-review.md`
+lines 58 and 96 say a Gemini model (`gemini-3.5-flash-lite`) was a judge in an eval panel. If any
+eval still calls a Google model, the sentence "no Gemini or Google model is used" would be false
+for eval, though eval does not process Customer data. GG to confirm the scope of the sentence
+(product path vs everything).
+
+Scope: `git grep -niE "gemini|ENABLE_GEMINI_FALLBACK"` over `legal/`, `SECURITY.md`, `README.md`,
+`docs/` (excluding `docs/drafts` and `docs/architecture/adr`). NOT swept: ADRs (historical),
+`ops/`, `.github/`, `app/`, `web/`, `site/`. `legal/dpa-template.md` has no Gemini mention.
+Classification: this is a substantive-adjacent change (a sub-processor is described as never used,
+not removed from an active list, so it is not a sub-processor list change since Gemini was never
+listed as active). Whether a notice is needed: GG (no external customers known).
+
+## SECTION B (for GG to approve; NOT decided): per-user `last_seen_at` - apply only if the migration is applied
+
+A new per-user activity timestamp on `organization_members` is personal data (it tracks when an
+identifiable user was last active). The PR is in progress; `git grep last_seen_at` on current
+origin/main returns nothing, so no code or migration exists to verify against. All text below is
+therefore conditional and UNVERIFIED against the real column name, trigger events, or update
+frequency; revise after the migration lands.
+
+**B1, legal/privacy-policy.md (add a row to the data table near line 35, "Usage/API logs" row):**
+"| **Last-activity timestamp** | The time a user was last active in the Service (`last_seen_at`, stored per user per organization on `organization_members`). | Generated by the Service when you use it; used to show organization administrators when a member was last active. [CONFIRM the actual purpose and who can see it] |"
+Single-sentence form if GG prefers prose: "We record, for each user, the time they were last active
+in the Service, so that organization administrators can see recent activity; this timestamp is
+deleted with the user or organization."
+
+**B2, legal/data-retention-and-deletion.md (add a row to the retention schedule after line 90):**
+"| Per-user last-activity timestamp (`organization_members.last_seen_at`) | Retained while the user is a member of the organization; overwritten on each new activity (no history kept) [CONFIRM overwrite-only]. | Deleted with the user or organization via the existing `ON DELETE CASCADE` on `organization_members` (the account-deletion statement removes the organization and its dependent rows). |"
+Check needed before publishing: the existing line 77 cascade list does not name
+`organization_members`; confirm the foreign key to `organizations` is `ON DELETE CASCADE`
+and add `organization_members` to that list. I did not verify this FK.
+
+**B3, docs/data-ownership.md:** add `organization_members.last_seen_at` to the table list at line
+18-19 (it already lists `organization_members` under RLS) and one line in the ownership section:
+"Per-user activity timestamps (`last_seen_at`) are stored per user and organization, are subject to
+the same RLS, and are deleted with the user or organization."
+
+---
+
+## STILL OPEN / NOT VERIFIED BY ME
+
+- All org counts, org names, and the 33-row / 10-org / 2026-07-26 figures (orchestrator-supplied; no
+  DB access).
+- Flag values in production and `alert_log` contents (Q6).
+- The exact ToS section numbers for the changelog line (section 1 and the disclaimer's section
+  number were not re-read; TOS-1 says "to be confirmed").
+- Contents of PRs #262 and the `last_seen_at` PR (not read); `last_seen_at` has no code on main.
+- Whether `organization_members` FK is `ON DELETE CASCADE`.
+- GG decisions still needed: Section A wording scope (Google vs Gemini only; eval judges), Section
+  B purpose and visibility, and the later data-deletion step for historical rows and the dead alert
+  code.
