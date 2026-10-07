@@ -81,6 +81,21 @@ class TestPostCorrections:
         )
         assert resp.status_code == 422
 
+    def test_authenticity_source_type_rejected_with_message(self, client: TestClient) -> None:
+        """New writes with the deprecated authenticity source_type -> 422, no DB call."""
+        mock_fn = MagicMock(return_value="new-uuid")
+        with patch("app.api.v2.corrections.submit_correction_pg", new=mock_fn):
+            resp = client.post(
+                "/v2/corrections",
+                json=_valid_body(source_type="authenticity", field_path="label"),
+            )
+        assert resp.status_code == 422
+        assert (
+            "source_type 'authenticity' is deprecated and no longer accepted; "
+            "authenticity scoring was removed"
+        ) in resp.text
+        mock_fn.assert_not_called()
+
     def test_prefixed_review_id_returns_422(self, client: TestClient) -> None:
         """review_id with 'sha256:' prefix is rejected with 422."""
         resp = client.post("/v2/corrections", json=_valid_body(review_id="sha256:abc"))
@@ -108,6 +123,17 @@ class TestPostCorrections:
 
 
 class TestGetCorrections:
+    def test_existing_authenticity_row_still_listed(self, client: TestClient) -> None:
+        """Reads of stored authenticity-sourced rows (and the filter) still work."""
+        fake_rows = [{"id": "x", "source_type": "authenticity", "field_path": "label"}]
+        with patch(
+            "app.api.v2.corrections.list_corrections_pg",
+            new=MagicMock(return_value=fake_rows),
+        ):
+            resp = client.get("/v2/corrections", params={"source_type": "authenticity"})
+        assert resp.status_code == 200
+        assert resp.json()["results"][0]["source_type"] == "authenticity"
+
     def test_list_returns_200_with_results(self, client: TestClient) -> None:
         """Happy path: mocked DB → 200, count=1, results non-empty."""
         fake_rows = [{"id": "x", "source_type": "extraction"}]

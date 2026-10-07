@@ -25,6 +25,18 @@ class CorrectionRequest(BaseModel):
     correction_note: str | None = None
     language: str = "en"
 
+    @field_validator("source_type")
+    @classmethod
+    def reject_deprecated_source_type(cls, v: SourceType) -> SourceType:
+        # The enum member stays so stored rows and reads still serialize; only new writes
+        # are refused.
+        if v is SourceType.authenticity:
+            raise ValueError(
+                "source_type 'authenticity' is deprecated and no longer accepted; "
+                "authenticity scoring was removed"
+            )
+        return v
+
     @field_validator("review_id")
     @classmethod
     def reject_prefixed_review_id(cls, v: str) -> str:
@@ -89,8 +101,8 @@ async def submit_correction(
 
     ``field_path`` must be one of the fields allowed for ``source_type``:
     extraction (sentiment, stars, stars_inferred, buy_again, urgency, language, pros,
-    cons, topics, competitor_mentions, feature_requests, product), authenticity
-    (score, label, flags), or reply (reply_text, tone). ``review_id`` is the plain
+    cons, topics, competitor_mentions, feature_requests, product) or reply (reply_text, tone).
+    ``source_type`` 'authenticity' is deprecated and rejected with 422 (scoring was removed). ``review_id`` is the plain
     sha256 hex digest of the review text — no ``sha256:`` prefix.
     """
     try:

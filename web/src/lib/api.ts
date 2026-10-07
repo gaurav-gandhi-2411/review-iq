@@ -124,7 +124,6 @@ export interface HealthScore {
   components: {
     sentiment: { score: number; positive_count: number; total: number }
     urgency: { score: number; high_urgency_count: number; total: number }
-    authenticity: { score: number; priority_review_count: number; total_audited: number }
   }
 }
 
@@ -181,17 +180,6 @@ export interface ReviewsResponse {
   results: Review[]
 }
 
-export type AuthLabel = 'genuine' | 'suspicious' | 'likely_fake'
-
-export interface AuthenticityResult {
-  score: number
-  label: AuthLabel
-  flags: string[]
-  reasons: string
-  review_hash: string
-  scored_at: string
-}
-
 export type ReplyTone = 'apologetic' | 'appreciative' | 'professional' | 'warm'
 
 export interface ReplyDraft {
@@ -202,17 +190,6 @@ export interface ReplyDraft {
   caveats: string[]
   model_used: string
   drafted_at: string
-}
-
-export interface AuthInsights {
-  total_audited: number
-  dispositions: { clear: number; flagged_for_review: number; priority_review: number }
-  disposition_rates: { clear: number; flagged_for_review: number; priority_review: number }
-  review_flag_rate: number
-  mean_authenticity_score: number
-  signal_frequency: Array<{ signal: string; count: number }>
-  flag_rate_series: Array<{ period: string; review_flag_rate: number; audited: number }>
-  moderation_note: string
 }
 
 // ---- API functions ----
@@ -232,13 +209,6 @@ export async function getReviews(params: {
   return bff(`/reviews${qs ? '?' + qs : ''}`)
 }
 
-export async function scoreAuthenticity(text: string, stars?: number | null): Promise<AuthenticityResult> {
-  return bff('/authenticity', {
-    method: 'POST',
-    body: JSON.stringify({ text, stars: stars ?? null }),
-  })
-}
-
 export async function draftReply(
   text: string,
   tone: ReplyTone,
@@ -255,40 +225,6 @@ export async function requestQuotaIncrease(notes?: string): Promise<{ recorded: 
     method: 'POST',
     body: JSON.stringify({ notes: notes ?? null }),
   })
-}
-
-export async function getAuthInsights(params: {
-  since?: string
-  until?: string
-  bucket?: string
-} = {}): Promise<AuthInsights> {
-  const q = new URLSearchParams()
-  if (params.bucket) q.set('bucket', params.bucket)
-  if (params.since) q.set('since', params.since)
-  if (params.until) q.set('until', params.until)
-  const qs = q.toString()
-  return bff(`/insights/authenticity${qs ? '?' + qs : ''}`)
-}
-
-// ---- Flagged reviews ----
-
-export interface FlaggedReview {
-  review_hash: string
-  score: number
-  label: AuthLabel
-  flags: string[]
-  created_at: string
-}
-
-export interface FlaggedReviewsResponse {
-  count: number
-  offset: number
-  limit: number
-  results: FlaggedReview[]
-}
-
-export async function getFlaggedReviews(limit = 50, offset = 0): Promise<FlaggedReviewsResponse> {
-  return bff(`/authenticity/flagged?limit=${limit}&offset=${offset}`)
 }
 
 // ---- Export ----

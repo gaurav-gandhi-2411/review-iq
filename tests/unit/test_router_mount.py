@@ -91,25 +91,27 @@ def test_public_service_mounts_leads_on_every_deploy_target() -> None:
 
 
 # The fake-review flag is unmeasurable (Session 15c D2), so its public API routes were removed
-# in Session 15d (D5). The dashboard's own /bff/* authenticity routes are a separate surface
-# and intentionally stay (see the D5 report / PR body for that follow-up).
+# in Session 15d (D5) and the dashboard's /bff/* authenticity routes in Session 17 (W6).
 _REMOVED_AUTHENTICITY_PATHS = (
     "/v2/authenticity",
     "/v2/authenticity/batch",
     "/v2/insights/authenticity",
+    "/bff/authenticity",
+    "/bff/authenticity/flagged",
+    "/bff/insights/authenticity",
 )
 
 
 def test_public_service_does_not_mount_removed_authenticity_routes() -> None:
-    """Session 15d D5: no public deploy target mounts the three /v2 authenticity routes, but
-    the sibling /v2/insights endpoints and the dashboard's /bff/authenticity are unaffected."""
+    """Session 15d D5 + Session 17 W6: no public deploy target mounts any /v2 or /bff
+    authenticity route; the sibling /v2/insights and /bff/insights endpoints are unaffected."""
     for deploy_target in ("cloud-run", "local", "hf-spaces"):
         paths = _paths(deploy_target, service_role="public")
         for removed in _REMOVED_AUTHENTICITY_PATHS:
             assert removed not in paths, f"{removed} is still mounted on {deploy_target}"
         assert "/v2/insights/trends" in paths
         assert "/v2/insights/health-score" in paths
-        assert "/bff/authenticity" in paths  # dashboard path, out of D5's scope
+        assert "/bff/insights/health-score" in paths
 
 
 def test_removed_authenticity_routes_return_404() -> None:
@@ -118,6 +120,9 @@ def test_removed_authenticity_routes_return_404() -> None:
     assert client.post("/v2/authenticity", json={"text": "x"}).status_code == 404
     assert client.post("/v2/authenticity/batch", json={"reviews": []}).status_code == 404
     assert client.get("/v2/insights/authenticity").status_code == 404
+    assert client.post("/bff/authenticity", json={"text": "x"}).status_code == 404
+    assert client.get("/bff/authenticity/flagged").status_code == 404
+    assert client.get("/bff/insights/authenticity").status_code == 404
 
 
 def test_admin_service_role_unaffected_by_authenticity_removal() -> None:
@@ -141,3 +146,16 @@ def test_openapi_has_no_v2_authenticity_paths_and_no_fake_review_claim() -> None
     blob = json.dumps(schema).lower()
     assert "fake-review" not in blob
     assert "fake review" not in blob
+
+
+def test_openapi_has_no_authenticity_in_paths_ingest_or_health_score() -> None:
+    """Session 17 W6: no authenticity path, and neither CSV ingest (include_authenticity) nor
+    the health-score operation mentions authenticity. NOT asserted for the whole schema:
+    /v2/dataset and the corrections SourceType enum still reference stored audit rows (tracked
+    follow-up, deliberately out of W6's scope)."""
+    import json
+
+    schema = _app("cloud-run").openapi()  # type: ignore[attr-defined]
+    assert not [p for p in schema["paths"] if "authenticity" in p]
+    for path in ("/v2/ingest/csv", "/v2/insights/health-score"):
+        assert "authenticity" not in json.dumps(schema["paths"][path]).lower(), path

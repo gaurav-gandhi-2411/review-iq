@@ -96,7 +96,6 @@ async def ingest_csv(
     product_column: Annotated[str | None, Form()] = None,
     date_column: Annotated[str | None, Form()] = None,
     date_format: Annotated[str | None, Form()] = None,
-    include_authenticity: Annotated[bool, Form()] = False,
 ) -> dict[str, object]:
     """Upload a CSV of reviews for bulk extraction.
 
@@ -156,15 +155,13 @@ async def ingest_csv(
     job_id = str(uuid.uuid4())
     total = len(rows)
 
-    # Store column mapping + include_authenticity now (the worker reads
-    # include_authenticity per row); input_hashes are appended on completion.
+    # Store column mapping now; input_hashes are appended on completion.
     initial_meta = json.dumps(
         {
             "text_column": resolved_text,
             "product_column": resolved_product,
             "date_column": resolved_date,
             "date_ambiguous": date_ambiguous,
-            "include_authenticity": include_authenticity,
             "input_hashes": [],
         }
     )
