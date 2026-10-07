@@ -162,20 +162,53 @@ jobs:
             echo "See ops/runbooks/db-restore.md for how to generate and set it."
             exit 1
           fi
+          mkdir -p upload
           # --passphrase-fd 0: passphrase is piped via stdin, never argv (avoids
           # exposure in the runner's process list), same care as the DSN handling above.
           gpg --batch --yes --symmetric --cipher-algo AES256 \
             --passphrase-fd 0 \
-            --output "${FILENAME}.gpg" \
+            --output "upload/${FILENAME}.gpg" \
             "${FILENAME}" <<< "$DB_BACKUP_ENCRYPTION_KEY"
           rm -f "${FILENAME}"
           echo "encrypted_filename=${FILENAME}.gpg" >> "$GITHUB_OUTPUT"
+
+      - name: Assert the upload set is encrypted-only (structural guard)
+        # S17: until 2026-07-10 plaintext dumps were uploaded to this PUBLIC repo (4 files, deleted
+        # 2026-10-05). Encryption was bolted on afterwards, which made a plaintext upload unlikely,
+        # not impossible. Now: the plaintext dump never lives under upload/, the upload step below
+        # takes the LITERAL glob upload/*.gpg (not a step output that could point anywhere), and this
+        # step fails the job unless every file there is a gpg symmetric-encrypted packet that is NOT
+        # a readable gzip. A plaintext file renamed .gpg still fails here.
+        run: |
+          set -e
+          shopt -s nullglob
+          FILES=(upload/*)
+          [ "${#FILES[@]}" -ge 1 ] || { echo "::error::upload/ is empty"; exit 1; }
+          for F in "${FILES[@]}"; do
+            case "$F" in *.gpg) ;; *) echo "::error::non-.gpg file in upload/: $F"; exit 1 ;; esac
+            if gunzip -t "$F" 2>/dev/null; then
+              echo "::error::$F is a readable gzip, not an encrypted file"; exit 1
+            fi
+            # gpg --list-packets exits 2 on a valid symmetric file (it is listing, not decrypting, and
+            # holds no key), so the exit status is handled explicitly: 0 and 2 are expected, anything
+            # else (or a missing binary) fails the job. The packet greps below are the real check.
+            if PACKETS=$(gpg --list-packets "$F" 2>&1); then GPG_RC=0; else GPG_RC=$?; fi
+            if [ "$GPG_RC" -gt 2 ]; then
+              echo "::error::gpg failed (exit $GPG_RC) reading $F"; exit 1
+            fi
+            echo "$PACKETS" | grep -q 'symkey enc packet' \
+              || { echo "::error::$F is not a gpg symmetric-encrypted file"; exit 1; }
+            echo "$PACKETS" | grep -q 'encrypted data packet' \
+              || { echo "::error::$F has no encrypted data packet"; exit 1; }
+          done
+          echo "upload set verified encrypted: ${FILES[*]}"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.encrypt.outputs.encrypted_filename }}
-          path: ${{ steps.encrypt.outputs.encrypted_filename }}
+          path: upload/*.gpg
+          if-no-files-found: error
           # 90 days is the GitHub free-tier maximum. Safe to keep even on a public
           # repo now that the artifact is encrypted (see the "Encrypt dump" step
           # above) — see ops/runbooks/db-restore.md for the upgrade path.
