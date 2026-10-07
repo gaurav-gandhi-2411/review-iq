@@ -95,11 +95,10 @@ async def test_reply_success_returns_reply_text(client: httpx.AsyncClient) -> No
     )
     with patch("app.api.bff.router.draft_reply", new=AsyncMock(return_value=(mock_draft, 100, 50))):
         with patch("app.api.bff.router.update_usage_tokens", new=AsyncMock()):
-            with patch("app.api.bff.router.get_authenticity_audit_by_hash_pg", return_value=None):
-                resp = await client.post(
-                    "/bff/reply",
-                    json={"text": "The stitching came apart after one wash.", "tone": "apologetic"},
-                )
+            resp = await client.post(
+                "/bff/reply",
+                json={"text": "The stitching came apart after one wash.", "tone": "apologetic"},
+            )
     assert resp.status_code == 200
     body = resp.json()
     assert "reply_text" in body

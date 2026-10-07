@@ -76,7 +76,10 @@ async def list_reviews(
     sentiment: Sentiment | None = Query(None),
     urgency: Urgency | None = Query(None),
     has_competitor_mention: bool | None = Query(None),
-    topic: str | None = Query(None, description="Filter reviews containing this topic"),
+    topic: str | None = Query(
+        None,
+        description="Exact (case-sensitive) match against one entry of the extracted topics list, e.g. battery or build_quality (snake_case, free-form LLM output, not a closed vocabulary)",
+    ),
     since: datetime | None = Query(None, description="ISO8601 datetime — earliest created_at"),
     until: datetime | None = Query(None, description="ISO8601 datetime — latest created_at"),
     limit: int = Query(50, ge=1, le=200),

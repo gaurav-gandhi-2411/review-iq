@@ -33,7 +33,7 @@ concurrency:
 
 jobs:
   probe:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: unverified on 26.04 (S17 H3); move to ubuntu-latest after a main-branch dry run
     permissions:
       contents: read
       issues: write # only used by the scheduled-run failure-alert step below

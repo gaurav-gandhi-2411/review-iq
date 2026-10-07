@@ -137,6 +137,174 @@ def _label_agreement_text(data: dict[str, Any]) -> str:
     )
 
 
+def _render_held_out_grid_md(data: dict[str, Any]) -> str:
+    """Held-out block once the artifact carries the Session 16 exposure x split-gold grid.
+
+    Rule 65c: the published headline here is HIGHER than the one it replaces, so every cell of the
+    grid is printed beside it, the field that goes DOWN is named, and the exposed-vs-unexposed
+    comparison is shown -- all rendered from the one artifact, none hand-typed.
+    """
+    grid = data["headline_grid"]
+    pub = grid[data["headline_policy"]["cell"]]
+    sha = data.get("git_sha")
+    models = f"{data['groq_model_small']} / {data['groq_model_large']}"
+    un = data["unscored"]
+    unscored_cell = (
+        f"{un['n_pairs_unscored']} of {un['n_pairs']} ({_fmt_pct(un['unscored_fraction'])})"
+    )
+    lo_b = un["bounds"]["lower_unscored_all_wrong"]["score"]
+    hi_b = un["bounds"]["upper_unscored_all_correct"]["score"]
+    pros = data["per_field_split_effect"]["pros"]
+    lines = [
+        f"Measured {data['generated_at']}"
+        + (f" &middot; `{sha[:7]}`" if sha else "")
+        + f" &middot; models: {models}",
+        "",
+        # Session 17 (W3): the unscored fraction sits BESIDE the number it qualifies. The score
+        # is accuracy where the panel agreed -- split pairs are the hardest reviews -- so it is
+        # not overall accuracy and must not be read as such.
+        f"**{_fmt_pct(pub['as_deployed']['score'])} "
+        f"[{_fmt_pct(pub['as_deployed']['ci_95']['lower'])}, "
+        f"{_fmt_pct(pub['as_deployed']['ci_95']['upper'])}] on {pub['n']} unseen reviews, scored "
+        f"where the three-judge panel reached consensus; {_fmt_pct(un['unscored_fraction'])} of "
+        f"field-pairs ({un['n_pairs_unscored']} of {un['n_pairs']}) had no consensus and are "
+        "unscored.**",
+        "",
+        "| Condition | Score (headline fields) | 95% CI | n | Field-pairs unscored |",
+        "|---|---|---|---|---|",
+        f"| **As actually deployed** (real language routing) | "
+        f"**{_fmt_pct(pub['as_deployed']['score'])}** "
+        f"| [{_fmt_pct(pub['as_deployed']['ci_95']['lower'])}, "
+        f"{_fmt_pct(pub['as_deployed']['ci_95']['upper'])}] | {pub['n']} | {unscored_cell} |",
+        f"| Language routing forced correct | {_fmt_pct(pub['language_forced']['score'])} "
+        f"| [{_fmt_pct(pub['language_forced']['ci_95']['lower'])}, "
+        f"{_fmt_pct(pub['language_forced']['ci_95']['upper'])}] | {pub['n']} | {unscored_cell} |",
+        "",
+        "**This is accuracy where the panel agreed, not overall accuracy.** A *field-pair* is one "
+        f"(review, field) cell: {pub['n']} reviews x {len(un['fields'])} fields = {un['n_pairs']}. "
+        "A pair is unscored when the three judges split and the stored gold is a default, not a "
+        "label. Those are the reviews the panel found hardest or most ambiguous, so scoring only "
+        "the agreed pairs is a selection effect: it is why `pros` reads "
+        f"{_fmt_pct(pros['score_excluding_split'])} with them excluded against "
+        f"{_fmt_pct(pros['score_all_pairs'])} with the defaults scored (all reviews). "
+        f"{un['n_reviews_with_any_unscored_pair']} of {un['n_reviews']} reviews have at least one "
+        "unscored pair. **No point estimate of overall accuracy is identifiable from this "
+        "data.** The assumption-free interval (every unscored pair all wrong / all right) is "
+        f"[{_fmt_pct(lo_b)}, {_fmt_pct(hi_b)}]; that is a bound, not a result.",
+        "",
+        "**What this headline is.** The average of "
+        f"{len(data['headline_fields'])} fields ({', '.join(f'`{f}`' for f in data['headline_fields'])}) "
+        f"over the {pub['n']} of {data['n_fixtures']} corpus reviews that the prompt-development "
+        f"process had **not** seen, with {pub['n_split_pairs_excluded']} gold "
+        "(review, field) pairs excluded because the judge panel split and the stored gold was a "
+        "default, not a label. `stars` (null everywhere) and `language` (an echo of the "
+        f"detector, {_label_agreement_text(data)}) are excluded as before.",
+        "",
+        "**Every cell, same recorded model outputs, as deployed** (the change moves the number up, "
+        "so all four are shown):",
+        "",
+        "| Reviews | Gold pairs | Score | 95% CI | n |",
+        "|---|---|---|---|---|",
+    ]
+    labels = {
+        "all_reviews_all_pairs": ("all", "all"),
+        "all_reviews_split_excluded": ("all", "split excluded"),
+        "unexposed_all_pairs": ("unseen only", "all"),
+        "unexposed_split_excluded": ("**unseen only (headline)**", "**split excluded**"),
+    }
+    for key, (who, which) in labels.items():
+        c = grid[key]["as_deployed"]
+        lines.append(
+            f"| {who} | {which} | {_fmt_pct(c['score'])} "
+            f"| [{_fmt_pct(c['ci_95']['lower'])}, {_fmt_pct(c['ci_95']['upper'])}] "
+            f"| {grid[key]['n']} |"
+        )
+    reasons = data["exposure_reasons"]
+    sens = data.get("exposure_sensitivity", {})
+    lines += [
+        "",
+        f"**Why {data['n_exposed_reviews']} reviews are excluded.** "
+        f"{reasons.get('prompt_visible_dev_fixture', 0)} also appear in the prompt-visible "
+        "development fixtures (`eval/fixtures/hi-en/`; four of the `hi_en` prompt's few-shot "
+        f"examples are rewrites of them) and {reasons.get('benchmark_gold', 0)} in the "
+        "internal benchmark whose adjudicated labels accepted prompt v2.2/v2.3. The builder "
+        "only excluded already-quarantined text, so nothing stopped this "
+        "([ADR 0032](docs/architecture/adr/0032-held-out-exposure-and-split-gold.md)). "
+        + (
+            f"Exposed reviews score {_fmt_pct(sens['exposed_score'])} vs "
+            f"{_fmt_pct(sens['unexposed_score'])} for unseen ones (difference "
+            f"{sens['difference'] * 100:+.1f} pp, 95% CI {sens['difference_ci_95']['lower'] * 100:+.1f}"
+            f" to {sens['difference_ci_95']['upper'] * 100:+.1f}): no benefit is detectable at "
+            "this sample size, but that is absence of evidence, not proof of none."
+            if "difference" in sens
+            else ""
+        ),
+        "",
+        "**Effect of excluding split gold, per field** (as deployed, all reviews; one field goes "
+        "down):",
+        "",
+        "| Field | Split-gold pairs | Score, all pairs | Score, split excluded |",
+        "|---|---|---|---|",
+    ]
+    for field, info in data["per_field_split_effect"].items():
+        excl = info["score_excluding_split"]
+        lines.append(
+            f"| `{field}` | {info['n_split_gold']} | {_fmt_pct(info['score_all_pairs'])} "
+            f"| {'n/a' if excl is None else _fmt_pct(excl)} |"
+        )
+    lines += [
+        "",
+        f"**Unscored field-pairs and bounds, per field** (as deployed, the {un['n_reviews']} "
+        "unseen reviews; each bound gives every unscored pair of that field the score 0 or 1):",
+        "",
+        "| Field | Unscored pairs | Unscored | Score on scored pairs | Bound, unscored all wrong "
+        "| Bound, unscored all right |",
+        "|---|---|---|---|---|---|",
+    ]
+    for field, info in un["per_field"].items():
+        b = un["bounds"]["per_field"][field]
+        lines.append(
+            f"| `{field}` | {info['unscored']} of {info['pairs']} "
+            f"| {_fmt_pct(info['unscored_fraction'])} | {_fmt_pct(b['scored_only'])} "
+            f"| {_fmt_pct(b['lower_unscored_all_wrong'])} "
+            f"| {_fmt_pct(b['upper_unscored_all_correct'])} |"
+        )
+    ob = un["bounds"]
+    lines.append(
+        f"| **all {len(un['fields'])} (per-review mean)** | **{un['n_pairs_unscored']} of "
+        f"{un['n_pairs']}** | **{_fmt_pct(un['unscored_fraction'])}** "
+        f"| **{_fmt_pct(un['scored_only']['score'])}** "
+        f"| **{_fmt_pct(ob['lower_unscored_all_wrong']['score'])}** "
+        f"| **{_fmt_pct(ob['upper_unscored_all_correct']['score'])}** |"
+    )
+    js = un.get("judge_sensitivity")
+    if js:
+        per_judge = [v["score"] for v in js["scored_against_each_judge"].values()]
+        lines += [
+            "",
+            "**Sensitivity, conditional on an assumption that is not verified** (the true label of "
+            "an unscored pair is one of the three judges' own answers): scoring each unscored "
+            f"pair against each judge in turn gives {_fmt_pct(min(per_judge))} to "
+            f"{_fmt_pct(max(per_judge))} overall, and the per-pair worst/best over the judges "
+            f"gives [{_fmt_pct(js['envelope_min_over_judges']['score'])}, "
+            f"{_fmt_pct(js['envelope_max_over_judges']['score'])}] -- all below the headline. "
+            "A sensitivity analysis, not an estimate: all three judges can be wrong, and the "
+            "unscored pairs have never been adjudicated.",
+        ]
+    lines += [
+        "",
+        "Gold labels are LLM-consensus silver, not human ground truth. Production's own language "
+        "detector, measured against this corpus's language label: "
+        f"{_label_agreement_text(data)}. That agreement figure is the number to trust for "
+        "routing; the held-out headline above is real-world extraction accuracy only where the "
+        "panel agreed, and the CI-gate table above is a regression detector, not a real-world "
+        "accuracy claim -- see "
+        "[ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) "
+        "(its misrouting-cost finding was corrected in Session 15d).",
+    ]
+    return "\n".join(lines)
+
+
 def render_held_out_table_md(data: dict[str, Any]) -> str:
     """Render the real-world, uncontaminated held-out measurement (README.md).
 
@@ -147,6 +315,8 @@ def render_held_out_table_md(data: dict[str, Any]) -> str:
     quarantined held-out corpus (`eval/fixtures/_held_out_hindi_hinglish/`) the prompt has
     never seen, via `eval/score_held_out_corpus_v2.py`, cassette-replay reproducible.
     """
+    if "headline_grid" in data:
+        return _render_held_out_grid_md(data)
     as_dep = data["as_deployed"]
     forced = data["language_forced"]
     models = f"{data['groq_model_small']} / {data['groq_model_large']}"
@@ -287,6 +457,38 @@ def render_held_out_table_md(data: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def _coverage_view(data: dict[str, Any]) -> tuple[dict[str, Any], int, dict[str, Any] | None]:
+    """(published per-field block, its n, the all-reviews block or None).
+
+    Session 17 (W3): once the artifact carries an `unexposed` block the published coverage figures
+    are the ones over reviews the prompt-development process had not seen (ADR 0032); the all-106
+    figures are kept beside them, never dropped. An older artifact without it renders as before.
+    """
+    if "unexposed" in data:
+        return data["unexposed"]["per_field"], data["unexposed"]["n_fixtures"], data
+    return data["per_field"], data["n_fixtures"], None
+
+
+def _coverage_exposure_sentence(data: dict[str, Any], n: int) -> str:
+    """One sentence (plain text) naming the exposure scope and what the all-reviews cut was."""
+    total = data["n_fixtures"]
+    seen = data["exposed"]["n_fixtures"]
+    allr, exp = data["per_field"], data["exposed"]["per_field"]
+    parts = ", ".join(
+        f"{f.replace('_', ' ')} coverage {_fmt_pct(allr[f]['coverage'])} / "
+        f"accuracy-on-answered {_fmt_pct(allr[f]['accuracy_on_answered'])}"
+        for f in allr
+    )
+    return (
+        f"n={n} reviews the prompt-development process had not seen; the {seen} of {total} it had "
+        f"seen are excluded (ADR 0032). Over all {total} (the earlier published basis): {parts}. "
+        f"On the {seen} seen reviews alone buy-again coverage is "
+        f"{_fmt_pct(exp['buy_again']['coverage'])}, against "
+        f"{_fmt_pct(data['unexposed']['per_field']['buy_again']['coverage'])} on the unseen ones, "
+        "so including them flattered it"
+    )
+
+
 def render_coverage_metrics_table_md(data: dict[str, Any]) -> str:
     """Render the coverage/accuracy-on-answered/wrong-committed breakdown (README.md).
 
@@ -299,7 +501,8 @@ def render_coverage_metrics_table_md(data: dict[str, Any]) -> str:
         "| Field | Coverage | Accuracy-on-answered | Wrong-committed |",
         "|---|---|---|---|",
     ]
-    for field, info in data["per_field"].items():
+    per_field, n_pub, allr = _coverage_view(data)
+    for field, info in per_field.items():
         cov = info["coverage"]
         cov_ci = info["coverage_ci_95"]
         acc = info["accuracy_on_answered"]
@@ -314,9 +517,10 @@ def render_coverage_metrics_table_md(data: dict[str, Any]) -> str:
             f"| {wrong} = {_fmt_pct(wrong_rate)} "
             f"[{_fmt_pct(wrong_ci['lower'])}, {_fmt_pct(wrong_ci['upper'])}] |"
         )
+    scope = _coverage_exposure_sentence(data, n_pub) + ". " if allr is not None else f"n={n_pub}, "
     lines += [
         "",
-        f"n={data['n_fixtures']}, `{data['condition']}` condition (real language routing). "
+        f"{scope}`{data['condition']}` condition (real language routing). "
         '**"Rarely wrong when it commits" does not hold as a single claim across both '
         "fields** -- buy_again's committed-answer error rate is materially higher than "
         "sentiment's; see [ADR 0026](docs/architecture/adr/0026-coverage-accuracy-on-answered-wrong-committed-n106.md) "
@@ -334,17 +538,19 @@ def render_committed_accuracy_headline_md(data: dict[str, Any]) -> str:
     single blended "rarely wrong when it commits" claim is NOT what this renders: the two
     hedge-capable fields diverge enough that only a per-field claim is honest.
     """
-    sentiment = data["per_field"]["sentiment"]
-    buy_again = data["per_field"]["buy_again"]
-    n = data["n_fixtures"]
+    per_field, n, allr = _coverage_view(data)
+    sentiment = per_field["sentiment"]
+    buy_again = per_field["buy_again"]
+    # Session 17 (W3): n is the unseen-review count once the artifact carries it; say so beside n.
+    unit = f"{n} unseen reviews" if allr is not None else f"{n}"
     return (
         f"**When it commits to an answer, this model is correct "
         f"{_fmt_pct(sentiment['accuracy_on_answered'])} of the time for sentiment "
         f"(95% CI {_fmt_pct(sentiment['accuracy_on_answered_ci_95']['lower'])}–"
-        f"{_fmt_pct(sentiment['accuracy_on_answered_ci_95']['upper'])}, n={n}) and "
+        f"{_fmt_pct(sentiment['accuracy_on_answered_ci_95']['upper'])}, n={unit}) and "
         f"{_fmt_pct(buy_again['accuracy_on_answered'])} of the time for buy-again "
         f"(95% CI {_fmt_pct(buy_again['accuracy_on_answered_ci_95']['lower'])}–"
-        f"{_fmt_pct(buy_again['accuracy_on_answered_ci_95']['upper'])}, n={n}) -- rates "
+        f"{_fmt_pct(buy_again['accuracy_on_answered_ci_95']['upper'])}, n={unit}) -- rates "
         f'divergent enough that a single blended "rarely wrong when it commits" claim would '
         f"misrepresent buy-again.** See "
         f"[ADR 0027](docs/architecture/adr/0027-n23-discrepancy-resolved-and-headline-claim.md) "
@@ -359,9 +565,10 @@ def render_committed_accuracy_headline_html(data: dict[str, Any]) -> str:
     Same source data and same per-field-never-blended discipline as the Markdown renderer
     above -- see its docstring and ADR 0027.
     """
-    sentiment = data["per_field"]["sentiment"]
-    buy_again = data["per_field"]["buy_again"]
-    n = data["n_fixtures"]
+    per_field, n, allr = _coverage_view(data)
+    sentiment = per_field["sentiment"]
+    buy_again = per_field["buy_again"]
+    unit = f"{n} unseen reviews" if allr is not None else f"{n}"
 
     def _card(label: str, info: dict[str, Any]) -> str:
         acc = _fmt_pct(info["accuracy_on_answered"])
@@ -373,7 +580,7 @@ def render_committed_accuracy_headline_html(data: dict[str, Any]) -> str:
             '            <div class="stat-card">\n'
             f'              <div class="stat-num">{acc}</div>\n'
             f'              <div class="stat-label">accurate when it commits to {label}</div>\n'
-            f'              <div class="stat-note">95% CI [{lo}, {hi}], n={n}. '
+            f'              <div class="stat-note">95% CI [{lo}, {hi}], n={unit}. '
             f"Separately, it abstains (&ldquo;unclear&rdquo;) on {abstain_lo}&ndash;{abstain_hi} "
             f"of all reviews rather than commit to any answer.</div>\n"
             "            </div>"
@@ -423,6 +630,16 @@ def render_known_gaps_html(data: dict[str, Any]) -> str:
         key=lambda fc: (-fc[1], fc[0]),
     )
     top_wrong_fields = ", ".join(f"`{f}` ({n})" for f, n in ranked[:3] if n > 0)
+    # Session 17 (W3e): the figures exclude reviews the development process had seen and field
+    # pairs where the judge panel split (the stored gold there is a default, not a label). An
+    # artifact without the exclusion keys (pre-S17) renders without the qualifier.
+    split_n = sr.get("n_split_pairs_excluded")
+    scope = (
+        f"the development process had not seen ({split_n} field checks left out where the "
+        "judge panel split on the label)"
+        if sr.get("excluded_exposed_reviews") and split_n is not None
+        else "(all of them)"
+    )
     sarcasm_n = sarcasm["n_sarcastic_or_backhanded_found"]
     sarcasm_total = data["n_fixtures_total"]
 
@@ -433,7 +650,8 @@ def render_known_gaps_html(data: dict[str, Any]) -> str:
         "often under the current models than the previous ones — accuracy on the answers "
         "the model DOES commit to is unchanged, but it commits less often, and flat "
         "accuracy charges that the same as a wrong answer. Hinglish shows the opposite "
-        f"pattern. On the {n} short reviews (under 10 words) in our held-out test set, when "
+        f"pattern. On the {n} short reviews (under 10 words) among the held-out reviews "
+        f"{scope}, when "
         f"the model says a field is unclear, that call is right {abstention_rate} of the "
         "time — the information usually genuinely isn't in the text. The real short-review "
         "issue is different: it commits to a value that does not match the reference labels "
@@ -441,7 +659,7 @@ def render_known_gaps_html(data: dict[str, Any]) -> str:
         f"{top_wrong_fields}. Only {real_gap_n} of "
         f"{total_checks} were genuine silent misses. Separately: sarcastic or backhanded "
         f"phrasing is rare in real marketplace reviews — {sarcasm_n} of {sarcasm_total} in "
-        "our held-out set — too few to measure reliably, so we don't claim a number for it "
+        "the whole corpus (seen and unseen reviews alike) — too few to measure reliably, so we don't claim a number for it "
         "either way.\n      "
     )
 
@@ -528,7 +746,8 @@ def render_coverage_metrics_table_html(data: dict[str, Any]) -> str:
     docstring and ADR 0026/0027.
     """
     rows: list[str] = []
-    for field, info in data["per_field"].items():
+    per_field, n_pub, allr = _coverage_view(data)
+    for field, info in per_field.items():
         cov = _fmt_pct(info["coverage"])
         cov_ci = f"[{_fmt_pct(info['coverage_ci_95']['lower'])}, {_fmt_pct(info['coverage_ci_95']['upper'])}]"
         acc = _fmt_pct(info["accuracy_on_answered"])
@@ -544,6 +763,15 @@ def render_coverage_metrics_table_html(data: dict[str, Any]) -> str:
             f'              <td class="num">{cov} <span class="muted">{cov_ci}</span></td>\n'
             f'              <td class="num">{acc} <span class="muted">{acc_ci}</span></td>\n'
             f'              <td class="ci">{wrong} = {wrong_rate}</td>\n'
+            "            </tr>"
+        )
+    if allr is not None:
+        # Same scope sentence as the Markdown table, inside the table so it cannot be separated
+        # from the numbers it qualifies.
+        rows.append(
+            "            <tr>\n"
+            '              <td class="muted" colspan="4">'
+            f"{_coverage_exposure_sentence(data, n_pub)}.</td>\n"
             "            </tr>"
         )
     return "\n" + "\n".join(rows) + "\n          "

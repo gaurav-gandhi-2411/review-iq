@@ -1,12 +1,161 @@
 {
-  "generated_at": "2026-09-19T22:01:13Z",
-  "git_sha": "68f21b736d43c205d1ea38dd29a8588cccc1f811",
+  "generated_at": "2026-10-05T08:59:06Z",
+  "git_sha": "8186d0dff3024ecd7bf65ed309ff6b493b7519d6",
   "scorer_version": "2026-09-20.free-text-v1",
   "predictions_source": "eval/results/held_out_scoring_v2.json",
-  "predictions_git_sha": "5c5c8e0205e97ffbb1e4d3a6dd3d174fed7e3f3b",
+  "predictions_git_sha": "8186d0dff3024ecd7bf65ed309ff6b493b7519d6",
   "n": 106,
   "conditions": {
     "as_deployed": {
+      "overall_split_excluded": {
+        "n_fixtures": 106,
+        "n_split_pairs_excluded": 104,
+        "strict_mean": 0.7557656609459661,
+        "corrected_mean": 0.7870154196004602,
+        "delta": 0.03124975865449413,
+        "delta_ci95": [
+          0.022069418263461916,
+          0.0411647547653837
+        ]
+      },
+      "product_attribution_split_excluded": {
+        "n": 78,
+        "strict": 0.3076923076923077,
+        "null_only": 0.5384615384615384,
+        "corrected": 0.5769230769230769
+      },
+      "per_field_split_excluded": {
+        "product": {
+          "n": 78,
+          "n_split_pairs_excluded": 28,
+          "strict_mean": 0.3076923076923077,
+          "corrected_mean": 0.5769230769230769,
+          "delta": 0.2692307692307692,
+          "delta_ci95": [
+            0.1794871794871795,
+            0.3717948717948718
+          ],
+          "n_up": 21,
+          "n_down": 0
+        },
+        "stars": {
+          "n": 106,
+          "n_split_pairs_excluded": 0,
+          "strict_mean": 1.0,
+          "corrected_mean": 1.0,
+          "delta": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "n_up": 0,
+          "n_down": 0
+        },
+        "buy_again": {
+          "n": 106,
+          "n_split_pairs_excluded": 0,
+          "strict_mean": 0.7264150943396226,
+          "corrected_mean": 0.7264150943396226,
+          "delta": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "n_up": 0,
+          "n_down": 0
+        },
+        "sentiment": {
+          "n": 106,
+          "n_split_pairs_excluded": 0,
+          "strict_mean": 0.8679245283018868,
+          "corrected_mean": 0.8679245283018868,
+          "delta": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "n_up": 0,
+          "n_down": 0
+        },
+        "language": {
+          "n": 106,
+          "n_split_pairs_excluded": 0,
+          "strict_mean": 0.4811320754716981,
+          "corrected_mean": 0.4811320754716981,
+          "delta": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "n_up": 0,
+          "n_down": 0
+        },
+        "topics": {
+          "n": 81,
+          "n_split_pairs_excluded": 25,
+          "strict_mean": 0.5737261084755638,
+          "corrected_mean": 0.6851295400315008,
+          "delta": 0.111403431555937,
+          "delta_ci95": [
+            0.06602638062333051,
+            0.16308499456647604
+          ],
+          "n_up": 22,
+          "n_down": 0
+        },
+        "competitor_mentions": {
+          "n": 106,
+          "n_split_pairs_excluded": 0,
+          "strict_mean": 0.839622641509434,
+          "corrected_mean": 0.839622641509434,
+          "delta": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "n_up": 0,
+          "n_down": 0
+        },
+        "pros": {
+          "n": 76,
+          "n_split_pairs_excluded": 30,
+          "strict_mean": 0.7383882116524773,
+          "corrected_mean": 0.7383882116524773,
+          "delta": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "n_up": 0,
+          "n_down": 0
+        },
+        "cons": {
+          "n": 85,
+          "n_split_pairs_excluded": 21,
+          "strict_mean": 0.8744885833121128,
+          "corrected_mean": 0.8744885833121128,
+          "delta": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "n_up": 0,
+          "n_down": 0
+        },
+        "stars_inferred": {
+          "n": 106,
+          "n_split_pairs_excluded": 0,
+          "strict_mean": 0.9811320754716981,
+          "corrected_mean": 0.9811320754716981,
+          "delta": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "n_up": 0,
+          "n_down": 0
+        }
+      },
       "overall": {
         "strict_mean": 0.682944196654376,
         "corrected_mean": 0.7273061569902541,
@@ -447,6 +596,155 @@
       }
     },
     "language_forced": {
+      "overall_split_excluded": {
+        "n_fixtures": 106,
+        "n_split_pairs_excluded": 104,
+        "strict_mean": 0.8085784279803785,
+        "corrected_mean": 0.8420663401073027,
+        "delta": 0.03348791212692433,
+        "delta_ci95": [
+          0.023426754063546513,
+          0.044328573910982334
+        ]
+      },
+      "product_attribution_split_excluded": {
+        "n": 78,
+        "strict": 0.3333333333333333,
+        "null_only": 0.5769230769230769,
+        "corrected": 0.6282051282051282
+      },
+      "per_field_split_excluded": {
+        "product": {
+          "n": 78,
+          "n_split_pairs_excluded": 28,
+          "strict_mean": 0.3333333333333333,
+          "corrected_mean": 0.6282051282051282,
+          "delta": 0.2948717948717949,
+          "delta_ci95": [
+            0.19230769230769232,
+            0.3974358974358974
+          ],
+          "n_up": 23,
+          "n_down": 0
+        },
+        "stars": {
+          "n": 106,
+          "n_split_pairs_excluded": 0,
+          "strict_mean": 1.0,
+          "corrected_mean": 1.0,
+          "delta": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "n_up": 0,
+          "n_down": 0
+        },
+        "buy_again": {
+          "n": 106,
+          "n_split_pairs_excluded": 0,
+          "strict_mean": 0.6226415094339622,
+          "corrected_mean": 0.6226415094339622,
+          "delta": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "n_up": 0,
+          "n_down": 0
+        },
+        "sentiment": {
+          "n": 106,
+          "n_split_pairs_excluded": 0,
+          "strict_mean": 0.8773584905660378,
+          "corrected_mean": 0.8773584905660378,
+          "delta": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "n_up": 0,
+          "n_down": 0
+        },
+        "language": {
+          "n": 106,
+          "n_split_pairs_excluded": 0,
+          "strict_mean": 1.0,
+          "corrected_mean": 1.0,
+          "delta": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "n_up": 0,
+          "n_down": 0
+        },
+        "topics": {
+          "n": 81,
+          "n_split_pairs_excluded": 25,
+          "strict_mean": 0.5818689016946098,
+          "corrected_mean": 0.695457322472573,
+          "delta": 0.11358842077796326,
+          "delta_ci95": [
+            0.06486621584660801,
+            0.17054170714301434
+          ],
+          "n_up": 19,
+          "n_down": 0
+        },
+        "competitor_mentions": {
+          "n": 106,
+          "n_split_pairs_excluded": 0,
+          "strict_mean": 0.8427672955974843,
+          "corrected_mean": 0.8427672955974843,
+          "delta": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "n_up": 0,
+          "n_down": 0
+        },
+        "pros": {
+          "n": 76,
+          "n_split_pairs_excluded": 30,
+          "strict_mean": 0.7413737556342327,
+          "corrected_mean": 0.7413737556342327,
+          "delta": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "n_up": 0,
+          "n_down": 0
+        },
+        "cons": {
+          "n": 85,
+          "n_split_pairs_excluded": 21,
+          "strict_mean": 0.8888557847381376,
+          "corrected_mean": 0.8888557847381376,
+          "delta": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "n_up": 0,
+          "n_down": 0
+        },
+        "stars_inferred": {
+          "n": 106,
+          "n_split_pairs_excluded": 0,
+          "strict_mean": 1.0,
+          "corrected_mean": 1.0,
+          "delta": 0.0,
+          "delta_ci95": [
+            0.0,
+            0.0
+          ],
+          "n_up": 0,
+          "n_down": 0
+        }
+      },
       "overall": {
         "strict_mean": 0.7286432655674907,
         "corrected_mean": 0.7741155882873162,

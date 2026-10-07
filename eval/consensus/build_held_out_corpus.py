@@ -18,9 +18,11 @@ invocation labels; already-labeled ids (existing files in the quarantine dir) ar
 skipped. Every item is written regardless of consensus agreement level (unanimous/majority/
 split) -- discarding low-consensus items would bias this corpus toward the "easy" cases, which
 is exactly wrong for a corpus whose purpose is an honest, uncontaminated difficulty measurement.
-Split-consensus items get `"ground_truth": null` for the affected field(s) and are counted
-separately in the run summary; P4's scoring must treat them as "no defensible silver label for
-this field" rather than silently dropping them from the corpus's own accounting.
+Split-consensus fields keep a schema-valid DEFAULT in `ground_truth` ("unknown" / [] / null --
+NOT null for every type, as an earlier version of this docstring claimed) and are named in
+`labeling_meta.unresolved_fields` (Session 16). Scoring must read that list and exclude those
+(fixture, field) pairs: the default is not a label and scoring it as one penalises a correct
+prediction (an empty gold list scores 0 against any non-empty prediction).
 
 Labels every item with LLM-consensus silver ONLY -- P3f, never human ground truth.
 """
@@ -41,6 +43,12 @@ sys.path.insert(0, str(ROOT))
 from eval.consensus import panel  # noqa: E402
 from eval.consensus.candidates import FLIPKART_CANDIDATES_PATH, load_jsonl  # noqa: E402
 from eval.consensus.voting import consensus_for_item  # noqa: E402
+from eval.heldout_exposure import (  # noqa: E402
+    RESOLVED_AGREEMENT,
+    benchmark_texts,
+    dev_fixture_texts,
+    normalize_review_text,
+)
 
 QUARANTINE_DIR = ROOT / "eval" / "fixtures" / "_held_out_hindi_hinglish"
 RESULTS_DIR = ROOT / "eval" / "consensus" / "results"
@@ -84,12 +92,18 @@ def build_candidate_queue() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]
     """Return (hindi_candidates, hinglish_candidates), both excluding already-labeled text."""
     all_candidates = load_jsonl(FLIPKART_CANDIDATES_PATH)
     used = load_already_labeled_keys()
+    # Session 16 (V1b): excluding only already-quarantined text let 36 of the first 106 reviews
+    # in that were ALSO in the prompt-visible dev fixtures or the benchmark gold (see
+    # eval/heldout_exposure.py). A candidate the development process has seen is not held out.
+    seen = set(dev_fixture_texts()) | set(benchmark_texts())
 
     def pool(language: str) -> list[dict[str, Any]]:
         p = [
             c
             for c in all_candidates
-            if c.get("language") == language and _text_key(c["text"]) not in used
+            if c.get("language") == language
+            and _text_key(c["text"]) not in used
+            and normalize_review_text(c["text"]) not in seen
         ]
         p.sort(key=lambda c: _text_key(c["text"]))
         return p
@@ -139,6 +153,14 @@ def build_fixture(
         "language": silver_or_none("language"),
     }
     agreement_levels = {field: c["agreement"] for field, c in consensus.items()}
+    # Session 16 (V2b): `silver_or_none(...) or <default>` above stores a panel SPLIT as
+    # "unknown" / [] / null, indistinguishable from a genuine empty label -- 30 pros, 26 product,
+    # 25 topics and 21 cons golds in the committed corpus were defaults, scored as if they were
+    # labels. The value stays (the fixture schema needs one), but the pair is now named here so
+    # scoring can exclude it: a field with no resolved consensus is UNRESOLVED, not empty.
+    unresolved = sorted(
+        f for f in ground_truth if agreement_levels.get(f) not in RESOLVED_AGREEMENT
+    )
     return {
         "id": fixture_id,
         "review_text": review_text,
@@ -155,6 +177,7 @@ def build_fixture(
             "source": source,
             "quarantined": True,
             "agreement_per_field": agreement_levels,
+            "unresolved_fields": unresolved,
         },
     }
 

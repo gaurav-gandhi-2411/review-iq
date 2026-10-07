@@ -214,3 +214,18 @@ When the project moves to Supabase Pro:
 3. Update this runbook to reference the Supabase restore UI instead.
 
 PITR on Supabase Pro supports restores to any second within the retention window (7 days on Pro, 30 days on Enterprise), with no manual download required.
+
+---
+
+## Automated restore test (added 2026-10-05, S17 H2)
+
+`.github/workflows/db-restore-test.yml` (weekly, Sundays 21:00 UTC, and on demand) decrypts a backup
+artifact, restores it into a throwaway `postgres:17` container and runs `scripts/verify_restore.py`,
+which compares the restored database with the dump itself: tables, per-table row counts, RLS-enabled
+tables and policies, and fails if `public.organizations` is empty. The restore must produce zero
+`psql` ERROR lines; the roles the dump references are pre-created first (including the Supabase role
+`supabase_admin`, named by `ALTER DEFAULT PRIVILEGES FOR ROLE`).
+
+First run, 2026-10-05: 7 of 7 sampled artifacts (2026-10-05, 09-20, 09-19, 08-20, 07-31, 07-11 and the
+unencrypted 07-10) restored with zero errors and matched their dumps. To test other artifacts:
+Actions -> DB Restore Test -> Run workflow, `artifact_names` = space-separated names.
