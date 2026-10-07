@@ -550,6 +550,27 @@ UNDO_CASES: list[tuple[str, str, str]] = [
         "extraction_costs_grants_narrowed",
         "GRANT DELETE ON public.extraction_costs TO authenticated",
     ),
+    # S18 D3: per-user last_seen_at.
+    (
+        "20261007000001_organization_members_last_seen.sql",
+        "organization_members_last_seen_column",
+        "ALTER TABLE public.organization_members DROP COLUMN last_seen_at",
+    ),
+    (
+        "20261007000001_organization_members_last_seen.sql",
+        "last_seen_functions_hardened",
+        "ALTER FUNCTION public.touch_last_seen(uuid) SECURITY INVOKER",
+    ),
+    (
+        "20261007000001_organization_members_last_seen.sql",
+        "last_seen_functions_hardened",
+        "GRANT EXECUTE ON FUNCTION public.get_last_seen(uuid) TO authenticated",
+    ),
+    (
+        "20261007000001_organization_members_last_seen.sql",
+        "organization_members_still_closed_to_anon_and_authenticated",
+        "GRANT SELECT ON public.organization_members TO authenticated",
+    ),
 ]
 
 

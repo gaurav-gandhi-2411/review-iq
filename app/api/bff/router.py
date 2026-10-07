@@ -54,7 +54,7 @@ from app.api.v2.insights import (
 )
 from app.auth.api_key import ApiKeyContext
 from app.auth.keygen import insert_api_key_with_retry
-from app.auth.session import require_session, require_session_read
+from app.auth.session import require_session, require_session_read, require_verified_user_id
 from app.core.config import get_settings
 from app.core.corrections.schema import SourceType, validate_field_path
 from app.core.corrections.service import list_corrections_pg, submit_correction_pg
@@ -76,11 +76,13 @@ from app.core.storage_pg import (
     create_batch_job_pg,
     enqueue_batch_job_rows_pg,
     get_batch_job_pg,
+    get_last_seen_pg,
     health_score_pg,
     list_dated_extractions_pg,
     list_extractions_pg,
     record_quota_request_pg,
     theme_trends_pg,
+    touch_last_seen_pg,
     update_batch_job_pg,
     update_usage_tokens,
 )
@@ -1026,6 +1028,58 @@ async def bff_revoke_key(
     never revoke another org's key by guessing a UUID."""
     await asyncio.to_thread(_revoke_key_bff_db, ctx.org_id, str(key_id))
     log.info("bff.keys.revoked", org_id=ctx.org_id, key_id=str(key_id))
+
+
+class LastSeenResponse(BaseModel):
+    last_seen_at: datetime | None = Field(
+        description=(
+            "When the signed-in user was last recorded as active (ISO 8601, UTC), or null if "
+            "never recorded."
+        ),
+    )
+
+
+@router.get(
+    "/account/last-seen",
+    response_model=LastSeenResponse,
+    summary="Get the signed-in user's last-seen timestamp",
+    description=(
+        "Returns the per-user last_seen_at (ISO 8601) or null if the user has never been "
+        "recorded as seen (or has no account yet). The user is identified ONLY by the "
+        "verified Supabase JWT; no user id is accepted as a parameter. Read-only: does not "
+        "update the timestamp."
+    ),
+)
+async def bff_get_last_seen(
+    user_id: Annotated[str, Depends(require_verified_user_id)],
+) -> LastSeenResponse:
+    last_seen = await asyncio.to_thread(get_last_seen_pg, user_id)
+    return LastSeenResponse(last_seen_at=last_seen)
+
+
+@router.post(
+    "/account/last-seen",
+    response_model=LastSeenResponse,
+    summary="Record that the signed-in user is active now",
+    description=(
+        "Sets the per-user last_seen_at to now and returns the stored value (ISO 8601). "
+        "Debounced server-side in the database: if the stored value is less than 60 seconds "
+        "old nothing is written and the existing value is returned, so calling this on every "
+        "page load is cheap. The user is identified ONLY by the verified Supabase JWT; no "
+        "user id is accepted in the path, query or body. Returns 404 if the user has no "
+        "account yet (complete sign-up via POST /auth/provision first)."
+    ),
+)
+async def bff_touch_last_seen(
+    user_id: Annotated[str, Depends(require_verified_user_id)],
+) -> LastSeenResponse:
+    last_seen = await asyncio.to_thread(touch_last_seen_pg, user_id)
+    if last_seen is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No account found. Complete sign-up first via POST /auth/provision.",
+        )
+    return LastSeenResponse(last_seen_at=last_seen)
 
 
 from app.api.bff.alerts import router as _alerts_router  # noqa: E402, I001 -- deliberately after all route handlers, not a top-level import (see module docstring's import constraints)

@@ -1677,3 +1677,52 @@ def update_lead_email_status_pg(lead_id: str, email_status: str) -> bool:
         raise
     finally:
         conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Per-user last_seen_at (S18 D3, ADR 0036)
+# ---------------------------------------------------------------------------
+
+
+def get_last_seen_pg(user_id: str) -> datetime | None:
+    """Return the user's stored last_seen_at, or None (never seen / no member row).
+
+    User-scoped, not org-scoped, so deliberately no _set_tenant(): organization_members is
+    closed to every app role (20260817000002) and is reached only through the narrow
+    SECURITY DEFINER function public.get_last_seen(uuid) (20261007000001), which takes the
+    user_id and returns only the timestamp -- no org_id is involved.
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT public.get_last_seen(%s)", (user_id,))
+        row = cur.fetchone()
+        conn.commit()
+        value = row[0] if row else None
+        return value if isinstance(value, datetime) else None
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def touch_last_seen_pg(user_id: str) -> datetime | None:
+    """Set the user's last_seen_at to now() (debounced to once per 60s in SQL) and return the
+    value now stored; None if the user has no member row (nothing is changed or raised).
+
+    Same scoping note as get_last_seen_pg: user-scoped, via public.touch_last_seen(uuid).
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT public.touch_last_seen(%s)", (user_id,))
+        row = cur.fetchone()
+        conn.commit()
+        value = row[0] if row else None
+        return value if isinstance(value, datetime) else None
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
