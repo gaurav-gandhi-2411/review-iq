@@ -38,7 +38,7 @@ jobs:
   model-availability-check:
     runs-on: ubuntu-24.04 # pinned: unverified on 26.04 (S17 H3); move to ubuntu-latest after a main-branch dry run
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
 
       - name: Extract configured model names from source
         id: models
@@ -124,7 +124,7 @@ jobs:
 
       - name: Open/update alert issue on failure
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const label = process.env.ALERT_LABEL;
@@ -141,7 +141,7 @@ jobs:
 
       - name: Close alert issue on recovery
         if: success()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const label = process.env.ALERT_LABEL;
