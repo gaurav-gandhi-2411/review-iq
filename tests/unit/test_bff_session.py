@@ -276,27 +276,33 @@ async def test_bff_quota_enforcement_blocks_over_limit(
 
     app.dependency_overrides[_rs] = _session_dep
 
-    fake_result = MagicMock()
-    fake_result.model_dump.return_value = {"score": 0.9, "label": "genuine", "flags": []}
+    # /bff/reply is the session-authenticated POST used here (the authenticity POST this test
+    # originally drove was removed in Session 17 W6); only the session dependency matters.
+    from datetime import UTC, datetime
 
-    monkeypatch.setattr(
-        "app.api.bff.router.get_authenticity_audit_by_hash_pg",
-        MagicMock(return_value=None),
+    from app.core.reply.schema import ReplyDraft, ReplyTone
+
+    fake_draft = ReplyDraft(
+        reply_text="Thanks for the feedback.",
+        language="en",
+        tone=ReplyTone.professional,
+        grounded_on=[],
+        caveats=[],
+        model_used="test-model",
+        drafted_at=datetime.now(UTC),
     )
     monkeypatch.setattr(
-        "app.api.bff.router.engine.score_single",
-        AsyncMock(return_value=fake_result),
+        "app.api.bff.router.draft_reply", AsyncMock(return_value=(fake_draft, 1, 1))
     )
-    monkeypatch.setattr(
-        "app.api.bff.router.save_authenticity_audit_pg",
-        MagicMock(return_value=None),
-    )
+    monkeypatch.setattr("app.api.bff.router.update_usage_tokens", AsyncMock())
 
     async with httpx.AsyncClient(
         transport=httpx.ASGITransport(app=app), base_url="http://test"
     ) as c:
-        r1 = await c.post("/bff/authenticity", json={"text": "Great product"})
-        r2 = await c.post("/bff/authenticity", json={"text": "Great product again"})
+        r1 = await c.post("/bff/reply", json={"text": "Great product", "tone": "professional"})
+        r2 = await c.post(
+            "/bff/reply", json={"text": "Great product again", "tone": "professional"}
+        )
 
     app.dependency_overrides.clear()
 

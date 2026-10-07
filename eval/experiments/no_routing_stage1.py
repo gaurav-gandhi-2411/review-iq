@@ -492,9 +492,10 @@ def decide(
         "stage1_cannot_certify": (
             "Hinglish stratum: the unified prompt does not exist yet, and the recorded hi-en-prompt "
             "arm is the status-quo prompt for those reviews. English stratum: at n=30 the standard "
-            "error is about 2.0-2.9pp (per-fixture delta SD 11.2pp over all 106 held-out fixtures, "
-            "15.8pp over the 53 whose two runs differ; `design` mode), so a -3pp margin is only "
-            "certifiable if the observed mean is about +1.0pp to +2.7pp or better; the CI-gate set "
+            "error is about 2.4-3.3pp (per-fixture delta SD 12.9pp over the 106 held-out fixtures with "
+            "panel-split pairs excluded [11.2pp when they were scored as labels, S17 correction], "
+            "18.1pp over the 54 whose two runs differ; `design` mode), so a -3pp margin is only "
+            "certifiable if the observed mean is about +1.6pp to +3.5pp or better; the CI-gate set "
             "overlaps the en prompt's few-shots, which favours "
             "the routed (en) side and so makes this test conservative for no-routing."
         ),
@@ -586,13 +587,28 @@ def verdict_probabilities(true_mean: float, sd: float, n: int) -> dict[str, floa
 def design(held_out: dict[str, Any], token_cost: dict[str, Any]) -> dict[str, Any]:
     """Expected tokens and verdict probabilities, from recorded data only."""
     n = N_CI_GATE_EN + N_HELD_OUT_EN
-    deltas = []
+    # S17: panel-split pairs are stored as a default, not a label (ADR 0032), so a delta that
+    # scores them measures agreement with a placeholder. The SD that feeds the power calculation
+    # therefore drops each review's unresolved fields (a review with none left drops out).
+    # `sd_all_incl_split_defaults` is the pre-S17 figure, kept only to show the size of the error.
+    deltas_incl_split: list[float] = []
+    deltas: list[float] = []
     for r in held_out["records"]:
-        s = {
-            c: mean(v for f, v in r[c]["field_scores"].items() if f not in EXCLUDED_FIELDS)
-            for c in ("as_deployed", "language_forced")
-        }
-        deltas.append(s["language_forced"] - s["as_deployed"])
+        unresolved = set(r.get("unresolved_fields", ()))
+        for keep_split, out in ((True, deltas_incl_split), (False, deltas)):
+            s = {
+                c: [
+                    v
+                    for f, v in r[c]["field_scores"].items()
+                    if f not in EXCLUDED_FIELDS and (keep_split or f not in unresolved)
+                ]
+                for c in ("as_deployed", "language_forced")
+            }
+            if s["as_deployed"] and s["language_forced"]:
+                out.append(mean(s["language_forced"]) - mean(s["as_deployed"]))
+    sd_incl_split = pstdev(deltas_incl_split) * math.sqrt(
+        len(deltas_incl_split) / (len(deltas_incl_split) - 1)
+    )
     nonzero = [d for d in deltas if abs(d) > 1e-12]
     sd_all = pstdev(deltas) * math.sqrt(len(deltas) / (len(deltas) - 1))
     sd_nonzero = pstdev(nonzero) * math.sqrt(len(nonzero) / (len(nonzero) - 1))
@@ -608,7 +624,8 @@ def design(held_out: dict[str, Any], token_cost: dict[str, Any]) -> dict[str, An
             "ceiling_per_model": TOKEN_CEILING_PER_MODEL,
         },
         "delta_sd_held_out": {
-            "all_106": sd_all,
+            "all_106": sd_all,  # split pairs excluded (S17); key name kept for consumers
+            "all_106_incl_split_defaults": sd_incl_split,  # the pre-S17 figure
             "nonzero_only": sd_nonzero,
             "n_nonzero": len(nonzero),
         },
