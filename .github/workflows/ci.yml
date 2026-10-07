@@ -61,7 +61,21 @@ jobs:
         # Verified all 1059 tests (tests/unit/ + flat tests/, excluding integration/
         # benchmark which need a live DB / are long-running) pass together before widening
         # this gate (2026-07-31).
-        run: uv run pytest tests/ --ignore=tests/integration --ignore=tests/benchmark -v
+        # tests/benchmark/ (111 tests, ~2s, hermetic) used to be excluded as "long-running"; it
+        # is not, and it guards corpus licence provenance, PII scrub wiring, held-out leakage
+        # and the published benchmark scorers (S19 control audit F8). Only tests/integration
+        # (live Postgres) stays excluded; tests/unit/test_ci_test_coverage.py pins this.
+        run: uv run pytest tests/ --ignore=tests/integration -v
+
+      # Tests that live beside their code. Separate invocations on purpose: both directories
+      # use bare sibling imports (`from common import ...`) and have no __init__.py, so one
+      # combined run would share a `common` module name. --no-cov: coverage is app/-only and
+      # the floor is enforced by the step above.
+      - name: Unit tests (benchmark/phase2_synthetic/detectors)
+        run: uv run pytest benchmark/phase2_synthetic/detectors -v --no-cov
+
+      - name: Unit tests (benchmark/phase2_campaign)
+        run: uv run pytest benchmark/phase2_campaign -v --no-cov
 
       # Truth-reconciliation gates (Wave 1 Section A) -- see
       # docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md.
