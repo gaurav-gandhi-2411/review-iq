@@ -37,9 +37,23 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
       - name: Install dependencies
         run: uv sync --frozen
+
+      - name: Assert no plaintext backup artifact exists (detective, public repo)
+        # S17: plaintext dumps from before 2026-07-11 stayed downloadable for ~90 days. Any
+        # unexpired review-iq-db-* artifact that is not .gpg fails the job (and the weekly alert).
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BAD=$(gh api "repos/${{ github.repository }}/actions/artifacts?per_page=100" --paginate \
+            --jq '.artifacts[] | select((.name | startswith("review-iq-db-")) and (.name | endswith(".gpg") | not) and (.expired | not)) | .name')
+          if [ -n "${BAD}" ]; then
+            echo "::error::Unencrypted backup artifact(s) are publicly downloadable: ${BAD}"
+            exit 1
+          fi
+          echo "no plaintext review-iq-db-* artifacts"
 
       - name: Start throwaway postgres:17
         run: |
