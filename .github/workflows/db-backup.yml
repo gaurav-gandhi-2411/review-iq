@@ -189,7 +189,13 @@ jobs:
             if gunzip -t "$F" 2>/dev/null; then
               echo "::error::$F is a readable gzip, not an encrypted file"; exit 1
             fi
-            PACKETS=$(gpg --list-packets "$F" 2>&1 || true)
+            # gpg --list-packets exits 2 on a valid symmetric file (it is listing, not decrypting, and
+            # holds no key), so the exit status is handled explicitly: 0 and 2 are expected, anything
+            # else (or a missing binary) fails the job. The packet greps below are the real check.
+            if PACKETS=$(gpg --list-packets "$F" 2>&1); then GPG_RC=0; else GPG_RC=$?; fi
+            if [ "$GPG_RC" -gt 2 ]; then
+              echo "::error::gpg failed (exit $GPG_RC) reading $F"; exit 1
+            fi
             echo "$PACKETS" | grep -q 'symkey enc packet' \
               || { echo "::error::$F is not a gpg symmetric-encrypted file"; exit 1; }
             echo "$PACKETS" | grep -q 'encrypted data packet' \
