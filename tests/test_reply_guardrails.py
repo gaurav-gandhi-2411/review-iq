@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import pytest
 from app.core.reply.guardrails import (
     check_grounded,
     check_language_match,
     check_length,
     check_no_fabrication,
+    redact_invented_details,
     run_guardrails,
 )
 
@@ -230,3 +232,101 @@ def test_run_guardrails_all_pass() -> None:
         topics=[],
     )
     assert violations == []
+
+
+# ---------------------------------------------------------------------------
+# Hindi / Hinglish commitments + fault admission (caveat-level)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Hum aapka product theek kar denge, chinta mat karein",
+        "Maaf kijiye, galti hamari thi aur hum sudhaar karenge",
+        "Aapka refund mil jayega bahut jaldi",
+        "Hum 3 din ke andar replacement bhej denge",
+        "हम इसे ठीक कर देंगे, आप चिंता न करें",
+        "आपका रिफंड मिल जाएगा",
+        "गलती हमारी थी, हमें खेद है",
+    ],
+)
+def test_fabrication_hindi_hinglish_commitments(text: str) -> None:
+    assert check_no_fabrication(text) is not None
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Aapka feedback note kar liya hai, humse baat karein",
+        "आपकी बात हमने नोट कर ली है, कृपया संपर्क करें",
+    ],
+)
+def test_fabrication_hindi_hinglish_benign(text: str) -> None:
+    assert check_no_fabrication(text) is None
+
+
+# ---------------------------------------------------------------------------
+# redact_invented_details -- shapes of the N4c failures (synthetic text)
+# ---------------------------------------------------------------------------
+
+REVIEW = "The blender stopped working after two weeks. Very disappointed."
+
+
+def test_invented_email_replaced_with_placeholder() -> None:
+    reply = "Sorry to hear that. Please write to support@example.com for help."
+    out, found = redact_invented_details(reply, [REVIEW])
+    assert "support@example.com" not in out
+    assert "[your support contact]" in out
+    assert found == [("email", "support@example.com")]
+
+
+def test_invented_commitment_shape_is_still_caveated() -> None:
+    # Second N4c failure shape: unsupported commitment. Detection is caveat-level.
+    assert check_no_fabrication("We will send you a full refund right away.") is not None
+
+
+@pytest.mark.parametrize(
+    ("reply", "kind"),
+    [
+        ("Call us on +91 98765 43210 anytime.", "phone"),
+        ("Visit www.shop-help.example/returns to proceed.", "url"),
+        ("Write to https://help.fakeshop.com/ticket now.", "url"),
+        ("We have logged your ticket #A48213 already.", "order id"),
+        ("Your order number 5567123 is being checked.", "order id"),
+        ("We can refund Rs. 1,499 once verified.", "amount"),
+        ("A credit of ₹250 will follow.", "amount"),
+    ],
+)
+def test_invented_details_by_kind(reply: str, kind: str) -> None:
+    out, found = redact_invented_details(reply, [REVIEW])
+    assert [k for k, _ in found] == [kind]
+    assert out != reply and "[" in out
+
+
+def test_echoed_details_from_review_are_allowed() -> None:
+    review = (
+        "Order #778812 arrived broken. I emailed help@myshop.in and called 98765 43210. "
+        "I paid Rs. 1,499 on www.myshop.in"
+    )
+    reply = (
+        "Sorry about order #778812. We saw you wrote to help@myshop.in, "
+        "called 98765 43210 and paid Rs. 1,499 via www.myshop.in."
+    )
+    out, found = redact_invented_details(reply, [review])
+    assert out == reply
+    assert found == []
+
+
+def test_signature_contact_is_allowed() -> None:
+    sig = "Team Acme, care@acme.in"
+    out, found = redact_invented_details(f"Thanks for writing.\n{sig}", [REVIEW, sig])
+    assert found == []
+    assert sig in out
+
+
+def test_non_details_not_flagged() -> None:
+    reply = "It stopped after 2 weeks, rated 4.5 stars on 12-10-2026 in 2026 and 3 days."
+    out, found = redact_invented_details(reply, [REVIEW])
+    assert out == reply
+    assert found == []
