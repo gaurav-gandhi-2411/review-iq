@@ -23,8 +23,8 @@ export default function DashboardPage() {
   const total = stats.total
   const s_score = total > 0 ? stats.positiveCount / total : 0
   const u_score = total > 0 ? 1 - stats.highUrgencyCount / total : 1
-  // auth component approximated as 1.0 (authenticity page has its own view)
-  const score = Math.round((0.50 * s_score + 0.20 * u_score + 0.30 * 1.0) * 100)
+  // Same formula as the backend (health-score formula_version 2.0): 5/7 sentiment + 2/7 urgency.
+  const score = Math.round(((5 / 7) * s_score + (2 / 7) * u_score) * 100)
   const band: 'healthy' | 'needs_attention' | 'at_risk' =
     score >= 75 ? 'healthy' : score >= 50 ? 'needs_attention' : 'at_risk'
 
@@ -205,7 +205,7 @@ function HealthCard({
           </span>
           {isApprox && (
             <p className="mt-1.5 text-xs font-sans text-charcoal-light/70 italic">
-              approx · excl. authenticity signals
+              based on filtered reviews
             </p>
           )}
         </div>

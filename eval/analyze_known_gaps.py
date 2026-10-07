@@ -7,6 +7,13 @@ held-out corpus was built (eval/consensus/build_held_out_corpus.py, Session 9 P3
 `labeling_meta.agreement_per_field` -- and the model's own `as_deployed` predictions
 already recorded in `eval/results/held_out_scoring_v2.json`. No new LLM calls.
 
+Session 17 (W3e): the short-review figures used to be computed over EVERY (review, field) pair,
+including the pairs where the judge panel split and the stored gold is a schema-valid default
+(`[]`, null, "unknown"; ADR 0032). Against a default, a model that abstains is credited as a
+"correct abstention" and one that commits is charged a "wrong commit" -- neither says anything
+about the model. The published figures now exclude those pairs and the 36 reviews the development
+process had seen; the earlier all-pairs, all-reviews cut is kept in the artifact for the record.
+
 Two claims measured:
 
 1. "Short reviews (<10 words) occasionally miss fields." For every (short review, field)
@@ -93,12 +100,19 @@ def _load_fixtures() -> list[dict[str, Any]]:
 
 
 def analyze_short_reviews(
-    fixtures: list[dict[str, Any]], records_by_id: dict[str, Any]
+    fixtures: list[dict[str, Any]],
+    records_by_id: dict[str, Any],
+    *,
+    exclude_exposed: bool = False,
+    exclude_split: bool = False,
 ) -> dict[str, Any]:
+    """Short-review failure modes. `exclude_*` default to False so the pre-Session-17 cut is
+    reproducible; main() publishes the (True, True) cut."""
     short = [
         (fx, len(fx["review_text"].split()))
         for fx in fixtures
         if len(fx["review_text"].split()) < SHORT_WORD_THRESHOLD
+        and not (exclude_exposed and records_by_id.get(fx["id"], {}).get("exposure"))
     ]
 
     buckets: dict[str, list[dict[str, Any]]] = {
@@ -108,17 +122,24 @@ def analyze_short_reviews(
         "wrong_committed": [],
     }
     per_field: dict[str, Counter[str]] = {f: Counter() for f in FIELDS}
+    split_excluded = 0
+    total = 0
 
     for fx, n_words in short:
         rec = records_by_id.get(fx["id"])
         if rec is None:
             continue
+        unresolved = set(rec.get("unresolved_fields", ()))
         predicted = rec["as_deployed"]["predicted"]
         field_scores = rec["as_deployed"]["field_scores"]
         gt = fx["ground_truth"]
         agreement = fx.get("labeling_meta", {}).get("agreement_per_field", {})
 
         for field in FIELDS:
+            if exclude_split and field in unresolved:
+                split_excluded += 1
+                continue
+            total += 1
             gt_val, pred_val = gt.get(field), predicted.get(field)
             gt_empty, pred_empty = _is_empty(gt_val, field), _is_empty(pred_val, field)
             entry = {
@@ -150,9 +171,11 @@ def analyze_short_reviews(
             buckets[bucket].append(entry)
             per_field[field][bucket] += 1
 
-    total = len(short) * len(FIELDS)
     return {
         "n_short_reviews": len(short),
+        "excluded_exposed_reviews": exclude_exposed,
+        "excluded_split_gold_pairs": exclude_split,
+        "n_split_pairs_excluded": split_excluded,
         "short_review_word_threshold": SHORT_WORD_THRESHOLD,
         "total_field_checks": total,
         "counts": {k: len(v) for k, v in buckets.items()},
@@ -232,7 +255,19 @@ def main() -> int:
         "source_fixtures": FIXTURES_DIR.relative_to(REPO_ROOT).as_posix(),
         "source_scoring": SCORING_PATH.relative_to(REPO_ROOT).as_posix(),
         "n_fixtures_total": len(fixtures),
-        "short_reviews": analyze_short_reviews(fixtures, records_by_id),
+        # Published (Session 17): unseen reviews only, panel-split pairs excluded.
+        "short_reviews": analyze_short_reviews(
+            fixtures, records_by_id, exclude_exposed=True, exclude_split=True
+        ),
+        # The pre-Session-17 basis (all 106 reviews, split defaults scored as labels), kept so the
+        # correction is auditable from one artifact, and the intermediate cut that isolates the
+        # split-gold effect from the exposure effect.
+        "short_reviews_all_reviews_split_excluded": analyze_short_reviews(
+            fixtures, records_by_id, exclude_split=True
+        ),
+        "short_reviews_pre_s17_all_reviews_all_pairs": analyze_short_reviews(
+            fixtures, records_by_id
+        ),
         "sarcasm": analyze_sarcasm(fixtures, records_by_id),
     }
     OUTPUT_PATH.write_text(

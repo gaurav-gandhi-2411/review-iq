@@ -3,7 +3,351 @@
   "source_scoring": "eval/results/held_out_scoring_v2.json",
   "n_fixtures_total": 106,
   "short_reviews": {
+    "n_short_reviews": 25,
+    "excluded_exposed_reviews": true,
+    "excluded_split_gold_pairs": true,
+    "n_split_pairs_excluded": 23,
+    "short_review_word_threshold": 10,
+    "total_field_checks": 277,
+    "counts": {
+      "correct": 115,
+      "correct_abstention": 122,
+      "real_gap": 9,
+      "wrong_committed": 31
+    },
+    "rates": {
+      "correct": 0.4152,
+      "correct_abstention": 0.4404,
+      "real_gap": 0.0325,
+      "wrong_committed": 0.1119
+    },
+    "abstention_correctness_rate": 0.9313,
+    "real_gaps": [
+      {
+        "id": "hien-0010",
+        "field": "competitor_mentions",
+        "n_words": 8,
+        "text": "Bahut hi achcha Bluetooth oneplus I like it",
+        "gt": [
+          "OnePlus"
+        ],
+        "pred": [],
+        "panel_agreement": "majority"
+      },
+      {
+        "id": "hien-0028",
+        "field": "product",
+        "n_words": 8,
+        "text": "don't buy bro bekar hai.sometimes its break sounds.",
+        "gt": "audio device",
+        "pred": "general product",
+        "panel_agreement": "majority"
+      },
+      {
+        "id": "hien-0043",
+        "field": "product",
+        "n_words": 6,
+        "text": "Hard bass yaar love itREAD MORE",
+        "gt": "audio device",
+        "pred": "general product",
+        "panel_agreement": "majority"
+      },
+      {
+        "id": "hien-0057",
+        "field": "pros",
+        "n_words": 3,
+        "text": "Mast productREAD MORE",
+        "gt": [
+          "mast product"
+        ],
+        "pred": [],
+        "panel_agreement": "unanimous"
+      },
+      {
+        "id": "hien-0065",
+        "field": "pros",
+        "n_words": 6,
+        "text": "Nice h betray backup mast h",
+        "gt": [
+          "nice",
+          "mast"
+        ],
+        "pred": [],
+        "panel_agreement": "majority"
+      },
+      {
+        "id": "hien-0090",
+        "field": "topics",
+        "n_words": 5,
+        "text": "Ultimate headset Paisa wasoolREAD MORE",
+        "gt": [
+          "price",
+          "value"
+        ],
+        "pred": [],
+        "panel_agreement": "majority"
+      },
+      {
+        "id": "hien-0090",
+        "field": "pros",
+        "n_words": 5,
+        "text": "Ultimate headset Paisa wasoolREAD MORE",
+        "gt": [
+          "good value for money"
+        ],
+        "pred": [],
+        "panel_agreement": "majority"
+      },
+      {
+        "id": "hien-0091",
+        "field": "buy_again",
+        "n_words": 5,
+        "text": "Useless products hai yeREAD MORE",
+        "gt": false,
+        "pred": null,
+        "panel_agreement": "unanimous"
+      },
+      {
+        "id": "hien-0102",
+        "field": "product",
+        "n_words": 7,
+        "text": "Wow mast bassssś goood  👍👍quality soundREAD MORE",
+        "gt": "speaker",
+        "pred": "unknown product",
+        "panel_agreement": "majority"
+      }
+    ],
+    "per_field": {
+      "product": {
+        "correct": 2,
+        "correct_abstention": 11,
+        "wrong_committed": 5,
+        "real_gap": 3
+      },
+      "stars": {
+        "correct_abstention": 25
+      },
+      "buy_again": {
+        "wrong_committed": 4,
+        "correct": 7,
+        "correct_abstention": 13,
+        "real_gap": 1
+      },
+      "sentiment": {
+        "correct": 21,
+        "wrong_committed": 4
+      },
+      "language": {
+        "correct": 12,
+        "wrong_committed": 13
+      },
+      "topics": {
+        "correct": 11,
+        "wrong_committed": 2,
+        "real_gap": 1
+      },
+      "competitor_mentions": {
+        "real_gap": 1,
+        "correct_abstention": 24
+      },
+      "pros": {
+        "correct_abstention": 6,
+        "correct": 9,
+        "real_gap": 3
+      },
+      "cons": {
+        "correct_abstention": 18,
+        "wrong_committed": 1,
+        "correct": 5
+      },
+      "stars_inferred": {
+        "correct": 23,
+        "wrong_committed": 2
+      },
+      "urgency": {
+        "correct": 25
+      },
+      "feature_requests": {
+        "correct_abstention": 25
+      }
+    }
+  },
+  "short_reviews_all_reviews_split_excluded": {
     "n_short_reviews": 27,
+    "excluded_exposed_reviews": false,
+    "excluded_split_gold_pairs": true,
+    "n_split_pairs_excluded": 24,
+    "short_review_word_threshold": 10,
+    "total_field_checks": 300,
+    "counts": {
+      "correct": 127,
+      "correct_abstention": 132,
+      "real_gap": 9,
+      "wrong_committed": 32
+    },
+    "rates": {
+      "correct": 0.4233,
+      "correct_abstention": 0.44,
+      "real_gap": 0.03,
+      "wrong_committed": 0.1067
+    },
+    "abstention_correctness_rate": 0.9362,
+    "real_gaps": [
+      {
+        "id": "hien-0010",
+        "field": "competitor_mentions",
+        "n_words": 8,
+        "text": "Bahut hi achcha Bluetooth oneplus I like it",
+        "gt": [
+          "OnePlus"
+        ],
+        "pred": [],
+        "panel_agreement": "majority"
+      },
+      {
+        "id": "hien-0028",
+        "field": "product",
+        "n_words": 8,
+        "text": "don't buy bro bekar hai.sometimes its break sounds.",
+        "gt": "audio device",
+        "pred": "general product",
+        "panel_agreement": "majority"
+      },
+      {
+        "id": "hien-0043",
+        "field": "product",
+        "n_words": 6,
+        "text": "Hard bass yaar love itREAD MORE",
+        "gt": "audio device",
+        "pred": "general product",
+        "panel_agreement": "majority"
+      },
+      {
+        "id": "hien-0057",
+        "field": "pros",
+        "n_words": 3,
+        "text": "Mast productREAD MORE",
+        "gt": [
+          "mast product"
+        ],
+        "pred": [],
+        "panel_agreement": "unanimous"
+      },
+      {
+        "id": "hien-0065",
+        "field": "pros",
+        "n_words": 6,
+        "text": "Nice h betray backup mast h",
+        "gt": [
+          "nice",
+          "mast"
+        ],
+        "pred": [],
+        "panel_agreement": "majority"
+      },
+      {
+        "id": "hien-0090",
+        "field": "topics",
+        "n_words": 5,
+        "text": "Ultimate headset Paisa wasoolREAD MORE",
+        "gt": [
+          "price",
+          "value"
+        ],
+        "pred": [],
+        "panel_agreement": "majority"
+      },
+      {
+        "id": "hien-0090",
+        "field": "pros",
+        "n_words": 5,
+        "text": "Ultimate headset Paisa wasoolREAD MORE",
+        "gt": [
+          "good value for money"
+        ],
+        "pred": [],
+        "panel_agreement": "majority"
+      },
+      {
+        "id": "hien-0091",
+        "field": "buy_again",
+        "n_words": 5,
+        "text": "Useless products hai yeREAD MORE",
+        "gt": false,
+        "pred": null,
+        "panel_agreement": "unanimous"
+      },
+      {
+        "id": "hien-0102",
+        "field": "product",
+        "n_words": 7,
+        "text": "Wow mast bassssś goood  👍👍quality soundREAD MORE",
+        "gt": "speaker",
+        "pred": "unknown product",
+        "panel_agreement": "majority"
+      }
+    ],
+    "per_field": {
+      "product": {
+        "correct": 2,
+        "correct_abstention": 12,
+        "wrong_committed": 5,
+        "real_gap": 3
+      },
+      "stars": {
+        "correct_abstention": 27
+      },
+      "buy_again": {
+        "wrong_committed": 4,
+        "correct": 8,
+        "correct_abstention": 14,
+        "real_gap": 1
+      },
+      "sentiment": {
+        "correct": 23,
+        "wrong_committed": 4
+      },
+      "language": {
+        "correct": 14,
+        "wrong_committed": 13
+      },
+      "topics": {
+        "correct": 13,
+        "wrong_committed": 2,
+        "real_gap": 1
+      },
+      "competitor_mentions": {
+        "real_gap": 1,
+        "correct_abstention": 26
+      },
+      "pros": {
+        "correct_abstention": 7,
+        "correct": 10,
+        "real_gap": 3
+      },
+      "cons": {
+        "correct_abstention": 19,
+        "wrong_committed": 1,
+        "correct": 6
+      },
+      "stars_inferred": {
+        "correct": 25,
+        "wrong_committed": 2
+      },
+      "urgency": {
+        "correct": 26,
+        "wrong_committed": 1
+      },
+      "feature_requests": {
+        "correct_abstention": 27
+      }
+    }
+  },
+  "short_reviews_pre_s17_all_reviews_all_pairs": {
+    "n_short_reviews": 27,
+    "excluded_exposed_reviews": false,
+    "excluded_split_gold_pairs": false,
+    "n_split_pairs_excluded": 0,
     "short_review_word_threshold": 10,
     "total_field_checks": 324,
     "counts": {

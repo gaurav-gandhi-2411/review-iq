@@ -1,4 +1,4 @@
-"""Dataset read model: fetch extractions joined with authenticity audits and corrections.
+"""Dataset read model: fetch extractions joined with corrections.
 
 Each public function opens a fresh connection and sets RLS context before querying.
 No DDL, no writes — this module is read-only.
@@ -107,14 +107,12 @@ def _fetch_supporting_data(
     cur: Any,
     org_id: str,
     review_ids: list[str],
-) -> tuple[dict[str, dict[str, Any]], dict[str, list[dict[str, Any]]]]:
-    """Fetch authenticity audits and corrections for a set of review_ids.
+) -> dict[str, list[dict[str, Any]]]:
+    """Fetch corrections for a set of review_ids.
 
-    Both queries are issued in a single RLS-scoped cursor.  RLS context must
-    already be set before calling this function.
-
-    Authenticity deduplication: if (somehow) multiple audit rows exist for the
-    same review_id, only the one with the latest created_at is kept.
+    RLS context must already be set before calling this function.  Authenticity audits
+    are intentionally no longer read: scoring was removed, and stored rows stay in the
+    DB untouched but are never served.
 
     Args:
         cur:        Open psycopg2 cursor with RLS already set.
@@ -122,41 +120,8 @@ def _fetch_supporting_data(
         review_ids: List of review_id values to look up.
 
     Returns:
-        Tuple of:
-          auth_by_review_id   — dict[review_id → {score, label, flags, scored_at}]
-          corrections_by_review_id — dict[review_id → list[correction_dict]]
+        dict[review_id → list[correction_dict]]
     """
-    # --- Query 1: authenticity_audits ---
-    cur.execute(
-        """
-        SELECT review_id, score, label, flags, created_at
-        FROM public.authenticity_audits
-        WHERE org_id = %s AND review_id = ANY(%s)
-        """,
-        (org_id, review_ids),
-    )
-    auth_rows = cur.fetchall()
-
-    auth_by_review_id: dict[str, dict[str, Any]] = {}
-    for review_id, score, label, flags_raw, created_at in auth_rows:
-        flags: list[str] = (
-            json.loads(flags_raw) if isinstance(flags_raw, str) else (flags_raw or [])
-        )
-        candidate: dict[str, Any] = {
-            "score": float(score) if score is not None else None,
-            "label": label,
-            "flags": flags,
-            "scored_at": created_at,
-        }
-        existing = auth_by_review_id.get(review_id)
-        # Keep the row with the latest created_at (guard against duplicates).
-        if existing is None or (
-            created_at is not None
-            and existing["scored_at"] is not None
-            and created_at > existing["scored_at"]
-        ):
-            auth_by_review_id[review_id] = candidate
-
     # --- Query 2: corrections ---
     cur.execute(
         """
@@ -187,7 +152,7 @@ def _fetch_supporting_data(
         rid = c["review_id"]
         corrections_by_review_id.setdefault(rid, []).append(c)
 
-    return auth_by_review_id, corrections_by_review_id
+    return corrections_by_review_id
 
 
 def get_dataset_page(
@@ -198,7 +163,8 @@ def get_dataset_page(
     """Return one page of the org's structured review dataset.
 
     Opens a fresh connection, sets RLS, fetches extractions, then enriches each
-    record with its authenticity audit (if scored) and any corrections.
+    record with any corrections.  The ``authenticity`` key is deprecated and always None
+    (kept for response-shape compatibility; removal not before 2027-01-01).
 
     Args:
         org_id: Tenant identifier.
@@ -217,11 +183,8 @@ def get_dataset_page(
 
         review_ids = [r["review_id"] for r in rows if r.get("review_id")]
         if review_ids:
-            auth_by_review_id, corrections_by_review_id = _fetch_supporting_data(
-                cur, org_id, review_ids
-            )
+            corrections_by_review_id = _fetch_supporting_data(cur, org_id, review_ids)
         else:
-            auth_by_review_id = {}
             corrections_by_review_id = {}
 
         conn.commit()
@@ -259,7 +222,7 @@ def get_dataset_page(
                     "prompt_version": row["prompt_version"],
                     "is_suspicious": row["is_suspicious"],
                 },
-                "authenticity": auth_by_review_id.get(rid),
+                "authenticity": None,  # DEPRECATED: always null; key kept for old clients
                 "corrections": corrections_by_review_id.get(rid, []),
             }
         )
