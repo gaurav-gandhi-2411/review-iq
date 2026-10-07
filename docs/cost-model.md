@@ -164,6 +164,89 @@ required (this project's `GROQ_API_KEY` config doesn't change on a plan upgrade,
 attached to it do). The only thing gated on GG's direct verification is *how much better* the new
 ceiling is, not *whether* the upgrade path exists or requires engineering work.
 
+## 7. Update (S19 M4a): failover, Secret Manager, and margin at 1/5/10/20 customers
+
+Everything above is unchanged. This section adds the cost lines that did not exist when it was
+written and re-runs section 4's margin math at four customer counts. Date: 2026-10-07.
+
+### 7.1 New cost lines
+
+| Item | Figure | Derivation | Confidence |
+|---|---|---|---|
+| OpenRouter failover call (`meta-llama/llama-3.3-70b-instruct`, DeepInfra, ZDR) | **$0.000196/call** (INR 0.0187) at the probe's 1,612 in / 108 out | 1,612 x $0.10/M + 108 x $0.32/M = $0.0001612 + $0.0000346 | Tokens VERIFIED (failover-probe run in PR #279 commit message, `0a74db8`: "PASS 6767ms ... tokens 1612/108"). Rates BELIEVED: $0.10/M in, $0.32/M out from third-party aggregator summaries (OpenRouter's own page did not return prices through the fetch tool); re-check at openrouter.ai/meta-llama/llama-3.3-70b-instruct |
+| Same call on the primary (gpt-oss-120b) | $0.000307 | 1,612 x $0.15/M + 108 x $0.60/M (`app/core/pricing.py`) | VERIFIED (pricing table, as_of 2026-09-10) |
+| OpenRouter credit-purchase fee | 5.5%, $0.80 minimum per top-up -> effective ~$0.000207/call with fee; a $5 top-up costs $0.80 (16%) | aggregator summaries | BELIEVED |
+| Failover standing cost | ~$0.07/month (one $0.80 top-up per year) while failover is rare | 0.80/12 | BELIEVED |
+| Secret Manager | $0.06 per active version per month ($0.000082192/hr x 730), first 6 versions free; $0.03 per 10,000 access ops, first 10,000 free; $0.05 per rotation notification after 3 free | 14 secrets (13 in `ops/runbooks/secret-rotation.md` + `secondary-provider-api-key`, 1 version each) -> (14 - 6) x $0.06 = **$0.48/month**. Access ops: each cold start reads ~12 secrets, so ~800 cold starts/month fit the free 10,000 | Rates BELIEVED (cloud.google.com/secret-manager/pricing returned truncated content; figures from costbench.com quoting the SKU). Secret count VERIFIED from the repo runbook, not from `gcloud` (no live call made) |
+
+Observations that matter more than the cents:
+
+- **The failover path is cheaper per call than the primary** ($0.000196 vs $0.000307 on the same
+  tokens), so a long Groq outage does not raise COGS. Its risk is capacity and quality, not cost.
+- **The failover model has no entry in `PRICING_TABLE`.** `extract.py` catches `UnknownModelError`,
+  logs `extraction.cost_pricing_missing` and skips the cost row, so failover traffic is currently
+  invisible in `extraction_costs` COGS. Fix is one table entry; not done here (docs-only PR).
+- Per-extraction llama output tokens are unmeasured (the probe prompt is not an extraction). If it
+  emits the gpt-oss-120b mean of 647 tokens, an extraction costs ~$0.00038 on failover vs $0.00065
+  on the primary tier (BELIEVED).
+
+### 7.2 Shared fixed cost, updated
+
+F = Supabase $25 + Cloud Run $47.34 + Vercel $20 + Resend $0 + Secret Manager $0.48 + failover
+$0.07 = **$92.89/month** (was $92.34). Cloud Run is still the min-instances=1 projection, not
+today's scale-to-zero. Resend stays $0 only while sends stay under 3,000/month and 100/day.
+
+### 7.3 Margin per tier at 1, 5, 10, 20 customers
+
+Formulas (all customers assumed on the same tier, 100% quota use, which is the worst case):
+
+- fixed per customer = F / N
+- variable = quota x $0.000534 (blended cost per extraction, section 1)
+- payment = 3.54% x price (3% + 18% GST on the fee)
+- margin = (price - variable - F/N - payment) / price
+
+| Tier | Price (USD) | Variable | 1 cust | 5 cust | 10 cust | 20 cust |
+|---|---|---|---|---|---|---|
+| Starter intl (10K) | $59 | $5.34 | -70.0% | 55.9% | 71.7% | 79.5% |
+| Growth intl (50K) | $99 | $26.70 | -24.3% | 50.7% | 60.1% | 64.8% |
+| Agency intl (200K) | $249 | $106.80 | 16.3% | 46.1% | 49.8% | 51.7% |
+| Starter IN (10K) | Rs 2,999 = $31.34 | $5.34 | -217.0% | 20.1% | 49.8% | 64.6% |
+| Growth IN (50K) | Rs 6,999 = $73.14 | $26.70 | -67.1% | 34.6% | 47.3% | 53.6% |
+| Agency IN (200K) | Rs 19,999 = $208.99 | $106.80 | 0.9% | 36.5% | 40.9% | 43.1% |
+
+Worked check (Starter intl, 5): 5.34 + 92.89/5 + 0.0354 x 59 = 5.34 + 18.58 + 2.09 = 26.01;
+(59 - 26.01)/59 = 55.9%. The 0.2-point drop from section 4's 56.1% is the added $0.55 of F.
+FX: Rs 95.6943/USD (`pricing.py`, 2026-07-31). Prices are treated as GST-exclusive, as before.
+Fixed per customer: $92.89 / $18.58 / $9.29 / $4.64.
+
+Reading: all three international tiers clear 45% at 5 customers (Agency barely, 46.1%). India
+Starter and Growth clear it at 10 customers (49.8%, 47.3%); India Agency does not clear it even at
+20 (43.1%). At 1 customer every tier except Agency intl is at or below break-even, so a single early
+customer is carried by running paid-tier infrastructure ahead of revenue.
+
+### 7.4 Starter at $15 / Rs 999 at 45% margin (S19 M4b)
+
+Solve 45% for N: price x (1 - 0.0354 - 0.45) - variable = F/N, so N = F / (price x 0.5146 - variable).
+
+| Case | Price | Quota | Room for fixed cost per customer | Customers needed (F = $92.89) | If Resend Pro is needed (F = $112.89) |
+|---|---|---|---|---|---|
+| Starter at $15 | $15.00 | 10,000 | 15 x 0.5146 - 5.34 = $2.379 | **40** (39.05) | 48 (47.45) |
+| Starter at Rs 999 | $10.44 | 10,000 | $0.032 | ~2,900 (not feasible) | ~3,500 |
+| $15, quota cut to 5,000 | $15.00 | 5,000 | $5.049 | 19 (18.4) | 23 |
+| Rs 999, quota cut to 5,000 | $10.44 | 5,000 | $2.702 | 35 (34.4) | 42 |
+
+Assumptions: every customer is on this tier at full quota use; F as in 7.2; blended
+$0.000534/extraction; no discounts, taxes beyond the 3.54%, or support cost; cost per extraction
+does not fall with volume.
+
+Conclusion: **$15 works at 40 customers on a 10,000 quota; Rs 999 does not work at 10,000** because
+variable cost alone ($5.34) is 51% of the rupee price. The honest levers are a 5,000 quota (note
+section 6 already calls Starter 5,000/month; this doc's tables use 10,000 - reconcile before
+quoting) or a cheaper per-extraction cost (route more traffic to the small tier: at 100% small,
+c = $0.000363, variable $3.63, Rs 999 needs N = 92.89/(5.372 - 3.63) = 54).
+Hard prerequisite at 40 customers: 400,000 extractions/month vs the ~4,217/month free-tier ceiling
+(section 6), so the Groq Developer plan must be live, and its limits are still unverified.
+
 ## Provenance
 
 - `eval/measure_token_costs.py` / `eval/results/token_cost_measurement_n106.json` — this
@@ -173,4 +256,6 @@ ceiling is, not *whether* the upgrade path exists or requires engineering work.
   `minScale` annotation present, confirming scale-to-zero today), 2026-09-12.
 - Cloud Run always-on pricing rates, OpenRouter frontier-model rates — BELIEVED, third-party
   sourced, flagged individually above with re-verification recommendations.
+- Section 7: failover tokens from PR #279 (`0a74db8`); OpenRouter, Secret Manager and Resend rates
+  are BELIEVED (third-party summaries, 2026-10-07). Margins computed in-session from the formulas shown.
 - Supabase Pro, Vercel Pro, payment-processing %, GST % — given directly by GG this session.
