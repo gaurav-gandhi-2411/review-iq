@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-07T12:07:59Z",
-  "git_sha": "3faba589a3212d067ae2b11459a7613da6262dad",
+  "generated_at": "2026-10-07T12:10:52Z",
+  "git_sha": "831a45b98aff7cb37d5f69d1995656f7a7a919ad",
   "scorer_version": "2026-09-20.free-text-v1",
   "groq_model_small": "openai/gpt-oss-20b",
   "groq_model_large": "openai/gpt-oss-120b",
@@ -635,7 +635,7 @@
       },
       "validated": false
     },
-    "headline_scorer_for_pros": "exact-phrase (eval.runner._fuzzy_list_score), unchanged"
+    "headline_scorer_for_pros": "token-level F1 over the pooled token sets (eval.runner._fuzzy_list_score), unchanged"
   },
   "records": [
     {
