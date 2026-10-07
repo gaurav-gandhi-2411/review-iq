@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from app.core.reply.schema import ReplyTone
 
+# v2.2: critical rules 6-7 forbid invented contact details/identifiers and (any-language)
+# fault admission/commitments -- see PROMPTS.md. Eval run required before merge.
 # v2.1: added _SECURITY_NOTE (untrusted-data framing) + <review> delimiting -- see
 # app/core/reply/engine.py's sanitize()/wrap_for_llm() wiring for the matching fix.
-REPLY_PROMPT_VERSION = "v2.1"
+REPLY_PROMPT_VERSION = "v2.2"
 
 # Each tone specifies register + structure + explicit do-nots.
 # The model previously collapsed all complaint tones to the same arc
@@ -148,7 +150,16 @@ Use open-ended language such as "we will follow up with you soon."
 4. NEVER make medical or safety claims.
 5. The reply will be reviewed by a human before posting. Do not write "this is a draft" or \
 any similar note — output only the reply text.
-6. Write the reply IN {language_name}. The customer wrote in {language_name}; \
+6. NEVER invent details you were not given: no email addresses, phone numbers, websites or \
+links, order/ticket/tracking numbers, names, or amounts. You are NOT told the seller's contact \
+details, so do not write any. To invite contact, say it in words ("please reach out to us") or \
+write the placeholder [your support contact] -- never a made-up address or number. Only repeat \
+a specific detail (e.g. an order number) if it appears in the customer's review.
+7. NEVER admit fault or commit to an outcome on the seller's behalf ("we will fix it", "it was \
+our mistake", "you will get your refund") -- acknowledge and invite follow-up instead. This \
+applies equally in Hindi and Hinglish ("hum theek kar denge", "galti hamari thi", "refund mil \
+jayega" are all forbidden).
+8. Write the reply IN {language_name}. The customer wrote in {language_name}; \
 replying in the same language shows respect and makes the reply useful to them."""
 
 _SYSTEM_TEMPLATE = """\
