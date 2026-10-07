@@ -396,7 +396,7 @@ def scan_product(
         "top_reviewer_ids": top_reviewer_ids,
         "top_texts": top_texts,
     }
-    return CampaignFlag(product_id=product_id, confidence=round(confidence, 4), evidence=evidence)
+    return CampaignFlag(product_id=product_id, confidence=confidence, evidence=evidence)
 
 
 def scan_corpus(reviews: list[Review]) -> list[CampaignFlag]:
@@ -422,7 +422,8 @@ def write_flags(flags: list[CampaignFlag], path: Path) -> None:
         for flag in flags:
             record = {
                 "product_id": flag.product_id,
-                "confidence": flag.confidence,
+                # Display rounding only; the flag keeps full precision (S19).
+                "confidence": round(flag.confidence, 4),
                 "evidence": flag.evidence,
             }
             f.write(json.dumps(record) + "\n")
