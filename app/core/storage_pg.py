@@ -329,7 +329,7 @@ def list_extractions_pg(
     elif has_competitor_mention is False:
         where.append("jsonb_array_length(competitor_mentions) = 0")
     if topic:
-        where.append("competitor_mentions @> %s::jsonb")
+        where.append("topics @> %s::jsonb")
         params.append(json.dumps([topic]))
     if since:
         where.append("created_at >= %s")

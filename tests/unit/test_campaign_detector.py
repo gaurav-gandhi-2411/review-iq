@@ -114,3 +114,35 @@ def test_scan_corpus_smoke_after_port_catches_text_based_coordination() -> None:
         "possible driver"
     )
     assert flag.evidence["text_dup_score"] > 0.0
+
+
+def test_flag_confidence_is_not_rounded_before_threshold_comparisons() -> None:
+    """S17 X5b: CampaignFlag used to carry round(confidence, 4), so an exact 0.49996 (below the
+    0.5 fake-campaign alert threshold) compared as 0.5 and alerted. Full precision is kept on the
+    flag; only to_dict() rounds for display."""
+    from unittest.mock import patch
+
+    from app.core.detectors import campaign as cp
+
+    reviews = [
+        cp.Review(
+            review_id=f"r{i}",
+            product_id="Widget",
+            reviewer_id=f"u{i}",
+            timestamp=_NOW + timedelta(hours=i),
+            text=f"text {i}",
+        )
+        for i in range(3)
+    ]
+    window = cp.BurstWindow(
+        start=_NOW,
+        end=_NOW + timedelta(hours=cp.BURST_HOURS),
+        reviews=reviews,
+        ratio_vs_baseline=9.0,
+    )
+    with patch.object(cp, "find_best_burst_window", return_value=(window, 0.49996, 0.2, 0.2, 0.0)):
+        flag = cp.scan_product("Widget", reviews, {})
+
+    assert flag is not None
+    assert flag.confidence < 0.5
+    assert flag.to_dict()["confidence"] == 0.5  # display rounding unchanged
