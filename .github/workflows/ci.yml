@@ -10,7 +10,7 @@ jobs:
   lint-and-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
 
       - name: Set up Python
         uses: actions/setup-python@v7.0.0
@@ -18,7 +18,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v10.2.0
         with:
           enable-cache: true
 
@@ -77,6 +77,11 @@ jobs:
       - name: Held-out corpus leakage check
         run: uv run python scripts/check_no_heldout_leakage.py
 
+      # S17: this repo is public; an Actions artifact is a publication. No dump-shaped upload
+      # may be unencrypted, and db-backup.yml's upload path is pinned (see the script).
+      - name: No unencrypted dump artifact uploads
+        run: uv run python scripts/check_artifact_uploads.py
+
       # Catches the exact 2026-08-16/22 incident class: a config-only model-name
       # change silently invalidating eval/results.json's claim, undetected because
       # nothing re-ran the eval. See scripts/check_eval_model_matches_config.py.
@@ -119,7 +124,7 @@ jobs:
   pip-audit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
 
       - name: Set up Python
         uses: actions/setup-python@v7.0.0
@@ -127,7 +132,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v10.2.0
         with:
           enable-cache: true
 
@@ -146,7 +151,7 @@ jobs:
     # warning. See gg-portfolio's provenance.md wave 19 section.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
 
       - uses: actions/setup-python@v7.0.0
         with:
