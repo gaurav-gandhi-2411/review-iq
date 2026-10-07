@@ -245,3 +245,89 @@ REQUIRED_CONTEXTS: dict[str, tuple[str, str]] = {
 def test_required_status_check_jobs_exist(context: str) -> None:
     workflow, job = REQUIRED_CONTEXTS[context]
     assert job in _load(WORKFLOWS_DIR / workflow)["jobs"]
+
+
+# (workflow, test id or file) -> why a pytest step may skip it. A deselected test is a control that
+# runs nowhere: S19 audit F9 found the forged-JWT tenant-isolation vector deselected in
+# pre-cutover-verification.yml, so the isolation suite looked green without it. A new entry needs
+# the reason the test CANNOT run in CI, not that it failed.
+PYTEST_SKIP_ALLOWLIST: dict[tuple[str, str], str] = {
+    ("ci.yml", "tests/integration"): (
+        "needs a live Postgres; run by the pre-cutover-verification.yml job (ephemeral Postgres)"
+    ),
+    ("ci.yml", "tests/benchmark"): (
+        "S19 audit TS-10: the benchmark suite does not run in CI at all today -- recorded, not "
+        "endorsed; remove this entry when it is wired in"
+    ),
+    ("security-bypassrls-check.yml", "-k not ..."): (
+        "TestCrossOrgSweepFunctionsSeeEveryOrg needs a superuser connection this job must not "
+        "hold; the class runs in pre-cutover-verification.yml's public-service pass"
+    ),
+    ("pre-cutover-verification.yml", "tests/integration/test_resend_e2e.py"): (
+        "sends real email through a real Resend key; CI has none"
+    ),
+    ("pre-cutover-verification.yml", "tests/integration/test_admin.py"): (
+        "needs SERVICE_ROLE=admin; run in the separate admin-service step of the same job"
+    ),
+    ("pre-cutover-verification.yml", "tests/integration/test_account_deletion.py"): (
+        "needs SERVICE_ROLE=admin; run in the separate admin-service step of the same job"
+    ),
+}
+
+
+def _pytest_skips(run: str) -> list[str]:
+    """Every --deselect / --ignore / `-k "not ..."` target in a pytest command (shell
+    line continuations joined). A --deselect target is reported as the full test id; an
+    --ignore target as the path."""
+    skips: list[str] = []
+    for line in run.replace("\\\n", " ").splitlines():
+        if "pytest" not in line:
+            continue
+        skips += [
+            m.group(1)
+            for m in re.finditer(r"""--(?:deselect|ignore(?:-glob)?)[ =]["']?([^\s"']+)""", line)
+        ]
+        if re.search(r"""-k\s+["']?\s*not\b""", line):
+            skips.append("-k not ...")
+    return skips
+
+
+def test_pytest_steps_do_not_deselect_tests_without_an_allowlisted_reason() -> None:
+    for name, wf in _all_workflows().items():
+        for _job_id, _job, step in _steps(wf):
+            for target in _pytest_skips(step.get("run") or ""):
+                assert (name, target) in PYTEST_SKIP_ALLOWLIST, (
+                    f"{name} step {step.get('name')!r} skips {target!r} "
+                    "(--deselect / --ignore / -k 'not ...'): a skipped test is a control that "
+                    "runs nowhere (S19 audit F9). Fix the test or add an allowlisted reason."
+                )
+
+
+def test_pytest_skip_allowlist_has_no_stale_entries_and_admin_files_run() -> None:
+    """Every allowlist entry must still be skipped by its workflow, and the two files skipped
+    from the public pass only because they need SERVICE_ROLE=admin must run in the admin step."""
+    seen: set[tuple[str, str]] = set()
+    admin_run = ""
+    for name, wf in _all_workflows().items():
+        for _job_id, _job, step in _steps(wf):
+            run = step.get("run") or ""
+            seen |= {(name, t) for t in _pytest_skips(run)}
+            if (
+                name == "pre-cutover-verification.yml"
+                and (step.get("env") or {}).get("SERVICE_ROLE") == "admin"
+            ):
+                admin_run += run
+    assert seen == set(PYTEST_SKIP_ALLOWLIST), seen ^ set(PYTEST_SKIP_ALLOWLIST)
+    assert "tests/integration/test_admin.py" in admin_run
+    assert "tests/integration/test_account_deletion.py" in admin_run
+
+
+def test_pytest_skip_detector_catches_each_shape() -> None:
+    cmd = (
+        "uv run pytest tests/ -v \\\n"
+        '  --deselect "tests/a.py::T::t" \\\n'
+        "  --ignore=tests/b.py \\\n"
+        "  -k 'not slow'"
+    )
+    assert _pytest_skips(cmd) == ["tests/a.py::T::t", "tests/b.py", "-k not ..."]
+    assert _pytest_skips("uv run pytest tests/ -m integration --no-cov") == []
