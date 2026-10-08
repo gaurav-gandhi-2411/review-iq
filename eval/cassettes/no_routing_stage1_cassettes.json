@@ -1,0 +1,152 @@
+{
+  "0801e8e294bbfbb8a207edd33161b1be6232fdf0d2a34e64da26501b55bf0787": {
+    "raw": "{\"product\":\"blender\",\"stars\":5,\"stars_inferred\":5,\"pros\":[\"blends smoothies in seconds\",\"easy to clean\",\"whisper quiet\",\"best purchase\"],\"cons\":[],\"buy_again\":true,\"sentiment\":\"positive\",\"topics\":[\"blending_speed\",\"cleaning\",\"noise_level\",\"value\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"hi-en\",\"confidence\":0.95}",
+    "tokens_in": 1824,
+    "tokens_out": 519
+  },
+  "08351f2b62de78a3928ad4e2e3f9161dfdc4a5feee279a98b3d90e00a87ce61a": {
+    "raw": "{\"product\":\"UltraSound Pro speaker\",\"stars\":4,\"stars_inferred\":4,\"pros\":[\"excellent bass\",\"clear mid\u2011tones and vocals\",\"good price comparison to JBL and Bose\",\"premium aluminum build\",\"stable rubber base\",\"fast Bluetooth 5.0 pairing\",\"good battery life\",\"passable built\u2011in mic\",\"great value\"],\"cons\":[\"flimsy charging port cover\",\"not suitable for heavy rain\",\"limited EQ presets\",\"highs slightly harsh at maximum volume\"],\"buy_again\":true,\"sentiment\":\"positive\",\"topics\":[\"sound_quality\",\"price\",\"build\",\"battery\",\"connectivity\",\"mic\",\"value\",\"charging_port\"],\"competitor_mentions\":[\"JBL\",\"Bose\"],\"urgency\":\"low\",\"feature_requests\":[\"more EQ presets\",\"sturdier charging port cover\"],\"language\":\"hi-en\",\"confidence\":0.95}",
+    "tokens_in": 2027,
+    "tokens_out": 621
+  },
+  "0b6e08b99b2d69a3981616ca39eb65801e763fa2da51d0f2cba7d3e143123d1e": {
+    "raw": "{\"product\":\"FreshBreeze air cooler\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"effective cooling\",\"quick cooling\",\"easy water tank refill\"],\"cons\":[],\"buy_again\":true,\"sentiment\":\"positive\",\"topics\":[\"cooling_performance\",\"water_tank\",\"room_size\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"hi-en\",\"confidence\":0.95}",
+    "tokens_in": 1831,
+    "tokens_out": 585
+  },
+  "0d02531775867d720a635679131079ddbd2c4764da63512245ecd69775116867": {
+    "raw": "{\"product\":\"NovaPod X earbuds\",\"stars\":null,\"stars_inferred\":3,\"pros\":[\"crystal clear sound\",\"good ANC\",\"comfortable for hours\"],\"cons\":[\"lid hinge broke after 2 weeks\",\"charging case is a disaster\",\"unacceptable for $150 combo\"],\"buy_again\":true,\"sentiment\":\"mixed\",\"topics\":[\"sound_quality\",\"anc\",\"comfort\",\"product_quality\",\"case_quality\",\"price\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"hi-en\",\"confidence\":0.9}",
+    "tokens_in": 1836,
+    "tokens_out": 860
+  },
+  "0f8518da2d8a50b117303572589a6d49dd4e55091e6119d0bf86e2e09c9958f2": {
+    "raw": "{\"product\":\"ChairMax Pro\",\"stars\":null,\"stars_inferred\":2,\"pros\":[\"comfortable seat\"],\"cons\":[\"lumbar support broke after 3 months\",\"poor durability\",\"no support response\",\"needs repair\"],\"buy_again\":false,\"sentiment\":\"negative\",\"topics\":[\"product_quality\",\"durability\",\"customer_service\",\"support_service\",\"price\"],\"competitor_mentions\":[],\"urgency\":\"high\",\"feature_requests\":[\"repair lumbar support\"],\"language\":\"hi-en\",\"confidence\":0.9}",
+    "tokens_in": 1831,
+    "tokens_out": 947
+  },
+  "170f2aae000debe700757edb383814efdedfc0d6f50320bb69a180a5b517e85b": {
+    "raw": "{\"product\":\"PowerDrive Pro\",\"stars\":10,\"stars_inferred\":2,\"pros\":[\"incredible battery life\"],\"cons\":[\"plastic creaks on touch\",\"would not recommend\"],\"buy_again\":false,\"sentiment\":\"negative\",\"topics\":[\"battery_life\",\"build_quality\",\"price\",\"recommendation\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"hi-en\",\"confidence\":0.9}",
+    "tokens_in": 1831,
+    "tokens_out": 1204
+  },
+  "18d9b445a1ca5dfe21c9de8457bb6ddc1f359686aa0b7ee8a265128b70eb5301": {
+    "raw": "{\"product\":\"air purifier\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"fresh and clean air\",\"incredibly quiet\",\"easy setup\",\"easy HEPA filter replacement\",\"suitable for family use\"],\"cons\":[],\"buy_again\":true,\"sentiment\":\"positive\",\"topics\":[\"air_quality\",\"noise_level\",\"setup\",\"filter_replacement\",\"family_use\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"hi-en\",\"confidence\":0.95}",
+    "tokens_in": 1827,
+    "tokens_out": 307
+  },
+  "1ed628654d3a2f0657a5b2e0a27602ce727cb0581d77d17967f3e5c201e3c9f1": {
+    "raw": "{\"product\":\"headphones\",\"stars\":5,\"stars_inferred\":5,\"pros\":[\"excellent sound quality\",\"punchy bass\",\"Bluetooth pairs instantly\"],\"cons\":[\"ear cups press really tight\",\"ears start aching after about 20 minutes\"],\"buy_again\":true,\"sentiment\":\"positive\",\"topics\":[\"sound_quality\",\"bass\",\"bluetooth\",\"fit\",\"comfort\",\"price\"],\"competitor_mentions\":[],\"urgency\":\"high\",\"feature_requests\":[],\"language\":\"hi-en\",\"confidence\":0.95}",
+    "tokens_in": 1836,
+    "tokens_out": 520
+  },
+  "20f111032a66d50867d6ee83a9a1bd439828bc75d3784924805bda68e561bdc9": {
+    "raw": "{\"product\":\"LightStep running shoes\",\"stars\":2,\"stars_inferred\":2,\"pros\":[\"good appearance\",\"breathable material\"],\"cons\":[\"paper-thin sole\",\"no arch support\",\"feet pain after 5km run\",\"returning the shoes\"],\"buy_again\":false,\"sentiment\":\"negative\",\"topics\":[\"sole_thickness\",\"arch_support\",\"pain\",\"breathability\"],\"competitor_mentions\":[],\"urgency\":\"high\",\"feature_requests\":[],\"language\":\"hi-en\",\"confidence\":0.92}",
+    "tokens_in": 1831,
+    "tokens_out": 797
+  },
+  "2cc57831f03d2a87e7fd17c64dbbfc44af5b922fee7f5a4fa1d6553712edc896": {
+    "raw": "{\"product\":\"headphones\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"excellent headphones\"],\"cons\":[],\"buy_again\":true,\"sentiment\":\"positive\",\"topics\":[\"product_quality\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"hi-en\",\"confidence\":0.95}",
+    "tokens_in": 1778,
+    "tokens_out": 501
+  },
+  "2ea91327e4fb9e8a44dea1da01beaa6b51853dc591cedeed21903edcb6cf013e": {
+    "raw": "{\"product\":\"wireless mouse\",\"stars\":null,\"stars_inferred\":4,\"pros\":[\"smooth tracking\",\"long battery life\",\"DPI button placement perfect for gaming\"],\"cons\":[\"narrow shape causes wrist pain after an hour\"],\"buy_again\":true,\"sentiment\":\"positive\",\"topics\":[\"tracking\",\"battery_life\",\"dpi_button\",\"hand_fit\",\"wrist_pain\"],\"competitor_mentions\":[],\"urgency\":\"high\",\"feature_requests\":[],\"language\":\"hi-en\",\"confidence\":0.95}",
+    "tokens_in": 1831,
+    "tokens_out": 526
+  },
+  "35e60eae6854db7a63ff3cf29e1bb8f63c423bfc047f3ab9da8e49e841731683": {
+    "raw": "{\"product\":\"general product\",\"stars\":null,\"stars_inferred\":3.5,\"pros\":[\"works as advertised\",\"good battery life\",\"charges overnight\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"neutral\",\"topics\":[\"battery_life\",\"product_quality\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"hi-en\",\"confidence\":0.9}",
+    "tokens_in": 1806,
+    "tokens_out": 582
+  },
+  "415d450c2d5fd1e421ec0a8b6ed80a33e548e434c8d3dd237808031595d4bc35": {
+    "raw": "{\"product\":\"CoolAir AC unit\",\"stars\":0,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"caught fire after 3 days\",\"smoke damage\",\"dangerous product\",\"legal action taken\",\"refund demanded\"],\"buy_again\":false,\"sentiment\":\"negative\",\"topics\":[\"product_safety\",\"fire_incident\",\"smoke_damage\",\"legal_action\",\"refund\"],\"competitor_mentions\":[],\"urgency\":\"high\",\"feature_requests\":[],\"language\":\"hi-en\",\"confidence\":0.95}",
+    "tokens_in": 1835,
+    "tokens_out": 941
+  },
+  "6a3cd953803a3829b2e23cdc1c5cadcd5a26a2471e5509bdd6e41e312f8c61be": {
+    "raw": "{\"product\":\"KitchenMaster Pro\",\"stars\":null,\"stars_inferred\":1.0,\"pros\":[],\"cons\":[\"cracked lid\",\"replacement never arrived\",\"constant leaking\",\"loud motor\",\"rusted blades after 2 washes\",\"overall worst purchase\"],\"buy_again\":false,\"sentiment\":\"negative\",\"topics\":[\"product_quality\",\"delivery_service\",\"delivery_speed\",\"customer_service\",\"leakage\",\"motor_noise\",\"blade_corrosion\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"hi-en\",\"confidence\":0.95}",
+    "tokens_in": 1829,
+    "tokens_out": 865
+  },
+  "6b3d434a952900d1c8213e0f3912554e080c5c77fa18cfa7c08d4d513aed1445": {
+    "raw": "{\"product\":\"headphones\",\"stars\":null,\"stars_inferred\":3,\"pros\":[\"good sound quality\",\"long battery life\",\"decent overall\"],\"cons\":[\"poor microphone quality\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[\"sound_quality\",\"battery\",\"microphone\",\"price\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[\"improve microphone quality\"],\"language\":\"hi-en\",\"confidence\":0.9}",
+    "tokens_in": 1836,
+    "tokens_out": 731
+  },
+  "6d2920160432eb36692cff3661aebb7b497c561d7d119b0047f669582add3800": {
+    "raw": "{\"product\":\"CleanBot X9\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"superior suction compared to Dyson\",\"half the price of Dyson\",\"smarter navigation than iRobot\",\"better battery than Shark\"],\"cons\":[],\"buy_again\":true,\"sentiment\":\"positive\",\"topics\":[\"suction\",\"price\",\"navigation\",\"battery\"],\"competitor_mentions\":[\"Dyson\",\"Shark\",\"iRobot\",\"Roomba\"],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"hi-en\",\"confidence\":0.95}",
+    "tokens_in": 1837,
+    "tokens_out": 427
+  },
+  "7cd39aa6e3c0fda0a54af52470aa2cfc6a3bd4d71b094567c98d5d580713e7ac": {
+    "raw": "{\"product\":\"Turbo-Vac 5000\",\"stars\":null,\"stars_inferred\":2,\"pros\":[\"excellent suction\",\"very quiet\"],\"cons\":[\"short battery life\",\"fragile plastic handle\",\"poor build quality\",\"not value for money\"],\"buy_again\":false,\"sentiment\":\"negative\",\"topics\":[\"suction\",\"battery_life\",\"noise\",\"build_quality\",\"handle\",\"price\"],\"competitor_mentions\":[\"Dyson\"],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"hi-en\",\"confidence\":0.9}",
+    "tokens_in": 1883,
+    "tokens_out": 503
+  },
+  "87b00665f462bbd61c682329970951219a722598779b4559df5cb81fac766e94": {
+    "raw": "{\"product\":\"NutriBlast 3000\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"blade detached during use\",\"safety hazard\",\"nearly hit child\",\"unacceptable customer service response\"],\"buy_again\":false,\"sentiment\":\"negative\",\"topics\":[\"product_defect\",\"safety\",\"customer_service\",\"recall\"],\"competitor_mentions\":[],\"urgency\":\"high\",\"feature_requests\":[\"recall the product\",\"improve blade safety\"],\"language\":\"hi-en\",\"confidence\":0.95}",
+    "tokens_in": 1836,
+    "tokens_out": 724
+  },
+  "89a5ded89eead6a06a577ac38b584646de7abb7d31803da15cd49440e58c3ffc": {
+    "raw": "{\"product\":\"earphones\",\"stars\":null,\"stars_inferred\":4,\"pros\":[\"good earphones\",\"no stress to ears\",\"good comfort\"],\"cons\":[\"low sound level\"],\"buy_again\":true,\"sentiment\":\"positive\",\"topics\":[\"sound_quality\",\"comfort\",\"volume\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"hi-en\",\"confidence\":0.9}",
+    "tokens_in": 1815,
+    "tokens_out": 617
+  },
+  "9e0af9f124e3ed9eb4fb40535ad85a384b820658f0ff5c40b3d5fd132f637af5": {
+    "raw": "{\"product\":\"BrewMaster coffee grinder\",\"stars\":null,\"stars_inferred\":4,\"pros\":[\"fantastic grinder\",\"grinds consistently\",\"easy to adjust settings\"],\"cons\":[\"arrived in crushed box\",\"packaging terrible\"],\"buy_again\":true,\"sentiment\":\"positive\",\"topics\":[\"product_quality\",\"packaging\",\"delivery_service\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[\"better packaging\"],\"language\":\"hi-en\",\"confidence\":0.9}",
+    "tokens_in": 1830,
+    "tokens_out": 395
+  },
+  "9fc7f8f723ea901ccef4989b67789a68a8dbb5bfa6056d4c65ce9565266f02a6": {
+    "raw": "{\"product\":\"blue tooth headset\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"excellent bass\",\"good battery backup\",\"great value for money\"],\"cons\":[],\"buy_again\":true,\"sentiment\":\"positive\",\"topics\":[\"bass\",\"battery\",\"price\",\"value\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"hi-en\",\"confidence\":0.95}",
+    "tokens_in": 1803,
+    "tokens_out": 586
+  },
+  "a02827e23d44b1a244411ad6d00b89f0edc5dd9c384272cbc8127207f3bbee28": {
+    "raw": "{\"product\":\"headphones\",\"stars\":null,\"stars_inferred\":1.0,\"pros\":[],\"cons\":[\"product breaks after one week\",\"battery lasts only 2 hours\",\"complete waste of money\"],\"buy_again\":false,\"sentiment\":\"negative\",\"topics\":[\"durability\",\"battery_life\",\"price\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"hi-en\",\"confidence\":0.9}",
+    "tokens_in": 1817,
+    "tokens_out": 1201
+  },
+  "c0cbe4baaa74cb59939919687e1e547f122d162e040da3572ad6c6d4047dbd77": {
+    "raw": "{\"product\":\"SleepPro mattress\",\"stars\":null,\"stars_inferred\":3,\"pros\":[\"fast delivery\",\"works every night\"],\"cons\":[\"edge support is a bit soft\",\"not sure I'd recommend it\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[\"delivery_speed\",\"delivery_service\",\"product_quality\",\"edge_support\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[\"firmer edge support\"],\"language\":\"hi-en\",\"confidence\":0.9}",
+    "tokens_in": 1835,
+    "tokens_out": 537
+  },
+  "c12de9207fd9e825dfc5e9546409ebc210772ef0a82310b805b4d382b6f28081": {
+    "raw": "{\"product\":\"AquaFilter\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"arrived without installation manual\",\"filter housing cracked on first use\",\"flooded sink area\",\"had to call plumber\",\"absolute disaster\"],\"buy_again\":false,\"sentiment\":\"negative\",\"topics\":[\"product_quality\",\"packaging\",\"installation\",\"water_damage\",\"plumbing\"],\"competitor_mentions\":[],\"urgency\":\"high\",\"feature_requests\":[],\"language\":\"hi-en\",\"confidence\":0.95}",
+    "tokens_in": 1851,
+    "tokens_out": 696
+  },
+  "c2db20e018f3e7805bdae19f42e104681f4f98ffc3f734bb594c65cfe77b57ed": {
+    "raw": "{\"product\":\"general product\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"great product\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"product_quality\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"hi-en\",\"confidence\":0.95}",
+    "tokens_in": 1776,
+    "tokens_out": 670
+  },
+  "c54ef178ded2e64e76c2cba78b8ee7e8d475a7989ca9fab2de0f41d78f40f548": {
+    "raw": "{\"product\":\"FitBand Lite\",\"stars\":null,\"stars_inferred\":3,\"pros\":[\"steps counted\",\"sleep tracked\",\"heart rate works\",\"battery lasts about 7 days\",\"price fair\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[\"steps\",\"sleep_tracking\",\"heart_rate\",\"battery_life\",\"price\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"hi-en\",\"confidence\":0.9}",
+    "tokens_in": 1831,
+    "tokens_out": 365
+  },
+  "ca059cf16a0431a16ae6311a0dd00a31441f69a0274ef37a9b4afd0f104c6288": {
+    "raw": "{\"product\":\"ZenDesk Pro standing desk\",\"stars\":3,\"stars_inferred\":3,\"pros\":[\"sturdy desk\",\"smooth and quiet height adjustment\",\"reliable motor\"],\"cons\":[\"difficult assembly\",\"time-consuming assembly\",\"poor instructions\"],\"buy_again\":true,\"sentiment\":\"mixed\",\"topics\":[\"product_quality\",\"assembly\",\"instructions\",\"height_adjustment\",\"motor\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[\"pre-assembled desk\",\"improved instructions\"],\"language\":\"hi-en\",\"confidence\":0.9}",
+    "tokens_in": 1832,
+    "tokens_out": 779
+  },
+  "cd9572b1805f9f7696a800bc4a6607471ffc0f487fda7d079eb29131cb89cc93": {
+    "raw": "{\"product\":\"general product\",\"stars\":null,\"stars_inferred\":4,\"pros\":[\"good\"],\"cons\":[],\"buy_again\":true,\"sentiment\":\"positive\",\"topics\":[\"product_quality\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"hi-en\",\"confidence\":0.9}",
+    "tokens_in": 1772,
+    "tokens_out": 616
+  },
+  "e25ee63f5ad4d236fb97bd97c9096ea92920af060de9d34c02466c0f24cc5bda": {
+    "raw": "{\"product\":\"CrispMaster 4000\",\"stars\":5,\"stars_inferred\":5,\"pros\":[\"fast heating\",\"larger basket\",\"easier cleanup\",\"better cooking performance\"],\"cons\":[\"no app\"],\"buy_again\":true,\"sentiment\":\"positive\",\"topics\":[\"heating_speed\",\"basket_size\",\"cleaning\",\"app\",\"cooking_performance\"],\"competitor_mentions\":[\"Philips\"],\"urgency\":\"low\",\"feature_requests\":[\"app integration\"],\"language\":\"hi-en\",\"confidence\":0.95}",
+    "tokens_in": 1847,
+    "tokens_out": 507
+  },
+  "fd51de992643ffc1039bb4dfa6f8e99807d6fde51c258cf00e551ee3632db733": {
+    "raw": "{\"product\":\"SmartScale Pro\",\"stars\":4,\"stars_inferred\":4,\"pros\":[\"good for basic use\",\"accurate weight readings\",\"easy to read display\"],\"cons\":[\"no companion app\",\"no Bluetooth sync\",\"uses AAA batteries instead of rechargeable\"],\"buy_again\":true,\"sentiment\":\"positive\",\"topics\":[\"weight_readings\",\"display\",\"battery\",\"app\",\"bluetooth\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[\"companion app\",\"Bluetooth sync\",\"rechargeable battery\"],\"language\":\"hi-en\",\"confidence\":0.95}",
+    "tokens_in": 1826,
+    "tokens_out": 488
+  }
+}

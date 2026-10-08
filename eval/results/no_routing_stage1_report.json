@@ -1,0 +1,83 @@
+{
+  "generated_at": "2026-10-08T00:25:51Z",
+  "git_sha": "2977e0bf98230c822f7e6d9a94a30fac9009825a",
+  "method": "paired percentile bootstrap, 10000 resamples, seed 42, unclamped; metric = 8-field headline (all scored fields except stars, language)",
+  "baseline_rescore_drift_ids": [],
+  "english_pooled_hi_en_prompt_minus_en_prompt": {
+    "n": 30,
+    "mean": 0.07453663622892137,
+    "n_up": 18,
+    "n_down": 11,
+    "n_zero": 1,
+    "ci95": [
+      0.023874225352177956,
+      0.12726875363059031
+    ],
+    "sd": 0.14693725783870773,
+    "se": 0.026826950218737673
+  },
+  "english_by_stratum": {
+    "ci_gate_en": {
+      "n": 27,
+      "mean": 0.084702285357112,
+      "n_up": 18,
+      "n_down": 9,
+      "n_zero": 0,
+      "ci95": [
+        0.029248309207819203,
+        0.1417621974529622
+      ],
+      "sd": 0.15158953518387128,
+      "se": 0.02917341964824611
+    },
+    "held_out_en": {
+      "n": 3,
+      "mean": -0.016954205924794203,
+      "n_up": 0,
+      "n_down": 2,
+      "n_zero": 1,
+      "ci95": [
+        -0.038257575757575824,
+        0.0
+      ],
+      "sd": 0.01949607513669273,
+      "se": 0.011256064228310719
+    }
+  },
+  "hinglish_recorded_hi_en_prompt_minus_as_deployed": {
+    "n": 101,
+    "mean": -0.004778414670879342,
+    "n_up": 23,
+    "n_down": 28,
+    "n_zero": 50,
+    "ci95": [
+      -0.026824380114153664,
+      0.01725962108266487
+    ],
+    "sd": 0.11339508231500021,
+    "se": 0.011283232409034824
+  },
+  "decision": {
+    "rule": {
+      "adopt_no_routing_only_if": "lower 95% bound of (unified - routed) >= -3pp on the 8-field headline for BOTH strata (Hinglish, English)",
+      "stage1_futility": "mean paired 8-field delta (hi-en minus en) below -5pp: stop"
+    },
+    "checks": {
+      "english_mean_above_futility_floor": true,
+      "english_lower_bound_meets_margin": true,
+      "hinglish_lower_bound_meets_margin": true,
+      "english_complete": true
+    },
+    "verdict": "NON-INFERIORITY NUMERICALLY MET on stage-1 data, but NOT sufficient to delete routing: the arm is the existing hi-en prompt (not an authored unified prompt), the English stratum is n=30, and the Hinglish stratum adds no new data. Proceed to stage 2.",
+    "stage1_cannot_certify": "Hinglish stratum: the unified prompt does not exist yet, and the recorded hi-en-prompt arm is the status-quo prompt for those reviews. English stratum: at n=30 the standard error is about 2.4-3.3pp (per-fixture delta SD 12.9pp over the 106 held-out fixtures with panel-split pairs excluded [11.2pp when they were scored as labels, S17 correction], 18.1pp over the 54 whose two runs differ; `design` mode), so a -3pp margin is only certifiable if the observed mean is about +1.6pp to +3.5pp or better; the CI-gate set overlaps the en prompt's few-shots, which favours the routed (en) side and so makes this test conservative for no-routing."
+  },
+  "tokens_spent_by_this_experiment": {
+    "rows": 30,
+    "tokens_total": 74597,
+    "by_final_model": {
+      "openai/gpt-oss-20b": 74597
+    },
+    "n_escalated": 0,
+    "n_degraded": 0
+  }
+}

@@ -1,0 +1,1100 @@
+{
+  "generated_at": "2026-10-08T00:23:19Z",
+  "git_sha": "ba5b12c98292e17c3864ebb2092953734c7b6334",
+  "spec": "docs/specs/s15c-language-routing.md (Stage 1 design, Session 15d)",
+  "mode_last_written": "record",
+  "rows": [
+    {
+      "id": "001_turbo_vac",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "Turbo-Vac 5000",
+        "stars": null,
+        "stars_inferred": 2,
+        "pros": [
+          "excellent suction",
+          "very quiet"
+        ],
+        "cons": [
+          "short battery life",
+          "fragile plastic handle",
+          "poor build quality",
+          "not value for money"
+        ],
+        "buy_again": false,
+        "sentiment": "negative",
+        "topics": [
+          "suction",
+          "battery_life",
+          "noise",
+          "build_quality",
+          "handle",
+          "price"
+        ],
+        "competitor_mentions": [
+          "Dyson"
+        ],
+        "urgency": "medium",
+        "feature_requests": [],
+        "language": "hi-en",
+        "confidence": 0.9
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1883,
+      "tokens_out": 503
+    },
+    {
+      "id": "002_explicit_stars",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "blender",
+        "stars": 5,
+        "stars_inferred": 5,
+        "pros": [
+          "blends smoothies in seconds",
+          "easy to clean",
+          "whisper quiet",
+          "best purchase"
+        ],
+        "cons": [],
+        "buy_again": true,
+        "sentiment": "positive",
+        "topics": [
+          "blending_speed",
+          "cleaning",
+          "noise_level",
+          "value"
+        ],
+        "competitor_mentions": [],
+        "urgency": "low",
+        "feature_requests": [],
+        "language": "hi-en",
+        "confidence": 0.95
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1824,
+      "tokens_out": 519
+    },
+    {
+      "id": "003_prompt_injection",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "headphones",
+        "stars": null,
+        "stars_inferred": 1,
+        "pros": [],
+        "cons": [
+          "product breaks after one week",
+          "battery lasts only 2 hours",
+          "complete waste of money"
+        ],
+        "buy_again": false,
+        "sentiment": "negative",
+        "topics": [
+          "durability",
+          "battery_life",
+          "price"
+        ],
+        "competitor_mentions": [],
+        "urgency": "medium",
+        "feature_requests": [],
+        "language": "hi-en",
+        "confidence": 0.9
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1817,
+      "tokens_out": 1201
+    },
+    {
+      "id": "005_all_positive",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "air purifier",
+        "stars": null,
+        "stars_inferred": 5,
+        "pros": [
+          "fresh and clean air",
+          "incredibly quiet",
+          "easy setup",
+          "easy HEPA filter replacement",
+          "suitable for family use"
+        ],
+        "cons": [],
+        "buy_again": true,
+        "sentiment": "positive",
+        "topics": [
+          "air_quality",
+          "noise_level",
+          "setup",
+          "filter_replacement",
+          "family_use"
+        ],
+        "competitor_mentions": [],
+        "urgency": "low",
+        "feature_requests": [],
+        "language": "hi-en",
+        "confidence": 0.95
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1827,
+      "tokens_out": 307
+    },
+    {
+      "id": "006_all_negative",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "KitchenMaster Pro",
+        "stars": null,
+        "stars_inferred": 1,
+        "pros": [],
+        "cons": [
+          "cracked lid",
+          "replacement never arrived",
+          "constant leaking",
+          "loud motor",
+          "rusted blades after 2 washes",
+          "overall worst purchase"
+        ],
+        "buy_again": false,
+        "sentiment": "negative",
+        "topics": [
+          "product_quality",
+          "delivery_service",
+          "delivery_speed",
+          "customer_service",
+          "leakage",
+          "motor_noise",
+          "blade_corrosion"
+        ],
+        "competitor_mentions": [],
+        "urgency": "medium",
+        "feature_requests": [],
+        "language": "hi-en",
+        "confidence": 0.95
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1829,
+      "tokens_out": 865
+    },
+    {
+      "id": "007_buy_again_ambiguous",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "SleepPro mattress",
+        "stars": null,
+        "stars_inferred": 3,
+        "pros": [
+          "fast delivery",
+          "works every night"
+        ],
+        "cons": [
+          "edge support is a bit soft",
+          "not sure I'd recommend it"
+        ],
+        "buy_again": null,
+        "sentiment": "mixed",
+        "topics": [
+          "delivery_speed",
+          "delivery_service",
+          "product_quality",
+          "edge_support"
+        ],
+        "competitor_mentions": [],
+        "urgency": "low",
+        "feature_requests": [
+          "firmer edge support"
+        ],
+        "language": "hi-en",
+        "confidence": 0.9
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1835,
+      "tokens_out": 537
+    },
+    {
+      "id": "008_pii_heavy",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "FreshBreeze air cooler",
+        "stars": null,
+        "stars_inferred": 5,
+        "pros": [
+          "effective cooling",
+          "quick cooling",
+          "easy water tank refill"
+        ],
+        "cons": [],
+        "buy_again": true,
+        "sentiment": "positive",
+        "topics": [
+          "cooling_performance",
+          "water_tank",
+          "room_size"
+        ],
+        "competitor_mentions": [],
+        "urgency": "low",
+        "feature_requests": [],
+        "language": "hi-en",
+        "confidence": 0.95
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1831,
+      "tokens_out": 585
+    },
+    {
+      "id": "009_competitor_heavy",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "CleanBot X9",
+        "stars": null,
+        "stars_inferred": 5,
+        "pros": [
+          "superior suction compared to Dyson",
+          "half the price of Dyson",
+          "smarter navigation than iRobot",
+          "better battery than Shark"
+        ],
+        "cons": [],
+        "buy_again": true,
+        "sentiment": "positive",
+        "topics": [
+          "suction",
+          "price",
+          "navigation",
+          "battery"
+        ],
+        "competitor_mentions": [
+          "Dyson",
+          "Shark",
+          "iRobot",
+          "Roomba"
+        ],
+        "urgency": "low",
+        "feature_requests": [],
+        "language": "hi-en",
+        "confidence": 0.95
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1837,
+      "tokens_out": 427
+    },
+    {
+      "id": "010_urgent_angry",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "CoolAir AC unit",
+        "stars": null,
+        "stars_inferred": 1,
+        "pros": [],
+        "cons": [
+          "caught fire after 3 days",
+          "smoke damage",
+          "dangerous product",
+          "legal action taken",
+          "refund demanded"
+        ],
+        "buy_again": false,
+        "sentiment": "negative",
+        "topics": [
+          "product_safety",
+          "fire_incident",
+          "smoke_damage",
+          "legal_action",
+          "refund"
+        ],
+        "competitor_mentions": [],
+        "urgency": "high",
+        "feature_requests": [],
+        "language": "hi-en",
+        "confidence": 0.95
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1835,
+      "tokens_out": 941
+    },
+    {
+      "id": "011_very_short",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "headphones",
+        "stars": null,
+        "stars_inferred": 5,
+        "pros": [
+          "excellent headphones"
+        ],
+        "cons": [],
+        "buy_again": true,
+        "sentiment": "positive",
+        "topics": [
+          "product_quality"
+        ],
+        "competitor_mentions": [],
+        "urgency": "low",
+        "feature_requests": [],
+        "language": "hi-en",
+        "confidence": 0.95
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1778,
+      "tokens_out": 501
+    },
+    {
+      "id": "012_sarcasm",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "PowerDrive Pro",
+        "stars": null,
+        "stars_inferred": 2,
+        "pros": [
+          "incredible battery life"
+        ],
+        "cons": [
+          "plastic creaks on touch",
+          "would not recommend"
+        ],
+        "buy_again": false,
+        "sentiment": "negative",
+        "topics": [
+          "battery_life",
+          "build_quality",
+          "price",
+          "recommendation"
+        ],
+        "competitor_mentions": [],
+        "urgency": "low",
+        "feature_requests": [],
+        "language": "hi-en",
+        "confidence": 0.9
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1831,
+      "tokens_out": 1204
+    },
+    {
+      "id": "013_multi_product",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "NovaPod X earbuds",
+        "stars": null,
+        "stars_inferred": 3,
+        "pros": [
+          "crystal clear sound",
+          "good ANC",
+          "comfortable for hours"
+        ],
+        "cons": [
+          "lid hinge broke after 2 weeks",
+          "charging case is a disaster",
+          "unacceptable for $150 combo"
+        ],
+        "buy_again": true,
+        "sentiment": "mixed",
+        "topics": [
+          "sound_quality",
+          "anc",
+          "comfort",
+          "product_quality",
+          "case_quality",
+          "price"
+        ],
+        "competitor_mentions": [],
+        "urgency": "medium",
+        "feature_requests": [],
+        "language": "hi-en",
+        "confidence": 0.9
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1836,
+      "tokens_out": 860
+    },
+    {
+      "id": "014_feature_requests",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "SmartScale Pro",
+        "stars": 4,
+        "stars_inferred": 4,
+        "pros": [
+          "good for basic use",
+          "accurate weight readings",
+          "easy to read display"
+        ],
+        "cons": [
+          "no companion app",
+          "no Bluetooth sync",
+          "uses AAA batteries instead of rechargeable"
+        ],
+        "buy_again": true,
+        "sentiment": "positive",
+        "topics": [
+          "weight_readings",
+          "display",
+          "battery",
+          "app",
+          "bluetooth"
+        ],
+        "competitor_mentions": [],
+        "urgency": "low",
+        "feature_requests": [
+          "companion app",
+          "Bluetooth sync",
+          "rechargeable battery"
+        ],
+        "language": "hi-en",
+        "confidence": 0.95
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1826,
+      "tokens_out": 488
+    },
+    {
+      "id": "015_medium_urgency",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "ChairMax Pro",
+        "stars": null,
+        "stars_inferred": 2,
+        "pros": [
+          "comfortable seat"
+        ],
+        "cons": [
+          "lumbar support broke after 3 months",
+          "poor durability",
+          "no support response",
+          "needs repair"
+        ],
+        "buy_again": false,
+        "sentiment": "negative",
+        "topics": [
+          "product_quality",
+          "durability",
+          "customer_service",
+          "support_service",
+          "price"
+        ],
+        "competitor_mentions": [],
+        "urgency": "high",
+        "feature_requests": [
+          "repair lumbar support"
+        ],
+        "language": "hi-en",
+        "confidence": 0.9
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1831,
+      "tokens_out": 947
+    },
+    {
+      "id": "016_no_product_name",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "general product",
+        "stars": null,
+        "stars_inferred": 3,
+        "pros": [
+          "works as advertised",
+          "good battery life",
+          "charges overnight"
+        ],
+        "cons": [],
+        "buy_again": null,
+        "sentiment": "neutral",
+        "topics": [
+          "battery_life",
+          "product_quality"
+        ],
+        "competitor_mentions": [],
+        "urgency": "low",
+        "feature_requests": [],
+        "language": "hi-en",
+        "confidence": 0.9
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1806,
+      "tokens_out": 582
+    },
+    {
+      "id": "017_very_long",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "UltraSound Pro speaker",
+        "stars": 4,
+        "stars_inferred": 4,
+        "pros": [
+          "excellent bass",
+          "clear mid‑tones and vocals",
+          "good price comparison to JBL and Bose",
+          "premium aluminum build",
+          "stable rubber base",
+          "fast Bluetooth 5.0 pairing",
+          "good battery life",
+          "passable built‑in mic",
+          "great value"
+        ],
+        "cons": [
+          "flimsy charging port cover",
+          "not suitable for heavy rain",
+          "limited EQ presets",
+          "highs slightly harsh at maximum volume"
+        ],
+        "buy_again": true,
+        "sentiment": "positive",
+        "topics": [
+          "sound_quality",
+          "price",
+          "build",
+          "battery",
+          "connectivity",
+          "mic",
+          "value",
+          "charging_port"
+        ],
+        "competitor_mentions": [
+          "JBL",
+          "Bose"
+        ],
+        "urgency": "low",
+        "feature_requests": [
+          "more EQ presets",
+          "sturdier charging port cover"
+        ],
+        "language": "hi-en",
+        "confidence": 0.95
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 2027,
+      "tokens_out": 621
+    },
+    {
+      "id": "018_packaging_damage",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "BrewMaster coffee grinder",
+        "stars": null,
+        "stars_inferred": 4,
+        "pros": [
+          "fantastic grinder",
+          "grinds consistently",
+          "easy to adjust settings"
+        ],
+        "cons": [
+          "arrived in crushed box",
+          "packaging terrible"
+        ],
+        "buy_again": true,
+        "sentiment": "positive",
+        "topics": [
+          "product_quality",
+          "packaging",
+          "delivery_service"
+        ],
+        "competitor_mentions": [],
+        "urgency": "low",
+        "feature_requests": [
+          "better packaging"
+        ],
+        "language": "hi-en",
+        "confidence": 0.9
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1830,
+      "tokens_out": 395
+    },
+    {
+      "id": "019_three_stars_explicit",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "ZenDesk Pro standing desk",
+        "stars": 3,
+        "stars_inferred": 3,
+        "pros": [
+          "sturdy desk",
+          "smooth and quiet height adjustment",
+          "reliable motor"
+        ],
+        "cons": [
+          "difficult assembly",
+          "time-consuming assembly",
+          "poor instructions"
+        ],
+        "buy_again": true,
+        "sentiment": "mixed",
+        "topics": [
+          "product_quality",
+          "assembly",
+          "instructions",
+          "height_adjustment",
+          "motor"
+        ],
+        "competitor_mentions": [],
+        "urgency": "medium",
+        "feature_requests": [
+          "pre-assembled desk",
+          "improved instructions"
+        ],
+        "language": "hi-en",
+        "confidence": 0.9
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1832,
+      "tokens_out": 779
+    },
+    {
+      "id": "020_urgent_safety",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "NutriBlast 3000",
+        "stars": null,
+        "stars_inferred": 1,
+        "pros": [],
+        "cons": [
+          "blade detached during use",
+          "safety hazard",
+          "nearly hit child",
+          "unacceptable customer service response"
+        ],
+        "buy_again": false,
+        "sentiment": "negative",
+        "topics": [
+          "product_defect",
+          "safety",
+          "customer_service",
+          "recall"
+        ],
+        "competitor_mentions": [],
+        "urgency": "high",
+        "feature_requests": [
+          "recall the product",
+          "improve blade safety"
+        ],
+        "language": "hi-en",
+        "confidence": 0.95
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1836,
+      "tokens_out": 724
+    },
+    {
+      "id": "021_neutral_review",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "FitBand Lite",
+        "stars": null,
+        "stars_inferred": 3,
+        "pros": [
+          "steps counted",
+          "sleep tracked",
+          "heart rate works",
+          "battery lasts about 7 days",
+          "price fair"
+        ],
+        "cons": [],
+        "buy_again": null,
+        "sentiment": "mixed",
+        "topics": [
+          "steps",
+          "sleep_tracking",
+          "heart_rate",
+          "battery_life",
+          "price"
+        ],
+        "competitor_mentions": [],
+        "urgency": "low",
+        "feature_requests": [],
+        "language": "hi-en",
+        "confidence": 0.9
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1831,
+      "tokens_out": 365
+    },
+    {
+      "id": "022_two_star_explicit",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "LightStep running shoes",
+        "stars": 2,
+        "stars_inferred": 2,
+        "pros": [
+          "good appearance",
+          "breathable material"
+        ],
+        "cons": [
+          "paper-thin sole",
+          "no arch support",
+          "feet pain after 5km run",
+          "returning the shoes"
+        ],
+        "buy_again": false,
+        "sentiment": "negative",
+        "topics": [
+          "sole_thickness",
+          "arch_support",
+          "pain",
+          "breathability"
+        ],
+        "competitor_mentions": [],
+        "urgency": "high",
+        "feature_requests": [],
+        "language": "hi-en",
+        "confidence": 0.92
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1831,
+      "tokens_out": 797
+    },
+    {
+      "id": "023_empty_review",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "general product",
+        "stars": null,
+        "stars_inferred": 4,
+        "pros": [
+          "good"
+        ],
+        "cons": [],
+        "buy_again": true,
+        "sentiment": "positive",
+        "topics": [
+          "product_quality"
+        ],
+        "competitor_mentions": [],
+        "urgency": "low",
+        "feature_requests": [],
+        "language": "hi-en",
+        "confidence": 0.9
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1772,
+      "tokens_out": 616
+    },
+    {
+      "id": "024_return_intent",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "AquaFilter",
+        "stars": null,
+        "stars_inferred": 1,
+        "pros": [],
+        "cons": [
+          "arrived without installation manual",
+          "filter housing cracked on first use",
+          "flooded sink area",
+          "had to call plumber",
+          "absolute disaster"
+        ],
+        "buy_again": false,
+        "sentiment": "negative",
+        "topics": [
+          "product_quality",
+          "packaging",
+          "installation",
+          "water_damage",
+          "plumbing"
+        ],
+        "competitor_mentions": [],
+        "urgency": "high",
+        "feature_requests": [],
+        "language": "hi-en",
+        "confidence": 0.95
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1851,
+      "tokens_out": 696
+    },
+    {
+      "id": "025_competitor_switch",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "CrispMaster 4000",
+        "stars": 5,
+        "stars_inferred": 5,
+        "pros": [
+          "fast heating",
+          "larger basket",
+          "easier cleanup",
+          "better cooking performance"
+        ],
+        "cons": [
+          "no app"
+        ],
+        "buy_again": true,
+        "sentiment": "positive",
+        "topics": [
+          "heating_speed",
+          "basket_size",
+          "cleaning",
+          "app",
+          "cooking_performance"
+        ],
+        "competitor_mentions": [
+          "Philips"
+        ],
+        "urgency": "low",
+        "feature_requests": [
+          "app integration"
+        ],
+        "language": "hi-en",
+        "confidence": 0.95
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1847,
+      "tokens_out": 507
+    },
+    {
+      "id": "026_defect_no_escalation_medium",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "headphones",
+        "stars": null,
+        "stars_inferred": 3,
+        "pros": [
+          "good sound quality",
+          "long battery life",
+          "decent overall"
+        ],
+        "cons": [
+          "poor microphone quality"
+        ],
+        "buy_again": null,
+        "sentiment": "mixed",
+        "topics": [
+          "sound_quality",
+          "battery",
+          "microphone",
+          "price"
+        ],
+        "competitor_mentions": [],
+        "urgency": "medium",
+        "feature_requests": [
+          "improve microphone quality"
+        ],
+        "language": "hi-en",
+        "confidence": 0.9
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1836,
+      "tokens_out": 731
+    },
+    {
+      "id": "027_harm_in_positive_tone_high",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "headphones",
+        "stars": 5,
+        "stars_inferred": 5,
+        "pros": [
+          "excellent sound quality",
+          "punchy bass",
+          "Bluetooth pairs instantly"
+        ],
+        "cons": [
+          "ear cups press really tight",
+          "ears start aching after about 20 minutes"
+        ],
+        "buy_again": true,
+        "sentiment": "positive",
+        "topics": [
+          "sound_quality",
+          "bass",
+          "bluetooth",
+          "fit",
+          "comfort",
+          "price"
+        ],
+        "competitor_mentions": [],
+        "urgency": "high",
+        "feature_requests": [],
+        "language": "hi-en",
+        "confidence": 0.95
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1836,
+      "tokens_out": 520
+    },
+    {
+      "id": "028_fit_pain_high",
+      "stratum": "ci_gate_en",
+      "predicted": {
+        "product": "wireless mouse",
+        "stars": null,
+        "stars_inferred": 4,
+        "pros": [
+          "smooth tracking",
+          "long battery life",
+          "DPI button placement perfect for gaming"
+        ],
+        "cons": [
+          "narrow shape causes wrist pain after an hour"
+        ],
+        "buy_again": true,
+        "sentiment": "positive",
+        "topics": [
+          "tracking",
+          "battery_life",
+          "dpi_button",
+          "hand_fit",
+          "wrist_pain"
+        ],
+        "competitor_mentions": [],
+        "urgency": "high",
+        "feature_requests": [],
+        "language": "hi-en",
+        "confidence": 0.95
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1831,
+      "tokens_out": 526
+    },
+    {
+      "id": "hien-0039",
+      "stratum": "held_out_en",
+      "predicted": {
+        "product": "earphones",
+        "stars": null,
+        "stars_inferred": 4,
+        "pros": [
+          "good earphones",
+          "no stress to ears",
+          "good comfort"
+        ],
+        "cons": [
+          "low sound level"
+        ],
+        "buy_again": true,
+        "sentiment": "positive",
+        "topics": [
+          "sound_quality",
+          "comfort",
+          "volume"
+        ],
+        "competitor_mentions": [],
+        "urgency": "low",
+        "feature_requests": [],
+        "language": "hi-en",
+        "confidence": 0.9
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1815,
+      "tokens_out": 617
+    },
+    {
+      "id": "hien-0056",
+      "stratum": "held_out_en",
+      "predicted": {
+        "product": "general product",
+        "stars": null,
+        "stars_inferred": 5,
+        "pros": [
+          "great product"
+        ],
+        "cons": [],
+        "buy_again": null,
+        "sentiment": "positive",
+        "topics": [
+          "product_quality"
+        ],
+        "competitor_mentions": [],
+        "urgency": "low",
+        "feature_requests": [],
+        "language": "hi-en",
+        "confidence": 0.95
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1776,
+      "tokens_out": 670
+    },
+    {
+      "id": "hien-0069",
+      "stratum": "held_out_en",
+      "predicted": {
+        "product": "blue tooth headset",
+        "stars": null,
+        "stars_inferred": 5,
+        "pros": [
+          "excellent bass",
+          "good battery backup",
+          "great value for money"
+        ],
+        "cons": [],
+        "buy_again": true,
+        "sentiment": "positive",
+        "topics": [
+          "bass",
+          "battery",
+          "price",
+          "value"
+        ],
+        "competitor_mentions": [],
+        "urgency": "low",
+        "feature_requests": [],
+        "language": "hi-en",
+        "confidence": 0.95
+      },
+      "model": "openai/gpt-oss-20b",
+      "escalated": false,
+      "degraded": false,
+      "tokens_in": 1803,
+      "tokens_out": 586
+    }
+  ]
+}

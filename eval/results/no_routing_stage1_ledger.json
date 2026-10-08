@@ -1,0 +1,184 @@
+{
+  "entries": [
+    {
+      "ts": 1791418004.967003,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2386,
+      "id": "001_turbo_vac"
+    },
+    {
+      "ts": 1791418036.7313457,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2343,
+      "id": "002_explicit_stars"
+    },
+    {
+      "ts": 1791418070.8446724,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 3018,
+      "id": "003_prompt_injection"
+    },
+    {
+      "ts": 1791418103.5164418,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2134,
+      "id": "005_all_positive"
+    },
+    {
+      "ts": 1791418136.1291022,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2694,
+      "id": "006_all_negative"
+    },
+    {
+      "ts": 1791418171.5225258,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2372,
+      "id": "007_buy_again_ambiguous"
+    },
+    {
+      "ts": 1791418207.8483806,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2416,
+      "id": "008_pii_heavy"
+    },
+    {
+      "ts": 1791418243.3457587,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2264,
+      "id": "009_competitor_heavy"
+    },
+    {
+      "ts": 1791418280.0995092,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2776,
+      "id": "010_urgent_angry"
+    },
+    {
+      "ts": 1791418315.6726024,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2279,
+      "id": "011_very_short"
+    },
+    {
+      "ts": 1791418350.7466242,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 3035,
+      "id": "012_sarcasm"
+    },
+    {
+      "ts": 1791418385.0657368,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2696,
+      "id": "013_multi_product"
+    },
+    {
+      "ts": 1791418418.2852874,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2314,
+      "id": "014_feature_requests"
+    },
+    {
+      "ts": 1791418451.5466633,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2778,
+      "id": "015_medium_urgency"
+    },
+    {
+      "ts": 1791418485.208054,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2388,
+      "id": "016_no_product_name"
+    },
+    {
+      "ts": 1791418518.4131913,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2648,
+      "id": "017_very_long"
+    },
+    {
+      "ts": 1791418551.3382287,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2225,
+      "id": "018_packaging_damage"
+    },
+    {
+      "ts": 1791418584.644186,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2611,
+      "id": "019_three_stars_explicit"
+    },
+    {
+      "ts": 1791418622.0549827,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2560,
+      "id": "020_urgent_safety"
+    },
+    {
+      "ts": 1791418654.6771126,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2196,
+      "id": "021_neutral_review"
+    },
+    {
+      "ts": 1791418687.5023344,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2628,
+      "id": "022_two_star_explicit"
+    },
+    {
+      "ts": 1791418720.3863966,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2388,
+      "id": "023_empty_review"
+    },
+    {
+      "ts": 1791418760.0126305,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2547,
+      "id": "024_return_intent"
+    },
+    {
+      "ts": 1791418794.9514892,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2354,
+      "id": "025_competitor_switch"
+    },
+    {
+      "ts": 1791418835.4694045,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2567,
+      "id": "026_defect_no_escalation_medium"
+    },
+    {
+      "ts": 1791418868.0820832,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2356,
+      "id": "027_harm_in_positive_tone_high"
+    },
+    {
+      "ts": 1791418901.2399466,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2357,
+      "id": "028_fit_pain_high"
+    },
+    {
+      "ts": 1791418934.217804,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2432,
+      "id": "hien-0039"
+    },
+    {
+      "ts": 1791418966.8622034,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2446,
+      "id": "hien-0056"
+    },
+    {
+      "ts": 1791418999.9080029,
+      "model": "openai/gpt-oss-20b",
+      "tokens": 2389,
+      "id": "hien-0069"
+    }
+  ]
+}
