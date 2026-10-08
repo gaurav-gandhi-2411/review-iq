@@ -408,11 +408,12 @@ def test_report_end_to_end_with_mock_rows() -> None:
 
 def test_record_mode_refuses_without_the_explicit_quota_flag(tmp_path: Path) -> None:
     before = exp.ROWS_PATH.exists()
+    ledger_before = exp.LEDGER_PATH.exists()
     with pytest.raises(SystemExit) as e:
         exp.main(["record"])
     assert e.value.code == 2
     assert exp.ROWS_PATH.exists() == before  # nothing was recorded or created
-    assert not exp.LEDGER_PATH.exists()
+    assert exp.LEDGER_PATH.exists() == ledger_before  # a refusal adds no ledger
 
 
 def test_budget_constants_match_the_spec() -> None:
