@@ -100,3 +100,6 @@ ops/budget-killswitch/.build/
 
 # Vercel sweep plan (S18 V1d): local review artifact, never committed
 reports/vercel-sweep-plan.json
+
+# Local Groq TPD 429 observations (eval/quota_guard.py); machine state, never committed.
+eval/results/.groq_tpd_observations.json
