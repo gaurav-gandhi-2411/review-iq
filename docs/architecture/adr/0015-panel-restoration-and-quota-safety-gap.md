@@ -11,6 +11,10 @@
 > `qwen` models on a separate benchmark key) — do not confuse them with the Session 13
 > correction, which is about production's `openai/gpt-oss-20b`/`120b` models on the shared
 > production key that also serves real customers and the demo endpoint.
+>
+> **Further correction (S19 R1, 2026-10-08):** even the Session 13 ceiling assumes Samidha owns
+> the account's pool. GG's other products share the Groq account, so the real capacity is the pool
+> minus their draw, which we cannot see. See [ADR 0032](0032-shared-groq-org-capacity.md).
 
 ## Context
 
