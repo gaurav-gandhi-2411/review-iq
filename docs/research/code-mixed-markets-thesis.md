@@ -1,8 +1,28 @@
-# Thesis: code-mixed markets the incumbents can't read
+# Thesis: code-mixed markets the incumbents can't read (Hinglish claim retired 2026-10-08, pending N1b)
 
 Date: 2026-10-07; ICP section, N3b and N3c added 2026-10-08. Method: public web only (WebSearch/WebFetch, unauthenticated Apple iTunes RSS), no outreach.
 Labels: **VERIFIED** = I fetched/ran it and saw it; **SNIPPET** = seen only in a search summary; **BELIEVED** = my inference.
 Sources are in the table at the end (S-numbers). R-numbers are in-repo docs that live on unmerged branches (PRs #283, #284).
+
+## Position as of 2026-10-08 (Q2): wedge, ICP, and what is retired
+
+- **Wedge: triage and honesty.** Find the review that needs a human, separate product feedback from delivery noise, and publish
+  measured accuracy with error bars while abstaining ("unclear") instead of guessing. This is what the first-person seller
+  quotes in `docs/research/n5-research-gaps.md` (R7) describe: detection lag on a fake-1-star thread (a commenter), a
+  Hinglish-writing D2C snack owner asking how to filter product feedback out of late-delivery and rider noise, and a new D2C
+  seller tired of reading reviews manually, with the top reply telling them to paste reviews into ChatGPT or Claude. The
+  site quotes the first two verbatim and the third in part, each linked. That reply is the substitute to beat.
+- **Hinglish claim: retired as a headline, pending N1b.** The live hero "Half your reviews aren't in English" (live since
+  2026-09-12, commit 1813853) was contradicted by our own samples: Hinglish is 106 genuine candidates in 14,552 Flipkart
+  reviews (0.74%), 0 of 50 Flipkart and 0 of 16 Amazon.in in the N5 samples, and 6 of 200 in Indian Shopify D2C (R6).
+  Hinglish stays on the site as a capability line ("Handles English and Hinglish"), which is true and measured in the held-out
+  results. "Off-the-shelf tools miss it" and "we beat plain models" remain **unsupported**: N1b has NOT been run, and the
+  site makes neither claim.
+- **ICP: Shopify D2C brands in India via Judge.me**, agencies second (see the ICP section below). The Shopify connector
+  path is not yet reachable by users, so the site says "online brands", not "Shopify brands".
+- **Honest negatives kept:** the moat does not carry to the Shopify ICP on current evidence; no Indian seller was found
+  saying Hinglish reviews are unreadable by tools (R7, bounded search); the topic field is among the weaker measured
+  fields, and the site now says so.
 
 ## Verdict up front
 
@@ -142,7 +162,7 @@ reviews. Raw reviews are third-party text and are not committed.
 
 ## What the public site should say under each outcome (N3b)
 
-`site/` is NOT edited by this change. Two unknowns decide the hero: the moat test N1b (not run) and N2d (done: Hinglish about
+Written before the Q2 site change (2026-10-08, which retired the Hinglish headline and moved it to a capability line; the table below records what was changed and why). Two unknowns decide the hero: the moat test N1b (not run) and N2d (done: Hinglish about
 3% in Shopify D2C reviews, floor-biased).
 
 | Outcome of N1b on the 70 held-out reviews | Shopify brands mostly English (current N2d reading) | If Shopify brands prove Hinglish-heavy (needs a larger sample) |
@@ -154,17 +174,17 @@ reviews. Raw reviews are third-party text and are not committed.
 Reading rule (BELIEVED): "beats" needs a paired comparison on the same 70 items against the existing noise floor, not two
 point estimates. With 70 reviews and 10.7% of field-pairs unscored, only a large gap would clear it.
 
-### Current site claims that would need to change (grep of `site/index.html` for Hinglish/vernacular wording)
+### Site claims that needed to change (grep of `site/index.html` for Hinglish/vernacular wording), and what Q2 did
 
-| Line | Text | Problem |
+| Line | Text | Problem (Q2 disposition in the last sentence) |
 |---|---|---|
-| 9 | `...sentiment and urgency, in English and Hinglish. Stateless by default...` (meta description) | Fine under (ii), reword under (i) |
+| 9 | `...sentiment and urgency, in English and Hinglish. Stateless by default...` (meta description) | Fine under (ii), reword under (i). Q2: reworded to a capability line ("Handles English and Hinglish") |
 | 17, 23 | og/twitter description: `...in English and Hinglish.` | Same |
-| 392 | `Built for Indian e-commerce · English & Hinglish · Early access` | Hinglish in the kicker; "Indian e-commerce" implies marketplaces we cannot legally ingest |
-| 395 | `You manage reviews across a dozen brand storefronts, in a mix of English and Hinglish.` | Agency-first framing and an unmeasured mix; N2d says about 3% for Shopify D2C |
-| 463-467 | `Half your reviews aren't in English` / `Real Indian marketplace reviews mix English and romanized Hindi in the same sentence — Hinglish. Off-the-shelf sentiment tools built for English miss the actual complaint buried in the Hinglish half.` | Contradicted by the samples: 0 of 50 Flipkart, 0 of 16 Amazon.in, 6 of 200 Shopify. "Half" has no evidence. "Off-the-shelf tools miss it" is what N1b would test and has not. Highest priority under every outcome |
-| 536-537 | `...or connect Shopify/Google directly. English or Hinglish, no pre-translation needed.` | Shopify connect is not yet reachable by users (R8, R9) |
-| 908 | footer: `MIT License · evaluation-driven · built for Indian e-commerce` | Same as 392 |
+| 392 | `Built for Indian e-commerce · English & Hinglish · Early access` | Hinglish in the kicker; "Indian e-commerce" implies marketplaces we cannot legally ingest. Q2: now "Review triage for online brands" |
+| 395 | `You manage reviews across a dozen brand storefronts, in a mix of English and Hinglish.` | Agency-first framing and an unmeasured mix; N2d says about 3% for Shopify D2C. Q2: Hinglish and the "mix" claim removed from the lede |
+| 463-467 | `Half your reviews aren't in English` / `Real Indian marketplace reviews mix English and romanized Hindi in the same sentence — Hinglish. Off-the-shelf sentiment tools built for English miss the actual complaint buried in the Hinglish half.` | Contradicted by the samples: 0 of 50 Flipkart, 0 of 16 Amazon.in, 6 of 200 Shopify. "Half" has no evidence. "Off-the-shelf tools miss it" is what N1b would test and has not. Highest priority under every outcome. Q2: block removed, replaced by three seller pains with linked quotes |
+| 536-537 | `...or connect Shopify/Google directly. English or Hinglish, no pre-translation needed.` | Shopify connect is not yet reachable by users (R8, R9). Q2: kept as "Handles English and Hinglish" (capability); the Shopify/Google connect wording is unchanged and still a separate gap |
+| 908 | footer: `MIT License · evaluation-driven · built for Indian e-commerce` | Same as 392. Q2: now "review triage for online brands" |
 
 Line 1035 (demo template printing counts of English and Hinglish mentions) is data-driven, not a claim; leave it.
 
