@@ -1,4 +1,4 @@
-# ADR 0032: Groq capacity is shared across GG's products, so Samidha's real ceiling is unknown
+# ADR 0037: Groq capacity is shared across GG's products, so Samidha's real ceiling is unknown
 
 Status: accepted 2026-10-08 (S19 R1). Corrects the capacity claims in ADR 0015's Session 13
 correction and `docs/cost-model.md` section 6, which assumed Samidha owned the whole free-tier

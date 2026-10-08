@@ -14,7 +14,7 @@
 >
 > **Further correction (S19 R1, 2026-10-08):** even the Session 13 ceiling assumes Samidha owns
 > the account's pool. GG's other products share the Groq account, so the real capacity is the pool
-> minus their draw, which we cannot see. See [ADR 0032](0032-shared-groq-org-capacity.md).
+> minus their draw, which we cannot see. See [ADR 0037](0037-shared-groq-org-capacity.md).
 
 ## Context
 

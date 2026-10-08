@@ -128,7 +128,7 @@ quota — these are illustrative anchors, not a recommendation of a specific num
 
 ## 6. Groq Developer-plan upgrade readiness (Session 13 P3c) — planning only, NOT upgraded
 
-> **CORRECTED 2026-10-08 (S19 R1, [ADR 0032](architecture/adr/0032-shared-groq-org-capacity.md)):**
+> **CORRECTED 2026-10-08 (S19 R1, [ADR 0037](architecture/adr/0037-shared-groq-org-capacity.md)):**
 > the capacity figures below assume Samidha owns the whole free-tier pool. GG's other products
 > (StyleMaitri, TriageIQ, DealHunter, the portfolio chatbot) also call Groq and are believed to
 > share the same org, and limits are per org. The figures are therefore a **ceiling if Samidha were
@@ -385,7 +385,7 @@ Starter price alternatives (5,000 quota)
 
 **What changed.** Sections 6 and 7 treated the Groq free-tier pool (200K tokens per day per model,
 8K per minute) as Samidha's. All of GG's products use one Groq account (BELIEVED, stated by GG;
-code survey of the other repos VERIFIED in ADR 0032), and Groq rate-limits per organisation.
+code survey of the other repos VERIFIED in ADR 0037), and Groq rate-limits per organisation.
 
 **Capacity statement now supported by evidence.**
 
@@ -406,7 +406,7 @@ expose per-minute tokens and a daily request counter only; the daily token total
 a 429 body. A green guard means "no known reason to stop", not "headroom exists".
 
 **Fix.** A dedicated Groq org (free tier, $0) for Samidha production, and a second one for evals.
-Steps for GG are in ADR 0032. Until done, treat every capacity number above as an upper bound.
+Steps for GG are in ADR 0037. Until done, treat every capacity number above as an upper bound.
 
 ## Provenance
 
