@@ -57,7 +57,7 @@ def test_site_parse_finds_all_five_tiers() -> None:
         ("site/index.html", "&#8377;12,999/mo", "&#8377;13,999/mo", "scale.inr"),
         ("docs/cost-model.md", "| Starter | 5,000 | $29 |", "| Starter | 5,000 | $39 |", "stale"),
         ("docs/payments-readiness.md", "Growth $79/INR 4,999", "Growth $89/INR 4,999", "Growth"),
-        ("app/api/bff/router.py", '"free": 100,', '"free": 1000,', "PLAN_QUOTA_LIMITS"),
+        ("app/api/bff/router.py", '"free": 1000,', '"free": 100,', "PLAN_QUOTA_LIMITS"),
         (
             "app/core/pricing.py",
             "USD_TO_INR_RATE = 95.6943",
@@ -71,6 +71,29 @@ def test_mutation_is_detected(root: Path, rel: str, old: str, new: str, needle: 
     errs = chk.run(root)
     assert errs, f"mutation in {rel} went undetected"
     assert any(needle in e for e in errs)
+
+
+def test_free_quota_divergence_detected_independently_of_placeholder_pin(root: Path) -> None:
+    # Move the pin AND the code to 100: the pin agrees, but the public Free plan says 1,000.
+    _edit(root, "docs/pricing.json", '"free": 1000,\n    "pro"', '"free": 100,\n    "pro"')
+    _edit(root, "app/api/bff/router.py", '"free": 1000,', '"free": 100,')
+    errs = chk.run(root)
+    assert any("PLAN_QUOTA_LIMITS['free']=100" in e for e in errs)
+
+
+def test_missing_plan_quota_limits_dict_fails_closed(root: Path) -> None:
+    _edit(
+        root,
+        "app/api/bff/router.py",
+        "PLAN_QUOTA_LIMITS: dict[str, int] = {",
+        "OTHER: dict[str, int] = {",
+    )
+    assert any("PLAN_QUOTA_LIMITS not found" in e for e in chk.run(root))
+
+
+def test_missing_free_key_fails(root: Path) -> None:
+    _edit(root, "app/api/bff/router.py", '    "free": 1000,\n', "")
+    assert any("no 'free' entry" in e for e in chk.run(root))
 
 
 def test_pricing_json_change_without_rerender_fails(root: Path) -> None:

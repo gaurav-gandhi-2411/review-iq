@@ -76,7 +76,7 @@ All review text is PII-redacted before being sent to any provider.
 
 **API keys:** Keys follow the format `riq_live_<32 hex chars>`. The plaintext key is shown once at creation (and once again only on explicit regenerate) and never written to disk or logs. Keys are stored as argon2id hashes. The key prefix (first 17 characters) is indexed for O(1) lookup without exposing the full hash.
 
-**Quota enforcement:** Monthly extraction quotas are enforced with a `SELECT FOR UPDATE` lock, preventing TOCTOU races under concurrent requests. The free-tier hard caps (100 extractions/month, 500 rows/upload, 5 MB/file) are enforced server-side and cannot be bypassed by callers.
+**Quota enforcement:** Monthly extraction quotas are enforced with a `SELECT FOR UPDATE` lock, preventing TOCTOU races under concurrent requests. The free-tier hard caps (1,000 extractions/month, 500 rows/upload, 5 MB/file) are enforced server-side and cannot be bypassed by callers.
 
 ---
 
