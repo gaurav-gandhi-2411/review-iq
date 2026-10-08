@@ -123,6 +123,17 @@ async def run_day(day: int, mode: str) -> None:
     ids = day_ids(english_routed_ids(baseline["records"]), day)
     out_path = RESULTS_DIR / f"buy_again_exp_day{day}.json"
 
+    if mode == "record":
+        # S19 Q3a: the in-run `used` below starts at 0 and is blind to other consumers of the key;
+        # the live check reads Groq's own counters and refuses (fail closed) before any spend.
+        from eval.quota_guard import preflight
+
+        est = len(ids) * EST_TOKENS_PER_CALL
+        preflight(
+            {settings.groq_model_small: est, settings.groq_model_large: 0},
+            api_key=settings.groq_api_key,
+        )
+
     rows: list[dict[str, Any]] = []
     used: dict[str, int] = {}
     for n, fid in enumerate(ids, 1):
