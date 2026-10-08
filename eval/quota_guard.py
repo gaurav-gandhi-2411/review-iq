@@ -1,23 +1,24 @@
-"""Pre-batch Groq headroom guard: live signal + conservative local floor, FAILS CLOSED.
+"""Pre-batch Groq headroom guard: best-effort proxy + persisted 429 floor, FAILS CLOSED.
 
-Why this exists (S19 Q3a): the earlier headroom check only summed what *this* script and prod
-`extraction_costs` knew about. Eval runs, reply drafting and any other consumer of the same Groq key
-never appear in `extraction_costs`, so the large pool (openai/gpt-oss-120b) was driven past 93% of
-its 100K/day self-imposed ceiling while the check read "plenty of room".
+This guard does NOT read daily token headroom. Nothing on a successful Groq response exposes it.
+What it does, honestly:
+  * `x-ratelimit-*-tokens` are PER-MINUTE (TPM) and say nothing about the daily token budget.
+  * `x-ratelimit-*-requests` are the daily REQUEST budget (RPD, resets at UTC midnight). They are
+    a best-effort proxy: they see other consumers' request counts, but only for the current UTC
+    day, and not their token size. Groq's TPD window appears to be ROLLING, so the proxy is blind
+    to token draw from the previous day. Incident 2026-10-08: the proxy said OK (1 request used)
+    and the first real call got 429 "TPD: Limit 200000, Used 199409, Requested 1678".
+  * The only authoritative signal is that 429 body ("Limit N, Used M, Requested R"). It is parsed
+    by `parse_tpd_429` and persisted per model (`record_tpd_observation`); `preflight` then
+    refuses that model for 24h while the observation says it was past the ceiling fraction.
+  * A passing preflight therefore means "no known reason to refuse", not "headroom confirmed":
+    the first real call of the batch is the canary, and callers must stop on the first TPD 429.
 
-What Groq actually exposes (verified by a live probe 2026-10-08 and Groq's rate-limit docs):
-  * `x-ratelimit-limit-tokens` / `x-ratelimit-remaining-tokens` are PER-MINUTE (TPM, 8000 on the
-    free tier) -- they say nothing about the daily token budget.
-  * `x-ratelimit-limit-requests` / `x-ratelimit-remaining-requests` are the DAILY request budget
-    (RPD, 1000) and are shared across every consumer of the key, so they ARE a live signal of
-    other consumers' activity -- but in requests, not tokens.
-  * The daily token budget (TPD) is exposed on NO successful response. It appears only in the body
-    of a 429 once exceeded. There is no way to read "tokens used today" from Groq directly.
-
-So the live signal is converted to a pessimistic token estimate (requests used x
+The proxy is converted to a pessimistic token estimate (requests used x
 PESSIMISTIC_TOKENS_PER_REQUEST) and combined with every local ledger. The batch is refused when
-`est_cost > min(ceiling - local_floor, ceiling - live_estimate)`, and whenever the live signal is
-missing or unparseable (fail closed: "could not verify" is a refusal, never a pass).
+`est_cost > min(ceiling - local_floor, ceiling - live_estimate)`, when a fresh 429 observation
+puts the model over the ceiling fraction, and whenever a signal is missing, unparseable or
+unreadable (fail closed).
 
 Over-refusal is the deliberate direction of error: a refused batch costs a rerun tomorrow; an
 over-spend burns the shared quota that production draws on.
@@ -26,6 +27,7 @@ over-spend burns the shared quota that production draws on.
 from __future__ import annotations
 
 import json
+import re
 import time
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
@@ -39,6 +41,12 @@ DAILY_TOKEN_CEILING = 95_000  # 5% inside the 100K/model/UTC-day self-imposed bu
 # the rest.
 PESSIMISTIC_TOKENS_PER_REQUEST = 1_000
 LEDGER_WINDOW_SECONDS = 24 * 3600
+# The ceiling is a fraction of the nominal 100K/day budget; a 429 reports the model's REAL limit
+# (200000 for gpt-oss-120b on 2026-10-08), so the observation check compares used/limit to this.
+CEILING_FRACTION = DAILY_TOKEN_CEILING / 100_000
+OBSERVATION_TTL_SECONDS = 24 * 3600
+# Local state, gitignored in the root .gitignore; never committed.
+OBSERVATION_PATH = Path(__file__).resolve().parent / "results" / ".groq_tpd_observations.json"
 _REQUIRED_HEADERS = (
     "x-ratelimit-limit-requests",
     "x-ratelimit-remaining-requests",
@@ -80,6 +88,97 @@ def parse_live_signal(headers: Mapping[str, str] | None) -> LiveSignal | None:
     if lim_req <= 0 or lim_tok <= 0 or rem_req < 0 or rem_tok < 0 or rem_req > lim_req:
         return None
     return LiveSignal(lim_req, rem_req, lim_tok, rem_tok)
+
+
+_TPD_RE = re.compile(
+    r"tokens per day \(TPD\)\D*?Limit\s+(\d+),\s*Used\s+(\d+),\s*Requested\s+(\d+)", re.I
+)
+_RETRY_RE = re.compile(r"try again in\s+((?:\d+(?:\.\d+)?[hms](?![a-z])\s*)+)", re.I)
+
+
+def parse_tpd_429(text: str) -> tuple[int, int, int] | None:
+    """(limit, used, requested) from a Groq TPD 429 body, else None (never a default)."""
+    m = _TPD_RE.search(text or "")
+    return (int(m[1]), int(m[2]), int(m[3])) if m else None
+
+
+def parse_retry_after(text: str) -> float | None:
+    """Seconds from 'Please try again in 2m12.19s' (h/m/s parts), else None. A hint only."""
+    m = _RETRY_RE.search(text or "")
+    if not m:
+        return None
+    parts = re.findall(r"(\d+(?:\.\d+)?)([hms])(?![a-z])", m[1].lower())
+    return sum(float(v) * {"h": 3600, "m": 60, "s": 1}[u] for v, u in parts) if parts else None
+
+
+@dataclass(frozen=True)
+class TpdObservation:
+    model: str
+    ts: float
+    limit: int
+    used: int
+    requested: int
+    retry_after_s: float | None = None
+
+    def refusal(self, est_cost: int, now: float, fraction: float = CEILING_FRACTION) -> str | None:
+        """Reason to refuse, or None. Observations older than 24h no longer count."""
+        if now - self.ts > OBSERVATION_TTL_SECONDS:
+            return None
+        if self.limit <= 0 or (self.used + est_cost) / self.limit > fraction:
+            return (
+                f"TPD 429 observed {(now - self.ts) / 3600:.1f}h ago: used {self.used}/"
+                f"{self.limit} (+ est {est_cost}) exceeds {fraction:.0%} (rolling; fail closed)"
+            )
+        return None
+
+
+def _read_observations(path: Path) -> dict[str, TpdObservation]:
+    """Missing file = no observations. An unreadable file RAISES (fail closed, not 'none seen')."""
+    if not path.exists():
+        return {}
+    text = path.read_text(encoding="utf-8")
+    if not text.strip():
+        return {}
+    return {m: TpdObservation(**v) for m, v in json.loads(text).items()}
+
+
+def record_tpd_observation(
+    model: str, text: str, *, now: float | None = None, path: Path = OBSERVATION_PATH
+) -> TpdObservation | None:
+    """If `text` is a TPD 429 body, persist it as the model's latest observation (newest wins)."""
+    parsed = parse_tpd_429(text)
+    if parsed is None:
+        return None
+    obs = TpdObservation(
+        model, time.time() if now is None else now, *parsed, retry_after_s=parse_retry_after(text)
+    )
+    try:
+        current = _read_observations(path)
+    except (ValueError, TypeError, KeyError):
+        current = {}  # corrupt file: replaced by this fresher, authoritative observation
+    current[model] = obs
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps({k: vars(v) for k, v in current.items()}, indent=2) + "\n", encoding="utf-8"
+    )
+    return obs
+
+
+def check_persisted_floor(
+    est_cost_by_model: Mapping[str, int], *, now: float | None = None, path: Path = OBSERVATION_PATH
+) -> dict[str, str]:
+    """{model: refusal reason} from persisted 429 observations. No network. Unreadable => refuse."""
+    now = time.time() if now is None else now
+    try:
+        obs = _read_observations(path)
+    except (ValueError, TypeError, KeyError, OSError):
+        return {m: "TPD observation file unreadable (fail closed)" for m in est_cost_by_model}
+    out = {}
+    for model, est in est_cost_by_model.items():
+        reason = obs[model].refusal(est, now) if model in obs else None
+        if reason:
+            out[model] = reason
+    return out
 
 
 @dataclass
@@ -129,10 +228,14 @@ def evaluate_model(
     *,
     ceiling: int = DAILY_TOKEN_CEILING,
     tokens_per_request: int = PESSIMISTIC_TOKENS_PER_REQUEST,
+    floor_reason: str | None = None,
 ) -> ModelHeadroom:
     """Pure decision for one model. Refuses unless BOTH headrooms cover `est_cost`."""
     r = ModelHeadroom(model, est_cost, local_used, live, ceiling)
     r.ceiling_headroom = ceiling - local_used
+    if floor_reason:
+        r.reason = floor_reason
+        return r
     if live is None:
         r.reason = "live rate-limit headers missing or unparseable (fail closed)"
         return r
@@ -156,6 +259,7 @@ def evaluate(
     *,
     ceiling: int = DAILY_TOKEN_CEILING,
     tokens_per_request: int = PESSIMISTIC_TOKENS_PER_REQUEST,
+    floors: Mapping[str, str] | None = None,
 ) -> HeadroomReport:
     report = HeadroomReport()
     for model, est in est_cost_by_model.items():
@@ -167,6 +271,7 @@ def evaluate(
                 live_by_model.get(model),
                 ceiling=ceiling,
                 tokens_per_request=tokens_per_request,
+                floor_reason=(floors or {}).get(model),
             )
         )
     return report
@@ -235,17 +340,23 @@ def preflight(
     live_by_model: Mapping[str, LiveSignal | None] | None = None,
     api_key: str | None = None,
     ceiling: int = DAILY_TOKEN_CEILING,
+    observation_path: Path = OBSERVATION_PATH,
 ) -> HeadroomReport:
     """Run before every batch. Raises HeadroomRefusedError unless every model has headroom.
 
     `live_by_model` is injectable for tests; otherwise each model is probed with `api_key`
     (loaded from app settings by the caller -- never printed here).
     """
+    floors = check_persisted_floor(est_cost_by_model, path=observation_path)
     live: dict[str, LiveSignal | None] = dict(live_by_model or {})
     if live_by_model is None:
         for model in est_cost_by_model:
+            if model in floors:
+                continue  # already refused by a 429 observation; spend no probe call
             live[model] = probe_live_signal(model, api_key) if api_key else None
-    report = evaluate(est_cost_by_model, local_used_by_model or {}, live, ceiling=ceiling)
+    report = evaluate(
+        est_cost_by_model, local_used_by_model or {}, live, ceiling=ceiling, floors=floors
+    )
     if not report.ok:
         raise HeadroomRefusedError(
             "Groq headroom check REFUSED the batch:\n" + report.summary(), report
