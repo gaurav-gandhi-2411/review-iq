@@ -124,3 +124,100 @@ def test_unknown_base_fails_open_and_builds(repo: Path) -> None:
     git(repo, "remote", "remove", "origin")
     git(repo, "update-ref", "-d", "refs/remotes/origin/main")
     assert run(repo, VERCEL_GIT_PREVIOUS_SHA="0" * 40) == 1
+
+
+# --- Vercel's real clone shape (S18 Z4a): shallow, one branch, no origin/main, no previous sha ---
+
+
+def vercel_clone(
+    tmp_path: Path, *, depth: int, keep_origin: bool, feature_files: list[str]
+) -> Path:
+    """Remote with main (incl. a recent web/ change on main) + a feature branch, then the clone
+    Vercel makes: `git clone --depth=N --branch feature`, which has no origin/main ref."""
+    remote = tmp_path / "remote.git"
+    git(tmp_path, "init", "-q", "--bare", "-b", "main", str(remote))
+    seed = tmp_path / "seed"
+    git(tmp_path, "clone", "-q", str(remote), str(seed))
+    git(seed, "checkout", "-q", "-b", "main")
+    commit(seed, "web/src/App.tsx", "v1")
+    commit(seed, "README.md", "r1")
+    commit(seed, "web/src/MainRecent.tsx", "a web change that landed on main just before the PR")
+    git(seed, "push", "-q", "origin", "main")
+    git(seed, "checkout", "-q", "-b", "feature")
+    for i, rel in enumerate(feature_files):
+        commit(seed, rel, f"pr {i}")
+    git(seed, "push", "-q", "origin", "feature")
+    clone = tmp_path / "vercel"
+    git(
+        tmp_path,
+        "clone",
+        "-q",
+        f"--depth={depth}",
+        "--branch",
+        "feature",
+        remote.as_uri(),
+        str(clone),
+    )
+    assert git(clone, "rev-parse", "--is-shallow-repository") == "true"
+    assert git(clone, "branch", "-r", "--list", "origin/main") == ""
+    (clone / "web" / "scripts").mkdir(parents=True, exist_ok=True)
+    shutil.copy(SCRIPT, clone / "web" / "scripts" / "vercel-ignore.sh")
+    if not keep_origin:
+        git(clone, "remote", "remove", "origin")
+    return clone
+
+
+def test_shallow_clone_with_working_origin_fetches_base_and_skips_docs_only(
+    tmp_path: Path,
+) -> None:
+    clone = vercel_clone(
+        tmp_path, depth=2, keep_origin=True, feature_files=["docs/a.md", "docs/b.md"]
+    )
+    assert run(clone) == 0
+
+
+def test_shallow_no_remote_docs_only_window_is_skipped(tmp_path: Path) -> None:
+    # The PR 267 shape: nothing to fetch from, previous sha unset; the cloned commits are docs.
+    clone = vercel_clone(
+        tmp_path, depth=3, keep_origin=False, feature_files=["docs/a.md", "docs/b.md"]
+    )
+    assert run(clone) == 0
+
+
+def test_shallow_no_remote_web_change_in_pr_builds(tmp_path: Path) -> None:
+    clone = vercel_clone(
+        tmp_path, depth=3, keep_origin=False, feature_files=["docs/a.md", "web/src/New.tsx"]
+    )
+    assert run(clone) == 1
+
+
+def test_shallow_no_remote_web_change_on_main_inside_window_overbuilds_not_skips(
+    tmp_path: Path,
+) -> None:
+    # Documented trade-off: the window cannot tell main web/ change from the PR web/ change.
+    clone = vercel_clone(tmp_path, depth=3, keep_origin=False, feature_files=["docs/a.md"])
+    assert run(clone) == 1
+
+
+def test_shallow_public_url_base_is_exact_when_origin_is_missing(tmp_path: Path) -> None:
+    clone = vercel_clone(tmp_path, depth=3, keep_origin=False, feature_files=["docs/a.md"])
+    remote = tmp_path / "remote.git"
+    assert run(clone, VERCEL_IGNORE_PUBLIC_URL=remote.as_uri()) == 0
+
+
+def test_shallow_public_url_base_still_builds_a_real_web_change(tmp_path: Path) -> None:
+    clone = vercel_clone(tmp_path, depth=3, keep_origin=False, feature_files=["web/src/New.tsx"])
+    remote = tmp_path / "remote.git"
+    assert run(clone, VERCEL_IGNORE_PUBLIC_URL=remote.as_uri()) == 1
+
+
+def test_depth_one_clone_has_no_window_and_fails_open(tmp_path: Path) -> None:
+    clone = vercel_clone(tmp_path, depth=1, keep_origin=False, feature_files=["docs/a.md"])
+    assert run(clone) == 1
+
+
+def test_production_deploy_never_skips_on_the_shallow_window_guess(tmp_path: Path) -> None:
+    clone = vercel_clone(
+        tmp_path, depth=3, keep_origin=False, feature_files=["docs/a.md", "docs/b.md"]
+    )
+    assert run(clone, VERCEL_ENV="production") == 1

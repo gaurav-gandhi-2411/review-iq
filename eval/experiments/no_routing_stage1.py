@@ -700,6 +700,20 @@ def main(argv: list[str] | None = None) -> int:
     os.environ["EVAL_CASSETTE_MODE"] = args.mode
     cassette_module.CASSETTES_PATH = CASSETTE_PATH
     settings = get_settings()
+    if args.mode == "record":
+        # Offline check of the persisted 429 floor (eval/quota_guard.py): refuse a model that a
+        # recent TPD 429 showed to be near-exhausted. No probe call is made here.
+        from eval.quota_guard import check_persisted_floor
+
+        refused = check_persisted_floor(
+            {
+                settings.groq_model_small: EST_TOKENS_PER_CALL,
+                settings.groq_model_large: EST_TOKENS_PER_CALL,
+            }
+        )
+        if refused:
+            print(f"REFUSED by persisted TPD 429 observation: {refused}")
+            return 2
     outcome = asyncio.run(
         run_stage(
             items,
