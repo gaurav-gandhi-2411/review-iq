@@ -654,7 +654,13 @@ async def test_resume_after_partial_drain_and_zero_cost_dedup(
     calls (cache hit in _run_extraction_v2 via input_hash).
     """
     org_a, _org_b = two_orgs
-    run_marker = f"proof4-{uuid.uuid4().hex[:10]}"
+    # Letters only: the production sanitizer's phone regex redacts digit runs, and a uuid hex
+    # marker that is digit-heavy (~15% of draws, measured 2987/20000) gets rewritten to
+    # "[PHONE]" before the prompt is built, so `run_marker in prompt` never matched and the
+    # counting stub reported 0 instead of 5 (the "flake" the CI deselect was hiding, S19 Z10).
+    run_marker = "proof4-" + uuid.uuid4().hex[:10].translate(
+        str.maketrans("0123456789", "ghijklmnop")
+    )
     texts = [f"{run_marker} unique review body number {i} padding text" for i in range(5)]
     job_id = _seed_job(org_a, texts)
 

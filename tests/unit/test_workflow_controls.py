@@ -176,13 +176,48 @@ def test_gitleaksignore_does_not_grow_silently() -> None:
     assert len(lines) <= 20, f"{len(lines)} fingerprints; was 20 when this bound was set"
 
 
+def _executed_workflow_text(workflows_dir: Path) -> str:
+    """Only what a workflow EXECUTES: every step's `run:` script minus shell comment lines.
+
+    S19 Z8 induction: the previous version matched a script's name against the raw YAML text,
+    so a new scripts/check_x.py mentioned only in a `#` comment of ci.yml counted as wired.
+    """
+    chunks: list[str] = []
+    for path in sorted(workflows_dir.glob("*.yml")):
+        for _job_id, _job, step in _steps(_load(path)):
+            for line in str(step.get("run") or "").splitlines():
+                if not line.lstrip().startswith("#"):
+                    chunks.append(line)
+    return "\n".join(chunks)
+
+
+def test_executed_workflow_text_ignores_yaml_and_shell_comments(tmp_path: Path) -> None:
+    (tmp_path / "wf.yml").write_text(
+        "# scripts/check_in_yaml_comment.py\n"
+        "on: push\n"
+        "jobs:\n"
+        "  j:\n"
+        "    runs-on: ubuntu-latest\n"
+        "    steps:\n"
+        "      - run: |\n"
+        "          # scripts/check_in_shell_comment.py\n"
+        "          python scripts/check_really_run.py\n",
+        encoding="utf-8",
+    )
+    text = _executed_workflow_text(tmp_path)
+    assert "check_really_run.py" in text
+    assert "check_in_yaml_comment.py" not in text
+    assert "check_in_shell_comment.py" not in text
+
+
 def test_every_check_script_is_wired_into_a_workflow_or_declared_manual() -> None:
     """A guard script no workflow runs guards nothing. scripts/check_*.py and probe_*.py must
-    be referenced by a workflow, or listed here with the reason it is a manual tool."""
+    be EXECUTED by a workflow step (a comment does not count), or listed here with the reason
+    it is a manual tool."""
     manual = {
         "check_site_responsive.py": "developer browser check, documented as not a CI gate",
     }
-    workflow_text = "\n".join(f.read_text(encoding="utf-8") for f in WORKFLOWS_DIR.glob("*.yml"))
+    workflow_text = _executed_workflow_text(WORKFLOWS_DIR)
     scripts = sorted(
         [*(REPO_ROOT / "scripts").glob("check_*.py"), *(REPO_ROOT / "scripts").glob("probe_*.py")]
     )
@@ -193,8 +228,102 @@ def test_every_check_script_is_wired_into_a_workflow_or_declared_manual() -> Non
         assert name not in workflow_text, f"{name} is now wired in; drop it from `manual`"
 
 
-@pytest.mark.parametrize("job", ["lint-and-test", "web-build"])
-def test_required_status_check_jobs_exist_in_ci_yml(job: str) -> None:
-    # Branch protection requires exactly these two contexts (verified with the GitHub API in
-    # docs/decorative-control-sweep.md). If a job is renamed the required check never reports.
-    assert job in _load(WORKFLOWS_DIR / "ci.yml")["jobs"]
+# Branch protection's required contexts -> the (workflow file, job id) that must report them.
+# Read with `gh api repos/gaurav-gandhi-2411/review-iq/branches/main/protection` on 2026-10-07
+# (S19 Z8); the earlier version of this test pinned only the first two of the five. A renamed job
+# makes its required context never report, which blocks every merge until protection is edited.
+REQUIRED_CONTEXTS: dict[str, tuple[str, str]] = {
+    "lint-and-test": ("ci.yml", "lint-and-test"),
+    "web-build": ("ci.yml", "web-build"),
+    "manifest-provenance": ("ci.yml", "manifest-provenance"),
+    "diff-scan": ("secret-scan.yml", "diff-scan"),
+    "bypassrls-check": ("bypassrls-container-check.yml", "bypassrls-check"),
+}
+
+
+@pytest.mark.parametrize("context", sorted(REQUIRED_CONTEXTS))
+def test_required_status_check_jobs_exist(context: str) -> None:
+    workflow, job = REQUIRED_CONTEXTS[context]
+    assert job in _load(WORKFLOWS_DIR / workflow)["jobs"]
+
+
+# (workflow, test id or file) -> why a pytest step may skip it. A deselected test is a control that
+# runs nowhere: S19 audit F9 found the forged-JWT tenant-isolation vector deselected in
+# pre-cutover-verification.yml, so the isolation suite looked green without it. A new entry needs
+# the reason the test CANNOT run in CI, not that it failed.
+PYTEST_SKIP_ALLOWLIST: dict[tuple[str, str], str] = {
+    ("ci.yml", "tests/integration"): (
+        "needs a live Postgres; run by the pre-cutover-verification.yml job (ephemeral Postgres)"
+    ),
+    ("security-bypassrls-check.yml", "-k not ..."): (
+        "TestCrossOrgSweepFunctionsSeeEveryOrg needs a superuser connection this job must not "
+        "hold; the class runs in pre-cutover-verification.yml's public-service pass"
+    ),
+    ("pre-cutover-verification.yml", "tests/integration/test_resend_e2e.py"): (
+        "sends real email through a real Resend key; CI has none"
+    ),
+    ("pre-cutover-verification.yml", "tests/integration/test_admin.py"): (
+        "needs SERVICE_ROLE=admin; run in the separate admin-service step of the same job"
+    ),
+    ("pre-cutover-verification.yml", "tests/integration/test_account_deletion.py"): (
+        "needs SERVICE_ROLE=admin; run in the separate admin-service step of the same job"
+    ),
+}
+
+
+def _pytest_skips(run: str) -> list[str]:
+    """Every --deselect / --ignore / `-k "not ..."` target in a pytest command (shell
+    line continuations joined). A --deselect target is reported as the full test id; an
+    --ignore target as the path."""
+    skips: list[str] = []
+    for line in run.replace("\\\n", " ").splitlines():
+        if "pytest" not in line:
+            continue
+        skips += [
+            m.group(1)
+            for m in re.finditer(r"""--(?:deselect|ignore(?:-glob)?)[ =]["']?([^\s"']+)""", line)
+        ]
+        if re.search(r"""-k\s+["']?\s*not\b""", line):
+            skips.append("-k not ...")
+    return skips
+
+
+def test_pytest_steps_do_not_deselect_tests_without_an_allowlisted_reason() -> None:
+    for name, wf in _all_workflows().items():
+        for _job_id, _job, step in _steps(wf):
+            for target in _pytest_skips(step.get("run") or ""):
+                assert (name, target) in PYTEST_SKIP_ALLOWLIST, (
+                    f"{name} step {step.get('name')!r} skips {target!r} "
+                    "(--deselect / --ignore / -k 'not ...'): a skipped test is a control that "
+                    "runs nowhere (S19 audit F9). Fix the test or add an allowlisted reason."
+                )
+
+
+def test_pytest_skip_allowlist_has_no_stale_entries_and_admin_files_run() -> None:
+    """Every allowlist entry must still be skipped by its workflow, and the two files skipped
+    from the public pass only because they need SERVICE_ROLE=admin must run in the admin step."""
+    seen: set[tuple[str, str]] = set()
+    admin_run = ""
+    for name, wf in _all_workflows().items():
+        for _job_id, _job, step in _steps(wf):
+            run = step.get("run") or ""
+            seen |= {(name, t) for t in _pytest_skips(run)}
+            if (
+                name == "pre-cutover-verification.yml"
+                and (step.get("env") or {}).get("SERVICE_ROLE") == "admin"
+            ):
+                admin_run += run
+    assert seen == set(PYTEST_SKIP_ALLOWLIST), seen ^ set(PYTEST_SKIP_ALLOWLIST)
+    assert "tests/integration/test_admin.py" in admin_run
+    assert "tests/integration/test_account_deletion.py" in admin_run
+
+
+def test_pytest_skip_detector_catches_each_shape() -> None:
+    cmd = (
+        "uv run pytest tests/ -v \\\n"
+        '  --deselect "tests/a.py::T::t" \\\n'
+        "  --ignore=tests/b.py \\\n"
+        "  -k 'not slow'"
+    )
+    assert _pytest_skips(cmd) == ["tests/a.py::T::t", "tests/b.py", "-k not ..."]
+    assert _pytest_skips("uv run pytest tests/ -m integration --no-cov") == []
