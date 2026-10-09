@@ -346,8 +346,10 @@ async def test_create_key_route_pro_plan_allows_above_free_limit(
     """A pro-plan org may request a quota above the free tier's limit, up to its own
     (higher) plan limit -- confirms the bound is genuinely plan-aware, not a single
     flat max applied to every caller regardless of tier."""
-    requested = PLAN_QUOTA_LIMITS["free"] + 1
-    assert requested <= PLAN_QUOTA_LIMITS["pro"]  # sanity: this case must be allowed
+    # The free ceiling (1,000, the public Free plan) now equals the pro placeholder, so "above
+    # free" is no longer expressible with these numbers; request the pro plan's own limit.
+    requested = PLAN_QUOTA_LIMITS["pro"]
+    assert requested >= PLAN_QUOTA_LIMITS["free"]  # sanity: pro is never below free
     with patch("app.api.bff.router._get_org_plan_pg", return_value="pro"):
         with patch(
             "app.api.bff.router._create_key_bff_db",

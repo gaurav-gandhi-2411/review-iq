@@ -153,16 +153,17 @@ class CorrectionRequest(BaseModel):
 # the real per-plan ceiling is enforced in bff_create_key() below, since it depends on the
 # caller's org (Pydantic field constraints can't see request context beyond the field itself).
 #
-# PLAN_QUOTA_LIMITS' numbers are NOT a sourced pricing decision. "free": 100 is the one figure
-# GG has actually committed to (docs/specs/wave1-commercialization.md S0#1: "Free tier is
-# asserted (100 extractions/mo)"). "pro"/"enterprise" reuse this field's pre-existing (buggy)
-# default of 1000 as a placeholder ceiling -- the real Stripe/billing work that was meant to
-# define differentiated tiers (PR #43, "minimum-viable Stripe billing") was merged into a
+# "free": 1000 is sourced from the public Free plan (docs/pricing.json tiers.free.quota, shown
+# on the site); scripts/check_pricing_consistency.py fails CI if it diverges, so change the
+# number in docs/pricing.json first. "pro"/"enterprise" are NOT a sourced pricing decision: they
+# reuse this field's pre-existing (buggy) default of 1000 as a placeholder ceiling, keyed by DB
+# plan names that do not map to the public tiers (Starter/Growth/Scale). The real Stripe/billing
+# work that was meant to define differentiated tiers (PR #43, "minimum-viable Stripe billing") was merged into a
 # stacked branch (fix/wave1-s0-bypassrls-remediation) that never actually reached main despite
 # GitHub showing it "merged" -- see PLAN.md's stacked-PR-merge-discipline entry. Revisit these
 # two numbers once real billing tiers are decided and actually land on main.
 PLAN_QUOTA_LIMITS: dict[str, int] = {
-    "free": 100,
+    "free": 1000,
     "pro": 1000,
     "enterprise": 1000,
 }
