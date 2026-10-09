@@ -429,7 +429,7 @@ def list_orgs_with_weekly_digest_pg() -> list[str]:
 
     Same mechanism and constraints as list_orgs_with_daily_digest_pg: calls the narrow
     SECURITY DEFINER function public.list_orgs_with_weekly_digest() (migration
-    20261009000001), never a raw SELECT on alert_preferences. Before that migration is applied
+    20261009000003), never a raw SELECT on alert_preferences. Before that migration is applied
     the function does not exist and this raises, which the sweep endpoint surfaces as an
     error rather than as "no orgs".
     """

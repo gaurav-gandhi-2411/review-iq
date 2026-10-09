@@ -26,7 +26,7 @@ Behaviour worth knowing:
 ## Order of operations (human steps)
 
 1. Merge the PR.
-2. Apply migration `supabase/migrations/20261009000001_alert_preferences_weekly_digest.sql`
+2. Apply migration `supabase/migrations/20261009000003_alert_preferences_weekly_digest.sql`
    via the normal `supabase/push.py` path. Until then, saving `weekly_digest` fails with a
    database constraint error and the weekly sweep errors out (fail closed); daily is unaffected.
 3. Set `DASHBOARD_URL` on the Cloud Run service to the web app origin (for example the Vercel app
