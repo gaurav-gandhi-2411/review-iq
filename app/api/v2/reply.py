@@ -194,7 +194,7 @@ async def draft_batch(
             "upstream LLM unavailable for all reviews in batch",
             retry_after=retry_after,
         )
-        payload = json.loads(failed.body)
+        payload = json.loads(bytes(failed.body))
         payload["failed_items"] = failed_items
         return JSONResponse(status_code=503, content=payload, headers=dict(failed.headers))
 
