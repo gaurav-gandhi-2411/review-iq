@@ -371,3 +371,16 @@ async def test_200_event_csv_burst_sends_at_most_two_emails(db: FakeAlertLog) ->
     assert len(ch.sent) == 2
     assert "199 more urgent reviews" in ch.sent[1].body_text
     assert db.pending(ORG) == []
+
+
+@pytest.mark.asyncio
+async def test_suppressed_recipient_is_checked_before_coalescing(
+    db: FakeAlertLog, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Bounce/complaint suppression runs first: no email, no slot consumed, nothing deferred."""
+    monkeypatch.setattr("app.core.alerts.storage.is_email_suppressed_pg", lambda _email: True)
+    ch = FakeChannel()
+    for i in range(3):
+        await _alert(ch, f"r{i}")
+    assert ch.sent == []
+    assert db.rows == []

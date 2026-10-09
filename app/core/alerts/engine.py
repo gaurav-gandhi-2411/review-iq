@@ -36,6 +36,7 @@ from app.core.alerts.storage import (
     get_org_notification_email_pg,
     get_preference_pg,
     is_already_alerted_pg,
+    recipient_is_suppressed,
     record_alert_sent_pg,
 )
 from app.core.alerts.unsubscribe import build_unsubscribe_url
@@ -293,7 +294,14 @@ async def evaluate_and_alert(
             )
             continue
 
-        # 4b. Coalescing: at most N immediate urgent emails per org per window (config). Past
+        # 4b. Never mail an address that hard-bounced or complained (Resend webhook). Checked
+        # BEFORE coalescing so a suppressed recipient neither consumes a slot nor accrues
+        # deferred events.
+        if await recipient_is_suppressed(recipient_email, org_id=org_id):
+            log.info("alert.recipient_suppressed", org_id=org_id, event_type=event_type_str)
+            continue
+
+        # 4c. Coalescing: at most N immediate urgent emails per org per window (config). Past
         # the cap the event is recorded and rolled into one summary email -- never dropped.
         # Runs after the pref/recipient gates so a disabled or unsubscribed org neither
         # consumes a slot nor accrues deferred events.
