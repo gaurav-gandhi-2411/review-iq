@@ -179,6 +179,12 @@ class Settings(BaseSettings):
     #   endpoints from 11 upstream providers (see SecondaryProvider's docstring).
     secondary_provider_api_key: str = Field(default="", alias="SECONDARY_PROVIDER_API_KEY")
     secondary_provider_model: str = Field(default="", alias="SECONDARY_PROVIDER_MODEL")
+    # Which backend the secondary failover uses. "openrouter" (default) keeps the ZDR-only
+    # OpenRouter path above. "groq" makes the secondary a SECOND Groq account (key =
+    # SECONDARY_PROVIDER_API_KEY, model = a Groq model id, e.g. openai/gpt-oss-20b): Groq to
+    # Groq failover, both ZDR-capable, zero cost. It is a failover only (used after the
+    # primary fails), never a load-spreading rotation across accounts: see ADR 0038.
+    secondary_provider_kind: str = Field(default="openrouter", alias="SECONDARY_PROVIDER_KIND")
 
     # CORS allowlist — comma-separated origins (env: ALLOWED_ORIGINS).
     # Default covers local dev: both localhost and 127.0.0.1 aliases on :5173
