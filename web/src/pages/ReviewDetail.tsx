@@ -7,7 +7,7 @@ import Layout from '../components/Layout'
 import {
   draftReply,
   type Review, type ReplyDraft, type ReplyTone,
-  QuotaError, ServiceWarmingError,
+  QuotaError, ServiceWarmingError, ReplyDraftingDisabledError,
 } from '../lib/api'
 import { useFilterContext } from '../lib/filterContext'
 
@@ -86,6 +86,7 @@ export default function ReviewDetailPage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const isDisabled = draftError instanceof ReplyDraftingDisabledError
   const isCapError = draftError instanceof QuotaError || draftError instanceof ServiceWarmingError
 
   return (
@@ -218,7 +219,7 @@ export default function ReviewDetailPage() {
           </div>
 
           {/* Draft button */}
-          {!draft && (
+          {!draft && !isDisabled && (
             <button
               onClick={handleDraftReply}
               disabled={draftLoading}
@@ -233,7 +234,19 @@ export default function ReviewDetailPage() {
           )}
 
           {/* Graceful failure — the critical path */}
-          {draftError && (
+          {isDisabled && (
+            <div role="status" className="rounded-lg border p-4 bg-amber-light border-amber/20">
+              <p className="text-sm font-sans font-medium text-charcoal mb-1">
+                Reply drafting is temporarily unavailable
+              </p>
+              <p className="text-sm font-sans text-charcoal-light">
+                We have paused AI reply drafting while we improve its accuracy. Your reviews and
+                insights are unaffected.
+              </p>
+            </div>
+          )}
+
+          {draftError && !isDisabled && (
             <div className={`rounded-lg border p-4 ${isCapError ? 'bg-amber-light border-amber/20' : 'bg-red-50 border-red-100'}`}>
               <p className="text-sm font-sans font-medium text-charcoal mb-1">
                 {isCapError ? 'Drafting is busy' : 'Reply drafting unavailable'}
