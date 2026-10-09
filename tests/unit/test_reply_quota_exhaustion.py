@@ -13,6 +13,7 @@ exercise the engine -> router exception contract. These tests patch only the Gro
 
 from __future__ import annotations
 
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 import groq
@@ -51,6 +52,14 @@ _HINGLISH = {
     "tone": "apologetic",
     "extraction": _EXTRACTION,
 }
+
+
+@pytest.fixture(autouse=True)
+def _reply_drafting_on(monkeypatch: pytest.MonkeyPatch) -> None:
+    """These tests exercise drafting, so the ENABLE_REPLY_DRAFTING kill switch is set on."""
+    monkeypatch.setattr(
+        "app.api.v2.reply.get_settings", lambda: SimpleNamespace(enable_reply_drafting=True)
+    )
 
 
 def _rate_limit_error(retry_after: str | None = "321") -> groq.RateLimitError:
