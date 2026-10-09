@@ -70,7 +70,7 @@ Unstructured customer reviews → queryable structured insights.
 
 1. **Get an API key.** Sign in at the Samidha Reviews dashboard (Google sign-in via
    Supabase). Your first `riq_live_*` key is issued automatically on first
-   login — see `POST /auth/provision` below. Free tier: 100 requests/month.
+   login — see `POST /auth/provision` below. Free tier: 1,000 requests/month.
 2. **Authenticate** every `/v2/*` request with either header (Bearer takes
    precedence if both are sent):
    - `Authorization: Bearer riq_live_<32 hex chars>`
@@ -110,7 +110,7 @@ print(resp.json())
 | All endpoints, per IP | 30 requests/minute (`RATE_LIMIT_PER_MINUTE`) |
 | `POST /auth/provision`, per IP | 10 requests/minute |
 | `POST /demo/extract`, per IP | 5 requests/minute |
-| Monthly quota, per API key | 100 requests/month on the free tier |
+| Monthly quota, per API key | 1,000 requests/month on the free tier |
 
 The per-minute limit applies regardless of authentication and returns `429`
 from the rate limiter. The monthly quota is tracked per API key (not per IP)
