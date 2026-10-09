@@ -125,13 +125,13 @@ async def draft_single(
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=str(exc),
-            headers={"Retry-After": "60"},
+            headers={"Retry-After": str(exc.retry_after)},
         ) from exc
     except RuntimeError as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="upstream LLM unavailable",
-            headers={"Retry-After": "30"},
+            headers={"Retry-After": str(getattr(exc, "retry_after", 30))},
         ) from exc
 
 
@@ -164,18 +164,20 @@ async def draft_batch(
     ensure_reply_drafting_enabled()
     results: list[ReplyDraft] = []
     failed = 0
+    retry_after = 30
     for req in body.reviews:
         try:
             results.append(await _run_draft(req, ctx))
         except (RuntimeError, VernacularModelUnavailableError) as exc:
             log.error("reply.batch_item_failed", org_id=ctx.org_id, error=str(exc))
             failed += 1
+            retry_after = max(retry_after, getattr(exc, "retry_after", 0))
 
     if failed == len(body.reviews):
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="upstream LLM unavailable for all reviews in batch",
-            headers={"Retry-After": "30"},
+            headers={"Retry-After": str(retry_after)},
         )
 
     log.info(
