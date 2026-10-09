@@ -124,7 +124,7 @@ def evaluate(flags: list[BatchDefectFlag], ground_truth: dict[str, Any]) -> dict
                 "is_control": rec.get("is_control", False),
                 "expected_flag": expected,
                 "actually_flagged": len(product_flags) > 0,
-                "flags": [(f.topic, f.confidence) for f in product_flags],
+                "flags": [(f.topic, round(f.confidence, 3)) for f in product_flags],
             }
         )
 

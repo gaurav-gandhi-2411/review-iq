@@ -236,16 +236,26 @@ def test_v2_reviews_missing_key_returns_401() -> None:
 
 @pytest.mark.integration
 def test_v2_extract_token_counts_recorded_in_db() -> None:
-    """After a real extraction, tokens_in and tokens_out are > 0 in usage_records."""
+    """After an extraction, the LLM boundary's token counts land in usage_records.
+
+    S19 Z10: this used to make a real, unmocked Groq call (so CI deselected it). What it
+    proves is the accounting path (LLM result -> update_usage_tokens -> usage_records row,
+    tokens_used == in + out), not the provider, so the LLM boundary is stubbed with known,
+    distinct token counts and the DB row is asserted EXACTLY (stronger than the old > 0).
+    """
     org = _create_org("tokens")
     key = _create_key(org["id"])
 
     try:
-        r = client.post(
-            "/v2/extract",
-            json={"text": "This is a genuinely great product, highly recommend it to everyone!"},
-            headers=_api_headers(key["raw_key"]),
-        )
+        with patch("app.api.v2.extract.extract_with_llm", new_callable=AsyncMock) as mock_llm:
+            mock_llm.return_value = _mock_llm_output()  # tokens_in=150, tokens_out=80
+            r = client.post(
+                "/v2/extract",
+                json={
+                    "text": "This is a genuinely great product, highly recommend it to everyone!"
+                },
+                headers=_api_headers(key["raw_key"]),
+            )
         assert r.status_code == 200, r.text
 
         # Check the usage_record written during auth
@@ -265,8 +275,8 @@ def test_v2_extract_token_counts_recorded_in_db() -> None:
 
         assert row is not None, "No usage_record found"
         tokens_in, tokens_out, tokens_used = row
-        assert tokens_in > 0, f"tokens_in should be > 0, got {tokens_in}"
-        assert tokens_out > 0, f"tokens_out should be > 0, got {tokens_out}"
+        assert tokens_in == 150, f"tokens_in should be 150, got {tokens_in}"
+        assert tokens_out == 80, f"tokens_out should be 80, got {tokens_out}"
         assert tokens_used == tokens_in + tokens_out, (
             "tokens_used should equal tokens_in + tokens_out"
         )

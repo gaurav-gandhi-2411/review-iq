@@ -82,7 +82,10 @@ exclude = ["tests/", "eval/"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
-addopts = "--cov=app --cov-report=term-missing -v --cov-fail-under=60 -m 'not integration' --ignore=tests/benchmark"
+# tests/benchmark/ is collected (S19 F8: it was ignored here and in ci.yml and so never ran).
+# benchmark/**/test_*.py live beside their code and are NOT under testpaths: they share the
+# module name `common`, so CI runs each directory as its own pytest invocation.
+addopts = "--cov=app --cov-report=term-missing -v --cov-fail-under=60 -m 'not integration'"
 markers = [
     "integration: tests requiring a live Supabase/Postgres connection (run with -m integration)",
 ]

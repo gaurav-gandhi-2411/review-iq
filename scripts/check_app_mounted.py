@@ -27,11 +27,42 @@ from playwright.sync_api import sync_playwright
 APP_URL = "https://app.samidhareviews.xyz/"
 MOUNT_MARKER_TEXT = "Samidha Reviews"  # web/src/pages/Login.tsx's <h1>, root path is public
 TIMEOUT_MS = 15_000
+# web/src/main.tsx renders this <h1> ("Samidha Reviews is misconfigured") when a required VITE_*
+# variable is missing, INSTEAD of the app. It contains MOUNT_MARKER_TEXT, so the substring match
+# below passed it: the control reported "mounted" for the exact failure it was built to catch
+# (S19 Z8 induction: a real `vite build` with no VITE_* env -> "OK ... mounted"). Pinned to the
+# string in main.tsx by tests/unit/test_check_app_mounted.py.
+MISCONFIGURED_MARKER_TEXT = "is misconfigured"
 
 
 def _fail(message: str) -> int:
     print(f"FAIL: {message}")
     return 1
+
+
+def mount_problem(
+    url: str, root_html: str | None, heading_count: int, misconfigured_count: int
+) -> str | None:
+    """Why the page does not count as a mounted app, or None if it does. Pure, unit-tested."""
+    if not root_html or not root_html.strip():
+        return (
+            f"{url} returned 200 but #root is empty after networkidle -- React "
+            "never mounted (this is exactly the missing-env-var failure mode found on "
+            "the Cloudflare copy of this app)."
+        )
+    if misconfigured_count > 0:
+        return (
+            f"{url} rendered the app's own configuration-error screen "
+            f"('{MISCONFIGURED_MARKER_TEXT}', web/src/main.tsx): a required VITE_* variable is "
+            "missing in this deployment, so the app did NOT start."
+        )
+    if heading_count == 0:
+        return (
+            f"{url} rendered something into #root, but the expected "
+            f"'{MOUNT_MARKER_TEXT}' heading is not present -- mounted into an "
+            "unexpected state, investigate before trusting this deploy."
+        )
+    return None
 
 
 def main() -> int:
@@ -42,22 +73,14 @@ def main() -> int:
             page.goto(APP_URL, wait_until="networkidle", timeout=TIMEOUT_MS)
             root_html = page.eval_on_selector("#root", "el => el.innerHTML")
             heading_count = page.locator("h1", has_text=MOUNT_MARKER_TEXT).count()
+            misconfigured_count = page.locator("h1", has_text=MISCONFIGURED_MARKER_TEXT).count()
             browser.close()
     except (PlaywrightError, PlaywrightTimeoutError) as exc:
         return _fail(f"could not verify {APP_URL} mounted: {exc}")
 
-    if not root_html or not root_html.strip():
-        return _fail(
-            f"{APP_URL} returned 200 but #root is empty after networkidle -- React "
-            "never mounted (this is exactly the missing-env-var failure mode found on "
-            "the Cloudflare copy of this app)."
-        )
-    if heading_count == 0:
-        return _fail(
-            f"{APP_URL} rendered something into #root, but the expected "
-            f"'{MOUNT_MARKER_TEXT}' heading is not present -- mounted into an "
-            "unexpected state, investigate before trusting this deploy."
-        )
+    problem = mount_problem(APP_URL, root_html, heading_count, misconfigured_count)
+    if problem:
+        return _fail(problem)
 
     print(f"OK: {APP_URL} mounted React and rendered '{MOUNT_MARKER_TEXT}'.")
     return 0

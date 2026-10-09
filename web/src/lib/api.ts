@@ -12,6 +12,9 @@ export class QuotaError extends Error {
 export class DemoRateLimitError extends Error {
   constructor() { super("You've hit the demo's rate limit — wait a minute and try again.") }
 }
+export class ReplyDraftingDisabledError extends Error {
+  constructor() { super('Reply drafting is temporarily unavailable.') }
+}
 export class BffError extends Error {
   status: number
   constructor(status: number, message: string) {
@@ -38,6 +41,11 @@ async function bff<T>(path: string, init: RequestInit = {}): Promise<T> {
       ...init.headers,
     },
   })
+  if (res.status === 503) {
+    // Typed 503s (e.g. the reply kill switch) must not be mistaken for a cold start.
+    const body = await res.clone().json().catch(() => null)
+    if (body?.detail?.code === 'reply_drafting_disabled') throw new ReplyDraftingDisabledError()
+  }
   if (res.status === 503 || res.status === 502) throw new ServiceWarmingError()
   if (res.status === 429) throw new QuotaError()
   if (!res.ok) {
