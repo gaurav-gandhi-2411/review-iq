@@ -1,0 +1,207 @@
+{
+ "generated_at": "2026-10-09T14:08:08Z",
+ "git_sha": "9b5356ab110deb6244f53bf7995ec9c806bbd7ab",
+ "command": "python eval/experiments/english_labelling_free_panel.py run; ... report",
+ "script": "eval/experiments/english_labelling_free_panel.py",
+ "seed": 42,
+ "rubric_version": "v1.1",
+ "rubric_tie_break": "If a review names a cost, safety, health or deadline consequence it is at least medium; use high only when the reviewer states ongoing harm or an unmet urgent need; when torn between two adjacent levels choose the lower one.",
+ "rubric_note": "tie-break added AFTER seeing pilot alpha 0.618: exploratory, not confirmatory",
+ "panel": [
+  "nvidia/nemotron-3-super-120b-a12b:free",
+  "google/gemma-4-31b-it:free",
+  "dots-studio/dots-3-note-preview:free"
+ ],
+ "models_verified": {
+  "nvidia/nemotron-3-super-120b-a12b:free": {
+   "listed": true,
+   "free_suffix": true,
+   "response_format": true
+  },
+  "google/gemma-4-31b-it:free": {
+   "listed": true,
+   "free_suffix": true,
+   "response_format": true
+  },
+  "dots-studio/dots-3-note-preview:free": {
+   "listed": true,
+   "free_suffix": true,
+   "response_format": true
+  }
+ },
+ "item_ids": [
+  "s20en-0061",
+  "s20en-0028",
+  "s20en-0022",
+  "s20en-0068",
+  "s20en-0038",
+  "s20en-0036",
+  "s20en-0035",
+  "s20en-0029",
+  "s20en-0027",
+  "s20en-0055",
+  "s20en-0026",
+  "s20en-0058",
+  "s20en-0048",
+  "s20en-0023"
+ ],
+ "pilot_item_overlap": [],
+ "requests_used": 44,
+ "max_requests": 44,
+ "stopped": "request_cap",
+ "errors_by_type": {
+  "rate_limit_429": 11,
+  "body_error": 3,
+  "URLError": 6
+ },
+ "valid_labels_per_model": {
+  "nvidia/nemotron-3-super-120b-a12b:free": 8,
+  "google/gemma-4-31b-it:free": 0,
+  "dots-studio/dots-3-note-preview:free": 7
+ },
+ "unparseable_per_model": {
+  "dots-studio/dots-3-note-preview:free": 2
+ },
+ "empty_content_http200_per_model": {
+  "dots-studio/dots-3-note-preview:free": 5,
+  "nvidia/nemotron-3-super-120b-a12b:free": 2
+ },
+ "unanimous_items_among_usable": {
+  "urgency": 6,
+  "sentiment": 6
+ },
+ "stats": {
+  "n_items_usable_ge2_models": 6,
+  "urgency_nominal": {
+   "alpha": 1.0,
+   "bootstrap_ci95_lo_hi_nresamples": null
+  },
+  "urgency_ordinal": {
+   "alpha": 1.0,
+   "bootstrap_ci95_lo_hi_nresamples": null
+  },
+  "sentiment_nominal": {
+   "alpha": 1.0,
+   "bootstrap_ci95_lo_hi_nresamples": null
+  }
+ },
+ "pilot_urgency_alpha": 0.618,
+ "per_item_labels": {
+  "s20en-0061": {
+   "nvidia/nemotron-3-super-120b-a12b:free": {
+    "sentiment": "mixed",
+    "urgency": "medium"
+   },
+   "google/gemma-4-31b-it:free": null,
+   "dots-studio/dots-3-note-preview:free": {
+    "sentiment": "mixed",
+    "urgency": "medium"
+   }
+  },
+  "s20en-0028": {
+   "nvidia/nemotron-3-super-120b-a12b:free": {
+    "sentiment": "positive",
+    "urgency": "low"
+   },
+   "google/gemma-4-31b-it:free": null,
+   "dots-studio/dots-3-note-preview:free": {
+    "sentiment": "positive",
+    "urgency": "low"
+   }
+  },
+  "s20en-0022": {
+   "nvidia/nemotron-3-super-120b-a12b:free": {
+    "sentiment": "mixed",
+    "urgency": "medium"
+   },
+   "google/gemma-4-31b-it:free": null,
+   "dots-studio/dots-3-note-preview:free": null
+  },
+  "s20en-0068": {
+   "nvidia/nemotron-3-super-120b-a12b:free": {
+    "sentiment": "mixed",
+    "urgency": "low"
+   },
+   "google/gemma-4-31b-it:free": null,
+   "dots-studio/dots-3-note-preview:free": {
+    "sentiment": "mixed",
+    "urgency": "low"
+   }
+  },
+  "s20en-0038": {
+   "nvidia/nemotron-3-super-120b-a12b:free": null,
+   "google/gemma-4-31b-it:free": null,
+   "dots-studio/dots-3-note-preview:free": null
+  },
+  "s20en-0036": {
+   "nvidia/nemotron-3-super-120b-a12b:free": null,
+   "google/gemma-4-31b-it:free": null,
+   "dots-studio/dots-3-note-preview:free": null
+  },
+  "s20en-0035": {
+   "nvidia/nemotron-3-super-120b-a12b:free": {
+    "sentiment": "positive",
+    "urgency": "low"
+   },
+   "google/gemma-4-31b-it:free": null,
+   "dots-studio/dots-3-note-preview:free": {
+    "sentiment": "positive",
+    "urgency": "low"
+   }
+  },
+  "s20en-0029": {
+   "nvidia/nemotron-3-super-120b-a12b:free": {
+    "sentiment": "mixed",
+    "urgency": "low"
+   },
+   "google/gemma-4-31b-it:free": null,
+   "dots-studio/dots-3-note-preview:free": null
+  },
+  "s20en-0027": {
+   "nvidia/nemotron-3-super-120b-a12b:free": {
+    "sentiment": "positive",
+    "urgency": "low"
+   },
+   "google/gemma-4-31b-it:free": null,
+   "dots-studio/dots-3-note-preview:free": {
+    "sentiment": "positive",
+    "urgency": "low"
+   }
+  },
+  "s20en-0055": {
+   "nvidia/nemotron-3-super-120b-a12b:free": {
+    "sentiment": "negative",
+    "urgency": "medium"
+   },
+   "google/gemma-4-31b-it:free": null,
+   "dots-studio/dots-3-note-preview:free": {
+    "sentiment": "negative",
+    "urgency": "medium"
+   }
+  },
+  "s20en-0026": {
+   "nvidia/nemotron-3-super-120b-a12b:free": null,
+   "google/gemma-4-31b-it:free": null,
+   "dots-studio/dots-3-note-preview:free": null
+  },
+  "s20en-0058": {
+   "nvidia/nemotron-3-super-120b-a12b:free": null,
+   "google/gemma-4-31b-it:free": null,
+   "dots-studio/dots-3-note-preview:free": null
+  },
+  "s20en-0048": {
+   "nvidia/nemotron-3-super-120b-a12b:free": null,
+   "google/gemma-4-31b-it:free": null,
+   "dots-studio/dots-3-note-preview:free": {
+    "sentiment": "positive",
+    "urgency": "low"
+   }
+  },
+  "s20en-0023": {
+   "nvidia/nemotron-3-super-120b-a12b:free": null,
+   "google/gemma-4-31b-it:free": null,
+   "dots-studio/dots-3-note-preview:free": null
+  }
+ },
+ "total_cost_usd_reported": 0
+}

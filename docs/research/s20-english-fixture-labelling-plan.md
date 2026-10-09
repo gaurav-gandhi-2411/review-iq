@@ -295,3 +295,67 @@ USD 5 at N = 285.
 
 Command to resume after a decision (reads the key from Secret Manager into the process only):
 `python eval/experiments/english_labelling_pilot.py label --n 71` then `... report`.
+
+## Amendment 2026-10-09: urgency rubric v1.1
+
+Added AFTER seeing the pilot's urgency alpha of 0.618, so any alpha measured with it is
+**exploratory, not confirmatory**. One sentence is appended to the urgency definition in the judge
+prompt (inserted after the `"low"` line); nothing else in the rubric changed:
+
+> If a review names a cost, safety, health or deadline consequence it is at least medium; use high
+> only when the reviewer states ongoing harm or an unmet urgent need; when torn between two adjacent
+> levels choose the lower one.
+
+Applied in `eval/experiments/english_labelling_free_panel.py` (`v11_user_template()`, which patches
+`panel.JUDGE_USER_TEMPLATE` in memory and asserts the anchor occurs exactly once; `panel.py` itself
+is untouched). The pre-registered 0.67 floor is not moved.
+
+## Free-panel re-run (OpenRouter `:free` models only, USD 0)
+
+Provenance: `eval/results/s20_english_labelling_free_panel.json` (script
+`eval/experiments/english_labelling_free_panel.py`, seed 42, run 2026-10-09, git SHA recorded in the
+JSON). Commands: `... free_panel.py run --canary`, then `... run`, then `... report`.
+
+- Panel (disjoint from OpenAI/Meta; each id confirmed present in `GET /api/v1/models`, ending in
+  `:free`, with `response_format`): `nvidia/nemotron-3-super-120b-a12b:free`,
+  `google/gemma-4-31b-it:free`, `dots-studio/dots-3-note-preview:free`. No provider pinning, because
+  `:free` endpoints are not ZDR; the held-out reviews are CC0 and no customer text was sent.
+- Items: 14 drawn with `random.Random(42)` from the 51 pool items (first 71 of `selection.json`)
+  not in the pilot's 20; the code asserts zero overlap with the pilot's item ids (result:
+  `pilot_item_overlap: []`). All 14 received at least one request, but only 11 got any text response before the request cap.
+- Requests: 44 of the 44 cap (plus about 5 probe requests earlier the same day, so near the believed
+  50/day limit). Outcome of the 44: 17 text responses (15 parsed valid, 2 dots outputs truncated at
+  1500 tokens and failed schema validation), 7 HTTP 200 with EMPTY content (dots 5, nemotron 2),
+  20 errors (gemma 429 x11, dots `body_error` x3, `URLError` x6: nemotron 3, dots 2, gemma 1). No
+  daily-cap error was seen; the run stopped at the self-imposed cap.
+- Valid labels per model: nemotron 8, gemma **0**, dots 7. Gemma was rate limited on every attempt
+  (upstream 429); after its first item exhausted 3 tries it was skipped (circuit breaker) and only
+  re-probed once per item in a spare-quota pass, still 429. So this is effectively a 2-model panel.
+- Items with at least 2 valid labels: **6** of 14. Urgency unanimous 6 of 6 (4 low, 2 medium),
+  sentiment unanimous 6 of 6.
+- Krippendorff alpha on those 6 items (VERIFIED: `python
+  eval/experiments/english_labelling_free_panel.py report`, read from the JSON `stats`): urgency
+  nominal 1.0, urgency ordinal 1.0, sentiment nominal 1.0. Bootstrap CI NOT computed: n = 6 is below
+  the n >= 8 rule.
+- Reading: 1.0 on 6 items from 2 raters is a feasibility signal at best. It is NOT distinguishable
+  from the pilot's 0.618 (pilot interval 0.18 to 0.85, n = 20, 3 raters): with 6 units and no
+  middle-class boundary cases in the sample, perfect agreement is expected often even when the true
+  alpha is near 0.6. The pilot's disagreement came from Qwen vs Mistral/DeepSeek, and none of those
+  judges was in this panel, so this run does not test whether the tie-break sentence resolves that
+  split. It does NOT show that v1.1 helps, and it is not a certification.
+
+### Daily-cap arithmetic (BELIEVED limit 50 requests/day across all `:free` models)
+
+| Target | Labels (3 models) | Requests, zero failures | Days at 50/day | Days at observed yield |
+|---|---|---|---|---|
+| 143 items | 429 | 429 | 9 | about 25 (yield 15 valid / 44 requests = 34 percent) |
+| 283 items | 849 | 849 | 17 | about 50 |
+
+A 2-model panel needs 286 to 566 requests, 6 to 12 days at zero failures. It is not sensible as the
+labelling panel: two raters cannot form a majority, so every disagreement is unresolved (the ADR 0032
+convention), and the observed free-model failure rate (empty or truncated output, upstream 429) makes
+the zero-failure day counts unreachable. The free tier is fine for feasibility probes like this one
+but not for the full fixture set. Options for GG (none taken here): the paid cheap panel already
+costed above (USD 0.06 to 0.12 for 145 to 285 items at metered rates), or a one-off credit purchase
+that raises the free daily limit (BELIEVED per OpenRouter docs, not checked here). This run spent
+USD 0 (`total_cost_usd_reported` 0 in the JSON).
