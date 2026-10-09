@@ -213,6 +213,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allow_origins=settings.allowed_origins,
         allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["Authorization", "Content-Type"],
+        # Without this the browser hides every non-safelisted response header from fetch():
+        # the web app saw 503s but could never read Retry-After (S19 Q3c).
+        expose_headers=["Retry-After", "X-Correlation-ID", "X-Failed-Items"],
         allow_credentials=False,
     )
 

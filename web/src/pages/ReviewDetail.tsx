@@ -10,6 +10,7 @@ import {
   QuotaError, ServiceWarmingError, ReplyDraftingDisabledError,
 } from '../lib/api'
 import { useFilterContext } from '../lib/filterContext'
+import { describeWait } from '../lib/retryAfter'
 
 // --- Constants ---
 
@@ -252,9 +253,11 @@ export default function ReviewDetailPage() {
                 {isCapError ? 'Drafting is busy' : 'Reply drafting unavailable'}
               </p>
               <p className="text-sm font-sans text-charcoal-light">
-                {isCapError
-                  ? 'The reply service handles high request volume — try again in a minute.'
-                  : draftError.message}
+                {draftError instanceof ServiceWarmingError
+                  ? `The reply service is at capacity — ${describeWait(draftError.retryAfterSeconds)}.`
+                  : isCapError
+                    ? 'The reply service handles high request volume — try again in a minute.'
+                    : draftError.message}
               </p>
               <button
                 onClick={handleDraftReply}
