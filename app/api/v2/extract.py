@@ -117,7 +117,7 @@ async def _run_extraction_v2(
 
     t0 = datetime.utcnow()
     llm_output, model_name, latency_ms, tokens_in, tokens_out, degraded = await extract_with_llm(
-        user_prompt, allow_gemini_fallback=False
+        user_prompt
     )
     # Detected language takes precedence over LLM's self-reported language.
     llm_output.language = detected_lang

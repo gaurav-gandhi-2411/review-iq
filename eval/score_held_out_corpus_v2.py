@@ -103,9 +103,7 @@ async def _extract(text: str, lang: str) -> dict[str, Any] | None:
     sanitized, _ = sanitize(text)
     wrapped = wrap_for_llm(sanitized)
     user_prompt = build_prompt(wrapped, lang)
-    llm_output, _model, _latency_ms, _tin, _tout, _degraded = await extract_with_llm(
-        user_prompt, allow_gemini_fallback=False
-    )
+    llm_output, _model, _latency_ms, _tin, _tout, _degraded = await extract_with_llm(user_prompt)
     return llm_output.model_dump()
 
 

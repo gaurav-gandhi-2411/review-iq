@@ -45,7 +45,7 @@ corrected (see that row).
 | Secret name (kebab-case) | Cloud Run env var | What it is |
 |--------------------------|-------------------|------------|
 | `groq-api-key` | `GROQ_API_KEY` | Groq LLM API key (primary inference) |
-| `gemini-api-key` | `GEMINI_API_KEY` | Google Gemini API key (dev fallback) |
+| `gemini-api-key` | `GEMINI_API_KEY` | RETIRED (S17, ADR 0035): no application consumer; unbind and delete after GG confirms |
 | `supabase-database-url` | `SUPABASE_DATABASE_URL` | Supabase pooler URL, port 6543 (transaction mode). Connects as `review_iq_app` (non-superuser, member of `authenticated`). **As of the 2026-08-01 BYPASSRLS remediation cutover, this role no longer holds BYPASSRLS** — the 2026-07-26 description below was accurate at the time but is now stale; see `supabase/migrations/20260801000001_role_separation_bypassrls_remediation.sql` and `ops/runbooks/bypassrls-remediation-cutover.md` for the current state and why. Rotating this secret's password also requires `ALTER ROLE review_iq_app WITH PASSWORD '...'` on the database first. |
 | `admin-password-hash` | `ADMIN_PASSWORD_HASH` | argon2id hash of admin HTTP Basic password |
 | `review-iq-admin-database-url` | `ADMIN_DATABASE_URL` (review-iq-admin service only) | Added 2026-08-01. Connects as `review_iq_admin` (BYPASSRLS, member of `authenticated`) — a genuinely separate role from `review_iq_app`, used only by the private `review-iq-admin` Cloud Run service (IAM-gated, not the public service). Before this cutover, `ADMIN_DATABASE_URL` pointed at this same `supabase-database-url` secret by accident — see the cutover runbook. |

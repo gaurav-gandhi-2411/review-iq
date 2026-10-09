@@ -1,0 +1,74 @@
+[
+  {
+    "id": "calh-001",
+    "text": "Maine yeh mixer grinder pichhle mahine liya tha, bahut badhiya chalta hai. Dobara yahi company ka product kharidunga.",
+    "expected": {"sentiment": "positive", "urgency": "low", "buy_again": true, "language": "hi-en"},
+    "why_unambiguous": "Latin-script Hindi/English code-mix (maine/pichhle mahine/badhiya mixed with mixer grinder/product/company); pure praise; explicit repurchase intent (dobara ... kharidunga = will buy again); no defect."
+  },
+  {
+    "id": "calh-002",
+    "text": "Bilkul bekaar phone hai, teen din mein hi screen kharab ho gayi. Mujhe mera paisa wapas chahiye, refund do abhi.",
+    "expected": {"sentiment": "negative", "urgency": "high", "language": "hi-en"},
+    "why_unambiguous": "Entirely negative; explicit refund demand (paisa wapas chahiye, refund do abhi) which is urgency=high by definition; Latin-script Hindi/English mix."
+  },
+  {
+    "id": "calh-003",
+    "text": "Geyser on karte hi current laga aur bijli ka jhatka mila, haath mein dard ho gaya. Bahut khatarnak hai, please isse mat kharido.",
+    "expected": {"sentiment": "negative", "urgency": "high", "language": "hi-en"},
+    "why_unambiguous": "Electric shock with physical pain (bijli ka jhatka, haath mein dard) is a physical-harm/safety hazard, urgency=high by definition; the reviewer warns others off; Latin-script Hindi/English mix."
+  },
+  {
+    "id": "calh-004",
+    "text": "यह मिक्सर बहुत खराब है, दो दिन में ही खराब हो गया। मैं इसे दोबारा कभी नहीं खरीदूंगा।",
+    "expected": {"language": "hi", "sentiment": "negative", "buy_again": false},
+    "why_unambiguous": "Entirely Devanagari script (language=hi); entirely negative (बहुत खराब, दो दिन में ही खराब हो गया); explicit statement that they will never buy it again (दोबारा कभी नहीं खरीदूंगा)."
+  },
+  {
+    "id": "calh-005",
+    "text": "Delivery time par aa gayi aur packing bhi achhi thi. Product theek-thaak hai, na zyada achha na bura.",
+    "expected": {"sentiment": "neutral", "urgency": "low", "language": "hi-en"},
+    "why_unambiguous": "The reviewer states outright that the product is neither good nor bad (na zyada achha na bura) with no complaint and no strong praise: neutral, no defect so urgency=low; Latin-script Hindi/English mix."
+  },
+  {
+    "id": "calh-006",
+    "text": "Sound quality ekdum mast hai lekin battery sirf do ghante chalti hai, yeh bahut badi problem hai.",
+    "expected": {"sentiment": "mixed", "language": "hi-en"},
+    "why_unambiguous": "One clearly positive element (sound quality ekdum mast) and one clearly negative element (battery sirf do ghante, bahut badi problem), which is the definition of mixed; Latin-script Hindi/English mix."
+  },
+  {
+    "id": "calh-007",
+    "text": "Is kurte ka kapda bahut soft hai aur fitting perfect hai. Maine do aur order kar diye hain.",
+    "expected": {"sentiment": "positive", "urgency": "low", "buy_again": true, "language": "hi-en"},
+    "why_unambiguous": "Pure praise (kapda bahut soft, fitting perfect); having ordered two more (do aur order kar diye) is explicit repurchase behaviour; Latin-script Hindi/English mix."
+  },
+  {
+    "id": "calh-008",
+    "text": "Charger ka wire garam hokar jal gaya aur chingari nikli, ghar mein aag lag sakti thi. Company ko turant action lena chahiye.",
+    "expected": {"sentiment": "negative", "urgency": "high", "language": "hi-en"},
+    "why_unambiguous": "Burning wire with sparks and an explicit fire risk (jal gaya, chingari, aag lag sakti thi) is a safety hazard, urgency=high by definition; demand for action; Latin-script Hindi/English mix."
+  },
+  {
+    "id": "calh-009",
+    "text": "Yeh kitaab bahut acchi hai, bachchon ko pasand aayi. Paisa vasool!",
+    "expected": {"sentiment": "positive", "urgency": "low", "language": "hi-en"},
+    "why_unambiguous": "Pure praise (bahut acchi, pasand aayi, paisa vasool), no defect so urgency=low; Latin-script Hindi/English mix."
+  },
+  {
+    "id": "calh-010",
+    "text": "बैटरी बहुत जल्दी खत्म हो जाती है लेकिन कैमरा शानदार है।",
+    "expected": {"language": "hi", "sentiment": "mixed"},
+    "why_unambiguous": "Entirely Devanagari script (language=hi); one clear negative (बैटरी बहुत जल्दी खत्म) and one clear positive (कैमरा शानदार), which is the definition of mixed."
+  },
+  {
+    "id": "calh-011",
+    "text": "Bluetooth baar baar disconnect ho jata hai, bahut irritating hai.",
+    "expected": {"sentiment": "negative", "urgency": "medium", "language": "hi-en"},
+    "why_unambiguous": "A concrete fixable defect (bluetooth repeatedly disconnecting) with no harm and no refund/return demand is urgency=medium by the rubric; negative tone (bahut irritating); Latin-script Hindi/English mix."
+  },
+  {
+    "id": "calh-012",
+    "text": "Main isse dobara nahi lunga, bilkul paise barbaad. Packaging bhi tooti hui thi.",
+    "expected": {"sentiment": "negative", "buy_again": false, "language": "hi-en"},
+    "why_unambiguous": "Explicit statement that they will not buy it again (dobara nahi lunga), entirely negative (paise barbaad, tooti hui packaging); Latin-script Hindi/English mix."
+  }
+]
