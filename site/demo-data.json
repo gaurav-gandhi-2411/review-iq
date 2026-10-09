@@ -72,7 +72,7 @@
       "category": "extraction",
       "lang_badge": "HI-EN",
       "title": "Hinglish / code-mixed review",
-      "description": "Code-mixed Hindi-English — the differentiator. Western tools mislabel this; Samidha Reviews parses 'apple k earphone ko competition de dega' correctly.",
+      "description": "Code-mixed Hindi-English — Samidha Reviews parses 'apple k earphone ko competition de dega' correctly.",
       "input_label": "Customer review",
       "input": "Superb earphone i like it.... and the sound is just awsome.... ye earphone apple k earphone ko competition de dega..... Not better than apple earphone... but km v nai hai apple k earphone se....",
       "input_annotation": "\"apple k earphone ko competition de dega\" = will compete with Apple earphones | \"km v nai hai\" = not less than",
@@ -106,7 +106,7 @@
       "category": "insights",
       "lang_badge": "TRENDS",
       "title": "Theme trends — by_language breakdown",
-      "description": "delivery_speed complaints appear only in Hinglish reviews — zero in English. This vernacular-only signal is invisible to English-only tools. Real API response from demo org (10 ingested reviews).",
+      "description": "delivery_speed complaints appear only in Hinglish reviews — zero in English. Real API response from demo org (10 ingested reviews).",
       "input_label": "API call",
       "input": "GET /v2/insights/trends?trend_of=topics&bucket=week&limit=5",
       "output": {

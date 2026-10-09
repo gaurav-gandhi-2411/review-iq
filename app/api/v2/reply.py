@@ -6,10 +6,11 @@ import asyncio
 import json
 
 import structlog
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.responses import JSONResponse
 
 from app.auth.api_key import ApiKeyContext, require_api_key
+from app.core.config import get_settings
 from app.core.metrics import REPLY_CACHE_HIT_TOTAL
 from app.core.reply.engine import VernacularModelUnavailableError, draft_reply
 from app.core.reply.errors import error_response, item_error_code, unexpected_error_response
@@ -22,6 +23,26 @@ log = structlog.get_logger(__name__)
 # In-memory reply cache keyed by "{org_id}:{review_hash+tone+brand+sig}".
 # Ephemeral (per-process), suitable for the stateless MVP.
 _DRAFT_CACHE: dict[str, ReplyDraft] = {}
+
+
+REPLY_DRAFTING_DISABLED_CODE = "reply_drafting_disabled"
+
+
+def ensure_reply_drafting_enabled() -> None:
+    """Raise a typed 503 when the ENABLE_REPLY_DRAFTING kill switch is off.
+
+    Must be called before any cache lookup or provider call. The detail is an object
+    ({"code", "message"}) so clients can branch on the machine code instead of parsing prose.
+    """
+    if get_settings().enable_reply_drafting:
+        return
+    raise HTTPException(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail={
+            "code": REPLY_DRAFTING_DISABLED_CODE,
+            "message": "Reply drafting is temporarily unavailable.",
+        },
+    )
 
 
 async def _run_draft(request: ReplyRequest, ctx: ApiKeyContext) -> ReplyDraft:
@@ -100,6 +121,7 @@ async def draft_single(
     grounded in the structured extraction of that review's cons and topics.
     Drafts are suggestions for human review — never auto-posted.
     """
+    ensure_reply_drafting_enabled()
     try:
         return await _run_draft(body, ctx)
     except VernacularModelUnavailableError as exc:
@@ -145,6 +167,7 @@ async def draft_batch(
     The body stays a plain list (backward compatible). A 503 (with the same list in `failed_items`)
     is returned only when every item fails.
     """
+    ensure_reply_drafting_enabled()
     results: list[ReplyDraft] = []
     failed_items: list[dict[str, int | str]] = []
     retry_after = 30

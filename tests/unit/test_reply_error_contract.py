@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 import groq
@@ -28,6 +29,14 @@ async def client() -> httpx.AsyncClient:
     ) as c:
         yield c
     app.dependency_overrides.clear()
+
+
+@pytest.fixture(autouse=True)
+def _reply_drafting_on(monkeypatch: pytest.MonkeyPatch) -> None:
+    """These tests exercise drafting, so the ENABLE_REPLY_DRAFTING kill switch is set on."""
+    monkeypatch.setattr(
+        "app.api.v2.reply.get_settings", lambda: SimpleNamespace(enable_reply_drafting=True)
+    )
 
 
 @pytest.fixture(autouse=True)

@@ -148,6 +148,14 @@ class Settings(BaseSettings):
         default=False, alias="ENABLE_FIELD_INJECTION_OUTPUT_CHECK"
     )
 
+    # Reply drafting kill switch (/bff/reply, /v2/reply, /v2/reply/batch) -- OFF by default.
+    # The drafter has been observed inventing support contact details (emails/phones) in
+    # customer-facing text. Re-enable only after the invented-details guardrail (PR #298,
+    # prompt v2.2) is merged AND a clean judge-scored eval; see PROMPTS.md "Reply drafting
+    # kill switch". When off the endpoints return 503 `reply_drafting_disabled` and make no
+    # provider call.
+    enable_reply_drafting: bool = Field(default=False, alias="ENABLE_REPLY_DRAFTING")
+
     # Tiered model names — both Groq (privacy-vetted)
     # Groq deprecated llama-3.1-8b-instant on 2026-08-16; openai/gpt-oss-20b is their
     # documented replacement, same fast/cheap tier (Item G1).
