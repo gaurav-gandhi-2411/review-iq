@@ -15,9 +15,13 @@ import hmac
 import structlog
 from fastapi import APIRouter, Header, HTTPException, status
 
+from app.core.alerts.coalescer import flush_deferred_urgent_for_org
 from app.core.alerts.digest import run_digest_for_org
 from app.core.alerts.engine import _get_default_channel
-from app.core.alerts.storage import list_orgs_with_daily_digest_pg
+from app.core.alerts.storage import (
+    list_orgs_with_daily_digest_pg,
+    list_orgs_with_deferred_urgent_pg,
+)
 from app.core.config import get_settings
 
 router = APIRouter(prefix="/internal", tags=["internal"])
@@ -72,6 +76,22 @@ async def run_digest_sweep(
             log.error("digest_trigger.org_failed", org_id=org_id, exc_info=True)
             failed_orgs.append(org_id)
 
+    # Urgent roll-ups (app/core/alerts/coalescer.py): events held back by the per-org cap that
+    # no later urgent event has carried out yet. A missing resolver function (migration
+    # 20261009000001 not applied yet) must not break the digest sweep -- the rows just wait.
+    rollup_counts: dict[str, int] = {}
+    try:
+        rollup_orgs = await asyncio.to_thread(list_orgs_with_deferred_urgent_pg)
+    except Exception:
+        log.error("digest_trigger.rollup_enumeration_failed", exc_info=True)
+        rollup_orgs = []
+    for org_id in rollup_orgs:
+        try:
+            rollup_counts[org_id] = len(await flush_deferred_urgent_for_org(org_id, channel))
+        except Exception:
+            log.error("digest_trigger.rollup_org_failed", org_id=org_id, exc_info=True)
+            failed_orgs.append(org_id)
+
     total_events_sent = sum(sent_counts.values())
     log.info(
         "digest_trigger.sweep_complete",
@@ -84,5 +104,6 @@ async def run_digest_sweep(
         "orgs_processed": len(org_ids),
         "total_events_sent": total_events_sent,
         "sent_per_org": sent_counts,
+        "urgent_rollups_per_org": rollup_counts,
         "failed_orgs": failed_orgs,
     }

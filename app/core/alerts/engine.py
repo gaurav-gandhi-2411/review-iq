@@ -16,6 +16,14 @@ import structlog
 from app.core.alerts.channels.base import AlertMessage, Channel, ChannelError
 from app.core.alerts.channels.fake import LogChannel
 from app.core.alerts.channels.resend_channel import ResendChannel
+from app.core.alerts.coalescer import (
+    acquire_urgent_slot,
+    defer_urgent_event,
+    mark_delivered,
+    pending_deferred,
+    release_urgent_slot,
+    rollup_lines,
+)
 from app.core.alerts.rules import (
     DEFAULT_THRESHOLDS,
     AlertEvent,
@@ -285,13 +293,34 @@ async def evaluate_and_alert(
             )
             continue
 
+        # 4b. Coalescing: at most N immediate urgent emails per org per window (config). Past
+        # the cap the event is recorded and rolled into one summary email -- never dropped.
+        # Runs after the pref/recipient gates so a disabled or unsubscribed org neither
+        # consumes a slot nor accrues deferred events.
+        coalesce = event.event_type == AlertEventType.HIGH_URGENCY and review_id is not None
+        claim_token: str | None = None
+        rolled_up: list[dict[str, Any]] = []
+        if coalesce:
+            assert review_id is not None  # narrowed by `coalesce`; keeps mypy strict happy
+            send_now, claim_token = await acquire_urgent_slot(org_id)
+            if not send_now:
+                await defer_urgent_event(org_id, review_id, event)
+                continue
+            rolled_up = await pending_deferred(org_id, exclude_review_id=review_id)
+
         # 5. Format message and deliver via channel.
         unsubscribe_url = build_unsubscribe_url(org_id)
+        body_text = _format_body(org_id, review_id, extraction, event, unsubscribe_url)
+        subject = _format_subject(event)
+        if rolled_up:
+            # Fold earlier held-back urgent reviews into this email (one email, not two).
+            subject = f"{subject} (+{len(rolled_up)} more)"
+            body_text = "\n".join([body_text, "", *rollup_lines(rolled_up, org_id)])
         message = AlertMessage(
             org_id=org_id,
             event=event,
-            subject=_format_subject(event),
-            body_text=_format_body(org_id, review_id, extraction, event, unsubscribe_url),
+            subject=subject,
+            body_text=body_text,
             recipient_email=recipient_email,
             unsubscribe_url=unsubscribe_url,
         )
@@ -304,6 +333,15 @@ async def evaluate_and_alert(
                 event_type=event_type_str,
                 exc_info=True,
             )
+            if coalesce:
+                # Give the slot back and keep the event eligible for the next roll-up/digest
+                # sweep. Before coalescing a failed immediate send was simply lost.
+                assert review_id is not None
+                await release_urgent_slot(org_id, claim_token)
+                try:
+                    await defer_urgent_event(org_id, review_id, event)
+                except Exception:
+                    log.error("alert.defer_after_failure_failed", org_id=org_id, exc_info=True)
             continue
 
         # 6. Record in alert_log (dedupe source for future calls).
@@ -314,6 +352,9 @@ async def evaluate_and_alert(
             event_type_str,
             dict(event.details),
         )
+
+        if rolled_up:
+            await mark_delivered(org_id, rolled_up)
 
         sent.append(event)
         log.info(
