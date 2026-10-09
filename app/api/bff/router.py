@@ -531,13 +531,13 @@ async def bff_draft_reply(
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Reply service temporarily unavailable. Please try again shortly.",
-            headers={"Retry-After": "60"},
+            headers={"Retry-After": str(exc.retry_after)},
         ) from exc
     except RuntimeError as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Reply service temporarily unavailable. Please try again shortly.",
-            headers={"Retry-After": "30"},
+            headers={"Retry-After": str(getattr(exc, "retry_after", 30))},
         ) from exc
 
     await asyncio.to_thread(
