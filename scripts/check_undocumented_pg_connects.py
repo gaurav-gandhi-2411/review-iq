@@ -75,6 +75,11 @@ ALLOWLIST: dict[tuple[str, str], str] = {
         "Documented cross-org scheduled-sweep query (digest batcher) -- same pattern as "
         "storage_pg.py::list_orgs_with_dated_extractions_pg."
     ),
+    ("app/core/alerts/storage.py", "list_orgs_with_deferred_urgent_pg"): (
+        "Cross-org scheduled-sweep query (urgent roll-up flush in the digest sweep) -- goes "
+        "through public.list_orgs_with_deferred_urgent_alerts(), a narrow SECURITY DEFINER "
+        "function (20261009000002); same pattern as list_orgs_with_daily_digest_pg."
+    ),
     ("app/core/storage_pg.py", "list_orgs_with_retained_mode_pg"): (
         "Session 12 P2c: documented cross-org scheduled-sweep query (retention-window "
         "purge job) -- same pattern as list_orgs_with_daily_digest_pg. Goes through "

@@ -570,6 +570,12 @@ UNDO_CASES: list[tuple[str, str, str]] = [
         "email_suppressions_functions_definer_owned_and_app_only",
         "GRANT EXECUTE ON FUNCTION public.is_email_suppressed(text) TO anon",
     ),
+    # S20 M3b-2: urgent-alert coalescing sweep resolver.
+    (
+        "20261009000002_urgent_deferred_sweep.sql",
+        "deferred_urgent_sweep_function_hardened",
+        "GRANT EXECUTE ON FUNCTION public.list_orgs_with_deferred_urgent_alerts() TO authenticated",
+    ),
 ]
 
 
