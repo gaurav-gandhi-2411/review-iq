@@ -229,8 +229,16 @@ def record_alert_sent_pg(
 # ---------------------------------------------------------------------------
 
 
-def get_last_digest_watermark_pg(org_id: str, event_type: str) -> datetime | None:
+def get_last_digest_watermark_pg(
+    org_id: str, event_type: str, cadence: str | None = None
+) -> datetime | None:
     """Return the most recent alert_log.sent_at for (org_id, event_type), or None.
+
+    cadence=None (the daily digest) keeps the original query unchanged. A non-None cadence
+    (weekly) restricts to alert_log rows whose details->>'cadence' matches, so a weekly run's
+    watermark is not advanced by daily/immediate rows and vice versa. Rows written before
+    cadence existed carry no key and never match a cadence filter; the weekly sweep then falls
+    back to org creation and relies on the per-review is_already_alerted_pg exclusion.
 
     Used by the digest batcher as the lower bound ("since") for scanning
     extractions/authenticity_audits. This watermark is safe to use for that
@@ -252,10 +260,17 @@ def get_last_digest_watermark_pg(org_id: str, event_type: str) -> datetime | Non
     try:
         cur = conn.cursor()
         _set_tenant(cur, org_id)
-        cur.execute(
-            "SELECT MAX(sent_at) FROM public.alert_log WHERE org_id = %s AND event_type = %s",
-            (org_id, event_type),
-        )
+        if cadence is None:
+            cur.execute(
+                "SELECT MAX(sent_at) FROM public.alert_log WHERE org_id = %s AND event_type = %s",
+                (org_id, event_type),
+            )
+        else:
+            cur.execute(
+                "SELECT MAX(sent_at) FROM public.alert_log "
+                "WHERE org_id = %s AND event_type = %s AND details->>'cadence' = %s",
+                (org_id, event_type, cadence),
+            )
         row = cur.fetchone()
         conn.commit()
         return row[0] if row else None
@@ -407,3 +422,64 @@ def list_orgs_with_daily_digest_pg() -> list[str]:
         raise
     finally:
         conn.close()
+
+
+def list_orgs_with_weekly_digest_pg() -> list[str]:
+    """Return distinct org_ids with at least one enabled weekly_digest preference.
+
+    Same mechanism and constraints as list_orgs_with_daily_digest_pg: calls the narrow
+    SECURITY DEFINER function public.list_orgs_with_weekly_digest() (migration
+    20261009000001), never a raw SELECT on alert_preferences. Before that migration is applied
+    the function does not exist and this raises, which the sweep endpoint surfaces as an
+    error rather than as "no orgs".
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT org_id FROM public.list_orgs_with_weekly_digest()")
+        rows = cur.fetchall()
+        conn.commit()
+        return [str(r[0]) for r in rows]
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def list_extraction_summaries_since_pg(org_id: str, since: datetime) -> list[dict[str, object]]:
+    """Return (urgency, topics, cons, created_at) for every extraction after `since`.
+
+    Feeds the weekly digest's week-over-week counts; aggregation is done in Python by
+    digest.compute_weekly_stats so the SQL stays a plain tenant-scoped read.
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+        cur.execute(
+            "SELECT urgency, topics, cons, created_at "
+            "FROM public.extractions WHERE org_id = %s AND created_at > %s "
+            "ORDER BY created_at",
+            (org_id, since),
+        )
+        rows = cur.fetchall()
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+    def _load(val: Any) -> list[str]:
+        if val is None:
+            return []
+        if isinstance(val, list):
+            return val
+        loaded: list[str] = json.loads(val)
+        return loaded
+
+    return [
+        {"urgency": r[0], "topics": _load(r[1]), "cons": _load(r[2]), "created_at": r[3]}
+        for r in rows
+    ]

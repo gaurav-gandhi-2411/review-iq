@@ -1,6 +1,7 @@
-"""POST /internal/digest/run — token-protected trigger for the daily digest sweep.
+"""POST /internal/digest/run — token-protected trigger for the daily or weekly digest sweep.
 
-Designed to be called once/day by a free scheduler (Cloud Scheduler HTTP target) hitting
+`?cadence=daily` (default) or `?cadence=weekly` selects which preference frequency is swept.
+Designed to be called once/day (daily) or once/week (weekly) by a free scheduler (Cloud Scheduler HTTP target) hitting
 this endpoint with the shared-secret token in a header — NOT a query param (avoid the
 token leaking into access logs/URLs, unlike the existing Pub/Sub pattern which uses a
 query param because Pub/Sub push subscriptions require that shape; this endpoint has no
@@ -15,9 +16,9 @@ import hmac
 import structlog
 from fastapi import APIRouter, Header, HTTPException, status
 
-from app.core.alerts.digest import run_digest_for_org
+from app.core.alerts.digest import Cadence, run_digest_for_org
 from app.core.alerts.engine import _get_default_channel
-from app.core.alerts.storage import list_orgs_with_daily_digest_pg
+from app.core.alerts.storage import list_orgs_with_daily_digest_pg, list_orgs_with_weekly_digest_pg
 from app.core.config import get_settings
 
 router = APIRouter(prefix="/internal", tags=["internal"])
@@ -49,8 +50,9 @@ def _verify_trigger_token(provided: str | None) -> None:
 @router.post("/digest/run")
 async def run_digest_sweep(
     x_digest_trigger_token: str | None = Header(default=None),
+    cadence: str = "daily",
 ) -> dict[str, object]:
-    """Iterate every org with an enabled daily_digest preference and run one digest cycle each.
+    """Iterate every org with an enabled digest preference for `cadence`, one digest cycle each.
 
     A single org's failure (DB error, Resend error not already swallowed inside
     run_digest_for_org) is caught and logged here so it can never abort the sweep for the
@@ -59,14 +61,32 @@ async def run_digest_sweep(
     """
     _verify_trigger_token(x_digest_trigger_token)
 
-    org_ids = await asyncio.to_thread(list_orgs_with_daily_digest_pg)
+    # Validated AFTER the token check (and by hand, not a Literal parameter) so an
+    # unauthenticated caller always gets 401/503, never a 422 that confirms the route.
+    if cadence not in ("daily", "weekly"):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="cadence must be 'daily' or 'weekly'.",
+        )
+    cadence_value: Cadence = "weekly" if cadence == "weekly" else "daily"
+
+    lister = (
+        list_orgs_with_weekly_digest_pg
+        if cadence_value == "weekly"
+        else (list_orgs_with_daily_digest_pg)
+    )
+    org_ids = await asyncio.to_thread(lister)
     channel = _get_default_channel()
 
     sent_counts: dict[str, int] = {}
     failed_orgs: list[str] = []
     for org_id in org_ids:
         try:
-            events = await run_digest_for_org(org_id, channel)
+            events = await (
+                run_digest_for_org(org_id, channel)
+                if cadence_value == "daily"
+                else run_digest_for_org(org_id, channel, cadence_value)
+            )
             sent_counts[org_id] = len(events)
         except Exception:
             log.error("digest_trigger.org_failed", org_id=org_id, exc_info=True)
@@ -75,12 +95,14 @@ async def run_digest_sweep(
     total_events_sent = sum(sent_counts.values())
     log.info(
         "digest_trigger.sweep_complete",
+        cadence=cadence_value,
         org_count=len(org_ids),
         total_events_sent=total_events_sent,
         failed_org_count=len(failed_orgs),
     )
     return {
         "ok": True,
+        "cadence": cadence_value,
         "orgs_processed": len(org_ids),
         "total_events_sent": total_events_sent,
         "sent_per_org": sent_counts,

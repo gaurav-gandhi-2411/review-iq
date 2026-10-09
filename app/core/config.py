@@ -301,6 +301,11 @@ class Settings(BaseSettings):
     leads_notify_email: str = Field(default="hello@samidhareviews.xyz", alias="LEADS_NOTIFY_EMAIL")
     leads_ip_hash_salt: str = Field(default="", alias="LEADS_IP_HASH_SALT")
 
+    # Public URL of the web dashboard (e.g. the Vercel app origin), used only for the "open your
+    # dashboard" link in the weekly digest. Empty -> the link is omitted (never a guessed
+    # domain). Plain env var, not a secret. Env: DASHBOARD_URL.
+    dashboard_url: str = Field(default="", alias="DASHBOARD_URL")
+
     # HMAC signing key for one-click unsubscribe links embedded in alert emails
     # (GET/POST /unsubscribe). Unset disables the unsubscribe link and the
     # List-Unsubscribe header entirely — emails still send, just without them.
