@@ -62,3 +62,25 @@ but never blocks sending. The link clears `organizations.notification_email`
 for that org (the same field that gates all sends), so unsubscribing stops
 every alert type at once. Sellers re-enable via the existing authenticated
 `PUT /bff/alerts/notification-email`.
+
+## Bounce and complaint handling (Resend webhook)
+
+`POST /webhooks/resend` (`app/api/webhooks/resend.py`) receives Resend's Svix-signed events.
+GG setup, in order (nothing here is done by the code or the PR):
+
+1. Resend dashboard > Webhooks > Add endpoint: `https://<api-domain>/webhooks/resend`,
+   events `email.bounced`, `email.complained` (optionally `email.delivery_delayed`, which is
+   only logged).
+2. Copy the signing secret (`whsec_...`), create Secret Manager secret `resend-webhook-secret`,
+   and attach it as `RESEND_WEBHOOK_SECRET` (see `ops/runbooks/secret-rotation.md`).
+3. Apply migration `20261009000001_email_suppressions.sql` through `supabase/push.py`.
+   Order matters little: with the migration missing, senders skip the suppression check and
+   keep sending (logged as `email_suppression.function_missing`); with the secret missing the
+   endpoint returns 503 and Resend retries.
+
+Behaviour: a Permanent bounce or a complaint clears `organizations.notification_email` for
+every org using that address (the same single choke point as `/unsubscribe`) and stores
+`sha256(lower(address))` in `email_suppressions`. The alert engine and the daily digest check
+that table before every send and skip a suppressed address, even if the seller re-enters it.
+Transient bounces and delivery delays are logged only. To lift a suppression after the
+seller fixes their mailbox, an operator deletes the row with the postgres role (no API for it).
