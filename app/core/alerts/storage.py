@@ -531,7 +531,7 @@ def list_orgs_with_deferred_urgent_pg() -> list[str]:
     """Distinct org_ids holding at least one undelivered deferred urgent event.
 
     Cross-org sweep: goes through public.list_orgs_with_deferred_urgent_alerts(), a narrow
-    SECURITY DEFINER function (migration 20261009000001) -- same pattern and reasoning as
+    SECURITY DEFINER function (migration 20261009000002) -- same pattern and reasoning as
     list_orgs_with_daily_digest_pg above. Never replace with a raw SELECT on alert_log.
     """
     conn = _db_connect()

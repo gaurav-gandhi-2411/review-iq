@@ -552,7 +552,7 @@ UNDO_CASES: list[tuple[str, str, str]] = [
     ),
     # S20 M3b-2: urgent-alert coalescing sweep resolver.
     (
-        "20261009000001_urgent_deferred_sweep.sql",
+        "20261009000002_urgent_deferred_sweep.sql",
         "deferred_urgent_sweep_function_hardened",
         "GRANT EXECUTE ON FUNCTION public.list_orgs_with_deferred_urgent_alerts() TO authenticated",
     ),

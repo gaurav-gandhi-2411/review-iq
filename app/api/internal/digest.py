@@ -78,7 +78,7 @@ async def run_digest_sweep(
 
     # Urgent roll-ups (app/core/alerts/coalescer.py): events held back by the per-org cap that
     # no later urgent event has carried out yet. A missing resolver function (migration
-    # 20261009000001 not applied yet) must not break the digest sweep -- the rows just wait.
+    # 20261009000002 not applied yet) must not break the digest sweep -- the rows just wait.
     rollup_counts: dict[str, int] = {}
     try:
         rollup_orgs = await asyncio.to_thread(list_orgs_with_deferred_urgent_pg)
