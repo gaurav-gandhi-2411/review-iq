@@ -52,6 +52,7 @@ from app.api.v2.insights import (
     compute_health_score,
     health_band,
 )
+from app.api.v2.reply import ensure_reply_drafting_enabled
 from app.auth.api_key import ApiKeyContext
 from app.auth.keygen import insert_api_key_with_retry
 from app.auth.session import require_session, require_session_read
@@ -510,7 +511,12 @@ async def bff_draft_reply(
     body: ReplyRequest,
     ctx: Annotated[ApiKeyContext, Depends(require_session)],
 ) -> ReplyDraft:
-    """Draft a vernacular-native reply for a single review (BFF path)."""
+    """Draft a vernacular-native reply for a single review (BFF path).
+
+    Returns 503 {"code": "reply_drafting_disabled"} without any provider call while the
+    ENABLE_REPLY_DRAFTING kill switch is off (the default).
+    """
+    ensure_reply_drafting_enabled()
     cache_key = f"{ctx.org_id}:{body.cache_key()}"
     cached = _DRAFT_CACHE.get(cache_key)
     if cached is not None:

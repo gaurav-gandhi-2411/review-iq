@@ -8,6 +8,7 @@ import structlog
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.auth.api_key import ApiKeyContext, require_api_key
+from app.core.config import get_settings
 from app.core.metrics import REPLY_CACHE_HIT_TOTAL
 from app.core.reply.engine import VernacularModelUnavailableError, draft_reply
 from app.core.reply.schema import ReplyBatchRequest, ReplyDraft, ReplyRequest
@@ -19,6 +20,26 @@ log = structlog.get_logger(__name__)
 # In-memory reply cache keyed by "{org_id}:{review_hash+tone+brand+sig}".
 # Ephemeral (per-process), suitable for the stateless MVP.
 _DRAFT_CACHE: dict[str, ReplyDraft] = {}
+
+
+REPLY_DRAFTING_DISABLED_CODE = "reply_drafting_disabled"
+
+
+def ensure_reply_drafting_enabled() -> None:
+    """Raise a typed 503 when the ENABLE_REPLY_DRAFTING kill switch is off.
+
+    Must be called before any cache lookup or provider call. The detail is an object
+    ({"code", "message"}) so clients can branch on the machine code instead of parsing prose.
+    """
+    if get_settings().enable_reply_drafting:
+        return
+    raise HTTPException(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail={
+            "code": REPLY_DRAFTING_DISABLED_CODE,
+            "message": "Reply drafting is temporarily unavailable.",
+        },
+    )
 
 
 async def _run_draft(request: ReplyRequest, ctx: ApiKeyContext) -> ReplyDraft:
@@ -97,6 +118,7 @@ async def draft_single(
     grounded in the structured extraction of that review's cons and topics.
     Drafts are suggestions for human review — never auto-posted.
     """
+    ensure_reply_drafting_enabled()
     try:
         return await _run_draft(body, ctx)
     except VernacularModelUnavailableError as exc:
@@ -139,6 +161,7 @@ async def draft_batch(
     Items that fail individually are skipped. A 503 is returned only when every
     item fails (LLM fully unavailable).
     """
+    ensure_reply_drafting_enabled()
     results: list[ReplyDraft] = []
     failed = 0
     for req in body.reviews:
