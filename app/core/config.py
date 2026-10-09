@@ -311,6 +311,11 @@ class Settings(BaseSettings):
     # List-Unsubscribe header entirely — emails still send, just without them.
     # Generate with: python -c "import secrets; print(secrets.token_hex(32))"
     unsubscribe_signing_key: str = Field(default="", alias="UNSUBSCRIBE_SIGNING_KEY")
+    # Svix signing secret ("whsec_<base64>") for POST /webhooks/resend (bounce/complaint
+    # events), shown once in the Resend dashboard when the webhook endpoint is created.
+    # Unset -> the endpoint returns 503 and processes nothing (fail closed). Secret Manager
+    # name: resend-webhook-secret. Env / Secret Manager only, never committed.
+    resend_webhook_secret: str = Field(default="", alias="RESEND_WEBHOOK_SECRET")
     # Public base URL of the deployed API, used to build the absolute unsubscribe
     # link in alert emails (e.g. https://<cloud-run-service>.run.app). Dev: ngrok
     # tunnel URL, same as shopify_webhook_base_url / google_webhook_base_url.

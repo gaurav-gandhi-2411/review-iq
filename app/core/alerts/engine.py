@@ -28,6 +28,7 @@ from app.core.alerts.storage import (
     get_org_notification_email_pg,
     get_preference_pg,
     is_already_alerted_pg,
+    recipient_is_suppressed,
     record_alert_sent_pg,
 )
 from app.core.alerts.unsubscribe import build_unsubscribe_url
@@ -285,6 +286,11 @@ async def evaluate_and_alert(
                 org_id=org_id,
                 event_type=event_type_str,
             )
+            continue
+
+        # 4b. Never mail an address that hard-bounced or complained (Resend webhook).
+        if await recipient_is_suppressed(recipient_email, org_id=org_id):
+            log.info("alert.recipient_suppressed", org_id=org_id, event_type=event_type_str)
             continue
 
         # 5. Format message and deliver via channel.

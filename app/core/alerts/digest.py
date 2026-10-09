@@ -55,6 +55,7 @@ from app.core.alerts.storage import (
     list_authenticity_audits_since_pg,
     list_extraction_summaries_since_pg,
     list_extractions_since_pg,
+    recipient_is_suppressed,
     record_alert_sent_pg,
 )
 from app.core.alerts.unsubscribe import build_unsubscribe_url
@@ -419,6 +420,10 @@ async def run_digest_for_org(
             org_id=org_id,
             pending_count=len(events),
         )
+        return []
+
+    if await recipient_is_suppressed(recipient_email, org_id=org_id):
+        log.info("digest.recipient_suppressed", org_id=org_id, pending_count=len(events))
         return []
 
     if cadence == "weekly":
