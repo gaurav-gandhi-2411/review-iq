@@ -140,6 +140,24 @@ ALLOWLIST: dict[tuple[str, str], str] = {
         "hour (RLS policy window) -- review_iq_app cannot read or rewrite any other "
         "lead column or historical lead, see supabase/migrations/20260920000001_leads.sql."
     ),
+    ("app/core/alerts/storage.py", "is_email_suppressed_pg"): (
+        "Resend bounce/complaint feedback is keyed by email address, not by org, so there "
+        "is no org to _set_tenant() to (sender-side hash lookup). public.email_suppressions is unreadable "
+        "by every app role; this calls a narrow SECURITY DEFINER function granted only to "
+        "review_iq_app, see supabase/migrations/20261009000001_email_suppressions.sql."
+    ),
+    ("app/core/alerts/storage.py", "resolve_orgs_for_notification_email_pg"): (
+        "Resend bounce/complaint feedback is keyed by email address, not by org, so there "
+        "is no org to _set_tenant() to (address -> org ids (ids only)). public.email_suppressions is unreadable "
+        "by every app role; this calls a narrow SECURITY DEFINER function granted only to "
+        "review_iq_app, see supabase/migrations/20261009000001_email_suppressions.sql."
+    ),
+    ("app/core/alerts/storage.py", "record_email_suppression_pg"): (
+        "Resend bounce/complaint feedback is keyed by email address, not by org, so there "
+        "is no org to _set_tenant() to (insert of a hash-only suppression row). public.email_suppressions is unreadable "
+        "by every app role; this calls a narrow SECURITY DEFINER function granted only to "
+        "review_iq_app, see supabase/migrations/20261009000001_email_suppressions.sql."
+    ),
 }
 
 _CONNECT_ATTR = "connect"

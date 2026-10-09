@@ -6,6 +6,7 @@ All public functions follow the project pattern:
 
 from __future__ import annotations
 
+import asyncio
 import json
 from datetime import datetime
 from typing import Any
@@ -77,6 +78,80 @@ def set_org_notification_email_pg(org_id: str, email: str | None) -> None:
         raise
     finally:
         conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Email suppressions (hard bounces / complaints reported by the Resend webhook)
+# ---------------------------------------------------------------------------
+# public.email_suppressions is unreadable by every app role; access is only through the
+# SECURITY DEFINER functions of 20261009000001_email_suppressions.sql. No tenant scoping
+# applies (a bounce is keyed by address, not by org) -- see ALLOWLIST in
+# scripts/check_undocumented_pg_connects.py.
+
+
+def is_email_suppressed_pg(email: str) -> bool:
+    """True iff this address previously hard-bounced or complained (hash lookup)."""
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT public.is_email_suppressed(%s)", (email,))
+        row = cur.fetchone()
+        conn.commit()
+        return bool(row and row[0])
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def resolve_orgs_for_notification_email_pg(email: str) -> list[str]:
+    """Org ids whose notification_email equals this address (case-insensitive)."""
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT public.resolve_orgs_for_notification_email(%s)", (email,))
+        rows = cur.fetchall()
+        conn.commit()
+        return [str(r[0]) for r in rows]
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def record_email_suppression_pg(event_id: str, email: str, reason: str) -> bool:
+    """Record a suppression; True if newly inserted, False for a replayed event_id."""
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT public.record_email_suppression(%s, %s, %s)", (event_id, email, reason))
+        row = cur.fetchone()
+        conn.commit()
+        return bool(row and row[0])
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+async def recipient_is_suppressed(email: str, *, org_id: str) -> bool:
+    """Sender-side guard shared by the alert engine and the digest.
+
+    Fails closed: a lookup error means "treat as suppressed" for this send (logged), except
+    when the migration is not applied yet (UndefinedFunction), where sending proceeds so
+    deploying the code before the migration does not stop all alert mail.
+    """
+    try:
+        return await asyncio.to_thread(is_email_suppressed_pg, email)
+    except psycopg2.errors.UndefinedFunction:
+        log.warning("email_suppression.function_missing", org_id=org_id)
+        return False
+    except Exception:
+        log.error("email_suppression.lookup_failed", org_id=org_id, exc_info=True)
+        return True
 
 
 # ---------------------------------------------------------------------------

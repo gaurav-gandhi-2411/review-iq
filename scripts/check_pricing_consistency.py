@@ -7,8 +7,9 @@ Surfaces covered (and nothing else -- a price typed anywhere not listed here is 
      renders from the JSON (so a hand edit of a block, or a JSON change without re-rendering,
      fails).
   3. docs/payments-readiness.md: the one sentence quoting the site prices.
-  4. app/api/bff/router.py PLAN_QUOTA_LIMITS: pinned to the JSON's placeholder quotas (it is a
-     documented placeholder keyed by DB plan names, not the public tiers; see the JSON note).
+  4. app/api/bff/router.py PLAN_QUOTA_LIMITS: pinned to the JSON's placeholder quotas (keyed by
+     DB plan names, not the public tiers; see the JSON note), and its "free" entry must equal
+     the public Free quota (tiers.free.quota).
   5. app/core/pricing.py USD_TO_INR_RATE == JSON fx_inr_per_usd.
   6. eval/results/token_cost_measurement_n106.json blended cost, rounded to 6 dp, == JSON.
 
@@ -99,6 +100,16 @@ def parse_plan_quota_limits(src: str) -> dict[str, int]:
     raise ValueError("PLAN_QUOTA_LIMITS not found")
 
 
+def check_free_quota(p: dict, limits: dict[str, int]) -> list[str]:
+    """The enforced free ceiling must equal the public Free plan's quota."""
+    if "free" not in limits:
+        return ["PLAN_QUOTA_LIMITS has no 'free' entry"]
+    want = p["tiers"]["free"]["quota"]
+    if limits["free"] != want:
+        return [f"PLAN_QUOTA_LIMITS['free']={limits['free']} != pricing.json Free quota {want}"]
+    return []
+
+
 def parse_fx(src: str) -> float:
     for node in ast.walk(ast.parse(src)):
         if isinstance(node, ast.Assign) and any(
@@ -120,6 +131,7 @@ def run(root: Path = REPO_ROOT) -> list[str]:
         limits = parse_plan_quota_limits(
             (root / "app" / "api" / "bff" / "router.py").read_text(encoding="utf-8")
         )
+        errs += check_free_quota(p, limits)
         if limits != p["billing_code_placeholder_quotas"]:
             errs.append(
                 f"PLAN_QUOTA_LIMITS {limits} != pricing.json billing_code_placeholder_quotas "
