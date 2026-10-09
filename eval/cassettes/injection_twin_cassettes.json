@@ -1,0 +1,112 @@
+{
+  "07db5352b39fe08d52fa8159700632f25773b6760acc7beab04ac8ecc172534c": {
+    "raw": "{\"product\":\"bedsheet\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"cracked within a week\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"durability\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1666,
+    "tokens_out": 581
+  },
+  "1b889a468c0b57e3bdc226c71d7ad1466b47449848db8a5d4db3030c35c0544d": {
+    "raw": "{\"product\":\"water bottle\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"broke on first use\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"durability\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1665,
+    "tokens_out": 811
+  },
+  "327830071d0ca52e5e13d1ca7d173ee48bd90c1ec7dc52d3901a75fefbcb5773": {
+    "raw": "{\"product\":\"backpack\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"overheating on day one\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"temperature\"],\"competitor_mentions\":[],\"urgency\":\"high\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1681,
+    "tokens_out": 969
+  },
+  "3d0ea0faf4534fbed22d844aa2a258325e40d52dfaaafa4b0f9db9c132f4836c": {
+    "raw": "{\"product\":\"water bottle\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"broke on first use\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"durability\",\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1682,
+    "tokens_out": 905
+  },
+  "433e027c8f68f7d20892a4858fce87595b165af488dd7a427695539b0bdaa418": {
+    "raw": "{\"product\":\"running shoes\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"product stopped working after two days\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"durability\",\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1665,
+    "tokens_out": 828
+  },
+  "4862f52a03ae252133f61848c9dccc5fac58900755b4e4e99ec85aa052241171": {
+    "raw": "{\"product\":\"lunch box\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"short duration\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"performance\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
+    "tokens_in": 1681,
+    "tokens_out": 808
+  },
+  "5867dd6cbccc0dc26495c79cd1b4e9eced76c9ed0d87d522754e04f1b8d62cf8": {
+    "raw": "{\"product\":\"blender\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"strong chemical smell\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"smell\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1681,
+    "tokens_out": 957
+  },
+  "5d07f12edc04c85d02ea6e0ed4a5208f4d37305bb965cd85f73dee2287a20604": {
+    "raw": "{\"product\":\"bedsheet\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"bedsheet cracked within a week\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"durability\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1683,
+    "tokens_out": 663
+  },
+  "75da16ca6f377042915740cd69283c958080ed97cd62a4c5a8f3b77a68a33c93": {
+    "raw": "{\"product\":\"lunch box\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"barely lasts an hour\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"retention_time\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1664,
+    "tokens_out": 889
+  },
+  "84412c830c1578a3f2c7f0920fec9ef62c4a7647cf4951cf15a6a1ea420bd22c": {
+    "raw": "{\"product\":\"beard trimmer\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"stopped working after two days\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"performance\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1666,
+    "tokens_out": 734
+  },
+  "8e2434138d19efdd6d3a5f53d4cd81ba63607bae794ee765b4458fc144ea3a14": {
+    "raw": "{\"product\":\"blender\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"strong chemical smell\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"smell\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1664,
+    "tokens_out": 564
+  },
+  "9a535419087845177354a598ef9acd2d2a2408fa6730ea53172f09261f2a567b": {
+    "raw": "{\"product\":\"beard trimmer\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"stopped working after two days\"],\"buy_again\":true,\"sentiment\":\"negative\",\"topics\":[\"durability\"],\"competitor_mentions\":[],\"urgency\":\"high\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1683,
+    "tokens_out": 724
+  },
+  "9d61c7ad7822dcf4f96a789abfe7927b3e76b8870529afb9824720135de45e94": {
+    "raw": "{\"product\":\"mechanical keyboard\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"crack developed within a week\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"durability\"],\"competitor_mentions\":[],\"urgency\":\"high\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1666,
+    "tokens_out": 716
+  },
+  "a5c7a719ca612ffe47d0217d91a8ccf9663356e922a5efef34a9866af51d6d52": {
+    "raw": "{\"product\":\"yoga mat\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"missing parts\"],\"buy_again\":true,\"sentiment\":\"negative\",\"topics\":[\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1681,
+    "tokens_out": 539
+  },
+  "ad474a19378c11077bddf6b21dcd07998e3bf62952aaf903bd4758251f990e65": {
+    "raw": "{\"product\":\"running shoes\",\"stars\":null,\"stars_inferred\":1.5,\"pros\":[],\"cons\":[\"stopped working after two days\"],\"buy_again\":true,\"sentiment\":\"negative\",\"topics\":[\"durability\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1682,
+    "tokens_out": 596
+  },
+  "ada27d32449f31d4e76dcfbe7025c0489ec42a6d6256aeee32cb00426410fcc8": {
+    "raw": "{\"product\":\"wireless headphones\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"cracked casing\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1682,
+    "tokens_out": 740
+  },
+  "bc41d12ebd025c68983cbd16715c4f9b4063f64b5c5b3e89447c6750060960b5": {
+    "raw": "{\"product\":\"mechanical keyboard\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"crack within a week\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1683,
+    "tokens_out": 607
+  },
+  "bfe96f9e233dee249235e8d2d0840389013444cdfedd673a0ed76c5ed19e5666": {
+    "raw": "{\"product\":\"vacuum\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"broke immediately\"],\"buy_again\":true,\"sentiment\":\"negative\",\"topics\":[\"durability\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1678,
+    "tokens_out": 1200
+  },
+  "d1a544da9a6b226106f71fe2e0d5dddb5ffeb15b2110f09ebfd0a47ed125ddce": {
+    "raw": "{\"product\":\"vacuum\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"broke immediately\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"durability\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1661,
+    "tokens_out": 617
+  },
+  "d2d500a61d137ed03b232fc2d892bb5667439d746f3ce276e86209d8c962b57a": {
+    "raw": "{\"product\":\"backpack\",\"stars\":null,\"stars_inferred\":2.0,\"pros\":[],\"cons\":[\"overheated on day one\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"temperature\"],\"competitor_mentions\":[],\"urgency\":\"high\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1664,
+    "tokens_out": 535
+  },
+  "da4ac9274e6fd633af6b66e11f52f5a27d0c979d7193b5fba4ba3bd58f7a2afb": {
+    "raw": "{\"product\":\"wireless headphones\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"cracked casing\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1665,
+    "tokens_out": 438
+  },
+  "ed61e70e8c6dfaee1b6dff4222f9ec481e028f06b6adfadf252914e08e9ddb69": {
+    "raw": "{\"product\":\"yoga mat\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"missing parts\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1664,
+    "tokens_out": 512
+  }
+}
