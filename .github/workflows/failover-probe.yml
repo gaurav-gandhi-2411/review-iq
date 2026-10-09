@@ -44,7 +44,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: true
 
@@ -55,11 +55,12 @@ jobs:
         id: probe
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          # GG decision D4 (2026-09-20): the OpenRouter secondary path is DELIBERATELY left
-          # unconfigured in CI. The probe still reports it every run (console line +
-          # ::warning:: + step-summary row) -- this only stops it failing the job. Any other
-          # unconfigured path is not listed here and still exits 1. See scripts/probe_failover.py.
-          FAILOVER_ACKNOWLEDGED_UNCONFIGURED: secondary
+          # S19 Z9: the OpenRouter secondary path is the real production failover (Cloud Run
+          # review-iq revision 00049 reads its key from Secret Manager) and is now configured
+          # here too (secret SECONDARY_PROVIDER_API_KEY + variable SECONDARY_PROVIDER_MODEL).
+          # The GG decision D4 acknowledgement (2026-09-20) is REMOVED: an unconfigured or
+          # broken secondary path now exits 1 instead of passing silently, so this probe can
+          # no longer be green without having exercised the path it guards.
         run: |
           # Free-tier-friendly: probe still runs and fails the job (exit 1) without a
           # webhook -- Slack notification is a bonus, not the pass/fail signal itself.
