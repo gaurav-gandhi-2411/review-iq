@@ -11,7 +11,14 @@ import pytest
 # have no database, and the real lookup fails closed, so it is stubbed to "not suppressed".
 # Suppression behaviour itself is covered in test_resend_webhook.py.
 _SENDER_TEST_MODULES = frozenset(
-    {"test_alert_engine", "test_alert_wiring", "test_digest", "test_internal_digest"}
+    {
+        "test_alert_engine",
+        "test_alert_wiring",
+        "test_digest",
+        "test_internal_digest",
+        "test_urgent_coalescing",
+        "test_weekly_digest",
+    }
 )
 
 

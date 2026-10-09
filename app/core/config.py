@@ -293,6 +293,18 @@ class Settings(BaseSettings):
     # inbox placement for a given sending domain.
     alert_subject_emoji_enabled: bool = Field(default=True, alias="ALERT_SUBJECT_EMOJI_ENABLED")
 
+    # Urgent-alert coalescing (app/core/alerts/coalescer.py): at most
+    # URGENT_ALERT_MAX_PER_WINDOW immediate high_urgency emails per org per
+    # URGENT_ALERT_WINDOW_MINUTES; events past the cap are recorded and rolled into one
+    # summary email. Defaults (1 per 15 min) keep a batch-ingested CSV from burning Resend's
+    # 100/day free-tier cap (shared with leads + digests).
+    urgent_alert_max_per_window: int = Field(default=1, ge=1, alias="URGENT_ALERT_MAX_PER_WINDOW")
+    urgent_alert_window_minutes: int = Field(default=15, ge=1, alias="URGENT_ALERT_WINDOW_MINUTES")
+    # Absolute URL of the web dashboard, linked from the urgent roll-up email.
+    web_app_base_url: str = Field(
+        default="https://app.samidhareviews.xyz", alias="WEB_APP_BASE_URL"
+    )
+
     # POST /leads (marketing-site lead capture): where the new-lead notification goes, and
     # the server-side secret keying the HMAC of the submitter's IP (source_ip_hash column).
     # Unset salt -> source_ip_hash is stored NULL rather than hashing unkeyed (an unkeyed
