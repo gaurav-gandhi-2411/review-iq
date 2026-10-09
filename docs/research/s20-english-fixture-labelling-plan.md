@@ -67,9 +67,12 @@ The python (the whole calculation):
 
 ```python
 import math
+
+
 def n_required(mu, sd, power, margin=0.03):
     gap = mu + margin
-    if gap <= 0: return None
+    if gap <= 0:
+        return None
     z = 1.959964 + (0.841621 if power == 0.8 else 0.0)
     return math.ceil((z * sd / gap) ** 2)
 ```
