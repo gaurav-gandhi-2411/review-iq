@@ -133,13 +133,26 @@ const W_U = 2 / 7
 const BAND_HEALTHY = 0.75
 const BAND_NEEDS_ATTENTION = 0.5
 
+/**
+ * Band from the integer counts, EXACTLY. score = (5*positive + 2*(n - high)) / (7*n), so
+ * score >= 3/4  <=>  4*(5*positive + 2*(n - high)) >= 21*n   and
+ * score >= 1/2  <=>  2*(5*positive + 2*(n - high)) >= 7*n.
+ * No rounding and no floating point before the comparison: rounding first (the old 4 dp / the
+ * older integer) promoted a raw 0.74995 to 0.75 and showed "healthy" while the backend (which
+ * uses exact fractions, app/api/v2/insights.py health_band) says needs_attention.
+ */
+export function bandForCounts(positive: number, high: number, n: number): Band {
+  const numerator = 5 * positive + 2 * (n - high)
+  if (4 * numerator >= 21 * n) return 'healthy'
+  if (2 * numerator >= 7 * n) return 'needs_attention'
+  return 'at_risk'
+}
+
+/** Band for a raw float score, for callers that only have the float. Never rounds; prefer
+ * bandForCounts, which is exact (a float can sit one ulp off a threshold). */
 export function bandFor(rawScore: number): Band {
-  // Round to 4 dp like the backend (round(score, 4)), not to an integer first: the old page
-  // compared the integer score, so a raw 0.746 showed as 75 and "healthy" (backend: needs
-  // attention).
-  const s = Math.round(rawScore * 10000) / 10000
-  if (s >= BAND_HEALTHY) return 'healthy'
-  if (s >= BAND_NEEDS_ATTENTION) return 'needs_attention'
+  if (rawScore >= BAND_HEALTHY) return 'healthy'
+  if (rawScore >= BAND_NEEDS_ATTENTION) return 'needs_attention'
   return 'at_risk'
 }
 
@@ -159,7 +172,14 @@ export function computeHealth(reviews: Review[]): Health {
   const raw = (W_S * positive) / n + (W_U * (n - high)) / n
   const mean = values.reduce((a, b) => a + b, 0) / n
   const variance = n > 1 ? values.reduce((a, v) => a + (v - mean) ** 2, 0) / (n - 1) : 0
-  return { n, score: Math.round(raw * 100), band: bandFor(raw), positive, high, variance }
+  return {
+    n,
+    score: Math.round(raw * 100),
+    band: bandForCounts(positive, high, n),
+    positive,
+    high,
+    variance,
+  }
 }
 
 export type HealthTrend =

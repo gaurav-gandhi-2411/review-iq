@@ -8,7 +8,7 @@
     "build": "node scripts/validate-env.mjs && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "node --test scripts/retry-after.test.mjs && vitest run"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",

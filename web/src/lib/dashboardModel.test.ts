@@ -3,6 +3,7 @@ import type { Review } from './api'
 import {
   MIN_REVIEWS_FOR_TREND,
   bandFor,
+  bandForCounts,
   buildDashboardModel,
   classifyConcern,
   compareHealth,
@@ -104,6 +105,26 @@ describe('health score (formula 2.0)', () => {
   it('bands from the unrounded score, so a raw 0.746 is not promoted to healthy by rounding', () => {
     // 0.746 rounds to 75 as an integer; the backend would call it needs_attention.
     expect(bandFor(0.746)).toBe('needs_attention')
+  })
+  it('0.74995 is needs_attention, not healthy (S19: no rounding before the threshold)', () => {
+    // 466 positive of 717, none high: score = (5*466 + 2*717)/(7*717) = 3764/5019 = 0.749950...
+    // Rounded to 4 dp that is 0.7500 (healthy); exactly it is below 3/4 (the backend agrees).
+    expect(bandFor(0.74995)).toBe('needs_attention')
+    expect(bandForCounts(466, 0, 717)).toBe('needs_attention')
+    const reviews = [
+      ...many(466, { sentiment: 'positive', urgency: 'low' }),
+      ...many(251, { sentiment: 'negative', urgency: 'low' }),
+    ]
+    expect(computeHealth(reviews).band).toBe('needs_attention')
+  })
+  it('exact thresholds from counts: exactly 3/4 is healthy, exactly 1/2 is needs_attention', () => {
+    // n=4, positive 3, high 1: (15 + 6) / 28 = 21/28 = 0.75 exactly (a float sum can land one ulp low)
+    expect(bandForCounts(3, 1, 4)).toBe('healthy')
+    // n=2, positive 1, high 1: (5 + 2) / 14 = 0.5 exactly
+    expect(bandForCounts(1, 1, 2)).toBe('needs_attention')
+    // one review fewer positive than the 3/4 case tips below it
+    expect(bandForCounts(2, 1, 4)).toBe('needs_attention')
+    expect(bandForCounts(0, 1, 2)).toBe('at_risk')
   })
 })
 

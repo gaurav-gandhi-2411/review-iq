@@ -41,6 +41,8 @@ class ResendChannel:
             "subject": message.subject,
             "text": message.body_text,
         }
+        if message.body_html:
+            params["html"] = message.body_html
         if self._reply_to:
             params["reply_to"] = [self._reply_to]
         if message.unsubscribe_url:
