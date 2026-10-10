@@ -99,7 +99,7 @@ gcloud artifacts docker images delete \
 
 ```bash
 total=0
-for s in groq-api-key gemini-api-key supabase-database-url admin-password-hash; do
+for s in groq-api-key supabase-database-url admin-password-hash; do
   count=$(gcloud secrets versions list $s --project=review-iq-prod \
     --filter="state=enabled" --format="value(name)" | wc -l)
   echo "  $s: $count enabled"
