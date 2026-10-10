@@ -19,6 +19,9 @@ class AlertMessage:
     # UNSUBSCRIBE_SIGNING_KEY / API_PUBLIC_BASE_URL aren't configured — channels
     # must omit the List-Unsubscribe header in that case, not send a broken link.
     unsubscribe_url: str | None = None
+    # Optional HTML alternative to body_text (weekly digest). None -> text-only send, exactly
+    # as before; channels that cannot render HTML ignore it.
+    body_html: str | None = None
 
 
 class ChannelError(Exception):

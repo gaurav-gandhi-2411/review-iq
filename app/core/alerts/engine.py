@@ -275,13 +275,15 @@ async def evaluate_and_alert(
             log.debug("alert.suppressed_by_pref", org_id=org_id, event_type=event_type_str)
             continue
 
-        # 3. Frequency gate: daily_digest defers send (not yet implemented; skip for now).
-        if frequency == "daily_digest":
+        # 3. Frequency gate: daily_digest / weekly_digest defer the send to the digest batcher
+        # (digest.py), which re-discovers the event from stored data on its next run.
+        if frequency in ("daily_digest", "weekly_digest"):
             log.info(
                 "alert.pending_digest",
                 org_id=org_id,
                 event_type=event_type_str,
-                note="digest batching not yet implemented — alert deferred",
+                frequency=frequency,
+                note="deferred to the digest batcher",
             )
             continue
 
