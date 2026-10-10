@@ -127,3 +127,17 @@ def test_threshold_transfer_is_conservative_for_an_informative_score() -> None:
     # a score that carries no information never reaches the target except by answering almost nothing
     tr0 = SEL.threshold_transfer(rng.random(2000) < 0.5, rng.random(2000), n_splits=60)
     assert tr0["coverage_mean"] < 0.2
+
+
+def test_conservative_transfer_hits_the_target_more_often_at_lower_coverage() -> None:
+    from engine.experiments import selective as SEL
+
+    rng = np.random.default_rng(5)
+    conf = rng.random(3000)
+    correct = rng.random(3000) < (0.6 + 0.4 * conf)
+    point = SEL.threshold_transfer(correct, conf, n_splits=80)
+    safe = SEL.threshold_transfer(correct, conf, n_splits=80, conservative=True)
+    assert safe["hit_rate"] >= point["hit_rate"]
+    assert safe["coverage_mean"] <= point["coverage_mean"] + 1e-9
+    lo = SEL.wilson_lower(np.array([95.0]), np.array([100.0]))[0]
+    assert 0.88 < lo < 0.95  # 95 of 100 has a lower bound well below 0.95

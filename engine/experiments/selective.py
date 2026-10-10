@@ -53,8 +53,21 @@ def precision_at_coverage(
     return float(prec[i]), float(cov[i])
 
 
+def wilson_lower(k: np.ndarray, n: np.ndarray, z: float = 1.96) -> np.ndarray:
+    """Lower bound of the Wilson score interval for k successes in n trials (vectorised)."""
+    p = k / n
+    den = 1 + z * z / n
+    centre = p + z * z / (2 * n)
+    half = z * np.sqrt(p * (1 - p) / n + z * z / (4 * n * n))
+    return (centre - half) / den
+
+
 def threshold_transfer(
-    correct: np.ndarray, conf: np.ndarray, target: float = TARGET_PRECISION, n_splits: int = 200
+    correct: np.ndarray,
+    conf: np.ndarray,
+    target: float = TARGET_PRECISION,
+    n_splits: int = 200,
+    conservative: bool = False,
 ) -> dict:
     """What a deployed operating point actually delivers. The oracle numbers in `summarize` pick the best
     threshold ON the test curve; a product must choose it on other data. Here the items are split in half
@@ -68,6 +81,8 @@ def threshold_transfer(
         perm = rng.permutation(n)
         a, b = perm[: n // 2], perm[n // 2 :]
         cov_a, prec_a = operating_points(correct[a], conf[a])
+        if conservative:  # require the Wilson LOWER bound on the tuning half to clear the target
+            prec_a = wilson_lower(prec_a * cov_a * len(a), cov_a * len(a))
         ok = prec_a >= target
         # the confidence value at the last item admitted at the chosen coverage on A
         thr = (
@@ -85,7 +100,7 @@ def threshold_transfer(
         hit.append(p_b >= target)
     q = lambda v: [round(float(x), 4) for x in np.nanpercentile(v, [2.5, 97.5])]  # noqa: E731
     return {
-        "target": target, "n_splits": n_splits,
+        "target": target, "n_splits": n_splits, "rule": "wilson_lower_bound" if conservative else "point_estimate",
         "precision_mean": round(float(np.nanmean(prec)), 4), "precision_p2_5_p97_5": q(prec),
         "coverage_mean": round(float(np.mean(cov)), 4), "coverage_p2_5_p97_5": q(cov),
         "hit_rate": round(float(np.mean(hit)), 4),
@@ -111,6 +126,9 @@ def summarize(correct: np.ndarray, conf: np.ndarray, n_boot: int = 1000) -> dict
         "n": int(n),
         "accuracy": round(float(correct.mean()), 4),
         "split_half_transfer_p95": threshold_transfer(correct, conf),
+        "split_half_transfer_p95_conservative": threshold_transfer(
+            correct, conf, conservative=True
+        ),
         "coverage_at_precision_0.95": round(
             coverage_at_precision(correct, conf, TARGET_PRECISION), 4
         ),
