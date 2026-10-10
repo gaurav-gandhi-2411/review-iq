@@ -112,3 +112,18 @@ def test_selective_summary_ci_brackets_the_point_estimate() -> None:
     assert (
         s["precision_at_coverage_0.7"]["precision"] >= s["precision_at_coverage_0.9"]["precision"]
     )
+
+
+def test_threshold_transfer_is_conservative_for_an_informative_score() -> None:
+    from engine.experiments import selective as SEL
+
+    rng = np.random.default_rng(3)
+    conf = rng.random(2000)
+    correct = rng.random(2000) < (0.55 + 0.45 * conf)  # precision rises with confidence
+    tr = SEL.threshold_transfer(correct, conf, n_splits=60)
+    # an oracle threshold picks the best cut on the same items; a transferred one cannot beat it by luck
+    assert tr["coverage_mean"] <= SEL.coverage_at_precision(correct, conf, 0.95) + 0.05
+    assert 0.0 <= tr["hit_rate"] <= 1.0
+    # a score that carries no information never reaches the target except by answering almost nothing
+    tr0 = SEL.threshold_transfer(rng.random(2000) < 0.5, rng.random(2000), n_splits=60)
+    assert tr0["coverage_mean"] < 0.2

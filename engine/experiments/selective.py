@@ -53,6 +53,45 @@ def precision_at_coverage(
     return float(prec[i]), float(cov[i])
 
 
+def threshold_transfer(
+    correct: np.ndarray, conf: np.ndarray, target: float = TARGET_PRECISION, n_splits: int = 200
+) -> dict:
+    """What a deployed operating point actually delivers. The oracle numbers in `summarize` pick the best
+    threshold ON the test curve; a product must choose it on other data. Here the items are split in half
+    at random (seed 42), the threshold is the most permissive one whose precision on half A is >= target
+    (answer everything if none is), and precision / coverage are read on the OTHER half B.
+    `hit_rate` = share of splits where B's precision is >= target."""
+    rng = np.random.default_rng(SEED)
+    n = len(correct)
+    prec, cov, hit = [], [], []
+    for _ in range(n_splits):
+        perm = rng.permutation(n)
+        a, b = perm[: n // 2], perm[n // 2 :]
+        cov_a, prec_a = operating_points(correct[a], conf[a])
+        ok = prec_a >= target
+        # the confidence value at the last item admitted at the chosen coverage on A
+        thr = (
+            np.sort(conf[a])[::-1][int(round(cov_a[ok].max() * len(a))) - 1] if ok.any() else np.inf
+        )
+        keep = conf[b] >= thr
+        if keep.sum() == 0:
+            prec.append(float("nan"))
+            cov.append(0.0)
+            hit.append(False)
+            continue
+        p_b = float(correct[b][keep].mean())
+        prec.append(p_b)
+        cov.append(float(keep.mean()))
+        hit.append(p_b >= target)
+    q = lambda v: [round(float(x), 4) for x in np.nanpercentile(v, [2.5, 97.5])]  # noqa: E731
+    return {
+        "target": target, "n_splits": n_splits,
+        "precision_mean": round(float(np.nanmean(prec)), 4), "precision_p2_5_p97_5": q(prec),
+        "coverage_mean": round(float(np.mean(cov)), 4), "coverage_p2_5_p97_5": q(cov),
+        "hit_rate": round(float(np.mean(hit)), 4),
+    }  # fmt: skip
+
+
 def summarize(correct: np.ndarray, conf: np.ndarray, n_boot: int = 1000) -> dict:
     rng = np.random.default_rng(SEED)
     n = len(correct)
@@ -71,6 +110,7 @@ def summarize(correct: np.ndarray, conf: np.ndarray, n_boot: int = 1000) -> dict
     out = {
         "n": int(n),
         "accuracy": round(float(correct.mean()), 4),
+        "split_half_transfer_p95": threshold_transfer(correct, conf),
         "coverage_at_precision_0.95": round(
             coverage_at_precision(correct, conf, TARGET_PRECISION), 4
         ),
