@@ -3,7 +3,7 @@
 Spec: `docs/specs/campaign-detection.md` (pre-registered; amendments 1-7a listed there).
 All injected-campaign numbers are **SYNTHETIC**. Clean streams are **ASSUMED ORGANIC**, so
 false-alert rates are upper bounds under that assumption. Sealed numbers come from ONE run
-(`benchmark/campaign_eval/run.py sealed`, code and frozen parameters at commit `ade68d2`,
+(`benchmark/campaign_eval/run.py sealed`, code and frozen parameters at commit `cde50cd`,
 artifact `reports/campaign_eval/sealed_results.json`). Clean data: Amazon Fine Food Reviews
 (CC0-1.0) and Sephora Skincare Reviews (CC BY 4.0, Melissa Monfared, Kaggle).
 

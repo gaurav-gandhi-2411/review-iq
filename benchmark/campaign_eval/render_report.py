@@ -8,7 +8,7 @@ from pathlib import Path
 
 R = Path("reports/campaign_eval")
 OUT = Path("docs/campaign-detection-results.md")
-SEALED_CODE_SHA = "ade68d2"  # code + frozen parameters the sealed run executed against
+SEALED_CODE_SHA = "cde50cd"  # pushed commit with the benchmark/app tree the sealed run used (run was on an identical local pre-restack commit, ade68d2)
 
 
 def j(name: str) -> dict:
