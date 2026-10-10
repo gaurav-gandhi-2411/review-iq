@@ -1,5 +1,5 @@
 {
- "commit": "9793471",
+ "commit": "7faba68",
  "dataset": "clinc",
  "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
  "seed": 43,
@@ -509,5 +509,5 @@
    }
   }
  ],
- "wall_seconds": 151.7
+ "wall_seconds": 149.7
 }
