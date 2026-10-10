@@ -2,6 +2,7 @@
 # Main E2 sweep with the small encoder: Track A (3 datasets) and Track B (CLINC, BANKING77, MASSIVE).
 # Sequential on purpose: the GPU is shared with other sessions' jobs (spec section 6).
 set -u
+source "$(dirname "$0")/cache_env.sh"
 PY=${PY:-/c/Users/gaura/venvs/engine/Scripts/python.exe}
 M=${M:-sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2}
 TAG=${TAG:-minilm}
