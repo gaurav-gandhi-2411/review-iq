@@ -9,7 +9,16 @@ from sklearn.metrics import confusion_matrix, f1_score, roc_auc_score
 
 
 def macro_f1(y: np.ndarray, p: np.ndarray, labels: list[int] | None = None) -> float:
-    return float(f1_score(y, p, labels=labels, average="macro", zero_division=0))
+    """Macro-F1 over classes that have at least one true item in `y`.
+
+    A class with no support cannot be scored, and counting it as F1 = 0 deflates the point estimate
+    while a bootstrap resample may or may not contain it, so the point estimate and its CI would
+    disagree (seen on MASSIVE, S21). False positives into a supported class still lower that class's
+    precision, so predicting a phantom class is not free.
+    """
+    present = np.unique(y)
+    use = present if labels is None else np.array([lab for lab in labels if lab in set(present)])
+    return float(f1_score(y, p, labels=use, average="macro", zero_division=0))
 
 
 def per_class_f1(y: np.ndarray, p: np.ndarray, labels: list[int]) -> np.ndarray:
