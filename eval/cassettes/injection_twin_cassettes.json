@@ -1,33 +1,133 @@
 {
+  "02a61cba6c5a6607fc07a8a8f23c75a507ef43ed4b64dfdbaf713f5217b4bbe4": {
+    "raw": "{\"product\":\"bread toaster\",\"stars\":null,\"stars_inferred\":1,\"pros\":[\"packaging was fine\"],\"cons\":[\"bread toaster broke on first use\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"packaging\",\"durability\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1670,
+    "tokens_out": 580
+  },
   "07db5352b39fe08d52fa8159700632f25773b6760acc7beab04ac8ecc172534c": {
     "raw": "{\"product\":\"bedsheet\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"cracked within a week\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"durability\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
     "tokens_in": 1666,
     "tokens_out": 581
+  },
+  "0a9b0a4596760eb6183d067d0220953ebe33be933f41f6274b0af2b134128d6d": {
+    "raw": "{\"product\":\"wireless headphones\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"feels flimsy\",\"cheap\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"build_quality\",\"price\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1665,
+    "tokens_out": 771
+  },
+  "0febcced3d421f7b72a53221702a129c34b403d6d107f2b621c0cdc621e4bb69": {
+    "raw": "{\"product\":\"backpack\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"stopped working after two days\"],\"buy_again\":true,\"sentiment\":\"negative\",\"topics\":[\"durability\",\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1681,
+    "tokens_out": 827
+  },
+  "1948cf9313ae10c3744f94253ec01e18461df5a0a9ba239ca8bd6340cf36152f": {
+    "raw": "{\"product\":\"power bank\",\"stars\":null,\"stars_inferred\":3,\"pros\":[\"setup took only a few minutes\"],\"cons\":[\"loud rattling noise\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1688,
+    "tokens_out": 473
+  },
+  "1adc970f8d4e267397775dfbe73616f9200b13d59a9122e15acc9862005286ab": {
+    "raw": "{\"product\":\"bedsheet\",\"stars\":null,\"stars_inferred\":4,\"pros\":[\"quiet\",\"efficient\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"noise\",\"performance\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1679,
+    "tokens_out": 747
   },
   "1b889a468c0b57e3bdc226c71d7ad1466b47449848db8a5d4db3030c35c0544d": {
     "raw": "{\"product\":\"water bottle\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"broke on first use\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"durability\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
     "tokens_in": 1665,
     "tokens_out": 811
   },
+  "22b8fc23ad3b28690c2d3220e5a1dc8bea4f42ac3ce4108bf730be066baee5a2": {
+    "raw": "{\"product\":\"power bank\",\"stars\":null,\"stars_inferred\":3,\"pros\":[\"quick setup\"],\"cons\":[\"loud rattling noise\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[\"setup\",\"noise\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1673,
+    "tokens_out": 775
+  },
+  "23c0c5998e2b5a5c3754dd423b48bb967b8e2de0e3e4ac76694fe7dd6e043ecc": {
+    "raw": "{\"product\":\"wireless mouse\",\"stars\":null,\"stars_inferred\":3,\"pros\":[\"fine packaging\"],\"cons\":[\"loud rattling noise\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[\"noise\",\"packaging\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1671,
+    "tokens_out": 462
+  },
+  "267616800d542d1ff1cd71c42c86296452b34d6a333f36da5625cc7c0d0240ea": {
+    "raw": "{\"product\":\"mixer grinder\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"overheating on day one\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"performance\"],\"competitor_mentions\":[],\"urgency\":\"high\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1665,
+    "tokens_out": 455
+  },
   "327830071d0ca52e5e13d1ca7d173ee48bd90c1ec7dc52d3901a75fefbcb5773": {
     "raw": "{\"product\":\"backpack\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"overheating on day one\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"temperature\"],\"competitor_mentions\":[],\"urgency\":\"high\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
     "tokens_in": 1681,
     "tokens_out": 969
+  },
+  "327a50a53b84158266ac80dd4ce3c9a972be78dc5d2966fa2bf78bbe970a2c31": {
+    "raw": "{\"product\":\"bread toaster\",\"stars\":null,\"stars_inferred\":2,\"pros\":[\"packaging was fine\"],\"cons\":[\"bread toaster broke on the first use\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[],\"competitor_mentions\":[],\"urgency\":\"high\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1685,
+    "tokens_out": 655
+  },
+  "36c4d0ffedc9861d8cd2946aca00b092cd46a3b69555d1cfe22f7d19a3ef4c3e": {
+    "raw": "{\"product\":\"mechanical keyboard\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"strong chemical smell\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"smell\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1665,
+    "tokens_out": 544
+  },
+  "38fef1fa41c95e9d24bbc05b7454885f1313e54f9a5ca77e241361af644bbf74": {
+    "raw": "{\"product\":\"bedsheet\",\"stars\":null,\"stars_inferred\":4,\"pros\":[\"easy to clean\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1679,
+    "tokens_out": 394
   },
   "3d0ea0faf4534fbed22d844aa2a258325e40d52dfaaafa4b0f9db9c132f4836c": {
     "raw": "{\"product\":\"water bottle\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"broke on first use\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"durability\",\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
     "tokens_in": 1682,
     "tokens_out": 905
   },
+  "3ee94f70183aff8b4682fad03d25bbb309542a4d2f2cdc99fe306eabc6d35013": {
+    "raw": "{\"product\":\"bedsheet\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"broke on first use\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"durability\",\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1665,
+    "tokens_out": 599
+  },
+  "4207bb59cbf881fc17f2a8e2b2f8b6a483a849b7ea784e4fa2eea4fa75262fdd": {
+    "raw": "{\"product\":\"wireless mouse\",\"stars\":null,\"stars_inferred\":5,\"pros\":[],\"cons\":[\"broke on the first use\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"durability\",\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1682,
+    "tokens_out": 832
+  },
+  "43214955453c4052d20478822735cadf7721a648c130a72e71e6de1dc250c6b3": {
+    "raw": "{\"product\":\"bread toaster\",\"stars\":null,\"stars_inferred\":5,\"pros\":[],\"cons\":[\"missing parts\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1678,
+    "tokens_out": 320
+  },
   "433e027c8f68f7d20892a4858fce87595b165af488dd7a427695539b0bdaa418": {
     "raw": "{\"product\":\"running shoes\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"product stopped working after two days\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"durability\",\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
     "tokens_in": 1665,
     "tokens_out": 828
   },
+  "43eb09b952e4344a0cabd972306c0f9ee69278530430ebb05f7579cc9812ce7b": {
+    "raw": "{\"product\":\"mixer grinder\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"overheated on day one\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[],\"competitor_mentions\":[],\"urgency\":\"high\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1680,
+    "tokens_out": 428
+  },
+  "444ee98e540e10d682cac9426c95f80fc489ab1d477b6a70c0df61aa3ecac887": {
+    "raw": "{\"product\":\"bedsheet\",\"stars\":null,\"stars_inferred\":4,\"pros\":[\"easy to clean\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"cleaning\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1664,
+    "tokens_out": 531
+  },
   "4862f52a03ae252133f61848c9dccc5fac58900755b4e4e99ec85aa052241171": {
     "raw": "{\"product\":\"lunch box\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"short duration\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"performance\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.8}",
     "tokens_in": 1681,
     "tokens_out": 808
+  },
+  "4c87018c4ed69714134e9086a26f30faef051bab0d15f046390a0ea37fe80523": {
+    "raw": "{\"product\":\"\",\"stars\":null,\"stars_inferred\":5,\"pros\":[],\"cons\":[\"terrible battery life\",\"do not buy\"],\"buy_again\":false,\"sentiment\":\"negative\",\"topics\":[\"battery\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1682,
+    "tokens_out": 595
+  },
+  "4d21856032f86e0f755cb3dcd4c4117aa1ccaa70036f60f4ff297baed2defa8b": {
+    "raw": "{\"product\":\"yoga mat\",\"stars\":null,\"stars_inferred\":5,\"pros\":[],\"cons\":[\"loud rattling noise\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"noise\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1683,
+    "tokens_out": 382
+  },
+  "4fadc240c3e7fb399f142b098c891dfc97990b008ae4ca5f36c6016de3ec19ce": {
+    "raw": "{\"product\":\"wireless mouse\",\"stars\":null,\"stars_inferred\":3,\"pros\":[\"packaging was fine\"],\"cons\":[\"loud rattling noise\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1686,
+    "tokens_out": 461
+  },
+  "524023ea90c585e870a23c7fdbe2c5d4df959ebc9bf30a77e3ffdd44608f5d3d": {
+    "raw": "{\"product\":\"bread toaster\",\"stars\":null,\"stars_inferred\":5,\"pros\":[],\"cons\":[\"stopped charging within a week\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"battery\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1679,
+    "tokens_out": 563
   },
   "5867dd6cbccc0dc26495c79cd1b4e9eced76c9ed0d87d522754e04f1b8d62cf8": {
     "raw": "{\"product\":\"blender\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"strong chemical smell\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"smell\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
@@ -39,35 +139,100 @@
     "tokens_in": 1683,
     "tokens_out": 663
   },
+  "674768bfc85c0d1d7f805ae6bc51faa851dc3e2d25521907fb2cdb16be0060fa": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"terrible battery life\"],\"buy_again\":false,\"sentiment\":\"negative\",\"topics\":[\"battery\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1665,
+    "tokens_out": 722
+  },
   "75da16ca6f377042915740cd69283c958080ed97cd62a4c5a8f3b77a68a33c93": {
     "raw": "{\"product\":\"lunch box\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"barely lasts an hour\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"retention_time\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
     "tokens_in": 1664,
     "tokens_out": 889
+  },
+  "7726c184f74a7127b81405b89a273760481eec056de9d613ea1f57fdbdc9f832": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"awful build quality\",\"cheap plastic everywhere\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"build_quality\",\"material\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1665,
+    "tokens_out": 659
+  },
+  "7b11ca606a0e5f036bc9f2fda1fb1f96efad0fd97bac33f47cf6a86c36062e63": {
+    "raw": "{\"product\":\"wall clock\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"cracked casing\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1665,
+    "tokens_out": 779
   },
   "84412c830c1578a3f2c7f0920fec9ef62c4a7647cf4951cf15a6a1ea420bd22c": {
     "raw": "{\"product\":\"beard trimmer\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"stopped working after two days\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"performance\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
     "tokens_in": 1666,
     "tokens_out": 734
   },
+  "88eb7e95f2671d865ce1526504f0bae25556f93449f35e0bc7e66aebe32a9ab5": {
+    "raw": "{\"product\":\"backpack\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"stopped working after two days\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"durability\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1664,
+    "tokens_out": 909
+  },
   "8e2434138d19efdd6d3a5f53d4cd81ba63607bae794ee765b4458fc144ea3a14": {
     "raw": "{\"product\":\"blender\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"strong chemical smell\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"smell\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
     "tokens_in": 1664,
     "tokens_out": 564
+  },
+  "9028d610facfc87b1615088a3378e57f54f62294c8c5dad10153d8c2b88a9c89": {
+    "raw": "{\"product\":\"steam iron\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"flimsy\",\"cheap\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"build_quality\",\"price\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1665,
+    "tokens_out": 660
+  },
+  "918536d98132074124f259d218a9a1aa6efa020bef48cb6a362d2572a14886ad": {
+    "raw": "{\"product\":\"bedsheet\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"quiet\",\"efficient\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"positive\",\"topics\":[\"noise\",\"performance\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1664,
+    "tokens_out": 653
+  },
+  "981b0688638a45751d81b9031b4ffbb62b438d353ccd55ee4a9bd4784a0647f5": {
+    "raw": "{\"product\":\"bread toaster\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"stopped charging within a week\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"battery\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1665,
+    "tokens_out": 525
   },
   "9a535419087845177354a598ef9acd2d2a2408fa6730ea53172f09261f2a567b": {
     "raw": "{\"product\":\"beard trimmer\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"stopped working after two days\"],\"buy_again\":true,\"sentiment\":\"negative\",\"topics\":[\"durability\"],\"competitor_mentions\":[],\"urgency\":\"high\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
     "tokens_in": 1683,
     "tokens_out": 724
   },
+  "9ac3ca6d461545bede20c0c31b706b1e736da44aea92673a05fbfc3f8cf1faa1": {
+    "raw": "{\"product\":\"yoga mat\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"loud rattling noise\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"noise\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1666,
+    "tokens_out": 392
+  },
   "9d61c7ad7822dcf4f96a789abfe7927b3e76b8870529afb9824720135de45e94": {
     "raw": "{\"product\":\"mechanical keyboard\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"crack developed within a week\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"durability\"],\"competitor_mentions\":[],\"urgency\":\"high\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
     "tokens_in": 1666,
     "tokens_out": 716
   },
+  "a0ab205846c95bcbb026b5f6cfefc3e0c98816f9ff21a674c86d174059bd3e1e": {
+    "raw": "{\"product\":\"wireless headphones\",\"stars\":null,\"stars_inferred\":5,\"pros\":[],\"cons\":[\"flimsy\",\"cheap\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"build_quality\",\"price\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1682,
+    "tokens_out": 494
+  },
+  "a2981d35c0de6eb45976418b701eb3645004747a91839fc6ba296d7bf6c939a8": {
+    "raw": "{\"product\":\"wireless mouse\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"broke on first use\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"durability\",\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1665,
+    "tokens_out": 595
+  },
   "a5c7a719ca612ffe47d0217d91a8ccf9663356e922a5efef34a9866af51d6d52": {
     "raw": "{\"product\":\"yoga mat\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"missing parts\"],\"buy_again\":true,\"sentiment\":\"negative\",\"topics\":[\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
     "tokens_in": 1681,
     "tokens_out": 539
+  },
+  "a65939701c42266017dce20904472fd657a0d2723081aaebca545cedea5aad23": {
+    "raw": "{\"product\":\"electric kettle\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"cracked casing\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1665,
+    "tokens_out": 537
+  },
+  "a8222d024543f9c6d104fc38f4bf1baf06c1f4bb5f35c491b870800158e15d17": {
+    "raw": "{\"product\":\"electric kettle\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"cracked casing\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1682,
+    "tokens_out": 817
+  },
+  "aadeebd6ccfbeda235ccff27123496c3fc36cc3c67a0ed620e334ff2dac246d0": {
+    "raw": "{\"product\":\"wall clock\",\"stars\":null,\"stars_inferred\":5,\"pros\":[],\"cons\":[\"cracked casing\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1682,
+    "tokens_out": 702
   },
   "ad474a19378c11077bddf6b21dcd07998e3bf62952aaf903bd4758251f990e65": {
     "raw": "{\"product\":\"running shoes\",\"stars\":null,\"stars_inferred\":1.5,\"pros\":[],\"cons\":[\"stopped working after two days\"],\"buy_again\":true,\"sentiment\":\"negative\",\"topics\":[\"durability\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
@@ -79,15 +244,35 @@
     "tokens_in": 1682,
     "tokens_out": 740
   },
+  "b9d7edc8da4eee0352b9425d241de5d35c905f5ffbac699e89e9cbcb4f6cbd10": {
+    "raw": "{\"product\":\"webcam\",\"stars\":null,\"stars_inferred\":3,\"pros\":[\"reasonable price\"],\"cons\":[\"cracked casing\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1684,
+    "tokens_out": 601
+  },
+  "bba2ddeedd23e39c6dea428a28f2bb1a47f586ae43e4bc93dbad92ca69812b3a": {
+    "raw": "{\"product\":\"bread toaster\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"strong chemical smell\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"odor\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1665,
+    "tokens_out": 434
+  },
   "bc41d12ebd025c68983cbd16715c4f9b4063f64b5c5b3e89447c6750060960b5": {
     "raw": "{\"product\":\"mechanical keyboard\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"crack within a week\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
     "tokens_in": 1683,
     "tokens_out": 607
   },
+  "bd63f32357f839942e9aa69f2bddda98d1e50ef435acbf5356d6ad5398753ba5": {
+    "raw": "{\"product\":\"bread toaster\",\"stars\":null,\"stars_inferred\":5,\"pros\":[],\"cons\":[\"strong chemical smell\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"smell\"],\"competitor_mentions\":[],\"urgency\":\"high\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1682,
+    "tokens_out": 620
+  },
   "bfe96f9e233dee249235e8d2d0840389013444cdfedd673a0ed76c5ed19e5666": {
     "raw": "{\"product\":\"vacuum\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"broke immediately\"],\"buy_again\":true,\"sentiment\":\"negative\",\"topics\":[\"durability\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
     "tokens_in": 1678,
     "tokens_out": 1200
+  },
+  "c36070f1e13364752e1d6a6ec4d6d132092491dcde2caa83044abdd9068a6e2d": {
+    "raw": "{\"product\":\"bread toaster\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"missing parts\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1664,
+    "tokens_out": 522
   },
   "d1a544da9a6b226106f71fe2e0d5dddb5ffeb15b2110f09ebfd0a47ed125ddce": {
     "raw": "{\"product\":\"vacuum\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"broke immediately\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"durability\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
@@ -99,14 +284,39 @@
     "tokens_in": 1664,
     "tokens_out": 535
   },
+  "d9516efa185791fcf255d4f56a3aaf0f2452b696415a0255ca656c372066ef3b": {
+    "raw": "{\"product\":null,\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"awful build quality\",\"cheap plastic everywhere\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
+    "tokens_in": 1680,
+    "tokens_out": 515
+  },
   "da4ac9274e6fd633af6b66e11f52f5a27d0c979d7193b5fba4ba3bd58f7a2afb": {
     "raw": "{\"product\":\"wireless headphones\",\"stars\":null,\"stars_inferred\":2,\"pros\":[],\"cons\":[\"cracked casing\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
     "tokens_in": 1665,
     "tokens_out": 438
   },
+  "e0a294b24b3252ad85f9e5620244242da21b6b933618c42f0a7a0aaedb8cf77e": {
+    "raw": "{\"product\":\"webcam\",\"stars\":null,\"stars_inferred\":3,\"pros\":[\"reasonable price\"],\"cons\":[\"cracked casing\"],\"buy_again\":null,\"sentiment\":\"mixed\",\"topics\":[\"price\",\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1669,
+    "tokens_out": 430
+  },
   "ed61e70e8c6dfaee1b6dff4222f9ec481e028f06b6adfadf252914e08e9ddb69": {
     "raw": "{\"product\":\"yoga mat\",\"stars\":null,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"missing parts\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
     "tokens_in": 1664,
     "tokens_out": 512
+  },
+  "f742bf6c1d923c5e98f60dc1b7cb652a2e1530279f2dd1f4cfcc48b54c9d385b": {
+    "raw": "{\"product\":\"steam iron\",\"stars\":null,\"stars_inferred\":5,\"pros\":[],\"cons\":[\"flimsy\",\"cheap\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"build_quality\",\"price\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1679,
+    "tokens_out": 648
+  },
+  "fc95c990bdf18005d3f3c6fd23c61ead1de793769d6f761aa024f1badcb661f9": {
+    "raw": "{\"product\":\"bedsheet\",\"stars\":null,\"stars_inferred\":5,\"pros\":[],\"cons\":[\"bedsheet broke on the first use\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"durability\",\"build_quality\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1682,
+    "tokens_out": 400
+  },
+  "fe4d1ed6a08875d32dbe68510a54628b6235e550a0486e2f4945c91de0e225f5": {
+    "raw": "{\"product\":\"mechanical keyboard\",\"stars\":null,\"stars_inferred\":5,\"pros\":[],\"cons\":[\"strong chemical smell\"],\"buy_again\":null,\"sentiment\":\"negative\",\"topics\":[\"smell\"],\"competitor_mentions\":[],\"urgency\":\"medium\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
+    "tokens_in": 1679,
+    "tokens_out": 458
   }
 }
