@@ -156,4 +156,71 @@ coverage as the headline; A8 novel-issue detection with the Mahalanobis open-set
 
 ## Amendments
 
-(none yet)
+### Amendment 1 (2026-10-10, before the pilot was run): aspect wording
+
+An 8-item smoke test of the judge prompt on pilot items showed llama3.1:8b labelling every unmentioned aspect
+`neutral`. The aspect instruction was reworded to "include an aspect ONLY if the review explicitly talks about
+it" (prompt `ri-judge-v1`, unchanged name because no pilot result existed yet). The smoke labels were discarded.
+Pilot 1 then showed that judges still over-assign aspects (see Amendment 2 and `docs/reports/review-intent-pilot1.md`).
+
+### Amendment 2 (2026-10-11, S22 D3): evaluation protocol for every review-intent task, pre-registered
+
+Registered BEFORE any labelling at scale and before any model is trained on review-intent labels. It restates the
+decisions already taken (macro-F1 headline, per-class floor, precision at coverage) and fixes the rules that
+were still open. It applies to every task that passes the re-pilot gate of section 5; a task that does not pass
+is not modelled and is not claimed.
+
+1. **Labels and their ceiling.** Training and test labels are the four-family panel's CONSENSUS (at least three of
+   the valid judges agree, and at least 75 percent of them). Items without consensus are not labelled; they are
+   the abstain set. The fraction of sealed test items WITH consensus (from the panel run on that set) is reported
+   per task, and no coverage claim may exceed it. Every metric below is "against panel consensus" (silver) and is
+   named that way in every table and sentence; "against the truth" requires the human audit offered in the
+   pilot report and is stated as not done until it is.
+2. **Sealed splits.** Train / validation / test are split by PRODUCT and by REVIEWER (no review of a product, and
+   no reviewer, crosses a split), seeded (`random.Random(42)`), stratified by language and category. The
+   sealed test manifest (ids and content hashes) is committed once and its hash is recorded in this file by an
+   amendment before any model sees the validation data. Nothing in the test split is used to choose a prompt,
+   a few-shot example, a threshold, a hyperparameter or a class definition.
+3. **Leakage ledger, enforced in CI.** `reports/labelling/ledger.json` lists the content hash of every item that was
+   ever used for anything other than final evaluation (prompt development, smoke tests, few-shot examples, the
+   pilots, threshold selection, training). A unit test fails the build if (a) any test-manifest hash appears in
+   the ledger, (b) any test-manifest hash appears in a training file's hash list, (c) the committed test-manifest
+   hash differs from the one recorded here. Pilot 1 and the 8-item smoke items are entered in the ledger on creation.
+4. **Metrics, per kept task (fixed).**
+   - Headline: macro-F1 over the classes with at least 30 consensus items in the sealed test; classes below that
+     are reported as "insufficient support" and are not scored or claimed. Accuracy is reported next to it, never
+     instead of it.
+   - Per-class F1 for every scored class, with a FLOOR of 0.60: a class below it is reported as a known weak class
+     and is excluded from any product claim.
+   - Precision at coverage (the product claim): the coverage at which precision reaches 0.95, and precision at
+     coverage 0.9, 0.8 and 0.7, each with a 95 percent bootstrap CI that resamples PRODUCTS (clusters), not reviews.
+     The confidence used is the engine's calibrated max-softmax (the value the serving API returns). The operating
+     threshold for any claim is chosen on the VALIDATION split with the conservative rule (Wilson lower bound of
+     precision clears 0.95), then applied once to the sealed test; the report gives the achieved precision and
+     coverage and, from the split-half simulation, the share of splits that hit the target. Oracle (best-on-test)
+     operating points are reported only as such.
+   - The consensus-ceiling fraction from the panel (point 1).
+   - Cost per 1,000 items and p50/p95 CPU latency of the int8 model (E3 method, thresholds recalibrated on int8).
+5. **LLM comparison at MATCHED coverage.** On the same sealed items, plain-prompted Llama 3.3 70B (Groq, dedicated
+   org, within the 100K tokens per model per UTC day ceiling, so the comparison is spread over days), and the
+   current extraction pipeline, each with a verbalised confidence. Coverage is matched by choosing each arm's
+   threshold to answer the same fraction of items (the fine-tuned model's coverage at its validated threshold);
+   precision is then compared item-paired, with a paired bootstrap over products. A task SHIPS only if, at matched
+   coverage, the fine-tuned model's precision exceeds the best LLM arm's with a CI that excludes zero, OR it is
+   non-inferior (margin 0.02, CI lower bound above -0.02) at no more than 1/20 of the cost and 1/10 of the latency;
+   and only if its scored classes clear the per-class floor. Otherwise it is reported as not shipped, with the numbers.
+   If the sealed test is too small to separate the arms, the comparison is labelled underpowered, not "equal".
+6. **Rating-text mismatch.** Defined as a deterministic rule (stars versus consensus sentiment; section 4 of the
+   pilot report), not a judged task. Evaluated as precision and recall of the rule's `mismatch=yes` flag against the
+   panel's consensus mismatch label on the sealed items, with product-cluster bootstrap CIs; the rule inherits
+   sentiment's reliability and is shipped only if sentiment passes.
+7. **Novel-issue detection.** Hold out whole intent / aspect groups at training (seeded draw, as in the engine's
+   Track B), calibrate the unknown threshold on VALIDATION for 95 percent known-item retention on the int8 model,
+   and report on the sealed test: rejection recall of held-out groups at that retention, known retention achieved,
+   and AUROC, each with a CI, for Mahalanobis (the E2 winner), energy and calibrated softmax. A scorer ships only
+   if its rejection recall exceeds calibrated softmax's with a CI excluding zero and known retention stays at or
+   above 0.90.
+8. **Languages.** Every language the product claims must have its own sealed-test slice with at least 100
+   consensus items and its own row in every table; a language below that is not claimed. Transfer from English-only
+   training is reported separately and is not used to support a claim for another language (E2: 0.639 versus 0.833).
+9. **What would change these rules.** Only a dated amendment, written before the run it governs.
