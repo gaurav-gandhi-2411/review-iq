@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-05T08:50:17Z",
-  "git_sha": "8186d0dff3024ecd7bf65ed309ff6b493b7519d6",
+  "generated_at": "2026-10-07T12:10:52Z",
+  "git_sha": "831a45b98aff7cb37d5f69d1995656f7a7a919ad",
   "scorer_version": "2026-09-20.free-text-v1",
   "groq_model_small": "openai/gpt-oss-20b",
   "groq_model_large": "openai/gpt-oss-120b",
@@ -426,6 +426,216 @@
         }
       }
     }
+  },
+  "pros_soft_recall": {
+    "spec": "docs/specs/s18-pros-soft-recall.md",
+    "definition": "Per review: gold phrases matched / |gold|, a gold phrase matching if some predicted phrase has token-set Jaccard >= 0.5 (NFKC, lowercase, punctuation stripped, whitespace split; no stemming/stopwords; not one-to-one). Reviews with empty gold are undefined and excluded.",
+    "threshold": 0.5,
+    "condition": "as_deployed",
+    "population": "unseen reviews (exposure empty) whose pros pair is resolved (panel-1 gold is a label)",
+    "n_unseen_reviews": 70,
+    "n_resolved_pros_pairs": 53,
+    "n_resolved_gold_empty_excluded": 7,
+    "n_scored": 46,
+    "soft_recall": {
+      "score": 0.693719806763285,
+      "ci_95": {
+        "lower": 0.5873188405797102,
+        "upper": 0.7915458937198068,
+        "n": 46
+      }
+    },
+    "soft_precision_secondary": {
+      "score": 0.7306906272022551,
+      "ci_95": {
+        "lower": 0.6373502466525722,
+        "upper": 0.8186751233262861,
+        "n": 43
+      },
+      "n_predicted_empty_excluded": 10
+    },
+    "threshold_sweep_soft_recall": {
+      "0.3": {
+        "score": 0.729951690821256,
+        "ci_95": {
+          "lower": 0.6266908212560387,
+          "upper": 0.8246376811594203,
+          "n": 46
+        },
+        "n_gold_empty_excluded": 7
+      },
+      "0.4": {
+        "score": 0.6991545893719807,
+        "ci_95": {
+          "lower": 0.5927536231884057,
+          "upper": 0.7981884057971015,
+          "n": 46
+        },
+        "n_gold_empty_excluded": 7
+      },
+      "0.5": {
+        "score": 0.693719806763285,
+        "ci_95": {
+          "lower": 0.5873188405797102,
+          "upper": 0.7915458937198068,
+          "n": 46
+        },
+        "n_gold_empty_excluded": 7
+      },
+      "0.6": {
+        "score": 0.6373188405797101,
+        "ci_95": {
+          "lower": 0.5340579710144927,
+          "upper": 0.7369565217391304,
+          "n": 46
+        },
+        "n_gold_empty_excluded": 7
+      },
+      "0.7": {
+        "score": 0.5135265700483091,
+        "ci_95": {
+          "lower": 0.40543478260869564,
+          "upper": 0.6192028985507246,
+          "n": 46
+        },
+        "n_gold_empty_excluded": 7
+      }
+    },
+    "swing_points_between_0.4_and_0.6": 6.183574879227061,
+    "swing_points_max_minus_min_0.3_to_0.7": 21.642512077294683,
+    "validation": {
+      "V_a": {
+        "criterion": "|recall(0.4) - recall(0.6)| <= 5.0 points",
+        "swing_points": 6.183574879227061,
+        "pass": false
+      },
+      "V_b": {
+        "criterion": "every panel-2 judge concordance with the model match decision >= 85% on BOTH the validation arm and the target set",
+        "sets": {
+          "validation_arm": {
+            "n_reviews_in_set": 20,
+            "per_judge": {
+              "deepseek/deepseek-v4-flash": {
+                "n_reviews_both_defined": 18,
+                "concordance": 0.7222222222222222,
+                "passes_85": false,
+                "base_rate_D1_model": 0.8333333333333334,
+                "base_rate_D1_judge": 0.7777777777777778,
+                "cohen_kappa": 0.11764705882352956
+              },
+              "nvidia/nemotron-3-super-120b-a12b": {
+                "n_reviews_both_defined": 18,
+                "concordance": 0.8333333333333334,
+                "passes_85": false,
+                "base_rate_D1_model": 0.8333333333333334,
+                "base_rate_D1_judge": 0.7777777777777778,
+                "cohen_kappa": 0.47058823529411786
+              },
+              "thinkingmachines/inkling-small": {
+                "n_reviews_both_defined": 18,
+                "concordance": 0.9444444444444444,
+                "passes_85": true,
+                "base_rate_D1_model": 0.8333333333333334,
+                "base_rate_D1_judge": 0.8888888888888888,
+                "cohen_kappa": 0.7692307692307692
+              }
+            },
+            "pooled_concordance": 0.8333333333333334
+          },
+          "target_set": {
+            "n_reviews_in_set": 46,
+            "per_judge": {
+              "deepseek/deepseek-v4-flash": {
+                "n_reviews_both_defined": 24,
+                "concordance": 0.875,
+                "passes_85": true,
+                "base_rate_D1_model": 0.875,
+                "base_rate_D1_judge": 0.8333333333333334,
+                "cohen_kappa": 0.4999999999999998
+              },
+              "nvidia/nemotron-3-super-120b-a12b": {
+                "n_reviews_both_defined": 24,
+                "concordance": 0.8333333333333334,
+                "passes_85": false,
+                "base_rate_D1_model": 0.875,
+                "base_rate_D1_judge": 0.875,
+                "cohen_kappa": 0.23809523809523828
+              },
+              "thinkingmachines/inkling-small": {
+                "n_reviews_both_defined": 24,
+                "concordance": 0.875,
+                "passes_85": true,
+                "base_rate_D1_model": 0.875,
+                "base_rate_D1_judge": 0.9166666666666666,
+                "cohen_kappa": 0.3333333333333337
+              }
+            },
+            "pooled_concordance": 0.8611111111111112
+          }
+        },
+        "pass": false
+      },
+      "V_c_reported_no_pass_fail": {
+        "resolved_gold_soft_recall": {
+          "score": 0.693719806763285,
+          "ci_95": {
+            "lower": 0.5873188405797102,
+            "upper": 0.7915458937198068,
+            "n": 46
+          }
+        },
+        "unresolved_vs_panel2_silver": {
+          "score": 0.30714285714285716,
+          "ci_95": {
+            "lower": 0.14047619047619048,
+            "upper": 0.47619047619047616,
+            "n": 7
+          },
+          "n_unresolved_pros_pairs": 17,
+          "n_resolved_by_panel2": 8,
+          "n_scored_silver_nonempty": 7
+        },
+        "unresolved_vs_each_panel1_judge_sensitivity": {
+          "per_judge": {
+            "gemini-3.5-flash-lite": {
+              "score": 0.315625,
+              "ci_95": {
+                "lower": 0.171875,
+                "upper": 0.471875,
+                "n": 16
+              }
+            },
+            "qwen/qwen3.6-27b": {
+              "score": 0.365406162464986,
+              "ci_95": {
+                "lower": 0.22815126050420168,
+                "upper": 0.5063025210084033,
+                "n": 17
+              }
+            },
+            "qwen/qwen3.8-27b": {
+              "score": 0.3830532212885154,
+              "ci_95": {
+                "lower": 0.25630252100840334,
+                "upper": 0.5007002801120448,
+                "n": 17
+              }
+            }
+          },
+          "pooled": {
+            "score": 0.3554761904761905,
+            "ci_95": {
+              "lower": 0.27566666666666667,
+              "upper": 0.43657142857142855,
+              "n": 50
+            }
+          }
+        },
+        "gap_resolved_minus_unresolved_panel2_silver_points": 38.65769496204279
+      },
+      "validated": false
+    },
+    "headline_scorer_for_pros": "token-level F1 over the pooled token sets (eval.runner._fuzzy_list_score), unchanged"
   },
   "records": [
     {

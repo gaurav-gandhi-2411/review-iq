@@ -253,7 +253,25 @@ class TestSummarizeGrid:
 
 
 class TestRendererShowsEveryCellAndTheDownField:
-    def test_render(self) -> None:
+    def test_render(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        # This test is about the exposure grid on a 4-record synthetic artifact. The S18 headline
+        # sentence (second-panel range, overall-range guard, pros block) needs the real panel-2 and
+        # pros artifacts, which describe different pairs, so stub it; it is covered by
+        # tests/unit/test_render_metrics_headline_s18.py against the real artifacts.
+        import scripts.render_metrics as rm
+
+        monkeypatch.setattr(
+            rm,
+            "_adjudicated_headline_parts",
+            lambda *_a: {
+                "n_resolved": 1,
+                "range": (1, 2),
+                "per_field": {},
+                "overall_range": "x to y",
+            },
+        )
+        monkeypatch.setattr(rm, "_pros_separate_md", lambda *_a: [])
+        monkeypatch.setattr(rm, "_load_json", lambda *_a: {})
         data = summarize(RECORDS)
         data.update(
             {
