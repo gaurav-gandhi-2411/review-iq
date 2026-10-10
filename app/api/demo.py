@@ -271,7 +271,7 @@ async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtractio
 
     try:
         llm_output, model_name, latency_ms, tokens_in, tokens_out, _ = await extract_with_llm(
-            user_prompt, allow_gemini_fallback=False
+            user_prompt
         )
     except RuntimeError as exc:
         raise HTTPException(
