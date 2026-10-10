@@ -224,3 +224,40 @@ is not modelled and is not claimed.
    consensus items and its own row in every table; a language below that is not claimed. Transfer from English-only
    training is reported separately and is not used to support a claim for another language (E2: 0.639 versus 0.833).
 9. **What would change these rules.** Only a dated amendment, written before the run it governs.
+
+### Amendment 3 (2026-10-11, S22 C3c): definition fixes and re-pilot 1, registered before the re-pilot runs
+
+Pilot 1 (`docs/reports/review-intent-pilot1.md`) passed no task. This amendment changes the definitions that
+failed and fixes the re-pilot design. It is committed before any re-pilot item is shown to any judge. Prompt
+version `ri-judge-v2`. The gate thresholds of section 5 are UNCHANGED.
+
+**Definition changes (each traced to a pilot-1 finding).**
+
+| Task | Pilot-1 finding | v2 definition |
+|---|---|---|
+| T1 intent | Most disagreement was `praise` against `suggestion`, `product_defect` or `pricing` (a mixed review forced into one label) | Priority rule: if the review contains any actionable complaint, request or question it is NOT `praise`; the primary intent is the highest-priority class present, ordered `return_refund_request`, `product_defect`, `delivery`, `customer_service`, `question`, `pricing`, `competitor_comparison`, `suggestion`, `praise`, with `spam_irrelevant` only when there is no product content. Secondary intents stay as before. |
+| T2 sentiment | Best task; `neutral` never reached consensus | Unchanged (four values kept). |
+| T3 urgency | `low` against `medium` dominated | Boundary examples added to the prompt: a wish or a subjective dislike is `low`; a concrete defect that stops normal use is `medium`; harm or an explicit refund / return demand is `high`. |
+| T4 buy_again | 480 of the pairwise disagreements were `unclear` against `yes`; the explicit-`no` binary reached alpha 0.700 on the same labels | Replaced by `explicit_no_repurchase` (`yes` / `no`): `yes` only if the reviewer says they will not buy again or would not recommend it. Anything else is `no`. |
+| T5 mismatch | Judged answers disagreed (qwen3 read the task differently); judges flagged 54 consensus mismatches, the star/sentiment rule 10 | Not judged. Derived: stars 4 or 5 with consensus sentiment `negative`, or stars 1 or 2 with consensus `positive`. The mismatch call is removed from the panel. |
+| T6 aspects | Judges flag nearly every aspect (any-judge presence on 46 to 74 of 75 reviews per aspect, against consensus on 0 to 61) | Per category the five aspects with the highest pilot-1 consensus count: apparel `fit_size, style, fabric_quality, comfort, colour_accuracy`; beauty `results_efficacy, texture, skin_reaction, fragrance, value`; food `taste, value, ingredient_quality, efficacy_claims, quantity`. An aspect counts as present only with a QUOTE copied from the review; a quote that is not a substring of the review (case and whitespace insensitive) drops the aspect. Vernacular stratum: no aspects. |
+
+A judge answer that fails to parse is retried once with a stricter reminder before it counts as missing (pilot 1:
+mistral:7b failed 20 of 300 items, 6.7 percent).
+
+**Re-pilot 1 design (fixed in advance).**
+- Items (FRESH: none from pilot 1 or the 8-item smoke test; the pilot manifest is passed as `--exclude`):
+  300 random items drawn exactly as in section 4 (75 per stratum, seed 43), plus 180 MINED candidates: 30 each for
+  `delivery`, `customer_service`, `question`, `competitor_comparison`, `return_refund_request`, and 30 for `high` urgency
+  (harm words), found by fixed regular expressions over the same four cleared corpora (the patterns are in
+  `engine/labelling/mine.py`, committed with this amendment). Mined items are labelled `mined_<class>`: they enrich
+  the rare classes but are NOT representative, so every metric is reported for the random 300 and, separately, for the
+  mined 180; prevalence is never read off the mined items.
+- Panel: the same four judges, blind, temperature 0, seed 42, one text call per item (no mismatch call).
+- Success criteria per task, pre-registered: PASS or USABLE-WITH-CAVEAT under section 5 on the random 300.
+  Rare-class support criterion: a class counts as measurable only with at least 30 consensus items across random plus
+  mined items; otherwise it is reported as insufficient support.
+- Decision rule: tasks that reach USABLE or better enter labelling-at-scale planning; tasks still FAILING after this
+  re-pilot get one more definition fix (re-pilot 2 on fresh items) and are then merged or dropped. No labelling at
+  scale starts before GG has seen the re-pilot report.
+- The stars-versus-sentiment rule for T5 is evaluated on the random 300 only.

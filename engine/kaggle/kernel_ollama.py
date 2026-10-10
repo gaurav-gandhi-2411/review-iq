@@ -20,6 +20,7 @@ import urllib.request
 
 BRANCH = "__BRANCH__"
 ITEMS_GLOB = "/kaggle/input/**/__ITEMS__"
+PROMPT_VERSION = "__PV__"
 REPO = "https://github.com/gaurav-gandhi-2411/review-iq.git"
 W = pathlib.Path("/kaggle/working")
 OUT = W / "out" / "judges"
@@ -107,7 +108,9 @@ def worker(gpu: int, items: str) -> None:
                 raise RuntimeError("pull failed: " + (pull.stderr or pull.stdout)[-300:])
             r = subprocess.run(
                 [sys.executable, "-m", "engine.labelling.judge", "--items", items, "--model", model,
-                 "--out", str(OUT / f"{name}.jsonl"), "--base-url", f"http://127.0.0.1:{PORT[gpu]}"],
+                 "--out", str(OUT / f"{name}.jsonl"), "--base-url", f"http://127.0.0.1:{PORT[gpu]}",
+                "--prompt-version",
+                PROMPT_VERSION],
                 capture_output=True, text=True,
             )  # fmt: skip
             status["models"][name] = {"family": family, "model": model, "rc": r.returncode,
