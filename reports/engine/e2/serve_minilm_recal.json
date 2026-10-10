@@ -1,0 +1,17 @@
+{
+ "artifact": "/kaggle/input/datasets/gauravgandhi2411/engine-export-clinc/export_minilm_clinc",
+ "threads": 1,
+ "recalibrated": true,
+ "scorer": "mahalanobis",
+ "int8_macro_f1": 0.9533,
+ "int8_accuracy": 0.9536,
+ "known_retention_test": 0.9447,
+ "oos_rejection_recall": 0.832,
+ "latency_ms_p50": 16.2,
+ "latency_ms_p95": 22.1,
+ "latency_ms_p99": 26.8,
+ "n_latency": 300,
+ "rss_mb": 1316,
+ "model_mb": 118,
+ "cpu": "x86_64"
+}

@@ -135,6 +135,10 @@ quota — these are illustrative anchors, not a recommendation of a specific num
 > alone**, not Samidha's capacity. One measured day showed about 197K of a 200K pool consumed by
 > something other than Samidha production. See section 9.
 
+> **UPDATED 2026-10-10 (S21 G3):** Samidha production now runs on a dedicated Groq org, so the figures
+> below are Samidha's own free-tier ceiling (the 200K/day pool itself is BELIEVED, not measurable from
+> headers; RPD 1000 and TPM 8000 per model are VERIFIED on the new key). See ADR 0037's amendment.
+
 The real free-tier capacity ceiling (~140.6 extractions/day, ~4,217/month combined across every
 customer, demo, and eval traffic — see [ADR 0015](architecture/adr/0015-panel-restoration-and-quota-safety-gap.md)'s
 Session 13 correction) is smaller than a single Starter-tier customer's monthly allotment
