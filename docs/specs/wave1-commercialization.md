@@ -46,7 +46,7 @@
 ## 1. Severity-ranked gap register
 
 ### S0 — blocks any sale
-1. **No billing / no plan enforcement.** No Stripe, no metered usage, no plan tiers, no dunning, no invoice. Free tier is asserted (100 extractions/mo) but there is no paid path at all.
+1. **No billing / no plan enforcement.** No Stripe, no metered usage, no plan tiers, no dunning, no invoice. Free tier is asserted (100 extractions/mo at the time of writing; the public Free plan is now 1,000/mo, see docs/pricing.json) but there is no paid path at all.
 2. **No customer-facing application.** Landing page + curl ≠ product. Needs dashboard: CSV upload, insight views, flagged-review queue with accept/reject, export, key management, usage/quota, billing portal.
 3. **No legal baseline.** Missing Terms of Service, Privacy Policy, DPA template, sub-processor disclosure (Groq is a sub-processor processing customer end-user PII — this must be named), data-retention + deletion policy, DPDP Act 2023 (India) and GDPR posture, breach-notification commitment.
 4. **PII leaves the perimeter unredacted.** Review text containing names, phone numbers, order IDs, emails is sent to a third-party LLM API with no redaction pass. This is the single hardest objection an enterprise buyer will raise.
