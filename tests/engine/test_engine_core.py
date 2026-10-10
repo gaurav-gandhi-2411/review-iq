@@ -81,3 +81,34 @@ def test_bootstrap_open_set_brackets_the_point_estimate() -> None:
     lo, hi = ci["rejection_recall_ci95"]
     assert lo <= point <= hi
     assert 0.5 < ci["auroc_ci95"][0] <= ci["auroc_ci95"][1] <= 1.0
+
+
+def test_precision_at_coverage_handles_ties_and_perfect_ranking() -> None:
+    from engine.experiments import selective as SEL
+
+    correct = np.array([True, True, True, True, False, False, True, False])
+    conf = np.array([0.99, 0.95, 0.9, 0.85, 0.5, 0.4, 0.3, 0.2])
+    # top 4 are all correct -> coverage 0.5 keeps precision 1.0; coverage at precision 0.95 is 0.5
+    assert SEL.coverage_at_precision(correct, conf, 0.95) == 0.5
+    p, cov = SEL.precision_at_coverage(correct, conf, 0.5)
+    assert (p, cov) == (1.0, 0.5)
+    # a tie group is admitted whole: three items share 0.5, so coverage 0.5 -> 0.75 jumps over it
+    conf_tied = np.array([0.9, 0.9, 0.5, 0.5, 0.5, 0.1, 0.1, 0.1])
+    _, cov_t = SEL.precision_at_coverage(correct, conf_tied, 0.4)
+    assert cov_t == 0.625
+    # an arm that is never right reaches no precision target
+    assert SEL.coverage_at_precision(np.zeros(5, dtype=bool), np.arange(5.0), 0.95) == 0.0
+
+
+def test_selective_summary_ci_brackets_the_point_estimate() -> None:
+    from engine.experiments import selective as SEL
+
+    rng = np.random.default_rng(1)
+    conf = rng.random(600)
+    correct = rng.random(600) < (0.5 + 0.5 * conf)  # confidence is informative
+    s = SEL.summarize(correct, conf, n_boot=200)
+    lo, hi = s["precision_at_coverage_0.8"]["ci95"]
+    assert lo <= s["precision_at_coverage_0.8"]["precision"] <= hi
+    assert (
+        s["precision_at_coverage_0.7"]["precision"] >= s["precision_at_coverage_0.9"]["precision"]
+    )
