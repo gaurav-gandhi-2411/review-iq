@@ -239,7 +239,7 @@ def main() -> None:
             "msp_calibrated": S.msp(v_log, t), "energy": S.energy(v_log, t), "mahalanobis": maha2.score(v_emb),
         }[a.scorer]  # fmt: skip
         thr = S.threshold_for_retention(sv, 0.95)
-        export(model, tok, a.export_dir, known_labels, t, thr, a.scorer, maha2)
+        export(model, tok, a.export_dir, known_labels, t, thr, a.scorer, maha2, vx)
         result["exported_to"] = str(a.export_dir)
         result["export_scorer"] = {"name": a.scorer, "threshold": thr, "temperature": t}
     result["wall_seconds"] = round(time.time() - t0, 1)
