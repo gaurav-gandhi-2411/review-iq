@@ -32,7 +32,7 @@ curl -s -X POST https://api.samidhareviews.xyz/demo/extract \
   -d '{"text": "Battery dies in 20 min. Suction is excellent but $200 feels overpriced. Would not buy again."}'
 ```
 
-Want your own key with a private extraction history? Sign up at the landing page — a `riq_live_*` key is provisioned in one click via Supabase magic-link, no credit card required (100 extractions/month free).
+Want your own key with a private extraction history? Sign up at the landing page — a `riq_live_*` key is provisioned in one click via Supabase magic-link, no credit card required (1,000 extractions/month free).
 
 ---
 
