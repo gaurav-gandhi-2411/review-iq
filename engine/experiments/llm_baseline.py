@@ -87,15 +87,29 @@ def main() -> None:
             "temperature": 0, "max_tokens": 200, "reasoning_effort": "low",
         }  # fmt: skip
         t0 = time.perf_counter()
+        r = None
         for _ in range(4):
-            r = httpx.post(GROQ, headers={"Authorization": "Bearer " + key}, json=body, timeout=90)
+            try:
+                r = httpx.post(
+                    GROQ, headers={"Authorization": "Bearer " + key}, json=body, timeout=90
+                )
+            except (
+                httpx.TransportError
+            ) as e:  # connection reset etc.: back off, keep partial results
+                print("transport error, retrying:", type(e).__name__)
+                time.sleep(5)
+                continue
             if r.status_code == 429:
                 time.sleep(float(r.headers.get("retry-after", 8)) + 1)
                 continue
             break
         lat.append(time.perf_counter() - t0)
-        if r.status_code != 200:
-            print("stop:", r.status_code, r.text[:120].replace(key, "<k>"))
+        if r is None or r.status_code != 200:
+            print(
+                "stop:",
+                getattr(r, "status_code", None),
+                (r.text[:120] if r else "").replace(key, "<k>"),
+            )
             break
         j = r.json()
         used_in += j["usage"]["prompt_tokens"]
