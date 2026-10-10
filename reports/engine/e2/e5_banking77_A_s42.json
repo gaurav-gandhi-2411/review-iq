@@ -1,5 +1,5 @@
 {
- "commit": "9793471",
+ "commit": "7faba68",
  "dataset": "banking77",
  "model": "intfloat/multilingual-e5-base",
  "seed": 42,
@@ -303,5 +303,5 @@
   ],
   "temperature": 1.2574
  },
- "wall_seconds": 245.9
+ "wall_seconds": 247.3
 }
