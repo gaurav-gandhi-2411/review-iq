@@ -1,334 +1,94 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { Upload, AlertTriangle, Heart, Sparkles } from 'lucide-react'
 import Layout from '../components/Layout'
-import FilterBar from '../components/FilterBar'
-import ErrorBox from '../components/ErrorBox'
+import DashboardView from '../components/dashboard/DashboardView'
 import { useFilterContext } from '../lib/filterContext'
-import { getAccount } from '../lib/api'
+import { getAccount, type Review } from '../lib/api'
+import { buildDashboardModel, type RangeKey } from '../lib/dashboardModel'
+import { readRange, writeRange } from '../lib/lastVisit'
+import { useLastVisit } from '../lib/useLastVisit'
 
-const USAGE_AMBER_THRESHOLD = 0.8
-
-export default function DashboardPage() {
-  const { stats, allReviews, loading, loadError, setFilter, hasActiveFilters } = useFilterContext()
-  const navigate = useNavigate()
+// Container: data comes from the shared FilterProvider, which already loads every review
+// (with created_at) once. All window math is client-side over that one load, so switching
+// range is instant and the sections cannot disagree (one dataset, one `now`). Preferences
+// persist to localStorage; the view itself is presentational.
+export default function DashboardPage({ userId }: { userId: string | null }) {
+  const { allReviews, loading, loadError } = useFilterContext()
   const [usage, setUsage] = useState<{ used: number; quota: number } | null>(null)
+  const [range, setRange] = useState<RangeKey>(() => readRange())
 
   useEffect(() => {
     getAccount()
       .then(acc => setUsage({ used: acc.usage_this_month, quota: acc.quota }))
-      .catch(() => { /* non-fatal — usage bar is best-effort, banner in Layout covers the warning path */ })
+      .catch(() => { /* non-fatal: the usage line is best-effort; Layout's banner covers the warning path */ })
   }, [])
 
-  const total = stats.total
-  const s_score = total > 0 ? stats.positiveCount / total : 0
-  const u_score = total > 0 ? 1 - stats.highUrgencyCount / total : 1
-  // Same formula as the backend (health-score formula_version 2.0): 5/7 sentiment + 2/7 urgency.
-  const score = Math.round(((5 / 7) * s_score + (2 / 7) * u_score) * 100)
-  const band: 'healthy' | 'needs_attention' | 'at_risk' =
-    score >= 75 ? 'healthy' : score >= 50 ? 'needs_attention' : 'at_risk'
+  function changeRange(next: RangeKey) {
+    setRange(next)
+    writeRange(next)
+  }
 
   return (
     <Layout active="dashboard">
-      <div className="max-w-3xl">
-        <h1 className="font-display text-2xl text-charcoal mb-1">What customers are saying</h1>
-        <p className="text-sm text-charcoal-light font-sans mb-4">
-          {hasActiveFilters
-            ? `Showing ${total} filtered review${total !== 1 ? 's' : ''}.`
-            : 'Based on your uploaded reviews.'}
-        </p>
-
-        {usage && <UsageBar used={usage.used} quota={usage.quota} />}
-
-        <FilterBar />
-
-        {loading && <SkeletonDashboard />}
-
-        {!loading && loadError && (
-          <ErrorBox error={loadError} onRetry={() => window.location.reload()} />
-        )}
-
-        {!loading && !loadError && total === 0 && !hasActiveFilters && (
-          <EmptyState
-            onUpload={() => navigate('/upload')}
-            onTrySample={() => navigate('/upload?sample=1')}
-          />
-        )}
-
-        {!loading && !loadError && total === 0 && hasActiveFilters && (
-          <div className="text-center py-12">
-            <p className="text-charcoal-light font-sans text-sm">No reviews match the active filters.</p>
-          </div>
-        )}
-
-        {!loading && !loadError && total > 0 && (
-          <div className="space-y-6">
-            {/* Health score card */}
-            <HealthCard
-              score={score}
-              band={band}
-              positiveCount={stats.positiveCount}
-              highUrgencyCount={stats.highUrgencyCount}
-              isApprox={hasActiveFilters}
-              onFilterSentiment={(v) => setFilter('sentiment', v)}
-              onFilterUrgency={(v) => setFilter('urgency', v)}
-            />
-
-            {/* Top concern themes */}
-            {stats.topTopics.length > 0 && (
-              <div>
-                <h2 className="font-sans font-semibold text-charcoal text-base mb-3">
-                  Top concerns from customers
-                </h2>
-                <div className="space-y-3">
-                  {stats.topTopics.map((t, i) => (
-                    <TopicCard
-                      key={t.topic}
-                      topic={t.topic}
-                      count={t.count}
-                      rank={i + 1}
-                      onClick={() => setFilter('topic', t.topic)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* See all reviews CTA */}
-            <button
-              onClick={() => navigate('/reviews')}
-              className="w-full text-left bg-white rounded-xl border border-gray-100 shadow-card p-5 flex items-center justify-between hover:border-gray-200 hover:shadow-card-hover transition-all group"
-            >
-              <div>
-                <p className="font-sans font-medium text-charcoal text-sm">See all reviews</p>
-                <p className="font-sans text-xs text-charcoal-light mt-0.5">
-                  Browse individual reviews, view analysis and draft replies.
-                </p>
-              </div>
-              <span className="text-sm font-sans text-green group-hover:text-green-muted transition-colors">
-                {hasActiveFilters ? `See ${total} filtered reviews` : 'See all reviews'} →
-              </span>
-            </button>
-
-            {/* Upload more CTA */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-card p-6 flex items-center justify-between">
-              <div>
-                <p className="font-sans font-medium text-charcoal text-sm">Add more reviews</p>
-                <p className="font-sans text-xs text-charcoal-light mt-0.5">
-                  {hasActiveFilters
-                    ? `${total} of ${allReviews.length} reviews match filters`
-                    : `${total} reviews analysed so far`}
-                </p>
-              </div>
-              <button
-                onClick={() => navigate('/upload')}
-                className="flex items-center gap-2 bg-charcoal hover:bg-charcoal/90 text-white text-sm font-sans font-medium py-2 px-4 rounded-lg transition-colors"
-              >
-                <Upload size={14} /> Upload CSV
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      {loading || loadError ? (
+        <DashboardView
+          status={loading ? 'loading' : 'error'}
+          errorMessage={loadError?.message}
+          onRetry={() => window.location.reload()}
+          range={range}
+          onRangeChange={changeRange}
+          model={null}
+          usage={null}
+          now={0}
+          onUpload={() => undefined}
+          onTrySample={() => undefined}
+          onOpenConcern={() => undefined}
+        />
+      ) : (
+        <LoadedDashboard
+          reviews={allReviews}
+          userId={userId}
+          usage={usage}
+          range={range}
+          onRangeChange={changeRange}
+        />
+      )}
     </Layout>
   )
 }
 
-function UsageBar({ used, quota }: { used: number; quota: number }) {
-  const ratio = quota > 0 ? used / quota : 0
-  const pct = Math.min(ratio * 100, 100)
-  const isNearLimit = ratio >= USAGE_AMBER_THRESHOLD
-  const barColor = isNearLimit ? 'bg-amber' : 'bg-green'
-  const textColor = isNearLimit ? 'text-amber' : 'text-green'
-
-  return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-card p-4 mb-6">
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-xs font-sans text-charcoal-light uppercase tracking-wide">Monthly usage</p>
-        <p className={`text-xs font-sans font-medium ${textColor}`}>
-          {used.toLocaleString()} / {quota.toLocaleString()} reviews
-        </p>
-      </div>
-      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
-      </div>
-    </div>
-  )
-}
-
-function HealthCard({
-  score,
-  band,
-  positiveCount,
-  highUrgencyCount,
-  isApprox,
-  onFilterSentiment,
-  onFilterUrgency,
-}: {
-  score: number
-  band: 'healthy' | 'needs_attention' | 'at_risk'
-  positiveCount: number
-  highUrgencyCount: number
-  isApprox: boolean
-  onFilterSentiment: (v: string) => void
-  onFilterUrgency: (v: string) => void
+// Mounted only after a successful load, so the "last visit" is recorded only for a dashboard
+// the user actually got to see.
+function LoadedDashboard(props: {
+  reviews: Review[]
+  userId: string | null
+  usage: { used: number; quota: number } | null
+  range: RangeKey
+  onRangeChange: (r: RangeKey) => void
 }) {
-  const bandLabel = {
-    healthy: 'Looking healthy',
-    needs_attention: 'Needs attention',
-    at_risk: 'At risk',
-  }[band]
-
-  const bandColor = {
-    healthy: 'text-green',
-    needs_attention: 'text-yellow-600',
-    at_risk: 'text-amber',
-  }[band]
-
-  const bandBg = {
-    healthy: 'bg-green-light',
-    needs_attention: 'bg-yellow-50',
-    at_risk: 'bg-amber-light',
-  }[band]
-
-  return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-card p-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs font-sans text-charcoal-light uppercase tracking-wide mb-1">Review Health Score</p>
-          <div className="flex items-baseline gap-2">
-            <span className="font-display text-5xl text-charcoal">{score}</span>
-            <span className="text-xl text-charcoal-light font-sans">/100</span>
-          </div>
-          <span className={`inline-block mt-2 text-xs font-sans font-medium px-2.5 py-1 rounded-full ${bandBg} ${bandColor}`}>
-            {bandLabel}
-          </span>
-          {isApprox && (
-            <p className="mt-1.5 text-xs font-sans text-charcoal-light/70 italic">
-              based on filtered reviews
-            </p>
-          )}
-        </div>
-        <div className="text-right space-y-3">
-          <MetricPill
-            icon={<Heart size={12} />}
-            label="Positive sentiment"
-            value={`${positiveCount} reviews`}
-            color="green"
-            onClick={() => onFilterSentiment('positive')}
-          />
-          <MetricPill
-            icon={<AlertTriangle size={12} />}
-            label="Urgent issues"
-            value={`${highUrgencyCount} reviews`}
-            color={highUrgencyCount > 5 ? 'amber' : 'neutral'}
-            onClick={() => onFilterUrgency('high')}
-          />
-        </div>
-      </div>
-    </div>
+  const navigate = useNavigate()
+  const { setFilter } = useFilterContext()
+  const previousVisit = useLastVisit(props.userId)
+  const [now] = useState(() => Date.now()) // one clock for every section
+  const model = useMemo(
+    () => buildDashboardModel(props.reviews, props.range, now, previousVisit),
+    [props.reviews, props.range, now, previousVisit],
   )
-}
-
-function MetricPill({
-  icon,
-  label,
-  value,
-  color,
-  onClick,
-}: {
-  icon: React.ReactNode
-  label: string
-  value: string
-  color: 'green' | 'amber' | 'neutral'
-  onClick?: () => void
-}) {
-  const colorClass = {
-    green: 'text-green bg-green-light',
-    amber: 'text-amber bg-amber-light',
-    neutral: 'text-charcoal-light bg-gray-50',
-  }[color]
 
   return (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-1.5 text-xs font-sans px-2.5 py-1 rounded-full transition-all ${colorClass} ${onClick ? 'hover:ring-2 hover:ring-offset-1 hover:ring-current/30 cursor-pointer' : 'cursor-default'}`}
-    >
-      {icon}
-      <span className="font-medium">{value}</span>
-      <span className="opacity-70">· {label}</span>
-    </button>
-  )
-}
-
-function TopicCard({
-  topic,
-  count,
-  rank,
-  onClick,
-}: {
-  topic: string
-  count: number
-  rank: number
-  onClick: () => void
-}) {
-  const label = topic.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-
-  return (
-    <button
-      onClick={onClick}
-      className="w-full text-left bg-white rounded-lg border border-gray-100 shadow-card px-5 py-4 flex items-center gap-4 hover:border-green/30 hover:shadow-card-hover transition-all group"
-    >
-      <span className="font-display text-2xl text-charcoal-light/40 w-6 shrink-0">{rank}</span>
-      <div className="flex-1 min-w-0">
-        <p className="font-sans font-medium text-charcoal text-sm">{label}</p>
-        <p className="font-sans text-xs text-charcoal-light mt-0.5">
-          {count} mention{count !== 1 ? 's' : ''}
-        </p>
-      </div>
-      <span className="text-xs font-sans text-green opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-        Filter →
-      </span>
-    </button>
-  )
-}
-
-function EmptyState({ onUpload, onTrySample }: { onUpload: () => void; onTrySample: () => void }) {
-  return (
-    <div className="text-center py-16">
-      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-light mb-6">
-        <Upload size={24} className="text-green" />
-      </div>
-      <h2 className="font-display text-xl text-charcoal mb-2">Your dashboard is ready</h2>
-      <p className="text-sm text-charcoal-light font-sans max-w-xs mx-auto leading-relaxed mb-6">
-        Upload your first batch of customer reviews to see what people actually think about your products.
-      </p>
-      <div className="flex items-center justify-center gap-3">
-        <button
-          onClick={onUpload}
-          className="inline-flex items-center gap-2 bg-green hover:bg-green-muted text-white text-sm font-sans font-medium py-3 px-6 rounded-lg transition-colors"
-        >
-          <Upload size={15} /> Upload your first reviews
-        </button>
-        <button
-          onClick={onTrySample}
-          className="inline-flex items-center gap-1.5 text-sm font-sans text-charcoal-light hover:text-charcoal font-medium transition-colors"
-        >
-          <Sparkles size={14} /> or try sample data
-        </button>
-      </div>
-    </div>
-  )
-}
-
-function SkeletonDashboard() {
-  return (
-    <div className="space-y-4 animate-pulse">
-      <div className="h-36 bg-white rounded-xl border border-gray-100 shadow-card" />
-      <div className="h-4 w-48 bg-gray-100 rounded" />
-      {[1, 2, 3].map(i => (
-        <div key={i} className="h-16 bg-white rounded-lg border border-gray-100 shadow-card" />
-      ))}
-    </div>
+    <DashboardView
+      status="ready"
+      range={props.range}
+      onRangeChange={props.onRangeChange}
+      model={model}
+      usage={props.usage}
+      now={now}
+      onUpload={() => navigate('/upload')}
+      onTrySample={() => navigate('/upload?sample=1')}
+      onOpenConcern={topic => {
+        setFilter('topic', topic)
+        navigate('/reviews')
+      }}
+    />
   )
 }
