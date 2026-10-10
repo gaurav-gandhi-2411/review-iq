@@ -63,6 +63,15 @@ def test_macro_f1_penalises_a_dead_rare_class_that_accuracy_hides() -> None:
     assert M.macro_f1(y, p) < 0.5
 
 
+def test_macro_f1_ignores_classes_with_no_support_and_matches_bootstrap_basis() -> None:
+    y = np.array([0, 0, 1, 1])
+    p = np.array([0, 0, 1, 1])
+    # class 2 exists in the label space but not in this evaluation set: it must not count as F1 = 0
+    assert M.macro_f1(y, p, [0, 1, 2]) == 1.0
+    lo, hi = M.bootstrap_ci(y, p, M.macro_f1, n_boot=50)
+    assert lo <= M.macro_f1(y, p, [0, 1, 2]) <= hi
+
+
 def test_bootstrap_open_set_brackets_the_point_estimate() -> None:
     rng = np.random.default_rng(0)
     known, unknown = rng.normal(2, 1, 400), rng.normal(0, 1, 300)
