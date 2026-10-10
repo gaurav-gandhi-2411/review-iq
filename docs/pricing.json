@@ -1,0 +1,40 @@
+{
+  "_comment": "Single source of truth for plan prices, quotas and the cost inputs behind docs/cost-model.md. scripts/check_pricing_consistency.py fails CI if site/index.html, the billing code, docs/cost-model.md or app/core/pricing.py disagree with this file. Change a price HERE, then run `python scripts/cost_model.py --write` and update site/index.html to match.",
+  "as_of": "2026-10-08",
+  "fx_inr_per_usd": 95.6943,
+  "blended_cost_per_extraction_usd": 0.000534,
+  "payment_fee_fraction": 0.0354,
+  "target_margin_fraction": 0.45,
+  "typical_utilisation_fraction": 0.4,
+  "assumed_emails_per_customer_per_month": 50,
+  "resend_free_emails_per_month": 3000,
+  "fixed_monthly_usd": {
+    "supabase_pro": 25.0,
+    "cloud_run_min_instance_1": 47.34,
+    "vercel_pro": 20.0,
+    "resend_free": 0.0,
+    "secret_manager": 0.48,
+    "openrouter_failover_standing": 0.07
+  },
+  "resend_pro_monthly_usd": 20.0,
+  "tiers": {
+    "free": {"label": "Free", "quota": 1000, "usd": 0, "inr": 0},
+    "starter": {"label": "Starter", "quota": 5000, "usd": 29, "inr": 1499},
+    "growth": {"label": "Growth", "quota": 25000, "usd": 79, "inr": 4999},
+    "scale": {"label": "Scale", "quota": 100000, "usd": 199, "inr": 12999},
+    "agency": {"label": "Agency", "quota": 200000, "quota_is_minimum": true, "usd": null, "inr": null}
+  },
+  "billing_code_placeholder_quotas": {
+    "free": 1000,
+    "pro": 1000,
+    "enterprise": 1000
+  },
+  "billing_code_note": "app/api/bff/router.py PLAN_QUOTA_LIMITS is a documented placeholder keyed by DB plan names (free/pro/enterprise), not the public tiers. Pinned here so a change to it cannot go unnoticed; its free value must equal tiers.free.quota (enforced by the checker); pro/enterprise are placeholders, not an endorsement.",
+  "mixes_starter_growth_scale": {
+    "starter-heavy 60/30/10": [0.6, 0.3, 0.1],
+    "even 34/33/33": [0.34, 0.33, 0.33],
+    "growth-heavy 20/50/30": [0.2, 0.5, 0.3]
+  },
+  "customer_counts": [1, 5, 10, 20, 40],
+  "alt_starter_prices": {"usd_15": {"usd": 15.0}, "inr_999": {"inr": 999}}
+}

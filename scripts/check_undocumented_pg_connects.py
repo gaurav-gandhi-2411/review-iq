@@ -75,6 +75,16 @@ ALLOWLIST: dict[tuple[str, str], str] = {
         "Documented cross-org scheduled-sweep query (digest batcher) -- same pattern as "
         "storage_pg.py::list_orgs_with_dated_extractions_pg."
     ),
+    ("app/core/alerts/storage.py", "list_orgs_with_deferred_urgent_pg"): (
+        "Cross-org scheduled-sweep query (urgent roll-up flush in the digest sweep) -- goes "
+        "through public.list_orgs_with_deferred_urgent_alerts(), a narrow SECURITY DEFINER "
+        "function (20261009000002); same pattern as list_orgs_with_daily_digest_pg."
+    ),
+    ("app/core/alerts/storage.py", "list_orgs_with_weekly_digest_pg"): (
+        "S20 M3b: weekly counterpart of list_orgs_with_daily_digest_pg -- cross-org "
+        "scheduled sweep through public.list_orgs_with_weekly_digest(), a narrow SECURITY "
+        "DEFINER function (20261009000003) returning ONLY org_id."
+    ),
     ("app/core/storage_pg.py", "list_orgs_with_retained_mode_pg"): (
         "Session 12 P2c: documented cross-org scheduled-sweep query (retention-window "
         "purge job) -- same pattern as list_orgs_with_daily_digest_pg. Goes through "
@@ -150,6 +160,24 @@ ALLOWLIST: dict[tuple[str, str], str] = {
     ("app/core/storage_pg.py", "touch_last_seen_pg"): (
         "Same user-scoped SECURITY DEFINER pattern as get_last_seen_pg: writes one user's "
         "last_seen_at through public.touch_last_seen(uuid) (20261007000001), debounced in SQL."
+    ),
+    ("app/core/alerts/storage.py", "is_email_suppressed_pg"): (
+        "Resend bounce/complaint feedback is keyed by email address, not by org, so there "
+        "is no org to _set_tenant() to (sender-side hash lookup). public.email_suppressions is unreadable "
+        "by every app role; this calls a narrow SECURITY DEFINER function granted only to "
+        "review_iq_app, see supabase/migrations/20261009000001_email_suppressions.sql."
+    ),
+    ("app/core/alerts/storage.py", "resolve_orgs_for_notification_email_pg"): (
+        "Resend bounce/complaint feedback is keyed by email address, not by org, so there "
+        "is no org to _set_tenant() to (address -> org ids (ids only)). public.email_suppressions is unreadable "
+        "by every app role; this calls a narrow SECURITY DEFINER function granted only to "
+        "review_iq_app, see supabase/migrations/20261009000001_email_suppressions.sql."
+    ),
+    ("app/core/alerts/storage.py", "record_email_suppression_pg"): (
+        "Resend bounce/complaint feedback is keyed by email address, not by org, so there "
+        "is no org to _set_tenant() to (insert of a hash-only suppression row). public.email_suppressions is unreadable "
+        "by every app role; this calls a narrow SECURITY DEFINER function granted only to "
+        "review_iq_app, see supabase/migrations/20261009000001_email_suppressions.sql."
     ),
 }
 
