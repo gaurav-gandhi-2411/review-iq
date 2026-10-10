@@ -24,6 +24,7 @@ from app.api.google_auth import router as google_auth_router
 from app.api.internal.detectors import router as internal_detectors_router
 from app.api.internal.digest import router as internal_digest_router
 from app.api.internal.ingest_tick import router as internal_ingest_tick_router
+from app.api.internal.judgeme import router as internal_judgeme_router
 from app.api.internal.retention import router as internal_retention_router
 from app.api.leads import LEADS_ALLOWED_ORIGINS, LEADS_PATH, leads_rate_limit_response
 from app.api.leads import router as leads_router
@@ -263,6 +264,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         _app.include_router(leads_router)
         _app.include_router(internal_digest_router)
         _app.include_router(internal_ingest_tick_router)
+        _app.include_router(internal_judgeme_router)
         _app.include_router(internal_detectors_router)
         _app.include_router(internal_retention_router)
         _app.include_router(unsubscribe_router)
