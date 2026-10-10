@@ -56,7 +56,9 @@ _SUBJECT_TEMPLATES: dict[AlertEventType, str] = {
     AlertEventType.FAKE_CLUSTER: "🚨 {count} suspicious reviews in {window_hours}h — possible fake cluster",
     AlertEventType.TOPIC_SPIKE: "📈 Complaint spike: '{topic}' ({recent_count}x in recent window)",
     AlertEventType.BATCH_DEFECT: "📈 Possible batch defect: '{topic}' spiking for {product_id}",
-    AlertEventType.FAKE_CAMPAIGN: "🚨 Possible coordinated review campaign on {product_id}",
+    AlertEventType.FAKE_CAMPAIGN: (
+        "🚨 Unusual review pattern on {product_id}: {review_count} reviews in {window_label}"
+    ),
 }
 
 # Emoji-free counterparts — selected via ALERT_SUBJECT_EMOJI_ENABLED so inbox
@@ -67,7 +69,9 @@ _SUBJECT_TEMPLATES_NO_EMOJI: dict[AlertEventType, str] = {
     AlertEventType.FAKE_CLUSTER: "{count} suspicious reviews in {window_hours}h — possible fake cluster",
     AlertEventType.TOPIC_SPIKE: "Complaint spike: '{topic}' ({recent_count}x in recent window)",
     AlertEventType.BATCH_DEFECT: "Possible batch defect: '{topic}' spiking for {product_id}",
-    AlertEventType.FAKE_CAMPAIGN: "Possible coordinated review campaign on {product_id}",
+    AlertEventType.FAKE_CAMPAIGN: (
+        "Unusual review pattern on {product_id}: {review_count} reviews in {window_label}"
+    ),
 }
 
 
@@ -149,22 +153,14 @@ def _format_body(
         )
 
     elif event.event_type == AlertEventType.FAKE_CAMPAIGN:
-        # details is a CampaignFlag.to_dict() -- product_id/confidence top-level, the rest
-        # nested under evidence.
+        # details is a CampaignFlag.to_dict(): counts, window and shared text only. This alert
+        # describes a pattern across reviews; it never says anything about one review.
         product_id = event.details.get("product_id", "?")
-        confidence = event.details.get("confidence", "?")
-        evidence_raw = event.details.get("evidence")
-        evidence = evidence_raw if isinstance(evidence_raw, dict) else {}
-        window_count = evidence.get("window_review_count", "?")
-        distinct_reviewers = evidence.get("distinct_reviewers", "?")
-        distinct_texts = evidence.get("distinct_texts", "?")
-        burst_hours = evidence.get("burst_hours", "?")
+        lines.append(f"Unusual review pattern on '{product_id}'.")
+        lines.append(str(event.details.get("explanation", "")))
         lines.append(
-            f"Possible coordinated review campaign on '{product_id}': {window_count} reviews "
-            f"within {burst_hours}h ({distinct_reviewers} distinct reviewer IDs, "
-            f"{distinct_texts} distinct review texts), confidence {confidence}. "
-            "Synthetic-validated; not yet proven against real seller data -- treat as a "
-            "prioritization signal, not a verdict."
+            "This is a prioritisation signal about a group of reviews, not a verdict on any "
+            "single review."
         )
 
     # BATCH_DEFECT/FAKE_CAMPAIGN's review_id is a synthetic cluster-dedupe key (e.g.

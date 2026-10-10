@@ -127,10 +127,11 @@ class Settings(BaseSettings):
     # SYNTHETIC-VALIDATED, not yet proven on real seller data (see project memory). Gates both
     # the on-demand GET endpoint AND the scheduled detector sweep (app/core/alerts/detector_sweep.py).
     enable_batch_defect_detector: bool = Field(default=False, alias="ENABLE_BATCH_DEFECT_DETECTOR")
-    # Phase 2 fake-campaign detector (app/core/detectors/campaign.py) -- off by default.
-    # SYNTHETIC-VALIDATED, stress-tested, not yet proven on real seller data. Reviewer-identity
-    # signal is stubbed to 0 (no ingestion path captures it yet) -- see that module's docstring
-    # for the accepted recall-only limitation this implies. Gates the scheduled detector sweep.
+    # Review-pattern (campaign) detector (app/core/detectors/campaign.py) -- off by default; the
+    # flag keeps its historical name. Flags PATTERNS across reviews (counts, windows, shared text),
+    # never one review. Spec and pre-registered evaluation: docs/specs/campaign-detection.md.
+    # Production rows carry no rating yet, so only burst and template are active until ingestion
+    # plumbs ratings. Gates the scheduled detector sweep.
     enable_fake_campaign_detector: bool = Field(
         default=False, alias="ENABLE_FAKE_CAMPAIGN_DETECTOR"
     )
