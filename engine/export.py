@@ -32,6 +32,7 @@ def export(
     threshold: float,
     scorer: str,
     maha=None,
+    val_texts: list[str] | None = None,
 ) -> Path:
     from onnxruntime.quantization import QuantType, quantize_dynamic
 
@@ -61,4 +62,34 @@ def export(
     if maha is not None:
         np.savez(out / "maha.npz", mu=maha.mu, prec=maha.prec)
     tok.save_pretrained(str(out))
+    if val_texts:
+        calibrate_threshold(out, val_texts)
     return out
+
+
+def calibrate_threshold(
+    out_dir: str | Path, val_texts: list[str], retention: float = 0.95
+) -> float:
+    """Re-derive the unknown threshold from the EXPORTED int8 model's own validation scores.
+
+    Dynamic int8 quantisation shifts embedding geometry, and Mahalanobis scores are far more
+    sensitive to that than softmax scores: on CLINC the fp32-calibrated threshold kept only 89.2% of
+    known test items with e5-base (pre-registered floor: 90%) and 94.3% once recalibrated on int8.
+    """
+    from engine.scoring import threshold_for_retention
+    from engine.serve import Predictor
+
+    out = Path(out_dir)
+    pred = Predictor(out)
+    scores = []
+    for i in range(0, len(val_texts), 64):
+        emb = pred._embed(val_texts[i : i + 64])
+        scores.append(pred._known_score(emb @ pred.w.T + pred.b, emb))
+    thr = float(threshold_for_retention(np.concatenate(scores), retention))
+    meta = json.loads((out / "scorer.json").read_text(encoding="utf-8"))
+    meta["threshold"] = thr
+    meta["threshold_source"] = (
+        f"int8 model, {len(val_texts)} validation items, retention {retention}"
+    )
+    (out / "scorer.json").write_text(json.dumps(meta, indent=1), encoding="utf-8")
+    return thr
