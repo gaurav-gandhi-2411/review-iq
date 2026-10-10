@@ -1,0 +1,33 @@
+{
+ "commit": "44fd57e",
+ "dataset": "massive",
+ "model": "intfloat/multilingual-e5-base",
+ "seed": 42,
+ "n_intents": 60,
+ "n_parents": 18,
+ "flat": {
+  "macro_f1": 0.8787,
+  "macro_f1_ci95": [0.8596,0.9009],
+  "accuracy": 0.8991,
+  "errors": 300,
+  "errors_within_parent": 80,
+  "errors_cross_parent": 220
+ },
+ "joint_unconstrained": {
+  "macro_f1": 0.889,
+  "macro_f1_ci95": [0.8704,0.9077],
+  "accuracy": 0.8998,
+  "errors": 298,
+  "errors_within_parent": 71,
+  "errors_cross_parent": 227
+ },
+ "joint_parent_accuracy": 0.9217,
+ "joint_constrained": {
+  "macro_f1": 0.8835,
+  "macro_f1_ci95": [0.8653,0.9012],
+  "accuracy": 0.8964,
+  "errors": 308,
+  "errors_within_parent": 75,
+  "errors_cross_parent": 233
+ }
+}
