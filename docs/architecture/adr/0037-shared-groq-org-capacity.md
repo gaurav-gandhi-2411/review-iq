@@ -88,3 +88,28 @@ not come from Samidha production. The most likely source is another product on t
   provider posture; the failover already exists for outages, not for routine capacity.
 - Measure the other products' draw by reading their code: it shows who *can* draw, not how much,
   so it cannot replace a dedicated org.
+
+## Amendment 2026-10-10 (S21 G3): the dedicated org exists and is live
+
+GG created a dedicated Groq organisation and stored its key as `groq-api-key-samidha`. Executed and
+verified this session:
+
+- **Primary:** Cloud Run `review-iq` revision `review-iq-00152-bad` binds `GROQ_API_KEY` to
+  `groq-api-key-samidha` (VERIFIED by `gcloud run services describe`, names only). A real
+  `/demo/extract` on the tagged no-traffic revision returned 200 before it took traffic, and again on
+  live traffic (VERIFIED). The key is valid and Groq reports the same per-model limits as the shared
+  org: `x-ratelimit-limit-requests` 1000/day and `x-ratelimit-limit-tokens` 8000/min on
+  `openai/gpt-oss-20b`, `openai/gpt-oss-120b` and `qwen/qwen3.8-27b` (VERIFIED, response headers,
+  both orgs).
+- **Failover:** `SECONDARY_PROVIDER_KIND=groq`, `SECONDARY_PROVIDER_MODEL=openai/gpt-oss-120b`,
+  `SECONDARY_PROVIDER_API_KEY` bound to the shared `groq-api-key` (ADR 0038). Proved offline with the
+  real `extract_with_llm`: with the primary key deliberately invalid, the call was served by
+  `provider=secondary` in 4.75 s (VERIFIED, `llm.extracted` log line). The live primary was not
+  broken to test it.
+- **Not measurable from headers:** the per-day token pool (TPD). Groq's success headers do not carry
+  it; the 200K figure above is Groq's published free-tier number (**BELIEVED** to apply to the new
+  org) and only a 429 body reveals the real remaining budget. The dedicated org removes the
+  cross-product starvation described in the Decision, but it does not enlarge the pool: Samidha's
+  free ceiling is still about 140 extractions/day on the 200K assumption (`docs/cost-model.md` s6).
+- Measuring real capacity therefore needs a deliberate burn to the first 429, which is not done
+  here: it would consume the day's production budget.

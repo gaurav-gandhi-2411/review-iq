@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import math
+import re
 from datetime import UTC, datetime
 
 import structlog
@@ -29,13 +31,69 @@ _QUOTA_MESSAGE_SIGNALS = frozenset(["rate_limit_exceeded", "tokens per day", "tp
 _CASSETTE_MISS_SIGNAL = "no cassette for key"
 
 
+# Retry-After bounds for a quota 503. Default when the provider gives no reset hint; cap so a
+# tokens-per-day reset hours away is not relayed as an hours-long blind sleep to the caller.
+_RETRY_AFTER_DEFAULT_S = 60
+_RETRY_AFTER_MAX_S = 3600
+
+# Groq 429 bodies carry "Please try again in 5m58.128s" (also "1h2m3s", "45s", "659ms").
+_TRY_AGAIN_RE = re.compile(
+    r"try again in\s+(?:(?P<h>\d+)h)?(?:(?P<m>\d+)m(?!s))?(?:(?P<s>\d+(?:\.\d+)?)s)?",
+    re.IGNORECASE,
+)
+
+
+def _retry_after_seconds(exc: BaseException) -> int:
+    """Seconds a caller should wait before retrying after a provider quota error.
+
+    Reads Groq's own `retry-after` response header, else the "try again in 5m58s" text in the
+    429 body, else a default; always clamped to [1, _RETRY_AFTER_MAX_S].
+    """
+    for candidate in (exc, exc.__cause__):
+        if candidate is None:
+            continue
+        headers = getattr(getattr(candidate, "response", None), "headers", None)
+        raw = headers.get("retry-after") if headers is not None else None
+        if raw is not None:
+            try:
+                return max(1, min(_RETRY_AFTER_MAX_S, math.ceil(float(raw))))
+            except ValueError:
+                pass
+        m = _TRY_AGAIN_RE.search(str(candidate))
+        if m and any(m.group(g) for g in ("h", "m", "s")):
+            secs = (
+                int(m.group("h") or 0) * 3600
+                + int(m.group("m") or 0) * 60
+                + float(m.group("s") or 0)
+            )
+            return max(1, min(_RETRY_AFTER_MAX_S, math.ceil(secs)))
+    return _RETRY_AFTER_DEFAULT_S
+
+
 class VernacularModelUnavailableError(Exception):
     """Raised when the large model is quota-capped for a vernacular (hi/hi-en) reply.
 
-    The small model produces incoherent vernacular composition — brand-damaging in
-    customer-facing text. Callers should return 503 with Retry-After rather than
-    silently posting a broken draft.
+    The small model produces incoherent or invented-detail vernacular composition (see
+    docs/research/reply-drafting-measurement.md) -- brand-damaging in customer-facing text.
+    Callers should return 503 with `Retry-After: retry_after` rather than silently posting a
+    broken draft.
     """
+
+    def __init__(self, message: str, *, retry_after: int = _RETRY_AFTER_DEFAULT_S) -> None:
+        super().__init__(message)
+        self.retry_after = retry_after
+
+
+class ReplyQuotaExhaustedError(RuntimeError):
+    """Raised when the large AND the small model are both quota-capped.
+
+    A RuntimeError subclass so every existing `except RuntimeError` caller turns it into a 503;
+    it additionally carries the provider's reset hint for the Retry-After header.
+    """
+
+    def __init__(self, message: str, *, retry_after: int = _RETRY_AFTER_DEFAULT_S) -> None:
+        super().__init__(message)
+        self.retry_after = retry_after
 
 
 def _is_quota_error(exc: Exception) -> bool:
@@ -192,16 +250,29 @@ async def draft_reply(
                     language=language,
                     model=settings.groq_model_large,
                 )
+                retry_after = _retry_after_seconds(exc)
                 raise VernacularModelUnavailableError(
                     f"Large model quota reached; {language} reply drafting requires the "
-                    "large model. Retry when quota resets (typically within minutes)."
+                    f"large model. Retry in about {retry_after} seconds.",
+                    retry_after=retry_after,
                 ) from exc
             # English degrades acceptably on the small model.
             caveats.append("drafted on reduced-capacity model — review carefully before posting")
             log.warning("reply_engine.degraded_to_small", model=settings.groq_model_small)
-            raw, tin, tout = await _call_groq(
-                settings.groq_model_small, system_prompt, user_prompt, settings
-            )
+            try:
+                raw, tin, tout = await _call_groq(
+                    settings.groq_model_small, system_prompt, user_prompt, settings
+                )
+            except (RuntimeError, APIStatusError) as small_exc:
+                # Both pools capped. Without this the raw groq error left the engine, and the
+                # routers (which catch RuntimeError) answered 500 instead of 503.
+                if _is_quota_error(small_exc):
+                    retry_after = _retry_after_seconds(small_exc)
+                    raise ReplyQuotaExhaustedError(
+                        f"Reply models are quota-capped. Retry in about {retry_after} seconds.",
+                        retry_after=retry_after,
+                    ) from small_exc
+                raise
             reply_text = _parse_reply(raw)
             model_used = settings.groq_model_small
             total_tokens_in += tin
