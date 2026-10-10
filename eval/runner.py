@@ -22,7 +22,7 @@ RESULTS_DIR = Path(__file__).parent / "results"
 LATEST_RESULTS_PATH = RESULTS_DIR / "latest.json"
 REPORT_PATH = Path(__file__).parent / "report.md"
 # Hard wall-clock cap per fixture's LLM call. Worst case by the code's own retry/timeout
-# config is ~210s (2 tiers x 3 attempts x 30s timeout, plus a Gemini fallback attempt) — 240s
+# config is ~210s (2 tiers x 3 attempts x 30s timeout, plus a secondary-provider attempt) — 240s
 # gives headroom above that. A stuck call (client/network hang past its own configured timeout)
 # must never silently block a run for longer than this; asyncio.wait_for enforces it externally
 # so a misbehaving client-level timeout can't cause an indefinite hang.
@@ -277,12 +277,8 @@ def aggregate_score(results: list[FixtureResult]) -> float:
 
 
 async def run_single(fixture: dict[str, Any]) -> FixtureResult:
-    # KNOWN GAP (logged 2026-07-06, not fixed): unlike run_single_routed, this calls
-    # extract_with_llm() without allow_gemini_fallback=False, so a double-Groq-tier failure
-    # falls through to Gemini. The Gemini free tier is currently at limit:0 (unprovisioned/
-    # exhausted), so that fallback silently dead-ends in a confusing 429 instead of a clear
-    # "both Groq tiers failed" error. Fix later: either provision Gemini for eval, or pin
-    # allow_gemini_fallback=False here too so failures are legible.
+    # (The 2026-07-06 known gap here -- a double-Groq-tier failure falling through to a dead Gemini
+    # fallback -- is closed: the Gemini fallback was retired in S17, ADR 0035.)
     from app.core.llm import extract_with_llm
     from app.core.prompts import build_prompt
     from app.core.sanitize import sanitize, wrap_for_llm
@@ -344,7 +340,6 @@ async def run_single_routed(fixture: dict[str, Any]) -> FixtureResult:
             route_extraction(
                 user_prompt,
                 _SYSTEM_PROMPT,
-                allow_gemini_fallback=False,
                 settings=settings,
             ),
             timeout=FIXTURE_CALL_TIMEOUT_SECONDS,
