@@ -87,6 +87,7 @@ class FakeJudgeMe:
         self.echo_per_page = echo_per_page
         self.list_unpublished = list_unpublished
         self.accept_header_token = accept_header_token
+        self.junk: list[Any] = []  # raw (possibly malformed) items prepended to page 1
         self.token = token
         self.shop = shop
         self.request_log: list[dict[str, Any]] = []
@@ -171,6 +172,7 @@ class FakeJudgeMe:
             return httpx.Response(404, json={"error": "Shop not found"})
         per_page = max(1, min(per_page, 100))
         chunk = self._visible()[(page - 1) * per_page : page * per_page]
+        chunk = [*self.junk, *chunk] if page == 1 else chunk
         body: dict[str, Any] = {"current_page": page, "reviews": chunk}
         if self.echo_per_page:
             body["per_page"] = per_page
