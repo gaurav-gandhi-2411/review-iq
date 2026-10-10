@@ -1,0 +1,1140 @@
+{
+  "label": "EXPLORATORY (S17 X4c); derived from committed artifacts; no published number changes",
+  "gold_origin": {
+    "all_106": {
+      "product": {
+        "unanimous": 42,
+        "majority": 38,
+        "default_unresolved": 26
+      },
+      "buy_again": {
+        "unanimous": 72,
+        "majority": 34,
+        "default_unresolved": 0
+      },
+      "sentiment": {
+        "unanimous": 101,
+        "majority": 5,
+        "default_unresolved": 0
+      },
+      "topics": {
+        "unanimous": 42,
+        "majority": 39,
+        "default_unresolved": 25
+      },
+      "competitor_mentions": {
+        "unanimous": 89,
+        "majority": 17,
+        "default_unresolved": 0
+      },
+      "pros": {
+        "unanimous": 35,
+        "majority": 41,
+        "default_unresolved": 30
+      },
+      "cons": {
+        "unanimous": 66,
+        "majority": 19,
+        "default_unresolved": 21
+      },
+      "stars_inferred": {
+        "unanimous": 106,
+        "majority": 0,
+        "default_unresolved": 0
+      }
+    },
+    "unexposed_70": {
+      "product": {
+        "unanimous": 30,
+        "majority": 25,
+        "default_unresolved": 15
+      },
+      "buy_again": {
+        "unanimous": 48,
+        "majority": 22,
+        "default_unresolved": 0
+      },
+      "sentiment": {
+        "unanimous": 68,
+        "majority": 2,
+        "default_unresolved": 0
+      },
+      "topics": {
+        "unanimous": 27,
+        "majority": 28,
+        "default_unresolved": 15
+      },
+      "competitor_mentions": {
+        "unanimous": 60,
+        "majority": 10,
+        "default_unresolved": 0
+      },
+      "pros": {
+        "unanimous": 24,
+        "majority": 29,
+        "default_unresolved": 17
+      },
+      "cons": {
+        "unanimous": 46,
+        "majority": 12,
+        "default_unresolved": 12
+      },
+      "stars_inferred": {
+        "unanimous": 70,
+        "majority": 0,
+        "default_unresolved": 0
+      }
+    }
+  },
+  "resolution_sweep_unexposed_70": {
+    "pros": {
+      "0.3": {
+        "resolved": 59,
+        "unanimous": 36,
+        "of": 70,
+        "rate": 0.8428571428571429
+      },
+      "0.4": {
+        "resolved": 55,
+        "unanimous": 28,
+        "of": 70,
+        "rate": 0.7857142857142857
+      },
+      "0.5": {
+        "resolved": 53,
+        "unanimous": 24,
+        "of": 70,
+        "rate": 0.7571428571428571
+      },
+      "0.6": {
+        "resolved": 46,
+        "unanimous": 19,
+        "of": 70,
+        "rate": 0.6571428571428571
+      },
+      "0.7": {
+        "resolved": 39,
+        "unanimous": 16,
+        "of": 70,
+        "rate": 0.5571428571428572
+      }
+    },
+    "cons": {
+      "0.3": {
+        "resolved": 64,
+        "unanimous": 47,
+        "of": 70,
+        "rate": 0.9142857142857143
+      },
+      "0.4": {
+        "resolved": 58,
+        "unanimous": 46,
+        "of": 70,
+        "rate": 0.8285714285714286
+      },
+      "0.5": {
+        "resolved": 58,
+        "unanimous": 46,
+        "of": 70,
+        "rate": 0.8285714285714286
+      },
+      "0.6": {
+        "resolved": 54,
+        "unanimous": 46,
+        "of": 70,
+        "rate": 0.7714285714285715
+      },
+      "0.7": {
+        "resolved": 54,
+        "unanimous": 46,
+        "of": 70,
+        "rate": 0.7714285714285715
+      }
+    },
+    "topics": {
+      "0.3": {
+        "resolved": 62,
+        "unanimous": 37,
+        "of": 70,
+        "rate": 0.8857142857142857
+      },
+      "0.4": {
+        "resolved": 55,
+        "unanimous": 31,
+        "of": 70,
+        "rate": 0.7857142857142857
+      },
+      "0.5": {
+        "resolved": 55,
+        "unanimous": 27,
+        "of": 70,
+        "rate": 0.7857142857142857
+      },
+      "0.6": {
+        "resolved": 46,
+        "unanimous": 15,
+        "of": 70,
+        "rate": 0.6571428571428571
+      },
+      "0.7": {
+        "resolved": 38,
+        "unanimous": 11,
+        "of": 70,
+        "rate": 0.5428571428571428
+      }
+    }
+  },
+  "resolution_sweep_all_106": {
+    "pros": {
+      "0.3": {
+        "resolved": 89,
+        "unanimous": 51,
+        "of": 106,
+        "rate": 0.839622641509434
+      },
+      "0.4": {
+        "resolved": 80,
+        "unanimous": 39,
+        "of": 106,
+        "rate": 0.7547169811320755
+      },
+      "0.5": {
+        "resolved": 76,
+        "unanimous": 35,
+        "of": 106,
+        "rate": 0.7169811320754716
+      },
+      "0.6": {
+        "resolved": 67,
+        "unanimous": 27,
+        "of": 106,
+        "rate": 0.6320754716981132
+      },
+      "0.7": {
+        "resolved": 56,
+        "unanimous": 23,
+        "of": 106,
+        "rate": 0.5283018867924528
+      }
+    },
+    "cons": {
+      "0.3": {
+        "resolved": 93,
+        "unanimous": 67,
+        "of": 106,
+        "rate": 0.8773584905660378
+      },
+      "0.4": {
+        "resolved": 85,
+        "unanimous": 66,
+        "of": 106,
+        "rate": 0.8018867924528302
+      },
+      "0.5": {
+        "resolved": 85,
+        "unanimous": 66,
+        "of": 106,
+        "rate": 0.8018867924528302
+      },
+      "0.6": {
+        "resolved": 80,
+        "unanimous": 65,
+        "of": 106,
+        "rate": 0.7547169811320755
+      },
+      "0.7": {
+        "resolved": 80,
+        "unanimous": 65,
+        "of": 106,
+        "rate": 0.7547169811320755
+      }
+    },
+    "topics": {
+      "0.3": {
+        "resolved": 97,
+        "unanimous": 56,
+        "of": 106,
+        "rate": 0.9150943396226415
+      },
+      "0.4": {
+        "resolved": 84,
+        "unanimous": 48,
+        "of": 106,
+        "rate": 0.7924528301886793
+      },
+      "0.5": {
+        "resolved": 81,
+        "unanimous": 42,
+        "of": 106,
+        "rate": 0.7641509433962265
+      },
+      "0.6": {
+        "resolved": 65,
+        "unanimous": 25,
+        "of": 106,
+        "rate": 0.6132075471698113
+      },
+      "0.7": {
+        "resolved": 55,
+        "unanimous": 15,
+        "of": 106,
+        "rate": 0.5188679245283019
+      }
+    }
+  },
+  "score_sweep_unexposed_70": {
+    "pros": {
+      "n_resolved_pairs": 53,
+      "current_scorer": 0.7314787264523382,
+      "item_soft_f1_by_threshold": {
+        "0.2": 0.8096653870238776,
+        "0.3": 0.743627651174821,
+        "0.4": 0.7174222004410684,
+        "0.5": 0.7127052193089929,
+        "0.6": 0.6645280296223692,
+        "0.7": 0.557174167551526,
+        "0.8": 0.5427087587464946,
+        "1.0": 0.5373179231669798
+      },
+      "swing_max_minus_min": 0.2723474638568978,
+      "swing_between_0.3_and_0.7": 0.18645348362329495
+    },
+    "cons": {
+      "n_resolved_pairs": 58,
+      "current_scorer": 0.8506742299845748,
+      "item_soft_f1_by_threshold": {
+        "0.2": 0.8831417624521073,
+        "0.3": 0.85727969348659,
+        "0.4": 0.8227969348659003,
+        "0.5": 0.8227969348659003,
+        "0.6": 0.8113026819923371,
+        "0.7": 0.803639846743295,
+        "0.8": 0.803639846743295,
+        "1.0": 0.803639846743295
+      },
+      "swing_max_minus_min": 0.07950191570881227,
+      "swing_between_0.3_and_0.7": 0.05363984674329503
+    },
+    "topics": {
+      "n_resolved_pairs": 55,
+      "current_scorer": 0.6946537182366059,
+      "item_soft_f1_by_threshold": {
+        "0.2": 0.7109622581815095,
+        "0.3": 0.7109622581815095,
+        "0.4": 0.7109622581815095,
+        "0.5": 0.7109622581815095,
+        "0.6": 0.6946537182366059,
+        "0.7": 0.6946537182366059,
+        "0.8": 0.6946537182366059,
+        "1.0": 0.6946537182366059
+      },
+      "swing_max_minus_min": 0.016308539944903555,
+      "swing_between_0.3_and_0.7": 0.016308539944903555
+    }
+  },
+  "unresolved_pros_unexposed_70": {
+    "n": 17,
+    "by_class": {
+      "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)": 15,
+      "different_pros_altogether": 2
+    },
+    "rows": [
+      {
+        "id": "hien-0010",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.3333333333333333,
+        "max_pair_token_f1": 0.7499999999999999
+      },
+      {
+        "id": "hien-0017",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.3333333333333333,
+        "max_pair_token_f1": 0.962962962962963
+      },
+      {
+        "id": "hien-0032",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.0,
+        "max_pair_token_f1": 0.6
+      },
+      {
+        "id": "hien-0036",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.0,
+        "max_pair_token_f1": 0.5714285714285715
+      },
+      {
+        "id": "hien-0047",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.125,
+        "max_pair_token_f1": 0.6451612903225806
+      },
+      {
+        "id": "hien-0048",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.3333333333333333,
+        "max_pair_token_f1": 0.7407407407407408
+      },
+      {
+        "id": "hien-0051",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.4,
+        "max_pair_token_f1": 0.888888888888889
+      },
+      {
+        "id": "hien-0053",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.0,
+        "max_pair_token_f1": 0.7499999999999999
+      },
+      {
+        "id": "hien-0068",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.2,
+        "max_pair_token_f1": 0.7368421052631577
+      },
+      {
+        "id": "hien-0077",
+        "level": "split",
+        "responded": 3,
+        "class": "different_pros_altogether",
+        "max_pair_item_jaccard": 0.0,
+        "max_pair_token_f1": 0.0
+      },
+      {
+        "id": "hien-0084",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.2,
+        "max_pair_token_f1": 0.5454545454545454
+      },
+      {
+        "id": "hien-0085",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.4,
+        "max_pair_token_f1": 0.8749999999999999
+      },
+      {
+        "id": "hien-0096",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.0,
+        "max_pair_token_f1": 0.6666666666666665
+      },
+      {
+        "id": "hien-0098",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.0,
+        "max_pair_token_f1": 0.5
+      },
+      {
+        "id": "hien-0102",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.3333333333333333,
+        "max_pair_token_f1": 0.888888888888889
+      },
+      {
+        "id": "hien-0105",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.0,
+        "max_pair_token_f1": 0.6666666666666665
+      },
+      {
+        "id": "hien-0106",
+        "level": "split",
+        "responded": 3,
+        "class": "different_pros_altogether",
+        "max_pair_item_jaccard": 0.0,
+        "max_pair_token_f1": 0.0
+      }
+    ]
+  },
+  "unresolved_pros_all_106": {
+    "n": 30,
+    "by_class": {
+      "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)": 26,
+      "different_pros_altogether": 4
+    },
+    "rows": [
+      {
+        "id": "hien-0008",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.4,
+        "max_pair_token_f1": 0.7999999999999999
+      },
+      {
+        "id": "hien-0010",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.3333333333333333,
+        "max_pair_token_f1": 0.7499999999999999
+      },
+      {
+        "id": "hien-0014",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.0,
+        "max_pair_token_f1": 0.6666666666666665
+      },
+      {
+        "id": "hien-0017",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.3333333333333333,
+        "max_pair_token_f1": 0.962962962962963
+      },
+      {
+        "id": "hien-0024",
+        "level": "split",
+        "responded": 3,
+        "class": "different_pros_altogether",
+        "max_pair_item_jaccard": 0.0,
+        "max_pair_token_f1": 0.0
+      },
+      {
+        "id": "hien-0027",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.16666666666666666,
+        "max_pair_token_f1": 0.7272727272727273
+      },
+      {
+        "id": "hien-0029",
+        "level": "split",
+        "responded": 3,
+        "class": "different_pros_altogether",
+        "max_pair_item_jaccard": 0.2,
+        "max_pair_token_f1": 0.39999999999999997
+      },
+      {
+        "id": "hien-0032",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.0,
+        "max_pair_token_f1": 0.6
+      },
+      {
+        "id": "hien-0036",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.0,
+        "max_pair_token_f1": 0.5714285714285715
+      },
+      {
+        "id": "hien-0045",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.2,
+        "max_pair_token_f1": 0.5555555555555556
+      },
+      {
+        "id": "hien-0047",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.125,
+        "max_pair_token_f1": 0.6451612903225806
+      },
+      {
+        "id": "hien-0048",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.3333333333333333,
+        "max_pair_token_f1": 0.7407407407407408
+      },
+      {
+        "id": "hien-0050",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.0,
+        "max_pair_token_f1": 0.6250000000000001
+      },
+      {
+        "id": "hien-0051",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.4,
+        "max_pair_token_f1": 0.888888888888889
+      },
+      {
+        "id": "hien-0053",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.0,
+        "max_pair_token_f1": 0.7499999999999999
+      },
+      {
+        "id": "hien-0063",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.3333333333333333,
+        "max_pair_token_f1": 0.8000000000000002
+      },
+      {
+        "id": "hien-0068",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.2,
+        "max_pair_token_f1": 0.7368421052631577
+      },
+      {
+        "id": "hien-0070",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.3333333333333333,
+        "max_pair_token_f1": 0.6666666666666666
+      },
+      {
+        "id": "hien-0074",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.3333333333333333,
+        "max_pair_token_f1": 0.7692307692307692
+      },
+      {
+        "id": "hien-0077",
+        "level": "split",
+        "responded": 3,
+        "class": "different_pros_altogether",
+        "max_pair_item_jaccard": 0.0,
+        "max_pair_token_f1": 0.0
+      },
+      {
+        "id": "hien-0084",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.2,
+        "max_pair_token_f1": 0.5454545454545454
+      },
+      {
+        "id": "hien-0085",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.4,
+        "max_pair_token_f1": 0.8749999999999999
+      },
+      {
+        "id": "hien-0087",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.3333333333333333,
+        "max_pair_token_f1": 0.8571428571428571
+      },
+      {
+        "id": "hien-0088",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.3333333333333333,
+        "max_pair_token_f1": 0.8125
+      },
+      {
+        "id": "hien-0093",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.4,
+        "max_pair_token_f1": 0.7692307692307692
+      },
+      {
+        "id": "hien-0096",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.0,
+        "max_pair_token_f1": 0.6666666666666665
+      },
+      {
+        "id": "hien-0098",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.0,
+        "max_pair_token_f1": 0.5
+      },
+      {
+        "id": "hien-0102",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.3333333333333333,
+        "max_pair_token_f1": 0.888888888888889
+      },
+      {
+        "id": "hien-0105",
+        "level": "split",
+        "responded": 3,
+        "class": "granularity_(token overlap >= 0.5 but item Jaccard < 0.5)",
+        "max_pair_item_jaccard": 0.0,
+        "max_pair_token_f1": 0.6666666666666665
+      },
+      {
+        "id": "hien-0106",
+        "level": "split",
+        "responded": 3,
+        "class": "different_pros_altogether",
+        "max_pair_item_jaccard": 0.0,
+        "max_pair_token_f1": 0.0
+      }
+    ]
+  },
+  "validation_discordant_pros": {
+    "n_discordant": 11,
+    "hand_class_counts": {
+      "different": 1,
+      "paraphrase": 5,
+      "omission": 5
+    },
+    "rows": [
+      {
+        "id": "hien-0001",
+        "text": "A bit uncomfortable on ears baki to mast haiREAD MORE",
+        "panel1_gold": [
+          "overall good quality"
+        ],
+        "panel1_level": "majority",
+        "panel2_level": "split",
+        "panel2_silver": null,
+        "panel2_judges": {
+          "deepseek/deepseek-v4-flash": [
+            "mast hai (great otherwise)"
+          ],
+          "nvidia/nemotron-3-super-120b-a12b": [
+            "mast hai"
+          ],
+          "thinkingmachines/inkling-small": [
+            "sound quality is great"
+          ]
+        },
+        "gold_vs_silver_item_jaccard": null,
+        "gold_vs_silver_token_f1": null,
+        "gold_vs_best_judge_token_f1": 0.3333333333333333,
+        "hand_class": "different"
+      },
+      {
+        "id": "hien-0016",
+        "text": "BassDesignSound quality and battery backupSab badiya hai ...READ MORE",
+        "panel1_gold": [
+          "good sound quality",
+          "good battery backup"
+        ],
+        "panel1_level": "majority",
+        "panel2_level": "majority",
+        "panel2_silver": [
+          "sound quality",
+          "battery backup"
+        ],
+        "panel2_judges": {
+          "deepseek/deepseek-v4-flash": [
+            "sound quality",
+            "battery backup"
+          ],
+          "nvidia/nemotron-3-super-120b-a12b": [
+            "good sound quality",
+            "good battery backup"
+          ],
+          "thinkingmachines/inkling-small": [
+            "Sound quality",
+            "Battery backup"
+          ]
+        },
+        "gold_vs_silver_item_jaccard": 0.0,
+        "gold_vs_silver_token_f1": 0.888888888888889,
+        "gold_vs_best_judge_token_f1": 1.0,
+        "hand_class": "paraphrase"
+      },
+      {
+        "id": "hien-0030",
+        "text": "Everything is good at this price range.Realme brings innovation in the products, provides good quality at less price.Bass is good.Sound quality good.Simple yet ",
+        "panel1_gold": [
+          "good value for money",
+          "good bass",
+          "good sound quality",
+          "simple yet good design",
+          "comfortable around neck",
+          "good battery backup",
+          "magnet switch saves battery",
+          "clear built-in mic",
+          "includes 2 pairs of buds"
+        ],
+        "panel1_level": "unanimous",
+        "panel2_level": "majority",
+        "panel2_silver": [
+          "good price range",
+          "innovation",
+          "good quality",
+          "good bass",
+          "good sound quality",
+          "simple yet good design",
+          "comfortable around neck",
+          "good battery backup",
+          "magnet switch saves battery",
+          "built-in mic is good and clear",
+          "6 months warranty"
+        ],
+        "panel2_judges": {
+          "deepseek/deepseek-v4-flash": [
+            "good quality at less price",
+            "good bass",
+            "good sound quality",
+            "simple yet good design",
+            "comfortable around neck",
+            "good battery backup",
+            "magnet switch saves battery",
+            "built-in mic is good and clear"
+          ],
+          "nvidia/nemotron-3-super-120b-a12b": [
+            "good price range",
+            "innovation",
+            "good quality",
+            "good bass",
+            "good sound quality",
+            "simple yet good design",
+            "comfortable around neck",
+            "good battery backup",
+            "magnet switch saves battery",
+            "built-in mic is good and clear",
+            "6 months warranty"
+          ],
+          "thinkingmachines/inkling-small": [
+            "Good value for price",
+            "Good bass",
+            "Good sound quality",
+            "Simple and good design",
+            "Comfortable around neck",
+            "Good battery backup",
+            "Magnet switch saves battery",
+            "Built-in mic is clear",
+            "Overall best budget headset"
+          ]
+        },
+        "gold_vs_silver_item_jaccard": 0.42857142857142855,
+        "gold_vs_silver_token_f1": 0.75,
+        "gold_vs_best_judge_token_f1": 0.7999999999999999,
+        "hand_class": "paraphrase"
+      },
+      {
+        "id": "hien-0046",
+        "text": "I am using this headphone since 6 months, great bass I am a songs lover and like to listen all types of song, this headphone is great for all kind of music from",
+        "panel1_gold": [
+          "great bass",
+          "good for all kinds of music",
+          "great battery life",
+          "good value for money"
+        ],
+        "panel1_level": "majority",
+        "panel2_level": "majority",
+        "panel2_silver": [
+          "great bass",
+          "great for all kinds of music",
+          "great battery life",
+          "great buy",
+          "paisa vasool"
+        ],
+        "panel2_judges": {
+          "deepseek/deepseek-v4-flash": [
+            "great bass",
+            "great for all kinds of music",
+            "great battery life",
+            "great buy",
+            "paisa vasool"
+          ],
+          "nvidia/nemotron-3-super-120b-a12b": [
+            "great bass",
+            "great battery life",
+            "good for all types of music",
+            "value for money"
+          ],
+          "thinkingmachines/inkling-small": [
+            "great bass",
+            "great for all kinds of music",
+            "great battery life",
+            "great buy"
+          ]
+        },
+        "gold_vs_silver_item_jaccard": 0.2857142857142857,
+        "gold_vs_silver_token_f1": 0.7272727272727273,
+        "gold_vs_best_judge_token_f1": 0.9090909090909091,
+        "hand_class": "paraphrase"
+      },
+      {
+        "id": "hien-0056",
+        "text": "Mast fabulousREAD MORE",
+        "panel1_gold": [
+          "fabulous"
+        ],
+        "panel1_level": "unanimous",
+        "panel2_level": "split",
+        "panel2_silver": null,
+        "panel2_judges": {
+          "deepseek/deepseek-v4-flash": [],
+          "nvidia/nemotron-3-super-120b-a12b": [
+            "Mast fabulous"
+          ],
+          "thinkingmachines/inkling-small": [
+            "fabulous quality"
+          ]
+        },
+        "gold_vs_silver_item_jaccard": null,
+        "gold_vs_silver_token_f1": null,
+        "gold_vs_best_judge_token_f1": 0.6666666666666666,
+        "hand_class": "omission"
+      },
+      {
+        "id": "hien-0058",
+        "text": "Mast sound  best product and stylish headphoneREAD MORE",
+        "panel1_gold": [
+          "Mast sound",
+          "best product",
+          "stylish"
+        ],
+        "panel1_level": "majority",
+        "panel2_level": "split",
+        "panel2_silver": null,
+        "panel2_judges": {
+          "deepseek/deepseek-v4-flash": [
+            "best sound",
+            "stylish"
+          ],
+          "nvidia/nemotron-3-super-120b-a12b": [
+            "Mast sound",
+            "stylish"
+          ],
+          "thinkingmachines/inkling-small": [
+            "great sound",
+            "stylish design",
+            "best product"
+          ]
+        },
+        "gold_vs_silver_item_jaccard": null,
+        "gold_vs_silver_token_f1": null,
+        "gold_vs_best_judge_token_f1": 0.7499999999999999,
+        "hand_class": "omission"
+      },
+      {
+        "id": "hien-0066",
+        "text": "nice headphone but bluetooth range kaam hai long distance is doesn't work but sound quality is best and battery is also good ....thank you FlipkartREAD MORE",
+        "panel1_gold": [
+          "best sound quality",
+          "good battery"
+        ],
+        "panel1_level": "majority",
+        "panel2_level": "majority",
+        "panel2_silver": [
+          "sound quality is best",
+          "battery is good"
+        ],
+        "panel2_judges": {
+          "deepseek/deepseek-v4-flash": [
+            "sound quality is best",
+            "battery is good"
+          ],
+          "nvidia/nemotron-3-super-120b-a12b": [
+            "sound quality is best",
+            "battery is also good"
+          ],
+          "thinkingmachines/inkling-small": [
+            "sound quality is best",
+            "battery is good"
+          ]
+        },
+        "gold_vs_silver_item_jaccard": 0.0,
+        "gold_vs_silver_token_f1": 1.0,
+        "gold_vs_best_judge_token_f1": 1.0,
+        "hand_class": "paraphrase"
+      },
+      {
+        "id": "hien-0071",
+        "text": "Paisa basool product bcz I buy 900 , so I think it nice",
+        "panel1_gold": [
+          "good value for money",
+          "nice"
+        ],
+        "panel1_level": "unanimous",
+        "panel2_level": "majority",
+        "panel2_silver": [
+          "good value for money",
+          "nice product"
+        ],
+        "panel2_judges": {
+          "deepseek/deepseek-v4-flash": [
+            "good value for money"
+          ],
+          "nvidia/nemotron-3-super-120b-a12b": [],
+          "thinkingmachines/inkling-small": [
+            "good value for money",
+            "nice product"
+          ]
+        },
+        "gold_vs_silver_item_jaccard": 0.3333333333333333,
+        "gold_vs_silver_token_f1": 0.9090909090909091,
+        "gold_vs_best_judge_token_f1": 0.9090909090909091,
+        "hand_class": "omission"
+      },
+      {
+        "id": "hien-0079",
+        "text": "Sound quality is not so good.i received I speaker damge..base is low as I accept it.. degin was good, battery backup is good..if you want low volume sound lover",
+        "panel1_gold": [
+          "good design",
+          "good battery backup",
+          "nice for slow songs"
+        ],
+        "panel1_level": "unanimous",
+        "panel2_level": "majority",
+        "panel2_silver": [
+          "design was good",
+          "battery backup is good",
+          "very nice for slow songs lover"
+        ],
+        "panel2_judges": {
+          "deepseek/deepseek-v4-flash": [
+            "design was good",
+            "battery backup is good"
+          ],
+          "nvidia/nemotron-3-super-120b-a12b": [
+            "design was good",
+            "battery backup is good",
+            "very nice for slow songs lover"
+          ],
+          "thinkingmachines/inkling-small": [
+            "design is good",
+            "battery backup is good",
+            "good for slow songs"
+          ]
+        },
+        "gold_vs_silver_item_jaccard": 0.0,
+        "gold_vs_silver_token_f1": 0.8421052631578948,
+        "gold_vs_best_judge_token_f1": 0.9333333333333333,
+        "hand_class": "paraphrase"
+      },
+      {
+        "id": "hien-0089",
+        "text": "U&i Bluetooth device 3days charge  rakh ta he or voice clarity must he but bass itna nehi he fir bi achhha he Paisa ke hisab se good",
+        "panel1_gold": [
+          "3 days battery life",
+          "good voice clarity",
+          "good value for money"
+        ],
+        "panel1_level": "majority",
+        "panel2_level": "majority",
+        "panel2_silver": [
+          "3 days charge",
+          "voice clarity"
+        ],
+        "panel2_judges": {
+          "deepseek/deepseek-v4-flash": [
+            "3 days charge",
+            "voice clarity"
+          ],
+          "nvidia/nemotron-3-super-120b-a12b": [
+            "3 days charge",
+            "voice clarity"
+          ],
+          "thinkingmachines/inkling-small": [
+            "3-day battery life",
+            "good voice clarity",
+            "good value for money"
+          ]
+        },
+        "gold_vs_silver_item_jaccard": 0.0,
+        "gold_vs_silver_token_f1": 0.46153846153846156,
+        "gold_vs_best_judge_token_f1": 0.8888888888888888,
+        "hand_class": "omission"
+      },
+      {
+        "id": "hien-0090",
+        "text": "Ultimate headset Paisa wasoolREAD MORE",
+        "panel1_gold": [
+          "good value for money"
+        ],
+        "panel1_level": "majority",
+        "panel2_level": "split",
+        "panel2_silver": null,
+        "panel2_judges": {
+          "deepseek/deepseek-v4-flash": [
+            "value for money"
+          ],
+          "nvidia/nemotron-3-super-120b-a12b": [
+            "Paisa wasool"
+          ],
+          "thinkingmachines/inkling-small": []
+        },
+        "gold_vs_silver_item_jaccard": null,
+        "gold_vs_silver_token_f1": null,
+        "gold_vs_best_judge_token_f1": 0.8571428571428571,
+        "hand_class": "omission"
+      }
+    ]
+  },
+  "headline_exploratory": {
+    "label": "EXPLORATORY, as deployed, unexposed 70 reviews, split pairs excluded",
+    "published_headline_all_8_fields": {
+      "score": 0.7962863450018097,
+      "ci_95": {
+        "lower": 0.7623897281717151,
+        "upper": 0.8276997486806656,
+        "n": 70
+      }
+    },
+    "headline_excluding_pros": {
+      "score": 0.8048930308053958,
+      "ci_95": {
+        "lower": 0.7705272238765636,
+        "upper": 0.8368856200488853,
+        "n": 70
+      }
+    },
+    "pros_alone": {
+      "score": 0.7314787264523382,
+      "n_resolved_pairs": 53
+    }
+  }
+}
