@@ -205,7 +205,14 @@ class ProductStream:
     """One product's reviews with the prefix sums and pair lists needed for O(1)-ish evidence
     queries. Immutable after construction."""
 
-    def __init__(self, reviews: Sequence[Review], params: CampaignParams = DEFAULT_PARAMS):
+    def __init__(
+        self,
+        reviews: Sequence[Review],
+        params: CampaignParams = DEFAULT_PARAMS,
+        shingle_cache: dict[str, frozenset[str] | None] | None = None,
+    ):
+        """`shingle_cache` (review_id -> shingles) lets an offline harness reuse shingles across
+        many excerpts of one stream; production passes nothing."""
         self.p = params
         self.reviews = sorted(reviews, key=lambda r: (epoch_seconds(r.timestamp), r.review_id))
         self.ts = [epoch_seconds(r.timestamp) for r in self.reviews]
@@ -238,7 +245,14 @@ class ProductStream:
             self.dc.append(self.dc[-1] + c)
             self.dq.append(self.dq[-1] + c * c)
         # template: shingles + similarity pairs within the widest window
-        self.sh = [_shingles(r.text, params) for r in self.reviews]
+        if shingle_cache is None:
+            self.sh = [_shingles(r.text, params) for r in self.reviews]
+        else:
+            self.sh = []
+            for r in self.reviews:
+                if r.review_id not in shingle_cache:
+                    shingle_cache[r.review_id] = _shingles(r.text, params)
+                self.sh.append(shingle_cache[r.review_id])
         self.nbrs: list[list[tuple[int, float]]] = [[] for _ in range(n)]
         span = max(params.windows_hours) * HOUR_S
         floor = params.store_min_similarity
@@ -287,7 +301,7 @@ class ProductStream:
         phi = self._dispersion(start)
         burst = _poisson_evidence(math.ceil(n_w / phi), expected / phi)
 
-        k, members = self._largest_cluster(lo, i)
+        k, members = self.largest_cluster(lo, i)
 
         rating_z = w_mean = h_mean = None
         n_wr = self.cr[i + 1] - self.cr[lo]
@@ -350,8 +364,11 @@ class ProductStream:
         var = max(0.0, (sq - total * total / m) / (m - 1))
         return min(max(var / mean, 1.0), p.dispersion_cap)
 
-    def _largest_cluster(self, lo: int, hi: int) -> tuple[int, tuple[int, ...]]:
-        """Largest connected group of reviews in [lo, hi] linked by similarity >= p.similarity."""
+    def largest_cluster(
+        self, lo: int, hi: int, similarity: float | None = None
+    ) -> tuple[int, tuple[int, ...]]:
+        """Largest connected group of reviews in [lo, hi] linked by similarity >= `similarity`
+        (default p.similarity; a harness may ask for any value >= p.store_min_similarity)."""
         parent: dict[int, int] = {}
 
         def find(a: int) -> int:
@@ -360,7 +377,7 @@ class ProductStream:
                 a = parent[a]
             return a
 
-        s = self.p.similarity
+        s = self.p.similarity if similarity is None else similarity
         for j in range(lo, hi + 1):
             for i, sim in self.nbrs[j]:
                 if i >= lo and sim >= s:
