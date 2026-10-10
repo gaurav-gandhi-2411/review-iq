@@ -19,9 +19,14 @@ def main() -> None:
     ap.add_argument("--dataset", required=True)
     ap.add_argument("--branch", default="main")
     ap.add_argument("--slug", required=True)
+    ap.add_argument("--prompt-version", default="v1", choices=["v1", "v2"])
     a = ap.parse_args()
     src = (Path(__file__).parent / "kernel_ollama.py").read_text(encoding="utf-8")
-    src = src.replace("__BRANCH__", a.branch).replace("__ITEMS__", a.items)
+    src = (
+        src.replace("__BRANCH__", a.branch)
+        .replace("__ITEMS__", a.items)
+        .replace("__PV__", a.prompt_version)
+    )
     with tempfile.TemporaryDirectory() as d:
         (Path(d) / "kernel.py").write_text(src, encoding="utf-8")
         meta = {

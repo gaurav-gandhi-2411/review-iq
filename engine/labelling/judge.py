@@ -17,13 +17,16 @@ from pathlib import Path
 import httpx
 
 from engine.labelling import prompts as P
+from engine.labelling import prompts_v2 as P2
 
 
-def chat(base_url: str, model: str, prompt: str, timeout: float = 180.0) -> tuple[str, int, int]:
+def chat(
+    base_url: str, model: str, prompt: str, timeout: float = 180.0, num_predict: int = 400
+) -> tuple[str, int, int]:
     body = {
         "model": model, "stream": False, "format": "json", "think": False,
         "messages": [{"role": "user", "content": prompt}],
-        "options": {"temperature": 0, "seed": 42, "num_predict": 400},
+        "options": {"temperature": 0, "seed": 42, "num_predict": num_predict},
     }  # fmt: skip
     for attempt in range(4):
         try:
@@ -39,7 +42,30 @@ def chat(base_url: str, model: str, prompt: str, timeout: float = 180.0) -> tupl
     return "", 0, 0
 
 
-def run(items_path: Path, model: str, out: Path, base_url: str) -> dict:
+def _record_v2(base_url: str, model: str, it: dict) -> dict:
+    """v2: ONE text call (no stars, no mismatch call); one retry with a stricter reminder on a parse failure."""
+    tin = tout = 0
+    parsed, dropped, retried = None, 0, False
+    for attempt in range(2):
+        raw, a, b = chat(
+            base_url,
+            model,
+            P2.text_prompt(it["text"], it["category"], retry=attempt == 1),
+            num_predict=700,
+        )
+        tin, tout = tin + a, tout + b
+        parsed, dropped = P2.parse_text(raw, it["category"], it["text"])
+        if parsed is not None:
+            break
+        retried = True
+    return {
+        "text": parsed, "mismatch": None, "tokens_in": tin, "tokens_out": tout, "text_failed": parsed is None,
+        "mismatch_failed": False, "aspects_dropped_unverifiable": dropped, "retried": retried,
+        "prompt_version": P2.PROMPT_VERSION, "prompt_hash": P2.prompt_hash(),
+    }  # fmt: skip
+
+
+def run(items_path: Path, model: str, out: Path, base_url: str, version: str = "v1") -> dict:
     items = [
         json.loads(line)
         for line in items_path.read_text(encoding="utf-8").splitlines()
@@ -54,11 +80,21 @@ def run(items_path: Path, model: str, out: Path, base_url: str) -> dict:
         }
     out.parent.mkdir(parents=True, exist_ok=True)
     ph = P.prompt_hash()
+    assert version in ("v1", "v2")
     fails = 0
     t0 = time.time()
     with out.open("a", encoding="utf-8") as f:
         for it in items:
             if it["id"] in done:
+                continue
+            if version == "v2":
+                rec = _record_v2(base_url, model, it)
+                fails += rec["text_failed"]
+                f.write(json.dumps({
+                    "id": it["id"], "stratum": it["stratum"], "category": it["category"], "judge": out.stem,
+                    "model": model, **rec,
+                }) + "\n")  # fmt: skip
+                f.flush()
                 continue
             raw1, a1, b1 = chat(base_url, model, P.text_prompt(it["text"], it["category"]))
             raw2, a2, b2 = chat(base_url, model, P.mismatch_prompt(it["text"], it["stars"]))
@@ -85,8 +121,9 @@ def main() -> None:
     ap.add_argument("--model", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--base-url", default="http://127.0.0.1:11434")
+    ap.add_argument("--prompt-version", choices=["v1", "v2"], default="v1")
     a = ap.parse_args()
-    print(json.dumps(run(Path(a.items), a.model, Path(a.out), a.base_url)))
+    print(json.dumps(run(Path(a.items), a.model, Path(a.out), a.base_url, a.prompt_version)))
 
 
 if __name__ == "__main__":

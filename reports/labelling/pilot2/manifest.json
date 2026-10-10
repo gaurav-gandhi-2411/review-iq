@@ -1,0 +1,3565 @@
+{
+ "tag": "pilot2",
+ "seed": 43,
+ "per_stratum": 75,
+ "sources": {
+  "apparel": [
+   "Women's E-Commerce Clothing Reviews (Kaggle nicapotato)",
+   "CC0-1.0"
+  ],
+  "food": [
+   "Amazon Fine Food Reviews (Kaggle snap)",
+   "CC0-1.0"
+  ],
+  "beauty": [
+   "Sephora Skincare Reviews (Kaggle melissamonfared)",
+   "CC BY 4.0"
+  ],
+  "vernacular": [
+   "Flipkart reviews, ADR 0004 corpus (ODbL-1.0 / DbCL-1.0 Kaggle releases)",
+   "ODbL-1.0/DbCL-1.0"
+  ]
+ },
+ "items": [
+  {
+   "id": "pilot2-apparel-000",
+   "stratum": "apparel",
+   "sha": "04df7e0126749ad8",
+   "stars": 4.0,
+   "chars": 149
+  },
+  {
+   "id": "pilot2-apparel-001",
+   "stratum": "apparel",
+   "sha": "8b88442ce6cc34fa",
+   "stars": 5.0,
+   "chars": 171
+  },
+  {
+   "id": "pilot2-apparel-002",
+   "stratum": "apparel",
+   "sha": "30d5a63ceff1f427",
+   "stars": 4.0,
+   "chars": 383
+  },
+  {
+   "id": "pilot2-apparel-003",
+   "stratum": "apparel",
+   "sha": "f8805269b978889f",
+   "stars": 5.0,
+   "chars": 269
+  },
+  {
+   "id": "pilot2-apparel-004",
+   "stratum": "apparel",
+   "sha": "d6c7fd154973e729",
+   "stars": 5.0,
+   "chars": 118
+  },
+  {
+   "id": "pilot2-apparel-005",
+   "stratum": "apparel",
+   "sha": "aa188d08719de253",
+   "stars": 4.0,
+   "chars": 209
+  },
+  {
+   "id": "pilot2-apparel-006",
+   "stratum": "apparel",
+   "sha": "25d6c074643aadb4",
+   "stars": 3.0,
+   "chars": 274
+  },
+  {
+   "id": "pilot2-apparel-007",
+   "stratum": "apparel",
+   "sha": "d3ffb06f1094c7cb",
+   "stars": 5.0,
+   "chars": 349
+  },
+  {
+   "id": "pilot2-apparel-008",
+   "stratum": "apparel",
+   "sha": "c67fd91ab1d7ff09",
+   "stars": 1.0,
+   "chars": 92
+  },
+  {
+   "id": "pilot2-apparel-009",
+   "stratum": "apparel",
+   "sha": "74c15730f0e72831",
+   "stars": 5.0,
+   "chars": 309
+  },
+  {
+   "id": "pilot2-apparel-010",
+   "stratum": "apparel",
+   "sha": "fe039485160a2158",
+   "stars": 5.0,
+   "chars": 84
+  },
+  {
+   "id": "pilot2-apparel-011",
+   "stratum": "apparel",
+   "sha": "6e4a3e088d212887",
+   "stars": 5.0,
+   "chars": 157
+  },
+  {
+   "id": "pilot2-apparel-012",
+   "stratum": "apparel",
+   "sha": "867773269c0e2b03",
+   "stars": 2.0,
+   "chars": 499
+  },
+  {
+   "id": "pilot2-apparel-013",
+   "stratum": "apparel",
+   "sha": "a2473b1bb5e5eeb9",
+   "stars": 4.0,
+   "chars": 110
+  },
+  {
+   "id": "pilot2-apparel-014",
+   "stratum": "apparel",
+   "sha": "d969bcd336ef0ca8",
+   "stars": 5.0,
+   "chars": 500
+  },
+  {
+   "id": "pilot2-apparel-015",
+   "stratum": "apparel",
+   "sha": "a21e687b95d00fba",
+   "stars": 4.0,
+   "chars": 237
+  },
+  {
+   "id": "pilot2-apparel-016",
+   "stratum": "apparel",
+   "sha": "10a78bfc907b80f7",
+   "stars": 5.0,
+   "chars": 208
+  },
+  {
+   "id": "pilot2-apparel-017",
+   "stratum": "apparel",
+   "sha": "70ac228187c27ff5",
+   "stars": 5.0,
+   "chars": 453
+  },
+  {
+   "id": "pilot2-apparel-018",
+   "stratum": "apparel",
+   "sha": "b9fce8474b110fac",
+   "stars": 5.0,
+   "chars": 498
+  },
+  {
+   "id": "pilot2-apparel-019",
+   "stratum": "apparel",
+   "sha": "9fc75004630f45d1",
+   "stars": 5.0,
+   "chars": 177
+  },
+  {
+   "id": "pilot2-apparel-020",
+   "stratum": "apparel",
+   "sha": "4a0b1a432f5ba42d",
+   "stars": 5.0,
+   "chars": 279
+  },
+  {
+   "id": "pilot2-apparel-021",
+   "stratum": "apparel",
+   "sha": "355af44b65842895",
+   "stars": 5.0,
+   "chars": 506
+  },
+  {
+   "id": "pilot2-apparel-022",
+   "stratum": "apparel",
+   "sha": "fea107288ea70cf5",
+   "stars": 5.0,
+   "chars": 429
+  },
+  {
+   "id": "pilot2-apparel-023",
+   "stratum": "apparel",
+   "sha": "85696bbc1041c288",
+   "stars": 5.0,
+   "chars": 113
+  },
+  {
+   "id": "pilot2-apparel-024",
+   "stratum": "apparel",
+   "sha": "3cd264fc5c4817a1",
+   "stars": 5.0,
+   "chars": 133
+  },
+  {
+   "id": "pilot2-apparel-025",
+   "stratum": "apparel",
+   "sha": "71090b04b7391b93",
+   "stars": 5.0,
+   "chars": 143
+  },
+  {
+   "id": "pilot2-apparel-026",
+   "stratum": "apparel",
+   "sha": "cab55f29f1cf20fd",
+   "stars": 2.0,
+   "chars": 162
+  },
+  {
+   "id": "pilot2-apparel-027",
+   "stratum": "apparel",
+   "sha": "f26e172398995ab0",
+   "stars": 5.0,
+   "chars": 232
+  },
+  {
+   "id": "pilot2-apparel-028",
+   "stratum": "apparel",
+   "sha": "f4f145b5bf183128",
+   "stars": 4.0,
+   "chars": 324
+  },
+  {
+   "id": "pilot2-apparel-029",
+   "stratum": "apparel",
+   "sha": "0e7ce986dee1bde4",
+   "stars": 1.0,
+   "chars": 86
+  },
+  {
+   "id": "pilot2-apparel-030",
+   "stratum": "apparel",
+   "sha": "60e7ffaaa5ec9343",
+   "stars": 5.0,
+   "chars": 500
+  },
+  {
+   "id": "pilot2-apparel-031",
+   "stratum": "apparel",
+   "sha": "23927cd137b118ce",
+   "stars": 5.0,
+   "chars": 89
+  },
+  {
+   "id": "pilot2-apparel-032",
+   "stratum": "apparel",
+   "sha": "3cddce0460f492c0",
+   "stars": 4.0,
+   "chars": 500
+  },
+  {
+   "id": "pilot2-apparel-033",
+   "stratum": "apparel",
+   "sha": "9c6efdf040c8357a",
+   "stars": 3.0,
+   "chars": 500
+  },
+  {
+   "id": "pilot2-apparel-034",
+   "stratum": "apparel",
+   "sha": "0361c66020a53543",
+   "stars": 5.0,
+   "chars": 51
+  },
+  {
+   "id": "pilot2-apparel-035",
+   "stratum": "apparel",
+   "sha": "73d9fa56dbe67ef9",
+   "stars": 5.0,
+   "chars": 66
+  },
+  {
+   "id": "pilot2-apparel-036",
+   "stratum": "apparel",
+   "sha": "0107e89f0a959c0e",
+   "stars": 5.0,
+   "chars": 226
+  },
+  {
+   "id": "pilot2-apparel-037",
+   "stratum": "apparel",
+   "sha": "d5271eb67e779962",
+   "stars": 3.0,
+   "chars": 243
+  },
+  {
+   "id": "pilot2-apparel-038",
+   "stratum": "apparel",
+   "sha": "cc70c2e62475d43f",
+   "stars": 4.0,
+   "chars": 500
+  },
+  {
+   "id": "pilot2-apparel-039",
+   "stratum": "apparel",
+   "sha": "3a12b058963f97a9",
+   "stars": 2.0,
+   "chars": 208
+  },
+  {
+   "id": "pilot2-apparel-040",
+   "stratum": "apparel",
+   "sha": "a9a8e84f8ab82353",
+   "stars": 5.0,
+   "chars": 502
+  },
+  {
+   "id": "pilot2-apparel-041",
+   "stratum": "apparel",
+   "sha": "2fc5306ac047c2a5",
+   "stars": 5.0,
+   "chars": 439
+  },
+  {
+   "id": "pilot2-apparel-042",
+   "stratum": "apparel",
+   "sha": "e486e8e8d24140b6",
+   "stars": 5.0,
+   "chars": 225
+  },
+  {
+   "id": "pilot2-apparel-043",
+   "stratum": "apparel",
+   "sha": "a0071d9b422f5cbb",
+   "stars": 5.0,
+   "chars": 276
+  },
+  {
+   "id": "pilot2-apparel-044",
+   "stratum": "apparel",
+   "sha": "122f1bdf2cc319c0",
+   "stars": 5.0,
+   "chars": 488
+  },
+  {
+   "id": "pilot2-apparel-045",
+   "stratum": "apparel",
+   "sha": "2b4aea20124ce91c",
+   "stars": 3.0,
+   "chars": 362
+  },
+  {
+   "id": "pilot2-apparel-046",
+   "stratum": "apparel",
+   "sha": "0a59836c36f6f8d5",
+   "stars": 1.0,
+   "chars": 499
+  },
+  {
+   "id": "pilot2-apparel-047",
+   "stratum": "apparel",
+   "sha": "b24050473674d781",
+   "stars": 5.0,
+   "chars": 102
+  },
+  {
+   "id": "pilot2-apparel-048",
+   "stratum": "apparel",
+   "sha": "0afe71611b9b8f15",
+   "stars": 5.0,
+   "chars": 101
+  },
+  {
+   "id": "pilot2-apparel-049",
+   "stratum": "apparel",
+   "sha": "249f8b2390010a2e",
+   "stars": 5.0,
+   "chars": 500
+  },
+  {
+   "id": "pilot2-apparel-050",
+   "stratum": "apparel",
+   "sha": "bae34ada2a443645",
+   "stars": 4.0,
+   "chars": 496
+  },
+  {
+   "id": "pilot2-apparel-051",
+   "stratum": "apparel",
+   "sha": "6f5edfe95994ac6b",
+   "stars": 3.0,
+   "chars": 500
+  },
+  {
+   "id": "pilot2-apparel-052",
+   "stratum": "apparel",
+   "sha": "a1926fad3c72db6c",
+   "stars": 4.0,
+   "chars": 479
+  },
+  {
+   "id": "pilot2-apparel-053",
+   "stratum": "apparel",
+   "sha": "4d1005dd9719daf8",
+   "stars": 5.0,
+   "chars": 137
+  },
+  {
+   "id": "pilot2-apparel-054",
+   "stratum": "apparel",
+   "sha": "4d0c8a33392d2361",
+   "stars": 4.0,
+   "chars": 175
+  },
+  {
+   "id": "pilot2-apparel-055",
+   "stratum": "apparel",
+   "sha": "cbc327794aa5ebaa",
+   "stars": 5.0,
+   "chars": 101
+  },
+  {
+   "id": "pilot2-apparel-056",
+   "stratum": "apparel",
+   "sha": "e7cbc89f6b8d1dcb",
+   "stars": 5.0,
+   "chars": 285
+  },
+  {
+   "id": "pilot2-apparel-057",
+   "stratum": "apparel",
+   "sha": "34c313b2c48b5717",
+   "stars": 5.0,
+   "chars": 500
+  },
+  {
+   "id": "pilot2-apparel-058",
+   "stratum": "apparel",
+   "sha": "4f916855bf7522aa",
+   "stars": 5.0,
+   "chars": 220
+  },
+  {
+   "id": "pilot2-apparel-059",
+   "stratum": "apparel",
+   "sha": "1fdd3654ad650902",
+   "stars": 5.0,
+   "chars": 101
+  },
+  {
+   "id": "pilot2-apparel-060",
+   "stratum": "apparel",
+   "sha": "7d818ed59b0d29f8",
+   "stars": 5.0,
+   "chars": 471
+  },
+  {
+   "id": "pilot2-apparel-061",
+   "stratum": "apparel",
+   "sha": "0c2d46a8ab52cd4d",
+   "stars": 4.0,
+   "chars": 500
+  },
+  {
+   "id": "pilot2-apparel-062",
+   "stratum": "apparel",
+   "sha": "70c8b1df33f045c1",
+   "stars": 5.0,
+   "chars": 501
+  },
+  {
+   "id": "pilot2-apparel-063",
+   "stratum": "apparel",
+   "sha": "45f017d78c38c891",
+   "stars": 5.0,
+   "chars": 209
+  },
+  {
+   "id": "pilot2-apparel-064",
+   "stratum": "apparel",
+   "sha": "0ab61aae857d5c47",
+   "stars": 5.0,
+   "chars": 120
+  },
+  {
+   "id": "pilot2-apparel-065",
+   "stratum": "apparel",
+   "sha": "43fdca526485fa26",
+   "stars": 5.0,
+   "chars": 500
+  },
+  {
+   "id": "pilot2-apparel-066",
+   "stratum": "apparel",
+   "sha": "a833b7eafc64fe70",
+   "stars": 4.0,
+   "chars": 496
+  },
+  {
+   "id": "pilot2-apparel-067",
+   "stratum": "apparel",
+   "sha": "56830f4a379d0bd8",
+   "stars": 4.0,
+   "chars": 309
+  },
+  {
+   "id": "pilot2-apparel-068",
+   "stratum": "apparel",
+   "sha": "7779a22954cd18e4",
+   "stars": 5.0,
+   "chars": 166
+  },
+  {
+   "id": "pilot2-apparel-069",
+   "stratum": "apparel",
+   "sha": "1db744b1d1f8e4b0",
+   "stars": 5.0,
+   "chars": 213
+  },
+  {
+   "id": "pilot2-apparel-070",
+   "stratum": "apparel",
+   "sha": "c6e95ad405523e0a",
+   "stars": 5.0,
+   "chars": 381
+  },
+  {
+   "id": "pilot2-apparel-071",
+   "stratum": "apparel",
+   "sha": "77319b01a83cc943",
+   "stars": 5.0,
+   "chars": 138
+  },
+  {
+   "id": "pilot2-apparel-072",
+   "stratum": "apparel",
+   "sha": "8c874cf347d75830",
+   "stars": 3.0,
+   "chars": 298
+  },
+  {
+   "id": "pilot2-apparel-073",
+   "stratum": "apparel",
+   "sha": "230084947abee4a9",
+   "stars": 5.0,
+   "chars": 318
+  },
+  {
+   "id": "pilot2-apparel-074",
+   "stratum": "apparel",
+   "sha": "98ed9a9d5f7e03b9",
+   "stars": 2.0,
+   "chars": 221
+  },
+  {
+   "id": "pilot2-food-000",
+   "stratum": "food",
+   "sha": "51575ea45d41679a",
+   "stars": 5.0,
+   "chars": 220
+  },
+  {
+   "id": "pilot2-food-001",
+   "stratum": "food",
+   "sha": "498244f8a61568bd",
+   "stars": 2.0,
+   "chars": 178
+  },
+  {
+   "id": "pilot2-food-002",
+   "stratum": "food",
+   "sha": "e9afcd3100d8f96d",
+   "stars": 1.0,
+   "chars": 779
+  },
+  {
+   "id": "pilot2-food-003",
+   "stratum": "food",
+   "sha": "d814e1156bb952ea",
+   "stars": 5.0,
+   "chars": 215
+  },
+  {
+   "id": "pilot2-food-004",
+   "stratum": "food",
+   "sha": "b8febb57615fc928",
+   "stars": 1.0,
+   "chars": 215
+  },
+  {
+   "id": "pilot2-food-005",
+   "stratum": "food",
+   "sha": "6a8538c03f735f70",
+   "stars": 1.0,
+   "chars": 215
+  },
+  {
+   "id": "pilot2-food-006",
+   "stratum": "food",
+   "sha": "772343c6bd193015",
+   "stars": 4.0,
+   "chars": 143
+  },
+  {
+   "id": "pilot2-food-007",
+   "stratum": "food",
+   "sha": "5f4354f6c428b078",
+   "stars": 3.0,
+   "chars": 422
+  },
+  {
+   "id": "pilot2-food-008",
+   "stratum": "food",
+   "sha": "6c3d3a197a5b21c8",
+   "stars": 5.0,
+   "chars": 694
+  },
+  {
+   "id": "pilot2-food-009",
+   "stratum": "food",
+   "sha": "8337aa00640d249a",
+   "stars": 4.0,
+   "chars": 679
+  },
+  {
+   "id": "pilot2-food-010",
+   "stratum": "food",
+   "sha": "06eac5e605b2a529",
+   "stars": 4.0,
+   "chars": 548
+  },
+  {
+   "id": "pilot2-food-011",
+   "stratum": "food",
+   "sha": "c0aa581e4e38d7dd",
+   "stars": 5.0,
+   "chars": 176
+  },
+  {
+   "id": "pilot2-food-012",
+   "stratum": "food",
+   "sha": "63cad1098c675795",
+   "stars": 5.0,
+   "chars": 202
+  },
+  {
+   "id": "pilot2-food-013",
+   "stratum": "food",
+   "sha": "06021427f668b4c8",
+   "stars": 5.0,
+   "chars": 224
+  },
+  {
+   "id": "pilot2-food-014",
+   "stratum": "food",
+   "sha": "9fab897b0abab355",
+   "stars": 2.0,
+   "chars": 261
+  },
+  {
+   "id": "pilot2-food-015",
+   "stratum": "food",
+   "sha": "885d32b2b6f3c59c",
+   "stars": 5.0,
+   "chars": 145
+  },
+  {
+   "id": "pilot2-food-016",
+   "stratum": "food",
+   "sha": "74fbb96a299a6ec5",
+   "stars": 5.0,
+   "chars": 303
+  },
+  {
+   "id": "pilot2-food-017",
+   "stratum": "food",
+   "sha": "a86cf4b0607aec1a",
+   "stars": 2.0,
+   "chars": 418
+  },
+  {
+   "id": "pilot2-food-018",
+   "stratum": "food",
+   "sha": "1d8262183771a49d",
+   "stars": 5.0,
+   "chars": 276
+  },
+  {
+   "id": "pilot2-food-019",
+   "stratum": "food",
+   "sha": "010043279a0ed10e",
+   "stars": 5.0,
+   "chars": 162
+  },
+  {
+   "id": "pilot2-food-020",
+   "stratum": "food",
+   "sha": "9678e56ad62aa87e",
+   "stars": 5.0,
+   "chars": 224
+  },
+  {
+   "id": "pilot2-food-021",
+   "stratum": "food",
+   "sha": "1f50d4fd5f2e5e0a",
+   "stars": 5.0,
+   "chars": 170
+  },
+  {
+   "id": "pilot2-food-022",
+   "stratum": "food",
+   "sha": "ee9ccac94f0ad583",
+   "stars": 5.0,
+   "chars": 137
+  },
+  {
+   "id": "pilot2-food-023",
+   "stratum": "food",
+   "sha": "e8ee26a68fc0a99d",
+   "stars": 3.0,
+   "chars": 226
+  },
+  {
+   "id": "pilot2-food-024",
+   "stratum": "food",
+   "sha": "5c0a45430ed9054d",
+   "stars": 5.0,
+   "chars": 145
+  },
+  {
+   "id": "pilot2-food-025",
+   "stratum": "food",
+   "sha": "c47dbc935f1c8b43",
+   "stars": 5.0,
+   "chars": 178
+  },
+  {
+   "id": "pilot2-food-026",
+   "stratum": "food",
+   "sha": "743c6cbe4b16fad8",
+   "stars": 4.0,
+   "chars": 302
+  },
+  {
+   "id": "pilot2-food-027",
+   "stratum": "food",
+   "sha": "d0bb8b38ebc8e39b",
+   "stars": 3.0,
+   "chars": 372
+  },
+  {
+   "id": "pilot2-food-028",
+   "stratum": "food",
+   "sha": "a84e551fc27797be",
+   "stars": 1.0,
+   "chars": 548
+  },
+  {
+   "id": "pilot2-food-029",
+   "stratum": "food",
+   "sha": "53fbf567fbe2edaf",
+   "stars": 1.0,
+   "chars": 142
+  },
+  {
+   "id": "pilot2-food-030",
+   "stratum": "food",
+   "sha": "7787fe97b0122583",
+   "stars": 5.0,
+   "chars": 314
+  },
+  {
+   "id": "pilot2-food-031",
+   "stratum": "food",
+   "sha": "ef4f334f7e40501c",
+   "stars": 1.0,
+   "chars": 173
+  },
+  {
+   "id": "pilot2-food-032",
+   "stratum": "food",
+   "sha": "b778a72bb75e0737",
+   "stars": 5.0,
+   "chars": 213
+  },
+  {
+   "id": "pilot2-food-033",
+   "stratum": "food",
+   "sha": "13345764ac468923",
+   "stars": 5.0,
+   "chars": 104
+  },
+  {
+   "id": "pilot2-food-034",
+   "stratum": "food",
+   "sha": "c8dc454380f4fae5",
+   "stars": 3.0,
+   "chars": 335
+  },
+  {
+   "id": "pilot2-food-035",
+   "stratum": "food",
+   "sha": "473d8a47760ea216",
+   "stars": 1.0,
+   "chars": 493
+  },
+  {
+   "id": "pilot2-food-036",
+   "stratum": "food",
+   "sha": "2ef66d35674aa94b",
+   "stars": 2.0,
+   "chars": 605
+  },
+  {
+   "id": "pilot2-food-037",
+   "stratum": "food",
+   "sha": "a5a0790100e53344",
+   "stars": 5.0,
+   "chars": 514
+  },
+  {
+   "id": "pilot2-food-038",
+   "stratum": "food",
+   "sha": "de49b090ab36747d",
+   "stars": 5.0,
+   "chars": 482
+  },
+  {
+   "id": "pilot2-food-039",
+   "stratum": "food",
+   "sha": "0d86a3628df7c8e1",
+   "stars": 5.0,
+   "chars": 280
+  },
+  {
+   "id": "pilot2-food-040",
+   "stratum": "food",
+   "sha": "2ca65636c574fe3f",
+   "stars": 5.0,
+   "chars": 340
+  },
+  {
+   "id": "pilot2-food-041",
+   "stratum": "food",
+   "sha": "a443d63144f7bbd5",
+   "stars": 5.0,
+   "chars": 146
+  },
+  {
+   "id": "pilot2-food-042",
+   "stratum": "food",
+   "sha": "d61717331f3e3afe",
+   "stars": 1.0,
+   "chars": 133
+  },
+  {
+   "id": "pilot2-food-043",
+   "stratum": "food",
+   "sha": "47ed676665edcbb6",
+   "stars": 5.0,
+   "chars": 185
+  },
+  {
+   "id": "pilot2-food-044",
+   "stratum": "food",
+   "sha": "beef687ae367b633",
+   "stars": 5.0,
+   "chars": 240
+  },
+  {
+   "id": "pilot2-food-045",
+   "stratum": "food",
+   "sha": "805585c5dff24e22",
+   "stars": 1.0,
+   "chars": 685
+  },
+  {
+   "id": "pilot2-food-046",
+   "stratum": "food",
+   "sha": "ee66a2a7a1be96e9",
+   "stars": 4.0,
+   "chars": 289
+  },
+  {
+   "id": "pilot2-food-047",
+   "stratum": "food",
+   "sha": "b64bf723af0efe7b",
+   "stars": 5.0,
+   "chars": 263
+  },
+  {
+   "id": "pilot2-food-048",
+   "stratum": "food",
+   "sha": "725abb95f16bf732",
+   "stars": 5.0,
+   "chars": 283
+  },
+  {
+   "id": "pilot2-food-049",
+   "stratum": "food",
+   "sha": "e4640f1a8df0f82f",
+   "stars": 3.0,
+   "chars": 469
+  },
+  {
+   "id": "pilot2-food-050",
+   "stratum": "food",
+   "sha": "17766aaffe4b4932",
+   "stars": 5.0,
+   "chars": 601
+  },
+  {
+   "id": "pilot2-food-051",
+   "stratum": "food",
+   "sha": "fa5aa19df389b890",
+   "stars": 5.0,
+   "chars": 258
+  },
+  {
+   "id": "pilot2-food-052",
+   "stratum": "food",
+   "sha": "7310aabf68efa4ec",
+   "stars": 5.0,
+   "chars": 422
+  },
+  {
+   "id": "pilot2-food-053",
+   "stratum": "food",
+   "sha": "03363a30c1fa69bb",
+   "stars": 4.0,
+   "chars": 623
+  },
+  {
+   "id": "pilot2-food-054",
+   "stratum": "food",
+   "sha": "cccb9432c93ccc04",
+   "stars": 1.0,
+   "chars": 256
+  },
+  {
+   "id": "pilot2-food-055",
+   "stratum": "food",
+   "sha": "a6f0f4c07eb3f5e5",
+   "stars": 1.0,
+   "chars": 138
+  },
+  {
+   "id": "pilot2-food-056",
+   "stratum": "food",
+   "sha": "f91250284aad6bd0",
+   "stars": 4.0,
+   "chars": 161
+  },
+  {
+   "id": "pilot2-food-057",
+   "stratum": "food",
+   "sha": "022015aeb8823f38",
+   "stars": 1.0,
+   "chars": 370
+  },
+  {
+   "id": "pilot2-food-058",
+   "stratum": "food",
+   "sha": "0c61ecda5d7278eb",
+   "stars": 5.0,
+   "chars": 432
+  },
+  {
+   "id": "pilot2-food-059",
+   "stratum": "food",
+   "sha": "c40b33de82104b60",
+   "stars": 5.0,
+   "chars": 794
+  },
+  {
+   "id": "pilot2-food-060",
+   "stratum": "food",
+   "sha": "7a45703f1c3e4a35",
+   "stars": 5.0,
+   "chars": 141
+  },
+  {
+   "id": "pilot2-food-061",
+   "stratum": "food",
+   "sha": "4857461e3c09ec66",
+   "stars": 4.0,
+   "chars": 734
+  },
+  {
+   "id": "pilot2-food-062",
+   "stratum": "food",
+   "sha": "15eca99f18686416",
+   "stars": 5.0,
+   "chars": 908
+  },
+  {
+   "id": "pilot2-food-063",
+   "stratum": "food",
+   "sha": "f2e4b2fdd9941e5f",
+   "stars": 5.0,
+   "chars": 770
+  },
+  {
+   "id": "pilot2-food-064",
+   "stratum": "food",
+   "sha": "ee09c0553bec0334",
+   "stars": 5.0,
+   "chars": 186
+  },
+  {
+   "id": "pilot2-food-065",
+   "stratum": "food",
+   "sha": "23d5a3a7bace4f55",
+   "stars": 5.0,
+   "chars": 503
+  },
+  {
+   "id": "pilot2-food-066",
+   "stratum": "food",
+   "sha": "8cafb1813844c7df",
+   "stars": 5.0,
+   "chars": 499
+  },
+  {
+   "id": "pilot2-food-067",
+   "stratum": "food",
+   "sha": "4fb7710155d78935",
+   "stars": 5.0,
+   "chars": 435
+  },
+  {
+   "id": "pilot2-food-068",
+   "stratum": "food",
+   "sha": "a24d958df0982f3d",
+   "stars": 5.0,
+   "chars": 217
+  },
+  {
+   "id": "pilot2-food-069",
+   "stratum": "food",
+   "sha": "9cd5cc507da1f845",
+   "stars": 5.0,
+   "chars": 125
+  },
+  {
+   "id": "pilot2-food-070",
+   "stratum": "food",
+   "sha": "921935f34ef874a1",
+   "stars": 5.0,
+   "chars": 308
+  },
+  {
+   "id": "pilot2-food-071",
+   "stratum": "food",
+   "sha": "5c82073726a3a719",
+   "stars": 5.0,
+   "chars": 113
+  },
+  {
+   "id": "pilot2-food-072",
+   "stratum": "food",
+   "sha": "5dfa125b031963f5",
+   "stars": 5.0,
+   "chars": 107
+  },
+  {
+   "id": "pilot2-food-073",
+   "stratum": "food",
+   "sha": "2d18c0f05766d9c7",
+   "stars": 1.0,
+   "chars": 128
+  },
+  {
+   "id": "pilot2-food-074",
+   "stratum": "food",
+   "sha": "3f8c16c8911e80c2",
+   "stars": 5.0,
+   "chars": 911
+  },
+  {
+   "id": "pilot2-beauty-000",
+   "stratum": "beauty",
+   "sha": "d74ef6b032ff2820",
+   "stars": 5.0,
+   "chars": 305
+  },
+  {
+   "id": "pilot2-beauty-001",
+   "stratum": "beauty",
+   "sha": "d86df0f03d528069",
+   "stars": 4.0,
+   "chars": 145
+  },
+  {
+   "id": "pilot2-beauty-002",
+   "stratum": "beauty",
+   "sha": "266728ed0cdb1144",
+   "stars": 5.0,
+   "chars": 404
+  },
+  {
+   "id": "pilot2-beauty-003",
+   "stratum": "beauty",
+   "sha": "48b37a40c00feadd",
+   "stars": 5.0,
+   "chars": 438
+  },
+  {
+   "id": "pilot2-beauty-004",
+   "stratum": "beauty",
+   "sha": "f2ac0fc71d4fb3f2",
+   "stars": 4.0,
+   "chars": 205
+  },
+  {
+   "id": "pilot2-beauty-005",
+   "stratum": "beauty",
+   "sha": "55fbc33673e37e26",
+   "stars": 5.0,
+   "chars": 274
+  },
+  {
+   "id": "pilot2-beauty-006",
+   "stratum": "beauty",
+   "sha": "9c70bedd970ece84",
+   "stars": 1.0,
+   "chars": 602
+  },
+  {
+   "id": "pilot2-beauty-007",
+   "stratum": "beauty",
+   "sha": "823c091f4a173dad",
+   "stars": 5.0,
+   "chars": 359
+  },
+  {
+   "id": "pilot2-beauty-008",
+   "stratum": "beauty",
+   "sha": "00d34cd6d46f0bc3",
+   "stars": 5.0,
+   "chars": 493
+  },
+  {
+   "id": "pilot2-beauty-009",
+   "stratum": "beauty",
+   "sha": "598572e177e5faa8",
+   "stars": 5.0,
+   "chars": 321
+  },
+  {
+   "id": "pilot2-beauty-010",
+   "stratum": "beauty",
+   "sha": "59592487f6ab29a9",
+   "stars": 4.0,
+   "chars": 285
+  },
+  {
+   "id": "pilot2-beauty-011",
+   "stratum": "beauty",
+   "sha": "7549cc96670e39cd",
+   "stars": 3.0,
+   "chars": 293
+  },
+  {
+   "id": "pilot2-beauty-012",
+   "stratum": "beauty",
+   "sha": "c1e881dbfe075bcc",
+   "stars": 5.0,
+   "chars": 67
+  },
+  {
+   "id": "pilot2-beauty-013",
+   "stratum": "beauty",
+   "sha": "a776aa2d464dd6bc",
+   "stars": 5.0,
+   "chars": 171
+  },
+  {
+   "id": "pilot2-beauty-014",
+   "stratum": "beauty",
+   "sha": "03457c3045d2a641",
+   "stars": 5.0,
+   "chars": 209
+  },
+  {
+   "id": "pilot2-beauty-015",
+   "stratum": "beauty",
+   "sha": "c439f581c2ddf848",
+   "stars": 5.0,
+   "chars": 242
+  },
+  {
+   "id": "pilot2-beauty-016",
+   "stratum": "beauty",
+   "sha": "83579c9ac0a3eba7",
+   "stars": 4.0,
+   "chars": 225
+  },
+  {
+   "id": "pilot2-beauty-017",
+   "stratum": "beauty",
+   "sha": "1e24ee90d7572cfe",
+   "stars": 5.0,
+   "chars": 365
+  },
+  {
+   "id": "pilot2-beauty-018",
+   "stratum": "beauty",
+   "sha": "cf8956c5c9089564",
+   "stars": 5.0,
+   "chars": 169
+  },
+  {
+   "id": "pilot2-beauty-019",
+   "stratum": "beauty",
+   "sha": "a03f7ebcacfb3e77",
+   "stars": 3.0,
+   "chars": 330
+  },
+  {
+   "id": "pilot2-beauty-020",
+   "stratum": "beauty",
+   "sha": "8ded56ff9c1eeb45",
+   "stars": 5.0,
+   "chars": 171
+  },
+  {
+   "id": "pilot2-beauty-021",
+   "stratum": "beauty",
+   "sha": "750a3bfe5a0436e0",
+   "stars": 5.0,
+   "chars": 241
+  },
+  {
+   "id": "pilot2-beauty-022",
+   "stratum": "beauty",
+   "sha": "b3bf2febadca7fb3",
+   "stars": 5.0,
+   "chars": 339
+  },
+  {
+   "id": "pilot2-beauty-023",
+   "stratum": "beauty",
+   "sha": "088a233dd3a59ac0",
+   "stars": 4.0,
+   "chars": 315
+  },
+  {
+   "id": "pilot2-beauty-024",
+   "stratum": "beauty",
+   "sha": "84c2a1813d7aeaad",
+   "stars": 4.0,
+   "chars": 278
+  },
+  {
+   "id": "pilot2-beauty-025",
+   "stratum": "beauty",
+   "sha": "c16672fc5f83ff97",
+   "stars": 4.0,
+   "chars": 350
+  },
+  {
+   "id": "pilot2-beauty-026",
+   "stratum": "beauty",
+   "sha": "766b5bec26607e15",
+   "stars": 4.0,
+   "chars": 66
+  },
+  {
+   "id": "pilot2-beauty-027",
+   "stratum": "beauty",
+   "sha": "6e49039419feb4ee",
+   "stars": 5.0,
+   "chars": 58
+  },
+  {
+   "id": "pilot2-beauty-028",
+   "stratum": "beauty",
+   "sha": "2ecfc73a0a478d55",
+   "stars": 5.0,
+   "chars": 157
+  },
+  {
+   "id": "pilot2-beauty-029",
+   "stratum": "beauty",
+   "sha": "5edd5aec5c74e3ca",
+   "stars": 5.0,
+   "chars": 212
+  },
+  {
+   "id": "pilot2-beauty-030",
+   "stratum": "beauty",
+   "sha": "b19f4438b7164607",
+   "stars": 5.0,
+   "chars": 102
+  },
+  {
+   "id": "pilot2-beauty-031",
+   "stratum": "beauty",
+   "sha": "0a08f3263e9daa10",
+   "stars": 5.0,
+   "chars": 176
+  },
+  {
+   "id": "pilot2-beauty-032",
+   "stratum": "beauty",
+   "sha": "16af52a9544ec441",
+   "stars": 5.0,
+   "chars": 80
+  },
+  {
+   "id": "pilot2-beauty-033",
+   "stratum": "beauty",
+   "sha": "1d2de95910e82dd0",
+   "stars": 1.0,
+   "chars": 999
+  },
+  {
+   "id": "pilot2-beauty-034",
+   "stratum": "beauty",
+   "sha": "a55d7ad471aacc1c",
+   "stars": 3.0,
+   "chars": 193
+  },
+  {
+   "id": "pilot2-beauty-035",
+   "stratum": "beauty",
+   "sha": "fd0070f0d1fb7214",
+   "stars": 4.0,
+   "chars": 286
+  },
+  {
+   "id": "pilot2-beauty-036",
+   "stratum": "beauty",
+   "sha": "29ab95ea0ef72434",
+   "stars": 5.0,
+   "chars": 607
+  },
+  {
+   "id": "pilot2-beauty-037",
+   "stratum": "beauty",
+   "sha": "271eeb316b96e218",
+   "stars": 5.0,
+   "chars": 327
+  },
+  {
+   "id": "pilot2-beauty-038",
+   "stratum": "beauty",
+   "sha": "cd9a99f28f152e2c",
+   "stars": 3.0,
+   "chars": 176
+  },
+  {
+   "id": "pilot2-beauty-039",
+   "stratum": "beauty",
+   "sha": "f1a478233a52afdd",
+   "stars": 5.0,
+   "chars": 325
+  },
+  {
+   "id": "pilot2-beauty-040",
+   "stratum": "beauty",
+   "sha": "49bf4e3039155073",
+   "stars": 1.0,
+   "chars": 123
+  },
+  {
+   "id": "pilot2-beauty-041",
+   "stratum": "beauty",
+   "sha": "095b6548c1fcf169",
+   "stars": 1.0,
+   "chars": 519
+  },
+  {
+   "id": "pilot2-beauty-042",
+   "stratum": "beauty",
+   "sha": "a0faa9a8b70e97b9",
+   "stars": 5.0,
+   "chars": 242
+  },
+  {
+   "id": "pilot2-beauty-043",
+   "stratum": "beauty",
+   "sha": "0466ce75a2803818",
+   "stars": 4.0,
+   "chars": 577
+  },
+  {
+   "id": "pilot2-beauty-044",
+   "stratum": "beauty",
+   "sha": "6d8e7a0c9ac10d31",
+   "stars": 5.0,
+   "chars": 110
+  },
+  {
+   "id": "pilot2-beauty-045",
+   "stratum": "beauty",
+   "sha": "2d2f59a0313ddeca",
+   "stars": 5.0,
+   "chars": 151
+  },
+  {
+   "id": "pilot2-beauty-046",
+   "stratum": "beauty",
+   "sha": "b77f4b626e26ac0f",
+   "stars": 5.0,
+   "chars": 232
+  },
+  {
+   "id": "pilot2-beauty-047",
+   "stratum": "beauty",
+   "sha": "7c78f264ff41ed74",
+   "stars": 4.0,
+   "chars": 145
+  },
+  {
+   "id": "pilot2-beauty-048",
+   "stratum": "beauty",
+   "sha": "5b0714be1117cdfa",
+   "stars": 5.0,
+   "chars": 272
+  },
+  {
+   "id": "pilot2-beauty-049",
+   "stratum": "beauty",
+   "sha": "158c5c5cf55898d4",
+   "stars": 5.0,
+   "chars": 393
+  },
+  {
+   "id": "pilot2-beauty-050",
+   "stratum": "beauty",
+   "sha": "fd9ad3e6d7df8d45",
+   "stars": 5.0,
+   "chars": 471
+  },
+  {
+   "id": "pilot2-beauty-051",
+   "stratum": "beauty",
+   "sha": "c4713a5701f21704",
+   "stars": 5.0,
+   "chars": 224
+  },
+  {
+   "id": "pilot2-beauty-052",
+   "stratum": "beauty",
+   "sha": "1a7c834434ff0ace",
+   "stars": 5.0,
+   "chars": 191
+  },
+  {
+   "id": "pilot2-beauty-053",
+   "stratum": "beauty",
+   "sha": "3cb775e4c629be27",
+   "stars": 5.0,
+   "chars": 359
+  },
+  {
+   "id": "pilot2-beauty-054",
+   "stratum": "beauty",
+   "sha": "be2d59f49fc53684",
+   "stars": 5.0,
+   "chars": 127
+  },
+  {
+   "id": "pilot2-beauty-055",
+   "stratum": "beauty",
+   "sha": "e1d1017adb0cea7a",
+   "stars": 5.0,
+   "chars": 160
+  },
+  {
+   "id": "pilot2-beauty-056",
+   "stratum": "beauty",
+   "sha": "813e470e4ca0379b",
+   "stars": 5.0,
+   "chars": 169
+  },
+  {
+   "id": "pilot2-beauty-057",
+   "stratum": "beauty",
+   "sha": "ad8643e5227133e9",
+   "stars": 5.0,
+   "chars": 143
+  },
+  {
+   "id": "pilot2-beauty-058",
+   "stratum": "beauty",
+   "sha": "caeed9cc948c7102",
+   "stars": 4.0,
+   "chars": 329
+  },
+  {
+   "id": "pilot2-beauty-059",
+   "stratum": "beauty",
+   "sha": "72d6637d39f25b54",
+   "stars": 3.0,
+   "chars": 940
+  },
+  {
+   "id": "pilot2-beauty-060",
+   "stratum": "beauty",
+   "sha": "2bfd5b9b833d37ae",
+   "stars": 3.0,
+   "chars": 753
+  },
+  {
+   "id": "pilot2-beauty-061",
+   "stratum": "beauty",
+   "sha": "7da991270b220422",
+   "stars": 3.0,
+   "chars": 400
+  },
+  {
+   "id": "pilot2-beauty-062",
+   "stratum": "beauty",
+   "sha": "781b8f36c5373a6b",
+   "stars": 5.0,
+   "chars": 146
+  },
+  {
+   "id": "pilot2-beauty-063",
+   "stratum": "beauty",
+   "sha": "3ad57552b5ae2f24",
+   "stars": 1.0,
+   "chars": 370
+  },
+  {
+   "id": "pilot2-beauty-064",
+   "stratum": "beauty",
+   "sha": "0131c17711d0b7a0",
+   "stars": 5.0,
+   "chars": 384
+  },
+  {
+   "id": "pilot2-beauty-065",
+   "stratum": "beauty",
+   "sha": "def7562f006b3ffa",
+   "stars": 5.0,
+   "chars": 75
+  },
+  {
+   "id": "pilot2-beauty-066",
+   "stratum": "beauty",
+   "sha": "8341f6c727401af8",
+   "stars": 5.0,
+   "chars": 989
+  },
+  {
+   "id": "pilot2-beauty-067",
+   "stratum": "beauty",
+   "sha": "3cfee3d01aa4dc3e",
+   "stars": 5.0,
+   "chars": 334
+  },
+  {
+   "id": "pilot2-beauty-068",
+   "stratum": "beauty",
+   "sha": "cd8baba31e928756",
+   "stars": 2.0,
+   "chars": 306
+  },
+  {
+   "id": "pilot2-beauty-069",
+   "stratum": "beauty",
+   "sha": "c1156e8588d10c33",
+   "stars": 5.0,
+   "chars": 159
+  },
+  {
+   "id": "pilot2-beauty-070",
+   "stratum": "beauty",
+   "sha": "44f2e6bbe8fad7bf",
+   "stars": 5.0,
+   "chars": 87
+  },
+  {
+   "id": "pilot2-beauty-071",
+   "stratum": "beauty",
+   "sha": "35b475b359035a44",
+   "stars": 5.0,
+   "chars": 504
+  },
+  {
+   "id": "pilot2-beauty-072",
+   "stratum": "beauty",
+   "sha": "30ff727eec60b0bd",
+   "stars": 1.0,
+   "chars": 200
+  },
+  {
+   "id": "pilot2-beauty-073",
+   "stratum": "beauty",
+   "sha": "0572c9b8f5544314",
+   "stars": 5.0,
+   "chars": 59
+  },
+  {
+   "id": "pilot2-beauty-074",
+   "stratum": "beauty",
+   "sha": "5a649e9d876b02e7",
+   "stars": 5.0,
+   "chars": 312
+  },
+  {
+   "id": "pilot2-vernacular-000",
+   "stratum": "vernacular",
+   "sha": "cf235ff360eebe6d",
+   "stars": 5.0,
+   "chars": 113
+  },
+  {
+   "id": "pilot2-vernacular-001",
+   "stratum": "vernacular",
+   "sha": "fec61413c3ee5b9c",
+   "stars": 5.0,
+   "chars": 227
+  },
+  {
+   "id": "pilot2-vernacular-002",
+   "stratum": "vernacular",
+   "sha": "f0399bc94fdd9bd8",
+   "stars": 2.0,
+   "chars": 32
+  },
+  {
+   "id": "pilot2-vernacular-003",
+   "stratum": "vernacular",
+   "sha": "92410f108c23cad4",
+   "stars": 1.0,
+   "chars": 60
+  },
+  {
+   "id": "pilot2-vernacular-004",
+   "stratum": "vernacular",
+   "sha": "c672611ed9b15ed9",
+   "stars": 4.0,
+   "chars": 114
+  },
+  {
+   "id": "pilot2-vernacular-005",
+   "stratum": "vernacular",
+   "sha": "25189c82b987875b",
+   "stars": 5.0,
+   "chars": 487
+  },
+  {
+   "id": "pilot2-vernacular-006",
+   "stratum": "vernacular",
+   "sha": "f062766868912085",
+   "stars": 5.0,
+   "chars": 193
+  },
+  {
+   "id": "pilot2-vernacular-007",
+   "stratum": "vernacular",
+   "sha": "c8979f2ed7d31029",
+   "stars": 5.0,
+   "chars": 68
+  },
+  {
+   "id": "pilot2-vernacular-008",
+   "stratum": "vernacular",
+   "sha": "7d50d44f7be6d916",
+   "stars": 4.0,
+   "chars": 55
+  },
+  {
+   "id": "pilot2-vernacular-009",
+   "stratum": "vernacular",
+   "sha": "76ff3289bb6609fc",
+   "stars": 4.0,
+   "chars": 58
+  },
+  {
+   "id": "pilot2-vernacular-010",
+   "stratum": "vernacular",
+   "sha": "a497f8df1eb2a8bc",
+   "stars": 1.0,
+   "chars": 34
+  },
+  {
+   "id": "pilot2-vernacular-011",
+   "stratum": "vernacular",
+   "sha": "885402aae7e09ffc",
+   "stars": 1.0,
+   "chars": 31
+  },
+  {
+   "id": "pilot2-vernacular-012",
+   "stratum": "vernacular",
+   "sha": "0a03c917e34b8fce",
+   "stars": 5.0,
+   "chars": 68
+  },
+  {
+   "id": "pilot2-vernacular-013",
+   "stratum": "vernacular",
+   "sha": "e2592d0cdc0ff0ff",
+   "stars": 4.0,
+   "chars": 55
+  },
+  {
+   "id": "pilot2-vernacular-014",
+   "stratum": "vernacular",
+   "sha": "353c971b1f1594c6",
+   "stars": 1.0,
+   "chars": 247
+  },
+  {
+   "id": "pilot2-vernacular-015",
+   "stratum": "vernacular",
+   "sha": "859593bb196db0db",
+   "stars": 1.0,
+   "chars": 33
+  },
+  {
+   "id": "pilot2-vernacular-016",
+   "stratum": "vernacular",
+   "sha": "6910d5efe8b707ab",
+   "stars": 4.0,
+   "chars": 102
+  },
+  {
+   "id": "pilot2-vernacular-017",
+   "stratum": "vernacular",
+   "sha": "822cb2812adf1e72",
+   "stars": 2.0,
+   "chars": 41
+  },
+  {
+   "id": "pilot2-vernacular-018",
+   "stratum": "vernacular",
+   "sha": "23885996dba729c2",
+   "stars": 5.0,
+   "chars": 25
+  },
+  {
+   "id": "pilot2-vernacular-019",
+   "stratum": "vernacular",
+   "sha": "efdb8643b4fd4138",
+   "stars": 5.0,
+   "chars": 475
+  },
+  {
+   "id": "pilot2-vernacular-020",
+   "stratum": "vernacular",
+   "sha": "c5d488c180719f2d",
+   "stars": 5.0,
+   "chars": 207
+  },
+  {
+   "id": "pilot2-vernacular-021",
+   "stratum": "vernacular",
+   "sha": "f6e11ace3cd989cb",
+   "stars": 5.0,
+   "chars": 65
+  },
+  {
+   "id": "pilot2-vernacular-022",
+   "stratum": "vernacular",
+   "sha": "3007b1c45057d8eb",
+   "stars": 5.0,
+   "chars": 268
+  },
+  {
+   "id": "pilot2-vernacular-023",
+   "stratum": "vernacular",
+   "sha": "a4adca6fa8e765c2",
+   "stars": 4.0,
+   "chars": 116
+  },
+  {
+   "id": "pilot2-vernacular-024",
+   "stratum": "vernacular",
+   "sha": "3948402797701ef8",
+   "stars": 5.0,
+   "chars": 21
+  },
+  {
+   "id": "pilot2-vernacular-025",
+   "stratum": "vernacular",
+   "sha": "1a0ee769e8bc8ec8",
+   "stars": 5.0,
+   "chars": 72
+  },
+  {
+   "id": "pilot2-vernacular-026",
+   "stratum": "vernacular",
+   "sha": "b3b6cd39e02e2b89",
+   "stars": 5.0,
+   "chars": 41
+  },
+  {
+   "id": "pilot2-vernacular-027",
+   "stratum": "vernacular",
+   "sha": "4de3eed53839f688",
+   "stars": 5.0,
+   "chars": 70
+  },
+  {
+   "id": "pilot2-vernacular-028",
+   "stratum": "vernacular",
+   "sha": "dab42bbc13917252",
+   "stars": 5.0,
+   "chars": 38
+  },
+  {
+   "id": "pilot2-vernacular-029",
+   "stratum": "vernacular",
+   "sha": "d5cc65bd35f2e9ed",
+   "stars": 2.0,
+   "chars": 138
+  },
+  {
+   "id": "pilot2-vernacular-030",
+   "stratum": "vernacular",
+   "sha": "d513d7d1e4e839e3",
+   "stars": 5.0,
+   "chars": 24
+  },
+  {
+   "id": "pilot2-vernacular-031",
+   "stratum": "vernacular",
+   "sha": "c66f2a3bc5a0d5cd",
+   "stars": 5.0,
+   "chars": 232
+  },
+  {
+   "id": "pilot2-vernacular-032",
+   "stratum": "vernacular",
+   "sha": "e900da0afb50f643",
+   "stars": 5.0,
+   "chars": 21
+  },
+  {
+   "id": "pilot2-vernacular-033",
+   "stratum": "vernacular",
+   "sha": "ca4b764fa9977af4",
+   "stars": 5.0,
+   "chars": 52
+  },
+  {
+   "id": "pilot2-vernacular-034",
+   "stratum": "vernacular",
+   "sha": "0d7e3a7328cffb8a",
+   "stars": 5.0,
+   "chars": 63
+  },
+  {
+   "id": "pilot2-vernacular-035",
+   "stratum": "vernacular",
+   "sha": "4c584d4fa2bab02b",
+   "stars": 4.0,
+   "chars": 28
+  },
+  {
+   "id": "pilot2-vernacular-036",
+   "stratum": "vernacular",
+   "sha": "145597e0699dbfa7",
+   "stars": 5.0,
+   "chars": 76
+  },
+  {
+   "id": "pilot2-vernacular-037",
+   "stratum": "vernacular",
+   "sha": "09cc787f8c70e85c",
+   "stars": 5.0,
+   "chars": 28
+  },
+  {
+   "id": "pilot2-vernacular-038",
+   "stratum": "vernacular",
+   "sha": "1ec7f2093bce623f",
+   "stars": 5.0,
+   "chars": 64
+  },
+  {
+   "id": "pilot2-vernacular-039",
+   "stratum": "vernacular",
+   "sha": "e40a9199199f2524",
+   "stars": 1.0,
+   "chars": 227
+  },
+  {
+   "id": "pilot2-vernacular-040",
+   "stratum": "vernacular",
+   "sha": "68346a0d4f469667",
+   "stars": 2.0,
+   "chars": 175
+  },
+  {
+   "id": "pilot2-vernacular-041",
+   "stratum": "vernacular",
+   "sha": "c19072870d524e22",
+   "stars": 5.0,
+   "chars": 35
+  },
+  {
+   "id": "pilot2-vernacular-042",
+   "stratum": "vernacular",
+   "sha": "9e7dc8c66cfd9c43",
+   "stars": 4.0,
+   "chars": 27
+  },
+  {
+   "id": "pilot2-vernacular-043",
+   "stratum": "vernacular",
+   "sha": "b39126eef5873c9a",
+   "stars": 5.0,
+   "chars": 39
+  },
+  {
+   "id": "pilot2-vernacular-044",
+   "stratum": "vernacular",
+   "sha": "b5a372765159b3ee",
+   "stars": 4.0,
+   "chars": 23
+  },
+  {
+   "id": "pilot2-vernacular-045",
+   "stratum": "vernacular",
+   "sha": "7d369e8d0ef05556",
+   "stars": 1.0,
+   "chars": 27
+  },
+  {
+   "id": "pilot2-vernacular-046",
+   "stratum": "vernacular",
+   "sha": "5c3583a1605221ac",
+   "stars": 1.0,
+   "chars": 64
+  },
+  {
+   "id": "pilot2-vernacular-047",
+   "stratum": "vernacular",
+   "sha": "cd271ca813a34595",
+   "stars": 5.0,
+   "chars": 18
+  },
+  {
+   "id": "pilot2-vernacular-048",
+   "stratum": "vernacular",
+   "sha": "fc6973dcb6058feb",
+   "stars": 5.0,
+   "chars": 109
+  },
+  {
+   "id": "pilot2-vernacular-049",
+   "stratum": "vernacular",
+   "sha": "87c83adde601b7b1",
+   "stars": 5.0,
+   "chars": 126
+  },
+  {
+   "id": "pilot2-vernacular-050",
+   "stratum": "vernacular",
+   "sha": "6b248981416cdf48",
+   "stars": 5.0,
+   "chars": 38
+  },
+  {
+   "id": "pilot2-vernacular-051",
+   "stratum": "vernacular",
+   "sha": "0b2c821f71e8c0e8",
+   "stars": 5.0,
+   "chars": 65
+  },
+  {
+   "id": "pilot2-vernacular-052",
+   "stratum": "vernacular",
+   "sha": "c561f35db4967f87",
+   "stars": 4.0,
+   "chars": 45
+  },
+  {
+   "id": "pilot2-vernacular-053",
+   "stratum": "vernacular",
+   "sha": "ac7e0ad8f57e80a4",
+   "stars": 5.0,
+   "chars": 123
+  },
+  {
+   "id": "pilot2-vernacular-054",
+   "stratum": "vernacular",
+   "sha": "e636496d1d84c88b",
+   "stars": 4.0,
+   "chars": 36
+  },
+  {
+   "id": "pilot2-vernacular-055",
+   "stratum": "vernacular",
+   "sha": "81978f600b9e7077",
+   "stars": 5.0,
+   "chars": 33
+  },
+  {
+   "id": "pilot2-vernacular-056",
+   "stratum": "vernacular",
+   "sha": "1fab8681c9ad4835",
+   "stars": 1.0,
+   "chars": 40
+  },
+  {
+   "id": "pilot2-vernacular-057",
+   "stratum": "vernacular",
+   "sha": "b53d057654607b0f",
+   "stars": 4.0,
+   "chars": 168
+  },
+  {
+   "id": "pilot2-vernacular-058",
+   "stratum": "vernacular",
+   "sha": "e6ce18ce5e9f06ec",
+   "stars": 3.0,
+   "chars": 65
+  },
+  {
+   "id": "pilot2-vernacular-059",
+   "stratum": "vernacular",
+   "sha": "c841f625b543dd86",
+   "stars": 4.0,
+   "chars": 37
+  },
+  {
+   "id": "pilot2-vernacular-060",
+   "stratum": "vernacular",
+   "sha": "62767a718802389e",
+   "stars": 5.0,
+   "chars": 77
+  },
+  {
+   "id": "pilot2-vernacular-061",
+   "stratum": "vernacular",
+   "sha": "91b50977a77a4092",
+   "stars": 5.0,
+   "chars": 23
+  },
+  {
+   "id": "pilot2-vernacular-062",
+   "stratum": "vernacular",
+   "sha": "6a573a14f9d1606b",
+   "stars": 4.0,
+   "chars": 64
+  },
+  {
+   "id": "pilot2-vernacular-063",
+   "stratum": "vernacular",
+   "sha": "82d7f11fa2fa0356",
+   "stars": 5.0,
+   "chars": 131
+  },
+  {
+   "id": "pilot2-vernacular-064",
+   "stratum": "vernacular",
+   "sha": "ab28b32d92ea3fe7",
+   "stars": 1.0,
+   "chars": 287
+  },
+  {
+   "id": "pilot2-vernacular-065",
+   "stratum": "vernacular",
+   "sha": "d9b00535e568c1c3",
+   "stars": 1.0,
+   "chars": 58
+  },
+  {
+   "id": "pilot2-vernacular-066",
+   "stratum": "vernacular",
+   "sha": "4efb9938331e5f96",
+   "stars": 5.0,
+   "chars": 128
+  },
+  {
+   "id": "pilot2-vernacular-067",
+   "stratum": "vernacular",
+   "sha": "4ebda254668d3dad",
+   "stars": 5.0,
+   "chars": 27
+  },
+  {
+   "id": "pilot2-vernacular-068",
+   "stratum": "vernacular",
+   "sha": "d08c25a2321f06ec",
+   "stars": 5.0,
+   "chars": 76
+  },
+  {
+   "id": "pilot2-vernacular-069",
+   "stratum": "vernacular",
+   "sha": "a82e864e75485211",
+   "stars": 5.0,
+   "chars": 65
+  },
+  {
+   "id": "pilot2-vernacular-070",
+   "stratum": "vernacular",
+   "sha": "baeecdc34dad9ae7",
+   "stars": 5.0,
+   "chars": 24
+  },
+  {
+   "id": "pilot2-vernacular-071",
+   "stratum": "vernacular",
+   "sha": "41cea5bb2c7fa605",
+   "stars": 1.0,
+   "chars": 27
+  },
+  {
+   "id": "pilot2-vernacular-072",
+   "stratum": "vernacular",
+   "sha": "87bd3524fe1dd5b3",
+   "stars": 5.0,
+   "chars": 20
+  },
+  {
+   "id": "pilot2-vernacular-073",
+   "stratum": "vernacular",
+   "sha": "7e1bec550deb746d",
+   "stars": 2.0,
+   "chars": 27
+  },
+  {
+   "id": "pilot2-vernacular-074",
+   "stratum": "vernacular",
+   "sha": "ff912ccfe306661a",
+   "stars": 1.0,
+   "chars": 17
+  },
+  {
+   "id": "pilot2-mined_delivery-000",
+   "stratum": "mined_delivery",
+   "sha": "a3dabc351b92fd75",
+   "stars": 5.0,
+   "chars": 128,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_delivery-001",
+   "stratum": "mined_delivery",
+   "sha": "fe1a3932e0ee87eb",
+   "stars": 5.0,
+   "chars": 273,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_delivery-002",
+   "stratum": "mined_delivery",
+   "sha": "b86137a5e144f0b3",
+   "stars": 5.0,
+   "chars": 207,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_delivery-003",
+   "stratum": "mined_delivery",
+   "sha": "7ecb4aa51d6bcd03",
+   "stars": 4.0,
+   "chars": 387,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_delivery-004",
+   "stratum": "mined_delivery",
+   "sha": "e71fcfd0ab153331",
+   "stars": 5.0,
+   "chars": 499,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_delivery-005",
+   "stratum": "mined_delivery",
+   "sha": "0e8535e80fdd9892",
+   "stars": 4.0,
+   "chars": 409,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_delivery-006",
+   "stratum": "mined_delivery",
+   "sha": "eec01352f36a648c",
+   "stars": 5.0,
+   "chars": 394,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_delivery-007",
+   "stratum": "mined_delivery",
+   "sha": "edeeb765bb381605",
+   "stars": 5.0,
+   "chars": 476,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_delivery-008",
+   "stratum": "mined_delivery",
+   "sha": "45962b371394fc99",
+   "stars": 4.0,
+   "chars": 410,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_delivery-009",
+   "stratum": "mined_delivery",
+   "sha": "c084ba6de7318b39",
+   "stars": 5.0,
+   "chars": 214,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_delivery-010",
+   "stratum": "mined_delivery",
+   "sha": "f4265f1dc0ca6eec",
+   "stars": 5.0,
+   "chars": 115,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_delivery-011",
+   "stratum": "mined_delivery",
+   "sha": "107b4c5e451c43be",
+   "stars": 5.0,
+   "chars": 258,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_delivery-012",
+   "stratum": "mined_delivery",
+   "sha": "1a145d45dd8126c9",
+   "stars": 4.0,
+   "chars": 374,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_delivery-013",
+   "stratum": "mined_delivery",
+   "sha": "9e5785ffe0227a43",
+   "stars": 5.0,
+   "chars": 328,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_delivery-014",
+   "stratum": "mined_delivery",
+   "sha": "115bfeaf2ab37fa1",
+   "stars": 3.0,
+   "chars": 470,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_delivery-015",
+   "stratum": "mined_delivery",
+   "sha": "aa36de68cbe1be67",
+   "stars": 5.0,
+   "chars": 979,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_delivery-016",
+   "stratum": "mined_delivery",
+   "sha": "5d03bb5a5c16ae7d",
+   "stars": 4.0,
+   "chars": 469,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_delivery-017",
+   "stratum": "mined_delivery",
+   "sha": "21656146911e039f",
+   "stars": 2.0,
+   "chars": 442,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_delivery-018",
+   "stratum": "mined_delivery",
+   "sha": "913941cef812f3cd",
+   "stars": 5.0,
+   "chars": 643,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_delivery-019",
+   "stratum": "mined_delivery",
+   "sha": "886d9bb7d5f97061",
+   "stars": 5.0,
+   "chars": 336,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_delivery-020",
+   "stratum": "mined_delivery",
+   "sha": "86981cedf42763a3",
+   "stars": 5.0,
+   "chars": 194,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_delivery-021",
+   "stratum": "mined_delivery",
+   "sha": "94703259dd804818",
+   "stars": 5.0,
+   "chars": 500,
+   "corpus": "vernacular"
+  },
+  {
+   "id": "pilot2-mined_delivery-022",
+   "stratum": "mined_delivery",
+   "sha": "9146b3eb9927150b",
+   "stars": 5.0,
+   "chars": 208,
+   "corpus": "vernacular"
+  },
+  {
+   "id": "pilot2-mined_delivery-023",
+   "stratum": "mined_delivery",
+   "sha": "f00bde44349b89f8",
+   "stars": 5.0,
+   "chars": 494,
+   "corpus": "vernacular"
+  },
+  {
+   "id": "pilot2-mined_delivery-024",
+   "stratum": "mined_delivery",
+   "sha": "68c847560d150532",
+   "stars": 4.0,
+   "chars": 44,
+   "corpus": "vernacular"
+  },
+  {
+   "id": "pilot2-mined_delivery-025",
+   "stratum": "mined_delivery",
+   "sha": "79b2a48f1329717d",
+   "stars": 5.0,
+   "chars": 109,
+   "corpus": "vernacular"
+  },
+  {
+   "id": "pilot2-mined_delivery-026",
+   "stratum": "mined_delivery",
+   "sha": "e5f95eb1acbcce6e",
+   "stars": 5.0,
+   "chars": 138,
+   "corpus": "vernacular"
+  },
+  {
+   "id": "pilot2-mined_delivery-027",
+   "stratum": "mined_delivery",
+   "sha": "3eeeeffe206b39e3",
+   "stars": 5.0,
+   "chars": 490,
+   "corpus": "vernacular"
+  },
+  {
+   "id": "pilot2-mined_delivery-028",
+   "stratum": "mined_delivery",
+   "sha": "70c2efae102201b0",
+   "stars": 5.0,
+   "chars": 398,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_delivery-029",
+   "stratum": "mined_delivery",
+   "sha": "5cfa70f1b806dab8",
+   "stars": 4.0,
+   "chars": 133,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_customer_service-000",
+   "stratum": "mined_customer_service",
+   "sha": "935ae3c8c46019c3",
+   "stars": 5.0,
+   "chars": 407,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_customer_service-001",
+   "stratum": "mined_customer_service",
+   "sha": "2cdeba5bf45eee0d",
+   "stars": 5.0,
+   "chars": 289,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_customer_service-002",
+   "stratum": "mined_customer_service",
+   "sha": "99a58a836b847cb6",
+   "stars": 5.0,
+   "chars": 307,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_customer_service-003",
+   "stratum": "mined_customer_service",
+   "sha": "a5019816e3d77d6a",
+   "stars": 2.0,
+   "chars": 426,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_customer_service-004",
+   "stratum": "mined_customer_service",
+   "sha": "e273552eafb1d70d",
+   "stars": 5.0,
+   "chars": 499,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_customer_service-005",
+   "stratum": "mined_customer_service",
+   "sha": "edc81a82cdbe78dd",
+   "stars": 4.0,
+   "chars": 469,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_customer_service-006",
+   "stratum": "mined_customer_service",
+   "sha": "fee554695164c161",
+   "stars": 5.0,
+   "chars": 211,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_customer_service-007",
+   "stratum": "mined_customer_service",
+   "sha": "4a033e1aa0c8719f",
+   "stars": 5.0,
+   "chars": 437,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_customer_service-008",
+   "stratum": "mined_customer_service",
+   "sha": "96777c2fd5d224d4",
+   "stars": 1.0,
+   "chars": 424,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_customer_service-009",
+   "stratum": "mined_customer_service",
+   "sha": "84d81cee2435aa38",
+   "stars": 1.0,
+   "chars": 184,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_customer_service-010",
+   "stratum": "mined_customer_service",
+   "sha": "7cb9489ea06510eb",
+   "stars": 1.0,
+   "chars": 891,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_customer_service-011",
+   "stratum": "mined_customer_service",
+   "sha": "fb06e1f5f07b27db",
+   "stars": 3.0,
+   "chars": 530,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_customer_service-012",
+   "stratum": "mined_customer_service",
+   "sha": "5790afdc81d2bc56",
+   "stars": 5.0,
+   "chars": 829,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_customer_service-013",
+   "stratum": "mined_customer_service",
+   "sha": "14811f75b00370bc",
+   "stars": 5.0,
+   "chars": 761,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_customer_service-014",
+   "stratum": "mined_customer_service",
+   "sha": "80cc68eb2a38a694",
+   "stars": 5.0,
+   "chars": 320,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_customer_service-015",
+   "stratum": "mined_customer_service",
+   "sha": "6c057e491e35e6a7",
+   "stars": 5.0,
+   "chars": 352,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_customer_service-016",
+   "stratum": "mined_customer_service",
+   "sha": "d2a1fc4e6ca4b2ba",
+   "stars": 5.0,
+   "chars": 491,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_customer_service-017",
+   "stratum": "mined_customer_service",
+   "sha": "f3709da86991585b",
+   "stars": 5.0,
+   "chars": 173,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_customer_service-018",
+   "stratum": "mined_customer_service",
+   "sha": "5940358d1922ebb1",
+   "stars": 5.0,
+   "chars": 701,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_customer_service-019",
+   "stratum": "mined_customer_service",
+   "sha": "5f72718a0fdefda6",
+   "stars": 2.0,
+   "chars": 649,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_customer_service-020",
+   "stratum": "mined_customer_service",
+   "sha": "f420ebba45d86a13",
+   "stars": 5.0,
+   "chars": 236,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_customer_service-021",
+   "stratum": "mined_customer_service",
+   "sha": "693da2e614851155",
+   "stars": 1.0,
+   "chars": 653,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_customer_service-022",
+   "stratum": "mined_customer_service",
+   "sha": "0833239aa5f9fc79",
+   "stars": 3.0,
+   "chars": 392,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_customer_service-023",
+   "stratum": "mined_customer_service",
+   "sha": "d44509153a989145",
+   "stars": 5.0,
+   "chars": 207,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_customer_service-024",
+   "stratum": "mined_customer_service",
+   "sha": "861b445e5e74410a",
+   "stars": 3.0,
+   "chars": 515,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_customer_service-025",
+   "stratum": "mined_customer_service",
+   "sha": "8c833a3a1bd26ce8",
+   "stars": 2.0,
+   "chars": 434,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_customer_service-026",
+   "stratum": "mined_customer_service",
+   "sha": "db7ef0ccd601e7db",
+   "stars": 5.0,
+   "chars": 356,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_customer_service-027",
+   "stratum": "mined_customer_service",
+   "sha": "e00dbed9cc65ac54",
+   "stars": 4.0,
+   "chars": 578,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_customer_service-028",
+   "stratum": "mined_customer_service",
+   "sha": "7a228d186a49eb71",
+   "stars": 2.0,
+   "chars": 275,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_customer_service-029",
+   "stratum": "mined_customer_service",
+   "sha": "044c52c8ec614069",
+   "stars": 5.0,
+   "chars": 165,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_question-000",
+   "stratum": "mined_question",
+   "sha": "4ab0d4f8117ec164",
+   "stars": 1.0,
+   "chars": 481,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_question-001",
+   "stratum": "mined_question",
+   "sha": "1be6e58a08294228",
+   "stars": 5.0,
+   "chars": 166,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_question-002",
+   "stratum": "mined_question",
+   "sha": "ec7532ad36f09b7f",
+   "stars": 5.0,
+   "chars": 499,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_question-003",
+   "stratum": "mined_question",
+   "sha": "235d06128d663172",
+   "stars": 3.0,
+   "chars": 317,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_question-004",
+   "stratum": "mined_question",
+   "sha": "a0e96c94f327a7d0",
+   "stars": 5.0,
+   "chars": 502,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_question-005",
+   "stratum": "mined_question",
+   "sha": "a5a53852e985b919",
+   "stars": 3.0,
+   "chars": 285,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_question-006",
+   "stratum": "mined_question",
+   "sha": "5db096568e0f5080",
+   "stars": 4.0,
+   "chars": 500,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_question-007",
+   "stratum": "mined_question",
+   "sha": "50a532296f47e7c6",
+   "stars": 3.0,
+   "chars": 109,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_question-008",
+   "stratum": "mined_question",
+   "sha": "7bb841c8b359a7cb",
+   "stars": 1.0,
+   "chars": 248,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_question-009",
+   "stratum": "mined_question",
+   "sha": "4ffa13ebe98c7528",
+   "stars": 2.0,
+   "chars": 660,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_question-010",
+   "stratum": "mined_question",
+   "sha": "a11dd71d488bf771",
+   "stars": 4.0,
+   "chars": 818,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_question-011",
+   "stratum": "mined_question",
+   "sha": "6359173b01597e50",
+   "stars": 3.0,
+   "chars": 368,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_question-012",
+   "stratum": "mined_question",
+   "sha": "73b49b26c7d58063",
+   "stars": 3.0,
+   "chars": 114,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_question-013",
+   "stratum": "mined_question",
+   "sha": "d8ed61c01d15a1c2",
+   "stars": 5.0,
+   "chars": 900,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_question-014",
+   "stratum": "mined_question",
+   "sha": "81f8bd828b0dc20e",
+   "stars": 1.0,
+   "chars": 901,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_question-015",
+   "stratum": "mined_question",
+   "sha": "6cd9782babe34711",
+   "stars": 1.0,
+   "chars": 93,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_question-016",
+   "stratum": "mined_question",
+   "sha": "5d995ee17cbd63f0",
+   "stars": 3.0,
+   "chars": 443,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_question-017",
+   "stratum": "mined_question",
+   "sha": "459c486613f7fee2",
+   "stars": 5.0,
+   "chars": 818,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_question-018",
+   "stratum": "mined_question",
+   "sha": "cae8163919e94115",
+   "stars": 4.0,
+   "chars": 485,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_question-019",
+   "stratum": "mined_question",
+   "sha": "f92c87410275b6c0",
+   "stars": 3.0,
+   "chars": 510,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_question-020",
+   "stratum": "mined_question",
+   "sha": "be24594fd404cce9",
+   "stars": 5.0,
+   "chars": 306,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_question-021",
+   "stratum": "mined_question",
+   "sha": "737d05f0d91e9fa5",
+   "stars": 1.0,
+   "chars": 221,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_question-022",
+   "stratum": "mined_question",
+   "sha": "8a1a9fffcadaaa4a",
+   "stars": 5.0,
+   "chars": 487,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_question-023",
+   "stratum": "mined_question",
+   "sha": "38bdccb2b1ab9b0c",
+   "stars": 5.0,
+   "chars": 277,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_question-024",
+   "stratum": "mined_question",
+   "sha": "556740460ed60ee6",
+   "stars": 2.0,
+   "chars": 497,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_question-025",
+   "stratum": "mined_question",
+   "sha": "10cf4c4f7c15a5cb",
+   "stars": 4.0,
+   "chars": 345,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_question-026",
+   "stratum": "mined_question",
+   "sha": "e782101e4f2280dd",
+   "stars": 3.0,
+   "chars": 164,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_question-027",
+   "stratum": "mined_question",
+   "sha": "6281af21dce89b28",
+   "stars": 1.0,
+   "chars": 245,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_question-028",
+   "stratum": "mined_question",
+   "sha": "8dd2c0256ac76059",
+   "stars": 3.0,
+   "chars": 581,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_question-029",
+   "stratum": "mined_question",
+   "sha": "98482579f965523b",
+   "stars": 3.0,
+   "chars": 937,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-000",
+   "stratum": "mined_competitor_comparison",
+   "sha": "123875e1fe6da72d",
+   "stars": 4.0,
+   "chars": 345,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-001",
+   "stratum": "mined_competitor_comparison",
+   "sha": "571332d80d315e4a",
+   "stars": 3.0,
+   "chars": 343,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-002",
+   "stratum": "mined_competitor_comparison",
+   "sha": "a16da44c7830c415",
+   "stars": 4.0,
+   "chars": 218,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-003",
+   "stratum": "mined_competitor_comparison",
+   "sha": "55800925be73c020",
+   "stars": 3.0,
+   "chars": 347,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-004",
+   "stratum": "mined_competitor_comparison",
+   "sha": "2c9af479314ae4ec",
+   "stars": 1.0,
+   "chars": 469,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-005",
+   "stratum": "mined_competitor_comparison",
+   "sha": "923df1998879a595",
+   "stars": 2.0,
+   "chars": 499,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-006",
+   "stratum": "mined_competitor_comparison",
+   "sha": "4343deded347376f",
+   "stars": 5.0,
+   "chars": 451,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-007",
+   "stratum": "mined_competitor_comparison",
+   "sha": "77b1ef025c6a8f0f",
+   "stars": 1.0,
+   "chars": 830,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-008",
+   "stratum": "mined_competitor_comparison",
+   "sha": "a64022cded5d2f01",
+   "stars": 5.0,
+   "chars": 768,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-009",
+   "stratum": "mined_competitor_comparison",
+   "sha": "df232c82f981124b",
+   "stars": 5.0,
+   "chars": 438,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-010",
+   "stratum": "mined_competitor_comparison",
+   "sha": "e30e9fc11be3b5c5",
+   "stars": 4.0,
+   "chars": 318,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-011",
+   "stratum": "mined_competitor_comparison",
+   "sha": "742185474e775fee",
+   "stars": 2.0,
+   "chars": 268,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-012",
+   "stratum": "mined_competitor_comparison",
+   "sha": "ea0e881ddd070992",
+   "stars": 4.0,
+   "chars": 442,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-013",
+   "stratum": "mined_competitor_comparison",
+   "sha": "37c7b5de040e5ea5",
+   "stars": 5.0,
+   "chars": 896,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-014",
+   "stratum": "mined_competitor_comparison",
+   "sha": "484672f80a391b46",
+   "stars": 5.0,
+   "chars": 716,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-015",
+   "stratum": "mined_competitor_comparison",
+   "sha": "f54335f8de7f77ec",
+   "stars": 4.0,
+   "chars": 399,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-016",
+   "stratum": "mined_competitor_comparison",
+   "sha": "ebd6730e67cc9c2d",
+   "stars": 5.0,
+   "chars": 335,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-017",
+   "stratum": "mined_competitor_comparison",
+   "sha": "9d2f007251e09070",
+   "stars": 2.0,
+   "chars": 453,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-018",
+   "stratum": "mined_competitor_comparison",
+   "sha": "37f03f407b464fb6",
+   "stars": 5.0,
+   "chars": 417,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-019",
+   "stratum": "mined_competitor_comparison",
+   "sha": "5db3acab848b44c1",
+   "stars": 5.0,
+   "chars": 382,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-020",
+   "stratum": "mined_competitor_comparison",
+   "sha": "b63955336d214aac",
+   "stars": 5.0,
+   "chars": 291,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-021",
+   "stratum": "mined_competitor_comparison",
+   "sha": "adc924af090eda88",
+   "stars": 5.0,
+   "chars": 562,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-022",
+   "stratum": "mined_competitor_comparison",
+   "sha": "85a9a603b0e1e5a1",
+   "stars": 5.0,
+   "chars": 463,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-023",
+   "stratum": "mined_competitor_comparison",
+   "sha": "7995a235cc91fb7f",
+   "stars": 5.0,
+   "chars": 192,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-024",
+   "stratum": "mined_competitor_comparison",
+   "sha": "bdd108cb1e6d5343",
+   "stars": 5.0,
+   "chars": 231,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-025",
+   "stratum": "mined_competitor_comparison",
+   "sha": "5c7797755270d267",
+   "stars": 4.0,
+   "chars": 600,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-026",
+   "stratum": "mined_competitor_comparison",
+   "sha": "fc5db2789890778d",
+   "stars": 5.0,
+   "chars": 550,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-027",
+   "stratum": "mined_competitor_comparison",
+   "sha": "e299f3c9925ca6db",
+   "stars": 4.0,
+   "chars": 760,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-028",
+   "stratum": "mined_competitor_comparison",
+   "sha": "7ab3ef4b55576a64",
+   "stars": 5.0,
+   "chars": 811,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_competitor_comparison-029",
+   "stratum": "mined_competitor_comparison",
+   "sha": "3062b66f3d5f7f97",
+   "stars": 5.0,
+   "chars": 336,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-000",
+   "stratum": "mined_return_refund_request",
+   "sha": "19cb2b3eee6eec91",
+   "stars": 2.0,
+   "chars": 432,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-001",
+   "stratum": "mined_return_refund_request",
+   "sha": "cdcbd9cda216519d",
+   "stars": 3.0,
+   "chars": 429,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-002",
+   "stratum": "mined_return_refund_request",
+   "sha": "dc26cc2fe3047c8b",
+   "stars": 3.0,
+   "chars": 335,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-003",
+   "stratum": "mined_return_refund_request",
+   "sha": "98bb61e92ad85324",
+   "stars": 3.0,
+   "chars": 457,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-004",
+   "stratum": "mined_return_refund_request",
+   "sha": "3d5ebe00e280055b",
+   "stars": 3.0,
+   "chars": 360,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-005",
+   "stratum": "mined_return_refund_request",
+   "sha": "e3a1ec353004c01a",
+   "stars": 5.0,
+   "chars": 489,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-006",
+   "stratum": "mined_return_refund_request",
+   "sha": "b94ed35ee8bd2438",
+   "stars": 5.0,
+   "chars": 500,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-007",
+   "stratum": "mined_return_refund_request",
+   "sha": "4b43ec98c3628b28",
+   "stars": 2.0,
+   "chars": 789,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-008",
+   "stratum": "mined_return_refund_request",
+   "sha": "e46cd440fde9bc12",
+   "stars": 3.0,
+   "chars": 893,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-009",
+   "stratum": "mined_return_refund_request",
+   "sha": "30c4526d9e842187",
+   "stars": 2.0,
+   "chars": 481,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-010",
+   "stratum": "mined_return_refund_request",
+   "sha": "f869f9a6cfc86a8f",
+   "stars": 1.0,
+   "chars": 979,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-011",
+   "stratum": "mined_return_refund_request",
+   "sha": "ad82c7a795bac805",
+   "stars": 5.0,
+   "chars": 860,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-012",
+   "stratum": "mined_return_refund_request",
+   "sha": "1e6561e15fb72bb8",
+   "stars": 1.0,
+   "chars": 258,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-013",
+   "stratum": "mined_return_refund_request",
+   "sha": "4ecb292eded4eb84",
+   "stars": 5.0,
+   "chars": 167,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-014",
+   "stratum": "mined_return_refund_request",
+   "sha": "59821fad44f8e45b",
+   "stars": 3.0,
+   "chars": 529,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-015",
+   "stratum": "mined_return_refund_request",
+   "sha": "7df868fcf064f6c9",
+   "stars": 5.0,
+   "chars": 368,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-016",
+   "stratum": "mined_return_refund_request",
+   "sha": "aa665d0c41872ffd",
+   "stars": 2.0,
+   "chars": 647,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-017",
+   "stratum": "mined_return_refund_request",
+   "sha": "f7a1f32d61ea68ce",
+   "stars": 1.0,
+   "chars": 346,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-018",
+   "stratum": "mined_return_refund_request",
+   "sha": "daaf11e23a8aa5db",
+   "stars": 5.0,
+   "chars": 394,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-019",
+   "stratum": "mined_return_refund_request",
+   "sha": "eedaea5c41c70a5b",
+   "stars": 4.0,
+   "chars": 358,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-020",
+   "stratum": "mined_return_refund_request",
+   "sha": "56ca812c59635a7d",
+   "stars": 4.0,
+   "chars": 360,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-021",
+   "stratum": "mined_return_refund_request",
+   "sha": "04df7d830f0af335",
+   "stars": 5.0,
+   "chars": 345,
+   "corpus": "vernacular"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-022",
+   "stratum": "mined_return_refund_request",
+   "sha": "f78586a46aafe99d",
+   "stars": 4.0,
+   "chars": 165,
+   "corpus": "vernacular"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-023",
+   "stratum": "mined_return_refund_request",
+   "sha": "a27f9e863abe7556",
+   "stars": 5.0,
+   "chars": 335,
+   "corpus": "vernacular"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-024",
+   "stratum": "mined_return_refund_request",
+   "sha": "fb5624e64fe6ac79",
+   "stars": 1.0,
+   "chars": 286,
+   "corpus": "vernacular"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-025",
+   "stratum": "mined_return_refund_request",
+   "sha": "0af0c893a14a271b",
+   "stars": 1.0,
+   "chars": 297,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-026",
+   "stratum": "mined_return_refund_request",
+   "sha": "20b0b3d27d42676f",
+   "stars": 5.0,
+   "chars": 219,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-027",
+   "stratum": "mined_return_refund_request",
+   "sha": "3a1c15b5f29eec13",
+   "stars": 4.0,
+   "chars": 166,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-028",
+   "stratum": "mined_return_refund_request",
+   "sha": "b88f9951c2008e96",
+   "stars": 4.0,
+   "chars": 436,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_return_refund_request-029",
+   "stratum": "mined_return_refund_request",
+   "sha": "61e1489373f6deaf",
+   "stars": 4.0,
+   "chars": 365,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-000",
+   "stratum": "mined_high_urgency",
+   "sha": "6e29930abd93263d",
+   "stars": 5.0,
+   "chars": 500,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-001",
+   "stratum": "mined_high_urgency",
+   "sha": "906dc0910ccb2fb7",
+   "stars": 5.0,
+   "chars": 392,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-002",
+   "stratum": "mined_high_urgency",
+   "sha": "962665352dc272ab",
+   "stars": 1.0,
+   "chars": 257,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-003",
+   "stratum": "mined_high_urgency",
+   "sha": "d9846057123a7775",
+   "stars": 5.0,
+   "chars": 319,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-004",
+   "stratum": "mined_high_urgency",
+   "sha": "370751a6f026cb23",
+   "stars": 5.0,
+   "chars": 500,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-005",
+   "stratum": "mined_high_urgency",
+   "sha": "8aca6e5da66dfcd9",
+   "stars": 4.0,
+   "chars": 421,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-006",
+   "stratum": "mined_high_urgency",
+   "sha": "38a68f7cd7094efe",
+   "stars": 3.0,
+   "chars": 500,
+   "corpus": "apparel"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-007",
+   "stratum": "mined_high_urgency",
+   "sha": "0dba794047fea9dd",
+   "stars": 5.0,
+   "chars": 453,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-008",
+   "stratum": "mined_high_urgency",
+   "sha": "b12adf116d8fa0cf",
+   "stars": 4.0,
+   "chars": 838,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-009",
+   "stratum": "mined_high_urgency",
+   "sha": "33f297ec2e75f10e",
+   "stars": 4.0,
+   "chars": 215,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-010",
+   "stratum": "mined_high_urgency",
+   "sha": "7493460d2c985b90",
+   "stars": 1.0,
+   "chars": 601,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-011",
+   "stratum": "mined_high_urgency",
+   "sha": "744c0882d5ec79f3",
+   "stars": 4.0,
+   "chars": 631,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-012",
+   "stratum": "mined_high_urgency",
+   "sha": "6c13b303e4b19ca5",
+   "stars": 3.0,
+   "chars": 891,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-013",
+   "stratum": "mined_high_urgency",
+   "sha": "8a6cf3bbbf251ef6",
+   "stars": 1.0,
+   "chars": 185,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-014",
+   "stratum": "mined_high_urgency",
+   "sha": "1cd097a6166bd8d2",
+   "stars": 5.0,
+   "chars": 597,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-015",
+   "stratum": "mined_high_urgency",
+   "sha": "2de23bbd4829a3e2",
+   "stars": 3.0,
+   "chars": 350,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-016",
+   "stratum": "mined_high_urgency",
+   "sha": "902df6724d3fb7b6",
+   "stars": 5.0,
+   "chars": 541,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-017",
+   "stratum": "mined_high_urgency",
+   "sha": "3ecd463649309c3b",
+   "stars": 5.0,
+   "chars": 671,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-018",
+   "stratum": "mined_high_urgency",
+   "sha": "6067973903c65890",
+   "stars": 5.0,
+   "chars": 900,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-019",
+   "stratum": "mined_high_urgency",
+   "sha": "43e2195671cfb837",
+   "stars": 5.0,
+   "chars": 453,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-020",
+   "stratum": "mined_high_urgency",
+   "sha": "c4b2f74a7028ed5a",
+   "stars": 1.0,
+   "chars": 64,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-021",
+   "stratum": "mined_high_urgency",
+   "sha": "51ad317ca10ca91f",
+   "stars": 5.0,
+   "chars": 228,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-022",
+   "stratum": "mined_high_urgency",
+   "sha": "8d3631ef8251b2f2",
+   "stars": 4.0,
+   "chars": 394,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-023",
+   "stratum": "mined_high_urgency",
+   "sha": "49759d4543b16028",
+   "stars": 5.0,
+   "chars": 560,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-024",
+   "stratum": "mined_high_urgency",
+   "sha": "8d94e9db8723f964",
+   "stars": 2.0,
+   "chars": 896,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-025",
+   "stratum": "mined_high_urgency",
+   "sha": "9934fa47037aa648",
+   "stars": 4.0,
+   "chars": 661,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-026",
+   "stratum": "mined_high_urgency",
+   "sha": "b9ffde7090d615ed",
+   "stars": 1.0,
+   "chars": 653,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-027",
+   "stratum": "mined_high_urgency",
+   "sha": "638d99853d86f0d7",
+   "stars": 1.0,
+   "chars": 215,
+   "corpus": "beauty"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-028",
+   "stratum": "mined_high_urgency",
+   "sha": "1157e8e8a822cad0",
+   "stars": 2.0,
+   "chars": 587,
+   "corpus": "food"
+  },
+  {
+   "id": "pilot2-mined_high_urgency-029",
+   "stratum": "mined_high_urgency",
+   "sha": "a3a1236b9415280a",
+   "stars": 4.0,
+   "chars": 991,
+   "corpus": "food"
+  }
+ ]
+}
