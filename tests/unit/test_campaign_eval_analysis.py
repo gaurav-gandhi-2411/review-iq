@@ -34,3 +34,22 @@ def test_bootstrap_resamples_products_and_is_deterministic() -> None:
     lo, hi = out1["recall"]["ci95"]
     assert lo <= out1["recall"]["value"] <= hi and 0 <= lo < hi <= 1
     assert out1["false_alerts_per_product_month"]["alert_episodes"] == sum(s % 3 for s in range(30))
+
+
+def test_production_defaults_equal_the_frozen_tuned_parameters() -> None:
+    """The shipped CampaignParams defaults must be the row frozen BEFORE the sealed run."""
+    import json
+    from pathlib import Path
+
+    from app.core.detectors.campaign_signals import DEFAULT_PARAMS
+
+    frozen = json.loads(Path("reports/campaign_eval/frozen_params_grid_v2.json").read_text())
+    pick = frozen["budgets"]["1.0"]["detector"]["params"]
+    assert {
+        "similarity": DEFAULT_PARAMS.similarity,
+        "k_min": DEFAULT_PARAMS.k_min,
+        "theta_burst": DEFAULT_PARAMS.theta_burst,
+        "theta_rating": DEFAULT_PARAMS.theta_rating,
+        "strong_multiplier": DEFAULT_PARAMS.strong_multiplier,
+        "use_mismatch": DEFAULT_PARAMS.use_mismatch,
+    } == pick

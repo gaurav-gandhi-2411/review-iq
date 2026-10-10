@@ -1,0 +1,172 @@
+{
+  "budgets": {
+    "0.1": {
+      "b1": {
+        "column": 2,
+        "params": {
+          "theta": 4.0
+        },
+        "tuning": {
+          "far": 0.0801184358700741,
+          "recall": 0.7507936507936508
+        },
+        "validation": {
+          "far": 0.06854563617971703,
+          "recall": 0.7868554829339143
+        }
+      },
+      "b1_half": {
+        "column": 4,
+        "params": {
+          "theta": 6.0
+        },
+        "tuning": {
+          "far": 0.030025553179180313,
+          "recall": 0.7246031746031746
+        },
+        "validation": {
+          "far": 0.03058756883288448,
+          "recall": 0.7668845315904139
+        }
+      },
+      "b2": {
+        "column": 8,
+        "params": {
+          "theta": 1.1
+        },
+        "tuning": {
+          "far": 0.06427580730819504,
+          "recall": 0.33134920634920634
+        },
+        "validation": {
+          "far": 0.06854563617971703,
+          "recall": 0.3449527959331881
+        }
+      },
+      "b2_half": {
+        "column": 9,
+        "params": {
+          "theta": 1.2
+        },
+        "tuning": {
+          "far": 0.04013465902342695,
+          "recall": 0.32222222222222224
+        },
+        "validation": {
+          "far": 0.049750864969149454,
+          "recall": 0.33623819898329704
+        }
+      },
+      "best_baseline_by_validation_recall": "b1",
+      "detector": {
+        "column": 18,
+        "params": {
+          "k_min": 3,
+          "similarity": 0.4,
+          "strong_multiplier": 1.5,
+          "theta_burst": 3.0,
+          "theta_rating": 4.0,
+          "use_mismatch": false
+        },
+        "tuning": {
+          "far": 0.05884404894412222,
+          "recall": 0.8777777777777778
+        },
+        "validation": {
+          "far": 0.0545416890032157,
+          "recall": 0.8801742919389978
+        }
+      },
+      "mismatch_ablation": {
+        "best_tuning_recall_with": 0.8773809523809524,
+        "best_tuning_recall_without": 0.8777777777777778,
+        "enabled": false
+      }
+    },
+    "1.0": {
+      "b1": {
+        "column": 0,
+        "params": {
+          "theta": 2.0
+        },
+        "tuning": {
+          "far": 0.16612127663456042,
+          "recall": 0.7571428571428571
+        },
+        "validation": {
+          "far": 0.11903355100026129,
+          "recall": 0.7966594045025418
+        }
+      },
+      "b1_half": {
+        "column": 0,
+        "params": {
+          "theta": 2.0
+        },
+        "tuning": {
+          "far": 0.16612127663456042,
+          "recall": 0.7571428571428571
+        },
+        "validation": {
+          "far": 0.11903355100026129,
+          "recall": 0.7966594045025418
+        }
+      },
+      "b2": {
+        "column": 8,
+        "params": {
+          "theta": 1.1
+        },
+        "tuning": {
+          "far": 0.06427580730819504,
+          "recall": 0.33134920634920634
+        },
+        "validation": {
+          "far": 0.06854563617971703,
+          "recall": 0.3449527959331881
+        }
+      },
+      "b2_half": {
+        "column": 8,
+        "params": {
+          "theta": 1.1
+        },
+        "tuning": {
+          "far": 0.06427580730819504,
+          "recall": 0.33134920634920634
+        },
+        "validation": {
+          "far": 0.06854563617971703,
+          "recall": 0.3449527959331881
+        }
+      },
+      "best_baseline_by_validation_recall": "b1",
+      "detector": {
+        "column": 18,
+        "params": {
+          "k_min": 3,
+          "similarity": 0.4,
+          "strong_multiplier": 1.5,
+          "theta_burst": 3.0,
+          "theta_rating": 4.0,
+          "use_mismatch": false
+        },
+        "tuning": {
+          "far": 0.05884404894412222,
+          "recall": 0.8777777777777778
+        },
+        "validation": {
+          "far": 0.0545416890032157,
+          "recall": 0.8801742919389978
+        }
+      },
+      "mismatch_ablation": {
+        "best_tuning_recall_with": 0.8773809523809524,
+        "best_tuning_recall_without": 0.8777777777777778,
+        "enabled": false
+      }
+    }
+  },
+  "n_tuning_streams": 126,
+  "n_validation_streams": 51
+}
