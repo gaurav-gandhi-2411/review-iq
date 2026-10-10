@@ -64,7 +64,7 @@ def test_provision_first_login_returns_created_with_raw_key() -> None:
                 "org_id": str(uuid.uuid4()),
                 "key_prefix": "riq_live_abc1234",
                 "raw_key": "riq_live_" + "a" * 32,
-                "monthly_quota": 100,
+                "monthly_quota": 1000,
             },
         ),
     ):
@@ -74,7 +74,7 @@ def test_provision_first_login_returns_created_with_raw_key() -> None:
     data = resp.json()
     assert data["status"] == "created"
     assert "raw_key" in data
-    assert data["monthly_quota"] == 100
+    assert data["monthly_quota"] == 1000
 
 
 def test_provision_existing_user_returns_existing_no_raw_key() -> None:
@@ -257,7 +257,7 @@ def test_provision_org_and_key_returns_raw_key_and_creates_rows() -> None:
     assert result["org_id"] == str(org_id)
     assert str(result["key_prefix"]).startswith("riq_live_")
     assert str(result["raw_key"]).startswith("riq_live_")
-    assert result["monthly_quota"] == 100
+    assert result["monthly_quota"] == 1000
     all_sqls = [c[0][0] for c in cur.execute.call_args_list]
     assert "create_org_and_membership" in all_sqls[0]
     # SAVEPOINT/RELEASE bracket the retry-scoped insert (app/auth/keygen.py) -- find the
