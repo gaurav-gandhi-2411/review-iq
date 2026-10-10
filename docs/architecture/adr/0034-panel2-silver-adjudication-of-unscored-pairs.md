@@ -92,12 +92,81 @@ mean score on the 29 resolved pairs against panel-2 silver is 0.625 (product), 0
 ## Consequences
 
 - No README, site or published-number change; the held-out artifact is untouched, and no marker block was extended.
-- Guard side effect (disclosed, for a decision): panel-1 judge `gemini-3.5-flash-lite` and the dormant Gemini fallback
-  share a vendor. Options: (a) retire the Gemini fallback formally (it is disabled in production) and drop the Google
-  judge from any future panel-1 run; (b) keep the fallback and replace the Google judge with a disjoint vendor, re-running
-  panel 1 only if labels must be regenerated; (c) allowlist the pair with a written justification (weakest).
-  Recommendation: (a), since the fallback is dormant and the guard then stays strict; not decided here.
-- A second adjudicator for `pros` (the weakest field) would be the next lever.
+- Guard side effect: panel-1 judge `gemini-3.5-flash-lite` and the dormant Gemini fallback shared a vendor.
+  **Decision (GG, 2026-10-05, option (a)): retire the dormant Gemini fallback and drop the Google judge from any future
+  panel-1 run. Implemented in ADR 0035.** The Google judge is kept as data only (`RETIRED_JUDGE_MODELS`); a fresh panel-1
+  run (qwen3.6-27b + qwen3.8-27b) passes the guard; existing panel-1 labels are unchanged and were produced with the old
+  three-judge roster. The guard's production-model list is now derived from every model-named Settings field, so a Google
+  rule returns automatically if a Google provider is ever re-added.
+- A second adjudicator for `pros` (the weakest field) would be the next lever; see the `pros` gold investigation below,
+  which suggests the matcher, not the adjudicator, is the first thing to fix.
+
+## The `pros` gold investigation (S17 X4c, exploratory, $0)
+
+Two independent signals made `pros` the suspect field: V-arm concordance of 9/20 (the weakest), and split-exclusion
+lifting `pros` from 53.9% to 73.8% (VERIFIED from `eval/results/held_out_scoring_v2.json`
+`per_field_split_effect`, all 106 reviews, as deployed). Reproduce with `python scripts/analyze_pros_gold.py`
+(output `eval/results/pros_gold_analysis.json`, committed; no model call, no published number changes). Unexposed
+n=70 unless stated.
+
+**1. How `pros` gold is made.** Gold = panel-1 `voting.vote_list_overlap`: each judge's pros list is normalised
+(lowercase, whitespace) into a SET OF WHOLE-PHRASE STRINGS and judges agree when the Jaccard of those sets is at least
+0.5. So two judges agree only if at least half of their pros are character-identical after lowercasing; ADR 0030 defines
+no matcher for `pros`/`cons` and none is used. Unanimous needs every pair to agree; majority one pair; the stored gold
+is the longest list of the agreeing judges (one judge's wording, not a merge). A split is stored as `[]` with the pair
+flagged unresolved. Gold origin, unanimous / majority / default (unresolved), on the 70: product 30/25/15, topics
+27/28/15, pros 24/29/17, cons 46/12/12, buy_again 48/22/0, sentiment 68/2/0, competitor_mentions 60/10/0, stars_inferred
+70/0/0 (stars_inferred is 70 "unanimous" under the +/-1 tolerance). `pros` has the highest default share among the
+free-text lists (24.3%; all 106: 28.3%, product 24.5%, topics 23.6%, cons 19.8%) and the lowest unanimous share (34.3%).
+
+**2. The 11 discordant V-arm `pros` pairs** (panel 2 disagrees with, or cannot resolve against, panel-1 gold; hand
+classification from the actual texts and judge lists, in `HAND_CLASS` in the script): **5 paraphrase** (same points,
+different wording or granularity: hien-0016, 0030, 0046, 0066, 0079), **5 omission** (at least one judge left out a
+pro the others list: hien-0056, 0058, 0071, 0089, 0090; two of these also differ in wording), **1 different** (hien-0001,
+"mast hai" read as praise by two judges and as "sound quality is great" by a third; gold says "overall good quality").
+In 10 of 11 the best single panel-2 judge has token-F1 of at least 0.67 with the gold; the points mostly agree and the
+strings do not. Three anonymised examples (review ids, short quotes): hien-0066 text "...sound quality is best and
+battery is also good" gold [best sound quality, good battery] vs judges [sound quality is best, battery is good]: the
+same two points, zero identical strings, item Jaccard 0.0, token-F1 1.0. hien-0090 text "Ultimate headset Paisa wasool":
+gold [good value for money] vs judges [value for money], [Paisa wasool], []: one judge listed no pro. hien-0001 text "A bit
+uncomfortable on ears baki to mast hai": gold [overall good quality] vs [mast hai (great otherwise)], [mast hai], [sound
+quality is great]: a genuinely ambiguous Hinglish reading.
+
+**3. Does the score measure the matcher?** Model (as deployed) score on the resolved pairs under item-level soft F1,
+greedy one-to-one matching of phrases whose token Jaccard is at least t, t from 0.2 to 1.0:
+
+| field (resolved pairs) | current scorer | t=0.2 | 0.3 | 0.4 | 0.5 | 0.6 | 0.7 | 0.8 | 1.0 (exact) | swing max-min | swing 0.3 to 0.7 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| pros (53) | 0.731 | 0.810 | 0.744 | 0.717 | 0.713 | 0.665 | 0.557 | 0.543 | 0.537 | 27.2 pts | 18.6 pts |
+| cons (58) | 0.851 | 0.883 | 0.857 | 0.823 | 0.823 | 0.811 | 0.804 | 0.804 | 0.804 | 8.0 pts | 5.4 pts |
+| topics (55) | 0.695 | 0.711 | 0.711 | 0.711 | 0.711 | 0.695 | 0.695 | 0.695 | 0.695 | 1.6 pts | 1.6 pts |
+
+The `pros` score moves 18.6 points between two defensible matcher thresholds (27.2 across the sweep), `cons` 5.4 (8.0), `topics` 1.6.
+The resolution rate shows the same: panel-1 `pros` pairs resolved at Jaccard thresholds 0.3/0.4/0.5/0.6/0.7: 59/55/53/46/39
+of 70 (84% to 56%); `topics` 62/55/55/46/38; `cons` 64/58/58/54/54. A field whose number swings this much with the matcher
+is measuring the matcher, and `pros` is the field that does most. (`pros` today is scored by token-F1 over the union of
+all words, which is itself a third matcher; it sits at about the t=0.3 value.)
+
+**4. Resolution failures by judge count and cause.** Every one of the 17 unresolved `pros` pairs (70) had all three judges
+respond (no pair failed for non-response). 15 of 17 are granularity (some judge pair has token-F1 of at least 0.5 although
+item-level Jaccard is below 0.5; across all 106, 26 of 30) and 2 are different pros altogether (hien-0077 and hien-0106
+have no overlap at all). So `pros` pairs fail resolution mostly because of set-granularity, not because judges disagree
+about the review.
+
+**5. Conclusion and recommendation.** Treat the `pros` gold as UNRELIABLE AS A STRING-MATCH TARGET: the stored label is one
+judge's phrasing of a point set, resolution is decided by exact phrase identity, and the model's score against it swings
+by 18.6 points with the matcher. That is a statement about the label and metric, not evidence that the model is bad at
+pros (the model-versus-gold token overlap is plausibly mostly paraphrase; BELIEVED, not tested against humans).
+Exploratory headline (as deployed, 70 unseen reviews, split pairs excluded; label as exploratory, the published headline
+is unchanged): all 8 fields 79.6% [76.2, 82.8] (published); **excluding `pros` 80.5% [77.1, 83.7]**; `pros` alone 73.1%
+on 53 resolved pairs. Recommended fix, in order: (a) score `pros` as soft recall of the gold points at a pre-registered
+item threshold (0.5 token Jaccard), or by a pairwise-containment rule, instead of whole-phrase identity or union token-F1;
+(b) resolve `pros` pairs by containment ("each point of judge A is covered by some point of judge B and vice versa at
+Jaccard 0.5") rather than exact-string Jaccard; BELIEVED to recover most of the 15 granularity failures, UNVERIFIED until
+re-run on the cassettes; (c) a rubric/granularity rule in the judge prompt (one pro = aspect plus valence in at most
+four words, no qualifiers), which needs a new panel run and so is not part of this change; (d) until (a) or (b) lands,
+report `pros` separately next to the headline rather than inside it. Not applied here: a scorer or headline change
+needs GG's review (CLAUDE.md 65c) and a regenerated published copy in the same PR.
 
 ## Alternatives
 
