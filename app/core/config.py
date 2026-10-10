@@ -282,6 +282,31 @@ class Settings(BaseSettings):
     # Plain env var, not Secret Manager, same free-tier-ceiling reason.
     retention_purge_trigger_token: str = Field(default="", alias="RETENTION_PURGE_TRIGGER_TOKEN")
 
+    # Judge.me connector (docs/specs/judgeme-ingestion.md). OFF by default: every BFF route
+    # returns 404 and the sweep does no I/O until this is true. The migration
+    # 20261011000001_judgeme_installations.sql must be applied by GG before enabling.
+    enable_judgeme_connector: bool = Field(default=False, alias="ENABLE_JUDGEME_CONNECTOR")
+    # Fernet key(s) for the merchant-pasted private token at rest (own key, not Shopify's;
+    # comma-separated "new,old" rotates exactly like SHOPIFY_TOKEN_ENCRYPTION_KEY).
+    judgeme_token_encryption_key: str = Field(default="", alias="JUDGEME_TOKEN_ENCRYPTION_KEY")
+    # Shared-secret header token for POST /internal/judgeme/sync (same pattern as the other
+    # trigger tokens).
+    judgeme_sync_trigger_token: str = Field(default="", alias="JUDGEME_SYNC_TRIGGER_TOKEN")
+    # Spec F10: Judge.me's list order is undocumented, so "unknown" (full scan every run) is the
+    # only default that is correct under any order. Change only after the real-store check R2.
+    judgeme_list_order: Literal["unknown", "newest_first", "oldest_first"] = Field(
+        default="unknown", alias="JUDGEME_LIST_ORDER"
+    )
+    judgeme_sync_interval_minutes: int = Field(
+        default=360, ge=15, alias="JUDGEME_SYNC_INTERVAL_MINUTES"
+    )
+    judgeme_overlap_hours: int = Field(default=72, ge=1, alias="JUDGEME_OVERLAP_HOURS")
+    judgeme_reconcile_interval_hours: int = Field(
+        default=24, ge=1, alias="JUDGEME_RECONCILE_INTERVAL_HOURS"
+    )
+    judgeme_backfill_days: int = Field(default=90, ge=1, alias="JUDGEME_BACKFILL_DAYS")
+    judgeme_max_enqueue_per_run: int = Field(default=500, ge=1, alias="JUDGEME_MAX_ENQUEUE_PER_RUN")
+
     # Resend transactional email
     resend_api_key: str = Field(default="", alias="RESEND_API_KEY")
     resend_from_email: str = Field(default="", alias="RESEND_FROM_EMAIL")
