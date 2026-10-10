@@ -166,6 +166,16 @@ def main() -> None:
         "train_info": info, "config": vars(a),
     }  # fmt: skip
     result["track_a"] = track_a_block(sy, s_log, known_labels, t)
+    # Per-item test predictions + confidence scores, for precision-at-coverage (selective.py) and for
+    # pairing with the LLM baseline on the same items. test_idx indexes the dataset's test split.
+    _, tr_emb0 = infer(model, tok, tx)
+    Path(a.out).parent.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(
+        Path(a.out).with_suffix(".npz"),
+        y=sy, pred=s_log.argmax(1), msp=S.msp(s_log, t), energy=S.energy(s_log, t),
+        maha=S.Mahalanobis(tr_emb0, ty, n_cls).score(s_emb),
+        test_idx=np.array([i for i, e in enumerate(test_rows) if isk(e)]),
+    )  # fmt: skip
     if a.dataset == "massive" and len(locales) > 1:
         by = {}
         for loc in locales:
