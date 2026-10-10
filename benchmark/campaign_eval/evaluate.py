@@ -50,6 +50,14 @@ class Selection:
     grid: Grid
     b1: np.ndarray
     b2: np.ndarray
+    no_ratings: bool = False  # exploratory: mask the rating-based signals (production today)
+
+
+def _mask_ratings(tr: Trace, sel: Selection) -> Trace:
+    if sel.no_ratings:
+        tr.absrz[:] = -1.0
+        tr.mz[:] = -1.0
+    return tr
 
 
 def full_selection(version: str = "v2") -> Selection:
@@ -80,7 +88,7 @@ def clean_points(stream: Stream) -> tuple[list[int], float]:
 def evaluate_clean(stream: Stream, sel: Selection, cache: dict) -> dict:
     ps = ProductStream(stream.reviews(), EVAL_PARAMS, shingle_cache=cache)
     pts, months = clean_points(stream)
-    tr = trace_stream(ps, pts)
+    tr = _mask_ratings(trace_stream(ps, pts), sel)
     fa = {k: clean_false_alerts(tr, a) for k, (a, _) in _alerts_for_all(tr, sel).items()}
     return {"months": months, "fa": fa, "n_points": len(pts)}
 
@@ -108,7 +116,7 @@ def excerpt_stream(
 def evaluate_injection(stream: Stream, cfg: CampaignConfig, sel: Selection, cache: dict) -> dict:
     t_inj, seed = injection_time(stream, cfg)
     ps, camp_mask, camp_ts, points = excerpt_stream(stream, cfg, t_inj, seed, cache)
-    tr = trace_stream(ps, points, camp_mask)
+    tr = _mask_ratings(trace_stream(ps, points, camp_mask), sel)
     out: dict = {"config_id": cfg.config_id, "size": cfg.size, "type": cfg.type_id, "t_inj": t_inj}
     for name, (any_alert, attr) in _alerts_for_all(tr, sel).items():
         det, ttd_n, ttd_h = injected_outcomes(tr, any_alert, attr, camp_ts)
