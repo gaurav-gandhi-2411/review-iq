@@ -48,6 +48,22 @@ def _demo_quota_allows_by_default():  # type: ignore[return]
 
 
 @pytest.fixture(autouse=True)
+def _urgent_coalescer_storage_is_inert_by_default():  # type: ignore[return]
+    """Default the urgent-alert coalescer's alert_log calls to "slot granted, nothing
+    deferred" so every pre-existing immediate-alert test stays hermetic (no Postgres
+    connection attempt, ~9s timeout each) and sees the pre-coalescing behaviour.
+    tests/unit/test_urgent_coalescing.py replaces these with a stateful fake per test.
+    """
+    with (
+        patch("app.core.alerts.coalescer.claim_urgent_window_pg", return_value=True),
+        patch("app.core.alerts.coalescer.release_urgent_window_pg"),
+        patch("app.core.alerts.coalescer.record_urgent_deferred_pg"),
+        patch("app.core.alerts.coalescer.list_pending_urgent_deferred_pg", return_value=[]),
+    ):
+        yield
+
+
+@pytest.fixture(autouse=True)
 def _injection_guard_defaults_to_not_suspicious():  # type: ignore[return]
     """Default the Session 13 P4a model-based injection classifier to "not suspicious" for
     every unit test.

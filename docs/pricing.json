@@ -25,11 +25,11 @@
     "agency": {"label": "Agency", "quota": 200000, "quota_is_minimum": true, "usd": null, "inr": null}
   },
   "billing_code_placeholder_quotas": {
-    "free": 100,
+    "free": 1000,
     "pro": 1000,
     "enterprise": 1000
   },
-  "billing_code_note": "app/api/bff/router.py PLAN_QUOTA_LIMITS is a documented placeholder keyed by DB plan names (free/pro/enterprise), not the public tiers. Pinned here so a change to it cannot go unnoticed; its divergence from the public Free quota (100 vs 1,000) is a known open item, not an endorsement.",
+  "billing_code_note": "app/api/bff/router.py PLAN_QUOTA_LIMITS is a documented placeholder keyed by DB plan names (free/pro/enterprise), not the public tiers. Pinned here so a change to it cannot go unnoticed; its free value must equal tiers.free.quota (enforced by the checker); pro/enterprise are placeholders, not an endorsement.",
   "mixes_starter_growth_scale": {
     "starter-heavy 60/30/10": [0.6, 0.3, 0.1],
     "even 34/33/33": [0.34, 0.33, 0.33],

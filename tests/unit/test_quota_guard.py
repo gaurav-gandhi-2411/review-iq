@@ -3,16 +3,21 @@
 from __future__ import annotations
 
 import json
+import time
 
 import pytest
 from eval.quota_guard import (
     HeadroomRefusedError,
     LiveSignal,
+    check_persisted_floor,
     evaluate_model,
     ledger_used,
     merge_usage,
     parse_live_signal,
+    parse_retry_after,
+    parse_tpd_429,
     preflight,
+    record_tpd_observation,
 )
 
 LARGE = "openai/gpt-oss-120b"
@@ -125,3 +130,92 @@ def test_ledger_sums_trailing_24h_and_fails_on_corrupt_file(tmp_path) -> None:
     p.write_text("{not json", encoding="utf-8")
     with pytest.raises(ValueError):
         ledger_used([p], now)
+
+
+# --- 2026-10-08 incident: the request-count proxy was blind to rolling-window TPD draw ----------
+REAL_429 = (
+    "Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` "
+    "in organization `org_x` service tier `on_demand` on tokens per day (TPD): Limit 200000, "
+    "Used 199409, Requested 1678. Please try again in 2m12.19s. Need more tokens?', "
+    "'type': 'tokens', 'code': 'rate_limit_exceeded'}}"
+)
+
+
+def test_parse_tpd_429_real_shape_and_retry_hint() -> None:
+    assert parse_tpd_429(REAL_429) == (200000, 199409, 1678)
+    assert parse_retry_after(REAL_429) == pytest.approx(132.19)
+    assert parse_retry_after("try again in 1h2m3s.") == 3723
+    assert parse_retry_after("try again in 450ms") is None
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["", "Rate limit on tokens per minute (TPM): Limit 8000, Used 7000, Requested 2000", "x"],
+)
+def test_parse_tpd_429_rejects_non_tpd(text: str) -> None:
+    assert parse_tpd_429(text) is None
+
+
+def test_observation_makes_preflight_refuse_without_probing(tmp_path) -> None:
+    obs = tmp_path / "obs.json"
+    now = time.time()
+    assert record_tpd_observation(LARGE, REAL_429, now=now, path=obs) is not None
+    assert record_tpd_observation(LARGE, "not a 429", now=now, path=obs) is None
+    # api_key given, no live injection: a probe would be attempted if the floor did not skip it.
+    with pytest.raises(HeadroomRefusedError) as ei:
+        preflight({LARGE: 1_678}, api_key="unused", observation_path=obs)
+    assert "TPD 429 observed" in ei.value.report.models[0].reason
+    assert check_persisted_floor({LARGE: 1}, now=now + 23 * 3600, path=obs)
+    assert not check_persisted_floor({LARGE: 1}, now=now + 25 * 3600, path=obs)  # aged out
+    assert not check_persisted_floor({"other/model": 1}, now=now, path=obs)  # per-model
+
+
+def test_newer_low_observation_supersedes_and_corrupt_file_fails_closed(tmp_path) -> None:
+    obs = tmp_path / "obs.json"
+    record_tpd_observation(LARGE, REAL_429, now=100.0, path=obs)
+    low = REAL_429.replace("Used 199409", "Used 1000")
+    record_tpd_observation(LARGE, low, now=200.0, path=obs)
+    assert not check_persisted_floor({LARGE: 1_678}, now=300.0, path=obs)
+    obs.write_text("{broken", encoding="utf-8")
+    assert LARGE in check_persisted_floor({LARGE: 1}, now=300.0, path=obs)
+
+
+def test_record_hien_stops_on_first_tpd_429_without_sleeping(tmp_path, monkeypatch) -> None:
+    import asyncio
+    import importlib
+    import json as _json
+
+    import eval.quota_guard as qg
+
+    monkeypatch.delenv(
+        "EVAL_CASSETTE_MODE", raising=False
+    )  # module import sets it; monkeypatch undoes
+    monkeypatch.setattr(qg, "OBSERVATION_PATH", tmp_path / "obs.json")
+    rh = importlib.import_module("eval.reply.record_hien")
+    obs_path = tmp_path / "obs.json"
+    monkeypatch.setattr(
+        rh, "record_tpd_observation", lambda m, t: qg.record_tpd_observation(m, t, path=obs_path)
+    )
+
+    async def boom(_req):
+        raise RuntimeError(REAL_429)
+
+    async def no_sleep(*_a, **_k):
+        raise AssertionError("must not sleep and retry on a TPD 429")
+
+    monkeypatch.setattr(rh, "draft_reply", boom)
+    monkeypatch.setattr(rh.asyncio, "sleep", no_sleep)
+    fixture = next(
+        _json.loads(p.read_text(encoding="utf-8"))
+        for p in sorted(rh.FIXTURES_DIR.glob("*.json"))
+        if _json.loads(p.read_text(encoding="utf-8"))["language"] == "hi-en"
+    )
+    with pytest.raises(SystemExit) as ei:
+        asyncio.run(rh._record_one(fixture))
+    assert ei.value.code == 2
+    assert (
+        _json.loads(obs_path.read_text(encoding="utf-8"))[rh.get_settings().groq_model_large][
+            "used"
+        ]
+        == 199409
+    )

@@ -128,6 +128,17 @@ quota — these are illustrative anchors, not a recommendation of a specific num
 
 ## 6. Groq Developer-plan upgrade readiness (Session 13 P3c) — planning only, NOT upgraded
 
+> **CORRECTED 2026-10-08 (S19 R1, [ADR 0037](architecture/adr/0037-shared-groq-org-capacity.md)):**
+> the capacity figures below assume Samidha owns the whole free-tier pool. GG's other products
+> (StyleMaitri, TriageIQ, DealHunter, the portfolio chatbot) also call Groq and are believed to
+> share the same org, and limits are per org. The figures are therefore a **ceiling if Samidha were
+> alone**, not Samidha's capacity. One measured day showed about 197K of a 200K pool consumed by
+> something other than Samidha production. See section 9.
+
+> **UPDATED 2026-10-10 (S21 G3):** Samidha production now runs on a dedicated Groq org, so the figures
+> below are Samidha's own free-tier ceiling (the 200K/day pool itself is BELIEVED, not measurable from
+> headers; RPD 1000 and TPM 8000 per model are VERIFIED on the new key). See ADR 0037's amendment.
+
 The real free-tier capacity ceiling (~140.6 extractions/day, ~4,217/month combined across every
 customer, demo, and eval traffic — see [ADR 0015](architecture/adr/0015-panel-restoration-and-quota-safety-gap.md)'s
 Session 13 correction) is smaller than a single Starter-tier customer's monthly allotment
@@ -373,6 +384,33 @@ Starter price alternatives (5,000 quota)
 | Starter at $15 ($15.00) | 19 | 23 | 14 | 17 |
 | Starter at Rs 999 ($10.44) | 35 | 42 | 22 | 27 |
 <!-- PRICING:END -->
+
+## 9. Correction (S19 R1): free-tier capacity is shared, so Samidha's own figure is unknown
+
+**What changed.** Sections 6 and 7 treated the Groq free-tier pool (200K tokens per day per model,
+8K per minute) as Samidha's. All of GG's products use one Groq account (BELIEVED, stated by GG;
+code survey of the other repos VERIFIED in ADR 0037), and Groq rate-limits per organisation.
+
+**Capacity statement now supported by evidence.**
+
+| Claim | Status |
+|---|---|
+| Ceiling if Samidha were alone: about 140.6 extractions/day, about 4,217/month (section 6) | Derived earlier from the measured per-extraction tokens; valid only for an unshared org |
+| Samidha's real free-tier capacity | **Unknown**: "pool minus everything else", and the everything-else draw is not observable to us |
+| Observed other draw | One day: a 429 on the 120b pool read 199,409 of 200,000 used while production accounted for about 2K tokens (VERIFIED as a 429 body; attribution to other products is BELIEVED) |
+| Free-tier reviews/month we can promise | **None.** The public Free plan quota (1,000/month per user) is an entitlement, not a capacity guarantee |
+
+**Production risk.** A busy day in any other product silently starves Samidha's live traffic: the
+limiter and durable queue turn it into delay, and failover to the OpenRouter ZDR provider bounds
+it, but nothing removes the coupling. With no paying customers yet this is a launch blocker for
+the first real signup, not a present outage.
+
+**Headroom guard limit.** `eval/quota_guard.py` cannot see cross-product draw. Success responses
+expose per-minute tokens and a daily request counter only; the daily token total appears solely in
+a 429 body. A green guard means "no known reason to stop", not "headroom exists".
+
+**Fix.** A dedicated Groq org (free tier, $0) for Samidha production, and a second one for evals.
+Steps for GG are in ADR 0037. Until done, treat every capacity number above as an upper bound.
 
 ## Provenance
 
