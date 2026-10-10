@@ -22,8 +22,8 @@ states a percentile as SLO-grade evidence below --min-n real extractions; below
 that threshold it prints "INSUFFICIENT DATA" instead of a confident number.
 
 Auth: uses Application Default Credentials (gcloud CLI local auth, or Workload
-Identity Federation in CI) via `google.auth` -- both already transitive
-dependencies of this project (via google-genai). No new dependency added.
+Identity Federation in CI) via `google.auth`, declared in the dev dependency group
+(it used to arrive only transitively through google-genai, removed with the Gemini fallback).
 
 Usage:
     uv run python scripts/slo_report.py
