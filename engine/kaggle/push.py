@@ -17,7 +17,9 @@ OWNER = "gauravgandhi2411"
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", choices=["smoke", "final_a", "final_b", "final_c"], required=True)
+    ap.add_argument(
+        "--mode", choices=["smoke", "final_a", "final_b", "final_c", "final_export"], required=True
+    )
     ap.add_argument("--branch", default="main")
     ap.add_argument("--no-gpu", action="store_true")
     a = ap.parse_args()

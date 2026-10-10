@@ -103,6 +103,9 @@ JOBS = {
         ]
     ),  # fmt: skip
     # Hierarchy (E2d) and the ~500-row regime (E2e).
+    # Re-run of the two jobs that write ONNX artifacts (the first pass lacked onnxruntime).
+    "final_export": track_a("e5", E5, (42,), ("clinc",), export=("clinc",))
+    + track_a("minilm", MINI, (42,), ("clinc",), export=("clinc",)),
     "final_c": [
         ("e5_clinc_hier", HIER, E5, "--dataset clinc"),
         ("e5_massive_hier", HIER, E5, "--dataset massive"),
@@ -131,6 +134,8 @@ sha = subprocess.run(
 ).stdout.strip()
 os.chdir(repo)
 sys.path.insert(0, str(repo))
+# onnx/onnxruntime are not in the Kaggle image; only the export jobs need them
+sh(f"{sys.executable} -m pip install -q onnx onnxruntime", check=True)
 sh(f"{sys.executable} -m engine.fetch_data", check=True)
 OUT.mkdir(exist_ok=True)
 timings = {"gpu": gpu.stdout.strip(), "commit": sha, "mode": MODE, "jobs": {}}
