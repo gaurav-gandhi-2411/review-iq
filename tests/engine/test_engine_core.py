@@ -61,3 +61,23 @@ def test_macro_f1_penalises_a_dead_rare_class_that_accuracy_hides() -> None:
     p = np.zeros(100, dtype=int)  # never predicts the rare class
     assert M.accuracy(y, p) == 0.98
     assert M.macro_f1(y, p) < 0.5
+
+
+def test_macro_f1_ignores_classes_with_no_support_and_matches_bootstrap_basis() -> None:
+    y = np.array([0, 0, 1, 1])
+    p = np.array([0, 0, 1, 1])
+    # class 2 exists in the label space but not in this evaluation set: it must not count as F1 = 0
+    assert M.macro_f1(y, p, [0, 1, 2]) == 1.0
+    lo, hi = M.bootstrap_ci(y, p, M.macro_f1, n_boot=50)
+    assert lo <= M.macro_f1(y, p, [0, 1, 2]) <= hi
+
+
+def test_bootstrap_open_set_brackets_the_point_estimate() -> None:
+    rng = np.random.default_rng(0)
+    known, unknown = rng.normal(2, 1, 400), rng.normal(0, 1, 300)
+    thr = float(np.percentile(known, 5))
+    ci = M.bootstrap_open_set(known, unknown, thr, n_boot=200)
+    point = float((unknown < thr).mean())
+    lo, hi = ci["rejection_recall_ci95"]
+    assert lo <= point <= hi
+    assert 0.5 < ci["auroc_ci95"][0] <= ci["auroc_ci95"][1] <= 1.0
