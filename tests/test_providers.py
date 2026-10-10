@@ -88,44 +88,6 @@ def test_assert_privacy_safe_custom_context_in_message() -> None:
 
 
 # ---------------------------------------------------------------------------
-# org-key path: Gemini never called when allow_gemini_fallback=False
-# ---------------------------------------------------------------------------
-
-
-@pytest.mark.asyncio
-async def test_gemini_not_called_on_org_key_path(monkeypatch: pytest.MonkeyPatch) -> None:
-    """With allow_gemini_fallback=False, _call_gemini is never invoked even on Groq failure."""
-    import app.core.llm as llm_module
-    from app.core.config import Settings
-
-    gemini_called = False
-
-    async def fake_gemini(user_prompt: str) -> tuple[object, int, int]:
-        nonlocal gemini_called
-        gemini_called = True
-        raise AssertionError("Gemini must not be called on the org-key path")
-
-    monkeypatch.setattr(llm_module, "_call_gemini", fake_gemini)
-
-    # Groq will fail because the fake key is invalid; with fallback disabled it must raise.
-    monkeypatch.setattr(
-        llm_module,
-        "get_settings",
-        lambda: Settings(
-            GROQ_API_KEY="fake-key",
-            GEMINI_API_KEY="fake-key",
-            ENABLE_GEMINI_FALLBACK=False,
-        ),
-    )
-
-    with pytest.raises(Exception):  # RuntimeError or APIError from failed Groq call
-        await llm_module.extract_with_llm("test prompt", allow_gemini_fallback=False)
-
-    assert not gemini_called, "Gemini was called on the org-key path — privacy violation"
-
-
-# ---------------------------------------------------------------------------
-# SecondaryProvider stub behaviour
 # ---------------------------------------------------------------------------
 
 

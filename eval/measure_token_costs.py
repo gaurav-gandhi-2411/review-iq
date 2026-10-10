@@ -83,7 +83,7 @@ async def main() -> None:
             tokens_in,
             tokens_out,
             _degraded,
-        ) = await extract_with_llm(user_prompt, allow_gemini_fallback=False)
+        ) = await extract_with_llm(user_prompt)
         tier = "large" if model_name == settings.groq_model_large else "small"
         cost = price_extraction(model_name, tokens_in, tokens_out)
         per_call.append(
