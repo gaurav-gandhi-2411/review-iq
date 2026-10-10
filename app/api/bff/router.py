@@ -1046,3 +1046,7 @@ async def bff_revoke_key(
 from app.api.bff.alerts import router as _alerts_router  # noqa: E402, I001 -- deliberately after all route handlers, not a top-level import (see module docstring's import constraints)
 
 router.include_router(_alerts_router)
+
+from app.api.bff.judgeme import router as _judgeme_router  # noqa: E402, I001 -- same deliberate late import as _alerts_router above
+
+router.include_router(_judgeme_router)
