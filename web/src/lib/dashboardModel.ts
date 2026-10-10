@@ -2,9 +2,23 @@
 // urgent queue and "new since last visit". No React, no storage, no network, so every rule
 // here is unit-tested (dashboardModel.test.ts) and the view stays presentational.
 //
-// Time axis: every window is on `created_at` (when the review was analysed in Samidha), the
-// same column the API's since/until params filter on. `review_date` (when the customer wrote
-// it) is nullable and absent for most uploads, so it cannot drive recency.
+// Time axis (S19): a review's recency is its `review_date` (when the customer wrote it) when
+// the API returns a usable one, otherwise `created_at` (when Samidha analysed it). Every
+// window uses that one definition (7d/30d/all, the previous-period comparison, the urgent
+// queue order and "new since last visit"), see recencyOf().
+//
+// Bulk import grouping (S19, no schema change): without a review_date, a CSV of hundreds of
+// old reviews all gets created_at = "now" and would read as that many reviews that "arrived".
+// Heuristic, deterministic, client-side: among reviews WITHOUT a usable review_date, sort by
+// created_at; every run of IMPORT_MIN_REVIEWS (20) or more reviews that fits inside one
+// IMPORT_WINDOW_MS (10 minutes, inclusive: last - first <= 10:00.000) is an import window;
+// import windows that share at least one review merge into ONE import event (so a 30-review
+// import straddling a 10-minute edge is one event, and a long steady import is one event).
+// Reviews with a usable review_date are never grouped (their date already says when they
+// were written). Limits: an undated upload analysed more slowly than 20 reviews per 10
+// minutes will NOT group, and 20 undated reviews that genuinely arrived in 10 minutes will
+// group; both thresholds are heuristics. The exact alternative is a batch_job_id column on
+// extractions (a migration), not done here.
 import type { Review } from './api'
 
 export const RANGES = [
@@ -59,9 +73,34 @@ export function periodsFor(range: RangeKey, now: number): Periods {
   }
 }
 
-export function reviewTime(r: Pick<Review, 'created_at'>): number | null {
-  const t = Date.parse(r.created_at)
-  return Number.isNaN(t) ? null : t
+// A review cannot be analysed before it was written, so a review_date later than created_at
+// is a data error (typo, wrong year). One day of slack covers a date-only value parsed as UTC
+// midnight for a review written today. Beyond that we fall back to created_at.
+export const REVIEW_DATE_FUTURE_TOLERANCE_MS = DAY_MS
+
+export interface Recency {
+  time: number | null
+  source: 'review_date' | 'created_at'
+}
+
+export function recencyOf(r: Pick<Review, 'created_at' | 'review_date'>): Recency {
+  const created = Date.parse(r.created_at)
+  const createdTime = Number.isNaN(created) ? null : created
+  if (r.review_date) {
+    const written = Date.parse(r.review_date)
+    if (
+      !Number.isNaN(written) &&
+      (createdTime === null || written <= createdTime + REVIEW_DATE_FUTURE_TOLERANCE_MS)
+    ) {
+      return { time: written, source: 'review_date' }
+    }
+  }
+  return { time: createdTime, source: 'created_at' }
+}
+
+/** The instant used for every window and ordering: review_date when usable, else created_at. */
+export function reviewTime(r: Pick<Review, 'created_at' | 'review_date'>): number | null {
+  return recencyOf(r).time
 }
 
 export function inPeriod(reviews: Review[], p: Period): Review[] {
@@ -243,20 +282,95 @@ export function newestFirst(reviews: Review[]): Review[] {
   })
 }
 
+// ---- Bulk import events ----
+
+export const IMPORT_MIN_REVIEWS = 20
+export const IMPORT_WINDOW_MS = 10 * 60 * 1000
+
+export interface ImportEvent {
+  /** Stable key: the smallest member review id. */
+  key: number
+  /** Members, ascending by created_at then id. */
+  reviews: Review[]
+  start: number // earliest member created_at
+  end: number // latest member created_at
+}
+
+/** Detect import events among reviews that have NO usable review_date (see header). */
+export function detectImportEvents(reviews: Review[]): ImportEvent[] {
+  const undated: { r: Review; t: number }[] = []
+  for (const r of reviews) {
+    if (recencyOf(r).source === 'review_date') continue
+    const t = Date.parse(r.created_at)
+    if (!Number.isNaN(t)) undated.push({ r, t })
+  }
+  undated.sort((a, b) => a.t - b.t || a.r.id - b.r.id)
+
+  // Every maximal window [i, j] with t[j] - t[i] <= W and at least MIN reviews, then merge the
+  // windows that overlap (share a review). j never decreases as i grows, so one pass suffices.
+  const spans: [number, number][] = []
+  let j = 0
+  for (let i = 0; i < undated.length; i++) {
+    if (j < i) j = i
+    while (j + 1 < undated.length && undated[j + 1].t - undated[i].t <= IMPORT_WINDOW_MS) j++
+    if (j - i + 1 >= IMPORT_MIN_REVIEWS) {
+      const last = spans[spans.length - 1]
+      if (last && i <= last[1]) last[1] = Math.max(last[1], j)
+      else spans.push([i, j])
+    }
+  }
+  return spans.map(([a, b]) => {
+    const members = undated.slice(a, b + 1)
+    return {
+      key: Math.min(...members.map(m => m.r.id)),
+      reviews: members.map(m => m.r),
+      start: members[0].t,
+      end: members[members.length - 1].t,
+    }
+  })
+}
+
+/** review id -> the import event it belongs to. */
+export function importMembership(events: ImportEvent[]): Map<number, ImportEvent> {
+  const map = new Map<number, ImportEvent>()
+  for (const e of events) for (const r of e.reviews) map.set(r.id, e)
+  return map
+}
+
 export function urgentQueue(reviewsInRange: Review[]): Review[] {
   return newestFirst(reviewsInRange.filter(needsHuman))
 }
+
+/** One row of the "new since last visit" list: a single review, or one whole bulk import. */
+export type NewItem =
+  | { kind: 'review'; review: Review; time: number }
+  | {
+      kind: 'import'
+      key: number
+      /** Members of the import that are new in this window (an import can straddle the edge). */
+      count: number
+      urgent: number
+      negative: number
+      /** When the import finished: the latest new member's created_at. */
+      time: number
+    }
 
 export interface NewSince {
   mode: 'since-visit' | 'fallback'
   /** The instant the window starts (previous session's last-seen time, or now - 7d). */
   since: number
-  reviews: Review[] // newest first
+  reviews: Review[] // newest first; EVERY new review, imports included (counts are by review)
+  items: NewItem[] // newest first; each import event collapsed into one item
   urgent: number
   negative: number
 }
 
-export function newSince(reviews: Review[], previousVisit: number | null, now: number): NewSince {
+export function newSince(
+  reviews: Review[],
+  previousVisit: number | null,
+  now: number,
+  imports: Map<number, ImportEvent> = importMembership(detectImportEvents(reviews)),
+): NewSince {
   const mode = previousVisit === null ? 'fallback' : 'since-visit'
   const since = previousVisit ?? now - NEW_FALLBACK_DAYS * DAY_MS
   const fresh = newestFirst(
@@ -265,10 +379,32 @@ export function newSince(reviews: Review[], previousVisit: number | null, now: n
       return t !== null && t > since && t <= now
     }),
   )
+  const items: NewItem[] = []
+  const importItems = new Map<number, Extract<NewItem, { kind: 'import' }>>()
+  for (const r of fresh) {
+    const event = imports.get(r.id)
+    const t = reviewTime(r)!
+    if (!event) {
+      items.push({ kind: 'review', review: r, time: t })
+      continue
+    }
+    let item = importItems.get(event.key)
+    if (!item) {
+      item = { kind: 'import', key: event.key, count: 0, urgent: 0, negative: 0, time: t }
+      importItems.set(event.key, item)
+      items.push(item)
+    }
+    item.count++
+    if (needsHuman(r)) item.urgent++
+    if (r.sentiment === 'negative') item.negative++
+    item.time = Math.max(item.time, t)
+  }
+  items.sort((a, b) => b.time - a.time)
   return {
     mode,
     since,
     reviews: fresh,
+    items,
     urgent: fresh.filter(needsHuman).length,
     negative: fresh.filter(r => r.sentiment === 'negative').length,
   }
@@ -284,6 +420,8 @@ export interface DashboardModel {
   trend: HealthTrend
   concerns: Concern[]
   urgent: Review[]
+  /** Ids of reviews that belong to a detected bulk import (labelled "from import" in the queue). */
+  importIds: ReadonlySet<number>
   fresh: NewSince
   positive: number
   negative: number
@@ -299,6 +437,7 @@ export function buildDashboardModel(
   const cur = inPeriod(reviews, periods.current)
   const prev = periods.previous ? inPeriod(reviews, periods.previous) : null
   const health = computeHealth(cur)
+  const imports = importMembership(detectImportEvents(reviews))
   return {
     range,
     total: cur.length,
@@ -307,7 +446,8 @@ export function buildDashboardModel(
     trend: compareHealth(health, prev ? computeHealth(prev) : null),
     concerns: topConcerns(cur, prev),
     urgent: urgentQueue(cur),
-    fresh: newSince(reviews, previousVisit, now),
+    importIds: new Set(imports.keys()),
+    fresh: newSince(reviews, previousVisit, now, imports),
     positive: health.positive,
     negative: cur.filter(r => r.sentiment === 'negative').length,
   }

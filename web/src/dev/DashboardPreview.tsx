@@ -1,6 +1,6 @@
 // DEV-ONLY: renders the real Layout + DashboardView from fixtures in every state, so layout can
 // be inspected (and screenshotted at 360/768/1280) without a login or a backend.
-// Reached at /__preview/dashboard?state=normal|urgent-heavy|range-empty|empty|loading|error
+// Reached at /__preview/dashboard?state=normal|urgent-heavy|bulk-import|range-empty|empty|loading|error
 // and &range=7d|30d|all. Guarded in App.tsx by import.meta.env.DEV so it is not in the
 // production bundle (verified by grepping dist/ for FIXTURE_NOW's marker string in CI-less build).
 import { useMemo, useState } from 'react'
