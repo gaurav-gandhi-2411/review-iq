@@ -16,6 +16,7 @@ import time
 from pathlib import Path
 
 import numpy as np
+from sklearn.metrics import confusion_matrix
 
 from engine import data as D
 from engine import metrics as M
@@ -62,6 +63,8 @@ def track_a_block(y: np.ndarray, logits: np.ndarray, names: list[str], t: float)
             {"label": names[i], "f1": round(float(pc[i]), 3)} for i in np.argsort(pc)[:5]
         ],
         "top_confusions": M.top_confusions(y, p, names, 8),
+        "per_class_f1": {names[i]: round(float(pc[i]), 4) for i in labels},
+        "confusion_matrix": confusion_matrix(y, p, labels=labels).tolist(),  # rows=true, cols=pred
         "temperature": round(t, 4),
     }
 
@@ -91,6 +94,7 @@ def open_set_block(
             "n": int(len(su)),
             "rejection_recall": round(float((su < thr).mean()), 4),
             **{k: round(v, 4) for k, v in M.known_vs_unknown(s_known, su).items()},
+            **M.bootstrap_open_set(s_known, su, thr),
         }
     return out
 

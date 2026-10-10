@@ -70,3 +70,14 @@ def test_macro_f1_ignores_classes_with_no_support_and_matches_bootstrap_basis() 
     assert M.macro_f1(y, p, [0, 1, 2]) == 1.0
     lo, hi = M.bootstrap_ci(y, p, M.macro_f1, n_boot=50)
     assert lo <= M.macro_f1(y, p, [0, 1, 2]) <= hi
+
+
+def test_bootstrap_open_set_brackets_the_point_estimate() -> None:
+    rng = np.random.default_rng(0)
+    known, unknown = rng.normal(2, 1, 400), rng.normal(0, 1, 300)
+    thr = float(np.percentile(known, 5))
+    ci = M.bootstrap_open_set(known, unknown, thr, n_boot=200)
+    point = float((unknown < thr).mean())
+    lo, hi = ci["rejection_recall_ci95"]
+    assert lo <= point <= hi
+    assert 0.5 < ci["auroc_ci95"][0] <= ci["auroc_ci95"][1] <= 1.0

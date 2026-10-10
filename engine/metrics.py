@@ -68,3 +68,29 @@ def known_vs_unknown(score_known: np.ndarray, score_unknown: np.ndarray) -> dict
         "auroc": float(roc_auc_score(y, s)),
         "fpr_at_95_tpr": float((score_unknown >= thr95).mean()),
     }
+
+
+def bootstrap_open_set(
+    score_known: np.ndarray,
+    score_unknown: np.ndarray,
+    thr: float,
+    n_boot: int = 1000,
+    seed: int = 42,
+) -> dict[str, list[float]]:
+    """95% CIs for AUROC, rejection recall and known retention at a FIXED threshold.
+
+    Known and unknown items are resampled independently (they are separate populations); the
+    threshold stays fixed because it was chosen on validation, not on these items.
+    """
+    rng = np.random.default_rng(seed)
+    nk, nu = len(score_known), len(score_unknown)
+    aur, rej, ret = [], [], []
+    for _ in range(n_boot):
+        k = score_known[rng.integers(0, nk, nk)]
+        u = score_unknown[rng.integers(0, nu, nu)]
+        y = np.r_[np.ones(nk), np.zeros(nu)]
+        aur.append(roc_auc_score(y, np.r_[k, u]))
+        rej.append(float((u < thr).mean()))
+        ret.append(float((k >= thr).mean()))
+    q = lambda v: [round(float(x), 4) for x in np.percentile(v, [2.5, 97.5])]  # noqa: E731
+    return {"auroc_ci95": q(aur), "rejection_recall_ci95": q(rej), "retention_ci95": q(ret)}
