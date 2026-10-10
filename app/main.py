@@ -40,6 +40,7 @@ from app.api.v2.insights import router as v2_insights_router
 from app.api.v2.reply import router as v2_reply_router
 from app.api.v2.reviews import router as v2_reviews_router
 from app.api.webhooks.google import router as google_webhook_router
+from app.api.webhooks.resend import router as resend_webhook_router
 from app.api.webhooks.shopify import router as shopify_webhook_router
 from app.auth.signup import router as signup_router
 from app.core.config import Settings, get_settings
@@ -71,7 +72,7 @@ Unstructured customer reviews → queryable structured insights.
 
 1. **Get an API key.** Sign in at the Samidha Reviews dashboard (Google sign-in via
    Supabase). Your first `riq_live_*` key is issued automatically on first
-   login — see `POST /auth/provision` below. Free tier: 100 requests/month.
+   login — see `POST /auth/provision` below. Free tier: 1,000 requests/month.
 2. **Authenticate** every `/v2/*` request with either header (Bearer takes
    precedence if both are sent):
    - `Authorization: Bearer riq_live_<32 hex chars>`
@@ -111,7 +112,7 @@ print(resp.json())
 | All endpoints, per IP | 30 requests/minute (`RATE_LIMIT_PER_MINUTE`) |
 | `POST /auth/provision`, per IP | 10 requests/minute |
 | `POST /demo/extract`, per IP | 5 requests/minute |
-| Monthly quota, per API key | 100 requests/month on the free tier |
+| Monthly quota, per API key | 1,000 requests/month on the free tier |
 
 The per-minute limit applies regardless of authentication and returns `429`
 from the rate limiter. The monthly quota is tracked per API key (not per IP)
@@ -214,6 +215,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allow_origins=settings.allowed_origins,
         allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["Authorization", "Content-Type"],
+        # Without this the browser hides every non-safelisted response header from fetch():
+        # the web app saw 503s but could never read Retry-After (S19 Q3c).
+        expose_headers=["Retry-After", "X-Correlation-ID", "X-Failed-Items"],
         allow_credentials=False,
     )
 
@@ -253,6 +257,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         _app.include_router(shopify_webhook_router)
         _app.include_router(shopify_auth_router)
         _app.include_router(google_webhook_router)
+        _app.include_router(resend_webhook_router)
         _app.include_router(google_auth_router)
         _app.include_router(bff_router)
         _app.include_router(signup_router)
