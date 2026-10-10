@@ -115,4 +115,11 @@ Synthetic campaigns test the attacks we modelled, not unseen ones; real campaign
 
 ## Amendments
 
-(none)
+Amendments 1-6 were written on 2026-10-11 before the tuning or sealed runs, while the harness was being finished; they record implementation details the sections above left open. None changes a threshold, split, metric or decision rule.
+
+1. Jitter (section 3): one `default_rng(42 + crc32(stream_key))` per stream, drawing U(0, 24h) in date-sorted row order, instead of one generator per review. Same determinism, far cheaper.
+2. Excerpt rule (section 4): the excerpt starts 195 days before the injection (not 187) and evaluation points start 7 days before the injection. The 7-day pre-roll lets the cooldown state form from the organic week before the campaign, so an organic alert opened just before a campaign can suppress an alert on it, as it would in production. A unit test checks excerpt evidence equals full-stream evidence.
+3. The fire threshold for the verified-share signal (e) is 3.0, same as mismatch; it is inert in this evaluation (field absent).
+4. Qualification (section 3) yields 94 Amazon and 158 Sephora streams (252 total, 262,471 reviews). The split is 50/20/30 per corpus: tuning 126 streams, validation 51, sealed 75 (counts confirmed in `reports/campaign_eval/split.json`).
+5. The sealed run evaluates only the frozen parameter columns written to `frozen_params.json` before it starts, and refuses to run twice.
+6. Disclosure: before the split existed, a smoke test ran the full grid on the first stream key in sorted order (`amazon:B0007A0AQM`, clean span plus 6 tuning-configuration injections) to measure runtime. Its output was not used for any decision. Whether that stream lands in the sealed split is stated in the final report.
