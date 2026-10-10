@@ -576,6 +576,18 @@ UNDO_CASES: list[tuple[str, str, str]] = [
         "deferred_urgent_sweep_function_hardened",
         "GRANT EXECUTE ON FUNCTION public.list_orgs_with_deferred_urgent_alerts() TO authenticated",
     ),
+    # S20 M3b: weekly digest. Dropping the widened CHECK removes the 'weekly_digest' literal;
+    # dropping the new resolver makes to_regprocedure NULL so count(*) = 1 is false.
+    (
+        "20261009000003_alert_preferences_weekly_digest.sql",
+        "alert_preferences_frequency_allows_weekly_digest",
+        "ALTER TABLE public.alert_preferences DROP CONSTRAINT alert_preferences_frequency_check",
+    ),
+    (
+        "20261009000003_alert_preferences_weekly_digest.sql",
+        "weekly_digest_resolver_hardened",
+        "DROP FUNCTION public.list_orgs_with_weekly_digest()",
+    ),
 ]
 
 

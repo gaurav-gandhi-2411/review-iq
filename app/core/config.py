@@ -179,6 +179,12 @@ class Settings(BaseSettings):
     #   endpoints from 11 upstream providers (see SecondaryProvider's docstring).
     secondary_provider_api_key: str = Field(default="", alias="SECONDARY_PROVIDER_API_KEY")
     secondary_provider_model: str = Field(default="", alias="SECONDARY_PROVIDER_MODEL")
+    # Which backend the secondary failover uses. "openrouter" (default) keeps the ZDR-only
+    # OpenRouter path above. "groq" makes the secondary a SECOND Groq account (key =
+    # SECONDARY_PROVIDER_API_KEY, model = a Groq model id, e.g. openai/gpt-oss-20b): Groq to
+    # Groq failover, both ZDR-capable, zero cost. It is a failover only (used after the
+    # primary fails), never a load-spreading rotation across accounts: see ADR 0038.
+    secondary_provider_kind: str = Field(default="openrouter", alias="SECONDARY_PROVIDER_KIND")
 
     # CORS allowlist — comma-separated origins (env: ALLOWED_ORIGINS).
     # Default covers local dev: both localhost and 127.0.0.1 aliases on :5173
@@ -312,6 +318,11 @@ class Settings(BaseSettings):
     # Manager only, never committed. Generate: python -c "import secrets; print(secrets.token_hex(32))"
     leads_notify_email: str = Field(default="hello@samidhareviews.xyz", alias="LEADS_NOTIFY_EMAIL")
     leads_ip_hash_salt: str = Field(default="", alias="LEADS_IP_HASH_SALT")
+
+    # Public URL of the web dashboard (e.g. the Vercel app origin), used only for the "open your
+    # dashboard" link in the weekly digest. Empty -> the link is omitted (never a guessed
+    # domain). Plain env var, not a secret. Env: DASHBOARD_URL.
+    dashboard_url: str = Field(default="", alias="DASHBOARD_URL")
 
     # HMAC signing key for one-click unsubscribe links embedded in alert emails
     # (GET/POST /unsubscribe). Unset disables the unsubscribe link and the
