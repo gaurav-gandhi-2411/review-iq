@@ -17,6 +17,7 @@ _SENDER_TEST_MODULES = frozenset(
         "test_digest",
         "test_internal_digest",
         "test_urgent_coalescing",
+        "test_weekly_digest",
     }
 )
 
