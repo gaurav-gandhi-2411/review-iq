@@ -17,6 +17,7 @@ from eval.heldout_exposure import (
     DEV_FIXTURE_GLOBS,
     HELD_OUT_DIR,
 )
+from eval.heldout_unscored import adjudicated_block
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -318,3 +319,75 @@ class TestHinglishControlSet:
                 # very short sentences ("Paisa vasool!") are common phrases, not copies.
                 if len(key) >= 20:
                     assert not any(key in b for b in blob), (it["id"], sent)
+
+
+class TestAdjudicatedBlock:
+    def _fixture(self):
+        return {
+            "id": "r1",
+            "ground_truth": {"product": "unknown", "sentiment": "positive"},
+            "scoring_notes": {
+                "exact_match_fields": ["product", "sentiment"],
+                "set_overlap_fields": [],
+                "fuzzy_fields": [],
+                "tolerance_fields": {},
+            },
+        }
+
+    def test_bounds_narrow_and_point_estimate(self):
+        fixtures = {"r1": self._fixture(), "r2": {**self._fixture(), "id": "r2"}}
+        pred = {"product": "earphone", "sentiment": "positive"}
+        records = [
+            {
+                "id": "r1",
+                "unresolved_fields": ["product"],
+                "exposure": [],
+                "as_deployed": {
+                    "predicted": pred,
+                    "field_scores": {"product": 0.0, "sentiment": 1.0},
+                },
+            },
+            {
+                "id": "r2",
+                "unresolved_fields": ["product"],
+                "exposure": [],
+                "as_deployed": {
+                    "predicted": pred,
+                    "field_scores": {"product": 0.0, "sentiment": 1.0},
+                },
+            },
+        ]
+        fields = ["product", "sentiment"]
+        # panel 2 resolves r1.product to "earphone" (model right) and leaves r2.product open.
+        block = adjudicated_block(records, fixtures, {"r1.product": "earphone"}, fields)
+        assert block["n_pairs_unscored_by_panel1"] == 2
+        assert block["n_resolved_by_panel2"] == 1
+        assert block["original_manski_bounds"] == {"lower": 0.5, "upper": 1.0}
+        lo = block["narrowed_manski_lower_unresolved_all_wrong"]["score"]
+        hi = block["narrowed_manski_upper_unresolved_all_correct"]["score"]
+        assert (lo, hi) == (0.75, 1.0)
+        assert block["silver_adjudicated_estimate_conditional_on_panel2_agreement"]["score"] == 1.0
+        assert block["point_estimate_defensible"] is False
+        assert "NOT ground truth" in block["label"]
+
+
+class TestScopedGateA1:
+    def test_scoped_fields_exclude_language_and_urgency_but_include_stars(self):
+        assert "language" not in panel2.SCOPED_FIELDS
+        assert "urgency" not in panel2.SCOPED_FIELDS
+        assert "stars" in panel2.SCOPED_FIELDS
+        assert set(panel2.HEADLINE_FIELDS) <= set(panel2.SCOPED_FIELDS)
+
+    def test_selection_on_scoped_misses_breaks_ties_by_cost(self):
+        results = {
+            "deepseek/deepseek-v4-flash": {"misses": 0, "mean_cost_per_call": 0.0001},
+            "nvidia/nemotron-3-super-120b-a12b": {"misses": 0, "mean_cost_per_call": 0.0002},
+            "thinkingmachines/inkling-small": {"misses": 0, "mean_cost_per_call": 0.0005},
+            "z-ai/glm-4.7-flash": {"misses": 2, "mean_cost_per_call": 0.00006},
+            "mistralai/mistral-small-2603": {"misses": 2, "mean_cost_per_call": 0.0001},
+        }
+        assert panel2.select_active_panel(results) == [
+            "deepseek/deepseek-v4-flash",
+            "nvidia/nemotron-3-super-120b-a12b",
+            "thinkingmachines/inkling-small",
+        ]

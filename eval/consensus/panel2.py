@@ -20,6 +20,7 @@ panel from the calibration artifact), `all`.
 
 from __future__ import annotations
 
+import argparse
 import asyncio
 import hashlib
 import json
@@ -719,3 +720,258 @@ def outputs_by_review(
     for v in votes:
         if v["phase"].startswith(phase_prefix) and v["rep"] == rep:
             out.setdefault(v["unit_id"], {})[v["model"]] = v["parsed"]
+    return out
+
+
+def build_silver(
+    votes: list[dict[str, Any]], active: list[str], targets: dict[str, Any], ledger: Ledger
+) -> dict[str, Any]:
+    from eval.heldout_unscored import adjudicated_block
+
+    fixtures = targets["fixtures"]
+    fields = targets["headline_fields"]
+    # Judge order = active-panel order, so tie-breaks (first agreeing pair, representative value)
+    # are identical on every run; arrival order of concurrent live calls must not leak in.
+    main_out = {
+        rid: {m: outs.get(m) for m in active}
+        for rid, outs in outputs_by_review(votes, "main_").items()
+    }
+    t_ids, v_ids = targets["T"], targets["V"]
+
+    def level_counts(ids: list[str], variant: str, only_unscored: bool) -> dict[str, Any]:
+        per_field: dict[str, dict[str, int]] = {}
+        total = {"pairs": 0, "unanimous": 0, "majority_only": 0, "resolved": 0}
+        for f in fields:
+            c = {"pairs": 0, "unanimous": 0, "majority_only": 0, "resolved": 0}
+            for rid in ids:
+                if only_unscored and f not in targets["unscored"][rid]:
+                    continue
+                c["pairs"] += 1
+                lvl = resolve_field(f, main_out[rid], variant)["level"]
+                if lvl == "unanimous":
+                    c["unanimous"] += 1
+                    c["resolved"] += 1
+                elif lvl == "majority":
+                    c["majority_only"] += 1
+                    c["resolved"] += 1
+            per_field[f] = c
+            for k in total:
+                total[k] += c[k]
+        return {"overall": total, "per_field": per_field}
+
+    variants: dict[str, Any] = {}
+    for variant in ("adr0030", "panel1_literal"):
+        t = level_counts(t_ids, variant, only_unscored=True)
+        n = t["overall"]["pairs"]
+        variants[variant] = {
+            "T_unscored_pairs": t,
+            "r_primary_resolved": t["overall"]["resolved"] / n if n else 0.0,
+            "r_strict_unanimous": t["overall"]["unanimous"] / n if n else 0.0,
+            "r_majority_of_3": t["overall"]["resolved"] / n if n else 0.0,
+            "r_per_field_primary": {
+                f: (c["resolved"] / c["pairs"] if c["pairs"] else None)
+                for f, c in t["per_field"].items()
+            },
+        }
+
+    # Silver labels for the primary variant.
+    silver_pairs: dict[str, dict[str, Any]] = {}
+    for rid in t_ids:
+        for f in targets["unscored"][rid]:
+            res = resolve_field(f, main_out[rid], "adr0030")
+            silver_pairs[f"{rid}.{f}"] = {
+                "review_id": rid,
+                "field": f,
+                "level": res["level"],
+                "silver": res["silver"] if res["level"] in ("unanimous", "majority") else None,
+                "votes": {
+                    j: (main_out[rid][j].get(f) if main_out[rid][j] else "NO_RESPONSE")
+                    for j in active
+                },
+                "label": SILVER_LABEL,
+            }
+
+    # Validation arm: concordance with panel-1 silver (stored fixture gold on resolved pairs).
+    v_conc = {"all": _empty_conc(), "panel1_unanimous_only": _empty_conc(), "per_field": {}}
+    for f in fields:
+        v_conc["per_field"][f] = _empty_conc()
+    for rid in v_ids:
+        fx = fixtures[rid]
+        agreement = fx["labeling_meta"]["agreement_per_field"]
+        for f in fields:
+            gold = fx["ground_truth"][f]
+            res = resolve_field(f, main_out[rid], "adr0030")
+            resolved = res["level"] in ("unanimous", "majority")
+            concordant = resolved and equivalent(f, res["silver"], gold)
+            for bucket in (v_conc["all"], v_conc["per_field"][f]) + (
+                (v_conc["panel1_unanimous_only"],) if agreement.get(f) == "unanimous" else ()
+            ):
+                bucket["pairs"] += 1
+                bucket["panel2_resolved"] += int(resolved)
+                bucket["concordant"] += int(concordant)
+    for bucket in (v_conc["all"], v_conc["panel1_unanimous_only"], *v_conc["per_field"].values()):
+        p, r, c = bucket["pairs"], bucket["panel2_resolved"], bucket["concordant"]
+        bucket["concordance_among_resolved"] = c / r if r else None
+        bucket["concordance_counting_unresolved_as_miss"] = c / p if p else None
+
+    # Agreement statistics.
+    agreement = {
+        "T": field_agreement(main_out, t_ids, active),
+        "V": field_agreement(main_out, v_ids, active),
+        "caveat": (
+            "Free-text classes are connected components of the pre-registered equivalence "
+            "(arbitrary ids across items): alpha/kappa there measure within-item concordance."
+        ),
+    }
+
+    # Self-consistency.
+    rep0 = outputs_by_review(votes, "main_", rep=0)
+    rep1 = outputs_by_review(votes, "self_consistency", rep=1)
+    sc: dict[str, Any] = {}
+    for m in active:
+        n = same = 0
+        for rid, outs in rep1.items():
+            if outs.get(m) is None or rep0[rid].get(m) is None:
+                continue
+            for f in fields:
+                n += 1
+                same += int(equivalent(f, outs[m].get(f), rep0[rid][m].get(f)))
+        sc[m] = {"pairs_compared": n, "equivalent": same, "rate": same / n if n else None}
+
+    narrowed = adjudicated_block(
+        targets["artifact"]["records"],
+        fixtures,
+        {k: v["silver"] for k, v in silver_pairs.items() if v["silver"] is not None},
+        fields,
+    )
+    return {
+        "label": SILVER_LABEL,
+        "active_panel": active,
+        "n_T_reviews": len(t_ids),
+        "n_V_reviews": len(v_ids),
+        "V_pool_size": targets["V_pool_size"],
+        "V_review_ids": v_ids,
+        "variants": variants,
+        "silver_pairs": silver_pairs,
+        "validation_concordance": v_conc,
+        "agreement": agreement,
+        "self_consistency": sc,
+        "narrowed_bounds": narrowed,
+        "cost": ledger.summary(),
+    }
+
+
+def _empty_conc() -> dict[str, Any]:
+    return {"pairs": 0, "panel2_resolved": 0, "concordant": 0}
+
+
+# ---------------------------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------------------------
+
+
+def _write_json(path: Path, obj: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(obj, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def _write_votes(votes: list[dict[str, Any]]) -> None:
+    VOTES_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with VOTES_PATH.open("w", encoding="utf-8") as fh:
+        # Sorted: concurrent calls complete in nondeterministic order; replay must be byte-stable.
+        for v in sorted(votes, key=lambda x: (x["phase"], x["unit_id"], x["model"], x["rep"])):
+            fh.write(json.dumps(v, ensure_ascii=False, sort_keys=True) + "\n")
+
+
+def _load_votes_file() -> list[dict[str, Any]]:
+    if not VOTES_PATH.exists():
+        return []
+    return [json.loads(x) for x in VOTES_PATH.read_text(encoding="utf-8").splitlines() if x.strip()]
+
+
+async def amain(args: argparse.Namespace) -> int:
+    cassette = Cassette()
+    ledger = Ledger()
+    # The cap is cumulative across runs: seed live spend with what the cassette already cost.
+    ledger.live_cost["__prior_cassette__"] = sum(
+        float(e.get("cost_usd") or 0.0) for e in cassette.store.values()
+    )
+    runner = Runner(mode=args.mode, cassette=cassette, ledger=ledger)
+    http: Any = None
+    zdr: set[str] | None = None
+    if args.mode == "record":
+        import httpx
+
+        http = httpx.AsyncClient()
+        runner.http = http
+        runner.api_key = load_api_key()
+        zdr = await fetch_zdr_models(http)
+    prior_votes = _load_votes_file() if args.phase == "main" else []
+    try:
+        if args.phase in ("calibration", "all"):
+            cal = await run_calibration(runner, zdr)
+            if args.mode != "report":
+                _write_json(CALIBRATION_PATH, cal)
+            print(json.dumps({k: v for k, v in cal.items() if k != "candidates"}, indent=1))
+            for m, r in cal["candidates"].items():
+                print(
+                    f"  {m}: v1 misses={r['misses']} passed={r['passed']}; "
+                    f"v2 scoped misses={r['v2_scoped_misses']} passed={r['v2_scoped_passed']}"
+                )
+            if not cal["active_panel"]:
+                print("STOP: calibration gate failed (fewer than 3 passing, 3 vendors).")
+                if args.mode != "report":
+                    _write_votes(runner.votes)
+                return 2
+        if args.phase in ("main", "all"):
+            cal = json.loads(CALIBRATION_PATH.read_text(encoding="utf-8"))
+            active = cal["active_panel"]
+            if len(active) != 3:
+                print("STOP: no 3-judge active panel in the calibration artifact.")
+                return 2
+            roster = tuple({"id": m} for m in active)
+            panel.assert_no_self_judging(roster, extra_forbidden_families=PANEL1_FORBIDDEN_FAMILIES)
+            targets = load_targets()
+            await run_main(runner, active, targets)
+            all_votes = [*prior_votes, *runner.votes] if args.phase == "main" else runner.votes
+            seen: set[tuple[str, str, str, int]] = set()
+            deduped = []
+            for v in all_votes:
+                k = (v["phase"], v["unit_id"], v["model"], v["rep"])
+                if k not in seen:
+                    seen.add(k)
+                    deduped.append(v)
+            full_ledger = Ledger()
+            for v in deduped:
+                full_ledger.add(v, live=False)
+            silver = build_silver(deduped, active, targets, full_ledger)
+            if args.mode != "report":
+                _write_votes(deduped)
+                _write_json(SILVER_PATH, silver)
+            print(
+                json.dumps(
+                    {k: v for k, v in silver.items() if k != "silver_pairs"}, indent=1, default=str
+                )[:12000]
+            )
+        elif args.mode != "report" and args.phase == "calibration":
+            _write_votes(runner.votes)
+    except BudgetExceededError as exc:
+        print(f"BUDGET STOP: {exc}")
+        return 3
+    finally:
+        if http is not None:
+            await http.aclose()
+    print(json.dumps(ledger.summary(), indent=1))
+    return 0
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--mode", choices=["record", "replay", "report"], required=True)
+    ap.add_argument("--phase", choices=["calibration", "main", "all"], default="all")
+    args = ap.parse_args()
+    sys.exit(asyncio.run(amain(args)))
+
+
+if __name__ == "__main__":
+    main()
