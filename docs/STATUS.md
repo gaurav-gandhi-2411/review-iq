@@ -10,7 +10,7 @@ session or by a committed artifact; BELIEVED = inferred or stated by someone els
 | Primary LLM | Groq, **dedicated org** (`groq-api-key-samidha`) | VERIFIED: service description; live `/demo/extract` 200 |
 | Failover | Shared-org Groq, `openai/gpt-oss-120b` (`SECONDARY_PROVIDER_KIND=groq`, ADR 0038) | VERIFIED offline with an invalid primary key: served by `provider=secondary`, 4.75 s |
 | OpenRouter | Unbound from the service; key still in old revisions | VERIFIED: bindings; old revisions BELIEVED to carry it |
-| Supabase service-role key | Removed from Cloud Run; live bundle ships only `sb_publishable_` | VERIFIED: bundle scan (no JWT), service description, auth path 401 identical to live |
+| Supabase service-role key | Removed from Cloud Run; live bundle ships only `sb_publishable_` | VERIFIED: bundle scan (no JWT), service description. This proves rotation step d (not served to browsers), NOT that the leaked JWT is dead: on 2026-10-10 the legacy `service_role` JWT in Secret Manager still returned HTTP 200 on `/rest/v1/` (exp 2094). Dead-key proof = same probe returns 401 after step f (`scratchpad/g4_jwt_dead.py`) |
 | Migrations | 45/45 applied; `push.py --verify` PASS=97 on prod | VERIFIED 2026-10-10 |
 | Alerts | Suppression list (#315) and urgent-email coalescing (#316) live; unconfirmed in practice (no org has an alert preference enabled) | VERIFIED counts below |
 | Schedulers | ingest-tick ENABLED; digest-daily and detector-sweep PAUSED | VERIFIED |
