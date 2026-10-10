@@ -206,3 +206,24 @@ Record real responses with `scripts/record_judgeme_fixture.py` (token read from 
 - Product-only edits with identical text do not update an existing extraction's product (cache is keyed by text hash).
 - Throughput is bounded by the existing queue (3 rows per tick); a 2,000-review backfill takes hours, not minutes. This is a property of `ingest-tick`, not of the connector.
 - Everything in section 5 is fixture-based until section 9 is run.
+- Deletions are never faster than two complete full scans (section 3.7). There is no delete webhook (F11) and "absent from one scan" is indistinguishable from a page shift, so this is the price of zero false deletions.
+- `oldest_first` early-stop pays about log2(pages) probe requests to find the tail, so it is not cheaper than a full scan below roughly a dozen pages (measured below: 775 requests vs 655 for the 14-day, 200-review simulation). It only pays for large stores; `unknown` is the right default until section 9 R2.
+- `shop_domain` edge whitespace is stripped before validation (a paste habit); any interior whitespace or newline is rejected.
+
+## 11. Results on contract fixtures (SYNTHETIC, not a real Judge.me store)
+
+Provenance: code at commit `f4b8409` (branch `feat/judgeme-poller`); thresholds in section 5 were committed first (`c9f1f7d`) and are unchanged. Command: `.venv\Scripts\python.exe -m pytest tests/unit/test_judgeme_client.py tests/unit/test_judgeme_scan.py tests/unit/test_judgeme_sync.py tests/unit/test_judgeme_store.py tests/unit/test_judgeme_endpoints.py tests/unit/test_judgeme_job.py --no-cov -q` -> 177 passed. Freshness and lag figures come from re-running the same simulations with `scratchpad/measure_judgeme.py` and `measure_lags.py` (not committed; the bounds they print are asserted in `tests/unit/test_judgeme_sync.py`).
+
+| ID | Result | Threshold | Cases (n) |
+|---|---|---|---|
+| M1 completeness | 100 percent in every case | 100 percent | 21 sync cases (7 sizes x 3 order modes) + 28 scan cases (7 sizes x 2 orders x echo/no echo) + growth-between-pages + page-shift |
+| M2 idempotency | 0 duplicate stages; 0 rows staged in runs 2-5 (and via the job: one stage call in 5 runs); crash between stage and state re-stages 30 texts that all hit the extraction cache (30 conflicts, 0 extra rows) | 0 | 21 + 2 |
+| M3a edits/deletions | all reflected: edit, unpublish, hide, delete, republish, shared-text reviews. Lags (simulated clock, T=6h, R=24h): unknown-order edit 1 run (<= T); known-order edit of an old review 23h via a full scan (bound R+T = 30h); deletion 12h unknown order (bound 2T = 12h), 48h known order (bound 2R+T = 54h) | 100 percent within the section 3.7 bounds | 7 scenarios |
+| M3b false deletions | 0 across: empty-page glitch, 5xx mid-run, mid-scan deletion shift (review 150 got one strike, then cleared), page-cap incomplete scan, mass removal (needs 3 strikes) | 0 | 5 |
+| M4 freshness | p95 5.75h, p50 3.33h, max 5.98h for creates, identical for `unknown`, `newest_first`, `oldest_first` (n=200 reviews over 14 days, seed 42, 59 ticks, per_page 10). HTTP requests over the run: 655 unknown, 400 newest_first, 775 oldest_first. Late publish inside the overlap window: seen within T; beyond it: seen only at the next full scan (asserted > T and <= R+T) | p95 <= 6h and max <= 6h | 3 modes + 2 late-publish cases |
+| M5 failure handling | each case yields the section 3.5 behaviour with no partial writes | one test per case | client: bad token, 403, 404, 429 with/without Retry-After, 429 over cap, 429 exhausted, 5xx retried/exhausted, timeout retried/exhausted, 4 malformed pages, other 4xx; run level: 7 failure shapes leave state byte-identical; job level: bad token confirmed once then revoked, revoked after success, unknown shop, 429 deferral x2, 5xx/timeout/malformed recorded, run timeout, unexpected error, undecryptable token |
+| M6 privacy | 0 occurrences of fixture email/phone/name/reviewer id in staged rows, state rows, extractions or queue arguments | 0 | 4 tests |
+| M7 retention | 0 outbound requests, 0 stage/purge/state writes for a stateless org; connect refused with 409 before any probe; unreadable mode also does nothing | 0 | 3 tests |
+| M8 secret hygiene | 0 occurrences of the token in logs, exception text or endpoint payloads. A real leak was found and fixed during this work: `httpx` logs the URL as an object, so the first redaction filter missed `?api_token=` on the query-transport fallback | 0 | endpoint + client tests |
+
+Not measured and not claimable from fixtures: real response field names (R1), real ordering (R2), real rate limits (R3), whether unpublished reviews are listed (R5), real revoked-token behaviour (R7), API access on the free plan (R8), real propagation delay (R9, R10). The migration (`supabase/migrations/20261011000001_judgeme_installations.sql`) has been statically checked only (postcondition grammar, BYPASSRLS guard) and never executed against any Postgres.
