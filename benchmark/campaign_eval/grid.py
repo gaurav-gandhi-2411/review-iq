@@ -21,8 +21,16 @@ THETA_M = CampaignParams().theta_mismatch
 MIN_ATTRIBUTED = 3  # campaign reviews that must sit inside the firing window (spec section 5)
 DETECT_GRACE_S = DAY_S  # alert may open up to 24h after the last campaign review
 
-B1_THETAS = np.arange(2.0, 40.0, 1.0)
-B2_THETAS = np.round(np.arange(0.3, 3.0, 0.1), 2)
+# v1 = the grid pre-registered in the spec. v2 = the extension of amendment 7 (lower thresholds,
+# k_min 2), added because v1's loosest corner was still ~10x under the false-alert budget.
+B1_THETAS = {
+    "v1": np.arange(2.0, 40.0, 1.0),
+    "v2": np.concatenate([np.arange(0.0, 4.0, 0.5), np.arange(4.0, 40.0, 1.0)]),
+}
+B2_THETAS = {
+    "v1": np.round(np.arange(0.3, 3.0, 0.1), 2),
+    "v2": np.round(np.arange(0.1, 3.0, 0.1), 2),
+}
 
 
 @dataclass(frozen=True)
@@ -48,17 +56,7 @@ class Grid:
         }
 
 
-def build_grid() -> Grid:
-    rows = list(
-        itertools.product(
-            range(len(SIMS)),
-            (3, 4),
-            (3.0, 4.0, 5.0, 6.0),
-            (2.5, 3.0, 3.5, 4.0),
-            (1.5, 2.0, 3.0),
-            (0, 1),
-        )
-    )
+def _grid_from_rows(rows: list[tuple]) -> Grid:
     cols = list(zip(*rows, strict=True))
     return Grid(
         s_idx=np.array(cols[0]),
@@ -67,7 +65,36 @@ def build_grid() -> Grid:
         theta_r=np.array(cols[3]),
         strong=np.array(cols[4]),
         use_m=np.array(cols[5], dtype=bool),
-    )  # 4*2*4*4*3*2 = 768 combinations
+    )
+
+
+def build_grid(version: str = "v2") -> Grid:
+    """v1: 4*2*4*4*3*2 = 768 rows (pre-registered). v2: 4*3*8*6*3*2 = 3456 rows (amendment 7)."""
+    if version == "v1":
+        k, tb, tr = (3, 4), (3.0, 4.0, 5.0, 6.0), (2.5, 3.0, 3.5, 4.0)
+    else:
+        k = (2, 3, 4)
+        tb = (1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0)
+        tr = (1.5, 2.0, 2.5, 3.0, 3.5, 4.0)
+    rows = itertools.product(range(len(SIMS)), k, tb, tr, (1.5, 2.0, 3.0), (0, 1))
+    return _grid_from_rows(list(rows))
+
+
+def grid_from_params(params: list[dict]) -> Grid:
+    """A sub-grid from explicit parameter dicts (the frozen picks), in the given order."""
+    return _grid_from_rows(
+        [
+            (
+                SIMS.index(p["similarity"]),
+                p["k_min"],
+                p["theta_burst"],
+                p["theta_rating"],
+                p["strong_multiplier"],
+                int(p["use_mismatch"]),
+            )
+            for p in params
+        ]
+    )
 
 
 def detector_alerts(tr: Trace, g: Grid, sel: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
