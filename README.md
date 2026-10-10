@@ -32,13 +32,13 @@ curl -s -X POST https://api.samidhareviews.xyz/demo/extract \
   -d '{"text": "Battery dies in 20 min. Suction is excellent but $200 feels overpriced. Would not buy again."}'
 ```
 
-Want your own key with a private extraction history? Sign up at the landing page — a `riq_live_*` key is provisioned in one click via Supabase magic-link, no credit card required (100 extractions/month free).
+Want your own key with a private extraction history? Sign up at the landing page — a `riq_live_*` key is provisioned in one click via Supabase magic-link, no credit card required (1,000 extractions/month free).
 
 ---
 
 ## Why this exists
 
-Most review analytics tools are black boxes: you get a score with no methodology. Review-IQ takes the opposite approach — every prompt is in the repo, every eval fixture is versioned, and CI breaks if the eval gate fails (see [Eval results](#eval-results) below for the live threshold). Built with Indian DTC brands in mind: Phase 2 adds native Hinglish support that incumbents (Yotpo, Birdeye, Trustpilot Insights) don't offer, measured against 14,552 real Flipkart marketplace reviews (see [Corpus and language scope](#corpus-and-language-scope)). Fully MIT — same code self-hosters run is what the hosted version runs; no feature gates.
+Most review analytics tools are black boxes: you get a score with no methodology. Review-IQ takes the opposite approach — every prompt is in the repo, every eval fixture is versioned, and CI breaks if the eval gate fails (see [Eval results](#eval-results) below for the live threshold). Built with online brands in mind: it handles English and Hinglish, measured against real Flipkart marketplace reviews (see [Corpus and language scope](#corpus-and-language-scope)). Hinglish is a capability, not the pitch: it is a small share of the review samples we drew, and whether it beats a plain LLM prompt is untested (see [the market thesis](docs/research/code-mixed-markets-thesis.md)). Fully MIT — same code self-hosters run is what the hosted version runs; no feature gates.
 
 ---
 
