@@ -38,11 +38,15 @@ evidence for a human moderator to review, never an automated "this is a fake cam
 
 from __future__ import annotations
 
+import math
 import re
 from collections import defaultdict
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any
+
+from app.core.detectors.campaign_signals import CampaignParams, ProductStream, WindowEvidence
 
 # Same aggressive normalization used in benchmark/phase2_campaign/artifact_filter.py -- inlined,
 # see module docstring for why.
@@ -416,3 +420,116 @@ def campaign_reviews_from_rows(rows: list[dict[str, Any]]) -> list[Review]:
         )
         for row in rows
     ]
+
+
+SIGNAL_BURST = "burst"
+SIGNAL_TEMPLATE = "template"
+SIGNAL_RATING = "rating_shift"
+SIGNAL_MISMATCH = "rating_text_mismatch"
+SIGNAL_VERIFIED = "verified_share"
+
+DAY_S = 86400.0
+
+
+# ---- alert rule ---------------------------------------------------------------------------
+
+
+def fired_signals(ev: WindowEvidence, p: CampaignParams) -> tuple[list[str], bool]:
+    """(fired signal names, whether any single signal is beyond the strong multiple)."""
+    fired: list[str] = []
+    strong = False
+    c = p.strong_multiplier
+    if ev.burst is not None and ev.burst >= p.theta_burst:
+        fired.append(SIGNAL_BURST)
+        strong |= ev.burst >= c * p.theta_burst
+    if ev.template_k >= p.k_min:
+        fired.append(SIGNAL_TEMPLATE)
+        strong |= ev.template_k >= math.ceil(c * p.k_min)
+    if ev.rating_z is not None and abs(ev.rating_z) >= p.theta_rating:
+        fired.append(SIGNAL_RATING)
+        strong |= abs(ev.rating_z) >= c * p.theta_rating
+    if p.use_mismatch and ev.mismatch_z is not None and ev.mismatch_z >= p.theta_mismatch:
+        fired.append(SIGNAL_MISMATCH)
+        strong |= ev.mismatch_z >= c * p.theta_mismatch
+    if ev.verified_z is not None and ev.verified_z >= p.theta_verified:
+        fired.append(SIGNAL_VERIFIED)
+        strong |= ev.verified_z >= c * p.theta_verified
+    return fired, strong
+
+
+def is_alert(ev: WindowEvidence, p: CampaignParams) -> tuple[bool, list[str]]:
+    fired, strong = fired_signals(ev, p)
+    return (len(fired) >= 2 or strong), fired
+
+
+@dataclass(frozen=True)
+class Alert:
+    index: int
+    timestamp: float
+    width_hours: int
+    fired: tuple[str, ...]
+    evidence: WindowEvidence
+
+
+def scan_stream(
+    stream: ProductStream, start_index: int = 0, apply_warmup: bool = True
+) -> list[Alert]:
+    """Alerts opened over the stream (cooldown applied), evaluating each arrival from
+    `start_index` and the narrowest window that satisfies the alert rule."""
+    p = stream.p
+    alerts: list[Alert] = []
+    last_t = -math.inf
+    t0 = stream.ts[0] if len(stream) else 0.0
+    for i in range(max(start_index, 0), len(stream)):
+        t = stream.ts[i]
+        if apply_warmup and (i < p.warmup_reviews or t - t0 < p.warmup_days * DAY_S):
+            continue
+        if t - last_t < p.cooldown_days * DAY_S:
+            continue
+        for w in sorted(p.windows_hours):
+            ev = stream.evidence_at(i, w)
+            if ev is None:
+                continue
+            ok, fired = is_alert(ev, p)
+            if ok:
+                alerts.append(Alert(i, t, w, tuple(fired), ev))
+                last_t = t
+                break
+    return alerts
+
+
+# ---- user-facing output (counts, windows, shared text; never a verdict on one review) ------
+
+
+def window_label(hours: int) -> str:
+    if hours % 24 == 0:
+        days = hours // 24
+        return f"{days} day" + ("" if days == 1 else "s")
+    return f"{hours} hours"
+
+
+def build_explanation(ev: WindowEvidence, fired: Sequence[str]) -> str:
+    """Counts, window and shared text only. Names no individual review and gives no verdict."""
+    parts = [
+        f"{ev.n} reviews in the last {window_label(ev.width_hours)}"
+        f" (about {ev.expected:.1f} expected from this product's last 180 days)."
+    ]
+    if SIGNAL_TEMPLATE in fired:
+        parts.append(f"{ev.template_k} of them share near-identical text.")
+    if SIGNAL_RATING in fired and ev.window_mean is not None and ev.history_mean is not None:
+        parts.append(
+            f"Their average rating is {ev.window_mean:.1f} versus {ev.history_mean:.1f} "
+            "over the previous 180 days."
+        )
+    if SIGNAL_MISMATCH in fired:
+        parts.append(
+            f"{ev.mismatch_count} of them have a star rating that points the opposite way "
+            "from the wording."
+        )
+    if SIGNAL_VERIFIED in fired and ev.verified_window_share is not None:
+        parts.append(
+            f"{ev.verified_window_share:.0%} are marked as verified purchases versus "
+            f"{(ev.verified_history_share or 0.0):.0%} earlier."
+        )
+    parts.append("Worth reviewing together.")
+    return " ".join(parts)
