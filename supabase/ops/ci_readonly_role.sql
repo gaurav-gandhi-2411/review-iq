@@ -20,7 +20,8 @@ SELECT (length(:'ro_password') >= 24) AS pw_ok \gset
 \if :pw_ok
 \else
   \echo 'ERROR: CI_READONLY_PASSWORD must be set and >= 24 chars'
-  \quit 1
+  -- \quit exits 0 and would look like success; a failing statement under ON_ERROR_STOP exits 3.
+  DO $$ BEGIN RAISE EXCEPTION 'CI_READONLY_PASSWORD missing or too short'; END $$;
 \endif
 
 SELECT 'CREATE ROLE ci_readonly LOGIN' WHERE NOT EXISTS
