@@ -5,7 +5,7 @@
         --out D:/ml-cache/s23/safety_items.jsonl --manifest reports/labelling/safety/manifest.json
     python -m engine.labelling.safety_panel report --manifest ... --judges reports/labelling/safety/judges \
         --out reports/labelling/safety/panel_report.json --labels reports/labelling/safety/labels.jsonl \
-        --md docs/reports/review-intent-safety-mining.md
+        --md reports/labelling/safety/mining_report.md
 
 The candidate set is ENRICHED by keyword mining: the miner's recall cannot be measured here (only mined items are
 labelled), and any classifier precision measured on this stratum is not a base-rate precision. Items are drawn with
