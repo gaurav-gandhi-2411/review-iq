@@ -11,8 +11,11 @@ Per task (the four core tasks and the beauty/food aspect-sentiment tasks):
 - macro-F1 and per-class F1 (floor 0.60) with 95 percent bootstrap CIs. A class with fewer than 20 sealed positives is
   "insufficient data": it is never given a metric, and a task with fewer than two scored classes gets no macro-F1.
 - the consensus ceiling: share of sealed items that have a label for the task (no coverage claim may exceed it).
-CIs resample ITEMS (seed 42): the corpora carry no product or reviewer ids (manifest split_rule), so the cluster
-bootstrap of Amendment 2 is not possible and the intervals are narrower than a cluster bootstrap would give.
+CIs resample ITEMS (seed 42). Where `--clusters` maps sealed items to product ids (recovered by
+`engine.intent.clusters`) every interval also gets a CLUSTER bootstrap (resample products with replacement, seed 42,
+items weighted by their product's draw count); an item with no product id is its own cluster, so a task whose
+items have no ids is item-level only and says so. Items whose content hash is in the ledger's `sealed_excluded`
+(found in tracked files by the leakage ledger) are dropped from every sealed evaluation.
 """
 
 from __future__ import annotations
@@ -83,6 +86,64 @@ def apply_threshold(
     }  # fmt: skip
 
 
+def drop_excluded(preds: dict[str, dict], manifest: dict, excluded: set[str]) -> int:
+    """Remove ledger-excluded sealed items from every task's test split in place. -> number of items dropped."""
+    gone = {r["id"] for r in manifest["items"] if r["split"] == "test" and r["sha"] in excluded}
+    for d in preds.values():
+        sp = d["splits"]["test"]
+        k = len(d["classes"])
+        probs = np.array(sp["probs"]).reshape(len(sp["ids"]), k)
+        keep = [j for j, i in enumerate(sp["ids"]) if i not in gone]
+        sp["ids"] = [sp["ids"][j] for j in keep]
+        sp["probs"] = probs[keep].tolist()
+    return len(gone)
+
+
+def cluster_cis(
+    y: np.ndarray, pred: np.ndarray, conf: np.ndarray, thrs: dict[str, float], classes: list[str],
+    cl: np.ndarray, n_boot: int,
+) -> dict:  # fmt: skip
+    """Cluster bootstrap CIs: resample clusters with replacement, weight each item by its cluster's draw count.
+
+    cl = cluster label per item (an item with no product id carries a unique label, i.e. is its own cluster)."""
+    k = len(classes)
+    _, inv = np.unique(cl, return_inverse=True)
+    g = int(inv.max()) + 1
+    counts = np.random.default_rng(SEED).multinomial(g, np.full(g, 1.0 / g), size=n_boot)
+    w = counts[:, inv].astype(float)  # (B, n)
+    wt = w.sum(1)
+    support = np.bincount(y, minlength=k)
+    scored = [c for c in range(k) if support[c] >= MIN_POSITIVES]
+    yy, pp = (
+        (y[:, None] == np.arange(k)).astype(float),
+        (pred[:, None] == np.arange(k)).astype(float),
+    )
+    tp, fp, fn = w @ (yy * pp), w @ ((1 - yy) * pp), w @ (yy * (1 - pp))
+    with np.errstate(invalid="ignore", divide="ignore"):
+        f1 = np.where(2 * tp + fp + fn > 0, 2 * tp / np.maximum(2 * tp + fp + fn, 1e-12), 0.0)
+    f1 = np.where(tp + fn > 0, f1, np.nan)
+    pct = lambda v: [_r(x) for x in np.nanpercentile(v, [2.5, 97.5])]  # noqa: E731
+    correct = (y == pred).astype(float)
+    out: dict = {
+        "accuracy_cluster_ci95": pct((w @ correct) / wt),
+        "classes": {classes[c]: {"f1_cluster_ci95": pct(f1[:, c])} for c in scored},
+        "selective": {},
+        "n_clusters": g,
+    }
+    if len(scored) >= 2:
+        out["macro_f1_cluster_ci95"] = pct(np.nanmean(f1[:, scored], axis=1))
+    for name, thr in thrs.items():
+        keep = (conf >= thr).astype(float)
+        ans = w @ keep
+        with np.errstate(invalid="ignore", divide="ignore"):
+            prec = np.where(ans > 0, (w @ (keep * correct)) / np.maximum(ans, 1e-12), np.nan)
+        out["selective"][name] = {
+            "coverage_cluster_ci95": pct(ans / wt),
+            "precision_cluster_ci95": pct(prec) if keep.any() else None,
+        }
+    return out
+
+
 def _f1_matrix(y: np.ndarray, p: np.ndarray, k: int) -> np.ndarray:
     """Per-class F1 for arrays shaped (n,) or (B, n) -> (K,) or (B, K); NaN where the class has no true item."""
     cls = np.arange(k)
@@ -125,9 +186,11 @@ def class_stats(y: np.ndarray, pred: np.ndarray, classes: list[str], n_boot: int
 
 def evaluate_task(
     classes: list[str], val: tuple[np.ndarray, np.ndarray], test: tuple[np.ndarray, np.ndarray],
-    n_boot: int = 1000,
+    n_boot: int = 1000, clusters: np.ndarray | None = None,
 ) -> dict:  # fmt: skip
-    """val/test = (gold class indices, calibrated probabilities (n, K)) over the LABELLED items of each split."""
+    """val/test = (gold class indices, calibrated probabilities (n, K)) over the LABELLED items of each split.
+
+    `clusters` = one label per sealed labelled item (product id; unique per item when unknown) -> cluster CIs."""
     (yv, pv), (yt, pt) = val, test
     if len(yt) < MIN_POSITIVES:
         return {"n_sealed_labelled": len(yt), "insufficient_data": True}
@@ -141,6 +204,25 @@ def evaluate_task(
             "n_validation": len(yv),
             **apply_threshold(correct, conf, thr, target, n_boot),
         }
+    if clusters is not None:
+        thrs = {
+            f"conservative_p{t}": (math.inf if out["selective"][f"conservative_p{t}"]["threshold"] is None
+                                   else out["selective"][f"conservative_p{t}"]["threshold"])
+            for t in TARGETS
+        }  # fmt: skip
+        cc = cluster_cis(yt, pred, conf, thrs, classes, clusters, n_boot)
+        out["cluster"] = {
+            "unit": "products (items without a product id are their own cluster)",
+            "n_items": len(yt), "n_items_with_product_id": int(sum(not str(c).startswith("solo:") for c in clusters)),
+            "n_clusters": cc["n_clusters"],
+        }  # fmt: skip
+        out["accuracy_cluster_ci95"] = cc["accuracy_cluster_ci95"]
+        if "macro_f1_cluster_ci95" in cc:
+            out["macro_f1_cluster_ci95"] = cc["macro_f1_cluster_ci95"]
+        for cname, v in cc["classes"].items():
+            out["classes"][cname].update(v)
+        for name, v in cc["selective"].items():
+            out["selective"][name].update(v)
     oracle = SEL.summarize(correct, conf, n_boot)
     out["selective"]["oracle"] = {
         "label": "ORACLE: best on the sealed set itself, not deployable",
@@ -181,7 +263,11 @@ def slices(ids: list[str], y: np.ndarray, pred: np.ndarray, strata: dict[str, st
 
 
 def evaluate_all(
-    labels: dict, preds: dict[str, dict], strata: dict[str, str], n_boot: int = 1000
+    labels: dict,
+    preds: dict[str, dict],
+    strata: dict[str, str],
+    n_boot: int = 1000,
+    clusters: dict[str, str] | None = None,
 ) -> dict:
     """Per-task results for every task in labels['classes']; a task with no prediction file is flagged."""
     tasks: dict = {}
@@ -191,7 +277,8 @@ def evaluate_all(
             continue
         arr = task_arrays(labels, preds[task], task)
         (_, yv, pv), (ids_t, yt, pt) = arr["val"], arr["test"]
-        res = evaluate_task(list(preds[task]["classes"]), (yv, pv), (yt, pt), n_boot)
+        cl = None if clusters is None else np.array([clusters.get(i, f"solo:{i}") for i in ids_t])
+        res = evaluate_task(list(preds[task]["classes"]), (yv, pv), (yt, pt), n_boot, cl)
         n_sealed = len(preds[task]["splits"]["test"]["ids"])
         res["consensus_ceiling"] = {
             "n_labelled": len(yt), "n_sealed": n_sealed, "fraction": _r(len(yt) / n_sealed),
@@ -216,6 +303,14 @@ def main() -> None:
     ap.add_argument("--pred-dir", required=True, help="train output: pred_*.json and metadata.json")
     ap.add_argument("--out", required=True)
     ap.add_argument("--n-boot", type=int, default=1000)
+    ap.add_argument(
+        "--ledger",
+        default="reports/labelling/ledger.json",
+        help="its sealed_excluded hashes are dropped",
+    )
+    ap.add_argument(
+        "--clusters", help="sealed_clusters.json from engine.intent.clusters: adds cluster CIs"
+    )
     ap.add_argument("--texts", help="private scale.jsonl: enables the TF-IDF baseline")
     ap.add_argument(
         "--judges", nargs="+", help="judge dirs (A, S, B): enables the leave-one-out judges"
@@ -229,15 +324,21 @@ def main() -> None:
         d = json.loads(f.read_text(encoding="utf-8"))
         preds[d["task"]] = d
     strata = {r["id"]: r["stratum"] for r in manifest["items"]}
+    ledger = Path(a.ledger)
+    excluded = set(json.loads(ledger.read_text(encoding="utf-8")).get("sealed_excluded", []))
+    n_dropped = drop_excluded(preds, manifest, excluded)
+    cmap = json.loads(Path(a.clusters).read_text(encoding="utf-8")) if a.clusters else None
     rep = {
         "provenance": {
             "evaluation_commit": _git_sha(),
             "training_metadata": json.loads((pd / "metadata.json").read_text(encoding="utf-8")),
             "artifacts_sha256_16": {p.name: _sha256(p) for p in [lp, mp, *sorted(pd.glob("pred_*.json"))]},
+            "ledger_sealed_excluded": {"file_sha256_16": _sha256(ledger), "n_hashes": len(excluded), "n_sealed_items_dropped": n_dropped},
+            "clusters": None if cmap is None else {"file_sha256_16": _sha256(Path(a.clusters)), "stats": cmap["stats"], "per_stratum": cmap["per_stratum"]},
             "label_basis": "silver: sealed labels are four-judge consensus (Amendment 5), not human truth",
         },
-        "n_boot": a.n_boot, "seed": SEED, "bootstrap_unit": "items (no product ids in the corpora)",
-        "tasks": evaluate_all(labels, preds, strata, a.n_boot),
+        "n_boot": a.n_boot, "seed": SEED, "bootstrap_unit": "items; plus products (cluster bootstrap) where --clusters maps an item to a product id",
+        "tasks": evaluate_all(labels, preds, strata, a.n_boot, cmap["clusters"] if cmap else None),
     }  # fmt: skip
     if a.texts or a.judges:
         from engine.intent.baselines import attach_baselines  # lazy: baselines imports this module
