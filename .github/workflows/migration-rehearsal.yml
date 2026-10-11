@@ -146,7 +146,7 @@ jobs:
           set -euo pipefail
           uv run python supabase/ci/rehearse_pending.py pending > pending.txt
           uv run python supabase/ci/rehearse_pending.py counts counts_pre.json
-          if [ -s pending.txt ]; then
+          if grep -q . pending.txt; then
             echo "Pending migrations (in this checkout, not in the restored ledger):"
             sed 's/^/  /' pending.txt
           else
@@ -173,7 +173,7 @@ jobs:
       - name: Rehearse rollback via the migrations' undo cases
         run: |
           set -euo pipefail
-          if [ ! -s pending.txt ]; then
+          if ! grep -q . pending.txt; then
             echo "No pending migrations: nothing to roll back (trivial pass)."
             exit 0
           fi
