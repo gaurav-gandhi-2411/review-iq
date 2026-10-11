@@ -119,7 +119,7 @@ def scan_stream(
 
 
 def window_label(hours: int) -> str:
-    if hours % 24 == 0:
+    if hours >= 48 and hours % 24 == 0:
         days = hours // 24
         return f"{days} day" + ("" if days == 1 else "s")
     return f"{hours} hours"
