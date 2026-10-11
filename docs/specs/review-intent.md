@@ -322,3 +322,39 @@ is "measurable now" if it has at least 30 consensus items across random plus min
 corpora and excluding every id in the ledger; the sealed split, leakage ledger, metrics and LLM comparison are exactly
 Amendment 2, unchanged. Panel consensus is the label; items without consensus are the abstain set. Production reviews are not
 used.
+
+### Amendment 5 (2026-10-11, S22 M2e): two-judge training labels, four-judge sealed test, ~5,000 items; registered before any scale labelling
+
+Re-pilot 2 (Amendment 4) found no PASS and five USABLE-WITH-CAVEAT tasks and measured cost: 14.4 GPU-seconds per item for
+four judges, 7.1 for two judges plus a tiebreaker on disagreement. GG accepted the re-pilot and set the rules below.
+
+**Labelling rule.**
+- TRAINING and VALIDATION labels: judges `llama3.1` and `qwen3` label every item. For each task separately, if both parse and
+  agree, that value is the label. If they disagree (or one failed to parse) and `mistral` was run on the item, the label is
+  mistral's value when it equals one of the two, otherwise the item is in the abstain set for that task. Mistral runs on an
+  item only if at least one task disagrees (one call per item, all tasks). Gemma is not run on training items.
+- SEALED TEST SET (15 percent of items, drawn by the id-hash split of Amendment 2): all four judges, label by the existing
+  consensus rule (`consensus_label`: a clear majority; otherwise abstain). No human audit is part of the pipeline, by GG's
+  standing rule that no workflow blocks on him labelling. The four-judge panel is the check on the training-label rule.
+- Consequence stated now: training labels are SILVER from a cheaper rule than the test labels. Agreement of the two-judge rule
+  with the four-judge rule is measured on the sealed set and reported, not assumed. That comparison is not independent
+  (the two-judge labels are a subset of the four-judge votes), so it is reported as a consistency check only.
+
+**Size.** About 5,000 items (the re-pilot 2 sample-size rule gives about 4,700 for 138 `needs_action` test positives at a
+prevalence of 0.194 and a 15 percent test share). One pass labels every task at once. Stratified by language and category as
+Amendment 4 specified, drawn fresh, excluding every id in the ledger and every earlier manifest. Hinglish is capped by the
+corpus (393 rows, 225 used in pilots) and is reported as such.
+
+**Gate unchanged.** PASS and USABLE-WITH-CAVEAT thresholds are those of section 5, applied to the four-judge agreement
+statistics measured on the sealed set. Supplementary, never used to redefine PASS: Gwet's AC1 and raw percent agreement for
+skewed binaries (`needs_action` is about 80 percent "no", where alpha and kappa are known to understate agreement).
+
+**Classes without data.** `delivery` and `service` had 4 consensus items each in re-pilot 2. They are reported as
+"insufficient data" (fewer than 20 sealed-test positives) until a licensed shopping-app review source fills them; the source,
+its licence text and expected per-class yield are recorded in a dated report before any of its rows are labelled.
+
+**Evaluation, as Amendment 2, plus.** The classifier is `intfloat/multilingual-e5-base` with one head per task. On the sealed
+four-judge set: precision at coverage with the CONSERVATIVE rule (the threshold is chosen on validation as the lowest
+confidence whose Wilson lower bound for precision reaches the target; the oracle threshold is also reported and labelled as
+oracle), macro-F1, per-class F1 with the Amendment 2 floor, the consensus ceiling, bootstrap and Wilson intervals, and plain-
+prompted LLMs at matched coverage. Anything not in this list is exploratory and labelled so.
