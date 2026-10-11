@@ -1,4 +1,4 @@
-"""Render docs/reports/review-intent-model.md from an `engine.intent.evaluate` JSON. No number is typed by hand.
+"""Render reports/intent/model_report.md from an `engine.intent.evaluate` JSON. No number is typed by hand.
 
     python -m engine.intent.report reports/intent/eval_run1.json > docs/reports/review-intent-model.md
     python -m engine.intent.report --run2 reports/intent/eval_run2.json --run1 reports/intent/eval_run1.json \
