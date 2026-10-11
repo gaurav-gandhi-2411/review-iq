@@ -47,22 +47,19 @@ CACHE_DIR = Path(r"D:\ml-cache\campaign_eval")
 class Selection:
     """Which grid rows / baseline thresholds to evaluate (the sealed run passes only frozen ones)."""
 
-    det: np.ndarray
+    grid: Grid
     b1: np.ndarray
     b2: np.ndarray
 
 
-def full_selection() -> Selection:
-    return Selection(np.arange(len(build_grid())), B1_THETAS, B2_THETAS)
+def full_selection(version: str = "v2") -> Selection:
+    return Selection(build_grid(version), B1_THETAS[version], B2_THETAS[version])
 
 
-def _alerts_for_all(
-    tr: Trace, grid: Grid, sel: Selection
-) -> dict[str, tuple[np.ndarray, np.ndarray]]:
+def _alerts_for_all(tr: Trace, sel: Selection) -> dict[str, tuple[np.ndarray, np.ndarray]]:
     out: dict[str, tuple[np.ndarray, np.ndarray]] = {}
-    parts = [
-        detector_alerts(tr, grid, sel.det[i : i + CHUNK]) for i in range(0, len(sel.det), CHUNK)
-    ]
+    rows = np.arange(len(sel.grid))
+    parts = [detector_alerts(tr, sel.grid, rows[i : i + CHUNK]) for i in range(0, len(rows), CHUNK)]
     if parts:
         out["det"] = (np.concatenate([p[0] for p in parts]), np.concatenate([p[1] for p in parts]))
     if len(sel.b1):
@@ -84,8 +81,7 @@ def evaluate_clean(stream: Stream, sel: Selection, cache: dict) -> dict:
     ps = ProductStream(stream.reviews(), EVAL_PARAMS, shingle_cache=cache)
     pts, months = clean_points(stream)
     tr = trace_stream(ps, pts)
-    grid = build_grid()
-    fa = {k: clean_false_alerts(tr, a) for k, (a, _) in _alerts_for_all(tr, grid, sel).items()}
+    fa = {k: clean_false_alerts(tr, a) for k, (a, _) in _alerts_for_all(tr, sel).items()}
     return {"months": months, "fa": fa, "n_points": len(pts)}
 
 
@@ -113,9 +109,8 @@ def evaluate_injection(stream: Stream, cfg: CampaignConfig, sel: Selection, cach
     t_inj, seed = injection_time(stream, cfg)
     ps, camp_mask, camp_ts, points = excerpt_stream(stream, cfg, t_inj, seed, cache)
     tr = trace_stream(ps, points, camp_mask)
-    grid = build_grid()
     out: dict = {"config_id": cfg.config_id, "size": cfg.size, "type": cfg.type_id, "t_inj": t_inj}
-    for name, (any_alert, attr) in _alerts_for_all(tr, grid, sel).items():
+    for name, (any_alert, attr) in _alerts_for_all(tr, sel).items():
         det, ttd_n, ttd_h = injected_outcomes(tr, any_alert, attr, camp_ts)
         out[name] = {"det": det, "ttd_n": ttd_n, "ttd_h": ttd_h}
     return out

@@ -19,6 +19,7 @@ from benchmark.campaign_eval.grid import (
     COOLDOWN_S,
     build_grid,
     detector_alerts,
+    grid_from_params,
     injected_outcomes,
     open_alerts,
 )
@@ -41,11 +42,14 @@ def _stream(n: int = 500, days: float = 500.0, seed: int = 1) -> Stream:
     )
 
 
-def test_grid_has_768_rows_and_params_roundtrip() -> None:
-    g = build_grid()
-    assert len(g) == 768
+def test_grids_have_the_registered_sizes_and_params_roundtrip() -> None:
+    assert len(build_grid("v1")) == 768  # pre-registered
+    g = build_grid("v2")
+    assert len(g) == 3456  # amendment 7
+    sub = grid_from_params([g.params(5), g.params(2000)])
+    assert sub.params(0) == g.params(5) and sub.params(1) == g.params(2000)
     p = g.params(0)
-    assert p["similarity"] in SIMS and p["k_min"] in (3, 4)
+    assert p["similarity"] in SIMS and p["k_min"] in (2, 3, 4)
 
 
 def test_vectorised_rule_equals_production_is_alert_point_for_point() -> None:
