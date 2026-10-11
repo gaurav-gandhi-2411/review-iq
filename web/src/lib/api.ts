@@ -193,7 +193,8 @@ export interface Review {
   buy_again: boolean | null
   review_length_chars: number | null
   confidence: number | null
-  created_at: string
+  created_at: string       // when Samidha analysed it; the axis every dashboard window uses
+  review_date?: string | null  // when the customer wrote it; nullable, absent for most uploads
 }
 
 export interface ReviewsResponse {
