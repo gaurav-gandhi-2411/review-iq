@@ -1,9 +1,8 @@
-"""Unit tests for app.core.detectors.campaign -- the production fork.
+"""Unit tests for app.core.detectors.campaign: the alert rule, output shape and corpus scan.
 
-Not a re-run of the synthetic stress-test validation (already proven in
-benchmark/phase2_synthetic/detectors/, out of scope here). These tests only prove: (1) the
-Postgres-row adapter maps fields correctly and confirms the reviewer_id stub's documented
-effect, (2) the ported algorithm still runs end-to-end after the port.
+Signal arithmetic is covered in test_campaign_signals.py; wording rules in
+test_campaign_wording.py. The performance claim is NOT made here: it comes from the
+pre-registered evaluation in benchmark/campaign_eval (docs/specs/campaign-detection.md).
 """
 
 from __future__ import annotations
@@ -17,150 +16,13 @@ from app.core.detectors.campaign import (
     SIGNAL_TEMPLATE,
     CampaignParams,
     ProductStream,
+    Review,
     WindowEvidence,
     campaign_reviews_from_rows,
     is_alert,
     scan_corpus,
     scan_stream,
 )
-from app.core.detectors.campaign_signals import Review
-
-_NOW = datetime(2026, 6, 1, tzinfo=UTC)
-
-
-def test_campaign_reviews_from_rows_maps_fields() -> None:
-    rows = [
-        {
-            "id": "abc123",
-            "product": "Widget Pro",
-            "review_text": "Great product, highly recommend",
-            "review_date": _NOW,
-        }
-    ]
-
-    result = campaign_reviews_from_rows(rows)
-
-    assert len(result) == 1
-    review = result[0]
-    assert review.review_id == "abc123"
-    assert review.product_id == "Widget Pro"
-    assert review.timestamp == _NOW
-    assert review.text == "Great product, highly recommend"
-    # The documented stub: reviewer_id = the review's own id, guaranteed unique per review.
-    assert review.reviewer_id == "abc123"
-
-
-def test_campaign_reviews_from_rows_handles_missing_product_and_text() -> None:
-    rows = [{"id": "x", "product": None, "review_text": None, "review_date": _NOW}]
-
-    result = campaign_reviews_from_rows(rows)
-
-    assert result[0].product_id == "unknown product"
-    assert result[0].text == ""
-
-
-def test_reviewer_id_stub_forces_reviewer_concentration_to_zero() -> None:
-    """Confirms the documented mechanism directly: even 10 reviews landing in the exact same
-    burst window score reviewer_concentration_score=0.0, because campaign_reviews_from_rows
-    stubs a unique reviewer_id per review -- this is a pure recall reduction, never a
-    false-positive risk (a real coordinated-reviewer-identity campaign would be UNDER-detected,
-    not falsely flagged)."""
-    rows = [
-        {
-            "id": f"r{i}",
-            "product": "Widget",
-            "review_text": f"unique organic text number {i} about this product",
-            "review_date": _NOW + timedelta(hours=i),
-        }
-        for i in range(10)
-    ]
-
-    reviews = campaign_reviews_from_rows(rows)
-    flags = scan_corpus(reviews)
-
-    # Distinct, non-duplicate text + stubbed-unique reviewer_id -> no signal on either axis ->
-    # correctly not flagged at all (this specific case), proving the stub doesn't manufacture
-    # a false concentration signal.
-    assert flags == []
-
-
-def test_scan_corpus_smoke_after_port_catches_text_based_coordination() -> None:
-    """Hand-built burst: many reviews, unique-per-review reviewer_id (as production will
-    always provide), but near-identical long TEXT within a tight timing window. Proves the
-    port (import path, algorithm execution) still catches text-based coordination -- the one
-    signal that survives the reviewer_id stub -- not a re-derivation of the stress-test numbers.
-    """
-    random.seed(11)
-    base = _NOW - timedelta(days=60)
-    rows = [
-        {
-            "id": f"base-{i}",
-            "product": "Widget",
-            "review_text": f"baseline unique review number {i} about the widget",
-            "review_date": base + timedelta(days=random.uniform(0, 50)),
-        }
-        for i in range(15)
-    ]
-    template = (
-        "This product exceeded my expectations completely and arrived very quickly in "
-        "perfect condition"
-    )
-    for i in range(8):
-        rows.append(
-            {
-                "id": f"burst-{i}",
-                "product": "Widget",
-                "review_text": template,
-                "review_date": _NOW + timedelta(hours=i * 2),
-            }
-        )
-
-    flags = scan_corpus(campaign_reviews_from_rows(rows))
-
-    assert len(flags) == 1
-    flag = flags[0]
-    assert flag.product_id == "Widget"
-    assert flag.confidence > 0.0
-    assert flag.evidence["reviewer_concentration_score"] == 0.0, (
-        "reviewer signal must be exactly 0 given the stub -- text_dup_score is the only "
-        "possible driver"
-    )
-    assert flag.evidence["text_dup_score"] > 0.0
-
-
-def test_flag_confidence_is_not_rounded_before_threshold_comparisons() -> None:
-    """S17 X5b: CampaignFlag used to carry round(confidence, 4), so an exact 0.49996 (below the
-    0.5 fake-campaign alert threshold) compared as 0.5 and alerted. Full precision is kept on the
-    flag; only to_dict() rounds for display."""
-    from unittest.mock import patch
-
-    from app.core.detectors import campaign as cp
-
-    reviews = [
-        cp.Review(
-            review_id=f"r{i}",
-            product_id="Widget",
-            reviewer_id=f"u{i}",
-            timestamp=_NOW + timedelta(hours=i),
-            text=f"text {i}",
-        )
-        for i in range(3)
-    ]
-    window = cp.BurstWindow(
-        start=_NOW,
-        end=_NOW + timedelta(hours=cp.BURST_HOURS),
-        reviews=reviews,
-        ratio_vs_baseline=9.0,
-    )
-    with patch.object(cp, "find_best_burst_window", return_value=(window, 0.49996, 0.2, 0.2, 0.0)):
-        flag = cp.scan_product("Widget", reviews, {})
-
-    assert flag is not None
-    assert flag.confidence < 0.5
-    assert flag.to_dict()["confidence"] == 0.5  # display rounding unchanged
-
-
-# ---- alert rule (new review-pattern detector) ----
 
 T0 = datetime(2024, 1, 1, tzinfo=UTC)
 VOCAB = [f"word{k}x" for k in range(400)]
@@ -266,3 +128,25 @@ def test_works_without_ratings() -> None:
     )
     alerts = scan_stream(s)
     assert alerts and SIGNAL_RATING not in alerts[0].fired
+
+
+def test_scan_corpus_groups_by_product_and_respects_since() -> None:
+    reviews = _background("A") + _campaign("A", 12, 6, 1, True) + _background("B", n=150, days=150)
+    flags = scan_corpus(reviews)
+    assert [f.product_id for f in flags] == ["A"]
+    assert scan_corpus(reviews, since=T0 + timedelta(days=400)) == []
+    d = flags[0].to_dict()
+    assert d["review_count"] >= 5 and d["signals_fired"] and d["explanation"]
+    assert d["evidence"]["window"]["start"] < d["evidence"]["window"]["end"]
+    assert set(d["evidence"]["near_identical_review_ids"]) <= set(d["evidence"]["review_ids"])
+
+
+def test_rows_adapter_maps_fields_and_tolerates_missing_ones() -> None:
+    now = T0
+    rows = [
+        {"id": "a", "product": "Widget", "review_text": "Great", "review_date": now, "rating": 4},
+        {"id": "b", "product": None, "review_text": None, "review_date": now},
+    ]
+    r = campaign_reviews_from_rows(rows)
+    assert (r[0].review_id, r[0].product_id, r[0].rating, r[0].verified) == ("a", "Widget", 4, None)
+    assert (r[1].product_id, r[1].text, r[1].rating) == ("unknown product", "", None)
