@@ -121,6 +121,13 @@ def scan_repo(sealed: set[str]) -> list[tuple[str, str]]:
     return hits
 
 
+def near_hits() -> set[str]:
+    """Sealed hashes with a near-duplicate or quoted copy in a tracked file (engine.labelling.leakage_neardup)."""
+    from engine.labelling import leakage_neardup as nd
+
+    return {h for _, h, _ in nd.scan(json.loads(nd.FP.read_text(encoding="utf-8")))}
+
+
 def check() -> list[str]:
     problems: list[str] = []
     ledger = json.loads(LEDGER.read_text(encoding="utf-8"))
@@ -135,7 +142,7 @@ def check() -> list[str]:
     expected = build_ledger()["entries"]
     if expected != ledger["entries"]:
         problems.append("ledger entries are stale: run `build`")
-    leaked = {h for _, h in scan_repo(sealed)}
+    leaked = {h for _, h in scan_repo(sealed)} | near_hits()
     if unrecorded := leaked - set(ledger["sealed_excluded"]):
         problems.append(
             f"(d) {len(unrecorded)} sealed texts found in tracked files and not excluded"
@@ -151,7 +158,7 @@ def main() -> int:
     cmd = ap.parse_args().cmd
     if cmd == "build":
         LEDGER.parent.mkdir(parents=True, exist_ok=True)
-        found = {h for _, h in scan_repo(sealed_hashes())}
+        found = {h for _, h in scan_repo(sealed_hashes())} | near_hits()
         LEDGER.write_text(json.dumps(build_ledger(found), indent=1) + "\n", encoding="utf-8")
         print(f"{len(found)} sealed items found in tracked files: excluded from sealed evaluation")
         print(f"wrote {LEDGER}")
