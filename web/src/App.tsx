@@ -70,7 +70,7 @@ function AuthRouter() {
           />
         )}
         <Route path="/upload" element={session ? <UploadPage /> : <Navigate to="/" replace />} />
-        <Route path="/dashboard" element={session ? <DashboardPage /> : <Navigate to="/" replace />} />
+        <Route path="/dashboard" element={session ? <DashboardPage userId={session.user.id} /> : <Navigate to="/" replace />} />
         <Route path="/reviews" element={session ? <ReviewsPage /> : <Navigate to="/" replace />} />
         <Route path="/reviews/:reviewHash" element={session ? <ReviewDetailPage /> : <Navigate to="/" replace />} />
         <Route path="/keys" element={session ? <ApiKeysPage /> : <Navigate to="/" replace />} />
