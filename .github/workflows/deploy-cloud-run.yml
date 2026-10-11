@@ -114,6 +114,7 @@ jobs:
             --image="${{ env.IMAGE_REPO }}:${{ steps.image.outputs.tag }}" \
             --region="${{ env.REGION }}" \
             --project="${{ env.PROJECT }}" \
+            --update-env-vars="GIT_SHA=${{ github.sha }}" \
             --no-traffic \
             --format="value(status.latestReadyRevisionName)" > revision.txt
           echo "revision=$(cat revision.txt)" >> "$GITHUB_OUTPUT"
@@ -156,7 +157,8 @@ jobs:
           gcloud run deploy review-iq-admin \
             --image="${{ env.IMAGE_REPO }}:${{ steps.image.outputs.tag }}" \
             --region="${{ env.REGION }}" \
-            --project="${{ env.PROJECT }}"
+            --project="${{ env.PROJECT }}" \
+            --update-env-vars="GIT_SHA=${{ github.sha }}"
 
       - name: Verify deploy provenance (both services trace to this commit on main)
         run: uv run python scripts/check_cloud_run_deploy_is_from_main.py
