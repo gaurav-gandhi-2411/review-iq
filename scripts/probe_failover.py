@@ -7,9 +7,9 @@ the probe is not a fix" — this script is that probe. It makes REAL live calls 
 mocks, no cassettes) against both failover paths on a fixed cadence and fails LOUDLY,
 naming exactly which path broke, instead of silently degrading.
 
-Two paths exercised, independently of each other and of the primary Groq path:
-  1. Gemini fallback  — the demo/free-tier path's failover (`app.core.llm._call_gemini`).
-  2. SecondaryProvider — the org-key path's ONLY failover today (OpenRouter, ZDR-only).
+One path is exercised, independently of the primary Groq path:
+  SecondaryProvider — the ONLY failover (OpenRouter, ZDR-only). The Gemini fallback was
+  retired in S17 (ADR 0035), so there is no longer a Gemini probe.
 
 Each path either returns a valid `ReviewExtractionLLMOutput` or the probe records it
 as a hard failure. Exit code is non-zero if either path fails — this is what should
@@ -19,7 +19,7 @@ Usage:
     uv run python scripts/probe_failover.py
     uv run python scripts/probe_failover.py --slack-webhook "$SLACK_WEBHOOK_URL"
 
-Cost: 2 tiny live calls per invocation (~150-250 tokens total). At one nightly run,
+Cost: 1 tiny live call per invocation (~150-250 tokens total). At one nightly run,
 this is a few hundred tokens/month — negligible against both providers' free/low
 tiers (see PLAN.md Section F entry for the $/month estimate).
 
@@ -30,19 +30,17 @@ Session 15c amendment (D4, GG decision 2026-09-20) -- three-state result per pat
   NOT_CONFIGURED  the secret/var is absent, so the path is UNPROTECTED and UNTESTED.
                   Never printed or counted as PASS.
 
-GG only configures GEMINI_API_KEY; the OpenRouter/secondary path is deliberately left
-unconfigured. Before this amendment an unconfigured path was a plain FAIL, so the job was
+Historical context (pre-S17): GG only configured GEMINI_API_KEY and the OpenRouter/secondary
+path was deliberately left unconfigured. Before this amendment an unconfigured path was a plain FAIL, so the job was
 red every night and the signal was useless; a silent skip would be just as useless. So an
 unconfigured path is instead always VISIBLE -- on every run it produces (1) a
 `[NOT CONFIGURED]` console line, (2) a `::warning::` annotation, (3) a row in
 $GITHUB_STEP_SUMMARY -- and its effect on the exit code is an explicit, reviewable choice:
 
-  FAILOVER_ACKNOWLEDGED_UNCONFIGURED  comma/space-separated path names (`gemini`,
-      `secondary`) whose absence is a deliberate decision (set in failover-probe.yml).
+  FAILOVER_ACKNOWLEDGED_UNCONFIGURED  comma/space-separated path names (`secondary`) whose absence is a deliberate decision (set in failover-probe.yml).
 
 Exit code: 0 only if no path FAILed AND every NOT_CONFIGURED path is acknowledged.
-Exit 1 if any path FAILed, or any NOT_CONFIGURED path is NOT acknowledged (e.g. a primary
-GEMINI_API_KEY that was never set or was deleted). Acknowledged-but-unconfigured still
+Exit 1 if any path FAILed, or any NOT_CONFIGURED path is NOT acknowledged (e.g. a failover key that was never set or was deleted). Acknowledged-but-unconfigured still
 prints the warning/summary row every run; acknowledgement only stops it failing the job.
 
 Machine-readable output: the last stdout line is `PROBE_SUMMARY {json}` with
@@ -109,37 +107,6 @@ async def _build_probe_prompt() -> str:
     sanitized, _flagged = sanitize(_PROBE_REVIEW_TEXT)
     wrapped = wrap_for_llm(sanitized)
     return build_prompt(wrapped, "en")
-
-
-async def probe_gemini() -> ProbeResult:
-    """Exercise the Gemini fallback path (demo/free-tier failover) with a real live call."""
-    from app.core.config import get_settings
-    from app.core.llm import _call_gemini
-    from app.core.schemas import ReviewExtractionLLMOutput
-
-    settings = get_settings()
-    if not settings.gemini_api_key:
-        return ProbeResult("gemini", ProbeState.NOT_CONFIGURED, 0, "GEMINI_API_KEY absent")
-
-    prompt = await _build_probe_prompt()
-    t0 = time.monotonic()
-    try:
-        extraction, tokens_in, tokens_out = await _call_gemini(prompt)
-    except Exception as exc:  # noqa: BLE001 -- any failure here is a probe finding, not a crash
-        latency_ms = int((time.monotonic() - t0) * 1000)
-        return ProbeResult("gemini", ProbeState.FAIL, latency_ms, f"{type(exc).__name__}: {exc}")
-    latency_ms = int((time.monotonic() - t0) * 1000)
-
-    if not isinstance(extraction, ReviewExtractionLLMOutput):
-        return ProbeResult(
-            "gemini", ProbeState.FAIL, latency_ms, "response did not parse to expected schema"
-        )
-    return ProbeResult(
-        "gemini",
-        ProbeState.PASS,
-        latency_ms,
-        f"model={settings.gemini_model} tokens_in={tokens_in} tokens_out={tokens_out}",
-    )
 
 
 async def probe_secondary() -> ProbeResult:
@@ -305,9 +272,8 @@ def _notify_slack(webhook_url: str, blocking: list[ProbeResult]) -> None:
 
 
 async def run_probe() -> list[ProbeResult]:
-    """Run both failover-path probes concurrently and return their results."""
-    gemini_result, secondary_result = await asyncio.gather(probe_gemini(), probe_secondary())
-    return [gemini_result, secondary_result]
+    """Run the failover-path probes and return their results (today: the secondary path only)."""
+    return [await probe_secondary()]
 
 
 def main() -> int:

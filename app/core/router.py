@@ -2,7 +2,7 @@
 
 Called by extract_with_llm when enable_tiered_routing=True.
 Returns the extraction result or raises RuntimeError on Groq exhaustion
-(caller then falls back to secondary / Gemini / 503).
+(caller then falls back to secondary / 503).
 
 Graceful degradation: when the LARGE model fails specifically due to a quota /
 rate-limit / TPD error, the router returns the small-model result with
@@ -106,7 +106,6 @@ async def route_extraction(
     user_prompt: str,
     system_prompt: str,
     *,
-    allow_gemini_fallback: bool,
     settings: Settings,
 ) -> tuple[ReviewExtractionLLMOutput, str, int, int, bool, bool]:
     """Route a single extraction through the tiered model selection policy.
@@ -114,7 +113,6 @@ async def route_extraction(
     Args:
         user_prompt: The fully formatted prompt (includes the review text).
         system_prompt: The system instruction string.
-        allow_gemini_fallback: Forwarded from extract_with_llm; False on org-key path.
         settings: Application settings (injected to avoid repeated lru_cache calls).
 
     Returns:
@@ -124,7 +122,7 @@ async def route_extraction(
         response falls back to the small-model result rather than raising.
 
     Raises:
-        RuntimeError: When Groq is fully exhausted (caller falls back to secondary/Gemini).
+        RuntimeError: When Groq is fully exhausted (caller falls back to secondary).
     """
     # Language detection — runs on the prompt which embeds the review text.
     lang = detect_language(user_prompt)
@@ -135,8 +133,7 @@ async def route_extraction(
         api_key=settings.groq_api_key,
         timeout=settings.llm_timeout_seconds,
     )
-    if not allow_gemini_fallback:
-        assert_privacy_safe(large_provider)
+    assert_privacy_safe(large_provider)
 
     if initial_tier == "large":
         # Defensive branch: choose_tier currently always returns "small", so this
@@ -153,7 +150,7 @@ async def route_extraction(
             if _is_quota_error(exc):
                 # Large quota hit on the direct-large path: no small result exists,
                 # so we cannot degrade gracefully — propagate and let the caller
-                # fall back to secondary / Gemini / 503.
+                # fall back to secondary / 503.
                 log.warning(
                     "router.large_quota_error_no_small_fallback",
                     lang=lang,
@@ -181,8 +178,7 @@ async def route_extraction(
         api_key=settings.groq_api_key,
         timeout=settings.llm_timeout_seconds,
     )
-    if not allow_gemini_fallback:
-        assert_privacy_safe(small_provider)
+    assert_privacy_safe(small_provider)
 
     small_tin = small_tout = 0
     extraction: ReviewExtractionLLMOutput | None = None
@@ -254,7 +250,7 @@ async def route_extraction(
             ROUTER_TIER_TOKENS_IN.labels(tier="small").inc(small_tin)
             return extraction, settings.groq_model_small, small_tin, small_tout, True, True
         # Non-quota large failure, or quota with no valid small result: propagate
-        # so the caller can try secondary / Gemini / 503.
+        # so the caller can try secondary / 503.
         raise
 
     large_extraction = _parse_response(raw)

@@ -1,4 +1,4 @@
-"""LLM client — Groq (primary) + Gemini (fallback) with Pydantic validation.
+"""LLM client — Groq (primary) + OpenRouter ZDR-only (secondary) with Pydantic validation.
 
 Internal plumbing uses GroqProvider from the provider abstraction layer.
 The external extract_with_llm signature is unchanged from v0.4.0.
@@ -53,36 +53,6 @@ def _parse_response(raw: str) -> ReviewExtractionLLMOutput:
     return ReviewExtractionLLMOutput.model_validate(json.loads(text))
 
 
-async def _call_gemini(user_prompt: str) -> tuple[ReviewExtractionLLMOutput, int, int]:
-    """Call Gemini 2.0 Flash and parse the response.
-
-    Returns (extraction, tokens_in, tokens_out).
-    NEVER called on the v2/org-key path — Gemini free tier trains on inputs.
-    """
-    from google import genai
-    from google.genai import types
-
-    settings = get_settings()
-    client = genai.Client(api_key=settings.gemini_api_key)
-    response = await client.aio.models.generate_content(
-        model=settings.gemini_model,
-        contents=user_prompt,
-        config=types.GenerateContentConfig(
-            system_instruction=_SYSTEM_PROMPT,
-            response_mime_type="application/json",
-            temperature=0.0,
-        ),
-    )
-    meta = getattr(response, "usage_metadata", None)
-    if meta:
-        tokens_in = getattr(meta, "prompt_token_count", 0) or 0
-        tokens_out = getattr(meta, "candidates_token_count", 0) or 0
-    else:
-        log.warning("llm.missing_token_counts", provider="gemini")
-        tokens_in, tokens_out = 0, 0
-    return _parse_response(response.text or ""), tokens_in, tokens_out
-
-
 def _build_secondary(settings: Any) -> SecondaryProvider | GroqProvider:
     """Secondary failover backend: OpenRouter (default) or a second Groq account.
 
@@ -104,22 +74,18 @@ async def extract_with_llm(
     user_prompt: str,
     *,
     model_hint: str | None = None,
-    allow_gemini_fallback: bool = True,
 ) -> tuple[ReviewExtractionLLMOutput, str, int, int, int, bool]:
     """Extract a review using the LLM pipeline with optional tiered routing and failover.
 
     Args:
         user_prompt: Formatted prompt string (review wrapped in delimiters).
-        model_hint: Override to force "groq" or "gemini" (for testing).
-        allow_gemini_fallback: When False, raises RuntimeError instead of calling
-            Gemini on Groq failure. Must be False on the v2/org-key path — Gemini
-            free tier trains on inputs and is unacceptable for client data.
+        model_hint: Override to force "groq" (skips the secondary failover; for testing).
 
     Returns:
         Tuple of (parsed extraction, model name, latency_ms, tokens_in, tokens_out, degraded).
         ``degraded`` is True when the large model was quota-capped during escalation
         and the response was served from the small-model result.  Always False on the
-        non-tiered (Groq primary, secondary, Gemini) paths.
+        non-tiered (Groq primary, secondary) paths.
 
     Raises:
         RuntimeError: When all providers fail.
@@ -134,7 +100,6 @@ async def extract_with_llm(
             extraction, model, tokens_in, tokens_out, _escalated, degraded = await route_extraction(
                 user_prompt,
                 _SYSTEM_PROMPT,
-                allow_gemini_fallback=allow_gemini_fallback,
                 settings=settings,
             )
             latency_ms = int((time.monotonic() - t0) * 1000)
@@ -152,21 +117,16 @@ async def extract_with_llm(
             log.warning("llm.tiered_groq_exhausted_falling_back")
             FAILOVER_TOTAL.labels(from_provider="groq_tiered").inc()
             _tiered_failed = True
-            # Fall through to secondary / Gemini / RuntimeError below.
+            # Fall through to secondary / RuntimeError below.
 
     # --- Groq primary (routing OFF or model_hint="groq") ---
-    if (
-        model_hint != "gemini"
-        and settings.groq_api_key
-        and (not settings.enable_tiered_routing or model_hint == "groq")
-    ):
+    if settings.groq_api_key and (not settings.enable_tiered_routing or model_hint == "groq"):
         groq_provider = GroqProvider(
             model=settings.groq_model,
             api_key=settings.groq_api_key,
             timeout=settings.llm_timeout_seconds,
         )
-        if not allow_gemini_fallback:
-            assert_privacy_safe(groq_provider)
+        assert_privacy_safe(groq_provider)
 
         api_error_attempts = 0
         for attempt in range(settings.llm_max_retries + 1):
@@ -208,7 +168,7 @@ async def extract_with_llm(
 
     # --- Secondary failover (always-on when configured) ---
     if (
-        model_hint not in ("groq", "gemini")
+        model_hint != "groq"
         and settings.secondary_provider_api_key
         and settings.secondary_provider_model
     ):
@@ -243,22 +203,5 @@ async def extract_with_llm(
             raise
         except Exception as exc:  # noqa: BLE001
             log.error("llm.secondary_failed", error=str(exc))
-
-    # --- Gemini fallback (disabled on v2/org-key path) ---
-    if allow_gemini_fallback and model_hint != "groq" and settings.gemini_api_key:
-        try:
-            result, tokens_in, tokens_out = await _call_gemini(user_prompt)
-            latency_ms = int((time.monotonic() - t0) * 1000)
-            log.info(
-                "llm.extracted",
-                provider="gemini",
-                model=settings.gemini_model,
-                latency_ms=latency_ms,
-                tokens_in=tokens_in,
-                tokens_out=tokens_out,
-            )
-            return result, settings.gemini_model, latency_ms, tokens_in, tokens_out, False
-        except Exception as exc:  # noqa: BLE001
-            log.error("llm.gemini_failed", error=str(exc))
 
     raise RuntimeError("All LLM providers failed to extract the review.")

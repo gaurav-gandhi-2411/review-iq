@@ -73,7 +73,7 @@ async def test_hi_en_routes_to_small_model_first() -> None:
         instance.complete = AsyncMock(return_value=(_GOOD_RAW_HIGH, 10, 5))
 
         extraction, model, tin, tout, escalated, degraded = await router_module.route_extraction(
-            prompt, _SYSTEM, allow_gemini_fallback=False, settings=settings
+            prompt, _SYSTEM, settings=settings
         )
 
     assert not escalated
@@ -100,7 +100,7 @@ async def test_en_routes_to_small_no_escalation() -> None:
         small_instance.complete = AsyncMock(return_value=(_GOOD_RAW_HIGH, 8, 4))
 
         extraction, model, tin, tout, escalated, degraded = await router_module.route_extraction(
-            prompt, _SYSTEM, allow_gemini_fallback=False, settings=settings
+            prompt, _SYSTEM, settings=settings
         )
 
     assert not escalated
@@ -142,7 +142,7 @@ async def test_en_low_confidence_escalates_to_large() -> None:
         instance.complete = fake_complete
 
         extraction, model, tin, tout, escalated, degraded = await router_module.route_extraction(
-            prompt, _SYSTEM, allow_gemini_fallback=False, settings=settings
+            prompt, _SYSTEM, settings=settings
         )
 
     assert escalated
@@ -183,7 +183,7 @@ async def test_en_schema_fail_escalates_to_large() -> None:
         instance.complete = fake_complete
 
         extraction, model, tin, tout, escalated, degraded = await router_module.route_extraction(
-            prompt, _SYSTEM, allow_gemini_fallback=False, settings=settings
+            prompt, _SYSTEM, settings=settings
         )
 
     assert escalated
@@ -219,7 +219,7 @@ async def test_routing_off_uses_groq_model_directly() -> None:
             mock_client.chat.completions.create = AsyncMock(return_value=mock_resp)
 
             result, model, latency_ms, tin, tout, degraded = await llm_module.extract_with_llm(
-                "test prompt", allow_gemini_fallback=False
+                "test prompt"
             )
 
     assert model == "llama-3.3-70b-versatile"
@@ -250,7 +250,6 @@ async def test_routing_on_delegates_to_route_extraction() -> None:
         user_prompt: str,
         system_prompt: str,
         *,
-        allow_gemini_fallback: bool,
         settings: Settings,
     ) -> tuple[object, str, int, int, bool, bool]:
         nonlocal router_called
@@ -260,7 +259,7 @@ async def test_routing_on_delegates_to_route_extraction() -> None:
     with patch.object(llm_module, "get_settings", return_value=settings):
         with patch.object(llm_module, "route_extraction", fake_route):
             result, model, latency_ms, tin, tout, degraded = await llm_module.extract_with_llm(
-                "test prompt", allow_gemini_fallback=False
+                "test prompt"
             )
 
     assert router_called
