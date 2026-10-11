@@ -4,6 +4,17 @@ This file documents every version of the extraction prompt, including eval score
 
 ---
 
+## Reply drafter v2.2 (2026-10-08) — forbid invented details and commitments (EVAL NOT YET RUN)
+
+**Prompt: `app/core/prompts/reply.py` `REPLY_PROMPT_VERSION` v2.1 → v2.2.** Eval run required before merge; not run in this change.
+
+- **What changed**: `_CRITICAL_RULES` gains rule 6 (never invent email/phone/URL/order-ticket-tracking numbers/names/amounts; the drafter is not given the shop's contact details, so use words or the `[your support contact]` placeholder) and rule 7 (no fault admission or outcome commitments, explicitly including Hindi/Hinglish phrases).
+- **Why**: N4c quality run (PR #297, `docs/research/reply-drafting-measurement.md`): 5/20 hard failures on the large model, clearest = invented `support@example.com`-style contact addresses (2/20 per arm, all 3 judges) and unsupported commitments. Prompt is the first layer; code is the backstop (`redact_invented_details` replaces ungrounded contact/id/amount spans with a bracketed placeholder + caveat; Hindi/Hinglish commitment patterns added to `check_no_fabrication`, caveat-level).
+- **Known tension**: the tone examples in `_TONE_INSTRUCTIONS` / hi-en guidance still model phrases like "hum zimmedaar hain" and "yeh hamare end pe galti thi"; those can now trip the (caveat-level) fault-admission patterns. Measure before deciding whether to edit them.
+- **Eval scores**: pending. Cassettes keyed on the prompt will need re-recording (`eval/reply/record_hien.py`, `runner.py`), which spends Groq quota and is deliberately not done here.
+
+---
+
 ## Target A (hi-en prompt tuning): NOT PURSUED (2026-07-06)
 
 **No prompt change. `hi_en.py` unchanged. No cassette re-record (nothing to invalidate).**

@@ -14,7 +14,7 @@ from app.core.metrics import REPLY_DEGRADED_TOTAL, REPLY_DRAFT_TOTAL
 from app.core.prompts.reply import build_reply_prompt
 from app.core.providers.base import assert_privacy_safe
 from app.core.providers.groq import GroqProvider
-from app.core.reply.guardrails import run_guardrails
+from app.core.reply.guardrails import redact_invented_details, run_guardrails
 from app.core.reply.schema import ReplyDraft, ReplyRequest
 
 log = structlog.get_logger(__name__)
@@ -278,7 +278,29 @@ async def draft_reply(
         else:
             raise
 
-    # 4. Guardrail check — violations become caveats, never a hard block
+    # 4a. Invented details (contact addresses, order numbers, amounts the drafter was never
+    # given) are replaced by a bracketed placeholder plus a caveat -- never shown as if fine.
+    # Placeholder + caveat rather than a block: the response contract stays a ReplyDraft, the
+    # seller still gets a usable draft, and the gap is visible where they must fill it in.
+    # Sources = what the drafter actually saw (sanitized review, cons/topics, seller signature).
+    reply_text, invented = redact_invented_details(
+        reply_text,
+        [clean_text, *cons, *topics, request.signature or "", request.brand_name or ""],
+    )
+    if invented:
+        kinds = sorted({k for k, _ in invented})
+        caveats.append(
+            f"invented detail replaced with a placeholder ({', '.join(kinds)}) -- "
+            "fill in the real value or remove it before posting"
+        )
+        log.warning(
+            "reply_engine.invented_details_redacted",
+            kinds=kinds,
+            count=len(invented),
+            model=model_used,
+        )
+
+    # 4b. Guardrail check — violations become caveats, never a hard block
     violations = run_guardrails(
         reply_text,
         expected_language=language,

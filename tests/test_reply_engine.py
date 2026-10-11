@@ -314,3 +314,23 @@ async def test_draft_reply_guardrail_violation_becomes_caveat() -> None:
     assert draft.reply_text != ""
     # At least one caveat contains "guardrail"
     assert any("guardrail" in c for c in draft.caveats)
+
+
+async def test_draft_reply_replaces_invented_contact_with_placeholder_and_caveat() -> None:
+    extraction = _make_extraction(cons=["stopped working"], topics=["durability"])
+    request = ReplyRequest(
+        text="The blender stopped working after two weeks.",
+        tone=ReplyTone.professional,
+        extraction=extraction,
+    )
+    invented = "Sorry it stopped working. Email support@example.com or call 1800-123-4567."
+    with patch(
+        "app.core.reply.engine._call_groq",
+        new=AsyncMock(return_value=(f'{{"reply_text": "{invented}"}}', 10, 5)),
+    ):
+        draft, _, _ = await draft_reply(request)
+
+    assert "support@example.com" not in draft.reply_text
+    assert "1800-123-4567" not in draft.reply_text
+    assert "[your support contact]" in draft.reply_text
+    assert any("invented detail replaced" in c for c in draft.caveats)
