@@ -49,7 +49,7 @@ PASSes the label-quality gate (all USABLE-WITH-CAVEAT). The e5-base multi-task m
 rising) reproduces the panel consensus on the sealed set: needs_action accuracy 0.960, conservative p0.95 coverage 0.917
 at precision 0.983. These are agreement with silver labels; the four labelling judges score 0.97 to 0.99 against the
 other three, so the encoder is a cheap copy of the panel, not better than it. delivery, service, urgency high and
-several aspects are insufficient data. Source: `docs/reports/review-intent-model.md`.
+several aspects are insufficient data. Source: `reports/intent/model_report.md`.
 
 **What each feature needs.**
 - Per-review classes (defect, delivery, refund request...): the customers' own reviews (Judge.me ingestion, a

@@ -116,7 +116,7 @@ def synthetic_run(tmp: Path) -> tuple[Path, Path, Path]:
         json.dumps({"task": "needs_action", "classes": CL, "temperature": 1.0, "splits": sp})
     )
     (pred_dir / "metadata.json").write_text(json.dumps({"commit": "abc1234"}))
-    man = {"items": [{"id": i, "stratum": "food" if int(i[1:]) % 2 else "vernacular", "split": s}
+    man = {"items": [{"id": i, "stratum": "food" if int(i[1:]) % 2 else "vernacular", "split": s, "sha": f"sha-{i}"}
                      for s, v in ids.items() for i in v]}  # fmt: skip
     (tmp / "labels.json").write_text(json.dumps(labels))
     (tmp / "manifest.json").write_text(json.dumps(man))
@@ -128,16 +128,21 @@ def test_main_end_to_end_flags_missing_task_ceiling_slices_and_provenance(
 ) -> None:
     lab, man, pred_dir = synthetic_run(tmp_path)
     out = tmp_path / "eval.json"
+    ledger = tmp_path / "ledger.json"
+    ledger.write_text(
+        json.dumps({"sealed_excluded": ["sha-t5"]})
+    )  # t5 is labelled: it must vanish from the sealed set
     monkeypatch.setattr(
         "sys.argv",
         ["x", "--labels", str(lab), "--manifest", str(man), "--pred-dir", str(pred_dir),
-         "--out", str(out), "--n-boot", "100"],
+         "--out", str(out), "--n-boot", "100", "--ledger", str(ledger)],
     )  # fmt: skip
     E.main()
     rep = json.loads(out.read_text())
     assert rep["tasks"]["urgency"] == {"missing_predictions": True}
     t = rep["tasks"]["needs_action"]
-    assert t["consensus_ceiling"]["n_labelled"] == 299 and t["consensus_ceiling"]["n_sealed"] == 300
+    assert t["consensus_ceiling"]["n_labelled"] == 298 and t["consensus_ceiling"]["n_sealed"] == 299
+    assert rep["provenance"]["ledger_sealed_excluded"]["n_sealed_items_dropped"] == 1
     assert t["slices_accuracy"]["food"]["claimed"] and "accuracy" in t["slices_accuracy"]["food"]
     assert rep["provenance"]["training_metadata"]["commit"] == "abc1234"
     assert set(rep["provenance"]["artifacts_sha256_16"]) >= {
@@ -145,3 +150,34 @@ def test_main_end_to_end_flags_missing_task_ceiling_slices_and_provenance(
         "pred_needs_action.json",
     }
     assert "silver" in rep["provenance"]["label_basis"]
+
+
+def test_drop_excluded_removes_only_ledger_hashes_from_every_task() -> None:
+    manifest = {"items": [{"id": f"t{i}", "split": "test", "sha": f"h{i}"} for i in range(4)]
+                + [{"id": "v0", "split": "val", "sha": "h0"}]}  # fmt: skip
+    mk = lambda: {"classes": ["a", "b"], "splits": {"test": {"ids": ["t0", "t1", "t2", "t3"],  # noqa: E731
+                  "probs": [[0.6, 0.4], [0.9, 0.1], [0.2, 0.8], [0.5, 0.5]]}}}  # fmt: skip
+    preds = {"x": mk(), "y": mk()}
+    assert E.drop_excluded(preds, manifest, {"h1", "h3", "nope"}) == 2
+    for d in preds.values():
+        assert d["splits"]["test"]["ids"] == ["t0", "t2"]
+        assert d["splits"]["test"]["probs"] == [[0.6, 0.4], [0.2, 0.8]]
+
+
+def test_cluster_ci_is_wider_when_errors_cluster_and_equals_item_level_for_singletons() -> None:
+    rng = np.random.default_rng(1)
+    n, per = 600, 20
+    cl_id = np.repeat(np.arange(n // per), per)  # 30 products x 20 reviews
+    bad = rng.random(n // per) < 0.3  # whole products are wrong together
+    y = np.zeros(n, dtype=np.int64)
+    pred = np.where(bad[cl_id], 1, 0)
+    conf = np.full(n, 0.9)
+    clustered = E.cluster_cis(y, pred, conf, {}, CL, cl_id.astype(str), 400)
+    solo = E.cluster_cis(y, pred, conf, {}, CL, np.array([f"solo:{i}" for i in range(n)]), 400)
+    w = lambda ci: ci[1] - ci[0]  # noqa: E731
+    assert w(clustered["accuracy_cluster_ci95"]) > 2 * w(solo["accuracy_cluster_ci95"])
+    acc = (y == pred).mean()
+    item = E.wilson(int((y == pred).sum()), n)
+    assert abs(w(solo["accuracy_cluster_ci95"]) - (item[1] - item[0])) < 0.01
+    assert solo["accuracy_cluster_ci95"][0] < acc < solo["accuracy_cluster_ci95"][1]
+    assert clustered["n_clusters"] == 30 and solo["n_clusters"] == n
