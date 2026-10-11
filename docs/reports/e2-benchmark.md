@@ -1,62 +1,98 @@
-# Classification engine: E2 benchmark report (S21)
+# Classification engine: E2 benchmark report (S21, rewritten S22)
 
-Spec and pre-registered protocol: `docs/specs/classification-engine.md`. Every number below is rendered
-from the result JSONs in `reports/engine/e2/` by `engine/experiments/report.py` (regenerate with
-`python -m engine.experiments.report reports/engine/e2`). Nothing is hand-typed except the prose reading
-of those tables. Models were trained on free Kaggle GPUs (Tesla T4) except the LLM baseline (Groq, dedicated
-org) and the serving bench (Kaggle CPU kernel, Intel Xeon 2.2 GHz, 1 thread).
+Spec and pre-registered protocol: `docs/specs/classification-engine.md`. Every number below is rendered from the
+result JSONs in `reports/engine/e2/` by `engine/experiments/report.py` (regenerate with
+`python -m engine.experiments.report reports/engine/e2`) or read from the same files by the prose generator. Models
+were trained on free Kaggle Tesla T4s; the LLM baseline ran on Groq (dedicated org, free tier, 100K tokens per model
+per UTC day); the serving bench ran on a Kaggle CPU kernel (Intel Xeon 2.2 GHz, 1 thread).
+
+## What changed since the first version of this report
+
+1. **Like-for-like metrics.** The first version compared macro-F1 with accuracy in places (a fine-tuned macro-F1 against a
+   published accuracy; a fine-tuned macro-F1 against an LLM's accuracy). Every arm and every published reference now appears in
+   BOTH metrics in the first table below, and the prose compares accuracy to accuracy and macro-F1 to macro-F1 only. A metric
+   a source did not report is shown as "not reported", never filled in.
+2. **Precision at coverage is the headline claim** (section "Precision at coverage"), with CIs, a threshold chosen on other
+   data, and the cost of making the claim safe.
+3. **The LLM comparison is paired.** Same items, both arms, with a verbalised confidence from the LLM. The earlier
+   unpaired rows (different subsamples) are kept only where labelled.
+4. **Training is reproducible.** All 21 Track A jobs were re-run on a second Kaggle session at a later commit: macro-F1 and
+   accuracy are bit-identical in every run (max absolute difference 0.0).
+
+## Headline: calibration, not accuracy
+
+At a 95 percent precision requirement on BANKING77 (77 intents, 168 paired test items), the fine-tuned e5-base model answers
+**96.4 percent** of inputs (coverage [0.869, 1.000]); gpt-oss-120b, prompted zero-shot and ranked by its own
+verbalised confidence, answers **13.1 percent** (coverage [0.000, 0.488]). The intervals do not overlap. That is the measured edge:
+the fine-tuned model knows which answers to trust, so most traffic can be automated at a stated precision, while the prompted model's
+confidence barely ranks its answers.
+
+Read this with its limits: (1) it is a public benchmark, not review text; no review-intent metric exists yet (see the review-intent reports).
+(2) Both coverages are oracle points, with the threshold chosen on the test curve; the honest, transferable operating point is the
+conservative-threshold row in the Verdict (a few points lower coverage). (3) n = 168, so the intervals are wide, and the
+LLM's is wide because few of its answers clear the bar. (4) One LLM, one prompt, zero-shot; a stronger prompt or a retrieval-augmented
+few-shot arm is untested here. (5) The confidence signal is a verbalised number, not token log-probabilities, which the provider did not expose.
 
 ## Verdict
 
-1. The engine reproduces published known-intent quality on public benchmarks. Main model
-   `intfloat/multilingual-e5-base`, three seeds: macro-F1 0.936 on BANKING77, 0.966 on CLINC150, 0.880 on
-   MASSIVE en-US. Published full-data BANKING77 accuracy for RoBERTa-base is 94.1 (arXiv 2012.03929); ours is
-   0.936, inside the seed-42 interval of 0.925-0.942, so not distinguishable. Our XLM-R base reproduction on
-   MASSIVE en-US gives accuracy 0.886 against the paper's 88.3 (per-locale table, garbled extraction), a sanity
-   check that the pipeline is not broken.
-2. Open-set rejection is the part that improves with scorer choice, not with extra training machinery.
-   Mahalanobis on the fine-tuned features has the best AUROC on all four unknown sets (0.889 to 0.983). A dedicated
-   unknown head trained with outlier exposure is the worst scorer everywhere; it is not worth its second training
-   run. Energy matches or beats Mahalanobis on rejection recall on CLINC150 held-out and MASSIVE en-US and is within
-   0.01 on CLINC150 out-of-scope, and it needs no class statistics or int8 recalibration, so it is the safe
-   fallback.
-3. Against the reference point from the earlier private project (rejection recall 0.23-0.34 at 0.95 validation
-   retention, AUROC about 0.87), every scorer on every public set clears the top of that recall range (0.34); the
-   weakest are the unknown head on MASSIVE en-US at 0.341 and raw softmax at 0.369. On MASSIVE en-US, the hardest set (15 of 60 intents held out), Mahalanobis rejects 0.432 of
-   unseen-intent items (three-seed mean; seed-42 interval 0.451-0.511) at known retention 0.940, AUROC 0.889. This is context,
-   not a head-to-head: different task, class count and size.
-4. Hierarchy, augmentation and active learning did not help in this implementation (details below). Two of those
-   are negative results and are reported as such.
-5. A fine-tuned encoder is the cheaper and more accurate default than a prompted LLM on BANKING77, and
-   comparable on CLINC150 on a small sample. Cost per 1,000 messages is about 75 times lower and median latency about 20
-   times lower.
-6. Serving meets the 100 ms p95 target on one CPU thread for both encoders after a threshold fix found during
-   this work (below). No Cloud Run service was deployed; that is a production change and is GG's call.
+1. **Known-intent quality matches the published numbers it can be compared with.** Main model: multilingual-e5-base, 3 seeds.
+   BANKING77 accuracy 0.936 and macro-F1 0.936; published RoBERTa-base accuracy 0.941 (macro-F1 not reported).
+   MASSIVE en-US accuracy 0.900 and macro-F1 0.880; the published XLM-R accuracy is 0.883 and our own XLM-R reproduction gives
+   0.886. CLINC150 accuracy 0.967 and macro-F1 0.966; aggregators list about 0.97 to 0.98 (model and split unstated).
+2. **Precision at coverage, BANKING77, e5.** On the test curve precision stays at or above 0.95 up to coverage 0.974
+   [0.961, 0.989] (an oracle point). Precision at coverage 0.9 / 0.8 / 0.7 is 0.977 / 0.988 / 0.991.
+   A threshold chosen to hit exactly 0.95 on half of the items reached it on the other half only 0.44 of the time;
+   requiring the Wilson lower bound to clear 0.95 on the tuning half gives precision 0.961 at coverage
+   0.952 and hits the target in 0.96 of splits. CLINC150 stays above 0.95 at full coverage (accuracy
+   0.968); MASSIVE en-US reaches 0.876 oracle and 0.825 with the conservative rule (hit rate 0.92).
+   The sentence a product may say is the conservative one, and only for this kind of text.
+3. **Against a prompted LLM on the same items.** BANKING77, gpt-oss-120b zero-shot, 168 items: fine-tuned accuracy
+   0.917 against 0.786; difference 0.131 [0.071, 0.196], exact McNemar p = 0.00011
+   (27 items only the fine-tuned model got right, 5 only the LLM). The LLM's verbalised confidence barely ranks its answers: it
+   reaches precision 0.95 at coverage 0.131 [0.000, 0.488] against
+   0.964 for the fine-tuned model on the same items, and its precision at coverage 0.9 is
+   0.837 against 0.974. 
+4. **CLINC150 LLM comparison.** On CLINC150 the paired run covers n = 109 items (the token ceiling and qwen's repeated 503 over-capacity responses stopped it there): fine-tuned accuracy 0.936 against 0.881 for the LLM, difference 0.055 [0.000, 0.119], exact McNemar p = 0.10938 (8 items only the fine-tuned model got right, 2 only the LLM). The interval includes zero: this comparison is UNDERPOWERED and is not evidence of equality. Separating a gap of this size needs a few hundred paired items, about three UTC days of the qwen budget for a 150-label prompt; the harness resumes where it stopped.
+5. **Open-set rejection.** Mahalanobis on the fine-tuned features has the best AUROC on all four unknown sets; the dedicated
+   unknown head is the worst scorer everywhere. Energy matches or beats Mahalanobis on rejection recall on two sets and needs no
+   statistics or int8 recalibration (the safe fallback). Every scorer clears the 23 to 34 percent range reported by the earlier
+   private project; that is context on a different task, not a head-to-head.
+6. **Serving meets 100 ms p95 on one thread** for both encoders after the threshold fix (below); nothing is deployed.
 
-## Deviations from the pre-registered protocol (all disclosed before reading results)
+## Deviations from the pre-registered protocol (disclosed)
 
-- Active learning ran an initial 100 random rows plus 4 uncertainty rounds of 100 (to 500 rows), not 5 rounds.
-- Hierarchy compares flat, joint parent loss (unconstrained) and joint parent loss with domain-constrained
-  prediction. A separate two-stage classifier was NOT built.
-- LLM baseline: `qwen/qwen3.8-27b` returned HTTP 503 (over capacity) on BANKING77, so BANKING77 used
-  `openai/gpt-oss-120b`; CLINC used qwen once it recovered. Few-shot uses 5 retrieved examples (TF-IDF nearest),
-  not 3 per class. Sample sizes are small (30-77) because of the 100K tokens per model per day ceiling; their
-  intervals are wide and the macro-F1 on a sample with about one item per class is noisy. The first CLINC attempt
-  died on a connection reset (an unknown number of tokens was spent against the ceiling); the retry in the
-  harness was fixed in the same session.
-- Three training seeds (42, 43, 44) on ONE pre-registered draw of held-out classes (`random.Random(42)`), so
-  the Track B ranges show training noise, not held-out-class selection noise.
-- The first sweep (commit a9f9e21) is superseded: its MASSIVE macro-F1 sat outside its own interval because
-  zero-support classes were counted as F1 = 0 in the point estimate only. Fixed in PR 335 and every reported
-  number was re-run on the fixed code. The superseded files are not in `reports/`.
-- Rejection-recall intervals hold the validation threshold fixed, so they omit threshold-selection variance
-  (visible as seed-42 intervals that do not contain the three-seed mean).
+- Active learning ran an initial 100 random rows plus 4 uncertainty rounds of 100, not 5 rounds.
+- Hierarchy compares flat, joint parent loss, and domain-constrained prediction; a separate two-stage classifier was not built.
+- LLM baseline: BANKING77 used `openai/gpt-oss-120b` because `qwen/qwen3.8-27b` returned HTTP 503 (over capacity) on it; CLINC used qwen. Few-shot
+  rows (5 retrieved examples, not 3 per class) are small, unpaired and labelled so. The first CLINC attempt died on a connection reset; the
+  harness now retries transport errors and 5xx responses and resumes across UTC days.
+- Three training seeds (42, 43, 44) on ONE pre-registered draw of held-out classes, so Track B ranges show training noise, not class-selection noise.
+- The first sweep (commit a9f9e21) is superseded (zero-support classes were counted as F1 = 0 in the point estimate only); every reported number was re-run on the fixed code.
+- Rejection-recall intervals hold the validation threshold fixed, so they omit threshold-selection variance.
+- The precision-at-coverage "oracle" points choose the threshold ON the test curve; the half-split rows are the honest operating points.
 
 ## Tables (generated)
 
 <!-- METRICS:START -->
 <!-- generated by engine/experiments/report.py from reports/engine/e2; do not edit -->
 Reference point for Track B from a separate private project: 23-34% rejection recall at 95% retention, AUROC about 0.87 (private 12-class, 500-row task).
+
+### Like-for-like: accuracy and macro-F1 for every arm and reference
+
+| Dataset | Arm | Accuracy | Macro-F1 | Basis |
+|---|---|---|---|---|
+| banking77 | e5 (ours) | 0.936 | 0.936 | mean of 3 seed(s), sealed test |
+| banking77 | minilm (ours) | 0.921 | 0.921 | mean of 3 seed(s), sealed test |
+| banking77 | xlmr (ours) | 0.923 | 0.923 | mean of 1 seed(s), sealed test |
+| banking77 | published: RoBERTa-base, full data | 0.941 | not reported | arXiv 2012.03929 |
+| clinc | e5 (ours) | 0.967 | 0.966 | mean of 3 seed(s), sealed test |
+| clinc | minilm (ours) | 0.957 | 0.957 | mean of 3 seed(s), sealed test |
+| clinc | xlmr (ours) | 0.960 | 0.960 | mean of 1 seed(s), sealed test |
+| clinc | published: best aggregator entries, model and split unstated | about 0.97 to 0.98 | not reported | hyper.ai / wizwand list about 0.97 to 0.98 |
+| massive_en | e5 (ours) | 0.900 | 0.880 | mean of 3 seed(s), sealed test |
+| massive_en | minilm (ours) | 0.882 | 0.838 | mean of 3 seed(s), sealed test |
+| massive_en | xlmr (ours) | 0.886 | 0.856 | mean of 1 seed(s), sealed test |
+| massive_en | published: XLM-R base, en-US | 0.883 | not reported | arXiv 2204.08582 / ACL 2023 long.235, per-locale table |
 
 ### Track A (known intents)
 
@@ -71,6 +107,27 @@ Reference point for Track B from a separate private project: 23-34% rejection re
 | massive_en | e5 | 3 | 0.880 (0.879-0.881) | 0.879 [0.860, 0.901] | 0.900 |
 | massive_en | minilm | 3 | 0.838 (0.818-0.851) | 0.851 [0.826, 0.871] | 0.882 |
 | massive_en | xlmr | 1 | 0.856 | 0.856 [0.834, 0.878] | 0.886 |
+
+### Precision at coverage (the product claim)
+
+| Dataset | Model | Seeds | Oracle coverage at precision 0.95 (seed 42 [95% CI]) | Precision at coverage 0.9 / 0.8 / 0.7 (seed-42, CI at 0.9) | Chosen on half, point rule: precision / coverage / hit rate | Chosen on half, conservative rule: precision / coverage / hit rate |
+|---|---|---|---|---|---|---|
+| banking77 | e5 | 3 | 0.974 [0.961, 0.989] | 0.977 [0.970, 0.984] / 0.988 / 0.991 | 0.950 / 0.974 / 0.44 | 0.961 / 0.952 / 0.96 |
+| banking77 | minilm | 3 | 0.948 [0.927, 0.965] | 0.967 [0.960, 0.973] / 0.977 / 0.986 | 0.951 / 0.947 / 0.51 | 0.962 / 0.918 / 0.95 |
+| banking77 | xlmr | 1 | 0.949 [0.928, 0.970] | 0.967 [0.959, 0.973] / 0.983 / 0.988 | 0.950 / 0.948 / 0.54 | 0.962 / 0.916 / 0.96 |
+| clinc | e5 | 3 | 1.000 [1.000, 1.000] | 0.994 [0.991, 0.996] / 0.997 / 0.998 | 0.968 / 1.000 / 1.00 | 0.968 / 1.000 / 1.00 |
+| clinc | minilm | 3 | 1.000 [1.000, 1.000] | 0.988 [0.984, 0.992] / 0.993 / 0.996 | 0.958 / 1.000 / 0.99 | 0.960 / 0.996 / 0.99 |
+| clinc | xlmr | 1 | 1.000 [1.000, 1.000] | 0.990 [0.986, 0.993] / 0.996 / 0.996 | 0.961 / 1.000 / 1.00 | 0.961 / 0.999 / 1.00 |
+| massive_en | e5 | 3 | 0.876 [0.842, 0.905] | 0.943 [0.932, 0.952] / 0.969 / 0.978 | 0.950 / 0.874 / 0.51 | 0.962 / 0.825 / 0.92 |
+| massive_en | minilm | 3 | 0.814 [0.762, 0.865] | 0.932 [0.922, 0.941] / 0.951 / 0.964 | 0.950 / 0.810 / 0.48 | 0.963 / 0.703 / 0.94 |
+| massive_en | xlmr | 1 | 0.864 [0.835, 0.891] | 0.936 [0.926, 0.947] / 0.966 / 0.975 | 0.950 / 0.861 / 0.48 | 0.962 / 0.818 / 0.95 |
+
+### Fine-tuned vs LLM on the SAME items (paired)
+
+| Dataset | LLM | n paired | Fine-tuned accuracy | LLM accuracy | Difference [95% CI] | McNemar exact p | LLM coverage at precision 0.95 (verbalised confidence) | Fine-tuned coverage at precision 0.95 on the same items |
+|---|---|---|---|---|---|---|---|---|
+| banking77 | openai/gpt-oss-120b zero-shot | 168 | 0.917 | 0.786 | 0.131 [0.071, 0.196] | 0.00011 | 0.131 [0.000, 0.488] | 0.964 [0.869, 1.000] |
+| clinc | qwen/qwen3.8-27b zero-shot | 109 | 0.936 | 0.881 | 0.055 [0.000, 0.119] | 0.10938 | 0.688 [0.578, 0.982] | 0.973 [0.881, 1.000] |
 
 ### Track B (open set)
 
@@ -135,9 +192,9 @@ Reference point for Track B from a separate private project: 23-34% rejection re
 
 | Dataset | Model | Shots | n | Unparsed | Accuracy [95% CI] | Macro-F1 on sample | p50 / p95 latency (s) | USD per 1K at published rate |
 |---|---|---|---|---|---|---|---|---|
-| banking77 | openai/gpt-oss-120b | 0 | 77 | 2 | 0.805 [0.714, 0.883] | 0.752 | 1.02 / 4.99 | 0.0996 |
+| banking77 | openai/gpt-oss-120b | 0 | 168 | 2 | 0.786 [0.726, 0.845] | 0.752 | 3.22 / 4.82 | 0.0996 |
 | banking77 | openai/gpt-oss-120b | 5 | 40 | 0 | 0.875 [0.774, 0.975] | 0.829 | 1.0 / 4.77 | 0.1057 |
-| clinc | qwen/qwen3.8-27b | 0 | 47 | 2 | 0.936 [0.851, 1.000] | 0.929 | 2.37 / 15.15 | n/a (no published rate) |
+| clinc | qwen/qwen3.8-27b | 0 | 110 | 5 | 0.882 [0.818, 0.936] | 0.867 | 0.62 / 11.3 | n/a (no published rate) |
 | clinc | qwen/qwen3.8-27b | 5 | 30 | 1 | 0.900 [0.767, 1.000] | 0.900 | 3.97 / 10.85 | n/a (no published rate) |
 
 ### Serving (int8 ONNX, CPU)
@@ -152,72 +209,37 @@ Reference point for Track B from a separate private project: 23-34% rejection re
 
 ## Reading the tables
 
-**Model choice (E2h).** Rule fixed in advance: macro-F1 within 1 point, then CPU p95 latency, then memory; a
-small model within 1 point wins. e5-base beats MiniLM by 1.5 points on BANKING77 and 4.2 on MASSIVE en-US and by
-0.9 on CLINC150 (inside the 1-point band). XLM-R base is below e5 on all three datasets at the same size and
-latency class, so it is dominated. Both e5 and MiniLM meet p95 under 100 ms on one thread (see serving table), and
-both hold about 1.3 GB resident because the serving path imports the Hugging Face tokenizer, which pulls in torch.
-Decision: **e5-base is the default** (it wins by more than 1 point on two of three datasets and on all
-multilingual runs); **MiniLM is the option** when model size (118 MB against 278 MB) or per-request CPU time
-(about 16 ms against 45 ms) dominates and the task resembles CLINC150.
+**Model choice (E2h).** Rule fixed in advance: macro-F1 within 1 point, then CPU p95 latency, then memory. e5-base beats MiniLM
+on BANKING77 and MASSIVE en-US by more than 1 point and by 0.9 on CLINC150 (inside the band); XLM-R is below e5 on all three at the same
+size and latency class. Both e5 and MiniLM meet p95 under 100 ms on one thread. Decision: **e5-base is the default**; **MiniLM is the
+option** when size (118 MB against 278 MB) or CPU time (about 16 ms against 45 ms) dominates.
 
-**Track B guard.** The pre-registered disqualifiers (known retention under 0.90, or known macro-F1 on answered
-items more than 2 points under the Track A model) did not fire for any scorer at the validation-calibrated
-threshold. Answered macro-F1 is higher than the Track A macro-F1 in every row, as expected when low-confidence
-items are abstained.
+**Hierarchy (E2d).** No variant beats flat softmax outside the intervals; most remaining errors are semantic overlap between sibling-like
+intents, not a failure to find the domain. **Small data (E2e).** At 500 rows, plain fine-tuning, character noise, back-translation and frozen
+embeddings plus logistic regression land within about one interval of each other; uncertainty sampling ended 3 to 8 points BELOW random sampling
+in this implementation (a negative result for this implementation, not for active learning in general). **Multilingual (E2f).** Trained on eight
+locales, e5 holds non-English macro-F1 well above the English-only transfer figure; Swahili, Arabic and Tamil transfer worst.
 
-**Hierarchy (E2d).** No variant beats flat softmax outside the intervals. On CLINC150 about 43 percent of the
-remaining errors cross a domain boundary, so a domain head cannot fix most of them; on MASSIVE about three
-quarters of errors cross a scenario boundary (the intents overlap in meaning across scenarios), which is why a
-parent head does not help either. Where the error lives is semantic overlap between sibling-looking intents, not
-a failure to find the domain.
-
-**Small data (E2e).** At 500 rows, plain fine-tuning, character noise, back-translation and frozen embeddings
-plus logistic regression land within about one interval of each other on both datasets, so none of the
-augmentations is a demonstrated gain. Frozen embeddings plus logistic regression needs no GPU and matches fine
-tuning on BANKING77 (6.5 rows per class), which makes it the pragmatic first model at that size. Uncertainty
-sampling ended 3 to 8 points BELOW random 500 rows on both datasets: with a 100-row random seed and 3 to 6 rows
-per class, least-confidence picks concentrate on a few confusable classes. This is a negative result for this
-implementation, not for active learning in general.
-
-**Multilingual (E2f).** Trained on all eight locales, e5 holds non-English macro-F1 at 0.833 against 0.877 for
-en-US (MiniLM 0.798). Trained on en-US only, zero-shot transfer drops non-English to 0.639, with Swahili (0.476),
-Arabic (0.555) and Tamil (0.569) the worst. Translating or collecting even modest in-language data is worth far
-more than model size.
-
-**LLM baseline (E2g).** On BANKING77, zero-shot gpt-oss-120b is at 0.805 accuracy (n = 77, interval 0.714-0.883)
-against 0.936 for the fine-tuned encoder; retrieved 5-shot reaches 0.875 on n = 40 (interval 0.774-0.975, not
-comparable to the n = 77 row because the subsamples differ). On CLINC150 qwen reaches 0.936 zero-shot on n = 47
-(interval 0.851-1.000) and 0.900 on n = 30 with 5 shots; the intervals overlap the fine-tuned 0.967. At published
-rates gpt-oss costs about 0.10 USD per 1,000 messages with a median latency near 1 second.
-
-**Serving (E3).** The fine-tuned encoder exported to int8 ONNX keeps quality (e5 CLINC macro-F1 0.9685 int8
-against 0.968 fp32; MiniLM 0.953 against 0.957). Finding: the unknown threshold calibrated on fp32 embeddings does
-not transfer to the int8 model. With e5 it kept only 0.892 of known test items (below the 0.90 floor) and
-rejected 0.968 of out-of-scope items; recalibrating on the int8 model's own validation scores gives 0.943 retention
-and 0.913 rejection, in line with the fp32 Track B result. `export()` now does this automatically (PR 338). The
-benchmark was first run on a shared workstation whose CPU was saturated by other jobs (e5 p50 jumped from 34 to 162
-ms between two runs), so the reported latency is from an isolated Kaggle CPU kernel. Cost per 1,000 messages
-(arithmetic, BELIEVED: Cloud Run request-based rates of 0.000024 USD per vCPU-second and 0.0000025 USD per
-GiB-second from memory, not re-fetched; 2 GiB assumed): e5 about 44.5 vCPU-seconds, roughly 0.0013 USD; MiniLM
-about 16.2 vCPU-seconds, roughly 0.0005 USD. The latency is in-process `Predictor.predict`; the FastAPI layer was
-not load tested.
+**Serving (E3).** The int8 ONNX encoder keeps quality, but the unknown threshold calibrated on fp32 embeddings does not transfer: with e5 it kept only
+0.892 of known test items (below the 0.90 floor); recalibrated on the int8 model's own validation scores it keeps 0.943. `export()` does this
+automatically (engine PR 338). The local latency runs were contaminated by CPU contention from other jobs (e5 p50 jumped from 34 to 162 ms
+between runs), so the reported latency is from an isolated Kaggle CPU kernel. Cost per 1,000 messages is arithmetic from remembered Cloud Run
+rates (BELIEVED, not re-fetched): about 0.0013 USD (e5) and 0.0005 USD (MiniLM), against about 0.10 USD for gpt-oss-120b at the published rate.
+Latency is in-process `Predictor.predict`; the FastAPI layer was not load tested.
 
 ## Published comparison (BELIEVED: secondary sources, not re-read in the papers)
 
-| Benchmark | Published | Ours | Source |
-|---|---|---|---|
-| BANKING77 accuracy, full data | RoBERTa-base 94.1; aggregator top entries 94.4-94.8 | e5-base 3-seed mean 0.936 | arXiv 2012.03929; hyper.ai, wizwand leaderboards |
-| MASSIVE en-US intent accuracy | XLM-R base 88.3, mT5 encoder 89.0 (per-locale table) | XLM-R 0.886, e5 0.900 (seed 42) | arXiv 2204.08582 / ACL 2023 long.235 |
-| CLINC150 in-scope accuracy | aggregators list 97-98 (model and split unstated) | e5 0.967 | hyper.ai, wizwand |
+| Benchmark | Published (accuracy) | Ours (accuracy) | Ours (macro-F1) | Source |
+|---|---|---|---|---|
+| BANKING77, full data | RoBERTa-base 0.941; aggregator top entries 0.944 to 0.948 | e5-base 0.936 | 0.936 | arXiv 2012.03929; hyper.ai, wizwand |
+| MASSIVE en-US intent | XLM-R base 0.883, mT5 encoder 0.890 (per-locale table, garbled extraction) | XLM-R 0.886, e5 0.900 | 0.856, 0.880 | arXiv 2204.08582 / ACL 2023 long.235 |
+| CLINC150 in-scope | aggregators list about 0.97 to 0.98 (model and split unstated) | e5-base 0.967 | 0.966 | hyper.ai, wizwand |
 
-CLINC150 out-of-scope recall for a fine-tuned encoder: no authoritative figure was found; the OOS rows are
-reported without a published comparison.
+Published macro-F1 was not found for any of the three; no macro-F1 comparison is made. No authoritative CLINC150 out-of-scope figure was found for a fine-tuned encoder.
 
 ## Provenance
 
-Result files carry their commit: final Track A/B kernels ran at 9793471, hierarchy, small-data and the export
-re-run at 44fd57e, BANKING77 LLM runs at f30f052 (the pre-split branch tip, code-identical), CLINC LLM runs at
-11b1f7c, serving at the post-338 branch. Kaggle kernels are private and cloned the public repository; no secret
-entered any kernel. Datasets: CLINC150 (CC BY 3.0), BANKING77 (CC BY 4.0), MASSIVE 1.0 (CC BY 4.0); attribution is
-required in any published use.
+Result files carry their commit. Track A (all 21 runs, with per-item predictions): `7faba68`, Kaggle T4; first pass `9793471`. Track B and
+multilingual: `9793471`; hierarchy, small-data and the export re-run: `44fd57e`; serving bench: Kaggle CPU kernel (branch `fix/s21-engine-int8-threshold`);
+BANKING77 LLM paired run: `93454d1`; CLINC LLM paired run: `2cf4cb2`. Kaggle kernels are private and cloned the public repository; no secret
+entered any kernel. Datasets: CLINC150 (CC BY 3.0), BANKING77 (CC BY 4.0), MASSIVE 1.0 (CC BY 4.0); attribution is required in any published use.
