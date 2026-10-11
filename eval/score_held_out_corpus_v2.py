@@ -71,7 +71,7 @@ QUARANTINE_DIR = ROOT / "eval" / "fixtures" / "_held_out_hindi_hinglish"
 HELD_OUT_CASSETTES_PATH = ROOT / "eval" / "cassettes" / "held_out_cassettes.json"
 OUT_PATH = ROOT / "eval" / "results" / "held_out_scoring_v2.json"
 
-PANEL2_SILVER_PATH = ROOT / "eval" / "consensus" / "results" / "panel2_silver.json"
+PANEL2_SILVER_PATH = ROOT / "reports" / "eval" / "consensus" / "panel2_silver.json"
 PANEL2_VOTES_PATH = ROOT / "eval" / "consensus" / "results" / "panel2_votes.jsonl"
 
 DELAY_SECONDS = 2.0  # courtesy pacing on production's own shared org quota
