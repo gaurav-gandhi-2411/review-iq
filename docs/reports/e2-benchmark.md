@@ -19,6 +19,20 @@ per UTC day); the serving bench ran on a Kaggle CPU kernel (Intel Xeon 2.2 GHz, 
 4. **Training is reproducible.** All 21 Track A jobs were re-run on a second Kaggle session at a later commit: macro-F1 and
    accuracy are bit-identical in every run (max absolute difference 0.0).
 
+## Headline: calibration, not accuracy
+
+At a 95 percent precision requirement on BANKING77 (77 intents, 168 paired test items), the fine-tuned e5-base model answers
+**96.4 percent** of inputs (coverage [0.869, 1.000]); gpt-oss-120b, prompted zero-shot and ranked by its own
+verbalised confidence, answers **13.1 percent** (coverage [0.000, 0.488]). The intervals do not overlap. That is the measured edge:
+the fine-tuned model knows which answers to trust, so most traffic can be automated at a stated precision, while the prompted model's
+confidence barely ranks its answers.
+
+Read this with its limits: (1) it is a public benchmark, not review text; no review-intent metric exists yet (see the review-intent reports).
+(2) Both coverages are oracle points, with the threshold chosen on the test curve; the honest, transferable operating point is the
+conservative-threshold row in the Verdict (a few points lower coverage). (3) n = 168, so the intervals are wide, and the
+LLM's is wide because few of its answers clear the bar. (4) One LLM, one prompt, zero-shot; a stronger prompt or a retrieval-augmented
+few-shot arm is untested here. (5) The confidence signal is a verbalised number, not token log-probabilities, which the provider did not expose.
+
 ## Verdict
 
 1. **Known-intent quality matches the published numbers it can be compared with.** Main model: multilingual-e5-base, 3 seeds.
