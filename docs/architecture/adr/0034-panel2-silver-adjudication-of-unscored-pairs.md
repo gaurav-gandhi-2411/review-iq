@@ -3,7 +3,7 @@
 Status: accepted. **The panel that produced the results below was chosen by a gate written AFTER the pre-registered
 gate had failed. Everything under "Result (v2)" is a post-hoc, exploratory analysis relative to the pre-registration.**
 Pre-registration and amendment: `docs/specs/s17-panel2-adjudication.md` (Amendment A1). Numbers come from
-`eval/consensus/results/panel2_calibration.json`, `panel2_votes.jsonl`, `panel2_silver.json`; every one reproduces at zero cost with
+`eval/consensus/results/panel2_calibration.json`, `panel2_votes.jsonl`, `panel2_silver.json` (the last now at `reports/eval/consensus/panel2_silver.json`); every one reproduces at zero cost with
 `python -m eval.consensus.panel2 --mode replay --phase all` against `eval/cassettes/panel2_cassettes.json` (verified
 byte for byte, run twice). LLM-consensus silver (panel 2), disjoint from production; NOT ground truth.
 
@@ -106,7 +106,7 @@ mean score on the 29 resolved pairs against panel-2 silver is 0.625 (product), 0
 Two independent signals made `pros` the suspect field: V-arm concordance of 9/20 (the weakest), and split-exclusion
 lifting `pros` from 53.9% to 73.8% (VERIFIED from `eval/results/held_out_scoring_v2.json`
 `per_field_split_effect`, all 106 reviews, as deployed). Reproduce with `python scripts/analyze_pros_gold.py`
-(output `eval/results/pros_gold_analysis.json`, committed; no model call, no published number changes). Unexposed
+(output `reports/eval/pros_gold_analysis.json`, committed; no model call, no published number changes). Unexposed
 n=70 unless stated.
 
 **1. How `pros` gold is made.** Gold = panel-1 `voting.vote_list_overlap`: each judge's pros list is normalised
