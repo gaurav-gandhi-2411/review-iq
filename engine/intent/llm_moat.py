@@ -13,8 +13,9 @@ PRE-REGISTERED (committed before any LLM call is made on the sealed set):
     BANKING77 comparison (`engine.experiments.selective.summarize`), item bootstrap 1,000 resamples, 95 percent CI.
     This is the ORACLE curve (best threshold on the sealed set), which FAVOURS both arms equally; the deployable
     comparison for the encoder is the conservative rule already in eval_run1.json. Ties in verbalised confidence
-    produce coarse steps; reported as is. Unparseable or missing answers count as wrong at confidence 0 (kept, not
-    dropped). CIs resample items, not products (no product ids in the scale corpus): stated beside every interval.
+    produce coarse steps; reported as is. Unparseable answers (invalid JSON, provider 400) count as wrong at confidence 0
+    (kept, not dropped); quota, rate-limit and transport failures are NOT answers: nothing is recorded and the item
+    is retried on resume. CIs resample items, not products (no product ids in the scale corpus): stated beside every interval.
   * No claim of superiority unless the CIs of the 0.95-precision coverage do not overlap.
   * SEQUENTIAL STOPPING RULE (added before any further calls; the first ~100 rows per model were collected
     under the plain protocol above): after n = 300 sealed items per model and arm, for each task compare the
@@ -69,6 +70,10 @@ TPM_BUDGET = 6500  # of 8,000 TPM, headroom for the other jobs on the org
 DAILY_BUDGET = int(os.environ.get("MOAT_DAILY_BUDGET", "180000"))
 
 
+class InfraError(RuntimeError):
+    """Quota, rate limit or transport failure: NOT an answer, never scored, the item is retried later."""
+
+
 def ask(key: str, model: str, text: str, shots: str = "") -> tuple[dict | None, int]:
     import httpx
 
@@ -107,7 +112,7 @@ def ask(key: str, model: str, text: str, shots: str = "") -> tuple[dict | None, 
             return json.loads(j["choices"][0]["message"]["content"]), used
         except (ValueError, KeyError, IndexError):
             return None, used
-    return None, 0
+    raise InfraError("rate limit or transport failure after 5 attempts")
 
 
 def sealed_ids() -> list[str]:
@@ -192,6 +197,13 @@ def run(model: str, texts: Path, out: Path, arm: str = "zeroshot") -> int:
         d = json.loads(ln)
         text_of[d["id"]] = d["text"]
     day_tokens, window = 0, []
+    interim = out / f"{stem}__interim300.json"
+    if (
+        len(done) >= 300 and not interim.exists()
+    ):  # resumed past n=300: score the first 300 recorded rows
+        rows = [json.loads(ln) for ln in f.open(encoding="utf-8")]
+        decided_at_300 = decide(rows, enc, gold)
+        interim.write_text(json.dumps(decided_at_300, indent=1) + "\n")
     with f.open("a", encoding="utf-8") as w:
         for i in sealed_ids():
             if i in done:
@@ -205,7 +217,11 @@ def run(model: str, texts: Path, out: Path, arm: str = "zeroshot") -> int:
             window = [(t, n) for t, n in window if now - t < 60]
             if sum(n for _, n in window) > TPM_BUDGET:
                 time.sleep(max(1.0, 60 - (now - window[0][0])))
-            ans, used = ask(key, model, text_of[i], shots)
+            try:
+                ans, used = ask(key, model, text_of[i], shots)
+            except InfraError as e:
+                print(f"stopping at {len(done)} items: {e}; resume later (item not recorded)")
+                return 3
             window.append((time.time(), used))
             day_tokens += used
             w.write(json.dumps({"id": i, "ans": ans, "tokens": used}) + "\n")
