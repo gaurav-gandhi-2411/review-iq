@@ -216,6 +216,10 @@ def main() -> None:
     ap.add_argument("--pred-dir", required=True, help="train output: pred_*.json and metadata.json")
     ap.add_argument("--out", required=True)
     ap.add_argument("--n-boot", type=int, default=1000)
+    ap.add_argument("--texts", help="private scale.jsonl: enables the TF-IDF baseline")
+    ap.add_argument(
+        "--judges", nargs="+", help="judge dirs (A, S, B): enables the leave-one-out judges"
+    )
     a = ap.parse_args()
     lp, mp, pd = Path(a.labels), Path(a.manifest), Path(a.pred_dir)
     labels = json.loads(lp.read_text(encoding="utf-8"))
@@ -235,6 +239,19 @@ def main() -> None:
         "n_boot": a.n_boot, "seed": SEED, "bootstrap_unit": "items (no product ids in the corpora)",
         "tasks": evaluate_all(labels, preds, strata, a.n_boot),
     }  # fmt: skip
+    if a.texts or a.judges:
+        from engine.intent.baselines import attach_baselines  # lazy: baselines imports this module
+        from engine.intent.labels import load_texts
+        from engine.labelling.scale_report import load_items
+
+        jd = [Path(d) for d in a.judges or []]
+        rep["provenance"]["baseline_inputs_sha256_16"] = {
+            f"{d.name}/{f.name}": _sha256(f) for d in jd for f in sorted(d.glob("*.jsonl"))
+        } | ({Path(a.texts).name: _sha256(Path(a.texts))} if a.texts else {})
+        attach_baselines(
+            rep["tasks"], labels, preds, load_texts(Path(a.texts)) if a.texts else None,
+            load_items(jd) if jd else None, strata, a.n_boot,
+        )  # fmt: skip
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text(
         json.dumps(_nan_to_none(rep), indent=1, allow_nan=False) + "\n", encoding="utf-8"
