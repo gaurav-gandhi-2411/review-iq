@@ -179,10 +179,39 @@ def fit(
                 break
     model.load_state_dict(best_state)
     return {
-        "history": history, "best_val_mean_macro_f1": best,
+        "history": history,
+        "best_val_mean_macro_f1": best,
         "best_epoch": max(history, key=lambda h: h["val_mean_macro_f1"])["epoch"],
         "stopped_early": len(history) < cfg.epochs,
     }
+
+
+def write_predictions(
+    out_dir: Path, classes: dict[str, tuple[str, ...]], arr: dict, logits: dict[str, dict]
+) -> dict[str, float | None]:
+    """Fit a per-task temperature on validation only and write pred_<task>.json for val and test.
+
+    arr[split] = (ids, {task: labels}); logits[split][task] = raw logits. -> task -> temperature
+    (None = fewer than 2 validation labels). Shared with `engine.intent.quantize`."""
+    temps: dict[str, float | None] = {}
+    for t, cl in classes.items():
+        yv = arr["val"][1][t]
+        m = yv != IGNORE
+        temp = SC.fit_temperature(logits["val"][t][m], yv[m]) if m.sum() >= 2 else None
+        temps[t] = temp
+        splits = {
+            s: {
+                "ids": arr[s][0],
+                "probs": np.round(softmax(logits[s][t] / (temp or 1.0), axis=1), 6).tolist(),
+            }
+            for s in ("val", "test")
+        }
+        (out_dir / f"pred_{t.replace(':', '__')}.json").write_text(
+            json.dumps({"task": t, "classes": list(cl), "temperature": temp, "splits": splits})
+            + "\n",
+            encoding="utf-8",
+        )
+    return temps
 
 
 def run(
@@ -208,26 +237,11 @@ def run(
         out_dir / "epoch_log.json",
     )  # fmt: skip
     if save_weights:  # best-validation weights, fp32, for the int8 export; far too large to commit
-        torch.save({k: v.float().cpu() for k, v in model.state_dict().items()}, out_dir / "model.pt")
-    logits = {s: infer(model, tok, txt[s], cfg, device) for s in ("val", "test")}
-    temps: dict[str, float | None] = {}
-    for t, cl in classes.items():
-        yv = arr["val"][1][t]
-        m = yv != IGNORE
-        temp = SC.fit_temperature(logits["val"][t][m], yv[m]) if m.sum() >= 2 else None
-        temps[t] = temp
-        splits = {
-            s: {
-                "ids": arr[s][0],
-                "probs": np.round(softmax(logits[s][t] / (temp or 1.0), axis=1), 6).tolist(),
-            }
-            for s in ("val", "test")
-        }
-        (out_dir / f"pred_{t.replace(':', '__')}.json").write_text(
-            json.dumps({"task": t, "classes": list(cl), "temperature": temp, "splits": splits})
-            + "\n",
-            encoding="utf-8",
+        torch.save(
+            {k: v.float().cpu() for k, v in model.state_dict().items()}, out_dir / "model.pt"
         )
+    logits = {s: infer(model, tok, txt[s], cfg, device) for s in ("val", "test")}
+    temps = write_predictions(out_dir, classes, arr, logits)
     meta = {
         "commit": _git_sha(), "config": asdict(cfg), "device": device, "torch": torch.__version__,
         "n_items": {s: len(arr[s][0]) for s in arr}, "temperatures": temps,
@@ -252,7 +266,9 @@ def main() -> None:
     ap.add_argument("--max-len", type=int, default=128)
     ap.add_argument("--patience", type=int, default=2)
     ap.add_argument("--seed", type=int, default=42)
-    ap.add_argument("--save-weights", action="store_true", help="write the best checkpoint to out-dir/model.pt")
+    ap.add_argument(
+        "--save-weights", action="store_true", help="write the best checkpoint to out-dir/model.pt"
+    )
     ap.add_argument("--device", default="auto", choices=["auto", "cpu", "cuda"])
     a = ap.parse_args()
     cfg = IntentConfig(a.model, a.epochs, a.lr, a.batch_size, a.seed, a.max_len, a.patience)
@@ -268,7 +284,15 @@ def main() -> None:
         Path(p).name: hashlib.sha256(Path(p).read_bytes()).hexdigest()[:16]
         for p in (a.labels, a.texts, a.manifest)
     }
-    run(cfg, data, load_texts(Path(a.texts)), Path(a.out_dir), device, save_weights=a.save_weights, inputs=inputs)
+    run(
+        cfg,
+        data,
+        load_texts(Path(a.texts)),
+        Path(a.out_dir),
+        device,
+        save_weights=a.save_weights,
+        inputs=inputs,
+    )
 
 
 if __name__ == "__main__":
