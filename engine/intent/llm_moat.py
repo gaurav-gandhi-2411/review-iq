@@ -96,6 +96,10 @@ def ask(key: str, model: str, text: str, shots: str = "") -> tuple[dict | None, 
         if r.status_code == 429:
             time.sleep(min(60, 5 * 2**attempt))
             continue
+        if r.status_code == 400:  # e.g. json_validate_failed: the model's JSON was invalid
+            if attempt >= 1:
+                return None, 0  # counted as an unparseable answer (wrong, confidence 0)
+            continue
         r.raise_for_status()
         j = r.json()
         used = int(j.get("usage", {}).get("total_tokens", 0))
