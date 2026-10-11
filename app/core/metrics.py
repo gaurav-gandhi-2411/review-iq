@@ -56,7 +56,7 @@ ROUTER_TIER_TOKENS_IN = Counter(
 
 FAILOVER_TOTAL = Counter(
     "review_iq_failover_total",
-    "Provider failover events (Groq exhausted, falling to secondary/Gemini)",
+    "Provider failover events (Groq exhausted, falling to secondary)",
     ["from_provider"],
 )
 

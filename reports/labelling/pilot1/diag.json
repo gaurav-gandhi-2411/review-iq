@@ -1,0 +1,296 @@
+{
+ "judges": [
+  "gemma2_9b",
+  "llama31_8b",
+  "mistral_7b",
+  "qwen3_8b"
+ ],
+ "n_items": 300,
+ "parse_failures": {
+  "gemma2_9b": {
+   "text": 0,
+   "mismatch": 0
+  },
+  "llama31_8b": {
+   "text": 2,
+   "mismatch": 0
+  },
+  "mistral_7b": {
+   "text": 20,
+   "mismatch": 0
+  },
+  "qwen3_8b": {
+   "text": 1,
+   "mismatch": 0
+  }
+ },
+ "primary_intent_by_judge": {
+  "gemma2_9b": {
+   "praise": 187,
+   "product_defect": 68,
+   "suggestion": 30,
+   "return_refund_request": 3,
+   "pricing": 9,
+   "customer_service": 1,
+   "question": 1,
+   "competitor_comparison": 1
+  },
+  "llama31_8b": {
+   "praise": 195,
+   "product_defect": 59,
+   "customer_service": 8,
+   "return_refund_request": 9,
+   "pricing": 21,
+   "delivery": 1,
+   "competitor_comparison": 1,
+   "suggestion": 3,
+   "spam_irrelevant": 1
+  },
+  "mistral_7b": {
+   "praise": 189,
+   "product_defect": 68,
+   "suggestion": 4,
+   "pricing": 7,
+   "competitor_comparison": 4,
+   "customer_service": 2,
+   "delivery": 2,
+   "spam_irrelevant": 4
+  },
+  "qwen3_8b": {
+   "praise": 220,
+   "suggestion": 12,
+   "product_defect": 46,
+   "return_refund_request": 6,
+   "pricing": 5,
+   "competitor_comparison": 1,
+   "customer_service": 1,
+   "spam_irrelevant": 8
+  }
+ },
+ "consensus_distribution": {
+  "T1": {
+   "praise": 193,
+   "product_defect": 57,
+   "return_refund_request": 3,
+   "pricing": 7,
+   "competitor_comparison": 1,
+   "suggestion": 3,
+   "customer_service": 1,
+   "spam_irrelevant": 1,
+   "_no_consensus": 34
+  },
+  "T2": {
+   "positive": 203,
+   "negative": 62,
+   "mixed": 10,
+   "_no_consensus": 25
+  },
+  "T3": {
+   "low": 224,
+   "medium": 44,
+   "high": 5,
+   "_no_consensus": 27
+  },
+  "T4": {
+   "unclear": 93,
+   "no": 48,
+   "yes": 100,
+   "_no_consensus": 59
+  },
+  "T5": {
+   "no": 203,
+   "yes": 54,
+   "_no_consensus": 43
+  }
+ },
+ "top_pairwise_confusions": {
+  "T1": [
+   [
+    "praise | suggestion",
+    41
+   ],
+   [
+    "praise | product_defect",
+    36
+   ],
+   [
+    "praise | pricing",
+    32
+   ],
+   [
+    "product_defect | return_refund_request",
+    29
+   ],
+   [
+    "product_defect | suggestion",
+    28
+   ]
+  ],
+  "T2": [
+   [
+    "mixed | negative",
+    97
+   ],
+   [
+    "mixed | positive",
+    37
+   ],
+   [
+    "negative | positive",
+    26
+   ],
+   [
+    "negative | neutral",
+    11
+   ],
+   [
+    "mixed | neutral",
+    4
+   ]
+  ],
+  "T3": [
+   [
+    "low | medium",
+    166
+   ],
+   [
+    "high | medium",
+    49
+   ],
+   [
+    "high | low",
+    9
+   ]
+  ],
+  "T4": [
+   [
+    "unclear | yes",
+    480
+   ],
+   [
+    "no | unclear",
+    162
+   ],
+   [
+    "no | yes",
+    3
+   ]
+  ],
+  "T5": [
+   [
+    "no | yes",
+    382
+   ]
+  ]
+ },
+ "drop_one_judge": {
+  "None": {
+   "T1_alpha": 0.6928,
+   "T4_alpha": 0.4165,
+   "T5_alpha": 0.392
+  },
+  "gemma2_9b": {
+   "T1_alpha": 0.6885,
+   "T4_alpha": 0.2837,
+   "T5_alpha": 0.2394
+  },
+  "llama31_8b": {
+   "T1_alpha": 0.6908,
+   "T4_alpha": 0.606,
+   "T5_alpha": 0.2172
+  },
+  "mistral_7b": {
+   "T1_alpha": 0.6688,
+   "T4_alpha": 0.3275,
+   "T5_alpha": 0.3409
+  },
+  "qwen3_8b": {
+   "T1_alpha": 0.7233,
+   "T4_alpha": 0.4218,
+   "T5_alpha": 0.6581
+  }
+ },
+ "intent_support_flagged_by_k_judges": {
+  "product_defect": {
+   "flagged_by_at_least_1": 137,
+   "by_2": 91,
+   "by_3": 71
+  },
+  "delivery": {
+   "flagged_by_at_least_1": 29,
+   "by_2": 14,
+   "by_3": 2
+  },
+  "customer_service": {
+   "flagged_by_at_least_1": 26,
+   "by_2": 7,
+   "by_3": 3
+  },
+  "pricing": {
+   "flagged_by_at_least_1": 84,
+   "by_2": 28,
+   "by_3": 10
+  },
+  "praise": {
+   "flagged_by_at_least_1": 257,
+   "by_2": 234,
+   "by_3": 216
+  },
+  "question": {
+   "flagged_by_at_least_1": 6,
+   "by_2": 2,
+   "by_3": 0
+  },
+  "return_refund_request": {
+   "flagged_by_at_least_1": 18,
+   "by_2": 6,
+   "by_3": 5
+  },
+  "suggestion": {
+   "flagged_by_at_least_1": 103,
+   "by_2": 39,
+   "by_3": 7
+  },
+  "competitor_comparison": {
+   "flagged_by_at_least_1": 17,
+   "by_2": 4,
+   "by_3": 2
+  },
+  "spam_irrelevant": {
+   "flagged_by_at_least_1": 8,
+   "by_2": 4,
+   "by_3": 1
+  }
+ },
+ "sentiment_vs_stars": {
+  "1-2": {
+   "negative": 32,
+   "positive": 2
+  },
+  "3": {
+   "negative": 22,
+   "positive": 3,
+   "mixed": 4
+  },
+  "4-5": {
+   "positive": 198,
+   "mixed": 6,
+   "negative": 8
+  }
+ },
+ "proposed_T4_explicit_no_binary": {
+  "n_units": 298,
+  "alpha": 0.7002,
+  "fleiss_kappa": 0.7216,
+  "fleiss_n_complete": 279,
+  "pairwise_agreement": 0.9048,
+  "clear_consensus": 0.9329,
+  "unanimous": 0.8221
+ },
+ "proposed_T5_derived": {
+  "items_with_consensus_sentiment": 275,
+  "mismatch_yes": 10,
+  "judge_consensus_yes": 54,
+  "judge_consensus_n": 257
+ }
+}
