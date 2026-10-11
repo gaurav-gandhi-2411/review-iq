@@ -1,0 +1,12 @@
+# Allow-list for any `vercel deploy` run from the REPO ROOT (S18 V1).
+# The only deployable surface of this repo is web/ (a Vite SPA). Everything else (app/, data/,
+# eval/, ops/, reports/, the Python project files) must never be uploaded. Production deploys
+# come from git push to main (CLAUDE rule 31a), so this is a safety net for accidental CLI runs.
+# Syntax is gitignore-style; tests/test_vercelignore.py checks it with `git check-ignore`.
+/*
+!/web
+/web/node_modules
+/web/dist
+/web/.vercel
+/web/.env
+/web/.env.*
