@@ -37,7 +37,7 @@ def metadata(slug: str, datasets: list[str]) -> dict:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", required=True, choices=["A", "S", "B"])
+    ap.add_argument("--stage", required=True, choices=["A", "S", "B", "P"])
     ap.add_argument("--items", required=True)
     ap.add_argument("--dataset", required=True)
     ap.add_argument("--prior", default="")
