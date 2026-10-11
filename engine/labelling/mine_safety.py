@@ -72,11 +72,37 @@ def main() -> int:
             seen.add(sha)
             kept += 1
             per_kw.update(h)
-            out.write(json.dumps({"sha": sha, "src": a.source_tag, "id": row.get("id"), "kw": h,
-                                  "product": row.get("product_name"), "text": t}, ensure_ascii=False) + "\n")
-    Path(a.counts).write_text(json.dumps({"corpus_rows": n, "hits_kept": kept, "hits_excluded_ledger_or_dup": excluded,
-                                          "per_keyword": dict(per_kw.most_common())}, indent=1) + "\n")
-    print(json.dumps({"rows": n, "kept": kept, "excluded": excluded, "per_kw": dict(per_kw.most_common())}))
+            out.write(
+                json.dumps(
+                    {
+                        "sha": sha,
+                        "src": a.source_tag,
+                        "id": row.get("id"),
+                        "kw": h,
+                        "product": row.get("product_name"),
+                        "text": t,
+                    },
+                    ensure_ascii=False,
+                )
+                + "\n"
+            )
+    Path(a.counts).write_text(
+        json.dumps(
+            {
+                "corpus_rows": n,
+                "hits_kept": kept,
+                "hits_excluded_ledger_or_dup": excluded,
+                "per_keyword": dict(per_kw.most_common()),
+            },
+            indent=1,
+        )
+        + "\n"
+    )
+    print(
+        json.dumps(
+            {"rows": n, "kept": kept, "excluded": excluded, "per_kw": dict(per_kw.most_common())}
+        )
+    )
     return 0
 
 
