@@ -106,6 +106,17 @@ CROSS_PRODUCT_BOOST_WEIGHT = 0.5
 TIMING_CONCENTRATION_BUCKETS = 8
 
 
+@dataclass(frozen=True)
+class _LegacyReview:
+    """Legacy review shape (with the stubbed reviewer_id) for the unused scorer below."""
+
+    review_id: str
+    product_id: str
+    reviewer_id: str
+    timestamp: datetime
+    text: str
+
+
 @dataclass
 class BurstWindow:
     """The highest-CONFIDENCE BURST_HOURS-wide window found for one product, if any -- see
@@ -113,7 +124,7 @@ class BurstWindow:
 
     start: datetime
     end: datetime
-    reviews: list[Review]
+    reviews: list[_LegacyReview]
     ratio_vs_baseline: float
 
 
@@ -122,7 +133,7 @@ def _token_set(text: str) -> frozenset[str]:
     return frozenset(normalize_cluster_text(text).split())
 
 
-def _near_dup_score(reviews: list[Review]) -> float:
+def _near_dup_score(reviews: list[_LegacyReview]) -> float:
     """Fraction of long-enough reviews that fall into a near-duplicate (Jaccard-clustered) group,
     beyond exact-text duplication -- catches templated campaigns with minor word substitutions
     that `normalize_cluster_text` alone treats as distinct. Gated to MIN_WORDS_FOR_NEAR_DUP+ words
@@ -160,7 +171,7 @@ def _near_dup_score(reviews: list[Review]) -> float:
 
 
 def _cross_product_score(
-    window_reviews: list[Review], reviewer_products: dict[str, set[str]]
+    window_reviews: list[_LegacyReview], reviewer_products: dict[str, set[str]]
 ) -> float:
     """Fraction of a burst window's DISTINCT reviewers who also appear elsewhere in the corpus
     under a different product_id -- a coordination-farm signature (the same accounts posting
@@ -196,7 +207,7 @@ def _timing_concentration_score(window: BurstWindow) -> float:
 
 
 def find_best_burst_window(
-    product_reviews: list[Review], reviewer_products: dict[str, set[str]]
+    product_reviews: list[_LegacyReview], reviewer_products: dict[str, set[str]]
 ) -> tuple[BurstWindow, float, float, float, float] | None:
     """Find the highest-CONFIDENCE BURST_HOURS-wide window in one product's review timeline, and
     return it pre-scored as (window, confidence, reviewer_concentration_score, text_dup_score,
