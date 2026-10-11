@@ -1,0 +1,228 @@
+name: Migration Rehearsal
+
+# Rehearse a PR's PENDING migrations on a RESTORED copy of the latest nightly backup.
+# GG's binding decision (S22): NO production DB credential in CI, ever -- this repo is public.
+# So nothing here can reach production. The latest encrypted db-backup artifact is decrypted
+# into a throwaway postgres:17 service container (as ops/runbooks/db-restore.md does), the
+# migrations the PR adds are applied there through supabase/push.py as the non-superuser
+# review_iq_migrator, push.py --verify runs every postcondition, and the PR's undo cases are
+# replayed. What this does and does NOT prove: docs/ops/migration-rehearsal.md.
+#
+# The three job ids below are what claude-config's merge gate (GATE4_EVIDENCE_CONFIG,
+# review-iq "migration") requires: rehearse-prod-rollback, undo-case, postconditions.
+
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/**"
+      - "supabase/push.py"
+      - "supabase/postconditions.py"
+      - "supabase/ci/**"
+      - "tests/integration/test_push_postconditions.py"
+      - ".github/workflows/migration-rehearsal.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read # gh run download of the backup artifact (GITHUB_TOKEN)
+
+concurrency:
+  group: migration-rehearsal-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Throwaway container credentials only; the service DB dies with the job.
+  TEST_DB_HOST: localhost
+  TEST_DB_PORT: "5432"
+  TEST_DB_SSLMODE: disable
+  SUPABASE_DB_PASSWORD: ci_postgres_password
+  MAX_BACKUP_AGE_HOURS: "72"
+
+jobs:
+  rehearse-prod-rollback:
+    # Fork PRs get no secrets, so the key cannot be read: the job is SKIPPED (a skipped required
+    # job is not a pass for the merge gate). workflow_dispatch always runs.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    # Pinned like db-restore-test.yml: gh + gpg + docker service all stable on 24.04.
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: ci_postgres_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      REHEARSAL_HOST: localhost
+      REHEARSAL_PORT: "5432"
+      REHEARSAL_DBNAME: postgres
+      REHEARSAL_USER: postgres
+      REHEARSAL_PASSWORD: ci_postgres_password
+      PGPASSWORD: ci_postgres_password
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - name: Install dependencies
+        run: |
+          uv sync --frozen
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends postgresql-client
+
+      - name: Download the latest successful db-backup artifact (fail if older than 72h)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          RUN=$(gh run list --workflow=db-backup.yml --repo "${{ github.repository }}" \
+            --status success --limit 1 --json databaseId,createdAt)
+          RUN_ID=$(jq -r '.[0].databaseId // empty' <<< "$RUN")
+          CREATED=$(jq -r '.[0].createdAt // empty' <<< "$RUN")
+          if [ -z "$RUN_ID" ]; then
+            echo "::error::No successful db-backup run found: cannot rehearse without a backup."
+            exit 1
+          fi
+          AGE_H=$(( ( $(date -u +%s) - $(date -u -d "$CREATED" +%s) ) / 3600 ))
+          echo "Latest successful db-backup run ${RUN_ID} created ${CREATED} (${AGE_H}h old)"
+          if [ "$AGE_H" -gt "$MAX_BACKUP_AGE_HOURS" ]; then
+            echo "::error::Latest successful backup is ${AGE_H}h old (> ${MAX_BACKUP_AGE_HOURS}h). Nightly backups are failing; a rehearsal on stale data proves little. See ops/runbooks/db-restore.md."
+            exit 1
+          fi
+          mkdir -p backup
+          gh run download "$RUN_ID" --repo "${{ github.repository }}" --dir backup
+          find backup -type f -name '*.sql.gz.gpg' | head -1 > backup/path.txt
+          [ -s backup/path.txt ] || { echo "::error::no .sql.gz.gpg in run ${RUN_ID}"; exit 1; }
+
+      - name: Decrypt the backup
+        env:
+          DB_BACKUP_ENCRYPTION_KEY: ${{ secrets.DB_BACKUP_ENCRYPTION_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "$DB_BACKUP_ENCRYPTION_KEY" ]; then
+            echo "::error::DB_BACKUP_ENCRYPTION_KEY is not available (fork PR or unset secret)."
+            exit 1
+          fi
+          echo "::add-mask::$DB_BACKUP_ENCRYPTION_KEY"
+          # passphrase via stdin only, never argv (same as db-backup.yml / restore_one.sh)
+          gpg --batch --yes --decrypt --passphrase-fd 0 --output backup/dump.sql.gz \
+            "$(cat backup/path.txt)" <<< "$DB_BACKUP_ENCRYPTION_KEY"
+          gunzip -t backup/dump.sql.gz
+          echo "decrypted + gzip OK ($(du -h backup/dump.sql.gz | cut -f1))"
+
+      - name: Create roles, then restore into the service database
+        run: |
+          set -uo pipefail
+          P="psql -h localhost -U postgres -X -q"
+          # --schema=public dumps carry no roles: bootstrap the Supabase ones, then every role the
+          # dump references, then the three app roles exactly as production has them.
+          $P -d postgres -f supabase/ci/bootstrap_supabase_roles.sql
+          for ROLE in $(uv run python scripts/verify_restore.py roles backup/dump.sql.gz); do
+            $P -d postgres -c "DO \$\$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname='${ROLE}') THEN CREATE ROLE \"${ROLE}\" NOLOGIN; END IF; END \$\$;"
+          done
+          for ROLE in review_iq_migrator review_iq_app review_iq_admin; do
+            $P -d postgres -c "DO \$\$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname='${ROLE}') THEN CREATE ROLE ${ROLE} NOLOGIN; END IF; END \$\$;"
+          done
+          # Same attributes 20260801000001 gives them; CI password is throwaway. The migrator is
+          # NOT a superuser, so push.py hits the same ownership walls as in production.
+          $P -d postgres -c "ALTER ROLE review_iq_migrator LOGIN BYPASSRLS PASSWORD 'ci_migrator_password'" \
+            -c "ALTER ROLE review_iq_admin LOGIN BYPASSRLS" \
+            -c "GRANT ALL ON SCHEMA public TO review_iq_migrator"
+          gunzip -c backup/dump.sql.gz | psql -h localhost -U postgres -d postgres -X \
+            -v ON_ERROR_STOP=0 > backup/restore.out 2> backup/restore.err || true
+          NERR=$(grep -c 'ERROR:' backup/restore.err || true)
+          echo "psql ERROR lines during restore: ${NERR}"
+          grep 'ERROR:' backup/restore.err | sort | uniq -c | sort -rn | head -20 || true
+          [ "${NERR}" = "0" ]
+          rm -f backup/dump.sql.gz
+
+      - name: Pending migrations and pre-apply row counts
+        id: pre
+        run: |
+          set -euo pipefail
+          uv run python supabase/ci/rehearse_pending.py pending > pending.txt
+          uv run python supabase/ci/rehearse_pending.py counts counts_pre.json
+          if [ -s pending.txt ]; then
+            echo "Pending migrations (in this checkout, not in the restored ledger):"
+            sed 's/^/  /' pending.txt
+          else
+            echo "NO pending migrations: this PR adds none the backup lacks. The apply and undo"
+            echo "steps below pass trivially (nothing to apply); --verify still audits the restore."
+          fi
+
+      - name: Apply pending migrations as review_iq_migrator, then verify
+        env:
+          SUPABASE_DIRECT_URL: postgresql://review_iq_migrator:ci_migrator_password@localhost:5432/postgres?sslmode=disable
+          PYTHONIOENCODING: utf-8
+        run: |
+          set -euo pipefail
+          # push.py's own mechanism: ledger, per-file transaction, postconditions before ledgering.
+          uv run python supabase/push.py --target prod
+          uv run python supabase/push.py --verify --target prod
+
+      - name: Row counts after apply (no table may lose rows)
+        run: |
+          set -euo pipefail
+          uv run python supabase/ci/rehearse_pending.py counts counts_post.json
+          uv run python supabase/ci/rehearse_pending.py compare counts_pre.json counts_post.json
+
+      - name: Rehearse rollback via the migrations' undo cases
+        run: |
+          set -euo pipefail
+          if [ ! -s pending.txt ]; then
+            echo "No pending migrations: nothing to roll back (trivial pass)."
+            exit 0
+          fi
+          # Each undo runs in a transaction that is rolled back; baseline must PASS, undo must FAIL.
+          # shellcheck disable=SC2046
+          uv run python supabase/ci/rehearse_pending.py undo $(cat pending.txt)
+
+  undo-case:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: ci_postgres_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - run: uv sync --frozen
+      - name: UNDO_CASES on a fresh migrator-built database
+        # -k selects the undo parametrisation plus the two completeness checks (every migration
+        # with postconditions has a case; no case names a stale postcondition).
+        run: |
+          uv run pytest tests/integration/test_push_postconditions.py -m integration --no-cov \
+            -k "goes_false_when_the_migrations_effect_is_undone or has_an_undo_case or names_a_real_postcondition"
+
+  postconditions:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: ci_postgres_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - run: uv sync --frozen
+      - name: Every migration's postconditions on a fresh migrator-built database
+        run: |
+          uv run pytest tests/integration/test_push_postconditions.py -m integration --no-cov \
+            -k "verify_passes_every_postcondition or migrator_applied or owns_everything"
