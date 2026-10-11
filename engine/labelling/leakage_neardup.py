@@ -44,20 +44,24 @@ def shingles(s: str, k: int) -> set[int]:
     return {zlib.crc32(s[i : i + k].encode("utf-8")) for i in range(len(s) - k + 1)}
 
 
-def build_fingerprints(texts: Path) -> dict:
+def build_fingerprints(texts: list[Path]) -> dict:
+    """Fingerprints of every sealed item found in the given private text files (scale sample AND safety items)."""
     sealed = sealed_hashes()
     items = {}
-    for ln in texts.open(encoding="utf-8"):
-        d = json.loads(ln)
-        c = clean(d["text"])
-        if text_sha(c) not in sealed:
-            continue
-        n = norm(c)
-        items[text_sha(c)] = {
-            "n": len(n),
-            "gj": sorted(shingles(n, 4)),
-            "g12": sorted(shingles(n, 12)),
-        }
+    for path in texts:
+        for ln in path.open(encoding="utf-8"):
+            d = json.loads(ln)
+            c = clean(d["text"])
+            if text_sha(c) not in sealed:
+                continue
+            n = norm(c)
+            items[text_sha(c)] = {
+                "n": len(n),
+                "gj": sorted(shingles(n, 4)),
+                "g12": sorted(shingles(n, 12)),
+            }
+    if missing := sealed - set(items):
+        raise SystemExit(f"{len(missing)} sealed hashes have no text in the given files")
     return {"jaccard": JACCARD, "contain": CONTAIN, "items": items}
 
 
@@ -127,7 +131,7 @@ def scan(fp: dict, files: list[str] | None = None, root: Path = ROOT) -> list[tu
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("cmd", choices=["build", "scan"])
-    ap.add_argument("--texts", type=Path)
+    ap.add_argument("--texts", type=Path, nargs="+")
     a = ap.parse_args()
     if a.cmd == "build":
         fp = build_fingerprints(a.texts)
