@@ -4,7 +4,7 @@
     python -m engine.intent.report --run2 reports/intent/eval_run2.json --run1 reports/intent/eval_run1.json \
         --curve reports/intent/run2/epoch_log.json --meta reports/intent/run2/metadata.json \
         --cpu fp32_cpu=... int8_linear=... int8_full=... --quant reports/intent/run2_cpu/metadata.json \
-        --latency reports/intent/latency_run2.json > docs/reports/review-intent-model.md
+        --latency reports/intent/latency_run2.json > reports/intent/model_report.md
 
 Every number sits inside a `<!-- METRICS:START:<name> --> ... <!-- METRICS:END -->` block (the convention checked by
 scripts/check_no_hardcoded_metrics.py); the prose outside the blocks states method and caveats and carries no figures.
