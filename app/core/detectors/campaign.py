@@ -42,11 +42,18 @@ import math
 import re
 from collections import defaultdict
 from collections.abc import Sequence
-from dataclasses import dataclass
-from datetime import datetime, timedelta
+from dataclasses import dataclass, field
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from app.core.detectors.campaign_signals import CampaignParams, ProductStream, WindowEvidence
+from app.core.detectors.campaign_signals import (
+    DEFAULT_PARAMS,
+    CampaignParams,
+    ProductStream,
+    Review,
+    WindowEvidence,
+    epoch_seconds,
+)
 
 # Same aggressive normalization used in benchmark/phase2_campaign/artifact_filter.py -- inlined,
 # see module docstring for why.
@@ -99,17 +106,6 @@ CROSS_PRODUCT_BOOST_WEIGHT = 0.5
 TIMING_CONCENTRATION_BUCKETS = 8
 
 
-@dataclass(frozen=True)
-class Review:
-    """One review normalized into the fields this detector needs."""
-
-    review_id: str
-    product_id: str
-    reviewer_id: str
-    timestamp: datetime
-    text: str
-
-
 @dataclass
 class BurstWindow:
     """The highest-CONFIDENCE BURST_HOURS-wide window found for one product, if any -- see
@@ -119,25 +115,6 @@ class BurstWindow:
     end: datetime
     reviews: list[Review]
     ratio_vs_baseline: float
-
-
-@dataclass
-class CampaignFlag:
-    """One flagged product with its combined confidence score and human-readable evidence."""
-
-    product_id: str
-    confidence: float
-    evidence: dict[str, Any]
-
-    def to_dict(self) -> dict[str, Any]:
-        """Flatten to the JSON output record shape."""
-        return {
-            "product_id": self.product_id,
-            # Display rounding only: threshold comparisons (alert sweep, min_confidence) use
-            # the full-precision field, never this rounded copy.
-            "confidence": round(self.confidence, 4),
-            "evidence": self.evidence,
-        }
 
 
 def _token_set(text: str) -> frozenset[str]:
@@ -332,96 +309,6 @@ def score_burst_window(
     return confidence, reviewer_concentration_score, text_dup_score, cross_product_score
 
 
-def scan_product(
-    product_id: str, product_reviews: list[Review], reviewer_products: dict[str, set[str]]
-) -> CampaignFlag | None:
-    """Run the full scan for one product; returns a flag only if a burst was found AND its
-    confidence clears CONFIDENCE_REPORT_THRESHOLD -- the burst gate alone is not sufficient
-    (see that constant's comment for why)."""
-    found = find_best_burst_window(product_reviews, reviewer_products)
-    if found is None:
-        return None
-    window, confidence, reviewer_concentration_score, text_dup_score, cross_product_score = found
-    if confidence < CONFIDENCE_REPORT_THRESHOLD:
-        return None
-    window_count = len(window.reviews)
-    distinct_reviewers = len({r.reviewer_id for r in window.reviews})
-    distinct_texts = len({normalize_cluster_text(r.text) for r in window.reviews})
-
-    reviewer_counts: dict[str, int] = defaultdict(int)
-    text_counts: dict[str, int] = defaultdict(int)
-    for review in window.reviews:
-        reviewer_counts[review.reviewer_id] += 1
-        text_counts[normalize_cluster_text(review.text)] += 1
-    top_reviewer_ids = [
-        rid for rid, _ in sorted(reviewer_counts.items(), key=lambda kv: -kv[1])[:5]
-    ]
-    top_texts = [text for text, _ in sorted(text_counts.items(), key=lambda kv: -kv[1])[:5]]
-
-    evidence = {
-        "burst_window": {
-            "start": window.start.isoformat().replace("+00:00", "Z"),
-            "end": window.end.isoformat().replace("+00:00", "Z"),
-        },
-        "burst_hours": BURST_HOURS,
-        "window_review_count": window_count,
-        "burst_ratio_vs_baseline": round(window.ratio_vs_baseline, 3),
-        "distinct_reviewers": distinct_reviewers,
-        "distinct_texts": distinct_texts,
-        "reviewer_concentration_score": round(reviewer_concentration_score, 3),
-        "text_dup_score": round(text_dup_score, 3),
-        "cross_product_score": round(cross_product_score, 3),
-        "timing_concentration_score": round(_timing_concentration_score(window), 3),
-        "review_ids": [r.review_id for r in window.reviews],
-        "top_reviewer_ids": top_reviewer_ids,
-        "top_texts": top_texts,
-    }
-    return CampaignFlag(product_id=product_id, confidence=confidence, evidence=evidence)
-
-
-def scan_corpus(reviews: list[Review]) -> list[CampaignFlag]:
-    """Group reviews by product and scan each product independently; no product is hardcoded.
-
-    Builds a corpus-wide reviewer_id -> {product_ids reviewed} map once, used only by the
-    cross-product-reuse amplifier signal -- the only place any product's scan depends on data
-    outside its own reviews.
-    """
-    by_product: dict[str, list[Review]] = defaultdict(list)
-    reviewer_products: dict[str, set[str]] = defaultdict(set)
-    for review in reviews:
-        by_product[review.product_id].append(review)
-        reviewer_products[review.reviewer_id].add(review.product_id)
-
-    flags = [scan_product(pid, prs, reviewer_products) for pid, prs in by_product.items()]
-    return sorted((f for f in flags if f is not None), key=lambda f: -f.confidence)
-
-
-def campaign_reviews_from_rows(rows: list[dict[str, Any]]) -> list[Review]:
-    """Adapt app.core.storage_pg.list_dated_extractions_pg's row dicts into Review objects.
-
-    `reviewer_id` is stubbed to the review's own `id` (guaranteed unique per review) --
-    `extractions` has no reviewer-identity column to populate honestly (no ingestion path
-    captures it yet). This forces BOTH `reviewer_concentration_score` AND `cross_product_score`
-    to always be 0 (distinct_reviewers == window_count always; every stub id maps to exactly one
-    product forever), leaving `text_dup_score` (real review_text, exact + near-dup) as the only
-    confidence driver. Pure recall reduction, never a false-positive risk -- see module docstring
-    for the full explanation.
-
-    Each row must have `id`, `product`, `review_text`, `review_date` keys (see
-    list_dated_extractions_pg's return shape).
-    """
-    return [
-        Review(
-            review_id=row["id"],
-            product_id=row["product"] or "unknown product",
-            reviewer_id=row["id"],
-            timestamp=row["review_date"],
-            text=row["review_text"] or "",
-        )
-        for row in rows
-    ]
-
-
 SIGNAL_BURST = "burst"
 SIGNAL_TEMPLATE = "template"
 SIGNAL_RATING = "rating_shift"
@@ -533,3 +420,96 @@ def build_explanation(ev: WindowEvidence, fired: Sequence[str]) -> str:
         )
     parts.append("Worth reviewing together.")
     return " ".join(parts)
+
+
+@dataclass
+class CampaignFlag:
+    """One alert on one product: the pattern, which signals fired, and the counts."""
+
+    product_id: str
+    alert_time: datetime
+    width_hours: int
+    signals_fired: list[str]
+    review_count: int
+    explanation: str
+    evidence: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "product_id": self.product_id,
+            "review_count": self.review_count,
+            "window_label": window_label(self.width_hours),
+            "signals_fired": list(self.signals_fired),
+            "explanation": self.explanation,
+            "evidence": self.evidence,
+        }
+
+
+def flag_from_alert(stream: ProductStream, product_id: str, alert: Alert) -> CampaignFlag:
+    ev = alert.evidence
+    t_end = datetime.fromtimestamp(alert.timestamp, tz=UTC)
+    t_start = t_end - timedelta(hours=alert.width_hours)
+    lo = alert.index - ev.n + 1
+    evidence: dict[str, Any] = {
+        "window": {
+            "start": t_start.isoformat().replace("+00:00", "Z"),
+            "end": t_end.isoformat().replace("+00:00", "Z"),
+        },
+        "window_hours": alert.width_hours,
+        "review_count": ev.n,
+        "expected_count": round(ev.expected, 2),
+        "burst_strength": None if ev.burst is None else round(ev.burst, 2),
+        "near_identical_group_size": ev.template_k,
+        "window_mean_rating": None if ev.window_mean is None else round(ev.window_mean, 2),
+        "history_mean_rating": None if ev.history_mean is None else round(ev.history_mean, 2),
+        "review_ids": [stream.reviews[j].review_id for j in range(lo, alert.index + 1)],
+        "near_identical_review_ids": [stream.reviews[j].review_id for j in ev.template_members],
+    }
+    return CampaignFlag(
+        product_id=product_id,
+        alert_time=t_end,
+        width_hours=alert.width_hours,
+        signals_fired=list(alert.fired),
+        review_count=ev.n,
+        explanation=build_explanation(ev, alert.fired),
+        evidence=evidence,
+    )
+
+
+def scan_corpus(
+    reviews: Sequence[Review],
+    params: CampaignParams = DEFAULT_PARAMS,
+    since: datetime | None = None,
+) -> list[CampaignFlag]:
+    """Group reviews by product, scan each product's stream, return alerts (newest first).
+    `since` keeps only alerts opened at or after it (the sweep passes a recent cutoff so that
+    enabling the detector does not replay a product's whole history as alerts)."""
+    by_product: dict[str, list[Review]] = defaultdict(list)
+    for r in reviews:
+        by_product[r.product_id].append(r)
+    flags: list[CampaignFlag] = []
+    for pid, prs in by_product.items():
+        if len(prs) < params.warmup_reviews:
+            continue
+        stream = ProductStream(prs, params)
+        for alert in scan_stream(stream):
+            if since is None or alert.timestamp >= epoch_seconds(since):
+                flags.append(flag_from_alert(stream, pid, alert))
+    return sorted(flags, key=lambda f: f.alert_time, reverse=True)
+
+
+def campaign_reviews_from_rows(rows: list[dict[str, Any]]) -> list[Review]:
+    """Adapt app.core.storage_pg.list_dated_extractions_pg rows. Those rows carry no rating and
+    no verified flag today, so only the burst and template signals are active in production
+    until ingestion plumbs them (a rating or verified key is used when a row has one)."""
+    return [
+        Review(
+            review_id=row["id"],
+            product_id=row["product"] or "unknown product",
+            timestamp=row["review_date"],
+            text=row["review_text"] or "",
+            rating=row.get("rating"),
+            verified=row.get("verified"),
+        )
+        for row in rows
+    ]
