@@ -137,7 +137,9 @@ def check() -> list[str]:
         problems.append("ledger entries are stale: run `build`")
     leaked = {h for _, h in scan_repo(sealed)}
     if unrecorded := leaked - set(ledger["sealed_excluded"]):
-        problems.append(f"(d) {len(unrecorded)} sealed texts found in tracked files and not excluded")
+        problems.append(
+            f"(d) {len(unrecorded)} sealed texts found in tracked files and not excluded"
+        )
     if stale := set(ledger["sealed_excluded"]) - sealed:
         problems.append(f"(d) {len(stale)} excluded hashes are not in the sealed set")
     return problems
