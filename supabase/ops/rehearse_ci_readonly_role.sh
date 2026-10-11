@@ -24,7 +24,10 @@ must_fail "ALTER TABLE" ro "ALTER TABLE public.organizations ADD COLUMN ro_probe
 must_fail "CREATE ROLE" ro "CREATE ROLE ro_probe_role"
 must_fail "ALTER ROLE self to SUPERUSER" ro "ALTER ROLE ci_readonly SUPERUSER"
 must_fail "GRANT" ro "GRANT ALL ON public.organizations TO PUBLIC"
-must_fail "nextval (sequence write)" ro "SELECT nextval(c.oid) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind='S' LIMIT 1"
+psql "$ADMIN_DSN" -v ON_ERROR_STOP=1 -qc "CREATE SEQUENCE public.ro_seq"
+must_succeed "SELECT on sequence" ro "SELECT last_value FROM public.ro_seq"
+must_fail "nextval (sequence write)" ro "SELECT nextval('public.ro_seq')"
+psql "$ADMIN_DSN" -qc "DROP SEQUENCE public.ro_seq"
 
 # A table created AFTER the role script (as the superuser) must be readable: default privileges.
 psql "$ADMIN_DSN" -v ON_ERROR_STOP=1 -qc "CREATE TABLE public.ro_future (i int); INSERT INTO public.ro_future VALUES (1)"
@@ -32,7 +35,8 @@ must_succeed "SELECT on table created later (default privileges)" ro "SELECT i F
 psql "$ADMIN_DSN" -qc "DROP TABLE public.ro_future"
 
 # The backup path: pg_dump 17 as ci_readonly must contain the seeded organization row.
-if pg_dump --no-password --clean --if-exists --schema=public "$RO_DSN" | grep -q "rehearsal-ro"; then
+# To a file, not a pipe into grep -q: an early grep exit gives pg_dump a spurious EPIPE.
+if pg_dump --no-password --clean --if-exists --schema=public "$RO_DSN" > /tmp/ro_dump.sql && grep -q "rehearsal-ro" /tmp/ro_dump.sql; then
   ok "pg_dump as ci_readonly includes row data"
 else
   bad "pg_dump as ci_readonly is incomplete or failed"
