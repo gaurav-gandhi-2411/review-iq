@@ -39,8 +39,13 @@ definitions, four model families) gave: sentiment alpha 0.759 and urgency 0.683 
 intent 0.653 FAIL; explicit-no-repurchase 0.487 FAIL; aspect presence FAIL; aspect sentiment usable for beauty and
 food; mining did not fill the rare classes. Amendment 4 (committed before any run) coarsens the taxonomy to
 `needs_action` (yes/no) and a five-value broad intent, keeps sentiment, urgency and beauty/food aspect sentiment,
-and re-pilots on 360 fresh items (zero overlap with earlier pilots, verified). Re-pilot 2 is running on Kaggle.
-Labelling at scale starts only for tasks that pass; the gate is unchanged.
+and re-pilots on 360 fresh items (zero overlap with earlier pilots, verified). Re-pilot 2 (VERIFIED, `reports/labelling/pilot3/repilot2.json`, #389): no task PASSes; five are
+USABLE-WITH-CAVEAT (needs_action alpha 0.789 / consensus 0.960; 5-class intent 0.711 / 0.903; sentiment 0.719 /
+0.883; urgency 0.704 / 0.930; aspect sentiment beauty 0.749, food 0.744). delivery and service have 4 consensus
+items each: reported as insufficient data. Amendment 5 (#390, merged before any scale run) sets the scale-labelling
+rule: two-judge training labels with a mistral tiebreak, a four-judge sealed test, about 5,000 items, gate
+unchanged. Scale labelling is RUNNING on Kaggle (sealed set done: 763 items, both judges; training stage in
+progress); training and the sealed evaluation follow.
 
 **What each feature needs.**
 - Per-review classes (defect, delivery, refund request...): the customers' own reviews (Judge.me ingestion, a
@@ -72,11 +77,12 @@ Labelling at scale starts only for tasks that pass; the gate is unchanged.
 | Open-set / novel issue | Rejection recall at 0.95 validation retention, AUROC | Beat calibrated softmax with CI excluding zero; known retention at least 0.90 | Mahalanobis best AUROC on all four unknown sets; rejection recall 0.43 (MASSIVE-en) to 0.93 (CLINC150 out-of-scope) | MEASURED on public data |
 | CPU serving (int8 ONNX) | p50 and p95 latency on one thread, cost per 1,000 | p95 under 100 ms | e5 p50 44.5 ms, p95 65.1 ms; MiniLM p50 16.2 ms, p95 22.1 ms (Kaggle Xeon 2.2 GHz); about 0.0013 and 0.0005 USD per 1,000 (arithmetic from remembered Cloud Run rates, BELIEVED) | MEASURED in process; not deployed |
 | Review intent, pilot 1 | Krippendorff alpha, clear-consensus fraction (the coverage ceiling) | alpha 0.80 and consensus 0.80 to pass | Intent 0.693 / 0.893, sentiment 0.772 / 0.923, urgency 0.716 / 0.916, buy_again 0.416, mismatch 0.392, aspect presence 0.23 to 0.33 | GATE NOT PASSED |
-| Review intent, re-pilot 1 (random 300) | alpha, clear-consensus fraction | alpha 0.80 and consensus 0.80 to pass | Sentiment 0.759 / 0.923, urgency 0.683 / 0.897 (both USABLE-WITH-CAVEAT); 10-class intent 0.653 / 0.863 FAIL; explicit-no 0.487 / 0.957 FAIL | NOT PASSED; coarse taxonomy pre-registered (Amendment 4); re-pilot 2 running |
+| Review intent, re-pilot 1 (random 300) | alpha, clear-consensus fraction | alpha 0.80 and consensus 0.80 to pass | Sentiment 0.759 / 0.923, urgency 0.683 / 0.897 (both USABLE-WITH-CAVEAT); 10-class intent 0.653 / 0.863 FAIL; explicit-no 0.487 / 0.957 FAIL | NOT PASSED; led to the coarse taxonomy (Amendment 4) |
+| Review intent, re-pilot 2 (random 300, coarse taxonomy) | alpha, clear-consensus fraction | alpha 0.80 and consensus 0.80 to pass | needs_action 0.789 / 0.960; 5-class intent 0.711 / 0.903; sentiment 0.719 / 0.883; urgency 0.704 / 0.930; beauty 0.749 / 0.908, food 0.744 / 0.844 | NO PASS; five USABLE-WITH-CAVEAT; delivery/service insufficient data; `reports/labelling/pilot3/repilot2.json` |
 | Calibration vs prompted LLM (the headline) | Coverage at 95 percent precision, paired items | Claim only with intervals that separate | BANKING77: 0.964 [0.869, 1.000] against 0.131 [0.000, 0.488]; accuracy +0.131 [0.071, 0.196]. CLINC150 vs qwen: n 109, difference +0.055 [0.000, 0.119], underpowered | PROVEN on a public benchmark (n 168); not on review text; not on the public site |
 | Judge.me ingestion | Completeness, idempotency, edit/delete correctness, freshness, failure handling | 100 percent completeness; 0 duplicates after 5 re-runs; 100 percent edits and deletions after reconciliation; p95 freshness within the interval | All met on fixtures (synthetic): completeness 100 percent across 7 sizes and 3 orders; 0 duplicates; edit lag 1 run, deletion lag 12 h (unknown order); freshness p95 5.75 h at a 6 h schedule | CODE MERGED OFF; migration and real-store check pending |
 | Campaign (suspicious-pattern) detector | Alert-level recall, false alerts per product-month, time to detect | Recall above the best baseline with CI excluding zero, at most 1 false alert per product-month, wording test passes | SYNTHETIC: recall 0.880 [0.855, 0.903] vs best baseline 0.782; 0.060 false alerts per product-month on assumed-organic real streams; median 5 campaign reviews before the alert | USEFUL by the rule; draft PRs; flag stays off; no real-world claim |
-| Merge gate | Fails closed | A killed or slow hook must block | The merge hook (claude-config #44, live) now denies when the gate overruns 24 s; reproduced: old hook killed at 30 s with no verdict, new hook DENY at 24 s. `onFailure: block` (#45) and the standing waiver (#46) wait for GG: a merge attempt on 2026-10-11 was refused by the hook (gates 2 and 2b, no hosted CI), not routed around | PARTLY LIVE |
+| Merge gate | Fails closed | A killed or slow hook must block | claude-config #44, #45 and #46 are MERGED (the hook fails closed; the standing waiver for gates 1 and 3 exists in the repo). BELIEVED not yet live in GG's checkout: it has uncommitted edits to files the merge also changes, so I did not pull it. #48 (gate-4 evidence) is a draft in SHADOW mode with head-SHA pinning: it logs verdicts and enforces nothing; shadow verdicts are to be reported for 2 weeks before enforcement is proposed | PARTLY LIVE |
 | U4d injection twin control | Landing rate per attack type with exact McNemar test | All 74 pairs, 3 types | 52 of 74 pairs after day 3; partial, not a finding | RUNNING (days 4 and 5 after each 00:00 UTC Groq reset) |
 
 ## Measured (other)
@@ -94,12 +100,12 @@ Labelling at scale starts only for tasks that pass; the gate is unchanged.
 
 | Item | Blocked on |
 |---|---|
-| claude-config #45 (`onFailure: block`) and #46 (standing waiver, env fix, pre-gate caps) | GG merges: the merge hook refused CC's attempt on both (gates 2 and 2b; hosted CI is billing-blocked); then pull into the live checkout. The evidence-based gate-4 waiver (M1b) is also a claude-config PR and needs the same click |
-| Size-only review-iq PRs (#278, #323, #318, #268, #271, #273, #263) and `cache_env.sh` (#330) | #46 live (standing waiver) |
+| claude-config #48 (shadow mode + SHA pinning) | Owner review of the pin (every gated merge will need `--match-head-commit`); then 2 weeks of shadow verdicts before any enforcement proposal |
+| Size-only review-iq PRs | Done by splitting, not waiving: #278, #323, #271, #273, #263, #383, #389 and the campaign stack are merged as sub-400-line pieces (46 PRs merged since 07:00 UTC 2026-10-11, counted with gh). Not mergeable by gate: #429 and #432 (single JSON files over 400 lines, drafts), #318 and #268 (7,168 and 1,120 lines of one JSON file each; fragment splits were withdrawn because they leave invalid partial JSON on main) - these need the standing waiver live in the checkout |
 | Judge.me migration (#355) | GG: gate 4, apply with push.py; then #356 to #359 |
-| Recency dashboard: #263 CLEAN; #269 (migration, gate 4); #275 stacked on #263 | GG: #269 review and migration; #263 and #275 need the standing waiver |
+| Recency dashboard | #263 is merged as #440-#447. #269 (migration, gate 4) and #275 remain open |
 | #262 split into #360 to #369 | #361 is gate 4 (workflows, runbooks) and gates #362 onward; #367 and #368 are regenerated artifacts over the size cap |
-| Campaign detector stack #370 to #382 | The standing waiver (#372 is 544 reviewable lines), then merge in order |
+| Campaign detector stack | Merged (#372 to #379, #449 to #456); detector flag stays off. Real validation needs are in `docs/reports/campaign-real-validation-needs.md` (#388) |
 | Weekly digest Scheduler job and #298 | Deferred by GG |
 | Shopify stack #291 to #293 | GG: needs the Shopify app registration |
 | OpenRouter key rotation, Gemini clean-up (ADR 0035) | GG |
