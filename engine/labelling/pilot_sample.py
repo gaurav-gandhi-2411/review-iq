@@ -68,6 +68,9 @@ def main() -> None:
     ap.add_argument(
         "--mined-per-class", type=int, default=0, help="re-pilot: candidates mined per rare class"
     )
+    ap.add_argument(
+        "--mined-classes", default="", help="comma list restricting which mine.PATTERNS are mined"
+    )
     a = ap.parse_args()
 
     banned: set[str] = set()
@@ -104,7 +107,10 @@ def main() -> None:
     if a.mined_per_class:
         from engine.labelling import mine
 
+        wanted = [c for c in a.mined_classes.split(",") if c]
         for cls in mine.PATTERNS:
+            if wanted and cls not in wanted:
+                continue
             cands = {
                 st: [x for x in pl if x[2] not in picked and mine.matches(x[0], cls)]
                 for st, pl in pools.items()

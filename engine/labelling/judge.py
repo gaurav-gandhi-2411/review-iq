@@ -18,6 +18,7 @@ import httpx
 
 from engine.labelling import prompts as P
 from engine.labelling import prompts_v2 as P2
+from engine.labelling import prompts_v3 as P3
 
 
 def chat(
@@ -42,26 +43,26 @@ def chat(
     return "", 0, 0
 
 
-def _record_v2(base_url: str, model: str, it: dict) -> dict:
-    """v2: ONE text call (no stars, no mismatch call); one retry with a stricter reminder on a parse failure."""
+def _record_v2(base_url: str, model: str, it: dict, mod=P2) -> dict:  # noqa: ANN001 -- prompt module
+    """v2/v3: ONE text call (no stars, no mismatch call); one retry with a stricter reminder on a parse failure."""
     tin = tout = 0
     parsed, dropped, retried = None, 0, False
     for attempt in range(2):
         raw, a, b = chat(
             base_url,
             model,
-            P2.text_prompt(it["text"], it["category"], retry=attempt == 1),
+            mod.text_prompt(it["text"], it["category"], retry=attempt == 1),
             num_predict=700,
         )
         tin, tout = tin + a, tout + b
-        parsed, dropped = P2.parse_text(raw, it["category"], it["text"])
+        parsed, dropped = mod.parse_text(raw, it["category"], it["text"])
         if parsed is not None:
             break
         retried = True
     return {
         "text": parsed, "mismatch": None, "tokens_in": tin, "tokens_out": tout, "text_failed": parsed is None,
         "mismatch_failed": False, "aspects_dropped_unverifiable": dropped, "retried": retried,
-        "prompt_version": P2.PROMPT_VERSION, "prompt_hash": P2.prompt_hash(),
+        "prompt_version": mod.PROMPT_VERSION, "prompt_hash": mod.prompt_hash(),
     }  # fmt: skip
 
 
@@ -80,15 +81,15 @@ def run(items_path: Path, model: str, out: Path, base_url: str, version: str = "
         }
     out.parent.mkdir(parents=True, exist_ok=True)
     ph = P.prompt_hash()
-    assert version in ("v1", "v2")
+    assert version in ("v1", "v2", "v3")
     fails = 0
     t0 = time.time()
     with out.open("a", encoding="utf-8") as f:
         for it in items:
             if it["id"] in done:
                 continue
-            if version == "v2":
-                rec = _record_v2(base_url, model, it)
+            if version in ("v2", "v3"):
+                rec = _record_v2(base_url, model, it, P3 if version == "v3" else P2)
                 fails += rec["text_failed"]
                 f.write(json.dumps({
                     "id": it["id"], "stratum": it["stratum"], "category": it["category"], "judge": out.stem,
@@ -121,7 +122,7 @@ def main() -> None:
     ap.add_argument("--model", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--base-url", default="http://127.0.0.1:11434")
-    ap.add_argument("--prompt-version", choices=["v1", "v2"], default="v1")
+    ap.add_argument("--prompt-version", choices=["v1", "v2", "v3"], default="v1")
     a = ap.parse_args()
     print(json.dumps(run(Path(a.items), a.model, Path(a.out), a.base_url, a.prompt_version)))
 
