@@ -3,6 +3,7 @@
     python -m engine.intent.report reports/intent/eval_run1.json > reports/intent/model_report.md
     python -m engine.intent.report --run2 reports/intent/eval_run2.json --run1 reports/intent/eval_run1.json \
         --curve reports/intent/run2/epoch_log.json --meta reports/intent/run2/metadata.json \
+        --cpu fp32_cpu=... int8_linear=... int8_full=... --quant reports/intent/run2_cpu/metadata.json \
         > reports/intent/model_report.md
 
 Every number sits inside a `<!-- METRICS:START:<name> --> ... <!-- METRICS:END -->` block (the convention checked by
@@ -206,6 +207,38 @@ def curve(log: list[dict], meta: dict) -> str:
     return block("curve", rows)
 
 
+def delta(u: object, w: object) -> str:
+    return "n/a" if isinstance(u, str) or isinstance(w, str) else f(u - w, 3)
+
+
+def int8(fp: dict, cpu: dict[str, dict], quant: dict) -> str:
+    rows = ["| Task | Variant | Accuracy | Macro-F1 | Conservative p0.95 coverage | precision | Reached | Accuracy delta vs GPU fp16 | Macro-F1 delta | Coverage delta | Argmax agreement with GPU on sealed |",
+            "|---|---|---|---|---|---|---|---|---|---|---|"]  # fmt: skip
+    for t, b in fp.items():
+        if (
+            b.get("insufficient_data")
+            or b.get("missing_predictions")
+            or isinstance(b["macro_f1"], str)
+        ):
+            continue
+        c0 = b["selective"]["conservative_p0.95"]
+        rows.append(f"| {t} | GPU fp16 (reference) | {f(b['accuracy'])} | {f(b['macro_f1'])} | {f(c0['coverage'])} | {f(c0['precision'])} | {'yes' if c0['reached_target'] else 'no'} | | | | |")  # fmt: skip
+        for v, r in cpu.items():
+            x = r["tasks"][t]
+            c = x["selective"]["conservative_p0.95"]
+            ag = quant["variants"][v]["argmax_agreement_with_gpu_fp16"]["test"][t]
+            rows.append(f"| {t} | {v} | {f(x['accuracy'])} | {f(x['macro_f1'])} | {f(c['coverage'])} | {f(c['precision'])} | {'yes' if c['reached_target'] else 'no'} | {delta(x['accuracy'], b['accuracy'])} | {delta(x['macro_f1'], b['macro_f1'])} | {delta(c['coverage'], c0['coverage'])} | {f(ag)} |")  # fmt: skip
+    out = [block("int8", rows)]
+    sz = [
+        "| Model | File size (MB) |",
+        "|---|---|",
+        f"| fp32 checkpoint | {quant['fp32_checkpoint_mb']} |",
+    ]
+    sz += [f"| {v} state dict | {m['model_file_mb']} |" for v, m in quant["variants"].items()]
+    out.append(block("int8_sizes", sz))
+    return "\n".join(out)
+
+
 RUN2_NOTES = """Run 2 retrains the run 1 model with only the training length changed: up to 30 epochs instead of 6, patience 3
 instead of 2, same seed, learning rate, batch size, maximum length, frozen embeddings and labels. Early stopping looks
 at VALIDATION only; the sealed set is never used to choose an epoch, a threshold or a temperature.
@@ -220,10 +253,18 @@ differences between them are not separated from seed noise by this report.
 
 The Kaggle run records a different manifest hash from the evaluation provenance only because the kernel checks the
 repository out with LF line endings and the Windows checkout has CRLF; the content is identical.
+
+The CPU export uses PyTorch dynamic quantisation. Variants: fp32 on CPU (separates CPU-versus-GPU differences from
+quantisation error); int8 Linear layers with one scale per tensor, with and without an int8 word-embedding table;
+the same with one scale per output channel; and a mixed variant that quantises only the feed-forward layers and
+the embedding table and leaves attention and the heads in fp32. For each, probabilities are recomputed, the
+per-task temperature is refit on validation, and the conservative threshold is re-picked on validation before the
+sealed set is scored once. Read the delta columns: a variant that reaches the precision target at a lower coverage
+is not equivalent to the fp16 model.
 """
 
 
-def render_full(run2: dict, src: str, run1: dict | None, log: list[dict], meta: dict) -> str:
+def render_full(run2: dict, src: str, run1: dict | None, log: list[dict], meta: dict, cpu: dict, quant: dict) -> str:  # fmt: skip
     t = run2["tasks"]
     parts = [
         HEAD.format(src=src),
@@ -240,6 +281,11 @@ def render_full(run2: dict, src: str, run1: dict | None, log: list[dict], meta: 
             comparison(run1["tasks"], t),
         ]
     parts += ["## Per-class F1 (run 2)\n", per_class(t), "## Baselines (run 2)\n", baselines(t), "## Language and category slices (run 2)\n", slices(t)]  # fmt: skip
+    if cpu:
+        parts += [
+            "## int8 CPU export: probabilities recomputed, temperatures and thresholds refit on validation\n",
+            int8(t, cpu, quant),
+        ]
     return "\n".join(parts)
 
 
@@ -263,10 +309,14 @@ def main() -> None:
     ap.add_argument("--run1")
     ap.add_argument("--curve", required=True, help="run 2 epoch_log.json")
     ap.add_argument("--meta", required=True, help="run 2 metadata.json")
+    ap.add_argument("--cpu", nargs="*", default=[], help="variant=eval.json ...")
+    ap.add_argument("--quant")
     a = ap.parse_args()
     load = lambda p: json.loads(Path(p).read_text(encoding="utf-8"))  # noqa: E731
+    cpu = {kv.split("=", 1)[0]: load(kv.split("=", 1)[1]) for kv in a.cpu}
     sys.stdout.write(render_full(
         load(a.run2), Path(a.run2).as_posix(), load(a.run1) if a.run1 else None, load(a.curve), load(a.meta),
+        cpu, load(a.quant) if a.quant else {},
     ))  # fmt: skip
 
 

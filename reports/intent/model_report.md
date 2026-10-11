@@ -29,6 +29,14 @@ differences between them are not separated from seed noise by this report.
 The Kaggle run records a different manifest hash from the evaluation provenance only because the kernel checks the
 repository out with LF line endings and the Windows checkout has CRLF; the content is identical.
 
+The CPU export uses PyTorch dynamic quantisation. Variants: fp32 on CPU (separates CPU-versus-GPU differences from
+quantisation error); int8 Linear layers with one scale per tensor, with and without an int8 word-embedding table;
+the same with one scale per output channel; and a mixed variant that quantises only the feed-forward layers and
+the embedding table and leaves attention and the heads in fp32. For each, probabilities are recomputed, the
+per-task temperature is refit on validation, and the conservative threshold is re-picked on validation before the
+sealed set is scored once. Read the delta columns: a variant that reaches the precision target at a lower coverage
+is not equivalent to the fp16 model.
+
 ## Provenance
 
 <!-- METRICS:START:provenance -->
@@ -301,4 +309,65 @@ Best epoch 7 of at most 30; stopped early: yes; patience 3; best validation mean
 | aspect:beauty:fragrance | beauty | 51 | no | n/a |
 | aspect:food:taste | food | 109 | yes | 0.899 |
 | aspect:food:value | food | 39 | no | n/a |
+<!-- METRICS:END -->
+
+## int8 CPU export: probabilities recomputed, temperatures and thresholds refit on validation
+
+<!-- METRICS:START:int8 -->
+| Task | Variant | Accuracy | Macro-F1 | Conservative p0.95 coverage | precision | Reached | Accuracy delta vs GPU fp16 | Macro-F1 delta | Coverage delta | Argmax agreement with GPU on sealed |
+|---|---|---|---|---|---|---|---|---|---|---|
+| needs_action | GPU fp16 (reference) | 0.962 | 0.929 | 0.894 | 0.988 | yes | | | | |
+| needs_action | fp32_cpu | 0.962 | 0.929 | 0.894 | 0.988 | yes | 0.000 | 0.000 | 0.000 | 1.000 |
+| needs_action | int8_linear | 0.930 | 0.838 | 0.807 | 0.985 | yes | -0.032 | -0.091 | -0.087 | 0.913 |
+| needs_action | int8_full | 0.927 | 0.828 | 0.798 | 0.981 | yes | -0.035 | -0.101 | -0.096 | 0.911 |
+| needs_action | int8_perchannel | 0.940 | 0.863 | 0.795 | 0.984 | yes | -0.022 | -0.066 | -0.099 | 0.921 |
+| needs_action | int8_perchannel_full | 0.937 | 0.858 | 0.813 | 0.985 | yes | -0.025 | -0.071 | -0.081 | 0.924 |
+| needs_action | int8_ffn_full | 0.946 | 0.881 | 0.801 | 0.988 | yes | -0.017 | -0.048 | -0.093 | 0.936 |
+| broad_intent | GPU fp16 (reference) | 0.919 | 0.844 | 0.790 | 0.977 | yes | | | | |
+| broad_intent | fp32_cpu | 0.917 | 0.840 | 0.790 | 0.977 | yes | -0.001 | -0.004 | 0.000 | 0.999 |
+| broad_intent | int8_linear | 0.860 | 0.714 | 0.609 | 0.977 | yes | -0.059 | -0.130 | -0.181 | 0.868 |
+| broad_intent | int8_full | 0.854 | 0.712 | 0.649 | 0.978 | yes | -0.064 | -0.132 | -0.141 | 0.872 |
+| broad_intent | int8_perchannel | 0.877 | 0.747 | 0.667 | 0.981 | yes | -0.041 | -0.097 | -0.123 | 0.885 |
+| broad_intent | int8_perchannel_full | 0.877 | 0.745 | 0.709 | 0.974 | yes | -0.041 | -0.099 | -0.081 | 0.881 |
+| broad_intent | int8_ffn_full | 0.893 | 0.786 | 0.706 | 0.976 | yes | -0.026 | -0.058 | -0.084 | 0.898 |
+| sentiment | GPU fp16 (reference) | 0.948 | 0.939 | 0.831 | 0.989 | yes | | | | |
+| sentiment | fp32_cpu | 0.948 | 0.939 | 0.831 | 0.989 | yes | 0.000 | 0.000 | 0.000 | 1.000 |
+| sentiment | int8_linear | 0.909 | 0.876 | 0.831 | 0.977 | yes | -0.039 | -0.063 | 0.000 | 0.862 |
+| sentiment | int8_full | 0.911 | 0.883 | 0.826 | 0.975 | yes | -0.037 | -0.056 | -0.004 | 0.866 |
+| sentiment | int8_perchannel | 0.917 | 0.900 | 0.813 | 0.984 | yes | -0.031 | -0.040 | -0.018 | 0.878 |
+| sentiment | int8_perchannel_full | 0.918 | 0.897 | 0.808 | 0.984 | yes | -0.030 | -0.042 | -0.022 | 0.881 |
+| sentiment | int8_ffn_full | 0.920 | 0.901 | 0.835 | 0.980 | yes | -0.028 | -0.038 | 0.004 | 0.887 |
+| urgency | GPU fp16 (reference) | 0.955 | 0.894 | 0.832 | 0.990 | yes | | | | |
+| urgency | fp32_cpu | 0.955 | 0.894 | 0.829 | 0.991 | yes | 0.000 | 0.000 | -0.003 | 1.000 |
+| urgency | int8_linear | 0.940 | 0.821 | 0.789 | 0.996 | yes | -0.014 | -0.073 | -0.043 | 0.911 |
+| urgency | int8_full | 0.945 | 0.833 | 0.768 | 0.994 | yes | -0.010 | -0.061 | -0.064 | 0.913 |
+| urgency | int8_perchannel | 0.945 | 0.837 | 0.779 | 0.995 | yes | -0.010 | -0.056 | -0.053 | 0.916 |
+| urgency | int8_perchannel_full | 0.946 | 0.841 | 0.809 | 0.995 | yes | -0.009 | -0.053 | -0.023 | 0.921 |
+| urgency | int8_ffn_full | 0.945 | 0.837 | 0.757 | 0.996 | yes | -0.010 | -0.056 | -0.075 | 0.923 |
+| aspect:beauty:results_efficacy | GPU fp16 (reference) | 0.953 | 0.926 | 0.911 | 0.977 | yes | | | | |
+| aspect:beauty:results_efficacy | fp32_cpu | 0.953 | 0.926 | 0.911 | 0.977 | yes | 0.000 | 0.000 | 0.000 | 1.000 |
+| aspect:beauty:results_efficacy | int8_linear | 0.927 | 0.866 | 0.807 | 0.994 | yes | -0.026 | -0.061 | -0.104 | 0.866 |
+| aspect:beauty:results_efficacy | int8_full | 0.917 | 0.834 | 0.849 | 0.982 | yes | -0.036 | -0.093 | -0.062 | 0.869 |
+| aspect:beauty:results_efficacy | int8_perchannel | 0.922 | 0.835 | 0.849 | 0.976 | yes | -0.031 | -0.091 | -0.062 | 0.875 |
+| aspect:beauty:results_efficacy | int8_perchannel_full | 0.927 | 0.851 | 0.807 | 0.994 | yes | -0.026 | -0.075 | -0.104 | 0.883 |
+| aspect:beauty:results_efficacy | int8_ffn_full | 0.938 | 0.883 | 0.833 | 0.988 | yes | -0.016 | -0.043 | -0.078 | 0.894 |
+| aspect:food:taste | GPU fp16 (reference) | 0.899 | 0.863 | 0.000 | n/a | no | | | | |
+| aspect:food:taste | fp32_cpu | 0.899 | 0.863 | 0.000 | n/a | no | 0.000 | 0.000 | 0.000 | 0.999 |
+| aspect:food:taste | int8_linear | 0.881 | 0.815 | 0.000 | n/a | no | -0.018 | -0.048 | 0.000 | 0.911 |
+| aspect:food:taste | int8_full | 0.862 | 0.774 | 0.000 | n/a | no | -0.037 | -0.089 | 0.000 | 0.916 |
+| aspect:food:taste | int8_perchannel | 0.890 | 0.816 | 0.000 | n/a | no | -0.009 | -0.047 | 0.000 | 0.919 |
+| aspect:food:taste | int8_perchannel_full | 0.872 | 0.803 | 0.000 | n/a | no | -0.027 | -0.060 | 0.000 | 0.913 |
+| aspect:food:taste | int8_ffn_full | 0.899 | 0.841 | 0.000 | n/a | no | 0.000 | -0.023 | 0.000 | 0.930 |
+<!-- METRICS:END -->
+
+<!-- METRICS:START:int8_sizes -->
+| Model | File size (MB) |
+|---|---|
+| fp32 checkpoint | 1112.4 |
+| fp32_cpu state dict | 1112.4 |
+| int8_linear state dict | 855.8 |
+| int8_full state dict | 281.8 |
+| int8_perchannel state dict | 857.2 |
+| int8_perchannel_full state dict | 283.2 |
+| int8_ffn_full state dict | 369.3 |
 <!-- METRICS:END -->
