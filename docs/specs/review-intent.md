@@ -261,3 +261,64 @@ mistral:7b failed 20 of 300 items, 6.7 percent).
   re-pilot get one more definition fix (re-pilot 2 on fresh items) and are then merged or dropped. No labelling at
   scale starts before GG has seen the re-pilot report.
 - The stars-versus-sentiment rule for T5 is evaluated on the random 300 only.
+
+### Amendment 4 (2026-10-11, S22 M2): coarse taxonomy and re-pilot 2, registered before the re-pilot runs
+
+Re-pilot 1 (`docs/reports/review-intent-repilot1.md`) failed the 10-class intent task (alpha 0.653, consensus 0.863, FAIL: below the 0.667 floor) and the
+explicit-no-repurchase binary (alpha 0.487, FAIL), and showed that mining cannot fill the rare classes. BANKING77's 77 classes work because its
+labels are clean; the bottleneck here is taxonomy ambiguity, not the model, so the taxonomy is coarsened before anything else
+is spent. This amendment is committed BEFORE any re-pilot-2 item is shown to any judge. Prompt version `ri-judge-v3`.
+The gate of section 5 is UNCHANGED (alpha 0.80 and consensus 0.80 to PASS; alpha 0.667 and consensus 0.65 for
+USABLE-WITH-CAVEAT). Nothing about the gate is tuned in this amendment.
+
+**Authorisation.** GG's S22 addendum M2 allows labelling at scale for any task that passes this re-pilot, so the Amendment 3
+stop rule ("no labelling at scale before GG has seen the report") is lifted for tasks that reach PASS or USABLE-WITH-CAVEAT
+here. A task that fails stays unlabelled. Two re-pilots is the section 5 limit; a task failing re-pilot 2 is dropped or
+merged, not re-piloted a third time.
+
+**New tasks (replace T1 and T4 for modelling; T1's 10 classes become a secondary, reported-not-claimed output).**
+
+| Task | Values | Definition (decision rule) |
+|---|---|---|
+| `C1 needs_action` | `yes` / `no` | `yes` if the review contains at least ONE thing the seller can act on or owes a response to: a complaint about the product (defect, damage, not as described, adverse reaction, poor performance), the delivery (late, damaged parcel, missing item, courier), or the seller's service; an explicit return, refund or exchange request or action; or an unanswered question. `no` otherwise: praise, neutral description, a subjective taste or fit opinion with no fault stated, a price remark with no request, a wish or suggestion with no complaint, a comparison, spam. |
+| `C2 broad_intent` | `product_issue` / `delivery` / `service` / `praise` / `other` | ONE value, by priority when several are present: `product_issue` (the product is faulty, broke, damaged, not as described, caused a reaction, or underperforms), then `delivery` (shipping, courier, timing, parcel condition, missing items, rider behaviour; praise of fast shipping alone is not `delivery`), then `service` (how the seller or support handled a contact, and return / refund / exchange handling or requests), then `praise` (satisfaction with NO complaint, request or question of any kind), else `other` (price remarks, suggestions, comparisons, questions with no complaint, neutral descriptions, spam or off-topic). |
+
+Boundary examples shown to the judges (copied from real corpus reviews in the spec's section 2 table or invented and marked):
+"fell apart in the wash, returning" -> `needs_action=yes`, `product_issue`; "love it, but the pump broke on day two" ->
+yes, `product_issue` (a complaint outranks praise); "it is overpriced for a shirt" -> no, `other`; "I wish it came in blue" -> no,
+`other`; "does it contain nuts?" -> yes (a reply is owed), `other`; "great product, arrived fast" -> no, `praise`; "parcel was
+crushed but the product is fine" -> yes, `delivery`; "seller never replied to my message" -> yes, `service`.
+Fine intents (`pricing`, `suggestion`, `question`, `competitor_comparison`, `customer_service` as distinct from
+`return_refund_request`) return only where a later re-pilot shows agreement; none is claimed now.
+
+**Kept tasks (definitions as in Amendment 3, unchanged).** `T2 sentiment` (four values), `T3 urgency` (with the v2 boundary
+examples), and `T6 aspect sentiment` for beauty and food only, still requiring a verifiable quote (a quote that is not a
+substring of the review drops the aspect). Aspect presence is not a claim; aspect sentiment is scored only on aspects that at
+least two judges quoted. Apparel aspects are dropped (borderline in re-pilot 1) and the vernacular stratum has no aspects. The
+explicit-no-repurchase flag is dropped from the panel (FAIL in re-pilot 1; a rare flag needs its own gate, which is not
+registered here). T5 mismatch stays derived from stars and consensus sentiment.
+
+**Re-pilot 2 design (fixed in advance).**
+- Items: FRESH, `--exclude` pilot 1 and re-pilot 1 manifests (the 8 smoke items are inside the re-pilot-1 manifest): 300 random
+  items drawn as in section 4 (75 per stratum, seed 44), plus 60 MINED candidates (30 `delivery`, 30 `service`, by the fixed
+  `delivery` and `customer_service` regexes already in `engine/labelling/mine.py`) to test whether the two thinnest broad classes become measurable. Mined items
+  are reported separately and never used for prevalence.
+- Panel: the same four judges, blind, temperature 0, seed 42, one text call per item, one parse retry; Kaggle T4s.
+- Success criterion per task, on the random 300 only: PASS or USABLE-WITH-CAVEAT under section 5. Tasks: C1, C2, T2, T3,
+  T6 sentiment (beauty, food).
+- Reported per task: pairwise agreement, Krippendorff alpha (nominal; ordinal for T3), Fleiss kappa, clear-consensus fraction
+  (the coverage ceiling), unanimity, and for C1/C2 the consensus class distribution with Wilson 95 percent intervals.
+- Pre-registered expectation (a hypothesis from the exploratory look at re-pilot 1, which does not count as evidence): C1 reaches
+  at least USABLE. A result that disagrees is reported as it is.
+
+**Rare-class sample size rule (M2d, computed from re-pilot 2, rule fixed now).** For each class with consensus prevalence p
+(Wilson interval on the random 300): the test positives needed for a per-class precision interval of half-width 0.05 at
+precision 0.90 are m = 138 (normal approximation, 1.96 squared times 0.09 over 0.05 squared); the labelled corpus needed is
+N = m / (p * 0.15) for a 15 percent sealed test share, reported at p's point value and at its lower and upper bounds. A class
+is "measurable now" if it has at least 30 consensus items across random plus mined items (the Amendment 3 criterion) and
+"stable" if N is at most the size of the corpus we can label (10,000 to 20,000 items).
+
+**Labelling at scale, if a task passes.** 10,000+ items, stratified (language and category), drawn fresh from the four cleared
+corpora and excluding every id in the ledger; the sealed split, leakage ledger, metrics and LLM comparison are exactly
+Amendment 2, unchanged. Panel consensus is the label; items without consensus are the abstain set. Production reviews are not
+used.
