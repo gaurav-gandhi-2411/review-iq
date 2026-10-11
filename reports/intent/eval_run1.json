@@ -1,0 +1,6997 @@
+{
+ "provenance": {
+  "evaluation_commit": "791c289",
+  "training_metadata": {
+   "commit": "895f5ec",
+   "config": {
+    "model": "intfloat/multilingual-e5-base",
+    "epochs": 6,
+    "lr": 5e-05,
+    "batch_size": 32,
+    "seed": 42,
+    "max_len": 128,
+    "patience": 2,
+    "freeze_embeddings": true
+   },
+   "device": "cuda",
+   "torch": "2.11.0+cu128",
+   "n_items": {
+    "train": 3777,
+    "val": 460,
+    "test": 763
+   },
+   "temperatures": {
+    "needs_action": 1.2731965198890043,
+    "broad_intent": 1.077745064696654,
+    "sentiment": 1.0332217340169452,
+    "urgency": 1.1453624449155722,
+    "aspect:beauty:results_efficacy": 0.3920588120612541,
+    "aspect:beauty:texture": 1.5630711848493477,
+    "aspect:beauty:skin_reaction": 1.5936803041155612,
+    "aspect:beauty:fragrance": 1.845628818297305,
+    "aspect:beauty:value": 1.208063283147554,
+    "aspect:food:taste": 0.05000662713858094,
+    "aspect:food:value": 1.0751364729795176,
+    "aspect:food:ingredient_quality": 1.860145022685147,
+    "aspect:food:efficacy_claims": 0.0777603983178065,
+    "aspect:food:quantity": null
+   },
+   "n_labelled": {
+    "train": {
+     "needs_action": 3775,
+     "broad_intent": 3718,
+     "sentiment": 3502,
+     "urgency": 3773,
+     "aspect:beauty:results_efficacy": 712,
+     "aspect:beauty:texture": 358,
+     "aspect:beauty:skin_reaction": 166,
+     "aspect:beauty:fragrance": 182,
+     "aspect:beauty:value": 87,
+     "aspect:food:taste": 193,
+     "aspect:food:value": 120,
+     "aspect:food:ingredient_quality": 163,
+     "aspect:food:efficacy_claims": 51,
+     "aspect:food:quantity": 36
+    },
+    "val": {
+     "needs_action": 460,
+     "broad_intent": 454,
+     "sentiment": 435,
+     "urgency": 460,
+     "aspect:beauty:results_efficacy": 104,
+     "aspect:beauty:texture": 53,
+     "aspect:beauty:skin_reaction": 29,
+     "aspect:beauty:fragrance": 25,
+     "aspect:beauty:value": 14,
+     "aspect:food:taste": 23,
+     "aspect:food:value": 12,
+     "aspect:food:ingredient_quality": 19,
+     "aspect:food:efficacy_claims": 2,
+     "aspect:food:quantity": 0
+    },
+    "test": {
+     "needs_action": 723,
+     "broad_intent": 706,
+     "sentiment": 679,
+     "urgency": 708,
+     "aspect:beauty:results_efficacy": 192,
+     "aspect:beauty:texture": 69,
+     "aspect:beauty:skin_reaction": 33,
+     "aspect:beauty:fragrance": 51,
+     "aspect:beauty:value": 14,
+     "aspect:food:taste": 109,
+     "aspect:food:value": 39,
+     "aspect:food:ingredient_quality": 17,
+     "aspect:food:efficacy_claims": 13,
+     "aspect:food:quantity": 3
+    }
+   },
+   "calibration": "per-task temperature on validation only; null = fewer than 2 validation labels",
+   "train_info": {
+    "history": [
+     {
+      "epoch": 1,
+      "val_mean_macro_f1": 0.605,
+      "loss": 0.17560863494873047
+     },
+     {
+      "epoch": 2,
+      "val_mean_macro_f1": 0.6438,
+      "loss": 6.991333961486816
+     },
+     {
+      "epoch": 3,
+      "val_mean_macro_f1": 0.6813,
+      "loss": 0.09400317072868347
+     },
+     {
+      "epoch": 4,
+      "val_mean_macro_f1": 0.7005,
+      "loss": 0.18626922369003296
+     },
+     {
+      "epoch": 5,
+      "val_mean_macro_f1": 0.715,
+      "loss": 0.05189322680234909
+     },
+     {
+      "epoch": 6,
+      "val_mean_macro_f1": 0.7168,
+      "loss": 0.05861023813486099
+     }
+    ],
+    "best_val_mean_macro_f1": 0.7168206407282499
+   },
+   "seconds": 179.0
+  },
+  "artifacts_sha256_16": {
+   "labels.json": "8f3b582082e4cf17",
+   "manifest.json": "a29c235e88162304",
+   "pred_aspect__beauty__fragrance.json": "f85a65ae98bf9be7",
+   "pred_aspect__beauty__results_efficacy.json": "6595c8b6a920a485",
+   "pred_aspect__beauty__skin_reaction.json": "125ef966fe628313",
+   "pred_aspect__beauty__texture.json": "cca07ce45f3440cd",
+   "pred_aspect__beauty__value.json": "a56757faa75cd4bc",
+   "pred_aspect__food__efficacy_claims.json": "752943e609e6990d",
+   "pred_aspect__food__ingredient_quality.json": "b8d411fdecad0e81",
+   "pred_aspect__food__quantity.json": "865af3bfdf74c0ea",
+   "pred_aspect__food__taste.json": "297a3b7da0fc4200",
+   "pred_aspect__food__value.json": "0d83f3a90ee33f0b",
+   "pred_broad_intent.json": "6cd9c58d44975a15",
+   "pred_needs_action.json": "2183e2b2acd004ca",
+   "pred_sentiment.json": "081d4a6bf73370ab",
+   "pred_urgency.json": "bbb8912d6eefc49a"
+  },
+  "label_basis": "silver: sealed labels are four-judge consensus (Amendment 5), not human truth",
+  "baseline_inputs_sha256_16": {
+   "judges_A/llama31_8b.jsonl": "ce2235978611ff57",
+   "judges_A/qwen3_8b.jsonl": "d2568a1c1de36854",
+   "judges_S/gemma2_9b.jsonl": "b7642ae5835f4447",
+   "judges_S/mistral_7b.jsonl": "06902100012da83c",
+   "judges_B/mistral_7b.jsonl": "8b90998a1566d3cb",
+   "scale.jsonl": "d49895744c2e9a83"
+  }
+ },
+ "n_boot": 1000,
+ "seed": 42,
+ "bootstrap_unit": "items (no product ids in the corpora)",
+ "tasks": {
+  "needs_action": {
+   "insufficient_data": false,
+   "n": 723,
+   "accuracy": 0.9599,
+   "accuracy_wilson95": [
+    0.943,
+    0.9719
+   ],
+   "classes": {
+    "yes": {
+     "n": 112,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.8711,
+     "f1_ci95": [
+      0.8221,
+      0.9129
+     ],
+     "below_floor": false
+    },
+    "no": {
+     "n": 611,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.9762,
+     "f1_ci95": [
+      0.9672,
+      0.9845
+     ],
+     "below_floor": false
+    }
+   },
+   "macro_f1": 0.9237,
+   "macro_f1_ci95": [
+    0.8951,
+    0.9483
+   ],
+   "macro_f1_classes": [
+    "yes",
+    "no"
+   ],
+   "selective": {
+    "conservative_p0.95": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 460,
+     "target": 0.95,
+     "threshold": 0.843076,
+     "n_answered": 663,
+     "coverage": 0.917,
+     "coverage_ci95": [
+      0.8976,
+      0.9364
+     ],
+     "precision": 0.9834,
+     "precision_wilson95": [
+      0.9705,
+      0.9907
+     ],
+     "precision_ci95": [
+      0.9741,
+      0.9926
+     ],
+     "reached_target": true
+    },
+    "conservative_p0.9": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 460,
+     "target": 0.9,
+     "threshold": 0.554291,
+     "n_answered": 719,
+     "coverage": 0.9945,
+     "coverage_ci95": [
+      0.9889,
+      0.9986
+     ],
+     "precision": 0.9611,
+     "precision_wilson95": [
+      0.9443,
+      0.9729
+     ],
+     "precision_ci95": [
+      0.9459,
+      0.975
+     ],
+     "reached_target": true
+    },
+    "oracle": {
+     "label": "ORACLE: best on the sealed set itself, not deployable",
+     "n": 723,
+     "accuracy": 0.9599,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9611,
+      "precision_p2_5_p97_5": [
+       0.9475,
+       0.9805
+      ],
+      "coverage_mean": 0.9959,
+      "coverage_p2_5_p97_5": [
+       0.9807,
+       1.0
+      ],
+      "hit_rate": 0.945
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": 0.9734,
+      "precision_p2_5_p97_5": [
+       0.9497,
+       0.9913
+      ],
+      "coverage_mean": 0.9605,
+      "coverage_p2_5_p97_5": [
+       0.9171,
+       0.9917
+      ],
+      "hit_rate": 0.965
+     },
+     "coverage_at_precision_0.95": 1.0,
+     "coverage_at_precision_0.95_ci95": [
+      0.982,
+      1.0
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.9862,
+      "achieved_coverage": 0.9004,
+      "ci95": [
+       0.9755,
+       0.9954
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.9931,
+      "achieved_coverage": 0.8008,
+      "ci95": [
+       0.9828,
+       0.9983
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 0.998,
+      "achieved_coverage": 0.7012,
+      "ci95": [
+       0.9941,
+       1.0
+      ]
+     }
+    }
+   },
+   "consensus_ceiling": {
+    "n_labelled": 723,
+    "n_sealed": 763,
+    "fraction": 0.9476,
+    "wilson95": [
+     0.9294,
+     0.9613
+    ],
+    "note": "share of sealed items with a four-judge consensus label"
+   },
+   "slices_accuracy": {
+    "apparel": {
+     "n": 243,
+     "claimed": true,
+     "accuracy": 0.9424
+    },
+    "beauty": {
+     "n": 232,
+     "claimed": true,
+     "accuracy": 0.9784
+    },
+    "food": {
+     "n": 228,
+     "claimed": true,
+     "accuracy": 0.9605
+    },
+    "vernacular": {
+     "n": 20,
+     "claimed": false
+    }
+   },
+   "baselines": {
+    "majority": {
+     "class": "no",
+     "coverage": 1.0,
+     "n": 723,
+     "accuracy": 0.8451,
+     "accuracy_wilson95": [
+      0.8169,
+      0.8696
+     ],
+     "classes": {
+      "yes": {
+       "n": 112,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.0,
+       "f1_ci95": [
+        0.0,
+        0.0
+       ],
+       "below_floor": true
+      },
+      "no": {
+       "n": 611,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.916,
+       "f1_ci95": [
+        0.9004,
+        0.9313
+       ],
+       "below_floor": false
+      }
+     },
+     "macro_f1": 0.458,
+     "macro_f1_ci95": [
+      0.4502,
+      0.4656
+     ],
+     "macro_f1_classes": [
+      "yes",
+      "no"
+     ]
+    },
+    "tfidf_lr": {
+     "calibration": "none (raw LR probabilities)",
+     "insufficient_data": false,
+     "n": 723,
+     "accuracy": 0.9142,
+     "accuracy_wilson95": [
+      0.8916,
+      0.9325
+     ],
+     "classes": {
+      "yes": {
+       "n": 112,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.6667,
+       "f1_ci95": [
+        0.5818,
+        0.7429
+       ],
+       "below_floor": false
+      },
+      "no": {
+       "n": 611,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.9508,
+       "f1_ci95": [
+        0.9381,
+        0.9631
+       ],
+       "below_floor": false
+      }
+     },
+     "macro_f1": 0.8087,
+     "macro_f1_ci95": [
+      0.764,
+      0.8513
+     ],
+     "macro_f1_classes": [
+      "yes",
+      "no"
+     ],
+     "selective": {
+      "conservative_p0.95": {
+       "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+       "n_validation": 460,
+       "target": 0.95,
+       "threshold": 0.925198,
+       "n_answered": 465,
+       "coverage": 0.6432,
+       "coverage_ci95": [
+        0.6099,
+        0.6777
+       ],
+       "precision": 0.9892,
+       "precision_wilson95": [
+        0.9751,
+        0.9954
+       ],
+       "precision_ci95": [
+        0.9792,
+        0.9978
+       ],
+       "reached_target": true
+      },
+      "conservative_p0.9": {
+       "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+       "n_validation": 460,
+       "target": 0.9,
+       "threshold": 0.794375,
+       "n_answered": 610,
+       "coverage": 0.8437,
+       "coverage_ci95": [
+        0.8174,
+        0.8686
+       ],
+       "precision": 0.9607,
+       "precision_wilson95": [
+        0.9421,
+        0.9734
+       ],
+       "precision_ci95": [
+        0.9444,
+        0.9765
+       ],
+       "reached_target": true
+      },
+      "oracle": {
+       "label": "ORACLE: best on the sealed set itself, not deployable",
+       "n": 723,
+       "accuracy": 0.9142,
+       "split_half_transfer_p95": {
+        "target": 0.95,
+        "n_splits": 200,
+        "rule": "point_estimate",
+        "precision_mean": 0.948,
+        "precision_p2_5_p97_5": [
+         0.9117,
+         0.9767
+        ],
+        "coverage_mean": 0.9046,
+        "coverage_p2_5_p97_5": [
+         0.8148,
+         0.9724
+        ],
+        "hit_rate": 0.46
+       },
+       "split_half_transfer_p95_conservative": {
+        "target": 0.95,
+        "n_splits": 200,
+        "rule": "wilson_lower_bound",
+        "precision_mean": 0.974,
+        "precision_p2_5_p97_5": [
+         0.9444,
+         0.9959
+        ],
+        "coverage_mean": 0.7385,
+        "coverage_p2_5_p97_5": [
+         0.6739,
+         0.8702
+        ],
+        "hit_rate": 0.94
+       },
+       "coverage_at_precision_0.95": 0.9032,
+       "coverage_at_precision_0.95_ci95": [
+        0.8091,
+        0.9682
+       ],
+       "precision_at_coverage_0.9": {
+        "precision": 0.9508,
+        "achieved_coverage": 0.9004,
+        "ci95": [
+         0.9324,
+         0.9678
+        ]
+       },
+       "precision_at_coverage_0.8": {
+        "precision": 0.9655,
+        "achieved_coverage": 0.8008,
+        "ci95": [
+         0.9516,
+         0.9811
+        ]
+       },
+       "precision_at_coverage_0.7": {
+        "precision": 0.9803,
+        "achieved_coverage": 0.7012,
+        "ci95": [
+         0.9646,
+         0.9961
+        ]
+       }
+      }
+     },
+     "matched_to_model_p0.95": {
+      "target_coverage": 0.917,
+      "precision_a": 0.9834,
+      "achieved_coverage_a": 0.917,
+      "precision_b": 0.9457,
+      "achieved_coverage_b": 0.917,
+      "difference_a_minus_b": 0.0377,
+      "difference_ci95": [
+       0.0196,
+       0.0543
+      ]
+     },
+     "matched_to_model_p0.9": {
+      "target_coverage": 0.9945,
+      "precision_a": 0.9611,
+      "achieved_coverage_a": 0.9959,
+      "precision_b": 0.9153,
+      "achieved_coverage_b": 0.9959,
+      "difference_a_minus_b": 0.0458,
+      "difference_ci95": [
+       0.0243,
+       0.0638
+      ]
+     }
+    },
+    "llm_judges_leave_one_out": {
+     "llama31_8b": {
+      "insufficient_data": false,
+      "n_items": 680,
+      "answered_fraction": 1.0,
+      "accuracy_on_answered": 0.9912,
+      "accuracy_on_answered_wilson95": [
+       0.9809,
+       0.996
+      ],
+      "judge_missing_as_wrong": {
+       "n": 680,
+       "accuracy": 0.9912,
+       "accuracy_wilson95": [
+        0.9809,
+        0.996
+       ],
+       "classes": {
+        "yes": {
+         "n": 92,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9681,
+         "f1_ci95": [
+          0.9394,
+          0.9903
+         ],
+         "below_floor": false
+        },
+        "no": {
+         "n": 588,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9949,
+         "f1_ci95": [
+          0.9904,
+          0.9983
+         ],
+         "below_floor": false
+        }
+       },
+       "macro_f1": 0.9815,
+       "macro_f1_ci95": [
+        0.9646,
+        0.9943
+       ],
+       "macro_f1_classes": [
+        "yes",
+        "no"
+       ]
+      },
+      "model_on_same_items": {
+       "n": 680,
+       "accuracy": 0.9765,
+       "accuracy_wilson95": [
+        0.9621,
+        0.9855
+       ],
+       "classes": {
+        "yes": {
+         "n": 92,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.914,
+         "f1_ci95": [
+          0.87,
+          0.9543
+         ],
+         "below_floor": false
+        },
+        "no": {
+         "n": 588,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9864,
+         "f1_ci95": [
+          0.9799,
+          0.9926
+         ],
+         "below_floor": false
+        }
+       },
+       "macro_f1": 0.9502,
+       "macro_f1_ci95": [
+        0.925,
+        0.9734
+       ],
+       "macro_f1_classes": [
+        "yes",
+        "no"
+       ]
+      }
+     },
+     "qwen3_8b": {
+      "insufficient_data": false,
+      "n_items": 688,
+      "answered_fraction": 1.0,
+      "accuracy_on_answered": 0.9797,
+      "accuracy_on_answered_wilson95": [
+       0.9661,
+       0.9878
+      ],
+      "judge_missing_as_wrong": {
+       "n": 688,
+       "accuracy": 0.9797,
+       "accuracy_wilson95": [
+        0.9661,
+        0.9878
+       ],
+       "classes": {
+        "yes": {
+         "n": 104,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9286,
+         "f1_ci95": [
+          0.8889,
+          0.9619
+         ],
+         "below_floor": false
+        },
+        "no": {
+         "n": 584,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9881,
+         "f1_ci95": [
+          0.9817,
+          0.9941
+         ],
+         "below_floor": false
+        }
+       },
+       "macro_f1": 0.9584,
+       "macro_f1_ci95": [
+        0.9351,
+        0.9779
+       ],
+       "macro_f1_classes": [
+        "yes",
+        "no"
+       ]
+      },
+      "model_on_same_items": {
+       "n": 688,
+       "accuracy": 0.9695,
+       "accuracy_wilson95": [
+        0.9538,
+        0.98
+       ],
+       "classes": {
+        "yes": {
+         "n": 104,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.8976,
+         "f1_ci95": [
+          0.8522,
+          0.9388
+         ],
+         "below_floor": false
+        },
+        "no": {
+         "n": 584,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9821,
+         "f1_ci95": [
+          0.9748,
+          0.989
+         ],
+         "below_floor": false
+        }
+       },
+       "macro_f1": 0.9398,
+       "macro_f1_ci95": [
+        0.9141,
+        0.9642
+       ],
+       "macro_f1_classes": [
+        "yes",
+        "no"
+       ]
+      }
+     },
+     "gemma2_9b": {
+      "insufficient_data": false,
+      "n_items": 682,
+      "answered_fraction": 0.9985,
+      "accuracy_on_answered": 0.9897,
+      "accuracy_on_answered_wilson95": [
+       0.9789,
+       0.995
+      ],
+      "judge_missing_as_wrong": {
+       "n": 682,
+       "accuracy": 0.9883,
+       "accuracy_wilson95": [
+        0.977,
+        0.994
+       ],
+       "classes": {
+        "yes": {
+         "n": 98,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.963,
+         "f1_ci95": [
+          0.9318,
+          0.9894
+         ],
+         "below_floor": false
+        },
+        "no": {
+         "n": 584,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9932,
+         "f1_ci95": [
+          0.988,
+          0.9975
+         ],
+         "below_floor": false
+        }
+       },
+       "macro_f1": 0.9781,
+       "macro_f1_ci95": [
+        0.9604,
+        0.9934
+       ],
+       "macro_f1_classes": [
+        "yes",
+        "no"
+       ]
+      },
+      "model_on_same_items": {
+       "n": 682,
+       "accuracy": 0.9765,
+       "accuracy_wilson95": [
+        0.9622,
+        0.9855
+       ],
+       "classes": {
+        "yes": {
+         "n": 98,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9192,
+         "f1_ci95": [
+          0.8738,
+          0.9578
+         ],
+         "below_floor": false
+        },
+        "no": {
+         "n": 584,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9863,
+         "f1_ci95": [
+          0.9791,
+          0.993
+         ],
+         "below_floor": false
+        }
+       },
+       "macro_f1": 0.9527,
+       "macro_f1_ci95": [
+        0.9274,
+        0.9751
+       ],
+       "macro_f1_classes": [
+        "yes",
+        "no"
+       ]
+      }
+     },
+     "mistral_7b": {
+      "insufficient_data": false,
+      "n_items": 695,
+      "answered_fraction": 1.0,
+      "accuracy_on_answered": 0.9698,
+      "accuracy_on_answered_wilson95": [
+       0.9542,
+       0.9802
+      ],
+      "judge_missing_as_wrong": {
+       "n": 695,
+       "accuracy": 0.9698,
+       "accuracy_wilson95": [
+        0.9542,
+        0.9802
+       ],
+       "classes": {
+        "yes": {
+         "n": 91,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.8966,
+         "f1_ci95": [
+          0.8461,
+          0.9372
+         ],
+         "below_floor": false
+        },
+        "no": {
+         "n": 604,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9823,
+         "f1_ci95": [
+          0.9742,
+          0.9891
+         ],
+         "below_floor": false
+        }
+       },
+       "macro_f1": 0.9394,
+       "macro_f1_ci95": [
+        0.9102,
+        0.9628
+       ],
+       "macro_f1_classes": [
+        "yes",
+        "no"
+       ]
+      },
+      "model_on_same_items": {
+       "n": 695,
+       "accuracy": 0.9698,
+       "accuracy_wilson95": [
+        0.9542,
+        0.9802
+       ],
+       "classes": {
+        "yes": {
+         "n": 91,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.8901,
+         "f1_ci95": [
+          0.8436,
+          0.934
+         ],
+         "below_floor": false
+        },
+        "no": {
+         "n": 604,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9825,
+         "f1_ci95": [
+          0.9747,
+          0.9894
+         ],
+         "below_floor": false
+        }
+       },
+       "macro_f1": 0.9363,
+       "macro_f1_ci95": [
+        0.9098,
+        0.9616
+       ],
+       "macro_f1_classes": [
+        "yes",
+        "no"
+       ]
+      }
+     },
+     "matched_coverage": "not available: judges give no confidences; none invented",
+     "scoring": "leave-one-out: judge vs unanimous consensus of the other three judges"
+    }
+   }
+  },
+  "broad_intent": {
+   "insufficient_data": false,
+   "n": 706,
+   "accuracy": 0.9207,
+   "accuracy_wilson95": [
+    0.8984,
+    0.9384
+   ],
+   "classes": {
+    "product_issue": {
+     "n": 116,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.8821,
+     "f1_ci95": [
+      0.8327,
+      0.9231
+     ],
+     "below_floor": false
+    },
+    "delivery": {
+     "n": 1,
+     "insufficient_data": true
+    },
+    "service": {
+     "n": 0,
+     "insufficient_data": true
+    },
+    "praise": {
+     "n": 520,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.9703,
+     "f1_ci95": [
+      0.96,
+      0.9799
+     ],
+     "below_floor": false
+    },
+    "other": {
+     "n": 69,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.6187,
+     "f1_ci95": [
+      0.5161,
+      0.7093
+     ],
+     "below_floor": false
+    }
+   },
+   "macro_f1": 0.8237,
+   "macro_f1_ci95": [
+    0.7774,
+    0.8631
+   ],
+   "macro_f1_classes": [
+    "product_issue",
+    "praise",
+    "other"
+   ],
+   "selective": {
+    "conservative_p0.95": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 454,
+     "target": 0.95,
+     "threshold": 0.866217,
+     "n_answered": 549,
+     "coverage": 0.7776,
+     "coverage_ci95": [
+      0.7493,
+      0.8059
+     ],
+     "precision": 0.9854,
+     "precision_wilson95": [
+      0.9715,
+      0.9926
+     ],
+     "precision_ci95": [
+      0.9747,
+      0.9945
+     ],
+     "reached_target": true
+    },
+    "conservative_p0.9": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 454,
+     "target": 0.9,
+     "threshold": 0.721597,
+     "n_answered": 627,
+     "coverage": 0.8881,
+     "coverage_ci95": [
+      0.864,
+      0.9108
+     ],
+     "precision": 0.9601,
+     "precision_wilson95": [
+      0.9418,
+      0.9728
+     ],
+     "precision_ci95": [
+      0.9454,
+      0.9744
+     ],
+     "reached_target": true
+    },
+    "oracle": {
+     "label": "ORACLE: best on the sealed set itself, not deployable",
+     "n": 706,
+     "accuracy": 0.9207,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9487,
+      "precision_p2_5_p97_5": [
+       0.9101,
+       0.9778
+      ],
+      "coverage_mean": 0.9174,
+      "coverage_p2_5_p97_5": [
+       0.8697,
+       0.9745
+      ],
+      "hit_rate": 0.47
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": 0.9735,
+      "precision_p2_5_p97_5": [
+       0.9431,
+       0.9931
+      ],
+      "coverage_mean": 0.8349,
+      "coverage_p2_5_p97_5": [
+       0.7761,
+       0.9008
+      ],
+      "hit_rate": 0.95
+     },
+     "coverage_at_precision_0.95": 0.9164,
+     "coverage_at_precision_0.95_ci95": [
+      0.8669,
+      0.9703
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.956,
+      "achieved_coverage": 0.9008,
+      "ci95": [
+       0.9356,
+       0.9733
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.9823,
+      "achieved_coverage": 0.8003,
+      "ci95": [
+       0.9664,
+       0.9929
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 0.9919,
+      "achieved_coverage": 0.7011,
+      "ci95": [
+       0.9838,
+       0.998
+      ]
+     }
+    }
+   },
+   "consensus_ceiling": {
+    "n_labelled": 706,
+    "n_sealed": 763,
+    "fraction": 0.9253,
+    "wilson95": [
+     0.9044,
+     0.9419
+    ],
+    "note": "share of sealed items with a four-judge consensus label"
+   },
+   "slices_accuracy": {
+    "apparel": {
+     "n": 235,
+     "claimed": true,
+     "accuracy": 0.9106
+    },
+    "beauty": {
+     "n": 228,
+     "claimed": true,
+     "accuracy": 0.9561
+    },
+    "food": {
+     "n": 224,
+     "claimed": true,
+     "accuracy": 0.9062
+    },
+    "vernacular": {
+     "n": 19,
+     "claimed": false
+    }
+   },
+   "baselines": {
+    "majority": {
+     "class": "praise",
+     "coverage": 1.0,
+     "n": 706,
+     "accuracy": 0.7365,
+     "accuracy_wilson95": [
+      0.7028,
+      0.7677
+     ],
+     "classes": {
+      "product_issue": {
+       "n": 116,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.0,
+       "f1_ci95": [
+        0.0,
+        0.0
+       ],
+       "below_floor": true
+      },
+      "delivery": {
+       "n": 1,
+       "insufficient_data": true
+      },
+      "service": {
+       "n": 0,
+       "insufficient_data": true
+      },
+      "praise": {
+       "n": 520,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.8483,
+       "f1_ci95": [
+        0.8263,
+        0.8686
+       ],
+       "below_floor": false
+      },
+      "other": {
+       "n": 69,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.0,
+       "f1_ci95": [
+        0.0,
+        0.0
+       ],
+       "below_floor": true
+      }
+     },
+     "macro_f1": 0.2828,
+     "macro_f1_ci95": [
+      0.2754,
+      0.2895
+     ],
+     "macro_f1_classes": [
+      "product_issue",
+      "praise",
+      "other"
+     ]
+    },
+    "tfidf_lr": {
+     "calibration": "none (raw LR probabilities)",
+     "insufficient_data": false,
+     "n": 706,
+     "accuracy": 0.8569,
+     "accuracy_wilson95": [
+      0.8292,
+      0.8808
+     ],
+     "classes": {
+      "product_issue": {
+       "n": 116,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.7122,
+       "f1_ci95": [
+        0.6432,
+        0.7783
+       ],
+       "below_floor": false
+      },
+      "delivery": {
+       "n": 1,
+       "insufficient_data": true
+      },
+      "service": {
+       "n": 0,
+       "insufficient_data": true
+      },
+      "praise": {
+       "n": 520,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.9259,
+       "f1_ci95": [
+        0.9099,
+        0.9416
+       ],
+       "below_floor": false
+      },
+      "other": {
+       "n": 69,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.4602,
+       "f1_ci95": [
+        0.3455,
+        0.5714
+       ],
+       "below_floor": true
+      }
+     },
+     "macro_f1": 0.6994,
+     "macro_f1_ci95": [
+      0.6507,
+      0.746
+     ],
+     "macro_f1_classes": [
+      "product_issue",
+      "praise",
+      "other"
+     ],
+     "selective": {
+      "conservative_p0.95": {
+       "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+       "n_validation": 454,
+       "target": 0.95,
+       "threshold": 0.986209,
+       "n_answered": 192,
+       "coverage": 0.272,
+       "coverage_ci95": [
+        0.2408,
+        0.3059
+       ],
+       "precision": 1.0,
+       "precision_wilson95": [
+        0.9804,
+        1.0
+       ],
+       "precision_ci95": [
+        1.0,
+        1.0
+       ],
+       "reached_target": true
+      },
+      "conservative_p0.9": {
+       "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+       "n_validation": 454,
+       "target": 0.9,
+       "threshold": 0.878868,
+       "n_answered": 431,
+       "coverage": 0.6105,
+       "coverage_ci95": [
+        0.5751,
+        0.6473
+       ],
+       "precision": 0.9722,
+       "precision_wilson95": [
+        0.952,
+        0.984
+       ],
+       "precision_ci95": [
+        0.9561,
+        0.9864
+       ],
+       "reached_target": true
+      },
+      "oracle": {
+       "label": "ORACLE: best on the sealed set itself, not deployable",
+       "n": 706,
+       "accuracy": 0.8569,
+       "split_half_transfer_p95": {
+        "target": 0.95,
+        "n_splits": 200,
+        "rule": "point_estimate",
+        "precision_mean": 0.9484,
+        "precision_p2_5_p97_5": [
+         0.9091,
+         0.9869
+        ],
+        "coverage_mean": 0.6945,
+        "coverage_p2_5_p97_5": [
+         0.6317,
+         0.7791
+        ],
+        "hit_rate": 0.505
+       },
+       "split_half_transfer_p95_conservative": {
+        "target": 0.95,
+        "n_splits": 200,
+        "rule": "wilson_lower_bound",
+        "precision_mean": 0.978,
+        "precision_p2_5_p97_5": [
+         0.9451,
+         1.0
+        ],
+        "coverage_mean": 0.4992,
+        "coverage_p2_5_p97_5": [
+         0.3086,
+         0.6659
+        ],
+        "hit_rate": 0.96
+       },
+       "coverage_at_precision_0.95": 0.6856,
+       "coverage_at_precision_0.95_ci95": [
+        0.6261,
+        0.7805
+       ],
+       "precision_at_coverage_0.9": {
+        "precision": 0.8947,
+        "achieved_coverage": 0.9008,
+        "ci95": [
+         0.8695,
+         0.9198
+        ]
+       },
+       "precision_at_coverage_0.8": {
+        "precision": 0.9204,
+        "achieved_coverage": 0.8003,
+        "ci95": [
+         0.8956,
+         0.9435
+        ]
+       },
+       "precision_at_coverage_0.7": {
+        "precision": 0.9455,
+        "achieved_coverage": 0.7011,
+        "ci95": [
+         0.9232,
+         0.9697
+        ]
+       }
+      }
+     },
+     "matched_to_model_p0.95": {
+      "target_coverage": 0.7776,
+      "precision_a": 0.9854,
+      "achieved_coverage_a": 0.7776,
+      "precision_b": 0.9253,
+      "achieved_coverage_b": 0.7776,
+      "difference_a_minus_b": 0.0601,
+      "difference_ci95": [
+       0.0418,
+       0.0846
+      ]
+     },
+     "matched_to_model_p0.9": {
+      "target_coverage": 0.8881,
+      "precision_a": 0.9601,
+      "achieved_coverage_a": 0.8881,
+      "precision_b": 0.8995,
+      "achieved_coverage_b": 0.8881,
+      "difference_a_minus_b": 0.0606,
+      "difference_ci95": [
+       0.0372,
+       0.0916
+      ]
+     }
+    },
+    "llm_judges_leave_one_out": {
+     "llama31_8b": {
+      "insufficient_data": false,
+      "n_items": 614,
+      "answered_fraction": 1.0,
+      "accuracy_on_answered": 0.9544,
+      "accuracy_on_answered_wilson95": [
+       0.9349,
+       0.9683
+      ],
+      "judge_missing_as_wrong": {
+       "n": 614,
+       "accuracy": 0.9544,
+       "accuracy_wilson95": [
+        0.9349,
+        0.9683
+       ],
+       "classes": {
+        "product_issue": {
+         "n": 83,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9535,
+         "f1_ci95": [
+          0.9139,
+          0.982
+         ],
+         "below_floor": false
+        },
+        "delivery": {
+         "n": 0,
+         "insufficient_data": true
+        },
+        "service": {
+         "n": 0,
+         "insufficient_data": true
+        },
+        "praise": {
+         "n": 477,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9763,
+         "f1_ci95": [
+          0.9666,
+          0.9858
+         ],
+         "below_floor": false
+        },
+        "other": {
+         "n": 54,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.7059,
+         "f1_ci95": [
+          0.5833,
+          0.8
+         ],
+         "below_floor": false
+        }
+       },
+       "macro_f1": 0.8786,
+       "macro_f1_ci95": [
+        0.83,
+        0.9156
+       ],
+       "macro_f1_classes": [
+        "product_issue",
+        "praise",
+        "other"
+       ]
+      },
+      "model_on_same_items": {
+       "n": 614,
+       "accuracy": 0.9495,
+       "accuracy_wilson95": [
+        0.9292,
+        0.9642
+       ],
+       "classes": {
+        "product_issue": {
+         "n": 83,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9333,
+         "f1_ci95": [
+          0.8889,
+          0.9684
+         ],
+         "below_floor": false
+        },
+        "delivery": {
+         "n": 0,
+         "insufficient_data": true
+        },
+        "service": {
+         "n": 0,
+         "insufficient_data": true
+        },
+        "praise": {
+         "n": 477,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9781,
+         "f1_ci95": [
+          0.9678,
+          0.987
+         ],
+         "below_floor": false
+        },
+        "other": {
+         "n": 54,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.717,
+         "f1_ci95": [
+          0.6116,
+          0.8042
+         ],
+         "below_floor": false
+        }
+       },
+       "macro_f1": 0.8761,
+       "macro_f1_ci95": [
+        0.8317,
+        0.9148
+       ],
+       "macro_f1_classes": [
+        "product_issue",
+        "praise",
+        "other"
+       ]
+      }
+     },
+     "qwen3_8b": {
+      "insufficient_data": false,
+      "n_items": 644,
+      "answered_fraction": 1.0,
+      "accuracy_on_answered": 0.9099,
+      "accuracy_on_answered_wilson95": [
+       0.8853,
+       0.9297
+      ],
+      "judge_missing_as_wrong": {
+       "n": 644,
+       "accuracy": 0.9099,
+       "accuracy_wilson95": [
+        0.8853,
+        0.9297
+       ],
+       "classes": {
+        "product_issue": {
+         "n": 110,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.8542,
+         "f1_ci95": [
+          0.8023,
+          0.9065
+         ],
+         "below_floor": false
+        },
+        "delivery": {
+         "n": 1,
+         "insufficient_data": true
+        },
+        "service": {
+         "n": 0,
+         "insufficient_data": true
+        },
+        "praise": {
+         "n": 503,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9664,
+         "f1_ci95": [
+          0.9544,
+          0.9773
+         ],
+         "below_floor": false
+        },
+        "other": {
+         "n": 30,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.5263,
+         "f1_ci95": [
+          0.4078,
+          0.6334
+         ],
+         "below_floor": true
+        }
+       },
+       "macro_f1": 0.7823,
+       "macro_f1_ci95": [
+        0.733,
+        0.8273
+       ],
+       "macro_f1_classes": [
+        "product_issue",
+        "praise",
+        "other"
+       ]
+      },
+      "model_on_same_items": {
+       "n": 644,
+       "accuracy": 0.9519,
+       "accuracy_wilson95": [
+        0.9325,
+        0.9659
+       ],
+       "classes": {
+        "product_issue": {
+         "n": 110,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9194,
+         "f1_ci95": [
+          0.8791,
+          0.9561
+         ],
+         "below_floor": false
+        },
+        "delivery": {
+         "n": 1,
+         "insufficient_data": true
+        },
+        "service": {
+         "n": 0,
+         "insufficient_data": true
+        },
+        "praise": {
+         "n": 503,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.984,
+         "f1_ci95": [
+          0.976,
+          0.991
+         ],
+         "below_floor": false
+        },
+        "other": {
+         "n": 30,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.6316,
+         "f1_ci95": [
+          0.4911,
+          0.7529
+         ],
+         "below_floor": false
+        }
+       },
+       "macro_f1": 0.845,
+       "macro_f1_ci95": [
+        0.7911,
+        0.8931
+       ],
+       "macro_f1_classes": [
+        "product_issue",
+        "praise",
+        "other"
+       ]
+      }
+     },
+     "gemma2_9b": {
+      "insufficient_data": false,
+      "n_items": 597,
+      "answered_fraction": 0.9983,
+      "accuracy_on_answered": 0.9832,
+      "accuracy_on_answered_wilson95": [
+       0.9694,
+       0.9909
+      ],
+      "judge_missing_as_wrong": {
+       "n": 597,
+       "accuracy": 0.9816,
+       "accuracy_wilson95": [
+        0.9673,
+        0.9897
+       ],
+       "classes": {
+        "product_issue": {
+         "n": 86,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9704,
+         "f1_ci95": [
+          0.9417,
+          0.9942
+         ],
+         "below_floor": false
+        },
+        "delivery": {
+         "n": 0,
+         "insufficient_data": true
+        },
+        "service": {
+         "n": 0,
+         "insufficient_data": true
+        },
+        "praise": {
+         "n": 479,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9937,
+         "f1_ci95": [
+          0.9885,
+          0.9979
+         ],
+         "below_floor": false
+        },
+        "other": {
+         "n": 32,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.8571,
+         "f1_ci95": [
+          0.7618,
+          0.9394
+         ],
+         "below_floor": false
+        }
+       },
+       "macro_f1": 0.9404,
+       "macro_f1_ci95": [
+        0.9004,
+        0.9739
+       ],
+       "macro_f1_classes": [
+        "product_issue",
+        "praise",
+        "other"
+       ]
+      },
+      "model_on_same_items": {
+       "n": 597,
+       "accuracy": 0.9598,
+       "accuracy_wilson95": [
+        0.9409,
+        0.9728
+       ],
+       "classes": {
+        "product_issue": {
+         "n": 86,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9412,
+         "f1_ci95": [
+          0.8973,
+          0.9733
+         ],
+         "below_floor": false
+        },
+        "delivery": {
+         "n": 0,
+         "insufficient_data": true
+        },
+        "service": {
+         "n": 0,
+         "insufficient_data": true
+        },
+        "praise": {
+         "n": 479,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9842,
+         "f1_ci95": [
+          0.9762,
+          0.9916
+         ],
+         "below_floor": false
+        },
+        "other": {
+         "n": 32,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.6849,
+         "f1_ci95": [
+          0.5397,
+          0.8
+         ],
+         "below_floor": false
+        }
+       },
+       "macro_f1": 0.8701,
+       "macro_f1_ci95": [
+        0.8124,
+        0.9167
+       ],
+       "macro_f1_classes": [
+        "product_issue",
+        "praise",
+        "other"
+       ]
+      }
+     },
+     "mistral_7b": {
+      "insufficient_data": false,
+      "n_items": 609,
+      "answered_fraction": 1.0,
+      "accuracy_on_answered": 0.9622,
+      "accuracy_on_answered_wilson95": [
+       0.944,
+       0.9747
+      ],
+      "judge_missing_as_wrong": {
+       "n": 609,
+       "accuracy": 0.9622,
+       "accuracy_wilson95": [
+        0.944,
+        0.9747
+       ],
+       "classes": {
+        "product_issue": {
+         "n": 83,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9266,
+         "f1_ci95": [
+          0.8816,
+          0.965
+         ],
+         "below_floor": false
+        },
+        "delivery": {
+         "n": 0,
+         "insufficient_data": true
+        },
+        "service": {
+         "n": 0,
+         "insufficient_data": true
+        },
+        "praise": {
+         "n": 483,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9896,
+         "f1_ci95": [
+          0.9829,
+          0.9958
+         ],
+         "below_floor": false
+        },
+        "other": {
+         "n": 43,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.7317,
+         "f1_ci95": [
+          0.6197,
+          0.8333
+         ],
+         "below_floor": false
+        }
+       },
+       "macro_f1": 0.8826,
+       "macro_f1_ci95": [
+        0.8365,
+        0.9258
+       ],
+       "macro_f1_classes": [
+        "product_issue",
+        "praise",
+        "other"
+       ]
+      },
+      "model_on_same_items": {
+       "n": 609,
+       "accuracy": 0.9507,
+       "accuracy_wilson95": [
+        0.9305,
+        0.9653
+       ],
+       "classes": {
+        "product_issue": {
+         "n": 83,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9231,
+         "f1_ci95": [
+          0.8774,
+          0.9617
+         ],
+         "below_floor": false
+        },
+        "delivery": {
+         "n": 0,
+         "insufficient_data": true
+        },
+        "service": {
+         "n": 0,
+         "insufficient_data": true
+        },
+        "praise": {
+         "n": 483,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9813,
+         "f1_ci95": [
+          0.9713,
+          0.9895
+         ],
+         "below_floor": false
+        },
+        "other": {
+         "n": 43,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.6588,
+         "f1_ci95": [
+          0.523,
+          0.7595
+         ],
+         "below_floor": false
+        }
+       },
+       "macro_f1": 0.8544,
+       "macro_f1_ci95": [
+        0.8034,
+        0.8982
+       ],
+       "macro_f1_classes": [
+        "product_issue",
+        "praise",
+        "other"
+       ]
+      }
+     },
+     "matched_coverage": "not available: judges give no confidences; none invented",
+     "scoring": "leave-one-out: judge vs unanimous consensus of the other three judges"
+    }
+   }
+  },
+  "sentiment": {
+   "insufficient_data": false,
+   "n": 679,
+   "accuracy": 0.9352,
+   "accuracy_wilson95": [
+    0.9141,
+    0.9514
+   ],
+   "classes": {
+    "positive": {
+     "n": 546,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.9736,
+     "f1_ci95": [
+      0.9639,
+      0.9832
+     ],
+     "below_floor": false
+    },
+    "negative": {
+     "n": 103,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.8622,
+     "f1_ci95": [
+      0.8079,
+      0.9063
+     ],
+     "below_floor": false
+    },
+    "neutral": {
+     "n": 11,
+     "insufficient_data": true
+    },
+    "mixed": {
+     "n": 19,
+     "insufficient_data": true
+    }
+   },
+   "macro_f1": 0.9179,
+   "macro_f1_ci95": [
+    0.8886,
+    0.9427
+   ],
+   "macro_f1_classes": [
+    "positive",
+    "negative"
+   ],
+   "selective": {
+    "conservative_p0.95": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 435,
+     "target": 0.95,
+     "threshold": 0.853935,
+     "n_answered": 583,
+     "coverage": 0.8586,
+     "coverage_ci95": [
+      0.8336,
+      0.8837
+     ],
+     "precision": 0.9897,
+     "precision_wilson95": [
+      0.9777,
+      0.9953
+     ],
+     "precision_ci95": [
+      0.9809,
+      0.9966
+     ],
+     "reached_target": true
+    },
+    "conservative_p0.9": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 435,
+     "target": 0.9,
+     "threshold": 0.399109,
+     "n_answered": 670,
+     "coverage": 0.9867,
+     "coverage_ci95": [
+      0.9779,
+      0.9941
+     ],
+     "precision": 0.9418,
+     "precision_wilson95": [
+      0.9214,
+      0.9571
+     ],
+     "precision_ci95": [
+      0.9236,
+      0.9595
+     ],
+     "reached_target": true
+    },
+    "oracle": {
+     "label": "ORACLE: best on the sealed set itself, not deployable",
+     "n": 679,
+     "accuracy": 0.9352,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9509,
+      "precision_p2_5_p97_5": [
+       0.9174,
+       0.9752
+      ],
+      "coverage_mean": 0.9732,
+      "coverage_p2_5_p97_5": [
+       0.947,
+       0.9971
+      ],
+      "hit_rate": 0.56
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": 0.9732,
+      "precision_p2_5_p97_5": [
+       0.9472,
+       0.9934
+      ],
+      "coverage_mean": 0.9286,
+      "coverage_p2_5_p97_5": [
+       0.8971,
+       0.9618
+      ],
+      "hit_rate": 0.955
+     },
+     "coverage_at_precision_0.95": 0.9764,
+     "coverage_at_precision_0.95_ci95": [
+      0.9426,
+      1.0
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.982,
+      "achieved_coverage": 0.9013,
+      "ci95": [
+       0.9705,
+       0.9935
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.9963,
+      "achieved_coverage": 0.8012,
+      "ci95": [
+       0.9908,
+       1.0
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 0.9979,
+      "achieved_coverage": 0.701,
+      "ci95": [
+       0.9937,
+       1.0
+      ]
+     }
+    }
+   },
+   "consensus_ceiling": {
+    "n_labelled": 679,
+    "n_sealed": 763,
+    "fraction": 0.8899,
+    "wilson95": [
+     0.8657,
+     0.9102
+    ],
+    "note": "share of sealed items with a four-judge consensus label"
+   },
+   "slices_accuracy": {
+    "apparel": {
+     "n": 215,
+     "claimed": true,
+     "accuracy": 0.9535
+    },
+    "beauty": {
+     "n": 230,
+     "claimed": true,
+     "accuracy": 0.9304
+    },
+    "food": {
+     "n": 215,
+     "claimed": true,
+     "accuracy": 0.9302
+    },
+    "vernacular": {
+     "n": 19,
+     "claimed": false
+    }
+   },
+   "baselines": {
+    "majority": {
+     "class": "positive",
+     "coverage": 1.0,
+     "n": 679,
+     "accuracy": 0.8041,
+     "accuracy_wilson95": [
+      0.7726,
+      0.8322
+     ],
+     "classes": {
+      "positive": {
+       "n": 546,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.8914,
+       "f1_ci95": [
+        0.874,
+        0.9092
+       ],
+       "below_floor": false
+      },
+      "negative": {
+       "n": 103,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.0,
+       "f1_ci95": [
+        0.0,
+        0.0
+       ],
+       "below_floor": true
+      },
+      "neutral": {
+       "n": 11,
+       "insufficient_data": true
+      },
+      "mixed": {
+       "n": 19,
+       "insufficient_data": true
+      }
+     },
+     "macro_f1": 0.4457,
+     "macro_f1_ci95": [
+      0.437,
+      0.4546
+     ],
+     "macro_f1_classes": [
+      "positive",
+      "negative"
+     ]
+    },
+    "tfidf_lr": {
+     "calibration": "none (raw LR probabilities)",
+     "insufficient_data": false,
+     "n": 679,
+     "accuracy": 0.8895,
+     "accuracy_wilson95": [
+      0.8637,
+      0.911
+     ],
+     "classes": {
+      "positive": {
+       "n": 546,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.9424,
+       "f1_ci95": [
+        0.929,
+        0.9558
+       ],
+       "below_floor": false
+      },
+      "negative": {
+       "n": 103,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.7033,
+       "f1_ci95": [
+        0.6249,
+        0.7725
+       ],
+       "below_floor": false
+      },
+      "neutral": {
+       "n": 11,
+       "insufficient_data": true
+      },
+      "mixed": {
+       "n": 19,
+       "insufficient_data": true
+      }
+     },
+     "macro_f1": 0.8229,
+     "macro_f1_ci95": [
+      0.7807,
+      0.8612
+     ],
+     "macro_f1_classes": [
+      "positive",
+      "negative"
+     ],
+     "selective": {
+      "conservative_p0.95": {
+       "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+       "n_validation": 435,
+       "target": 0.95,
+       "threshold": 0.961237,
+       "n_answered": 358,
+       "coverage": 0.5272,
+       "coverage_ci95": [
+        0.4919,
+        0.5641
+       ],
+       "precision": 0.9804,
+       "precision_wilson95": [
+        0.9602,
+        0.9905
+       ],
+       "precision_ci95": [
+        0.9653,
+        0.9944
+       ],
+       "reached_target": true
+      },
+      "conservative_p0.9": {
+       "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+       "n_validation": 435,
+       "target": 0.9,
+       "threshold": 0.766254,
+       "n_answered": 559,
+       "coverage": 0.8233,
+       "coverage_ci95": [
+        0.7953,
+        0.8513
+       ],
+       "precision": 0.9553,
+       "precision_wilson95": [
+        0.9348,
+        0.9695
+       ],
+       "precision_ci95": [
+        0.9379,
+        0.9727
+       ],
+       "reached_target": true
+      },
+      "oracle": {
+       "label": "ORACLE: best on the sealed set itself, not deployable",
+       "n": 679,
+       "accuracy": 0.8895,
+       "split_half_transfer_p95": {
+        "target": 0.95,
+        "n_splits": 200,
+        "rule": "point_estimate",
+        "precision_mean": 0.9486,
+        "precision_p2_5_p97_5": [
+         0.9068,
+         0.978
+        ],
+        "coverage_mean": 0.8447,
+        "coverage_p2_5_p97_5": [
+         0.7734,
+         0.9147
+        ],
+        "hit_rate": 0.5
+       },
+       "split_half_transfer_p95_conservative": {
+        "target": 0.95,
+        "n_splits": 200,
+        "rule": "wilson_lower_bound",
+        "precision_mean": 0.9763,
+        "precision_p2_5_p97_5": [
+         0.9469,
+         1.0
+        ],
+        "coverage_mean": 0.5604,
+        "coverage_p2_5_p97_5": [
+         0.4029,
+         0.803
+        ],
+        "hit_rate": 0.935
+       },
+       "coverage_at_precision_0.95": 0.8557,
+       "coverage_at_precision_0.95_ci95": [
+        0.7717,
+        0.9102
+       ],
+       "precision_at_coverage_0.9": {
+        "precision": 0.9297,
+        "achieved_coverage": 0.9013,
+        "ci95": [
+         0.9086,
+         0.9542
+        ]
+       },
+       "precision_at_coverage_0.8": {
+        "precision": 0.9596,
+        "achieved_coverage": 0.8012,
+        "ci95": [
+         0.9415,
+         0.9779
+        ]
+       },
+       "precision_at_coverage_0.7": {
+        "precision": 0.9685,
+        "achieved_coverage": 0.701,
+        "ci95": [
+         0.9538,
+         0.9832
+        ]
+       }
+      }
+     },
+     "matched_to_model_p0.95": {
+      "target_coverage": 0.8586,
+      "precision_a": 0.9897,
+      "achieved_coverage_a": 0.8586,
+      "precision_b": 0.9468,
+      "achieved_coverage_b": 0.8586,
+      "difference_a_minus_b": 0.0429,
+      "difference_ci95": [
+       0.0264,
+       0.06
+      ]
+     },
+     "matched_to_model_p0.9": {
+      "target_coverage": 0.9867,
+      "precision_a": 0.9418,
+      "achieved_coverage_a": 0.9867,
+      "precision_b": 0.8955,
+      "achieved_coverage_b": 0.9867,
+      "difference_a_minus_b": 0.0463,
+      "difference_ci95": [
+       0.0216,
+       0.0685
+      ]
+     }
+    },
+    "llm_judges_leave_one_out": {
+     "llama31_8b": {
+      "insufficient_data": false,
+      "n_items": 624,
+      "answered_fraction": 1.0,
+      "accuracy_on_answered": 0.9663,
+      "accuracy_on_answered_wilson95": [
+       0.9491,
+       0.9779
+      ],
+      "judge_missing_as_wrong": {
+       "n": 624,
+       "accuracy": 0.9663,
+       "accuracy_wilson95": [
+        0.9491,
+        0.9779
+       ],
+       "classes": {
+        "positive": {
+         "n": 526,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9943,
+         "f1_ci95": [
+          0.9896,
+          0.9982
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 75,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.8929,
+         "f1_ci95": [
+          0.8402,
+          0.9399
+         ],
+         "below_floor": false
+        },
+        "neutral": {
+         "n": 4,
+         "insufficient_data": true
+        },
+        "mixed": {
+         "n": 19,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": 0.9436,
+       "macro_f1_ci95": [
+        0.9175,
+        0.9672
+       ],
+       "macro_f1_classes": [
+        "positive",
+        "negative"
+       ]
+      },
+      "model_on_same_items": {
+       "n": 624,
+       "accuracy": 0.9439,
+       "accuracy_wilson95": [
+        0.923,
+        0.9594
+       ],
+       "classes": {
+        "positive": {
+         "n": 526,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9772,
+         "f1_ci95": [
+          0.968,
+          0.986
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 75,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.8571,
+         "f1_ci95": [
+          0.8,
+          0.9111
+         ],
+         "below_floor": false
+        },
+        "neutral": {
+         "n": 4,
+         "insufficient_data": true
+        },
+        "mixed": {
+         "n": 19,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": 0.9172,
+       "macro_f1_ci95": [
+        0.8874,
+        0.9461
+       ],
+       "macro_f1_classes": [
+        "positive",
+        "negative"
+       ]
+      }
+     },
+     "qwen3_8b": {
+      "insufficient_data": false,
+      "n_items": 617,
+      "answered_fraction": 1.0,
+      "accuracy_on_answered": 0.9773,
+      "accuracy_on_answered_wilson95": [
+       0.9623,
+       0.9864
+      ],
+      "judge_missing_as_wrong": {
+       "n": 617,
+       "accuracy": 0.9773,
+       "accuracy_wilson95": [
+        0.9623,
+        0.9864
+       ],
+       "classes": {
+        "positive": {
+         "n": 534,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9896,
+         "f1_ci95": [
+          0.9822,
+          0.9953
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 78,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.974,
+         "f1_ci95": [
+          0.9461,
+          0.9944
+         ],
+         "below_floor": false
+        },
+        "neutral": {
+         "n": 2,
+         "insufficient_data": true
+        },
+        "mixed": {
+         "n": 3,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": 0.9818,
+       "macro_f1_ci95": [
+        0.9665,
+        0.9936
+       ],
+       "macro_f1_classes": [
+        "positive",
+        "negative"
+       ]
+      },
+      "model_on_same_items": {
+       "n": 617,
+       "accuracy": 0.9692,
+       "accuracy_wilson95": [
+        0.9524,
+        0.9802
+       ],
+       "classes": {
+        "positive": {
+         "n": 534,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9849,
+         "f1_ci95": [
+          0.9771,
+          0.9915
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 78,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9036,
+         "f1_ci95": [
+          0.8481,
+          0.9459
+         ],
+         "below_floor": false
+        },
+        "neutral": {
+         "n": 2,
+         "insufficient_data": true
+        },
+        "mixed": {
+         "n": 3,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": 0.9443,
+       "macro_f1_ci95": [
+        0.9133,
+        0.9679
+       ],
+       "macro_f1_classes": [
+        "positive",
+        "negative"
+       ]
+      }
+     },
+     "gemma2_9b": {
+      "insufficient_data": false,
+      "n_items": 604,
+      "answered_fraction": 0.9983,
+      "accuracy_on_answered": 1.0,
+      "accuracy_on_answered_wilson95": [
+       0.9937,
+       1.0
+      ],
+      "judge_missing_as_wrong": {
+       "n": 604,
+       "accuracy": 0.9983,
+       "accuracy_wilson95": [
+        0.9907,
+        0.9997
+       ],
+       "classes": {
+        "positive": {
+         "n": 524,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.999,
+         "f1_ci95": [
+          0.9971,
+          1.0
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 75,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 1.0,
+         "f1_ci95": [
+          1.0,
+          1.0
+         ],
+         "below_floor": false
+        },
+        "neutral": {
+         "n": 2,
+         "insufficient_data": true
+        },
+        "mixed": {
+         "n": 3,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": 0.9995,
+       "macro_f1_ci95": [
+        0.9985,
+        1.0
+       ],
+       "macro_f1_classes": [
+        "positive",
+        "negative"
+       ]
+      },
+      "model_on_same_items": {
+       "n": 604,
+       "accuracy": 0.9702,
+       "accuracy_wilson95": [
+        0.9534,
+        0.9811
+       ],
+       "classes": {
+        "positive": {
+         "n": 524,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9856,
+         "f1_ci95": [
+          0.9774,
+          0.9923
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 75,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9057,
+         "f1_ci95": [
+          0.8507,
+          0.9481
+         ],
+         "below_floor": false
+        },
+        "neutral": {
+         "n": 2,
+         "insufficient_data": true
+        },
+        "mixed": {
+         "n": 3,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": 0.9456,
+       "macro_f1_ci95": [
+        0.9148,
+        0.9688
+       ],
+       "macro_f1_classes": [
+        "positive",
+        "negative"
+       ]
+      }
+     },
+     "mistral_7b": {
+      "insufficient_data": false,
+      "n_items": 643,
+      "answered_fraction": 1.0,
+      "accuracy_on_answered": 0.9378,
+      "accuracy_on_answered_wilson95": [
+       0.9164,
+       0.954
+      ],
+      "judge_missing_as_wrong": {
+       "n": 643,
+       "accuracy": 0.9378,
+       "accuracy_wilson95": [
+        0.9164,
+        0.954
+       ],
+       "classes": {
+        "positive": {
+         "n": 531,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9924,
+         "f1_ci95": [
+          0.9867,
+          0.9972
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 100,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.8571,
+         "f1_ci95": [
+          0.795,
+          0.9101
+         ],
+         "below_floor": false
+        },
+        "neutral": {
+         "n": 9,
+         "insufficient_data": true
+        },
+        "mixed": {
+         "n": 3,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": 0.9248,
+       "macro_f1_ci95": [
+        0.8937,
+        0.9511
+       ],
+       "macro_f1_classes": [
+        "positive",
+        "negative"
+       ]
+      },
+      "model_on_same_items": {
+       "n": 643,
+       "accuracy": 0.9596,
+       "accuracy_wilson95": [
+        0.9414,
+        0.9723
+       ],
+       "classes": {
+        "positive": {
+         "n": 531,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9821,
+         "f1_ci95": [
+          0.9739,
+          0.9898
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 100,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.8995,
+         "f1_ci95": [
+          0.8555,
+          0.9397
+         ],
+         "below_floor": false
+        },
+        "neutral": {
+         "n": 9,
+         "insufficient_data": true
+        },
+        "mixed": {
+         "n": 3,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": 0.9408,
+       "macro_f1_ci95": [
+        0.9161,
+        0.9639
+       ],
+       "macro_f1_classes": [
+        "positive",
+        "negative"
+       ]
+      }
+     },
+     "matched_coverage": "not available: judges give no confidences; none invented",
+     "scoring": "leave-one-out: judge vs unanimous consensus of the other three judges"
+    }
+   }
+  },
+  "urgency": {
+   "insufficient_data": false,
+   "n": 708,
+   "accuracy": 0.9548,
+   "accuracy_wilson95": [
+    0.9369,
+    0.9678
+   ],
+   "classes": {
+    "low": {
+     "n": 627,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.9775,
+     "f1_ci95": [
+      0.9692,
+      0.9855
+     ],
+     "below_floor": false
+    },
+    "medium": {
+     "n": 77,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.8095,
+     "f1_ci95": [
+      0.7349,
+      0.8696
+     ],
+     "below_floor": false
+    },
+    "high": {
+     "n": 4,
+     "insufficient_data": true
+    }
+   },
+   "macro_f1": 0.8935,
+   "macro_f1_ci95": [
+    0.8518,
+    0.9271
+   ],
+   "macro_f1_classes": [
+    "low",
+    "medium"
+   ],
+   "selective": {
+    "conservative_p0.95": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 460,
+     "target": 0.95,
+     "threshold": 0.843907,
+     "n_answered": 595,
+     "coverage": 0.8404,
+     "coverage_ci95": [
+      0.815,
+      0.8686
+     ],
+     "precision": 0.9933,
+     "precision_wilson95": [
+      0.9828,
+      0.9974
+     ],
+     "precision_ci95": [
+      0.9864,
+      0.9983
+     ],
+     "reached_target": true
+    },
+    "conservative_p0.9": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 460,
+     "target": 0.9,
+     "threshold": 0.589888,
+     "n_answered": 689,
+     "coverage": 0.9732,
+     "coverage_ci95": [
+      0.9605,
+      0.9845
+     ],
+     "precision": 0.9681,
+     "precision_wilson95": [
+      0.9521,
+      0.9788
+     ],
+     "precision_ci95": [
+      0.9552,
+      0.9797
+     ],
+     "reached_target": true
+    },
+    "oracle": {
+     "label": "ORACLE: best on the sealed set itself, not deployable",
+     "n": 708,
+     "accuracy": 0.9548,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9569,
+      "precision_p2_5_p97_5": [
+       0.9407,
+       0.9745
+      ],
+      "coverage_mean": 0.9942,
+      "coverage_p2_5_p97_5": [
+       0.9746,
+       1.0
+      ],
+      "hit_rate": 0.745
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": 0.9727,
+      "precision_p2_5_p97_5": [
+       0.9484,
+       0.9909
+      ],
+      "coverage_mean": 0.9499,
+      "coverage_p2_5_p97_5": [
+       0.9124,
+       0.9859
+      ],
+      "hit_rate": 0.97
+     },
+     "coverage_at_precision_0.95": 1.0,
+     "coverage_at_precision_0.95_ci95": [
+      0.976,
+      1.0
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.9859,
+      "achieved_coverage": 0.9011,
+      "ci95": [
+       0.9749,
+       0.9937
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.9929,
+      "achieved_coverage": 0.8008,
+      "ci95": [
+       0.9859,
+       1.0
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 1.0,
+      "achieved_coverage": 0.7006,
+      "ci95": [
+       0.996,
+       1.0
+      ]
+     }
+    }
+   },
+   "consensus_ceiling": {
+    "n_labelled": 708,
+    "n_sealed": 763,
+    "fraction": 0.9279,
+    "wilson95": [
+     0.9073,
+     0.9442
+    ],
+    "note": "share of sealed items with a four-judge consensus label"
+   },
+   "slices_accuracy": {
+    "apparel": {
+     "n": 238,
+     "claimed": true,
+     "accuracy": 0.9328
+    },
+    "beauty": {
+     "n": 229,
+     "claimed": true,
+     "accuracy": 0.9651
+    },
+    "food": {
+     "n": 224,
+     "claimed": true,
+     "accuracy": 0.9688
+    },
+    "vernacular": {
+     "n": 17,
+     "claimed": false
+    }
+   },
+   "baselines": {
+    "majority": {
+     "class": "low",
+     "coverage": 1.0,
+     "n": 708,
+     "accuracy": 0.8856,
+     "accuracy_wilson95": [
+      0.86,
+      0.907
+     ],
+     "classes": {
+      "low": {
+       "n": 627,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.9393,
+       "f1_ci95": [
+        0.9264,
+        0.9534
+       ],
+       "below_floor": false
+      },
+      "medium": {
+       "n": 77,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.0,
+       "f1_ci95": [
+        0.0,
+        0.0
+       ],
+       "below_floor": true
+      },
+      "high": {
+       "n": 4,
+       "insufficient_data": true
+      }
+     },
+     "macro_f1": 0.4697,
+     "macro_f1_ci95": [
+      0.4632,
+      0.4767
+     ],
+     "macro_f1_classes": [
+      "low",
+      "medium"
+     ]
+    },
+    "tfidf_lr": {
+     "calibration": "none (raw LR probabilities)",
+     "insufficient_data": false,
+     "n": 708,
+     "accuracy": 0.9223,
+     "accuracy_wilson95": [
+      0.9002,
+      0.9398
+     ],
+     "classes": {
+      "low": {
+       "n": 627,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.9587,
+       "f1_ci95": [
+        0.9472,
+        0.97
+       ],
+       "below_floor": false
+      },
+      "medium": {
+       "n": 77,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.5781,
+       "f1_ci95": [
+        0.4695,
+        0.6761
+       ],
+       "below_floor": true
+      },
+      "high": {
+       "n": 4,
+       "insufficient_data": true
+      }
+     },
+     "macro_f1": 0.7684,
+     "macro_f1_ci95": [
+      0.7098,
+      0.8207
+     ],
+     "macro_f1_classes": [
+      "low",
+      "medium"
+     ],
+     "selective": {
+      "conservative_p0.95": {
+       "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+       "n_validation": 460,
+       "target": 0.95,
+       "threshold": 0.962525,
+       "n_answered": 433,
+       "coverage": 0.6116,
+       "coverage_ci95": [
+        0.5763,
+        0.6483
+       ],
+       "precision": 0.9931,
+       "precision_wilson95": [
+        0.9798,
+        0.9976
+       ],
+       "precision_ci95": [
+        0.9844,
+        1.0
+       ],
+       "reached_target": true
+      },
+      "conservative_p0.9": {
+       "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+       "n_validation": 460,
+       "target": 0.9,
+       "threshold": 0.85405,
+       "n_answered": 582,
+       "coverage": 0.822,
+       "coverage_ci95": [
+        0.7924,
+        0.8503
+       ],
+       "precision": 0.9639,
+       "precision_wilson95": [
+        0.9455,
+        0.9763
+       ],
+       "precision_ci95": [
+        0.9488,
+        0.9781
+       ],
+       "reached_target": true
+      },
+      "oracle": {
+       "label": "ORACLE: best on the sealed set itself, not deployable",
+       "n": 708,
+       "accuracy": 0.9223,
+       "split_half_transfer_p95": {
+        "target": 0.95,
+        "n_splits": 200,
+        "rule": "point_estimate",
+        "precision_mean": 0.949,
+        "precision_p2_5_p97_5": [
+         0.9152,
+         0.9789
+        ],
+        "coverage_mean": 0.9084,
+        "coverage_p2_5_p97_5": [
+         0.8136,
+         0.9718
+        ],
+        "hit_rate": 0.51
+       },
+       "split_half_transfer_p95_conservative": {
+        "target": 0.95,
+        "n_splits": 200,
+        "rule": "wilson_lower_bound",
+        "precision_mean": 0.9745,
+        "precision_p2_5_p97_5": [
+         0.9483,
+         0.996
+        ],
+        "coverage_mean": 0.7607,
+        "coverage_p2_5_p97_5": [
+         0.6977,
+         0.8531
+        ],
+        "hit_rate": 0.965
+       },
+       "coverage_at_precision_0.95": 0.9195,
+       "coverage_at_precision_0.95_ci95": [
+        0.8164,
+        0.9788
+       ],
+       "precision_at_coverage_0.9": {
+        "precision": 0.953,
+        "achieved_coverage": 0.9011,
+        "ci95": [
+         0.9373,
+         0.9687
+        ]
+       },
+       "precision_at_coverage_0.8": {
+        "precision": 0.9683,
+        "achieved_coverage": 0.8008,
+        "ci95": [
+         0.9524,
+         0.9841
+        ]
+       },
+       "precision_at_coverage_0.7": {
+        "precision": 0.9859,
+        "achieved_coverage": 0.7006,
+        "ci95": [
+         0.9758,
+         0.996
+        ]
+       }
+      }
+     },
+     "matched_to_model_p0.95": {
+      "target_coverage": 0.8404,
+      "precision_a": 0.9933,
+      "achieved_coverage_a": 0.8418,
+      "precision_b": 0.9631,
+      "achieved_coverage_b": 0.8418,
+      "difference_a_minus_b": 0.0302,
+      "difference_ci95": [
+       0.0168,
+       0.052
+      ]
+     },
+     "matched_to_model_p0.9": {
+      "target_coverage": 0.9732,
+      "precision_a": 0.9667,
+      "achieved_coverage_a": 0.9746,
+      "precision_b": 0.9319,
+      "achieved_coverage_b": 0.9746,
+      "difference_a_minus_b": 0.0348,
+      "difference_ci95": [
+       0.0151,
+       0.0572
+      ]
+     }
+    },
+    "llm_judges_leave_one_out": {
+     "llama31_8b": {
+      "insufficient_data": false,
+      "n_items": 645,
+      "answered_fraction": 1.0,
+      "accuracy_on_answered": 0.9814,
+      "accuracy_on_answered_wilson95": [
+       0.9678,
+       0.9893
+      ],
+      "judge_missing_as_wrong": {
+       "n": 645,
+       "accuracy": 0.9814,
+       "accuracy_wilson95": [
+        0.9678,
+        0.9893
+       ],
+       "classes": {
+        "low": {
+         "n": 594,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9941,
+         "f1_ci95": [
+          0.9898,
+          0.9983
+         ],
+         "below_floor": false
+        },
+        "medium": {
+         "n": 51,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.88,
+         "f1_ci95": [
+          0.8052,
+          0.9375
+         ],
+         "below_floor": false
+        },
+        "high": {
+         "n": 0,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": 0.937,
+       "macro_f1_ci95": [
+        0.8989,
+        0.9673
+       ],
+       "macro_f1_classes": [
+        "low",
+        "medium"
+       ]
+      },
+      "model_on_same_items": {
+       "n": 645,
+       "accuracy": 0.9829,
+       "accuracy_wilson95": [
+        0.9697,
+        0.9905
+       ],
+       "classes": {
+        "low": {
+         "n": 594,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9907,
+         "f1_ci95": [
+          0.9847,
+          0.9958
+         ],
+         "below_floor": false
+        },
+        "medium": {
+         "n": 51,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.8952,
+         "f1_ci95": [
+          0.8283,
+          0.9515
+         ],
+         "below_floor": false
+        },
+        "high": {
+         "n": 0,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": 0.943,
+       "macro_f1_ci95": [
+        0.9064,
+        0.9736
+       ],
+       "macro_f1_classes": [
+        "low",
+        "medium"
+       ]
+      }
+     },
+     "qwen3_8b": {
+      "insufficient_data": false,
+      "n_items": 639,
+      "answered_fraction": 1.0,
+      "accuracy_on_answered": 0.9906,
+      "accuracy_on_answered_wilson95": [
+       0.9797,
+       0.9957
+      ],
+      "judge_missing_as_wrong": {
+       "n": 639,
+       "accuracy": 0.9906,
+       "accuracy_wilson95": [
+        0.9797,
+        0.9957
+       ],
+       "classes": {
+        "low": {
+         "n": 589,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9958,
+         "f1_ci95": [
+          0.9915,
+          0.9992
+         ],
+         "below_floor": false
+        },
+        "medium": {
+         "n": 50,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9362,
+         "f1_ci95": [
+          0.878,
+          0.98
+         ],
+         "below_floor": false
+        },
+        "high": {
+         "n": 0,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": 0.966,
+       "macro_f1_ci95": [
+        0.9357,
+        0.9894
+       ],
+       "macro_f1_classes": [
+        "low",
+        "medium"
+       ]
+      },
+      "model_on_same_items": {
+       "n": 639,
+       "accuracy": 0.9797,
+       "accuracy_wilson95": [
+        0.9655,
+        0.9881
+       ],
+       "classes": {
+        "low": {
+         "n": 589,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.989,
+         "f1_ci95": [
+          0.9828,
+          0.9949
+         ],
+         "below_floor": false
+        },
+        "medium": {
+         "n": 50,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.8713,
+         "f1_ci95": [
+          0.8,
+          0.9333
+         ],
+         "below_floor": false
+        },
+        "high": {
+         "n": 0,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": 0.9301,
+       "macro_f1_ci95": [
+        0.8935,
+        0.9637
+       ],
+       "macro_f1_classes": [
+        "low",
+        "medium"
+       ]
+      }
+     },
+     "gemma2_9b": {
+      "insufficient_data": false,
+      "n_items": 657,
+      "answered_fraction": 0.9985,
+      "accuracy_on_answered": 0.9649,
+      "accuracy_on_answered_wilson95": [
+       0.9479,
+       0.9765
+      ],
+      "judge_missing_as_wrong": {
+       "n": 657,
+       "accuracy": 0.9635,
+       "accuracy_wilson95": [
+        0.9462,
+        0.9753
+       ],
+       "classes": {
+        "low": {
+         "n": 590,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9833,
+         "f1_ci95": [
+          0.9754,
+          0.9902
+         ],
+         "below_floor": false
+        },
+        "medium": {
+         "n": 63,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.7928,
+         "f1_ci95": [
+          0.7069,
+          0.8667
+         ],
+         "below_floor": false
+        },
+        "high": {
+         "n": 4,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": 0.888,
+       "macro_f1_ci95": [
+        0.8425,
+        0.9277
+       ],
+       "macro_f1_classes": [
+        "low",
+        "medium"
+       ]
+      },
+      "model_on_same_items": {
+       "n": 657,
+       "accuracy": 0.9756,
+       "accuracy_wilson95": [
+        0.9608,
+        0.985
+       ],
+       "classes": {
+        "low": {
+         "n": 590,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9898,
+         "f1_ci95": [
+          0.9837,
+          0.995
+         ],
+         "below_floor": false
+        },
+        "medium": {
+         "n": 63,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.8788,
+         "f1_ci95": [
+          0.8099,
+          0.9333
+         ],
+         "below_floor": false
+        },
+        "high": {
+         "n": 4,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": 0.9343,
+       "macro_f1_ci95": [
+        0.8978,
+        0.9639
+       ],
+       "macro_f1_classes": [
+        "low",
+        "medium"
+       ]
+      }
+     },
+     "mistral_7b": {
+      "insufficient_data": false,
+      "n_items": 666,
+      "answered_fraction": 1.0,
+      "accuracy_on_answered": 0.9505,
+      "accuracy_on_answered_wilson95": [
+       0.9312,
+       0.9645
+      ],
+      "judge_missing_as_wrong": {
+       "n": 666,
+       "accuracy": 0.9505,
+       "accuracy_wilson95": [
+        0.9312,
+        0.9645
+       ],
+       "classes": {
+        "low": {
+         "n": 621,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9736,
+         "f1_ci95": [
+          0.9637,
+          0.982
+         ],
+         "below_floor": false
+        },
+        "medium": {
+         "n": 45,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.7273,
+         "f1_ci95": [
+          0.6281,
+          0.8071
+         ],
+         "below_floor": false
+        },
+        "high": {
+         "n": 0,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": 0.8504,
+       "macro_f1_ci95": [
+        0.7982,
+        0.8945
+       ],
+       "macro_f1_classes": [
+        "low",
+        "medium"
+       ]
+      },
+      "model_on_same_items": {
+       "n": 666,
+       "accuracy": 0.967,
+       "accuracy_wilson95": [
+        0.9505,
+        0.9781
+       ],
+       "classes": {
+        "low": {
+         "n": 621,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9821,
+         "f1_ci95": [
+          0.9739,
+          0.9893
+         ],
+         "below_floor": false
+        },
+        "medium": {
+         "n": 45,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.7925,
+         "f1_ci95": [
+          0.6964,
+          0.8689
+         ],
+         "below_floor": false
+        },
+        "high": {
+         "n": 0,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": 0.8873,
+       "macro_f1_ci95": [
+        0.836,
+        0.9291
+       ],
+       "macro_f1_classes": [
+        "low",
+        "medium"
+       ]
+      }
+     },
+     "matched_coverage": "not available: judges give no confidences; none invented",
+     "scoring": "leave-one-out: judge vs unanimous consensus of the other three judges"
+    }
+   }
+  },
+  "aspect:beauty:results_efficacy": {
+   "insufficient_data": false,
+   "n": 192,
+   "accuracy": 0.9219,
+   "accuracy_wilson95": [
+    0.8751,
+    0.9521
+   ],
+   "classes": {
+    "positive": {
+     "n": 161,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.96,
+     "f1_ci95": [
+      0.9355,
+      0.9795
+     ],
+     "below_floor": false
+    },
+    "negative": {
+     "n": 27,
+     "insufficient_data": false,
+     "low_support_lt30": true,
+     "f1": 0.7636,
+     "f1_ci95": [
+      0.6206,
+      0.875
+     ],
+     "below_floor": false
+    },
+    "neutral": {
+     "n": 4,
+     "insufficient_data": true
+    }
+   },
+   "macro_f1": 0.8618,
+   "macro_f1_ci95": [
+    0.7837,
+    0.928
+   ],
+   "macro_f1_classes": [
+    "positive",
+    "negative"
+   ],
+   "selective": {
+    "conservative_p0.95": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 104,
+     "target": 0.95,
+     "threshold": 0.910127,
+     "n_answered": 183,
+     "coverage": 0.9531,
+     "coverage_ci95": [
+      0.9219,
+      0.9792
+     ],
+     "precision": 0.9399,
+     "precision_wilson95": [
+      0.8956,
+      0.9661
+     ],
+     "precision_ci95": [
+      0.9037,
+      0.9728
+     ],
+     "reached_target": false
+    },
+    "conservative_p0.9": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 104,
+     "target": 0.9,
+     "threshold": 0.863186,
+     "n_answered": 185,
+     "coverage": 0.9635,
+     "coverage_ci95": [
+      0.9375,
+      0.9896
+     ],
+     "precision": 0.9405,
+     "precision_wilson95": [
+      0.8967,
+      0.9665
+     ],
+     "precision_ci95": [
+      0.9045,
+      0.9731
+     ],
+     "reached_target": true
+    },
+    "oracle": {
+     "label": "ORACLE: best on the sealed set itself, not deployable",
+     "n": 192,
+     "accuracy": 0.9219,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9528,
+      "precision_p2_5_p97_5": [
+       0.8945,
+       1.0
+      ],
+      "coverage_mean": 0.9373,
+      "coverage_p2_5_p97_5": [
+       0.8643,
+       1.0
+      ],
+      "hit_rate": 0.61
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": 0.9894,
+      "precision_p2_5_p97_5": [
+       0.9333,
+       1.0
+      ],
+      "coverage_mean": 0.8296,
+      "coverage_p2_5_p97_5": [
+       0.7706,
+       0.9167
+      ],
+      "hit_rate": 0.955
+     },
+     "coverage_at_precision_0.95": 0.9427,
+     "coverage_at_precision_0.95_ci95": [
+      0.8646,
+      1.0
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.9711,
+      "achieved_coverage": 0.901,
+      "ci95": [
+       0.9364,
+       0.9942
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 1.0,
+      "achieved_coverage": 0.8021,
+      "ci95": [
+       0.9805,
+       1.0
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 1.0,
+      "achieved_coverage": 0.7031,
+      "ci95": [
+       1.0,
+       1.0
+      ]
+     }
+    }
+   },
+   "consensus_ceiling": {
+    "n_labelled": 192,
+    "n_sealed": 763,
+    "fraction": 0.2516,
+    "wilson95": [
+     0.2221,
+     0.2836
+    ],
+    "note": "aspect tasks: relative to all sealed items, not only those that mention the aspect"
+   },
+   "slices_accuracy": {
+    "beauty": {
+     "n": 192,
+     "claimed": true,
+     "accuracy": 0.9219
+    }
+   },
+   "baselines": {
+    "majority": {
+     "class": "positive",
+     "coverage": 1.0,
+     "n": 192,
+     "accuracy": 0.8385,
+     "accuracy_wilson95": [
+      0.7799,
+      0.8839
+     ],
+     "classes": {
+      "positive": {
+       "n": 161,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.9122,
+       "f1_ci95": [
+        0.8805,
+        0.9392
+       ],
+       "below_floor": false
+      },
+      "negative": {
+       "n": 27,
+       "insufficient_data": false,
+       "low_support_lt30": true,
+       "f1": 0.0,
+       "f1_ci95": [
+        0.0,
+        0.0
+       ],
+       "below_floor": true
+      },
+      "neutral": {
+       "n": 4,
+       "insufficient_data": true
+      }
+     },
+     "macro_f1": 0.4561,
+     "macro_f1_ci95": [
+      0.4402,
+      0.4696
+     ],
+     "macro_f1_classes": [
+      "positive",
+      "negative"
+     ]
+    },
+    "tfidf_lr": {
+     "calibration": "none (raw LR probabilities)",
+     "insufficient_data": false,
+     "n": 192,
+     "accuracy": 0.875,
+     "accuracy_wilson95": [
+      0.8207,
+      0.9145
+     ],
+     "classes": {
+      "positive": {
+       "n": 161,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.9302,
+       "f1_ci95": [
+        0.9015,
+        0.9573
+       ],
+       "below_floor": false
+      },
+      "negative": {
+       "n": 27,
+       "insufficient_data": false,
+       "low_support_lt30": true,
+       "f1": 0.4444,
+       "f1_ci95": [
+        0.2222,
+        0.6316
+       ],
+       "below_floor": true
+      },
+      "neutral": {
+       "n": 4,
+       "insufficient_data": true
+      }
+     },
+     "macro_f1": 0.6873,
+     "macro_f1_ci95": [
+      0.5766,
+      0.7906
+     ],
+     "macro_f1_classes": [
+      "positive",
+      "negative"
+     ],
+     "selective": {
+      "conservative_p0.95": {
+       "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+       "n_validation": 104,
+       "target": 0.95,
+       "threshold": null,
+       "n_answered": 0,
+       "coverage": 0.0,
+       "coverage_ci95": null,
+       "precision": null,
+       "precision_wilson95": null,
+       "precision_ci95": null,
+       "reached_target": false
+      },
+      "conservative_p0.9": {
+       "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+       "n_validation": 104,
+       "target": 0.9,
+       "threshold": 0.854526,
+       "n_answered": 149,
+       "coverage": 0.776,
+       "coverage_ci95": [
+        0.7135,
+        0.8333
+       ],
+       "precision": 0.9866,
+       "precision_wilson95": [
+        0.9524,
+        0.9963
+       ],
+       "precision_ci95": [
+        0.9669,
+        1.0
+       ],
+       "reached_target": true
+      },
+      "oracle": {
+       "label": "ORACLE: best on the sealed set itself, not deployable",
+       "n": 192,
+       "accuracy": 0.875,
+       "split_half_transfer_p95": {
+        "target": 0.95,
+        "n_splits": 200,
+        "rule": "point_estimate",
+        "precision_mean": 0.9506,
+        "precision_p2_5_p97_5": [
+         0.8924,
+         1.0
+        ],
+        "coverage_mean": 0.8488,
+        "coverage_p2_5_p97_5": [
+         0.7604,
+         0.9375
+        ],
+        "hit_rate": 0.535
+       },
+       "split_half_transfer_p95_conservative": {
+        "target": 0.95,
+        "n_splits": 200,
+        "rule": "wilson_lower_bound",
+        "precision_mean": 0.9618,
+        "precision_p2_5_p97_5": [
+         0.9065,
+         0.9737
+        ],
+        "coverage_mean": 0.1517,
+        "coverage_p2_5_p97_5": [
+         0.0,
+         0.8229
+        ],
+        "hit_rate": 0.155
+       },
+       "coverage_at_precision_0.95": 0.8438,
+       "coverage_at_precision_0.95_ci95": [
+        0.7604,
+        0.9427
+       ],
+       "precision_at_coverage_0.9": {
+        "precision": 0.9306,
+        "achieved_coverage": 0.901,
+        "ci95": [
+         0.8844,
+         0.9711
+        ]
+       },
+       "precision_at_coverage_0.8": {
+        "precision": 0.974,
+        "achieved_coverage": 0.8021,
+        "ci95": [
+         0.9286,
+         1.0
+        ]
+       },
+       "precision_at_coverage_0.7": {
+        "precision": 0.9852,
+        "achieved_coverage": 0.7031,
+        "ci95": [
+         0.963,
+         1.0
+        ]
+       }
+      }
+     },
+     "matched_to_model_p0.95": {
+      "target_coverage": 0.9531,
+      "precision_a": 0.9399,
+      "achieved_coverage_a": 0.9531,
+      "precision_b": 0.9016,
+      "achieved_coverage_b": 0.9531,
+      "difference_a_minus_b": 0.0383,
+      "difference_ci95": [
+       0.0027,
+       0.0867
+      ]
+     },
+     "matched_to_model_p0.9": {
+      "target_coverage": 0.9635,
+      "precision_a": 0.9405,
+      "achieved_coverage_a": 0.9635,
+      "precision_b": 0.8973,
+      "achieved_coverage_b": 0.9635,
+      "difference_a_minus_b": 0.0432,
+      "difference_ci95": [
+       0.0052,
+       0.0813
+      ]
+     }
+    },
+    "llm_judges_leave_one_out": {
+     "llama31_8b": {
+      "insufficient_data": false,
+      "n_items": 105,
+      "answered_fraction": 0.9714,
+      "accuracy_on_answered": 0.9608,
+      "accuracy_on_answered_wilson95": [
+       0.9035,
+       0.9846
+      ],
+      "judge_missing_as_wrong": {
+       "n": 105,
+       "accuracy": 0.9333,
+       "accuracy_wilson95": [
+        0.8687,
+        0.9673
+       ],
+       "classes": {
+        "positive": {
+         "n": 88,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9708,
+         "f1_ci95": [
+          0.9438,
+          0.9942
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 14,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 3,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      },
+      "model_on_same_items": {
+       "n": 105,
+       "accuracy": 0.9143,
+       "accuracy_wilson95": [
+        0.8451,
+        0.9543
+       ],
+       "classes": {
+        "positive": {
+         "n": 88,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9545,
+         "f1_ci95": [
+          0.9222,
+          0.9832
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 14,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 3,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      }
+     },
+     "qwen3_8b": {
+      "insufficient_data": false,
+      "n_items": 144,
+      "answered_fraction": 0.7014,
+      "accuracy_on_answered": 0.9703,
+      "accuracy_on_answered_wilson95": [
+       0.9163,
+       0.9898
+      ],
+      "judge_missing_as_wrong": {
+       "n": 144,
+       "accuracy": 0.6806,
+       "accuracy_wilson95": [
+        0.6006,
+        0.7512
+       ],
+       "classes": {
+        "positive": {
+         "n": 124,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.7943,
+         "f1_ci95": [
+          0.73,
+          0.8519
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 18,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 2,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      },
+      "model_on_same_items": {
+       "n": 144,
+       "accuracy": 0.9306,
+       "accuracy_wilson95": [
+        0.8769,
+        0.9618
+       ],
+       "classes": {
+        "positive": {
+         "n": 124,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.96,
+         "f1_ci95": [
+          0.9348,
+          0.9837
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 18,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 2,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      }
+     },
+     "gemma2_9b": {
+      "insufficient_data": false,
+      "n_items": 116,
+      "answered_fraction": 0.8448,
+      "accuracy_on_answered": 1.0,
+      "accuracy_on_answered_wilson95": [
+       0.9623,
+       1.0
+      ],
+      "judge_missing_as_wrong": {
+       "n": 116,
+       "accuracy": 0.8448,
+       "accuracy_wilson95": [
+        0.768,
+        0.8995
+       ],
+       "classes": {
+        "positive": {
+         "n": 97,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9222,
+         "f1_ci95": [
+          0.883,
+          0.9622
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 17,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 2,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      },
+      "model_on_same_items": {
+       "n": 116,
+       "accuracy": 0.9224,
+       "accuracy_wilson95": [
+        0.8591,
+        0.9586
+       ],
+       "classes": {
+        "positive": {
+         "n": 97,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9538,
+         "f1_ci95": [
+          0.9223,
+          0.9808
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 17,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 2,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      }
+     },
+     "mistral_7b": {
+      "insufficient_data": false,
+      "n_items": 121,
+      "answered_fraction": 0.8182,
+      "accuracy_on_answered": 0.9899,
+      "accuracy_on_answered_wilson95": [
+       0.945,
+       0.9982
+      ],
+      "judge_missing_as_wrong": {
+       "n": 121,
+       "accuracy": 0.8099,
+       "accuracy_wilson95": [
+        0.7309,
+        0.8699
+       ],
+       "classes": {
+        "positive": {
+         "n": 101,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9022,
+         "f1_ci95": [
+          0.8538,
+          0.9436
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 17,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 3,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      },
+      "model_on_same_items": {
+       "n": 121,
+       "accuracy": 0.9091,
+       "accuracy_wilson95": [
+        0.8445,
+        0.9485
+       ],
+       "classes": {
+        "positive": {
+         "n": 101,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9505,
+         "f1_ci95": [
+          0.9171,
+          0.9802
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 17,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 3,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      }
+     },
+     "matched_coverage": "not available: judges give no confidences; none invented",
+     "scoring": "leave-one-out: judge vs unanimous consensus of the other three judges"
+    }
+   }
+  },
+  "aspect:beauty:texture": {
+   "insufficient_data": false,
+   "n": 69,
+   "accuracy": 0.8986,
+   "accuracy_wilson95": [
+    0.8051,
+    0.95
+   ],
+   "classes": {
+    "positive": {
+     "n": 59,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.95,
+     "f1_ci95": [
+      0.9043,
+      0.9841
+     ],
+     "below_floor": false
+    },
+    "negative": {
+     "n": 6,
+     "insufficient_data": true
+    },
+    "neutral": {
+     "n": 4,
+     "insufficient_data": true
+    }
+   },
+   "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)",
+   "selective": {
+    "conservative_p0.95": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 53,
+     "target": 0.95,
+     "threshold": null,
+     "n_answered": 0,
+     "coverage": 0.0,
+     "coverage_ci95": null,
+     "precision": null,
+     "precision_wilson95": null,
+     "precision_ci95": null,
+     "reached_target": false
+    },
+    "conservative_p0.9": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 53,
+     "target": 0.9,
+     "threshold": null,
+     "n_answered": 0,
+     "coverage": 0.0,
+     "coverage_ci95": null,
+     "precision": null,
+     "precision_wilson95": null,
+     "precision_ci95": null,
+     "reached_target": false
+    },
+    "oracle": {
+     "label": "ORACLE: best on the sealed set itself, not deployable",
+     "n": 69,
+     "accuracy": 0.8986,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.943,
+      "precision_p2_5_p97_5": [
+       0.8286,
+       1.0
+      ],
+      "coverage_mean": 0.7844,
+      "coverage_p2_5_p97_5": [
+       0.5421,
+       0.9714
+      ],
+      "hit_rate": 0.46
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": null,
+      "precision_p2_5_p97_5": [
+       null,
+       null
+      ],
+      "coverage_mean": 0.0,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.0
+      ],
+      "hit_rate": 0.0
+     },
+     "coverage_at_precision_0.95": 0.8986,
+     "coverage_at_precision_0.95_ci95": [
+      0.5072,
+      1.0
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.9365,
+      "achieved_coverage": 0.913,
+      "ci95": [
+       0.8484,
+       0.9844
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.9464,
+      "achieved_coverage": 0.8116,
+      "ci95": [
+       0.8772,
+       1.0
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 0.9592,
+      "achieved_coverage": 0.7101,
+      "ci95": [
+       0.8776,
+       1.0
+      ]
+     }
+    }
+   },
+   "consensus_ceiling": {
+    "n_labelled": 69,
+    "n_sealed": 763,
+    "fraction": 0.0904,
+    "wilson95": [
+     0.0721,
+     0.1129
+    ],
+    "note": "aspect tasks: relative to all sealed items, not only those that mention the aspect"
+   },
+   "slices_accuracy": {
+    "beauty": {
+     "n": 69,
+     "claimed": false
+    }
+   },
+   "baselines": {
+    "majority": {
+     "class": "positive",
+     "coverage": 1.0,
+     "n": 69,
+     "accuracy": 0.8551,
+     "accuracy_wilson95": [
+      0.7534,
+      0.9193
+     ],
+     "classes": {
+      "positive": {
+       "n": 59,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.9219,
+       "f1_ci95": [
+        0.8686,
+        0.9624
+       ],
+       "below_floor": false
+      },
+      "negative": {
+       "n": 6,
+       "insufficient_data": true
+      },
+      "neutral": {
+       "n": 4,
+       "insufficient_data": true
+      }
+     },
+     "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+    },
+    "tfidf_lr": {
+     "calibration": "none (raw LR probabilities)",
+     "insufficient_data": false,
+     "n": 69,
+     "accuracy": 0.8261,
+     "accuracy_wilson95": [
+      0.7202,
+      0.8976
+     ],
+     "classes": {
+      "positive": {
+       "n": 59,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.9048,
+       "f1_ci95": [
+        0.8498,
+        0.9545
+       ],
+       "below_floor": false
+      },
+      "negative": {
+       "n": 6,
+       "insufficient_data": true
+      },
+      "neutral": {
+       "n": 4,
+       "insufficient_data": true
+      }
+     },
+     "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)",
+     "selective": {
+      "conservative_p0.95": {
+       "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+       "n_validation": 53,
+       "target": 0.95,
+       "threshold": null,
+       "n_answered": 0,
+       "coverage": 0.0,
+       "coverage_ci95": null,
+       "precision": null,
+       "precision_wilson95": null,
+       "precision_ci95": null,
+       "reached_target": false
+      },
+      "conservative_p0.9": {
+       "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+       "n_validation": 53,
+       "target": 0.9,
+       "threshold": null,
+       "n_answered": 0,
+       "coverage": 0.0,
+       "coverage_ci95": null,
+       "precision": null,
+       "precision_wilson95": null,
+       "precision_ci95": null,
+       "reached_target": false
+      },
+      "oracle": {
+       "label": "ORACLE: best on the sealed set itself, not deployable",
+       "n": 69,
+       "accuracy": 0.8261,
+       "split_half_transfer_p95": {
+        "target": 0.95,
+        "n_splits": 200,
+        "rule": "point_estimate",
+        "precision_mean": 0.9549,
+        "precision_p2_5_p97_5": [
+         0.7879,
+         1.0
+        ],
+        "coverage_mean": 0.8033,
+        "coverage_p2_5_p97_5": [
+         0.7136,
+         0.915
+        ],
+        "hit_rate": 0.7
+       },
+       "split_half_transfer_p95_conservative": {
+        "target": 0.95,
+        "n_splits": 200,
+        "rule": "wilson_lower_bound",
+        "precision_mean": null,
+        "precision_p2_5_p97_5": [
+         null,
+         null
+        ],
+        "coverage_mean": 0.0,
+        "coverage_p2_5_p97_5": [
+         0.0,
+         0.0
+        ],
+        "hit_rate": 0.0
+       },
+       "coverage_at_precision_0.95": 0.7971,
+       "coverage_at_precision_0.95_ci95": [
+        0.6812,
+        0.913
+       ],
+       "precision_at_coverage_0.9": {
+        "precision": 0.873,
+        "achieved_coverage": 0.913,
+        "ci95": [
+         0.7619,
+         0.9524
+        ]
+       },
+       "precision_at_coverage_0.8": {
+        "precision": 0.9464,
+        "achieved_coverage": 0.8116,
+        "ci95": [
+         0.8246,
+         1.0
+        ]
+       },
+       "precision_at_coverage_0.7": {
+        "precision": 1.0,
+        "achieved_coverage": 0.7101,
+        "ci95": [
+         0.918,
+         1.0
+        ]
+       }
+      }
+     }
+    },
+    "llm_judges_leave_one_out": {
+     "llama31_8b": {
+      "insufficient_data": false,
+      "n_items": 34,
+      "answered_fraction": 0.9412,
+      "accuracy_on_answered": 0.9688,
+      "accuracy_on_answered_wilson95": [
+       0.8426,
+       0.9945
+      ],
+      "judge_missing_as_wrong": {
+       "n": 34,
+       "accuracy": 0.9118,
+       "accuracy_wilson95": [
+        0.7704,
+        0.9695
+       ],
+       "classes": {
+        "positive": {
+         "n": 29,
+         "insufficient_data": false,
+         "low_support_lt30": true,
+         "f1": 0.9474,
+         "f1_ci95": [
+          0.8727,
+          1.0
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 3,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 2,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      },
+      "model_on_same_items": {
+       "n": 34,
+       "accuracy": 0.8824,
+       "accuracy_wilson95": [
+        0.7338,
+        0.9533
+       ],
+       "classes": {
+        "positive": {
+         "n": 29,
+         "insufficient_data": false,
+         "low_support_lt30": true,
+         "f1": 0.931,
+         "f1_ci95": [
+          0.8571,
+          0.9841
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 3,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 2,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      }
+     },
+     "qwen3_8b": {
+      "insufficient_data": false,
+      "n_items": 50,
+      "answered_fraction": 0.78,
+      "accuracy_on_answered": 0.7949,
+      "accuracy_on_answered_wilson95": [
+       0.6447,
+       0.8922
+      ],
+      "judge_missing_as_wrong": {
+       "n": 50,
+       "accuracy": 0.62,
+       "accuracy_wilson95": [
+        0.4815,
+        0.7414
+       ],
+       "classes": {
+        "positive": {
+         "n": 43,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.7714,
+         "f1_ci95": [
+          0.6552,
+          0.8685
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 6,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 1,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      },
+      "model_on_same_items": {
+       "n": 50,
+       "accuracy": 0.92,
+       "accuracy_wilson95": [
+        0.8116,
+        0.9685
+       ],
+       "classes": {
+        "positive": {
+         "n": 43,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9647,
+         "f1_ci95": [
+          0.9143,
+          1.0
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 6,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 1,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      }
+     },
+     "gemma2_9b": {
+      "insufficient_data": false,
+      "n_items": 33,
+      "answered_fraction": 0.9394,
+      "accuracy_on_answered": 1.0,
+      "accuracy_on_answered_wilson95": [
+       0.8897,
+       1.0
+      ],
+      "judge_missing_as_wrong": {
+       "n": 33,
+       "accuracy": 0.9394,
+       "accuracy_wilson95": [
+        0.8039,
+        0.9832
+       ],
+       "classes": {
+        "positive": {
+         "n": 29,
+         "insufficient_data": false,
+         "low_support_lt30": true,
+         "f1": 0.9643,
+         "f1_ci95": [
+          0.902,
+          1.0
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 3,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 1,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      },
+      "model_on_same_items": {
+       "n": 33,
+       "accuracy": 0.9091,
+       "accuracy_wilson95": [
+        0.7643,
+        0.9686
+       ],
+       "classes": {
+        "positive": {
+         "n": 29,
+         "insufficient_data": false,
+         "low_support_lt30": true,
+         "f1": 0.9474,
+         "f1_ci95": [
+          0.875,
+          1.0
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 3,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 1,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      }
+     },
+     "mistral_7b": {
+      "insufficient_data": false,
+      "n_items": 45,
+      "answered_fraction": 0.7333,
+      "accuracy_on_answered": 0.9394,
+      "accuracy_on_answered_wilson95": [
+       0.8039,
+       0.9832
+      ],
+      "judge_missing_as_wrong": {
+       "n": 45,
+       "accuracy": 0.6889,
+       "accuracy_wilson95": [
+        0.5433,
+        0.8047
+       ],
+       "classes": {
+        "positive": {
+         "n": 39,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.8182,
+         "f1_ci95": [
+          0.7,
+          0.9167
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 3,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 3,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      },
+      "model_on_same_items": {
+       "n": 45,
+       "accuracy": 0.8889,
+       "accuracy_wilson95": [
+        0.765,
+        0.9516
+       ],
+       "classes": {
+        "positive": {
+         "n": 39,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9367,
+         "f1_ci95": [
+          0.8696,
+          0.988
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 3,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 3,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      }
+     },
+     "matched_coverage": "not available: judges give no confidences; none invented",
+     "scoring": "leave-one-out: judge vs unanimous consensus of the other three judges"
+    }
+   }
+  },
+  "aspect:beauty:skin_reaction": {
+   "insufficient_data": false,
+   "n": 33,
+   "accuracy": 0.9091,
+   "accuracy_wilson95": [
+    0.7643,
+    0.9686
+   ],
+   "classes": {
+    "positive": {
+     "n": 12,
+     "insufficient_data": true
+    },
+    "negative": {
+     "n": 20,
+     "insufficient_data": false,
+     "low_support_lt30": true,
+     "f1": 0.9189,
+     "f1_ci95": [
+      0.8125,
+      1.0
+     ],
+     "below_floor": false
+    },
+    "neutral": {
+     "n": 1,
+     "insufficient_data": true
+    }
+   },
+   "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)",
+   "selective": {
+    "conservative_p0.95": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 29,
+     "target": 0.95,
+     "threshold": null,
+     "n_answered": 0,
+     "coverage": 0.0,
+     "coverage_ci95": null,
+     "precision": null,
+     "precision_wilson95": null,
+     "precision_ci95": null,
+     "reached_target": false
+    },
+    "conservative_p0.9": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 29,
+     "target": 0.9,
+     "threshold": null,
+     "n_answered": 0,
+     "coverage": 0.0,
+     "coverage_ci95": null,
+     "precision": null,
+     "precision_wilson95": null,
+     "precision_ci95": null,
+     "reached_target": false
+    },
+    "oracle": {
+     "label": "ORACLE: best on the sealed set itself, not deployable",
+     "n": 33,
+     "accuracy": 0.9091,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9698,
+      "precision_p2_5_p97_5": [
+       0.9231,
+       1.0
+      ],
+      "coverage_mean": 0.8135,
+      "coverage_p2_5_p97_5": [
+       0.5868,
+       1.0
+      ],
+      "hit_rate": 0.545
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": null,
+      "precision_p2_5_p97_5": [
+       null,
+       null
+      ],
+      "coverage_mean": 0.0,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.0
+      ],
+      "hit_rate": 0.0
+     },
+     "coverage_at_precision_0.95": 0.9394,
+     "coverage_at_precision_0.95_ci95": [
+      0.6364,
+      1.0
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.9667,
+      "achieved_coverage": 0.9091,
+      "ci95": [
+       0.8438,
+       1.0
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.963,
+      "achieved_coverage": 0.8182,
+      "ci95": [
+       0.8889,
+       1.0
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 1.0,
+      "achieved_coverage": 0.7273,
+      "ci95": [
+       0.8846,
+       1.0
+      ]
+     }
+    }
+   },
+   "consensus_ceiling": {
+    "n_labelled": 33,
+    "n_sealed": 763,
+    "fraction": 0.0433,
+    "wilson95": [
+     0.031,
+     0.0601
+    ],
+    "note": "aspect tasks: relative to all sealed items, not only those that mention the aspect"
+   },
+   "slices_accuracy": {
+    "beauty": {
+     "n": 33,
+     "claimed": false
+    }
+   },
+   "baselines": {
+    "majority": {
+     "class": "negative",
+     "coverage": 1.0,
+     "n": 33,
+     "accuracy": 0.6061,
+     "accuracy_wilson95": [
+      0.4368,
+      0.7532
+     ],
+     "classes": {
+      "positive": {
+       "n": 12,
+       "insufficient_data": true
+      },
+      "negative": {
+       "n": 20,
+       "insufficient_data": false,
+       "low_support_lt30": true,
+       "f1": 0.7547,
+       "f1_ci95": [
+        0.5957,
+        0.8621
+       ],
+       "below_floor": false
+      },
+      "neutral": {
+       "n": 1,
+       "insufficient_data": true
+      }
+     },
+     "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+    },
+    "tfidf_lr": {
+     "calibration": "none (raw LR probabilities)",
+     "insufficient_data": false,
+     "n": 33,
+     "accuracy": 0.697,
+     "accuracy_wilson95": [
+      0.5266,
+      0.8262
+     ],
+     "classes": {
+      "positive": {
+       "n": 12,
+       "insufficient_data": true
+      },
+      "negative": {
+       "n": 20,
+       "insufficient_data": false,
+       "low_support_lt30": true,
+       "f1": 0.75,
+       "f1_ci95": [
+        0.5789,
+        0.875
+       ],
+       "below_floor": false
+      },
+      "neutral": {
+       "n": 1,
+       "insufficient_data": true
+      }
+     },
+     "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)",
+     "selective": {
+      "conservative_p0.95": {
+       "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+       "n_validation": 29,
+       "target": 0.95,
+       "threshold": null,
+       "n_answered": 0,
+       "coverage": 0.0,
+       "coverage_ci95": null,
+       "precision": null,
+       "precision_wilson95": null,
+       "precision_ci95": null,
+       "reached_target": false
+      },
+      "conservative_p0.9": {
+       "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+       "n_validation": 29,
+       "target": 0.9,
+       "threshold": null,
+       "n_answered": 0,
+       "coverage": 0.0,
+       "coverage_ci95": null,
+       "precision": null,
+       "precision_wilson95": null,
+       "precision_ci95": null,
+       "reached_target": false
+      },
+      "oracle": {
+       "label": "ORACLE: best on the sealed set itself, not deployable",
+       "n": 33,
+       "accuracy": 0.697,
+       "split_half_transfer_p95": {
+        "target": 0.95,
+        "n_splits": 200,
+        "rule": "point_estimate",
+        "precision_mean": 0.8595,
+        "precision_p2_5_p97_5": [
+         0.5821,
+         1.0
+        ],
+        "coverage_mean": 0.2741,
+        "coverage_p2_5_p97_5": [
+         0.0,
+         0.8235
+        ],
+        "hit_rate": 0.36
+       },
+       "split_half_transfer_p95_conservative": {
+        "target": 0.95,
+        "n_splits": 200,
+        "rule": "wilson_lower_bound",
+        "precision_mean": null,
+        "precision_p2_5_p97_5": [
+         null,
+         null
+        ],
+        "coverage_mean": 0.0,
+        "coverage_p2_5_p97_5": [
+         0.0,
+         0.0
+        ],
+        "hit_rate": 0.0
+       },
+       "coverage_at_precision_0.95": 0.1212,
+       "coverage_at_precision_0.95_ci95": [
+        0.0303,
+        0.697
+       ],
+       "precision_at_coverage_0.9": {
+        "precision": 0.7333,
+        "achieved_coverage": 0.9091,
+        "ci95": [
+         0.5484,
+         0.8667
+        ]
+       },
+       "precision_at_coverage_0.8": {
+        "precision": 0.7407,
+        "achieved_coverage": 0.8182,
+        "ci95": [
+         0.5556,
+         0.8889
+        ]
+       },
+       "precision_at_coverage_0.7": {
+        "precision": 0.7917,
+        "achieved_coverage": 0.7273,
+        "ci95": [
+         0.5769,
+         0.92
+        ]
+       }
+      }
+     }
+    },
+    "llm_judges_leave_one_out": {
+     "llama31_8b": {
+      "n_items": 18,
+      "insufficient_data": true
+     },
+     "qwen3_8b": {
+      "insufficient_data": false,
+      "n_items": 21,
+      "answered_fraction": 0.8571,
+      "accuracy_on_answered": 1.0,
+      "accuracy_on_answered_wilson95": [
+       0.8241,
+       1.0
+      ],
+      "judge_missing_as_wrong": {
+       "n": 21,
+       "accuracy": 0.8571,
+       "accuracy_wilson95": [
+        0.6536,
+        0.9502
+       ],
+       "classes": {
+        "positive": {
+         "n": 5,
+         "insufficient_data": true
+        },
+        "negative": {
+         "n": 16,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 0,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      },
+      "model_on_same_items": {
+       "n": 21,
+       "accuracy": 0.9524,
+       "accuracy_wilson95": [
+        0.7733,
+        0.9915
+       ],
+       "classes": {
+        "positive": {
+         "n": 5,
+         "insufficient_data": true
+        },
+        "negative": {
+         "n": 16,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 0,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      }
+     },
+     "gemma2_9b": {
+      "insufficient_data": false,
+      "n_items": 25,
+      "answered_fraction": 0.72,
+      "accuracy_on_answered": 1.0,
+      "accuracy_on_answered_wilson95": [
+       0.8241,
+       1.0
+      ],
+      "judge_missing_as_wrong": {
+       "n": 25,
+       "accuracy": 0.72,
+       "accuracy_wilson95": [
+        0.5242,
+        0.8572
+       ],
+       "classes": {
+        "positive": {
+         "n": 5,
+         "insufficient_data": true
+        },
+        "negative": {
+         "n": 19,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 1,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      },
+      "model_on_same_items": {
+       "n": 25,
+       "accuracy": 0.92,
+       "accuracy_wilson95": [
+        0.7503,
+        0.9778
+       ],
+       "classes": {
+        "positive": {
+         "n": 5,
+         "insufficient_data": true
+        },
+        "negative": {
+         "n": 19,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 1,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      }
+     },
+     "mistral_7b": {
+      "insufficient_data": false,
+      "n_items": 23,
+      "answered_fraction": 0.8261,
+      "accuracy_on_answered": 0.9474,
+      "accuracy_on_answered_wilson95": [
+       0.7536,
+       0.9906
+      ],
+      "judge_missing_as_wrong": {
+       "n": 23,
+       "accuracy": 0.7826,
+       "accuracy_wilson95": [
+        0.581,
+        0.9034
+       ],
+       "classes": {
+        "positive": {
+         "n": 6,
+         "insufficient_data": true
+        },
+        "negative": {
+         "n": 17,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 0,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      },
+      "model_on_same_items": {
+       "n": 23,
+       "accuracy": 0.913,
+       "accuracy_wilson95": [
+        0.732,
+        0.9758
+       ],
+       "classes": {
+        "positive": {
+         "n": 6,
+         "insufficient_data": true
+        },
+        "negative": {
+         "n": 17,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 0,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      }
+     },
+     "matched_coverage": "not available: judges give no confidences; none invented",
+     "scoring": "leave-one-out: judge vs unanimous consensus of the other three judges"
+    }
+   }
+  },
+  "aspect:beauty:fragrance": {
+   "insufficient_data": false,
+   "n": 51,
+   "accuracy": 0.8039,
+   "accuracy_wilson95": [
+    0.6754,
+    0.8898
+   ],
+   "classes": {
+    "positive": {
+     "n": 41,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.8889,
+     "f1_ci95": [
+      0.8101,
+      0.9545
+     ],
+     "below_floor": false
+    },
+    "negative": {
+     "n": 8,
+     "insufficient_data": true
+    },
+    "neutral": {
+     "n": 2,
+     "insufficient_data": true
+    }
+   },
+   "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)",
+   "selective": {
+    "conservative_p0.95": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 25,
+     "target": 0.95,
+     "threshold": null,
+     "n_answered": 0,
+     "coverage": 0.0,
+     "coverage_ci95": null,
+     "precision": null,
+     "precision_wilson95": null,
+     "precision_ci95": null,
+     "reached_target": false
+    },
+    "conservative_p0.9": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 25,
+     "target": 0.9,
+     "threshold": null,
+     "n_answered": 0,
+     "coverage": 0.0,
+     "coverage_ci95": null,
+     "precision": null,
+     "precision_wilson95": null,
+     "precision_ci95": null,
+     "reached_target": false
+    },
+    "oracle": {
+     "label": "ORACLE: best on the sealed set itself, not deployable",
+     "n": 51,
+     "accuracy": 0.8039,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9452,
+      "precision_p2_5_p97_5": [
+       0.7826,
+       1.0
+      ],
+      "coverage_mean": 0.61,
+      "coverage_p2_5_p97_5": [
+       0.3846,
+       0.9231
+      ],
+      "hit_rate": 0.58
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": null,
+      "precision_p2_5_p97_5": [
+       null,
+       null
+      ],
+      "coverage_mean": 0.0,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.0
+      ],
+      "hit_rate": 0.0
+     },
+     "coverage_at_precision_0.95": 0.5882,
+     "coverage_at_precision_0.95_ci95": [
+      0.4314,
+      0.8824
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.8478,
+      "achieved_coverage": 0.902,
+      "ci95": [
+       0.7234,
+       0.9362
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.9024,
+      "achieved_coverage": 0.8039,
+      "ci95": [
+       0.7619,
+       0.9756
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 0.9167,
+      "achieved_coverage": 0.7059,
+      "ci95": [
+       0.8056,
+       1.0
+      ]
+     }
+    }
+   },
+   "consensus_ceiling": {
+    "n_labelled": 51,
+    "n_sealed": 763,
+    "fraction": 0.0668,
+    "wilson95": [
+     0.0512,
+     0.0868
+    ],
+    "note": "aspect tasks: relative to all sealed items, not only those that mention the aspect"
+   },
+   "slices_accuracy": {
+    "beauty": {
+     "n": 51,
+     "claimed": false
+    }
+   },
+   "baselines": {
+    "majority": {
+     "class": "positive",
+     "coverage": 1.0,
+     "n": 51,
+     "accuracy": 0.8039,
+     "accuracy_wilson95": [
+      0.6754,
+      0.8898
+     ],
+     "classes": {
+      "positive": {
+       "n": 41,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.8913,
+       "f1_ci95": [
+        0.814,
+        0.9485
+       ],
+       "below_floor": false
+      },
+      "negative": {
+       "n": 8,
+       "insufficient_data": true
+      },
+      "neutral": {
+       "n": 2,
+       "insufficient_data": true
+      }
+     },
+     "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+    },
+    "tfidf_lr": {
+     "calibration": "none (raw LR probabilities)",
+     "insufficient_data": false,
+     "n": 51,
+     "accuracy": 0.8431,
+     "accuracy_wilson95": [
+      0.7199,
+      0.9183
+     ],
+     "classes": {
+      "positive": {
+       "n": 41,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.9111,
+       "f1_ci95": [
+        0.8409,
+        0.9677
+       ],
+       "below_floor": false
+      },
+      "negative": {
+       "n": 8,
+       "insufficient_data": true
+      },
+      "neutral": {
+       "n": 2,
+       "insufficient_data": true
+      }
+     },
+     "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)",
+     "selective": {
+      "conservative_p0.95": {
+       "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+       "n_validation": 25,
+       "target": 0.95,
+       "threshold": null,
+       "n_answered": 0,
+       "coverage": 0.0,
+       "coverage_ci95": null,
+       "precision": null,
+       "precision_wilson95": null,
+       "precision_ci95": null,
+       "reached_target": false
+      },
+      "conservative_p0.9": {
+       "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+       "n_validation": 25,
+       "target": 0.9,
+       "threshold": null,
+       "n_answered": 0,
+       "coverage": 0.0,
+       "coverage_ci95": null,
+       "precision": null,
+       "precision_wilson95": null,
+       "precision_ci95": null,
+       "reached_target": false
+      },
+      "oracle": {
+       "label": "ORACLE: best on the sealed set itself, not deployable",
+       "n": 51,
+       "accuracy": 0.8431,
+       "split_half_transfer_p95": {
+        "target": 0.95,
+        "n_splits": 200,
+        "rule": "point_estimate",
+        "precision_mean": 0.9333,
+        "precision_p2_5_p97_5": [
+         0.7598,
+         1.0
+        ],
+        "coverage_mean": 0.4298,
+        "coverage_p2_5_p97_5": [
+         0.1538,
+         0.9615
+        ],
+        "hit_rate": 0.485
+       },
+       "split_half_transfer_p95_conservative": {
+        "target": 0.95,
+        "n_splits": 200,
+        "rule": "wilson_lower_bound",
+        "precision_mean": null,
+        "precision_p2_5_p97_5": [
+         null,
+         null
+        ],
+        "coverage_mean": 0.0,
+        "coverage_p2_5_p97_5": [
+         0.0,
+         0.0
+        ],
+        "hit_rate": 0.0
+       },
+       "coverage_at_precision_0.95": 0.4314,
+       "coverage_at_precision_0.95_ci95": [
+        0.2157,
+        0.8632
+       ],
+       "precision_at_coverage_0.9": {
+        "precision": 0.8478,
+        "achieved_coverage": 0.902,
+        "ci95": [
+         0.7391,
+         0.9375
+        ]
+       },
+       "precision_at_coverage_0.8": {
+        "precision": 0.8293,
+        "achieved_coverage": 0.8039,
+        "ci95": [
+         0.7209,
+         0.9524
+        ]
+       },
+       "precision_at_coverage_0.7": {
+        "precision": 0.8889,
+        "achieved_coverage": 0.7059,
+        "ci95": [
+         0.75,
+         1.0
+        ]
+       }
+      }
+     }
+    },
+    "llm_judges_leave_one_out": {
+     "llama31_8b": {
+      "insufficient_data": false,
+      "n_items": 41,
+      "answered_fraction": 0.8537,
+      "accuracy_on_answered": 0.9714,
+      "accuracy_on_answered_wilson95": [
+       0.8547,
+       0.9949
+      ],
+      "judge_missing_as_wrong": {
+       "n": 41,
+       "accuracy": 0.8293,
+       "accuracy_wilson95": [
+        0.6874,
+        0.9147
+       ],
+       "classes": {
+        "positive": {
+         "n": 33,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9355,
+         "f1_ci95": [
+          0.8621,
+          0.9851
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 7,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 1,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      },
+      "model_on_same_items": {
+       "n": 41,
+       "accuracy": 0.7805,
+       "accuracy_wilson95": [
+        0.6329,
+        0.88
+       ],
+       "classes": {
+        "positive": {
+         "n": 33,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.875,
+         "f1_ci95": [
+          0.7719,
+          0.9524
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 7,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 1,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      }
+     },
+     "qwen3_8b": {
+      "insufficient_data": false,
+      "n_items": 39,
+      "answered_fraction": 0.8718,
+      "accuracy_on_answered": 1.0,
+      "accuracy_on_answered_wilson95": [
+       0.8985,
+       1.0
+      ],
+      "judge_missing_as_wrong": {
+       "n": 39,
+       "accuracy": 0.8718,
+       "accuracy_wilson95": [
+        0.7329,
+        0.944
+       ],
+       "classes": {
+        "positive": {
+         "n": 34,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9206,
+         "f1_ci95": [
+          0.842,
+          0.9841
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 5,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 0,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      },
+      "model_on_same_items": {
+       "n": 39,
+       "accuracy": 0.8205,
+       "accuracy_wilson95": [
+        0.6733,
+        0.9102
+       ],
+       "classes": {
+        "positive": {
+         "n": 34,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9062,
+         "f1_ci95": [
+          0.8214,
+          0.9706
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 5,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 0,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      }
+     },
+     "gemma2_9b": {
+      "insufficient_data": false,
+      "n_items": 35,
+      "answered_fraction": 0.9714,
+      "accuracy_on_answered": 1.0,
+      "accuracy_on_answered_wilson95": [
+       0.8985,
+       1.0
+      ],
+      "judge_missing_as_wrong": {
+       "n": 35,
+       "accuracy": 0.9714,
+       "accuracy_wilson95": [
+        0.8547,
+        0.9949
+       ],
+       "classes": {
+        "positive": {
+         "n": 29,
+         "insufficient_data": false,
+         "low_support_lt30": true,
+         "f1": 1.0,
+         "f1_ci95": [
+          1.0,
+          1.0
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 5,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 1,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      },
+      "model_on_same_items": {
+       "n": 35,
+       "accuracy": 0.7714,
+       "accuracy_wilson95": [
+        0.6098,
+        0.8793
+       ],
+       "classes": {
+        "positive": {
+         "n": 29,
+         "insufficient_data": false,
+         "low_support_lt30": true,
+         "f1": 0.8727,
+         "f1_ci95": [
+          0.7692,
+          0.9508
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 5,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 1,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      }
+     },
+     "mistral_7b": {
+      "insufficient_data": false,
+      "n_items": 38,
+      "answered_fraction": 0.9474,
+      "accuracy_on_answered": 0.9444,
+      "accuracy_on_answered_wilson95": [
+       0.8186,
+       0.9846
+      ],
+      "judge_missing_as_wrong": {
+       "n": 38,
+       "accuracy": 0.8947,
+       "accuracy_wilson95": [
+        0.7587,
+        0.9583
+       ],
+       "classes": {
+        "positive": {
+         "n": 32,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9508,
+         "f1_ci95": [
+          0.8846,
+          1.0
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 6,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 0,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      },
+      "model_on_same_items": {
+       "n": 38,
+       "accuracy": 0.8158,
+       "accuracy_wilson95": [
+        0.6658,
+        0.9078
+       ],
+       "classes": {
+        "positive": {
+         "n": 32,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9,
+         "f1_ci95": [
+          0.807,
+          0.9697
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 6,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 0,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      }
+     },
+     "matched_coverage": "not available: judges give no confidences; none invented",
+     "scoring": "leave-one-out: judge vs unanimous consensus of the other three judges"
+    }
+   }
+  },
+  "aspect:beauty:value": {
+   "n_sealed_labelled": 14,
+   "insufficient_data": true,
+   "consensus_ceiling": {
+    "n_labelled": 14,
+    "n_sealed": 763,
+    "fraction": 0.0183,
+    "wilson95": [
+     0.011,
+     0.0306
+    ],
+    "note": "aspect tasks: relative to all sealed items, not only those that mention the aspect"
+   }
+  },
+  "aspect:food:taste": {
+   "insufficient_data": false,
+   "n": 109,
+   "accuracy": 0.8991,
+   "accuracy_wilson95": [
+    0.8283,
+    0.9427
+   ],
+   "classes": {
+    "positive": {
+     "n": 86,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.9349,
+     "f1_ci95": [
+      0.8903,
+      0.9704
+     ],
+     "below_floor": false
+    },
+    "negative": {
+     "n": 23,
+     "insufficient_data": false,
+     "low_support_lt30": true,
+     "f1": 0.7755,
+     "f1_ci95": [
+      0.6316,
+      0.8923
+     ],
+     "below_floor": false
+    },
+    "neutral": {
+     "n": 0,
+     "insufficient_data": true
+    }
+   },
+   "macro_f1": 0.8552,
+   "macro_f1_ci95": [
+    0.7651,
+    0.9279
+   ],
+   "macro_f1_classes": [
+    "positive",
+    "negative"
+   ],
+   "selective": {
+    "conservative_p0.95": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 23,
+     "target": 0.95,
+     "threshold": null,
+     "n_answered": 0,
+     "coverage": 0.0,
+     "coverage_ci95": null,
+     "precision": null,
+     "precision_wilson95": null,
+     "precision_ci95": null,
+     "reached_target": false
+    },
+    "conservative_p0.9": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 23,
+     "target": 0.9,
+     "threshold": null,
+     "n_answered": 0,
+     "coverage": 0.0,
+     "coverage_ci95": null,
+     "precision": null,
+     "precision_wilson95": null,
+     "precision_ci95": null,
+     "reached_target": false
+    },
+    "oracle": {
+     "label": "ORACLE: best on the sealed set itself, not deployable",
+     "n": 109,
+     "accuracy": 0.8991,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.902,
+      "precision_p2_5_p97_5": [
+       0.8364,
+       0.9245
+      ],
+      "coverage_mean": 0.3552,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.9818
+      ],
+      "hit_rate": 0.0
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": null,
+      "precision_p2_5_p97_5": [
+       null,
+       null
+      ],
+      "coverage_mean": 0.0,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.0
+      ],
+      "hit_rate": 0.0
+     },
+     "coverage_at_precision_0.95": 0.0,
+     "coverage_at_precision_0.95_ci95": [
+      0.0,
+      1.0
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.9406,
+      "achieved_coverage": 0.9266,
+      "ci95": [
+       0.8823,
+       0.9808
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.9406,
+      "achieved_coverage": 0.9266,
+      "ci95": [
+       0.8868,
+       0.9808
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 0.9406,
+      "achieved_coverage": 0.9266,
+      "ci95": [
+       0.8868,
+       0.9808
+      ]
+     }
+    }
+   },
+   "consensus_ceiling": {
+    "n_labelled": 109,
+    "n_sealed": 763,
+    "fraction": 0.1429,
+    "wilson95": [
+     0.1198,
+     0.1695
+    ],
+    "note": "aspect tasks: relative to all sealed items, not only those that mention the aspect"
+   },
+   "slices_accuracy": {
+    "food": {
+     "n": 109,
+     "claimed": true,
+     "accuracy": 0.8991
+    }
+   },
+   "baselines": {
+    "majority": {
+     "class": "positive",
+     "coverage": 1.0,
+     "n": 109,
+     "accuracy": 0.789,
+     "accuracy_wilson95": [
+      0.7032,
+      0.8551
+     ],
+     "classes": {
+      "positive": {
+       "n": 86,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.8821,
+       "f1_ci95": [
+        0.828,
+        0.9261
+       ],
+       "below_floor": false
+      },
+      "negative": {
+       "n": 23,
+       "insufficient_data": false,
+       "low_support_lt30": true,
+       "f1": 0.0,
+       "f1_ci95": [
+        0.0,
+        0.0
+       ],
+       "below_floor": true
+      },
+      "neutral": {
+       "n": 0,
+       "insufficient_data": true
+      }
+     },
+     "macro_f1": 0.441,
+     "macro_f1_ci95": [
+      0.414,
+      0.4631
+     ],
+     "macro_f1_classes": [
+      "positive",
+      "negative"
+     ]
+    },
+    "tfidf_lr": {
+     "calibration": "none (raw LR probabilities)",
+     "insufficient_data": false,
+     "n": 109,
+     "accuracy": 0.7982,
+     "accuracy_wilson95": [
+      0.7133,
+      0.8628
+     ],
+     "classes": {
+      "positive": {
+       "n": 86,
+       "insufficient_data": false,
+       "low_support_lt30": false,
+       "f1": 0.8721,
+       "f1_ci95": [
+        0.8143,
+        0.9213
+       ],
+       "below_floor": false
+      },
+      "negative": {
+       "n": 23,
+       "insufficient_data": false,
+       "low_support_lt30": true,
+       "f1": 0.5217,
+       "f1_ci95": [
+        0.3333,
+        0.6809
+       ],
+       "below_floor": true
+      },
+      "neutral": {
+       "n": 0,
+       "insufficient_data": true
+      }
+     },
+     "macro_f1": 0.6969,
+     "macro_f1_ci95": [
+      0.5871,
+      0.7966
+     ],
+     "macro_f1_classes": [
+      "positive",
+      "negative"
+     ],
+     "selective": {
+      "conservative_p0.95": {
+       "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+       "n_validation": 23,
+       "target": 0.95,
+       "threshold": null,
+       "n_answered": 0,
+       "coverage": 0.0,
+       "coverage_ci95": null,
+       "precision": null,
+       "precision_wilson95": null,
+       "precision_ci95": null,
+       "reached_target": false
+      },
+      "conservative_p0.9": {
+       "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+       "n_validation": 23,
+       "target": 0.9,
+       "threshold": null,
+       "n_answered": 0,
+       "coverage": 0.0,
+       "coverage_ci95": null,
+       "precision": null,
+       "precision_wilson95": null,
+       "precision_ci95": null,
+       "reached_target": false
+      },
+      "oracle": {
+       "label": "ORACLE: best on the sealed set itself, not deployable",
+       "n": 109,
+       "accuracy": 0.7982,
+       "split_half_transfer_p95": {
+        "target": 0.95,
+        "n_splits": 200,
+        "rule": "point_estimate",
+        "precision_mean": 0.9401,
+        "precision_p2_5_p97_5": [
+         0.7954,
+         1.0
+        ],
+        "coverage_mean": 0.3785,
+        "coverage_p2_5_p97_5": [
+         0.0909,
+         0.7818
+        ],
+        "hit_rate": 0.485
+       },
+       "split_half_transfer_p95_conservative": {
+        "target": 0.95,
+        "n_splits": 200,
+        "rule": "wilson_lower_bound",
+        "precision_mean": null,
+        "precision_p2_5_p97_5": [
+         null,
+         null
+        ],
+        "coverage_mean": 0.0,
+        "coverage_p2_5_p97_5": [
+         0.0,
+         0.0
+        ],
+        "hit_rate": 0.0
+       },
+       "coverage_at_precision_0.95": 0.3761,
+       "coverage_at_precision_0.95_ci95": [
+        0.0826,
+        0.7156
+       ],
+       "precision_at_coverage_0.9": {
+        "precision": 0.798,
+        "achieved_coverage": 0.9083,
+        "ci95": [
+         0.71,
+         0.8788
+        ]
+       },
+       "precision_at_coverage_0.8": {
+        "precision": 0.8636,
+        "achieved_coverage": 0.8073,
+        "ci95": [
+         0.7556,
+         0.9225
+        ]
+       },
+       "precision_at_coverage_0.7": {
+        "precision": 0.8961,
+        "achieved_coverage": 0.7064,
+        "ci95": [
+         0.7922,
+         0.9487
+        ]
+       }
+      }
+     }
+    },
+    "llm_judges_leave_one_out": {
+     "llama31_8b": {
+      "insufficient_data": false,
+      "n_items": 29,
+      "answered_fraction": 0.931,
+      "accuracy_on_answered": 1.0,
+      "accuracy_on_answered_wilson95": [
+       0.8754,
+       1.0
+      ],
+      "judge_missing_as_wrong": {
+       "n": 29,
+       "accuracy": 0.931,
+       "accuracy_wilson95": [
+        0.7804,
+        0.9809
+       ],
+       "classes": {
+        "positive": {
+         "n": 18,
+         "insufficient_data": true
+        },
+        "negative": {
+         "n": 11,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 0,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      },
+      "model_on_same_items": {
+       "n": 29,
+       "accuracy": 0.931,
+       "accuracy_wilson95": [
+        0.7804,
+        0.9809
+       ],
+       "classes": {
+        "positive": {
+         "n": 18,
+         "insufficient_data": true
+        },
+        "negative": {
+         "n": 11,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 0,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      }
+     },
+     "qwen3_8b": {
+      "insufficient_data": false,
+      "n_items": 101,
+      "answered_fraction": 0.2673,
+      "accuracy_on_answered": 1.0,
+      "accuracy_on_answered_wilson95": [
+       0.8754,
+       1.0
+      ],
+      "judge_missing_as_wrong": {
+       "n": 101,
+       "accuracy": 0.2673,
+       "accuracy_wilson95": [
+        0.1907,
+        0.361
+       ],
+       "classes": {
+        "positive": {
+         "n": 82,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.3434,
+         "f1_ci95": [
+          0.215,
+          0.4643
+         ],
+         "below_floor": true
+        },
+        "negative": {
+         "n": 19,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 0,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      },
+      "model_on_same_items": {
+       "n": 101,
+       "accuracy": 0.9109,
+       "accuracy_wilson95": [
+        0.8393,
+        0.9524
+       ],
+       "classes": {
+        "positive": {
+         "n": 82,
+         "insufficient_data": false,
+         "low_support_lt30": false,
+         "f1": 0.9434,
+         "f1_ci95": [
+          0.9044,
+          0.9753
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 19,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 0,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      }
+     },
+     "gemma2_9b": {
+      "insufficient_data": false,
+      "n_items": 29,
+      "answered_fraction": 0.931,
+      "accuracy_on_answered": 1.0,
+      "accuracy_on_answered_wilson95": [
+       0.8754,
+       1.0
+      ],
+      "judge_missing_as_wrong": {
+       "n": 29,
+       "accuracy": 0.931,
+       "accuracy_wilson95": [
+        0.7804,
+        0.9809
+       ],
+       "classes": {
+        "positive": {
+         "n": 18,
+         "insufficient_data": true
+        },
+        "negative": {
+         "n": 11,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 0,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      },
+      "model_on_same_items": {
+       "n": 29,
+       "accuracy": 0.931,
+       "accuracy_wilson95": [
+        0.7804,
+        0.9809
+       ],
+       "classes": {
+        "positive": {
+         "n": 18,
+         "insufficient_data": true
+        },
+        "negative": {
+         "n": 11,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 0,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      }
+     },
+     "mistral_7b": {
+      "insufficient_data": false,
+      "n_items": 31,
+      "answered_fraction": 0.871,
+      "accuracy_on_answered": 1.0,
+      "accuracy_on_answered_wilson95": [
+       0.8754,
+       1.0
+      ],
+      "judge_missing_as_wrong": {
+       "n": 31,
+       "accuracy": 0.871,
+       "accuracy_wilson95": [
+        0.7115,
+        0.9487
+       ],
+       "classes": {
+        "positive": {
+         "n": 19,
+         "insufficient_data": true
+        },
+        "negative": {
+         "n": 12,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 0,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      },
+      "model_on_same_items": {
+       "n": 31,
+       "accuracy": 0.9677,
+       "accuracy_wilson95": [
+        0.8381,
+        0.9943
+       ],
+       "classes": {
+        "positive": {
+         "n": 19,
+         "insufficient_data": true
+        },
+        "negative": {
+         "n": 12,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 0,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      }
+     },
+     "matched_coverage": "not available: judges give no confidences; none invented",
+     "scoring": "leave-one-out: judge vs unanimous consensus of the other three judges"
+    }
+   }
+  },
+  "aspect:food:value": {
+   "insufficient_data": false,
+   "n": 39,
+   "accuracy": 0.8462,
+   "accuracy_wilson95": [
+    0.7027,
+    0.9275
+   ],
+   "classes": {
+    "positive": {
+     "n": 26,
+     "insufficient_data": false,
+     "low_support_lt30": true,
+     "f1": 0.902,
+     "f1_ci95": [
+      0.7916,
+      0.9804
+     ],
+     "below_floor": false
+    },
+    "negative": {
+     "n": 11,
+     "insufficient_data": true
+    },
+    "neutral": {
+     "n": 2,
+     "insufficient_data": true
+    }
+   },
+   "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)",
+   "selective": {
+    "conservative_p0.95": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 12,
+     "target": 0.95,
+     "threshold": null,
+     "n_answered": 0,
+     "coverage": 0.0,
+     "coverage_ci95": null,
+     "precision": null,
+     "precision_wilson95": null,
+     "precision_ci95": null,
+     "reached_target": false
+    },
+    "conservative_p0.9": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 12,
+     "target": 0.9,
+     "threshold": null,
+     "n_answered": 0,
+     "coverage": 0.0,
+     "coverage_ci95": null,
+     "precision": null,
+     "precision_wilson95": null,
+     "precision_ci95": null,
+     "reached_target": false
+    },
+    "oracle": {
+     "label": "ORACLE: best on the sealed set itself, not deployable",
+     "n": 39,
+     "accuracy": 0.8462,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9645,
+      "precision_p2_5_p97_5": [
+       0.8419,
+       1.0
+      ],
+      "coverage_mean": 0.5142,
+      "coverage_p2_5_p97_5": [
+       0.1,
+       0.95
+      ],
+      "hit_rate": 0.51
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": null,
+      "precision_p2_5_p97_5": [
+       null,
+       null
+      ],
+      "coverage_mean": 0.0,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.0
+      ],
+      "hit_rate": 0.0
+     },
+     "coverage_at_precision_0.95": 0.8462,
+     "coverage_at_precision_0.95_ci95": [
+      0.1795,
+      0.9744
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.9167,
+      "achieved_coverage": 0.9231,
+      "ci95": [
+       0.7568,
+       1.0
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.9688,
+      "achieved_coverage": 0.8205,
+      "ci95": [
+       0.8434,
+       1.0
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 0.9643,
+      "achieved_coverage": 0.7179,
+      "ci95": [
+       0.8929,
+       1.0
+      ]
+     }
+    }
+   },
+   "consensus_ceiling": {
+    "n_labelled": 39,
+    "n_sealed": 763,
+    "fraction": 0.0511,
+    "wilson95": [
+     0.0376,
+     0.0691
+    ],
+    "note": "aspect tasks: relative to all sealed items, not only those that mention the aspect"
+   },
+   "slices_accuracy": {
+    "food": {
+     "n": 39,
+     "claimed": false
+    }
+   },
+   "baselines": {
+    "majority": {
+     "class": "negative",
+     "coverage": 1.0,
+     "n": 39,
+     "accuracy": 0.2821,
+     "accuracy_wilson95": [
+      0.1654,
+      0.4378
+     ],
+     "classes": {
+      "positive": {
+       "n": 26,
+       "insufficient_data": false,
+       "low_support_lt30": true,
+       "f1": 0.0,
+       "f1_ci95": [
+        0.0,
+        0.0
+       ],
+       "below_floor": true
+      },
+      "negative": {
+       "n": 11,
+       "insufficient_data": true
+      },
+      "neutral": {
+       "n": 2,
+       "insufficient_data": true
+      }
+     },
+     "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+    },
+    "tfidf_lr": {
+     "calibration": "none (raw LR probabilities)",
+     "insufficient_data": false,
+     "n": 39,
+     "accuracy": 0.4615,
+     "accuracy_wilson95": [
+      0.3157,
+      0.6143
+     ],
+     "classes": {
+      "positive": {
+       "n": 26,
+       "insufficient_data": false,
+       "low_support_lt30": true,
+       "f1": 0.4737,
+       "f1_ci95": [
+        0.25,
+        0.6512
+       ],
+       "below_floor": true
+      },
+      "negative": {
+       "n": 11,
+       "insufficient_data": true
+      },
+      "neutral": {
+       "n": 2,
+       "insufficient_data": true
+      }
+     },
+     "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)",
+     "selective": {
+      "conservative_p0.95": {
+       "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+       "n_validation": 12,
+       "target": 0.95,
+       "threshold": null,
+       "n_answered": 0,
+       "coverage": 0.0,
+       "coverage_ci95": null,
+       "precision": null,
+       "precision_wilson95": null,
+       "precision_ci95": null,
+       "reached_target": false
+      },
+      "conservative_p0.9": {
+       "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+       "n_validation": 12,
+       "target": 0.9,
+       "threshold": null,
+       "n_answered": 0,
+       "coverage": 0.0,
+       "coverage_ci95": null,
+       "precision": null,
+       "precision_wilson95": null,
+       "precision_ci95": null,
+       "reached_target": false
+      },
+      "oracle": {
+       "label": "ORACLE: best on the sealed set itself, not deployable",
+       "n": 39,
+       "accuracy": 0.4615,
+       "split_half_transfer_p95": {
+        "target": 0.95,
+        "n_splits": 200,
+        "rule": "point_estimate",
+        "precision_mean": 0.8831,
+        "precision_p2_5_p97_5": [
+         0.351,
+         1.0
+        ],
+        "coverage_mean": 0.126,
+        "coverage_p2_5_p97_5": [
+         0.0,
+         0.4
+        ],
+        "hit_rate": 0.69
+       },
+       "split_half_transfer_p95_conservative": {
+        "target": 0.95,
+        "n_splits": 200,
+        "rule": "wilson_lower_bound",
+        "precision_mean": null,
+        "precision_p2_5_p97_5": [
+         null,
+         null
+        ],
+        "coverage_mean": 0.0,
+        "coverage_p2_5_p97_5": [
+         0.0,
+         0.0
+        ],
+        "hit_rate": 0.0
+       },
+       "coverage_at_precision_0.95": 0.1282,
+       "coverage_at_precision_0.95_ci95": [
+        0.0256,
+        0.2564
+       ],
+       "precision_at_coverage_0.9": {
+        "precision": 0.4722,
+        "achieved_coverage": 0.9231,
+        "ci95": [
+         0.3056,
+         0.6389
+        ]
+       },
+       "precision_at_coverage_0.8": {
+        "precision": 0.5,
+        "achieved_coverage": 0.8205,
+        "ci95": [
+         0.3125,
+         0.6667
+        ]
+       },
+       "precision_at_coverage_0.7": {
+        "precision": 0.5,
+        "achieved_coverage": 0.7179,
+        "ci95": [
+         0.3214,
+         0.6897
+        ]
+       }
+      }
+     }
+    },
+    "llm_judges_leave_one_out": {
+     "llama31_8b": {
+      "n_items": 11,
+      "insufficient_data": true
+     },
+     "qwen3_8b": {
+      "insufficient_data": false,
+      "n_items": 33,
+      "answered_fraction": 0.3333,
+      "accuracy_on_answered": 1.0,
+      "accuracy_on_answered_wilson95": [
+       0.7412,
+       1.0
+      ],
+      "judge_missing_as_wrong": {
+       "n": 33,
+       "accuracy": 0.3333,
+       "accuracy_wilson95": [
+        0.1975,
+        0.5039
+       ],
+       "classes": {
+        "positive": {
+         "n": 24,
+         "insufficient_data": false,
+         "low_support_lt30": true,
+         "f1": 0.3448,
+         "f1_ci95": [
+          0.1,
+          0.5641
+         ],
+         "below_floor": true
+        },
+        "negative": {
+         "n": 8,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 1,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      },
+      "model_on_same_items": {
+       "n": 33,
+       "accuracy": 0.9091,
+       "accuracy_wilson95": [
+        0.7643,
+        0.9686
+       ],
+       "classes": {
+        "positive": {
+         "n": 24,
+         "insufficient_data": false,
+         "low_support_lt30": true,
+         "f1": 0.9333,
+         "f1_ci95": [
+          0.8333,
+          1.0
+         ],
+         "below_floor": false
+        },
+        "negative": {
+         "n": 8,
+         "insufficient_data": true
+        },
+        "neutral": {
+         "n": 1,
+         "insufficient_data": true
+        }
+       },
+       "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)"
+      }
+     },
+     "gemma2_9b": {
+      "n_items": 14,
+      "insufficient_data": true
+     },
+     "mistral_7b": {
+      "n_items": 14,
+      "insufficient_data": true
+     },
+     "matched_coverage": "not available: judges give no confidences; none invented",
+     "scoring": "leave-one-out: judge vs unanimous consensus of the other three judges"
+    }
+   }
+  },
+  "aspect:food:ingredient_quality": {
+   "n_sealed_labelled": 17,
+   "insufficient_data": true,
+   "consensus_ceiling": {
+    "n_labelled": 17,
+    "n_sealed": 763,
+    "fraction": 0.0223,
+    "wilson95": [
+     0.014,
+     0.0354
+    ],
+    "note": "aspect tasks: relative to all sealed items, not only those that mention the aspect"
+   }
+  },
+  "aspect:food:efficacy_claims": {
+   "n_sealed_labelled": 13,
+   "insufficient_data": true,
+   "consensus_ceiling": {
+    "n_labelled": 13,
+    "n_sealed": 763,
+    "fraction": 0.017,
+    "wilson95": [
+     0.01,
+     0.0289
+    ],
+    "note": "aspect tasks: relative to all sealed items, not only those that mention the aspect"
+   }
+  },
+  "aspect:food:quantity": {
+   "n_sealed_labelled": 3,
+   "insufficient_data": true,
+   "consensus_ceiling": {
+    "n_labelled": 3,
+    "n_sealed": 763,
+    "fraction": 0.0039,
+    "wilson95": [
+     0.0013,
+     0.0115
+    ],
+    "note": "aspect tasks: relative to all sealed items, not only those that mention the aspect"
+   }
+  }
+ }
+}
