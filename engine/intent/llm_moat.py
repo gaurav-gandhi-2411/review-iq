@@ -69,7 +69,11 @@ def ask(key: str, model: str, text: str) -> tuple[dict | None, int]:
         "max_tokens": 600,
     }
     for attempt in range(5):
-        r = httpx.post(URL, json=body, headers={"Authorization": f"Bearer {key}"}, timeout=60)
+        try:
+            r = httpx.post(URL, json=body, headers={"Authorization": f"Bearer {key}"}, timeout=60)
+        except httpx.TransportError:
+            time.sleep(5 * 2**attempt)
+            continue
         if r.status_code == 429:
             time.sleep(min(60, 5 * 2**attempt))
             continue
