@@ -1,9 +1,9 @@
 """Render reports/intent/model_report.md from an `engine.intent.evaluate` JSON. No number is typed by hand.
 
-    python -m engine.intent.report reports/intent/eval_run1.json > docs/reports/review-intent-model.md
+    python -m engine.intent.report reports/intent/eval_run1.json > reports/intent/model_report.md
     python -m engine.intent.report --run2 reports/intent/eval_run2.json --run1 reports/intent/eval_run1.json \
         --curve reports/intent/run2/epoch_log.json --meta reports/intent/run2/metadata.json \
-        > docs/reports/review-intent-model.md
+        > reports/intent/model_report.md
 
 Every number sits inside a `<!-- METRICS:START:<name> --> ... <!-- METRICS:END -->` block (the convention checked by
 scripts/check_no_hardcoded_metrics.py); the prose outside the blocks states method and caveats and carries no figures.
