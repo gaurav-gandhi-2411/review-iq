@@ -3,7 +3,7 @@
 Everything is derived from committed artifacts: the held-out fixtures, the panel-1 batch log
 (`eval/consensus/results/held_out_batch_log.jsonl`), the recorded as-deployed predictions
 (`eval/results/held_out_scoring_v2.json`) and the panel-2 votes/silver. Output:
-`eval/results/pros_gold_analysis.json`. EXPLORATORY: nothing here changes a published number.
+`reports/eval/pros_gold_analysis.json`. EXPLORATORY: nothing here changes a published number.
 
 Sections (matching the task):
   gold_origin            how each headline field's gold was resolved (unanimous / majority / default)
@@ -31,7 +31,7 @@ from eval.consensus import panel2, voting  # noqa: E402
 from eval.free_text_scoring import canonical_topic  # noqa: E402
 from eval.heldout_unscored import load_judge_votes  # noqa: E402
 
-OUT = ROOT / "eval" / "results" / "pros_gold_analysis.json"
+OUT = ROOT / "reports" / "eval" / "pros_gold_analysis.json"
 ARTIFACT = ROOT / "eval" / "results" / "held_out_scoring_v2.json"
 FIELDS = (
     "product",
