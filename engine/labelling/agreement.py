@@ -149,6 +149,8 @@ def build_tasks(
 
     if version == "v2":
         return _build_tasks_v2(judges, items, col, text)
+    if version == "v3":
+        return _build_tasks_v3(judges, items, col, text)
     res: dict[str, dict] = {}
     res["T1_primary_intent"] = task_report(
         col(lambda r: text(r, "primary_intent")), list(S.INTENTS)
@@ -253,6 +255,47 @@ def _build_tasks_v2(judges, items, col, text) -> dict[str, dict]:
     return res
 
 
+STRATA_KEYS = {
+    "v1": ("T1_primary_intent", "T2_sentiment", "T3_urgency"),
+    "v2": ("T1_primary_intent", "T2_sentiment", "T3_urgency"),
+    "v3": ("C1_needs_action", "C2_broad_intent", "T2_sentiment", "T3_urgency"),
+}
+
+
+def _build_tasks_v3(judges, items, col, text) -> dict[str, dict]:
+    """v3 (spec Amendment 4): coarse C1/C2, sentiment, urgency, aspect sentiment (beauty, food) on aspects quoted by 2+ judges."""
+    from engine.labelling import prompts_v3 as P3
+
+    res: dict[str, dict] = {}
+    res["C1_needs_action"] = task_report(col(lambda r: text(r, "needs_action")), list(S.YES_NO))
+    res["C2_broad_intent"] = task_report(
+        col(lambda r: text(r, "broad_intent")), list(P3.BROAD_INTENTS)
+    )
+    res["T2_sentiment"] = task_report(col(lambda r: text(r, "sentiment")), list(S.SENTIMENTS))
+    res["T3_urgency"] = task_report(
+        col(lambda r: text(r, "urgency")), list(S.URGENCY), ordinal=True
+    )
+    for cat, aspects in P3.ASPECTS_V3.items():
+        if not aspects:
+            continue
+        ids = {
+            i
+            for i, recs in items.items()
+            if any(r and r.get("category") == cat for r in recs.values())
+        }
+        sent = []
+        for i in sorted(ids):
+            for a in aspects:
+                row = [
+                    (items[i][j]["text"]["aspects"].get(a, MISSING) if items[i].get(j) and items[i][j].get("text") else MISSING)
+                    for j in judges
+                ]  # fmt: skip
+                if sum(v is not MISSING for v in row) >= 2:  # quoted by 2+ judges
+                    sent.append(row)
+        res[f"T6_aspect_sentiment_{cat}"] = task_report(sent, list(S.ASPECT_SENTIMENTS))
+    return res
+
+
 def main() -> None:
     judges, items = load_judges(Path(sys.argv[1]))
     version = sys.argv[3] if len(sys.argv) > 3 else "v1"
@@ -273,7 +316,7 @@ def main() -> None:
         sub = {i: items[i] for i in ids}
         t = build_tasks(judges, sub, version)
         out["by_stratum"][s] = {k: {"alpha": t[k]["alpha"], "clear_consensus": t[k]["clear_consensus"], "n_units": t[k]["n_units"]}
-                                for k in ("T1_primary_intent", "T2_sentiment", "T3_urgency")}  # fmt: skip
+                                for k in STRATA_KEYS[version]}  # fmt: skip
     Path(sys.argv[2]).write_text(json.dumps(out, indent=1), encoding="utf-8")
     print(f"wrote {sys.argv[2]}")
 

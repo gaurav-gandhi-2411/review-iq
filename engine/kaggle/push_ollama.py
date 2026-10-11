@@ -19,7 +19,7 @@ def main() -> None:
     ap.add_argument("--dataset", required=True)
     ap.add_argument("--branch", default="main")
     ap.add_argument("--slug", required=True)
-    ap.add_argument("--prompt-version", default="v1", choices=["v1", "v2"])
+    ap.add_argument("--prompt-version", default="v1", choices=["v1", "v2", "v3"])
     a = ap.parse_args()
     src = (Path(__file__).parent / "kernel_ollama.py").read_text(encoding="utf-8")
     src = (
