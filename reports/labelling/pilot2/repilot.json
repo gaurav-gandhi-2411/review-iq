@@ -1,0 +1,727 @@
+{
+ "judges": [
+  "gemma2_9b",
+  "llama31_8b",
+  "mistral_7b",
+  "qwen3_8b"
+ ],
+ "n_random": 300,
+ "n_mined": 180,
+ "tasks_random": {
+  "T1_primary_intent": {
+   "n_units": 300,
+   "alpha": 0.653,
+   "fleiss_kappa": 0.653,
+   "fleiss_n_complete": 291,
+   "pairwise_agreement": 0.8511,
+   "clear_consensus": 0.8633,
+   "unanimous": 0.7667,
+   "gate": "FAIL"
+  },
+  "T2_sentiment": {
+   "n_units": 300,
+   "alpha": 0.759,
+   "fleiss_kappa": 0.7481,
+   "fleiss_n_complete": 291,
+   "pairwise_agreement": 0.894,
+   "clear_consensus": 0.9233,
+   "unanimous": 0.83,
+   "gate": "USABLE-WITH-CAVEAT"
+  },
+  "T3_urgency": {
+   "n_units": 300,
+   "alpha": 0.6834,
+   "fleiss_kappa": 0.5699,
+   "fleiss_n_complete": 291,
+   "pairwise_agreement": 0.8652,
+   "clear_consensus": 0.8967,
+   "unanimous": 0.7633,
+   "gate": "USABLE-WITH-CAVEAT"
+  },
+  "T4_explicit_no_repurchase": {
+   "n_units": 300,
+   "alpha": 0.4868,
+   "fleiss_kappa": 0.5263,
+   "fleiss_n_complete": 291,
+   "pairwise_agreement": 0.9267,
+   "clear_consensus": 0.9567,
+   "unanimous": 0.8567,
+   "gate": "FAIL"
+  },
+  "T1b_intent_presence_per_class": {
+   "product_defect": {
+    "n_units": 300,
+    "alpha": 0.7777,
+    "fleiss_kappa": 0.7842,
+    "fleiss_n_complete": 291,
+    "pairwise_agreement": 0.9233,
+    "clear_consensus": 0.9467,
+    "unanimous": 0.86
+   },
+   "delivery": {
+    "n_units": 300,
+    "alpha": 0.1617,
+    "fleiss_kappa": 0.1609,
+    "fleiss_n_complete": 291,
+    "pairwise_agreement": 0.9887,
+    "clear_consensus": 0.9933,
+    "unanimous": 0.98
+   },
+   "customer_service": {
+    "n_units": 300,
+    "alpha": 0.2054,
+    "fleiss_kappa": 0.1415,
+    "fleiss_n_complete": 291,
+    "pairwise_agreement": 0.9859,
+    "clear_consensus": 0.99,
+    "unanimous": 0.9733
+   },
+   "pricing": {
+    "n_units": 300,
+    "alpha": 0.2654,
+    "fleiss_kappa": 0.2681,
+    "fleiss_n_complete": 291,
+    "pairwise_agreement": 0.9013,
+    "clear_consensus": 0.97,
+    "unanimous": 0.8133
+   },
+   "praise": {
+    "n_units": 300,
+    "alpha": 0.6787,
+    "fleiss_kappa": 0.6783,
+    "fleiss_n_complete": 291,
+    "pairwise_agreement": 0.8945,
+    "clear_consensus": 0.9367,
+    "unanimous": 0.8067
+   },
+   "question": {
+    "n_units": 300,
+    "alpha": -0.0068,
+    "fleiss_kappa": -0.0078,
+    "fleiss_n_complete": 291,
+    "pairwise_agreement": 0.9848,
+    "clear_consensus": 1.0,
+    "unanimous": 0.97
+   },
+   "return_refund_request": {
+    "n_units": 300,
+    "alpha": 0.5848,
+    "fleiss_kappa": 0.584,
+    "fleiss_n_complete": 291,
+    "pairwise_agreement": 0.965,
+    "clear_consensus": 0.9833,
+    "unanimous": 0.9367
+   },
+   "suggestion": {
+    "n_units": 300,
+    "alpha": 0.1793,
+    "fleiss_kappa": 0.1818,
+    "fleiss_n_complete": 291,
+    "pairwise_agreement": 0.9114,
+    "clear_consensus": 0.95,
+    "unanimous": 0.84
+   },
+   "competitor_comparison": {
+    "n_units": 300,
+    "alpha": 0.1749,
+    "fleiss_kappa": 0.174,
+    "fleiss_n_complete": 291,
+    "pairwise_agreement": 0.9848,
+    "clear_consensus": 0.99,
+    "unanimous": 0.9733
+   },
+   "spam_irrelevant": {
+    "n_units": 300,
+    "alpha": 0.497,
+    "fleiss_kappa": -0.0017,
+    "fleiss_n_complete": 291,
+    "pairwise_agreement": 0.9944,
+    "clear_consensus": 0.9933,
+    "unanimous": 0.9867
+   }
+  },
+  "T1b_intent_presence_macro_alpha": 0.3518,
+  "T6_aspect_presence_apparel": {
+   "n_units": 375,
+   "alpha": 0.497,
+   "fleiss_kappa": 0.4917,
+   "fleiss_n_complete": 360,
+   "pairwise_agreement": 0.7483,
+   "clear_consensus": 0.8427,
+   "unanimous": 0.552,
+   "gate": "FAIL"
+  },
+  "T6_aspect_sentiment_apparel": {
+   "n_units": 173,
+   "alpha": 0.6553,
+   "fleiss_kappa": 0.7253,
+   "fleiss_n_complete": 103,
+   "pairwise_agreement": 0.8567,
+   "clear_consensus": 0.8439,
+   "unanimous": 0.7803,
+   "gate": "FAIL"
+  },
+  "T6_aspect_presence_beauty": {
+   "n_units": 375,
+   "alpha": 0.5594,
+   "fleiss_kappa": 0.5591,
+   "fleiss_n_complete": 375,
+   "pairwise_agreement": 0.7836,
+   "clear_consensus": 0.9013,
+   "unanimous": 0.6,
+   "gate": "FAIL"
+  },
+  "T6_aspect_sentiment_beauty": {
+   "n_units": 145,
+   "alpha": 0.6973,
+   "fleiss_kappa": 0.769,
+   "fleiss_n_complete": 86,
+   "pairwise_agreement": 0.8822,
+   "clear_consensus": 0.9034,
+   "unanimous": 0.8138,
+   "gate": "USABLE-WITH-CAVEAT"
+  },
+  "T6_aspect_presence_food": {
+   "n_units": 375,
+   "alpha": 0.4104,
+   "fleiss_kappa": 0.41,
+   "fleiss_n_complete": 375,
+   "pairwise_agreement": 0.7404,
+   "clear_consensus": 0.8507,
+   "unanimous": 0.5307,
+   "gate": "FAIL"
+  },
+  "T6_aspect_sentiment_food": {
+   "n_units": 90,
+   "alpha": 0.7398,
+   "fleiss_kappa": 0.784,
+   "fleiss_n_complete": 39,
+   "pairwise_agreement": 0.8736,
+   "clear_consensus": 0.8667,
+   "unanimous": 0.8,
+   "gate": "USABLE-WITH-CAVEAT"
+  }
+ },
+ "tasks_mined": {
+  "T1_primary_intent": {
+   "n_units": 180,
+   "alpha": 0.6,
+   "fleiss_kappa": 0.6024,
+   "fleiss_n_complete": 179,
+   "pairwise_agreement": 0.7344,
+   "clear_consensus": 0.7722,
+   "unanimous": 0.5833,
+   "gate": "FAIL"
+  },
+  "T2_sentiment": {
+   "n_units": 180,
+   "alpha": 0.6797,
+   "fleiss_kappa": 0.6829,
+   "fleiss_n_complete": 179,
+   "pairwise_agreement": 0.8106,
+   "clear_consensus": 0.8889,
+   "unanimous": 0.6778,
+   "gate": "USABLE-WITH-CAVEAT"
+  },
+  "T3_urgency": {
+   "n_units": 180,
+   "alpha": 0.6531,
+   "fleiss_kappa": 0.4866,
+   "fleiss_n_complete": 179,
+   "pairwise_agreement": 0.7447,
+   "clear_consensus": 0.8278,
+   "unanimous": 0.5556,
+   "gate": "FAIL"
+  },
+  "T4_explicit_no_repurchase": {
+   "n_units": 180,
+   "alpha": 0.5734,
+   "fleiss_kappa": 0.5725,
+   "fleiss_n_complete": 179,
+   "pairwise_agreement": 0.8942,
+   "clear_consensus": 0.95,
+   "unanimous": 0.8056,
+   "gate": "FAIL"
+  },
+  "T1b_intent_presence_per_class": {
+   "product_defect": {
+    "n_units": 180,
+    "alpha": 0.7205,
+    "fleiss_kappa": 0.7249,
+    "fleiss_n_complete": 179,
+    "pairwise_agreement": 0.8682,
+    "clear_consensus": 0.9333,
+    "unanimous": 0.7556
+   },
+   "delivery": {
+    "n_units": 180,
+    "alpha": 0.3683,
+    "fleiss_kappa": 0.3175,
+    "fleiss_n_complete": 179,
+    "pairwise_agreement": 0.935,
+    "clear_consensus": 0.9778,
+    "unanimous": 0.8778
+   },
+   "customer_service": {
+    "n_units": 180,
+    "alpha": 0.5597,
+    "fleiss_kappa": 0.5588,
+    "fleiss_n_complete": 179,
+    "pairwise_agreement": 0.8969,
+    "clear_consensus": 0.95,
+    "unanimous": 0.8111
+   },
+   "pricing": {
+    "n_units": 180,
+    "alpha": 0.2819,
+    "fleiss_kappa": 0.2803,
+    "fleiss_n_complete": 179,
+    "pairwise_agreement": 0.8162,
+    "clear_consensus": 0.9167,
+    "unanimous": 0.6611
+   },
+   "praise": {
+    "n_units": 180,
+    "alpha": 0.726,
+    "fleiss_kappa": 0.7249,
+    "fleiss_n_complete": 179,
+    "pairwise_agreement": 0.87,
+    "clear_consensus": 0.9222,
+    "unanimous": 0.7667
+   },
+   "question": {
+    "n_units": 180,
+    "alpha": 0.3771,
+    "fleiss_kappa": 0.3761,
+    "fleiss_n_complete": 179,
+    "pairwise_agreement": 0.9313,
+    "clear_consensus": 0.9722,
+    "unanimous": 0.8722
+   },
+   "return_refund_request": {
+    "n_units": 180,
+    "alpha": 0.5758,
+    "fleiss_kappa": 0.575,
+    "fleiss_n_complete": 179,
+    "pairwise_agreement": 0.9016,
+    "clear_consensus": 0.9444,
+    "unanimous": 0.8222
+   },
+   "suggestion": {
+    "n_units": 180,
+    "alpha": 0.1735,
+    "fleiss_kappa": 0.1718,
+    "fleiss_n_complete": 179,
+    "pairwise_agreement": 0.8254,
+    "clear_consensus": 0.9222,
+    "unanimous": 0.6778
+   },
+   "competitor_comparison": {
+    "n_units": 180,
+    "alpha": 0.2317,
+    "fleiss_kappa": 0.2306,
+    "fleiss_n_complete": 179,
+    "pairwise_agreement": 0.9768,
+    "clear_consensus": 0.9778,
+    "unanimous": 0.9611
+   },
+   "spam_irrelevant": {
+    "n_units": 180,
+    "alpha": 1.0,
+    "fleiss_kappa": 1.0,
+    "fleiss_n_complete": 179,
+    "pairwise_agreement": 1.0,
+    "clear_consensus": 1.0,
+    "unanimous": 1.0
+   }
+  },
+  "T1b_intent_presence_macro_alpha": 0.5014,
+  "T6_aspect_presence_apparel": {
+   "n_units": 215,
+   "alpha": 0.3853,
+   "fleiss_kappa": 0.3878,
+   "fleiss_n_complete": 210,
+   "pairwise_agreement": 0.6941,
+   "clear_consensus": 0.8326,
+   "unanimous": 0.4419,
+   "gate": "FAIL"
+  },
+  "T6_aspect_sentiment_apparel": {
+   "n_units": 96,
+   "alpha": 0.7558,
+   "fleiss_kappa": 0.8036,
+   "fleiss_n_complete": 54,
+   "pairwise_agreement": 0.874,
+   "clear_consensus": 0.8438,
+   "unanimous": 0.8125,
+   "gate": "USABLE-WITH-CAVEAT"
+  },
+  "T6_aspect_presence_beauty": {
+   "n_units": 255,
+   "alpha": 0.4371,
+   "fleiss_kappa": 0.4366,
+   "fleiss_n_complete": 255,
+   "pairwise_agreement": 0.7196,
+   "clear_consensus": 0.8353,
+   "unanimous": 0.4941,
+   "gate": "FAIL"
+  },
+  "T6_aspect_sentiment_beauty": {
+   "n_units": 97,
+   "alpha": 0.7413,
+   "fleiss_kappa": 0.8138,
+   "fleiss_n_complete": 55,
+   "pairwise_agreement": 0.8775,
+   "clear_consensus": 0.8763,
+   "unanimous": 0.7835,
+   "gate": "USABLE-WITH-CAVEAT"
+  },
+  "T6_aspect_presence_food": {
+   "n_units": 375,
+   "alpha": 0.3817,
+   "fleiss_kappa": 0.3813,
+   "fleiss_n_complete": 375,
+   "pairwise_agreement": 0.7182,
+   "clear_consensus": 0.8373,
+   "unanimous": 0.4907,
+   "gate": "FAIL"
+  },
+  "T6_aspect_sentiment_food": {
+   "n_units": 99,
+   "alpha": 0.7869,
+   "fleiss_kappa": 0.8039,
+   "fleiss_n_complete": 38,
+   "pairwise_agreement": 0.8814,
+   "clear_consensus": 0.8687,
+   "unanimous": 0.8485,
+   "gate": "USABLE-WITH-CAVEAT"
+  }
+ },
+ "tasks_all": {
+  "T1_primary_intent": {
+   "n_units": 480,
+   "alpha": 0.6379,
+   "fleiss_kappa": 0.6397,
+   "fleiss_n_complete": 470,
+   "pairwise_agreement": 0.807,
+   "clear_consensus": 0.8292,
+   "unanimous": 0.6979,
+   "gate": "FAIL"
+  },
+  "T2_sentiment": {
+   "n_units": 480,
+   "alpha": 0.7298,
+   "fleiss_kappa": 0.7257,
+   "fleiss_n_complete": 470,
+   "pairwise_agreement": 0.8625,
+   "clear_consensus": 0.9104,
+   "unanimous": 0.7729,
+   "gate": "USABLE-WITH-CAVEAT"
+  },
+  "T3_urgency": {
+   "n_units": 480,
+   "alpha": 0.6777,
+   "fleiss_kappa": 0.5405,
+   "fleiss_n_complete": 470,
+   "pairwise_agreement": 0.8196,
+   "clear_consensus": 0.8708,
+   "unanimous": 0.6854,
+   "gate": "USABLE-WITH-CAVEAT"
+  },
+  "T4_explicit_no_repurchase": {
+   "n_units": 480,
+   "alpha": 0.5348,
+   "fleiss_kappa": 0.5555,
+   "fleiss_n_complete": 470,
+   "pairwise_agreement": 0.9144,
+   "clear_consensus": 0.9542,
+   "unanimous": 0.8375,
+   "gate": "FAIL"
+  },
+  "T1b_intent_presence_per_class": {
+   "product_defect": {
+    "n_units": 480,
+    "alpha": 0.7591,
+    "fleiss_kappa": 0.7646,
+    "fleiss_n_complete": 470,
+    "pairwise_agreement": 0.9025,
+    "clear_consensus": 0.9417,
+    "unanimous": 0.8208
+   },
+   "delivery": {
+    "n_units": 480,
+    "alpha": 0.3459,
+    "fleiss_kappa": 0.3018,
+    "fleiss_n_complete": 470,
+    "pairwise_agreement": 0.9684,
+    "clear_consensus": 0.9875,
+    "unanimous": 0.9417
+   },
+   "customer_service": {
+    "n_units": 480,
+    "alpha": 0.5521,
+    "fleiss_kappa": 0.5534,
+    "fleiss_n_complete": 470,
+    "pairwise_agreement": 0.9523,
+    "clear_consensus": 0.975,
+    "unanimous": 0.9125
+   },
+   "pricing": {
+    "n_units": 480,
+    "alpha": 0.2851,
+    "fleiss_kappa": 0.2859,
+    "fleiss_n_complete": 470,
+    "pairwise_agreement": 0.8691,
+    "clear_consensus": 0.95,
+    "unanimous": 0.7562
+   },
+   "praise": {
+    "n_units": 480,
+    "alpha": 0.7112,
+    "fleiss_kappa": 0.7124,
+    "fleiss_n_complete": 470,
+    "pairwise_agreement": 0.8853,
+    "clear_consensus": 0.9313,
+    "unanimous": 0.7917
+   },
+   "question": {
+    "n_units": 480,
+    "alpha": 0.3221,
+    "fleiss_kappa": 0.3215,
+    "fleiss_n_complete": 470,
+    "pairwise_agreement": 0.9646,
+    "clear_consensus": 0.9896,
+    "unanimous": 0.9333
+   },
+   "return_refund_request": {
+    "n_units": 480,
+    "alpha": 0.5901,
+    "fleiss_kappa": 0.5893,
+    "fleiss_n_complete": 470,
+    "pairwise_agreement": 0.9411,
+    "clear_consensus": 0.9688,
+    "unanimous": 0.8938
+   },
+   "suggestion": {
+    "n_units": 480,
+    "alpha": 0.1858,
+    "fleiss_kappa": 0.1865,
+    "fleiss_n_complete": 470,
+    "pairwise_agreement": 0.8789,
+    "clear_consensus": 0.9396,
+    "unanimous": 0.7792
+   },
+   "competitor_comparison": {
+    "n_units": 480,
+    "alpha": 0.2034,
+    "fleiss_kappa": 0.2028,
+    "fleiss_n_complete": 470,
+    "pairwise_agreement": 0.9818,
+    "clear_consensus": 0.9854,
+    "unanimous": 0.9688
+   },
+   "spam_irrelevant": {
+    "n_units": 480,
+    "alpha": 0.4982,
+    "fleiss_kappa": -0.0011,
+    "fleiss_n_complete": 470,
+    "pairwise_agreement": 0.9965,
+    "clear_consensus": 0.9958,
+    "unanimous": 0.9917
+   }
+  },
+  "T1b_intent_presence_macro_alpha": 0.4453,
+  "T6_aspect_presence_apparel": {
+   "n_units": 590,
+   "alpha": 0.456,
+   "fleiss_kappa": 0.4534,
+   "fleiss_n_complete": 570,
+   "pairwise_agreement": 0.7284,
+   "clear_consensus": 0.839,
+   "unanimous": 0.5119,
+   "gate": "FAIL"
+  },
+  "T6_aspect_sentiment_apparel": {
+   "n_units": 269,
+   "alpha": 0.7018,
+   "fleiss_kappa": 0.7656,
+   "fleiss_n_complete": 157,
+   "pairwise_agreement": 0.8628,
+   "clear_consensus": 0.8439,
+   "unanimous": 0.7918,
+   "gate": "USABLE-WITH-CAVEAT"
+  },
+  "T6_aspect_presence_beauty": {
+   "n_units": 630,
+   "alpha": 0.5098,
+   "fleiss_kappa": 0.5096,
+   "fleiss_n_complete": 630,
+   "pairwise_agreement": 0.7577,
+   "clear_consensus": 0.8746,
+   "unanimous": 0.5571,
+   "gate": "FAIL"
+  },
+  "T6_aspect_sentiment_beauty": {
+   "n_units": 242,
+   "alpha": 0.7187,
+   "fleiss_kappa": 0.7876,
+   "fleiss_n_complete": 141,
+   "pairwise_agreement": 0.8803,
+   "clear_consensus": 0.8926,
+   "unanimous": 0.8017,
+   "gate": "USABLE-WITH-CAVEAT"
+  },
+  "T6_aspect_presence_food": {
+   "n_units": 750,
+   "alpha": 0.396,
+   "fleiss_kappa": 0.3958,
+   "fleiss_n_complete": 750,
+   "pairwise_agreement": 0.7293,
+   "clear_consensus": 0.844,
+   "unanimous": 0.5107,
+   "gate": "FAIL"
+  },
+  "T6_aspect_sentiment_food": {
+   "n_units": 189,
+   "alpha": 0.769,
+   "fleiss_kappa": 0.7987,
+   "fleiss_n_complete": 77,
+   "pairwise_agreement": 0.8776,
+   "clear_consensus": 0.8677,
+   "unanimous": 0.8254,
+   "gate": "USABLE-WITH-CAVEAT"
+  }
+ },
+ "consensus_distribution": {
+  "primary_intent": {
+   "praise": 288,
+   "return_refund_request": 14,
+   "product_defect": 80,
+   "pricing": 5,
+   "customer_service": 3,
+   "delivery": 3,
+   "question": 3,
+   "suggestion": 1,
+   "spam_irrelevant": 1,
+   "_no_consensus": 82
+  },
+  "sentiment": {
+   "positive": 309,
+   "mixed": 21,
+   "negative": 105,
+   "neutral": 2,
+   "_no_consensus": 43
+  },
+  "urgency": {
+   "low": 338,
+   "medium": 64,
+   "high": 16,
+   "_no_consensus": 62
+  },
+  "explicit_no_repurchase": {
+   "no": 425,
+   "yes": 33,
+   "_no_consensus": 22
+  }
+ },
+ "intent_support": {
+  "product_defect": {
+   "random": 44,
+   "mined": 36,
+   "total": 80,
+   "measurable_30plus": true
+  },
+  "delivery": {
+   "random": 0,
+   "mined": 3,
+   "total": 3,
+   "measurable_30plus": false
+  },
+  "customer_service": {
+   "random": 0,
+   "mined": 3,
+   "total": 3,
+   "measurable_30plus": false
+  },
+  "pricing": {
+   "random": 2,
+   "mined": 3,
+   "total": 5,
+   "measurable_30plus": false
+  },
+  "praise": {
+   "random": 207,
+   "mined": 81,
+   "total": 288,
+   "measurable_30plus": true
+  },
+  "question": {
+   "random": 0,
+   "mined": 3,
+   "total": 3,
+   "measurable_30plus": false
+  },
+  "return_refund_request": {
+   "random": 5,
+   "mined": 9,
+   "total": 14,
+   "measurable_30plus": false
+  },
+  "suggestion": {
+   "random": 0,
+   "mined": 1,
+   "total": 1,
+   "measurable_30plus": false
+  },
+  "competitor_comparison": {
+   "random": 0,
+   "mined": 0,
+   "total": 0,
+   "measurable_30plus": false
+  },
+  "spam_irrelevant": {
+   "random": 1,
+   "mined": 0,
+   "total": 1,
+   "measurable_30plus": false
+  }
+ },
+ "intent_presence_flagged_by_3plus_judges": {
+  "product_defect": 128,
+  "delivery": 4,
+  "customer_service": 15,
+  "pricing": 21,
+  "praise": 329,
+  "question": 4,
+  "return_refund_request": 29,
+  "suggestion": 10,
+  "competitor_comparison": 0,
+  "spam_irrelevant": 1
+ },
+ "derived_mismatch_random": {
+  "items_with_consensus_sentiment": 277,
+  "mismatch_yes": 5
+ },
+ "parse": {
+  "gemma2_9b": {
+   "failed": 0,
+   "retried": 2,
+   "aspects_dropped_unverifiable": 86
+  },
+  "llama31_8b": {
+   "failed": 0,
+   "retried": 0,
+   "aspects_dropped_unverifiable": 73
+  },
+  "mistral_7b": {
+   "failed": 10,
+   "retried": 13,
+   "aspects_dropped_unverifiable": 178
+  },
+  "qwen3_8b": {
+   "failed": 0,
+   "retried": 0,
+   "aspects_dropped_unverifiable": 57
+  }
+ }
+}
