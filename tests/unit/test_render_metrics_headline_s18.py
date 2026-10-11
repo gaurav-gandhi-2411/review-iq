@@ -26,8 +26,8 @@ def _load(rel: str) -> dict[str, Any]:
 
 
 HELD = _load("eval/results/held_out_scoring_v2.json")
-PANEL2 = _load("eval/consensus/results/panel2_silver.json")
-PROS_GOLD = _load("eval/results/pros_gold_analysis.json")
+PANEL2 = _load("reports/eval/consensus/panel2_silver.json")
+PROS_GOLD = _load("reports/eval/pros_gold_analysis.json")
 
 
 def _headline(md: str) -> str:
