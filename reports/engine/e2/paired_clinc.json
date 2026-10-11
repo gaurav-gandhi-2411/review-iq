@@ -1,0 +1,144 @@
+{
+ "n_paired": 109,
+ "finetuned_accuracy": 0.9358,
+ "llm_accuracy": 0.8807,
+ "accuracy_difference": 0.055,
+ "accuracy_difference_ci95": [
+  0.0,
+  0.1193
+ ],
+ "mcnemar_exact_p": 0.10938,
+ "finetuned_only_correct": 8,
+ "llm_only_correct": 2,
+ "finetuned_selective": {
+  "n": 109,
+  "accuracy": 0.9358,
+  "split_half_transfer_p95": {
+   "target": 0.95,
+   "n_splits": 200,
+   "rule": "point_estimate",
+   "precision_mean": 0.9572,
+   "precision_p2_5_p97_5": [
+    0.9074,
+    1.0
+   ],
+   "coverage_mean": 0.9573,
+   "coverage_p2_5_p97_5": [
+    0.8905,
+    1.0
+   ],
+   "hit_rate": 0.595
+  },
+  "split_half_transfer_p95_conservative": {
+   "target": 0.95,
+   "n_splits": 200,
+   "rule": "wilson_lower_bound",
+   "precision_mean": NaN,
+   "precision_p2_5_p97_5": [
+    NaN,
+    NaN
+   ],
+   "coverage_mean": 0.0,
+   "coverage_p2_5_p97_5": [
+    0.0,
+    0.0
+   ],
+   "hit_rate": 0.0
+  },
+  "coverage_at_precision_0.95": 0.9725,
+  "coverage_at_precision_0.95_ci95": [
+   0.8807,
+   1.0
+  ],
+  "precision_at_coverage_0.9": {
+   "precision": 0.9798,
+   "achieved_coverage": 0.9083,
+   "ci95": [
+    0.9394,
+    1.0
+   ]
+  },
+  "precision_at_coverage_0.8": {
+   "precision": 1.0,
+   "achieved_coverage": 0.8073,
+   "ci95": [
+    0.9659,
+    1.0
+   ]
+  },
+  "precision_at_coverage_0.7": {
+   "precision": 1.0,
+   "achieved_coverage": 0.7064,
+   "ci95": [
+    1.0,
+    1.0
+   ]
+  }
+ },
+ "llm_selective_verbalised_confidence": {
+  "n": 109,
+  "accuracy": 0.8807,
+  "split_half_transfer_p95": {
+   "target": 0.95,
+   "n_splits": 200,
+   "rule": "point_estimate",
+   "precision_mean": 0.9505,
+   "precision_p2_5_p97_5": [
+    0.8824,
+    1.0
+   ],
+   "coverage_mean": 0.7977,
+   "coverage_p2_5_p97_5": [
+    0.6364,
+    0.9636
+   ],
+   "hit_rate": 0.44
+  },
+  "split_half_transfer_p95_conservative": {
+   "target": 0.95,
+   "n_splits": 200,
+   "rule": "wilson_lower_bound",
+   "precision_mean": NaN,
+   "precision_p2_5_p97_5": [
+    NaN,
+    NaN
+   ],
+   "coverage_mean": 0.0,
+   "coverage_p2_5_p97_5": [
+    0.0,
+    0.0
+   ],
+   "hit_rate": 0.0
+  },
+  "coverage_at_precision_0.95": 0.6881,
+  "coverage_at_precision_0.95_ci95": [
+   0.578,
+   0.9817
+  ],
+  "precision_at_coverage_0.9": {
+   "precision": 0.93,
+   "achieved_coverage": 0.9174,
+   "ci95": [
+    0.8627,
+    0.9802
+   ]
+  },
+  "precision_at_coverage_0.8": {
+   "precision": 0.9451,
+   "achieved_coverage": 0.8349,
+   "ci95": [
+    0.8889,
+    0.9891
+   ]
+  },
+  "precision_at_coverage_0.7": {
+   "precision": 0.9451,
+   "achieved_coverage": 0.8349,
+   "ci95": [
+    0.8953,
+    1.0
+   ]
+  }
+ },
+ "llm": "qwen/qwen3.8-27b zero-shot"
+}
