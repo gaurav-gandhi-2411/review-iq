@@ -1,0 +1,53 @@
+{
+ "label": "EXPLORATORY, not pre-registered",
+ "n_items": 300,
+ "T1_group_level": {
+  "n_units": 300,
+  "alpha": 0.7056,
+  "fleiss_kappa": 0.7068,
+  "fleiss_n_complete": 291,
+  "pairwise_agreement": 0.877,
+  "clear_consensus": 0.8867,
+  "unanimous": 0.8033
+ },
+ "T1_needs_action_binary": {
+  "n_units": 300,
+  "alpha": 0.7673,
+  "fleiss_kappa": 0.7736,
+  "fleiss_n_complete": 291,
+  "pairwise_agreement": 0.9239,
+  "clear_consensus": 0.94,
+  "unanimous": 0.8633
+ },
+ "T1_praise_vs_not": {
+  "n_units": 300,
+  "alpha": 0.7637,
+  "fleiss_kappa": 0.7616,
+  "fleiss_n_complete": 291,
+  "pairwise_agreement": 0.9069,
+  "clear_consensus": 0.9467,
+  "unanimous": 0.83
+ },
+ "T4_prevalence": {
+  "flagged_by_1plus": 52,
+  "flagged_by_2plus": 21,
+  "flagged_by_3plus": 14,
+  "flagged_by_all_valid": 9
+ },
+ "T4_alpha_on_items_any_judge_flagged": {
+  "n_units": 52,
+  "alpha": 0.1046,
+  "fleiss_kappa": 0.1445,
+  "fleiss_n_complete": 46,
+  "pairwise_agreement": 0.5578,
+  "clear_consensus": 0.75,
+  "unanimous": 0.1731
+ },
+ "T1_drop_one_judge": {
+  "None": 0.653,
+  "gemma2_9b": 0.6558,
+  "llama31_8b": 0.6259,
+  "mistral_7b": 0.6387,
+  "qwen3_8b": 0.6872
+ }
+}

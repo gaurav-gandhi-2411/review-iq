@@ -200,9 +200,7 @@ async def draft_reply(
         extraction_review = wrap_for_llm(sanitize(ctl.text)[0]) if ctl.stripped else wrapped_review
         ext_prompt = build_prompt(extraction_review, language)
         try:
-            llm_output, _, _, ex_tin, ex_tout, _ = await extract_with_llm(
-                ext_prompt, allow_gemini_fallback=False
-            )
+            llm_output, _, _, ex_tin, ex_tout, _ = await extract_with_llm(ext_prompt)
             cons = llm_output.cons
             topics = llm_output.topics
             total_tokens_in += ex_tin
