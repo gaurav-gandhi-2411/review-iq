@@ -67,6 +67,13 @@ def _valid_hmac(secret: str, *, code: str, shop: str, state: str, timestamp: str
     return _hmac.new(secret.encode(), msg.encode(), hashlib.sha256).hexdigest()
 
 
+@pytest.fixture(autouse=True)
+def _no_backfill() -> object:
+    """A successful callback schedules the post-install backfill; keep it off the DB here."""
+    with patch("app.api.shopify_auth._backfill_and_drain", new_callable=AsyncMock):
+        yield
+
+
 @pytest.fixture()
 def client() -> TestClient:
     return TestClient(create_app(_make_settings()))

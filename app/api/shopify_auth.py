@@ -57,12 +57,13 @@ from urllib.parse import urlencode
 import httpx
 import psycopg2
 import structlog
-from fastapi import APIRouter, Header, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, status
 from pydantic import BaseModel, ConfigDict
 
 from app.api.webhooks.shopify import encrypt_token
 from app.auth.signup import _get_org_for_user, verify_supabase_jwt
 from app.core.config import get_settings
+from app.core.ingestion.shopify_backfill import enqueue_backfill
 from app.core.storage_pg import _set_tenant
 
 log = structlog.get_logger(__name__)
@@ -282,6 +283,17 @@ def _list_installations_pg(org_id: str) -> list[dict[str, str | None]]:
         conn.close()
 
 
+async def _backfill_and_drain(
+    org_id: str, shop_domain: str, access_token: str, api_version: str
+) -> None:
+    """Background task: stage the shop's existing reviews, then drain this job's rows."""
+    from app.api.v2.ingest import _drain_until_job_complete
+
+    job_id = await enqueue_backfill(org_id, shop_domain, access_token, api_version)
+    if job_id:
+        await _drain_until_job_complete(org_id, job_id)
+
+
 def _bearer(authorization: str) -> str:
     if not authorization.startswith("Bearer "):
         raise _error(status.HTTP_401_UNAUTHORIZED, "auth_required", "Bearer token required.")
@@ -357,6 +369,7 @@ async def shopify_oauth_begin(
 @router.post("/callback")
 async def shopify_oauth_callback(
     body: ShopifyCallbackBody,
+    background_tasks: BackgroundTasks,
     authorization: str = Header(default="", alias="Authorization"),
 ) -> dict[str, str]:
     """Complete the Shopify OAuth install.
@@ -447,6 +460,11 @@ async def shopify_oauth_callback(
         await _register_webhook(shop_domain, access_token, settings)
     except Exception as exc:
         log.warning("shopify_auth.webhook_registration_error", shop=shop_domain, error=str(exc))
+
+    # Backfill existing reviews through the durable queue (never inline, never fails install).
+    background_tasks.add_task(
+        _backfill_and_drain, org_id, shop_domain, access_token, settings.shopify_api_version
+    )
 
     log.info("shopify_auth.install_complete", shop=shop_domain, org_id=org_id)
     return {"status": "installed", "shop": shop_domain, "org_id": org_id}
