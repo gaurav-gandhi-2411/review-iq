@@ -111,24 +111,38 @@ def extract_snapshot(dsn: str) -> dict[str, object]:
             """,
         )
 
+        # Read from pg_proc.proacl via aclexplode, NOT information_schema.routine_privileges:
+        # the latter only lists grants where the connecting role is grantor/grantee (or a member),
+        # so a least-privilege read-only CI role (supabase/ops/ci_readonly_role.sql) would see
+        # almost none and the drift diff would fail with false positives.
         function_grants = _rows(
             cur,
             """
-            SELECT r.routine_name AS function_name, g.grantee, g.privilege_type
-            FROM information_schema.routine_privileges g
-            JOIN information_schema.routines r ON r.specific_name = g.specific_name
-            WHERE r.specific_schema = 'public'
-            ORDER BY r.routine_name, g.grantee, g.privilege_type
+            SELECT DISTINCT p.proname AS function_name,
+                   CASE a.grantee WHEN 0 THEN 'PUBLIC' ELSE pg_get_userbyid(a.grantee) END
+                       AS grantee,
+                   a.privilege_type
+            FROM pg_proc p
+            JOIN pg_namespace n ON n.oid = p.pronamespace
+            CROSS JOIN LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
+            WHERE n.nspname = 'public' AND p.prokind IN ('f', 'p')
+            ORDER BY function_name, grantee, a.privilege_type
             """,
         )
 
+        # aclexplode on pg_class.relacl for the same visibility reason as function_grants above.
         table_grants = _rows(
             cur,
             """
-            SELECT table_name, grantee, privilege_type
-            FROM information_schema.role_table_grants
-            WHERE table_schema = 'public'
-            ORDER BY table_name, grantee, privilege_type
+            SELECT DISTINCT c.relname AS table_name,
+                   CASE a.grantee WHEN 0 THEN 'PUBLIC' ELSE pg_get_userbyid(a.grantee) END
+                       AS grantee,
+                   a.privilege_type
+            FROM pg_class c
+            JOIN pg_namespace n ON n.oid = c.relnamespace
+            CROSS JOIN LATERAL aclexplode(COALESCE(c.relacl, acldefault('r', c.relowner))) a
+            WHERE n.nspname = 'public' AND c.relkind IN ('r', 'v', 'f', 'p')
+            ORDER BY table_name, grantee, a.privilege_type
             """,
         )
 
