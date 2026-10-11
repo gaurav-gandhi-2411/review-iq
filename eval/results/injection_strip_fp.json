@@ -1,0 +1,160 @@
+{
+  "additional_corpora": {
+    "dataset/gold": {
+      "affected": [],
+      "n": 43,
+      "n_affected": 0,
+      "n_emptied": 0,
+      "path_name": "gold.jsonl",
+      "per_rule": {
+        "I1_identifier": 0,
+        "I2_field_directive": 0,
+        "I3_addresses_extractor": 0
+      },
+      "rate": 0.0,
+      "rule_of_three_upper_95": 0.06976744186046512,
+      "sha256": "9d357ffa03346e7199af19700487d7b4fb871be1cf8f12f9a6f9a8ef75738602",
+      "wilson_upper_95": 0.08200980441345543
+    },
+    "flipkart_deduped_full": {
+      "affected": [
+        {
+          "chars_after": 63,
+          "chars_before": 230,
+          "emptied": false,
+          "id": "flipkart-114211",
+          "removed_sha256": [
+            "45b87dea6f7ffee9"
+          ],
+          "rules": [
+            "I2_field_directive"
+          ],
+          "sentences_removed": 1
+        }
+      ],
+      "n": 245757,
+      "n_affected": 1,
+      "n_emptied": 0,
+      "path_name": "flipkart_deduped.jsonl",
+      "per_rule": {
+        "I1_identifier": 0,
+        "I2_field_directive": 1,
+        "I3_addresses_extractor": 0
+      },
+      "rate": 4.069060087810317e-06,
+      "rule_of_three_upper_95": null,
+      "sha256": "eec9a32ba13b409ca0a565ee7cc88c9c44f792c3d30ed00360ac677783b7f0be",
+      "wilson_upper_95": 2.305058627996093e-05
+    },
+    "gap_fixes/candidates": {
+      "affected": [],
+      "n": 50,
+      "n_affected": 0,
+      "n_emptied": 0,
+      "path_name": "candidates.jsonl",
+      "per_rule": {
+        "I1_identifier": 0,
+        "I2_field_directive": 0,
+        "I3_addresses_extractor": 0
+      },
+      "rate": 0.0,
+      "rule_of_three_upper_95": 0.06,
+      "sha256": "e2138fe89e390d7d0492ae9bbb8deb176a136b14b5652174b42e022909d72d7b",
+      "wilson_upper_95": 0.07134760017861413
+    },
+    "vernacular_v2/candidates": {
+      "affected": [],
+      "n": 210,
+      "n_affected": 0,
+      "n_emptied": 0,
+      "path_name": "candidates.jsonl",
+      "per_rule": {
+        "I1_identifier": 0,
+        "I2_field_directive": 0,
+        "I3_addresses_extractor": 0
+      },
+      "rate": 0.0,
+      "rule_of_three_upper_95": 0.014285714285714285,
+      "sha256": "755fdeb4ba07a2e92ef5ae857d7c0a1a4b3d47576d2dbe601edfab719d280e0f",
+      "wilson_upper_95": 0.017964051037588576
+    }
+  },
+  "dev": {
+    "affected": [],
+    "cassette_check": [],
+    "n": 42,
+    "n_affected": 0,
+    "n_emptied": 0,
+    "n_language_changes_any_review": 0,
+    "n_sanitized_differs": 0,
+    "per_rule": {
+      "I1_identifier": 0,
+      "I2_field_directive": 0,
+      "I3_addresses_extractor": 0
+    },
+    "rule_of_three_upper_95": 0.07142857142857142,
+    "wilson_upper_95": 0.083799
+  },
+  "first_party_combined": {
+    "n": 148,
+    "n_affected": 0,
+    "note": "held-out and dev are drawn from different sources; n is summed only because the question is 'any affected among every first-party review'.",
+    "rule_of_three_upper_95": 0.02027027027027027,
+    "wilson_upper_95": 0.025299
+  },
+  "generated_at": "2026-10-07T12:43:32Z",
+  "git_sha": "67ed4bd1634870974ca3c4f1a1799315b2edecca",
+  "held_out": {
+    "affected": [],
+    "cassette_check": [],
+    "n": 106,
+    "n_affected": 0,
+    "n_emptied": 0,
+    "n_language_changes_any_review": 0,
+    "n_sanitized_differs": 0,
+    "per_rule": {
+      "I1_identifier": 0,
+      "I2_field_directive": 0,
+      "I3_addresses_extractor": 0
+    },
+    "rule_of_three_upper_95": 0.02830188679245283,
+    "wilson_upper_95": 0.034973
+  },
+  "pipeline": "controlled_input(raw) -> detect_language -> sanitize -> wrap_for_llm -> build_prompt (as app/api/v2/extract.py::_run_extraction_v2)",
+  "provenance": {
+    "dev_counted": 42,
+    "dev_excluded_attack_fixtures": [
+      "003_prompt_injection"
+    ],
+    "dev_files_hi_en": 15,
+    "dev_files_top_level": 28,
+    "held_out_files": 106
+  },
+  "re_extraction_plan_not_run": {
+    "affected_reviews_needing_live_call": 0,
+    "note": "Calls = affected first-party reviews whose stripped prompt has no cassette entry; each would also need the same-prompt noise floor (eval/results/noise_floor_baseline.json) to separate a strip effect from run-to-run variation.",
+    "source": "eval/results/token_cost_measurement_n106.json",
+    "tokens_per_call_measured_blended": 2447.0,
+    "total_tokens_if_run": 0
+  },
+  "rule_set": {
+    "introduced_in": "PR #221 (853e87f); no version constant exists in code",
+    "module": "app/core/injection_controls.py",
+    "module_git_blob": "fea97db8b82371c5f21867169be63f6b2e97b587",
+    "rules": [
+      "I1_identifier",
+      "I2_field_directive",
+      "I3_addresses_extractor"
+    ],
+    "rules_sha256": "34da961b41d4793c80563eb09adb5cea27e358377b7176a054eb83ece3145f57"
+  },
+  "script": "eval/measure_injection_strip_fp.py",
+  "verdict": {
+    "additional_corpora_affected": 1,
+    "first_party_affected": 0,
+    "large_corpus_checked": true,
+    "threshold": "see module docstring: 0 affected in first-party, large rate <= 1e-4, no emptied",
+    "value": "NEAR_ZERO"
+  },
+  "zero_quota": true
+}
