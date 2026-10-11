@@ -84,10 +84,10 @@ def test_rule_needs_two_signals_or_one_strong() -> None:
 def test_mismatch_signal_only_counts_when_enabled_and_verified_works_when_present() -> None:
     off = CampaignParams(use_mismatch=False)
     on = CampaignParams(use_mismatch=True)
-    ev = _ev(mismatch_z=4.0, burst=6.0)
+    ev = _ev(mismatch_z=4.0, burst=3.5)  # 3.5: fired, but below the 1.5x strong level
     assert not is_alert(ev, off)[0]
     assert is_alert(ev, on)[0]
-    assert is_alert(_ev(verified_z=3.5, burst=6.0), off)[0]
+    assert is_alert(_ev(verified_z=3.5, burst=3.5), off)[0]
 
 
 def test_template_burst_in_a_quiet_product_alerts_and_explains() -> None:

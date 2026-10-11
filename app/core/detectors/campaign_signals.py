@@ -28,12 +28,13 @@ class CampaignParams:
     """Fixed structure plus the tuned thresholds. Tuned values come from the frozen result of
     benchmark/campaign_eval (tuning split only); the rest are pre-registered constants."""
 
-    # tuned (grid in the spec)
-    similarity: float = 0.6  # char-5-gram Jaccard for "near-identical"
+    # tuned on the tuning split, FROZEN in reports/campaign_eval/frozen_params_grid_v2.json (the
+    # same row was selected at both false-alert budgets and by grid v1); a test pins this
+    similarity: float = 0.4  # char-5-gram Jaccard for "near-identical"
     k_min: int = 3  # smallest near-identical group that counts as a template
-    theta_burst: float = 5.0  # -log10 tail probability
-    theta_rating: float = 3.5  # |z| of window mean vs history mean
-    strong_multiplier: float = 2.0  # one signal alone alerts at this multiple of its threshold
+    theta_burst: float = 3.0  # -log10 tail probability
+    theta_rating: float = 4.0  # |z| of window mean vs history mean
+    strong_multiplier: float = 1.5  # one signal alone alerts at this multiple of its threshold
     use_mismatch: bool = False  # only enabled if the tuning ablation justifies it
     # fixed
     theta_mismatch: float = 3.0
