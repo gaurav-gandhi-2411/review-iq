@@ -44,8 +44,12 @@ USABLE-WITH-CAVEAT (needs_action alpha 0.789 / consensus 0.960; 5-class intent 0
 0.883; urgency 0.704 / 0.930; aspect sentiment beauty 0.749, food 0.744). delivery and service have 4 consensus
 items each: reported as insufficient data. Amendment 5 (#390, merged before any scale run) sets the scale-labelling
 rule: two-judge training labels with a mistral tiebreak, a four-judge sealed test, about 5,000 items, gate
-unchanged. Scale labelling is RUNNING on Kaggle (sealed set done: 763 items, both judges; training stage in
-progress); training and the sealed evaluation follow.
+unchanged. Scale labelling is DONE (VERIFIED, #465): 5,000 items; sealed set of 763 labelled by four judges, none of the tasks
+PASSes the label-quality gate (all USABLE-WITH-CAVEAT). The e5-base multi-task model (run 1, 6 epochs, val macro-F1 still
+rising) reproduces the panel consensus on the sealed set: needs_action accuracy 0.960, conservative p0.95 coverage 0.917
+at precision 0.983. These are agreement with silver labels; the four labelling judges score 0.97 to 0.99 against the
+other three, so the encoder is a cheap copy of the panel, not better than it. delivery, service, urgency high and
+several aspects are insufficient data. Source: `docs/reports/review-intent-model.md`.
 
 **What each feature needs.**
 - Per-review classes (defect, delivery, refund request...): the customers' own reviews (Judge.me ingestion, a
