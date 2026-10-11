@@ -352,7 +352,7 @@ def make_live_caller() -> Caller:
 
     async def _call(prompt: str) -> CallResult:
         out, model, t_in, t_out, escalated, degraded = await route_extraction(
-            prompt, _SYSTEM_PROMPT, allow_gemini_fallback=False, settings=settings
+            prompt, _SYSTEM_PROMPT, settings=settings
         )
         return CallResult(out.model_dump(), model, t_in, t_out, escalated, degraded)
 

@@ -29,7 +29,6 @@ _GOOD_RAW = json.dumps(_GOOD_EXTRACTION.model_dump())
 
 _BASE_SETTINGS = dict(
     GROQ_API_KEY="fake-groq-key",
-    GEMINI_API_KEY="",
     SECONDARY_PROVIDER_API_KEY="",
     SECONDARY_PROVIDER_MODEL="",
     GROQ_MODEL="llama-3.3-70b-versatile",
@@ -68,7 +67,7 @@ async def test_groq_success_no_failover(monkeypatch: pytest.MonkeyPatch) -> None
         mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
 
         result, model, latency_ms, tin, tout, degraded = await llm_module.extract_with_llm(
-            "test prompt", allow_gemini_fallback=False
+            "test prompt"
         )
 
     assert result.sentiment == "positive"
@@ -106,7 +105,7 @@ async def test_groq_api_error_failover_to_secondary(monkeypatch: pytest.MonkeyPa
             return_value=(_GOOD_RAW, 8, 4),
         ):
             result, model, latency_ms, tin, tout, degraded = await llm_module.extract_with_llm(
-                "test prompt", allow_gemini_fallback=False
+                "test prompt"
             )
 
     assert result.sentiment == "positive"
@@ -140,44 +139,11 @@ async def test_groq_and_secondary_both_fail_raises(monkeypatch: pytest.MonkeyPat
             side_effect=RuntimeError("secondary also down"),
         ):
             with pytest.raises(Exception):
-                await llm_module.extract_with_llm("test prompt", allow_gemini_fallback=False)
+                await llm_module.extract_with_llm("test prompt")
 
 
 # ---------------------------------------------------------------------------
-# No secondary configured → falls through to Gemini (demo path)
-# ---------------------------------------------------------------------------
-
-
-@pytest.mark.asyncio
-async def test_groq_fails_no_secondary_uses_gemini_on_demo_path(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.setattr(
-        llm_module,
-        "get_settings",
-        lambda: _settings(GEMINI_API_KEY="fake-gemini-key"),
-    )
-
-    with patch("app.core.providers.groq.AsyncGroq") as mock_groq:
-        mock_client = mock_groq.return_value
-        mock_client.chat.completions.create = AsyncMock(side_effect=_api_error())
-
-        with patch.object(
-            llm_module,
-            "_call_gemini",
-            new_callable=AsyncMock,
-            return_value=(_GOOD_EXTRACTION, 12, 6),
-        ):
-            result, model, latency_ms, tin, tout, degraded = await llm_module.extract_with_llm(
-                "test prompt", allow_gemini_fallback=True
-            )
-
-    assert result.sentiment == "positive"
-    assert not degraded
-
-
-# ---------------------------------------------------------------------------
-# No secondary, no Gemini, org-key path → RuntimeError
+# (the Gemini demo-path fallback was retired in S17, ADR 0035)
 # ---------------------------------------------------------------------------
 
 
@@ -190,7 +156,7 @@ async def test_all_providers_fail_raises_runtime_error(monkeypatch: pytest.Monke
         mock_client.chat.completions.create = AsyncMock(side_effect=_api_error())
 
         with pytest.raises(RuntimeError, match="All LLM providers failed"):
-            await llm_module.extract_with_llm("test prompt", allow_gemini_fallback=False)
+            await llm_module.extract_with_llm("test prompt")
 
 
 # ---------------------------------------------------------------------------
@@ -224,40 +190,10 @@ async def test_secondary_trains_on_input_raises_privacy_error(
             mock_client.chat.completions.create = AsyncMock(side_effect=_api_error())
 
             with pytest.raises(RuntimeError, match="trains on input"):
-                await llm_module.extract_with_llm("test prompt", allow_gemini_fallback=False)
+                await llm_module.extract_with_llm("test prompt")
     finally:
         secondary_module.SecondaryProvider.trains_on_input = original  # type: ignore[assignment]
 
 
 # ---------------------------------------------------------------------------
-# Gemini never called on org-key path (allow_gemini_fallback=False)
 # ---------------------------------------------------------------------------
-
-
-@pytest.mark.asyncio
-async def test_gemini_not_called_on_org_key_path_even_with_key(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """With allow_gemini_fallback=False, Gemini is never invoked even if a key is present."""
-    monkeypatch.setattr(
-        llm_module,
-        "get_settings",
-        lambda: _settings(GEMINI_API_KEY="fake-gemini-key"),
-    )
-    gemini_called = False
-
-    async def forbidden_gemini(_: str) -> None:
-        nonlocal gemini_called
-        gemini_called = True
-        raise AssertionError("Gemini must not be called on org-key path")
-
-    monkeypatch.setattr(llm_module, "_call_gemini", forbidden_gemini)
-
-    with patch("app.core.providers.groq.AsyncGroq") as mock_groq:
-        mock_client = mock_groq.return_value
-        mock_client.chat.completions.create = AsyncMock(side_effect=_api_error())
-
-        with pytest.raises(RuntimeError):
-            await llm_module.extract_with_llm("test prompt", allow_gemini_fallback=False)
-
-    assert not gemini_called, "Gemini was called on the org-key path — privacy violation"
