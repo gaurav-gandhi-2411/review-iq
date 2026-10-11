@@ -11,7 +11,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from app.core.alerts.detector_sweep import (
     BATCH_DEFECT_ALERT_THRESHOLD,
-    FAKE_CAMPAIGN_ALERT_THRESHOLD,
+    FAKE_CAMPAIGN_RECENT_DAYS,
     _batch_defect_dedupe_key,
     _fake_campaign_dedupe_key,
     run_detector_sweep,
@@ -35,29 +35,28 @@ def _spike_rows(product: str = "Widget", n: int = 6) -> list[dict]:
     ]
 
 
-def _campaign_rows(product: str = "Widget", n: int = 8) -> list[dict]:
-    """Rows shaped to trigger an obvious campaign flag: baseline spread + a near-dup text burst.
-    Empirically verified to score confidence ~0.875 (comfortably above
-    FAKE_CAMPAIGN_ALERT_THRESHOLD=0.5) at build time."""
+def _campaign_rows(product: str = "Widget", n: int = 12) -> list[dict]:
+    """Rows shaped to trigger a pattern alert in the last FAKE_CAMPAIGN_RECENT_DAYS: a year of
+    steady, distinct-text history ending 5 days ago, then n near-identical reviews 2 days ago.
+    Times are relative to the real clock because the sweep's recency cutoff is."""
     import random
 
-    random.seed(7)
-    base = _NOW - timedelta(days=60)
+    rng = random.Random(7)
+    vocab = [f"word{k}x" for k in range(400)]
+    now = datetime.now(UTC)
     rows = [
         {
             "id": f"base-{product}-{i}",
             "product": product,
             "topics": [],
             "sentiment": "neutral",
-            "review_date": base + timedelta(days=random.uniform(0, 50)),
-            "review_text": f"baseline unique review number {i} about the {product.lower()}",
+            "review_date": now - timedelta(days=200 - i * 195 / 190),
+            "review_text": " ".join(rng.choice(vocab) for _ in range(9)),
+            "rating": rng.choice([4, 5, 5, 5, 5]),
         }
-        for i in range(15)
+        for i in range(190)
     ]
-    template = (
-        "This product exceeded my expectations completely and arrived very quickly in "
-        "perfect condition"
-    )
+    template = "this product exceeded my expectations completely and arrived very quickly"
     for i in range(n):
         rows.append(
             {
@@ -65,8 +64,9 @@ def _campaign_rows(product: str = "Widget", n: int = 8) -> list[dict]:
                 "product": product,
                 "topics": [],
                 "sentiment": "positive",
-                "review_date": _NOW + timedelta(hours=i * 2),
+                "review_date": now - timedelta(days=2) + timedelta(minutes=30 * i),
                 "review_text": template,
+                "rating": 1,
             }
         )
     return rows
@@ -204,7 +204,7 @@ async def test_below_threshold_flag_never_calls_evaluate_and_alert() -> None:
 
 
 @pytest.mark.asyncio
-async def test_fake_campaign_alert_fires_above_threshold() -> None:
+async def test_fake_campaign_alert_fires_on_a_recent_pattern() -> None:
     with (
         patch(
             "app.core.alerts.detector_sweep.get_settings",
@@ -229,6 +229,7 @@ async def test_fake_campaign_alert_fires_above_threshold() -> None:
     call_kwargs = mock_alert.call_args.kwargs
     assert call_kwargs["review_id"].startswith("fake_campaign:Widget:")
     assert call_kwargs["precomputed_events"][0].event_type == "fake_campaign"
+    assert "explanation" in call_kwargs["precomputed_events"][0].details
 
 
 @pytest.mark.asyncio
@@ -268,4 +269,4 @@ async def test_thresholds_are_the_documented_values() -> None:
     """Pin the exact threshold values -- a silent change here would be a real product-risk
     regression (looser thresholds = more false-positive-prone alerts to real sellers)."""
     assert BATCH_DEFECT_ALERT_THRESHOLD == 0.7
-    assert FAKE_CAMPAIGN_ALERT_THRESHOLD == 0.5
+    assert FAKE_CAMPAIGN_RECENT_DAYS == 14
