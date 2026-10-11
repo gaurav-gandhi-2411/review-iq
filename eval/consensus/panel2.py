@@ -48,7 +48,8 @@ RESULTS_DIR = ROOT / "eval" / "consensus" / "results"
 CASSETTE_PATH = ROOT / "eval" / "cassettes" / "panel2_cassettes.json"
 CALIBRATION_PATH = RESULTS_DIR / "panel2_calibration.json"
 VOTES_PATH = RESULTS_DIR / "panel2_votes.jsonl"
-SILVER_PATH = RESULTS_DIR / "panel2_silver.json"
+# Generated artifact: lives under reports/ (S23 large-JSON path migration), not RESULTS_DIR.
+SILVER_PATH = ROOT / "reports" / "eval" / "consensus" / "panel2_silver.json"
 HINGLISH_CONTROL_PATH = Path(__file__).resolve().parent / "control_set_hinglish.json"
 HELD_OUT_ARTIFACT = ROOT / "eval" / "results" / "held_out_scoring_v2.json"
 
