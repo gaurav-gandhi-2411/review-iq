@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -90,7 +91,8 @@ def sealed_ids() -> list[str]:
 
 
 def run(model: str, texts: Path, out: Path) -> int:
-    sys.path.insert(0, str(ROOT))
+    # The gitignored benchmark env file lives in the main checkout, not in worktrees.
+    sys.path.insert(0, os.environ.get("REVIEW_IQ_MAIN_CHECKOUT", str(ROOT)))
     from benchmark.vernacular_v2.benchmark_groq_key import load_benchmark_groq_key
 
     key = load_benchmark_groq_key()
