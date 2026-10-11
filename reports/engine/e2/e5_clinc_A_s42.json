@@ -1,5 +1,5 @@
 {
- "commit": "44fd57e",
+ "commit": "7faba68",
  "dataset": "clinc",
  "model": "intfloat/multilingual-e5-base",
  "seed": 42,
@@ -515,5 +515,5 @@
   "threshold": -4981.2742772135025,
   "temperature": 1.1309647024102878
  },
- "wall_seconds": 282.2
+ "wall_seconds": 378.0
 }
