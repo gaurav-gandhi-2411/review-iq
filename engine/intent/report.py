@@ -1,6 +1,9 @@
 """Render docs/reports/review-intent-model.md from an `engine.intent.evaluate` JSON. No number is typed by hand.
 
     python -m engine.intent.report reports/intent/eval_run1.json > docs/reports/review-intent-model.md
+    python -m engine.intent.report --run2 reports/intent/eval_run2.json --run1 reports/intent/eval_run1.json \
+        --curve reports/intent/run2/epoch_log.json --meta reports/intent/run2/metadata.json \
+        > docs/reports/review-intent-model.md
 
 Every number sits inside a `<!-- METRICS:START:<name> --> ... <!-- METRICS:END -->` block (the convention checked by
 scripts/check_no_hardcoded_metrics.py); the prose outside the blocks states method and caveats and carries no figures.
@@ -46,6 +49,8 @@ def has_ids(r: dict) -> bool:
 
 def both(item: list | None, clu: list | None, r: dict) -> str:
     """'<item CI> item; <cluster CI> cluster' or, with no product ids behind the task, the explicit marker."""
+    if not item and not clu:
+        return "n/a (no sealed item answered above the threshold)"
     if not has_ids(r) or clu is None:
         return f"{ci(item)} item-level only, no product ids"
     c = r["cluster"]
@@ -162,6 +167,82 @@ def slices(tasks: dict) -> str:
     return block("slices", rows)
 
 
+def comparison(r1: dict, r2: dict) -> str:
+    rows = ["| Task | Metric | Run 1 | Run 2 |", "|---|---|---|---|"]
+    for t, b in r2.items():
+        a = r1.get(t)
+        if (
+            b.get("insufficient_data")
+            or b.get("missing_predictions")
+            or not a
+            or a.get("insufficient_data")
+        ):
+            continue
+
+        def cells(r: dict) -> list[tuple[str, str]]:
+            c, mf = r["selective"]["conservative_p0.95"], r["macro_f1"]
+            return [
+                ("accuracy", f"{f(r['accuracy'])} {both(r['accuracy_wilson95'], r.get('accuracy_cluster_ci95'), r)}"),
+                ("macro-F1", "insufficient data" if isinstance(mf, str) else f"{f(mf)} {both(r.get('macro_f1_ci95'), r.get('macro_f1_cluster_ci95'), r)}"),
+                ("conservative p0.95 coverage", f"{f(c['coverage'])} {both(c['coverage_ci95'], c.get('coverage_cluster_ci95'), r)}"),
+                ("precision at that threshold", f"{f(c['precision'])} {both(c['precision_ci95'], c.get('precision_cluster_ci95'), r)}"),
+                ("target reached", "yes" if c["reached_target"] else "no"),
+            ]  # fmt: skip
+
+        for (m, x), (_, y) in zip(cells(a), cells(b), strict=True):
+            rows.append(f"| {t} (run 1 n={a['n']}, run 2 n={b['n']}) | {m} | {x} | {y} |")
+    return block("comparison", rows)
+
+
+def curve(log: list[dict], meta: dict) -> str:
+    tasks = ["needs_action", "broad_intent", "sentiment", "urgency"]
+    rows = ["| Epoch | Validation mean macro-F1 (selection metric) | " + " | ".join(tasks) + " | Train loss (last batch) |",
+            "|---|---|" + "---|" * len(tasks) + "---|"]  # fmt: skip
+    for h in log:
+        rows.append(f"| {h['epoch']} | {f(h['val_mean_macro_f1'], 4)} | " + " | ".join(f(h['val_macro_f1_by_task'].get(t), 4) for t in tasks) + f" | {f(h['loss'], 4)} |")  # fmt: skip
+    i = meta["train_info"]
+    rows.append("")
+    rows.append(f"Best epoch {i['best_epoch']} of at most {meta['config']['epochs']}; stopped early: {'yes' if i['stopped_early'] else 'no'}; patience {meta['config']['patience']}; best validation mean macro-F1 {f(i['best_val_mean_macro_f1'], 4)}; training commit `{meta['commit']}`; GPU training time {meta['seconds']} s.")  # fmt: skip
+    return block("curve", rows)
+
+
+RUN2_NOTES = """Run 2 retrains the run 1 model with only the training length changed: up to 30 epochs instead of 6, patience 3
+instead of 2, same seed, learning rate, batch size, maximum length, frozen embeddings and labels. Early stopping looks
+at VALIDATION only; the sealed set is never used to choose an epoch, a threshold or a temperature.
+
+Two caveats are part of the result. (1) The stopping metric is the mean macro-F1 over every task that has validation
+labels, as in run 1; this includes aspect tasks with very few validation items, so the curve is noisy and the best
+epoch is not a stable optimum. "Kept tasks" could also mean only the four core tasks, which would pick a different
+epoch; the per-task columns of the curve let a reader check that. (2) The learning rate decays linearly over the epoch
+budget, so a 30-epoch run follows a different schedule from a 6-epoch run (slower decay) and stopping early means the
+rate had not decayed; run 2 is therefore not a pure "same run, longer" comparison. Both runs are single seeds, so
+differences between them are not separated from seed noise by this report.
+
+The Kaggle run records a different manifest hash from the evaluation provenance only because the kernel checks the
+repository out with LF line endings and the Windows checkout has CRLF; the content is identical.
+"""
+
+
+def render_full(run2: dict, src: str, run1: dict | None, log: list[dict], meta: dict) -> str:
+    t = run2["tasks"]
+    parts = [
+        HEAD.format(src=src),
+        "## Run 2 setup and caveats\n",
+        RUN2_NOTES,
+        "## Provenance\n",
+        provenance(run2),
+    ]
+    parts += ["## Training curve (run 2, validation only)\n", curve(log, meta)]
+    parts += ["## Headline per task (run 2)\n", summary(t)]
+    if run1:
+        parts += [
+            "## Run 1 and run 2 side by side (same sealed set, same intervals)\n",
+            comparison(run1["tasks"], t),
+        ]
+    parts += ["## Per-class F1 (run 2)\n", per_class(t), "## Baselines (run 2)\n", baselines(t), "## Language and category slices (run 2)\n", slices(t)]  # fmt: skip
+    return "\n".join(parts)
+
+
 def render(rep: dict, src: str) -> str:
     t = rep["tasks"]
     parts = [HEAD.format(src=src), "## Provenance\n", provenance(rep), "## Headline per task\n", summary(t),
@@ -170,9 +251,23 @@ def render(rep: dict, src: str) -> str:
 
 
 def main() -> None:
-    src = Path(sys.argv[1])
     sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
-    sys.stdout.write(render(json.loads(src.read_text(encoding="utf-8")), src.as_posix()))
+    if len(sys.argv) == 2 and not sys.argv[1].startswith("--"):
+        src = Path(sys.argv[1])
+        sys.stdout.write(render(json.loads(src.read_text(encoding="utf-8")), src.as_posix()))
+        return
+    import argparse
+
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--run2", required=True)
+    ap.add_argument("--run1")
+    ap.add_argument("--curve", required=True, help="run 2 epoch_log.json")
+    ap.add_argument("--meta", required=True, help="run 2 metadata.json")
+    a = ap.parse_args()
+    load = lambda p: json.loads(Path(p).read_text(encoding="utf-8"))  # noqa: E731
+    sys.stdout.write(render_full(
+        load(a.run2), Path(a.run2).as_posix(), load(a.run1) if a.run1 else None, load(a.curve), load(a.meta),
+    ))  # fmt: skip
 
 
 if __name__ == "__main__":
