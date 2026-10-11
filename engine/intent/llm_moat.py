@@ -8,7 +8,7 @@ PRE-REGISTERED (committed before any LLM call is made on the sealed set):
     Same class definitions as the labelling spec in one short paragraph, NO few-shots, temperature 0, fixed seed.
     Models: openai/gpt-oss-20b and openai/gpt-oss-120b on the dedicated Groq org via the benchmark key
     (`benchmark_groq_key.load_benchmark_groq_key`), paced under the TPM limit and a per-model daily token budget
-    (default 150,000 of the 200,000 TPD so U4d and prod keep headroom). The run is resumable across days.
+    (default 90,000 of the 200,000 TPD; U4d may use 100K, prod keeps the rest). The run is resumable across days.
   * Metric: for each task, coverage at which precision (vs consensus) reaches 0.95, using the SAME function as the
     BANKING77 comparison (`engine.experiments.selective.summarize`), item bootstrap 1,000 resamples, 95 percent CI.
     This is the ORACLE curve (best threshold on the sealed set), which FAVOURS both arms equally; the deployable
@@ -53,7 +53,8 @@ Review: {text}
 JSON:"""
 URL = "https://api.groq.com/openai/v1/chat/completions"
 TPM_BUDGET = 6500  # of 8,000 TPM, headroom for the other jobs on the org
-DAILY_BUDGET = 150_000
+# U4d keeps DAY_CEILING 100K per model per UTC day on the same 200K pool; this arm gets at most 90K.
+DAILY_BUDGET = int(os.environ.get("MOAT_DAILY_BUDGET", "90000"))
 
 
 def ask(key: str, model: str, text: str) -> tuple[dict | None, int]:
