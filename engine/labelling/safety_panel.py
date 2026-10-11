@@ -30,7 +30,7 @@ from engine.labelling.mine_safety import KEYWORDS, MIN_CHARS, hits_for
 from engine.labelling.pilot_sample import clean, load_all
 from engine.labelling.repilot2_report import wilson
 from engine.labelling.repilot_report import consensus_label
-from engine.labelling.scale_report import PANEL, gwet_ac1
+from engine.labelling.scale_report import PANEL, _nan_to_none, gwet_ac1
 from engine.labelling.scale_sample import split_of, text_sha
 
 SEED = 45  # draws of the non-Flipkart sources (Flipkart is taken whole); fixed before any label
@@ -280,7 +280,7 @@ def render_md(rep: dict, meta: dict) -> str:
          "Do not hand-edit.", "",
          f"**Caveat.** {rep['caveat']}", "",
          f"Judges: {', '.join(rep['judges'])}. Consensus = `repilot_report.consensus_label` (at least 3 valid "
-         "votes and a clear majority). Intervals are Wilson 95%.", "",
+         "votes and a clear majority). Intervals are Wilson 95 percent.", "",
          "## Overall", "",
          f"- candidates: {rep['overall']['n_candidates']} (no urgency consensus: {rep['overall']['no_consensus']})",
          f"- urgency=high: {_pct(rep['overall']['high'])}",
@@ -328,6 +328,7 @@ def run_report(a: argparse.Namespace) -> None:
         for i, recs in part.items():
             items.setdefault(i, {}).update(recs)
     rep, labels = build_report(manifest, items)
+    rep = _nan_to_none(rep)  # JSON has no NaN: an empty-denominator statistic is null
     meta = {"commit": a.commit}
     rep["meta"] = meta
     Path(a.out).write_text(json.dumps(rep, indent=1, allow_nan=False) + "\n", encoding="utf-8")
