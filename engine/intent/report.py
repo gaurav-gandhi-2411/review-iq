@@ -50,6 +50,8 @@ def has_ids(r: dict) -> bool:
 
 def both(item: list | None, clu: list | None, r: dict) -> str:
     """'<item CI> item; <cluster CI> cluster' or, with no product ids behind the task, the explicit marker."""
+    if not item and not clu:
+        return "n/a (no sealed item answered above the threshold)"
     if not has_ids(r) or clu is None:
         return f"{ci(item)} item-level only, no product ids"
     c = r["cluster"]
@@ -250,9 +252,40 @@ def latency(lat: dict) -> str:
     return block("latency", rows)
 
 
+RUN2_NOTES = """Run 2 retrains the run 1 model with only the training length changed: up to 30 epochs instead of 6, patience 3
+instead of 2, same seed, learning rate, batch size, maximum length, frozen embeddings and labels. Early stopping looks
+at VALIDATION only; the sealed set is never used to choose an epoch, a threshold or a temperature.
+
+Two caveats are part of the result. (1) The stopping metric is the mean macro-F1 over every task that has validation
+labels, as in run 1; this includes aspect tasks with very few validation items, so the curve is noisy and the best
+epoch is not a stable optimum. "Kept tasks" could also mean only the four core tasks, which would pick a different
+epoch; the per-task columns of the curve let a reader check that. (2) The learning rate decays linearly over the epoch
+budget, so a 30-epoch run follows a different schedule from a 6-epoch run (slower decay) and stopping early means the
+rate had not decayed; run 2 is therefore not a pure "same run, longer" comparison. Both runs are single seeds, so
+differences between them are not separated from seed noise by this report.
+
+The Kaggle run records a different manifest hash from the evaluation provenance only because the kernel checks the
+repository out with LF line endings and the Windows checkout has CRLF; the content is identical.
+
+The CPU export uses PyTorch dynamic quantisation. Variants: fp32 on CPU (separates CPU-versus-GPU differences from
+quantisation error); int8 Linear layers with one scale per tensor, with and without an int8 word-embedding table;
+the same with one scale per output channel; and a mixed variant that quantises only the feed-forward layers and
+the embedding table and leaves attention and the heads in fp32. For each, probabilities are recomputed, the
+per-task temperature is refit on validation, and the conservative threshold is re-picked on validation before the
+sealed set is scored once. Read the delta columns: a variant that reaches the precision target at a lower coverage
+is not equivalent to the fp16 model.
+"""
+
+
 def render_full(run2: dict, src: str, run1: dict | None, log: list[dict], meta: dict, cpu: dict, quant: dict, lat: dict | None) -> str:  # fmt: skip
     t = run2["tasks"]
-    parts = [HEAD.format(src=src), "## Provenance\n", provenance(run2)]
+    parts = [
+        HEAD.format(src=src),
+        "## Run 2 setup and caveats\n",
+        RUN2_NOTES,
+        "## Provenance\n",
+        provenance(run2),
+    ]
     parts += ["## Training curve (run 2, validation only)\n", curve(log, meta)]
     parts += ["## Headline per task (run 2)\n", summary(t)]
     if run1:

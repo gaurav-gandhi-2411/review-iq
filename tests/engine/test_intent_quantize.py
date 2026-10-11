@@ -55,7 +55,17 @@ def logits(model: torch.nn.Module) -> np.ndarray:
     return np.concatenate([out["a"], out["b"]], axis=1)
 
 
-@pytest.mark.parametrize("variant", ["fp32_cpu", "int8_linear", "int8_full"])
+@pytest.mark.parametrize(
+    "variant",
+    [
+        "fp32_cpu",
+        "int8_linear",
+        "int8_full",
+        "int8_perchannel",
+        "int8_perchannel_full",
+        "int8_ffn_full",
+    ],
+)
 def test_variants_run_and_stay_close_to_fp32(variant: str) -> None:
     base = make()
     ref = logits(base)

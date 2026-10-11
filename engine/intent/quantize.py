@@ -6,10 +6,12 @@
 
 Method: `torch.ao.quantization.quantize_dynamic`, chosen over ONNX Runtime int8 because it needs no extra package, no
 export step and no calibration set (weights are quantised once, activations on the fly), so it reproduces from the
-checkpoint alone. Three CPU variants are scored on the SAME validation and sealed items as the GPU run:
+checkpoint alone. Five CPU variants are scored on the SAME validation and sealed items as the GPU run:
   fp32_cpu      the checkpoint in fp32 on CPU (separates "CPU vs GPU fp16" noise from quantisation error)
   int8_linear   every nn.Linear in the encoder and heads -> qint8 (dynamic); the 250k-row word-embedding table stays fp32
-  int8_full     as above, plus the word-embedding table -> uint8 weight-only (per-row scale and zero point)
+  int8_perchannel / int8_perchannel_full   the same two, but with one scale per output channel of each Linear
+  int8_ffn_full  per-channel int8 on the feed-forward Linears + int8 embedding table; attention and heads stay fp32
+  int8_full     as int8_linear, plus the word-embedding table -> uint8 weight-only (per-row scale and zero point)
 For each variant the logits are recomputed, a per-task temperature is REFIT on validation only, and pred_<task>.json
 is written in the format `engine.intent.evaluate` reads (so thresholds are re-picked on validation by the evaluator).
 Writes metadata.json with file sizes and the argmax agreement with the GPU predictions. No review text is written.
@@ -33,7 +35,14 @@ from engine.intent import train as T
 from engine.intent.labels import load_texts
 from engine.intent.model import E5, MultiHeadClassifier, load_pretrained
 
-VARIANTS = ("fp32_cpu", "int8_linear", "int8_full")
+VARIANTS = (
+    "fp32_cpu",
+    "int8_linear",
+    "int8_full",
+    "int8_perchannel",
+    "int8_perchannel_full",
+    "int8_ffn_full",
+)
 
 
 def quantize(model: MultiHeadClassifier, variant: str) -> nn.Module:
@@ -41,11 +50,35 @@ def quantize(model: MultiHeadClassifier, variant: str) -> nn.Module:
     m = copy.deepcopy(model).float().cpu().eval()
     if variant == "fp32_cpu":
         return m
-    spec: dict = {nn.Linear: torch.ao.quantization.default_dynamic_qconfig}
-    if variant == "int8_full":
-        m.enc.get_input_embeddings().qconfig = float_qparams_weight_only_qconfig
-        spec[nn.Embedding] = float_qparams_weight_only_qconfig
-    elif variant != "int8_linear":
+    if variant == "int8_ffn_full":
+        # mixed precision: per-channel int8 on the feed-forward Linears and the embedding table only; attention
+        # projections and the heads stay fp32 (tests whether attention is where the quantisation error comes from)
+        word = m.enc.get_input_embeddings()
+        spec = {
+            n: torch.ao.quantization.per_channel_dynamic_qconfig
+            for n, mod in m.named_modules()
+            if isinstance(mod, nn.Linear)
+            and "attention" not in n
+            and n.startswith("enc.")
+            and ("intermediate" in n or n.endswith("output.dense"))
+        }
+        spec[next(n for n, mod in m.named_modules() if mod is word)] = (
+            float_qparams_weight_only_qconfig
+        )
+        return quantize_dynamic(m, qconfig_spec=spec, dtype=torch.qint8)
+    per_channel = variant.startswith("int8_perchannel")
+    spec: dict = {
+        nn.Linear: torch.ao.quantization.per_channel_dynamic_qconfig
+        if per_channel
+        else torch.ao.quantization.default_dynamic_qconfig
+    }
+    if variant in ("int8_full", "int8_perchannel_full"):
+        # only the word-embedding table: the position-id lookup is a non-contiguous slice, which the
+        # quantised embedding op rejects, and those tables are small anyway
+        word = m.enc.get_input_embeddings()
+        name = next(n for n, mod in m.named_modules() if mod is word)
+        spec[name] = float_qparams_weight_only_qconfig
+    elif variant not in ("int8_linear", "int8_perchannel"):
         raise ValueError(f"unknown variant {variant}")
     return quantize_dynamic(m, qconfig_spec=spec, dtype=torch.qint8)
 
