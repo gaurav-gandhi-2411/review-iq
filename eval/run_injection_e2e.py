@@ -102,7 +102,7 @@ async def _extract_final(text: str, settings: Any, controls: bool = False) -> di
     lang = detect_language(clean)
     prompt = build_prompt(wrap_for_llm(clean), lang)
     out, model, t_in, t_out, escalated, degraded = await route_extraction(
-        prompt, _SYSTEM_PROMPT, allow_gemini_fallback=False, settings=settings
+        prompt, _SYSTEM_PROMPT, settings=settings
     )
     final = out.model_dump()
     dropped = ungrounded_competitor_mentions(source, final["competitor_mentions"])

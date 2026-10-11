@@ -1,5 +1,5 @@
 {
- "commit": "9793471",
+ "commit": "7faba68",
  "dataset": "banking77",
  "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
  "seed": 43,
@@ -303,5 +303,5 @@
   ],
   "temperature": 0.8297
  },
- "wall_seconds": 114.6
+ "wall_seconds": 112.4
 }
