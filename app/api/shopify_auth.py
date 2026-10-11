@@ -1,16 +1,28 @@
 """Shopify OAuth install flow.
 
+GET  /auth/shopify/status
+    Requires: Authorization: Bearer <supabase_jwt>
+    {enabled, installations: [...]} for the caller's org (RLS-scoped read).
+
 GET  /auth/shopify/begin?shop=store.myshopify.com
     Requires: Authorization: Bearer <supabase_jwt>
-    Validates the seller's session, generates a stateless CSRF state, returns the
-    Shopify OAuth authorization URL for the frontend to redirect to.
+    Validates the seller's session, generates a stateless CSRF state bound to shop AND user,
+    returns the Shopify OAuth authorization URL for the frontend to redirect to.
+    redirect_uri is {SHOPIFY_APP_URL}/shopify/callback -- a SPA route (see "Design" below).
 
 POST /auth/shopify/callback
     Requires: Authorization: Bearer <supabase_jwt>
-    Body: {code, shop, state, hmac?, timestamp?}
+    Body: every query param Shopify put on the redirect (code, shop, state, hmac, timestamp,
+    host, ...). Extra params are REQUIRED to be forwarded verbatim: Shopify's hmac covers all
+    of them, so dropping `host` would make a genuine callback fail verification.
     Called by the FRONTEND after Shopify redirects back to the SPA. The SPA
     captures the query params from the redirect URL and POSTs them here with
     the seller's active JWT in the Authorization header.
+
+Design (reconciled 2026-10-08, S19 N2b): the redirect target is the SPA, not this API. The
+backend cannot see the seller's identity on a browser redirect (the Supabase JWT lives in the
+SPA's storage, not a cookie), and org_id must come from the verified JWT only. A GET callback
+on the API would have no JWT and would have to trust something else -- exactly what is banned.
 
     Verifies (in order):
       1. Shopify's hmac on the callback params (proves Shopify signed this redirect)
@@ -28,6 +40,8 @@ CSRF:
     State = "{timestamp}:{HMAC-SHA256(shop_domain:timestamp, client_secret)}".
     Stateless — no server-side session store required. State expires in 10 minutes.
     Binding to shop_domain prevents state from shop A being replayed for shop B.
+    Since S19 N2b the state is ALSO bound to the beginning user's id, so a state minted for
+    seller X cannot be used to link a store into seller Y's org (login-CSRF).
 """
 
 from __future__ import annotations
@@ -38,22 +52,36 @@ import hmac as _hmac
 import re
 import time
 from typing import Any
+from urllib.parse import urlencode
 
 import httpx
 import psycopg2
 import structlog
 from fastapi import APIRouter, Header, HTTPException, status
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from app.api.webhooks.shopify import encrypt_token
 from app.auth.signup import _get_org_for_user, verify_supabase_jwt
 from app.core.config import get_settings
+from app.core.storage_pg import _set_tenant
 
 log = structlog.get_logger(__name__)
 router = APIRouter(prefix="/auth/shopify", tags=["shopify-oauth"])
 
 _SHOP_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9\-]*\.myshopify\.com$")
 _STATE_MAX_AGE_SECONDS = 600  # 10 minutes
+
+# Least privilege, read-only. The connector only READS product_review metaobjects (GraphQL
+# `metaobjects` query + the metaobjects/create webhook -> read_metaobjects) and resolves the
+# reviewed product's title through the metaobject's product reference (read_products). The
+# previous string also asked write_product_reviews (never used) and read_customers (no
+# customer data is read). Fewer scopes is also a smaller surface in Shopify's app review.
+SHOPIFY_SCOPES = "read_metaobjects,read_products"
+
+
+def _error(http_status: int, code: str, message: str) -> HTTPException:
+    """Typed error: machine `code` + human `message` (rule 104/109)."""
+    return HTTPException(http_status, {"code": code, "message": message})
 
 
 # ---------------------------------------------------------------------------
@@ -62,6 +90,10 @@ _STATE_MAX_AGE_SECONDS = 600  # 10 minutes
 
 
 class ShopifyCallbackBody(BaseModel):
+    # extra="allow": Shopify's hmac signs EVERY query param on the redirect (host, ...), so any
+    # param the SPA forwards must be kept and included in verification.
+    model_config = ConfigDict(extra="allow")
+
     code: str
     shop: str
     state: str
@@ -82,7 +114,7 @@ def _validate_shop(shop: str) -> str:
     return s
 
 
-def _generate_state(shop_domain: str, client_secret: str) -> str:
+def _generate_state(shop_domain: str, client_secret: str, subject: str = "") -> str:
     """Generate a stateless, expiring CSRF token bound to shop_domain.
 
     Format: "{unix_timestamp}:{hmac_hex}"
@@ -90,7 +122,7 @@ def _generate_state(shop_domain: str, client_secret: str) -> str:
     so the token is shop-specific and forge-resistant.
     """
     ts = str(int(time.time()))
-    msg = f"{shop_domain}:{ts}"
+    msg = f"{shop_domain}:{subject}:{ts}"
     mac = _hmac.new(client_secret.encode(), msg.encode(), hashlib.sha256).hexdigest()
     return f"{ts}:{mac}"
 
@@ -99,6 +131,7 @@ def _verify_state(
     state: str,
     shop_domain: str,
     client_secret: str,
+    subject: str = "",
     *,
     max_age: int = _STATE_MAX_AGE_SECONDS,
 ) -> bool:
@@ -116,7 +149,7 @@ def _verify_state(
         return False
     if int(time.time()) - ts > max_age:
         return False
-    msg = f"{shop_domain}:{ts_str}"
+    msg = f"{shop_domain}:{subject}:{ts_str}"
     expected_mac = _hmac.new(client_secret.encode(), msg.encode(), hashlib.sha256).hexdigest()
     return _hmac.compare_digest(expected_mac, received_mac)
 
@@ -226,9 +259,54 @@ def _upsert_installation_pg(org_id: str, shop_domain: str, access_token_enc: str
         conn.close()
 
 
+def _list_installations_pg(org_id: str) -> list[dict[str, str | None]]:
+    """The caller's own installs, via the RLS select policy (never token material)."""
+    conn = psycopg2.connect(get_settings().supabase_database_url)
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+        cur.execute(
+            "SELECT shop_domain, installed_at, revoked_at FROM public.shopify_installations "
+            "ORDER BY installed_at DESC"
+        )
+        return [
+            {
+                "shop_domain": str(r[0]),
+                "installed_at": r[1].isoformat() if r[1] else None,
+                "revoked_at": r[2].isoformat() if r[2] else None,
+            }
+            for r in cur.fetchall()
+        ]
+    finally:
+        conn.rollback()
+        conn.close()
+
+
+def _bearer(authorization: str) -> str:
+    if not authorization.startswith("Bearer "):
+        raise _error(status.HTTP_401_UNAUTHORIZED, "auth_required", "Bearer token required.")
+    return authorization[len("Bearer ") :]
+
+
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
+
+
+@router.get("/status")
+async def shopify_status(
+    authorization: str = Header(default="", alias="Authorization"),
+) -> dict[str, Any]:
+    """Whether the connector is enabled on this deployment, plus the caller's installs."""
+    user = await verify_supabase_jwt(_bearer(authorization))
+    settings = get_settings()
+    if not settings.shopify_enabled:
+        return {"enabled": False, "installations": []}
+    org = await asyncio.to_thread(_get_org_for_user, str(user.id))
+    if org is None:
+        return {"enabled": True, "installations": []}
+    installs = await asyncio.to_thread(_list_installations_pg, str(org["org_id"]))
+    return {"enabled": True, "installations": installs}
 
 
 @router.get("/begin")
@@ -242,36 +320,36 @@ async def shopify_oauth_begin(
     (e.g. sessionStorage) and redirect the user to `redirect_url`. Shopify
     will redirect back to the SPA callback route with code+state+shop+hmac.
     """
-    if not authorization.startswith("Bearer "):
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Bearer token required.")
-    bearer = authorization[len("Bearer ") :]
-    # Validate the seller is authenticated. We don't need user_id here
-    # because the state is not carrying identity — identity is re-verified
-    # in the callback.
-    await verify_supabase_jwt(bearer)
+    user = await verify_supabase_jwt(_bearer(authorization))
 
     settings = get_settings()
+    if not settings.shopify_enabled:
+        raise _error(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            "shopify_disabled",
+            "The Shopify connector is not enabled on this deployment.",
+        )
     if not settings.shopify_client_id or not settings.shopify_client_secret:
-        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Shopify app not configured.")
+        # Unreachable when SHOPIFY_ENABLED=true (Settings refuses to start), kept as a guard.
+        raise _error(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            "shopify_not_configured",
+            "Shopify app not configured.",
+        )
 
     try:
         shop_domain = _validate_shop(shop)
     except ValueError as exc:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, str(exc)) from exc
+        raise _error(status.HTTP_400_BAD_REQUEST, "invalid_shop", str(exc)) from exc
 
-    state = _generate_state(shop_domain, settings.shopify_client_secret)
-    scopes = "read_metaobjects,write_product_reviews,read_products,read_customers"
-    redirect_uri = (
-        f"{settings.shopify_webhook_base_url}/auth/shopify/callback"
-        if settings.shopify_webhook_base_url
-        else ""
-    )
-    auth_url = (
-        f"https://{shop_domain}/admin/oauth/authorize"
-        f"?client_id={settings.shopify_client_id}"
-        f"&scope={scopes}"
-        f"&redirect_uri={redirect_uri}"
-        f"&state={state}"
+    state = _generate_state(shop_domain, settings.shopify_client_secret, str(user.id))
+    auth_url = f"https://{shop_domain}/admin/oauth/authorize?" + urlencode(
+        {
+            "client_id": settings.shopify_client_id,
+            "scope": SHOPIFY_SCOPES,
+            "redirect_uri": f"{settings.shopify_app_url}/shopify/callback",
+            "state": state,
+        }
     )
     return {"state": state, "redirect_url": auth_url}
 
@@ -284,27 +362,34 @@ async def shopify_oauth_callback(
     """Complete the Shopify OAuth install.
 
     Called by the SPA after Shopify redirects to the frontend callback route.
-    The SPA extracts code+shop+state+hmac from the URL and POSTs them here with
+    The SPA extracts the redirect's query params and POSTs them here with
     the seller's active JWT in Authorization header.
 
-    Security layers (applied in sequence — first failure short-circuits):
-      1. Shopify hmac verification (mandatory — a real Shopify callback always
-         includes it; a request with no/wrong hmac is rejected outright)
-      2. State CSRF token (must match shop_domain; expires in 10 min)
-      3. Supabase JWT → org_id resolution (org_id NEVER from request params)
+    Security layers (applied in sequence, first failure short-circuits):
+      1. Shopify hmac verification over ALL forwarded params (mandatory)
+      2. Shop domain format
+      3. Supabase JWT -> user (a forged/expired JWT stops here, nothing written)
+      4. State CSRF token (bound to shop_domain AND this user; expires in 10 min)
+      5. org_id resolution from that user (NEVER from request params)
     """
-    if not authorization.startswith("Bearer "):
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Bearer token required.")
-    bearer = authorization[len("Bearer ") :]
+    bearer = _bearer(authorization)
 
     settings = get_settings()
+    if not settings.shopify_enabled:
+        raise _error(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            "shopify_disabled",
+            "The Shopify connector is not enabled on this deployment.",
+        )
     if not settings.shopify_client_secret or not settings.shopify_token_encryption_key:
-        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Shopify app not configured.")
+        raise _error(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            "shopify_not_configured",
+            "Shopify app not configured.",
+        )
 
-    # 1. Verify Shopify's HMAC — mandatory, no bypass. _verify_shopify_callback_hmac
-    # already fails closed on an empty/missing hmac (see its docstring), so simply
-    # always calling it (rather than gating on `if body.hmac:`) removes what was
-    # previously a caller-controlled auth-check skip ("for test calls").
+    # 1. Verify Shopify's HMAC: mandatory, no bypass. _verify_shopify_callback_hmac fails
+    # closed on an empty/missing hmac, so it is always called (never gated on `if body.hmac:`).
     callback_params: dict[str, str] = {
         "code": body.code,
         "shop": body.shop,
@@ -312,26 +397,35 @@ async def shopify_oauth_callback(
     }
     if body.timestamp:
         callback_params["timestamp"] = body.timestamp
+    for key, value in (body.model_extra or {}).items():
+        if key != "hmac":
+            callback_params[key] = str(value)
     callback_params["hmac"] = body.hmac
     if not _verify_shopify_callback_hmac(callback_params, settings.shopify_client_secret):
         log.warning("shopify_auth.callback_hmac_invalid", shop=body.shop)
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid Shopify HMAC.")
+        raise _error(status.HTTP_401_UNAUTHORIZED, "invalid_hmac", "Invalid Shopify HMAC.")
 
-    # 2. Validate shop domain format + verify state CSRF
+    # 2. Validate shop domain format
     try:
         shop_domain = _validate_shop(body.shop)
     except ValueError as exc:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, str(exc)) from exc
+        raise _error(status.HTTP_400_BAD_REQUEST, "invalid_shop", str(exc)) from exc
 
-    if not _verify_state(body.state, shop_domain, settings.shopify_client_secret):
-        log.warning("shopify_auth.state_invalid_or_expired", shop=shop_domain)
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid or expired state.")
-
-    # 3. Resolve org_id from JWT — NEVER from shop param, state, or any caller value
+    # 3. Resolve the user from the verified JWT, never from shop param, state, or caller value
     user = await verify_supabase_jwt(bearer)
+
+    # 4. State must have been minted for THIS shop and THIS user
+    if not _verify_state(body.state, shop_domain, settings.shopify_client_secret, str(user.id)):
+        log.warning("shopify_auth.state_invalid_or_expired", shop=shop_domain)
+        raise _error(
+            status.HTTP_401_UNAUTHORIZED,
+            "invalid_state",
+            "Invalid or expired state. Start the connection again.",
+        )
+
     org = await asyncio.to_thread(_get_org_for_user, str(user.id))
     if org is None:
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "No org found for this user.")
+        raise _error(status.HTTP_403_FORBIDDEN, "no_org", "No org found for this user.")
     org_id: str = str(org["org_id"])
 
     # Exchange code for plaintext access_token, then immediately encrypt
@@ -339,14 +433,16 @@ async def shopify_oauth_callback(
         access_token = await _exchange_code(shop_domain, body.code, settings)
     except (httpx.HTTPError, ValueError) as exc:
         log.error("shopify_auth.token_exchange_failed", shop=shop_domain, error=str(exc))
-        raise HTTPException(status.HTTP_502_BAD_GATEWAY, "Shopify token exchange failed.") from exc
+        raise _error(
+            status.HTTP_502_BAD_GATEWAY, "token_exchange_failed", "Shopify token exchange failed."
+        ) from exc
 
     access_token_enc = encrypt_token(access_token, settings.shopify_token_encryption_key)
 
-    # Upsert installation — service-role, org_id from JWT
+    # Upsert installation, org_id from the JWT
     await asyncio.to_thread(_upsert_installation_pg, org_id, shop_domain, access_token_enc)
 
-    # Register webhook — best-effort, never fails the install
+    # Register webhook: best-effort, never fails the install
     try:
         await _register_webhook(shop_domain, access_token, settings)
     except Exception as exc:

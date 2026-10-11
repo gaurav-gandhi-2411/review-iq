@@ -5,7 +5,7 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -209,7 +209,16 @@ class Settings(BaseSettings):
 
     # Shopify connector
     # Register app at partners.shopify.com to get these credentials.
-    # Scopes required: write_product_reviews read_metaobjects read_products read_customers
+    # Scopes (read-only, least privilege): read_metaobjects, read_products -- see
+    # app/api/shopify_auth.py SHOPIFY_SCOPES. docs/runbooks/shopify-first-install.md has the rationale.
+    # Master switch, OFF by default. When true, Settings validation REFUSES TO START the app
+    # unless every value the install flow needs is present (see _shopify_requires_config) --
+    # a half-configured Shopify connector must be a boot failure, never a silent 503 later.
+    shopify_enabled: bool = Field(default=False, alias="SHOPIFY_ENABLED")
+    # Public origin of the web app (e.g. https://app.samidhareviews.xyz). Shopify redirects the
+    # merchant's browser to {this}/shopify/callback -- a SPA route, because only the SPA holds
+    # the seller's JWT (the backend callback needs it to resolve org_id).
+    shopify_app_url: str = Field(default="", alias="SHOPIFY_APP_URL")
     shopify_client_id: str = Field(default="", alias="SHOPIFY_CLIENT_ID")
     shopify_client_secret: str = Field(default="", alias="SHOPIFY_CLIENT_SECRET")
     shopify_api_version: str = Field(default="2024-10", alias="SHOPIFY_API_VERSION")
@@ -341,6 +350,40 @@ class Settings(BaseSettings):
     # app/api/admin.py's _db_connect() when SERVICE_ROLE=admin. Distinct Secret Manager
     # secret from supabase_database_url — never present in the public service's env.
     admin_database_url: str = Field(default="", alias="ADMIN_DATABASE_URL")
+
+    @model_validator(mode="after")
+    def _shopify_requires_config(self) -> Settings:
+        """Fail loud at startup when SHOPIFY_ENABLED=true but the connector cannot work.
+
+        The blank-page lesson (a web build missing a VITE_* var shipped green and rendered an
+        empty page): a missing value must stop the process, naming the variables, instead of
+        surfacing later as a 503 on the first merchant's install click.
+        """
+        if not self.shopify_enabled:
+            return self
+        required = {
+            "SHOPIFY_CLIENT_ID": self.shopify_client_id,
+            "SHOPIFY_CLIENT_SECRET": self.shopify_client_secret,
+            "SHOPIFY_TOKEN_ENCRYPTION_KEY": self.shopify_token_encryption_key,
+            "SHOPIFY_APP_URL": self.shopify_app_url,
+            "SHOPIFY_WEBHOOK_BASE_URL": self.shopify_webhook_base_url,
+        }
+        missing = [name for name, value in required.items() if not value.strip()]
+        if missing:
+            raise ValueError(
+                "SHOPIFY_ENABLED=true but required settings are missing: " + ", ".join(missing)
+            )
+        for name in ("SHOPIFY_APP_URL", "SHOPIFY_WEBHOOK_BASE_URL"):
+            if not required[name].startswith("https://") or required[name].endswith("/"):
+                raise ValueError(f"{name} must be an https:// origin with no trailing slash")
+        from cryptography.fernet import Fernet
+
+        try:
+            for key in self.shopify_token_encryption_key.split(","):
+                Fernet(key.strip().encode())
+        except ValueError as exc:
+            raise ValueError("SHOPIFY_TOKEN_ENCRYPTION_KEY is not a valid Fernet key") from exc
+        return self
 
 
 @lru_cache
