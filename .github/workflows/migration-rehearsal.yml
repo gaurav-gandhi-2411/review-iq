@@ -125,11 +125,13 @@ jobs:
           for ROLE in review_iq_migrator review_iq_app review_iq_admin; do
             $P -d postgres -c "DO \$\$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname='${ROLE}') THEN CREATE ROLE ${ROLE} NOLOGIN; END IF; END \$\$;"
           done
-          # Same attributes 20260801000001 gives them; CI password is throwaway. The migrator is
-          # NOT a superuser, so push.py hits the same ownership walls as in production.
-          $P -d postgres -c "ALTER ROLE review_iq_migrator LOGIN BYPASSRLS PASSWORD 'ci_migrator_password'" \
-            -c "ALTER ROLE review_iq_admin LOGIN BYPASSRLS" \
-            -c "GRANT ALL ON SCHEMA public TO review_iq_migrator"
+          # A --schema=public dump carries NO cluster-level role facts, so mirror them exactly as
+          # 20260726000001 / 20260801000001 set them (their postconditions are NOT weakened; the
+          # restored database must satisfy them for real): LOGIN, membership in authenticated,
+          # CONNECT on the database, migrator BYPASSRLS + CREATE on public, admin BYPASSRLS, and
+          # postgres a member of review_iq_migrator. The migrator is NOT a superuser, so push.py
+          # hits the same ownership walls as in production. Passwords are throwaway.
+          $P -d postgres             -c "ALTER ROLE review_iq_app LOGIN"             -c "ALTER ROLE review_iq_migrator LOGIN BYPASSRLS PASSWORD 'ci_migrator_password'"             -c "ALTER ROLE review_iq_admin LOGIN BYPASSRLS"             -c "GRANT authenticated TO review_iq_app, review_iq_admin"             -c "GRANT CONNECT ON DATABASE postgres TO review_iq_app, review_iq_migrator, review_iq_admin"             -c "GRANT ALL ON SCHEMA public TO review_iq_migrator"             -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO review_iq_migrator"             -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO review_iq_migrator"             -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO review_iq_migrator"             -c "GRANT review_iq_migrator TO postgres"
           gunzip -c backup/dump.sql.gz | psql -h localhost -U postgres -d postgres -X \
             -v ON_ERROR_STOP=0 > backup/restore.out 2> backup/restore.err || true
           NERR=$(grep -c 'ERROR:' backup/restore.err || true)
