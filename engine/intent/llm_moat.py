@@ -198,11 +198,12 @@ def run(model: str, texts: Path, out: Path, arm: str = "zeroshot") -> int:
         text_of[d["id"]] = d["text"]
     day_tokens, window = 0, []
     interim = out / f"{stem}__interim300.json"
-    if len(done) >= 300 and not interim.exists():  # resumed past n=300: score the first 300 recorded rows
+    if (
+        len(done) >= 300 and not interim.exists()
+    ):  # resumed past n=300: score the first 300 recorded rows
         rows = [json.loads(ln) for ln in f.open(encoding="utf-8")]
         decided_at_300 = decide(rows, enc, gold)
-        interim.write_text(json.dumps(decided_at_300, indent=1) + "
-")
+        interim.write_text(json.dumps(decided_at_300, indent=1) + "\n")
     with f.open("a", encoding="utf-8") as w:
         for i in sealed_ids():
             if i in done:
