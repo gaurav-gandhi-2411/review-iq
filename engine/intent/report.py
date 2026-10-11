@@ -4,7 +4,7 @@
     python -m engine.intent.report --run2 reports/intent/eval_run2.json --run1 reports/intent/eval_run1.json \
         --curve reports/intent/run2/epoch_log.json --meta reports/intent/run2/metadata.json \
         --cpu fp32_cpu=... int8_linear=... int8_full=... --quant reports/intent/run2_cpu/metadata.json \
-        --latency reports/intent/latency_run2.json > reports/intent/model_report.md
+        > reports/intent/model_report.md
 
 Every number sits inside a `<!-- METRICS:START:<name> --> ... <!-- METRICS:END -->` block (the convention checked by
 scripts/check_no_hardcoded_metrics.py); the prose outside the blocks states method and caveats and carries no figures.
@@ -239,19 +239,6 @@ def int8(fp: dict, cpu: dict[str, dict], quant: dict) -> str:
     return "\n".join(out)
 
 
-def latency(lat: dict) -> str:
-    c = lat["cpu"]
-    rows = [f"- CPU: {c.get('Name', 'unknown')}; cores {c.get('NumberOfCores', 'n/a')}, logical processors {c.get('NumberOfLogicalProcessors', 'n/a')}; torch threads {lat['torch_threads']}; torch {lat['torch']}; {lat['os']}",  # fmt: skip
-            f"- inputs: {lat['n_sealed_texts']} real sealed review texts, mean {lat['tokens_per_text']['mean']} tokens, p95 {lat['tokens_per_text']['p95']}, share truncated at the {lat['max_len']}-token limit {lat['tokens_per_text']['share_truncated_at_128']}; {lat['warmup_calls']} warm-up calls discarded per configuration",  # fmt: skip
-            f"- system CPU use before / after the run: {lat['cpu_percent_before']} / {lat['cpu_percent_after']} percent",
-            "", "| Variant | Batch | Timed calls | Total p50 ms | p95 ms | p99 ms | Tokenise p50 ms | Forward p50 ms |", "|---|---|---|---|---|---|---|---|"]  # fmt: skip
-    for v, d in lat["variants"].items():
-        for b, x in d.items():
-            t = x["total_ms"]
-            rows.append(f"| {v} | {b.split('_')[1]} | {x['calls']} | {t['p50']} | {t['p95']} | {t['p99']} | {x['tokenise_ms']['p50']} | {x['forward_ms']['p50']} |")  # fmt: skip
-    return block("latency", rows)
-
-
 RUN2_NOTES = """Run 2 retrains the run 1 model with only the training length changed: up to 30 epochs instead of 6, patience 3
 instead of 2, same seed, learning rate, batch size, maximum length, frozen embeddings and labels. Early stopping looks
 at VALIDATION only; the sealed set is never used to choose an epoch, a threshold or a temperature.
@@ -277,7 +264,7 @@ is not equivalent to the fp16 model.
 """
 
 
-def render_full(run2: dict, src: str, run1: dict | None, log: list[dict], meta: dict, cpu: dict, quant: dict, lat: dict | None) -> str:  # fmt: skip
+def render_full(run2: dict, src: str, run1: dict | None, log: list[dict], meta: dict, cpu: dict, quant: dict) -> str:  # fmt: skip
     t = run2["tasks"]
     parts = [
         HEAD.format(src=src),
@@ -299,8 +286,6 @@ def render_full(run2: dict, src: str, run1: dict | None, log: list[dict], meta: 
             "## int8 CPU export: probabilities recomputed, temperatures and thresholds refit on validation\n",
             int8(t, cpu, quant),
         ]
-    if lat:
-        parts += ["## CPU latency\n", latency(lat)]
     return "\n".join(parts)
 
 
@@ -326,13 +311,12 @@ def main() -> None:
     ap.add_argument("--meta", required=True, help="run 2 metadata.json")
     ap.add_argument("--cpu", nargs="*", default=[], help="variant=eval.json ...")
     ap.add_argument("--quant")
-    ap.add_argument("--latency")
     a = ap.parse_args()
     load = lambda p: json.loads(Path(p).read_text(encoding="utf-8"))  # noqa: E731
     cpu = {kv.split("=", 1)[0]: load(kv.split("=", 1)[1]) for kv in a.cpu}
     sys.stdout.write(render_full(
         load(a.run2), Path(a.run2).as_posix(), load(a.run1) if a.run1 else None, load(a.curve), load(a.meta),
-        cpu, load(a.quant) if a.quant else {}, load(a.latency) if a.latency else None,
+        cpu, load(a.quant) if a.quant else {},
     ))  # fmt: skip
 
 
