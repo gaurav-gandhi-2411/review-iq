@@ -371,3 +371,26 @@ Best epoch 7 of at most 30; stopped early: yes; patience 3; best validation mean
 | int8_perchannel_full state dict | 283.2 |
 | int8_ffn_full state dict | 369.3 |
 <!-- METRICS:END -->
+
+## CPU latency
+
+<!-- METRICS:START:latency -->
+- CPU: AMD Ryzen 7 6800H with Radeon Graphics         ; cores 8, logical processors 16; torch threads 8; torch 2.6.0+cu124; Windows-11-10.0.26300-SP0
+- inputs: 757 real sealed review texts, mean 75.9 tokens, p95 128.0, share truncated at the 128-token limit 0.168; 20 warm-up calls discarded per configuration
+- system CPU use before / after the run: 20.9 / 23.2 percent
+
+| Variant | Batch | Timed calls | Total p50 ms | p95 ms | p99 ms | Tokenise p50 ms | Forward p50 ms |
+|---|---|---|---|---|---|---|---|
+| fp32_cpu | 1 | 200 | 103.02 | 154.18 | 163.67 | 1.03 | 101.96 |
+| fp32_cpu | 32 | 200 | 3493.37 | 3556.12 | 3611.6 | 10.18 | 3483.01 |
+| int8_linear | 1 | 200 | 78.87 | 114.64 | 116.0 | 1.0 | 77.86 |
+| int8_linear | 32 | 200 | 2116.05 | 2141.99 | 2146.12 | 10.92 | 2105.79 |
+| int8_full | 1 | 200 | 85.18 | 134.81 | 140.7 | 1.03 | 84.18 |
+| int8_full | 32 | 200 | 2096.61 | 2117.07 | 2123.89 | 11.25 | 2086.34 |
+| int8_perchannel | 1 | 200 | 83.58 | 117.99 | 138.43 | 1.04 | 82.66 |
+| int8_perchannel | 32 | 200 | 2141.84 | 2160.05 | 2167.47 | 10.59 | 2131.49 |
+| int8_perchannel_full | 1 | 200 | 81.03 | 116.74 | 118.08 | 1.03 | 79.93 |
+| int8_perchannel_full | 32 | 200 | 2146.79 | 2161.3 | 2165.17 | 10.25 | 2136.36 |
+| int8_ffn_full | 1 | 200 | 78.19 | 117.31 | 118.45 | 1.05 | 77.26 |
+| int8_ffn_full | 32 | 200 | 2697.46 | 2741.51 | 2753.66 | 10.33 | 2687.1 |
+<!-- METRICS:END -->
