@@ -35,6 +35,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 EXTRACTION_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "latest.json"
 AUTHENTICITY_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "authenticity_latest.json"
 HELD_OUT_RESULTS_PATH = REPO_ROOT / "eval" / "results" / "held_out_scoring_v2.json"
+PANEL2_SILVER_PATH = REPO_ROOT / "eval" / "consensus" / "results" / "panel2_silver.json"
+PROS_GOLD_ANALYSIS_PATH = REPO_ROOT / "eval" / "results" / "pros_gold_analysis.json"
 COVERAGE_METRICS_PATH = REPO_ROOT / "eval" / "results" / "coverage_metrics_n106.json"
 INJECTION_SUITE_PATH = REPO_ROOT / "eval" / "results" / "injection_suite_n40.json"
 PROMPT_GUARD_FPR_PATH = REPO_ROOT / "eval" / "results" / "prompt_guard_fpr_n106.json"
@@ -137,13 +139,109 @@ def _label_agreement_text(data: dict[str, Any]) -> str:
     )
 
 
-def _render_held_out_grid_md(data: dict[str, Any]) -> str:
+# D6 (2026-10-07): the overall-accuracy clause states a RANGE whose two endpoints are read from the
+# panel-2 artifact (narrowed Manski lower bound, silver adjudicated estimate), never typed. The
+# guard below checks the endpoints themselves, not a phrase: both present, ordered, and strictly
+# below the headline (the sentence says overall accuracy is "probably lower than the headline").
+class OverallRangeGuardError(ValueError):
+    """The independent-estimate endpoints are missing or inconsistent with the headline."""
+
+
+def overall_range_clause(lower: float | None, upper: float | None, headline: float) -> str:
+    """Render "73.7% to 78.1%"-shaped text from two fractions in [0, 1]; fail loudly otherwise."""
+    if lower is None or upper is None:
+        raise OverallRangeGuardError(
+            f"overall-accuracy range endpoints missing from the artifacts: lower={lower}, "
+            f"upper={upper}; re-run the panel-2 analysis"
+        )
+    if not (lower < upper < headline):
+        raise OverallRangeGuardError(
+            f"overall-accuracy range is inconsistent: lower={lower * 100:.1f}%, "
+            f"upper={upper * 100:.1f}%, headline={headline * 100:.1f}%; required lower < upper "
+            "< headline, otherwise the sentence 'probably lower than the headline' is false"
+        )
+    return f"{_fmt_pct(lower)} to {_fmt_pct(upper)}"
+
+
+def _adjudicated_headline_parts(data: dict[str, Any], panel2: dict[str, Any]) -> dict[str, Any]:
+    """Everything the second-panel sentence needs, from artifacts; asserts they describe the same
+    pairs as the headline artifact so a re-run of either cannot silently desynchronise them."""
+    un = data["unscored"]
+    nb = panel2["narrowed_bounds"]
+    if nb["n_pairs"] != un["n_pairs"] or nb["n_pairs_unscored_by_panel1"] != un["n_pairs_unscored"]:
+        raise ValueError(
+            "panel2_silver.json and held_out_scoring_v2.json disagree on the unscored pairs "
+            f"({nb['n_pairs_unscored_by_panel1']} of {nb['n_pairs']} vs "
+            f"{un['n_pairs_unscored']} of {un['n_pairs']}); re-run the panel-2 analysis"
+        )
+    per_field = {
+        f: v
+        for f, v in nb["per_field"].items()
+        if v["mean_score_on_resolved_vs_silver"] is not None
+    }
+    if not per_field:
+        raise ValueError("panel2_silver.json has no per-field scores on resolved pairs")
+    ints = [round(v["mean_score_on_resolved_vs_silver"] * 100) for v in per_field.values()]
+    pub = data["headline_grid"][data["headline_policy"]["cell"]]["as_deployed"]["score"]
+    lower = nb.get("narrowed_manski_lower_unresolved_all_wrong", {}).get("score")
+    upper = nb.get("silver_adjudicated_estimate_conditional_on_panel2_agreement", {}).get("score")
+    range_text = overall_range_clause(lower, upper, pub)
+    return {
+        "n_resolved": nb["n_resolved_by_panel2"],
+        "range": (min(ints), max(ints)),
+        "per_field": per_field,
+        "overall_range": range_text,
+    }
+
+
+def _pros_separate_md(data: dict[str, Any], pros_gold: dict[str, Any]) -> list[str]:
+    """`pros` soft recall, reported beside (never inside) the headline (S18 D2)."""
+    b = data["pros_soft_recall"]
+    v = b["validation"]
+    rec = b["soft_recall"]
+    status = "PASS" if v["V_a"]["pass"] else "FAIL"
+    status_b = "PASS" if v["V_b"]["pass"] else "FAIL"
+    sweep = pros_gold["score_sweep_unexposed_70"]["pros"]
+    unres = v["V_c_reported_no_pass_fail"]["unresolved_vs_panel2_silver"]
+    return [
+        f"**`pros` reported separately: soft recall {_fmt_pct(rec['score'])} "
+        f"[{_fmt_pct(rec['ci_95']['lower'])}, {_fmt_pct(rec['ci_95']['upper'])}] on "
+        f"{b['n_scored']} resolved gold pairs (threshold {b['threshold']}, pre-registered; "
+        f"validation V-a: {status}, V-b: {status_b}"
+        + ("" if v["validated"] else "; NOT validated")
+        + ").** "
+        f"The headline above still scores `pros` with the existing token-level F1 scorer, not "
+        f"with this: the same pairs scored by an item-level phrase matcher swing "
+        f"{sweep['swing_max_minus_min'] * 100:.1f} points across matcher thresholds "
+        f"({sweep['swing_between_0.3_and_0.7'] * 100:.1f} between 0.3 and 0.7), and the soft "
+        f"recall itself moves {b['swing_points_between_0.4_and_0.6']:.1f} points between "
+        f"thresholds 0.4 and 0.6 (pre-registered limit {v['V_a']['criterion'].split('<= ')[1]}). "
+        f"{b['n_resolved_gold_empty_excluded']} further resolved pairs have an empty gold list "
+        f"and are excluded. Soft recall on the {unres['n_resolved_by_panel2']} unresolved `pros` "
+        f"pairs a second panel could settle: {_fmt_pct(unres['score'])} "
+        f"(n={unres['n_scored_silver_nonempty']} scored, silver labels). "
+        "Definition, criteria and outcome: "
+        "[docs/specs/s18-pros-soft-recall.md](docs/specs/s18-pros-soft-recall.md).",
+        "",
+    ]
+
+
+def _render_held_out_grid_md(
+    data: dict[str, Any],
+    panel2: dict[str, Any] | None = None,
+    pros_gold: dict[str, Any] | None = None,
+) -> str:
     """Held-out block once the artifact carries the Session 16 exposure x split-gold grid.
 
     Rule 65c: the published headline here is HIGHER than the one it replaces, so every cell of the
     grid is printed beside it, the field that goes DOWN is named, and the exposed-vs-unexposed
     comparison is shown -- all rendered from the one artifact, none hand-typed.
     """
+    # Both extra artifacts are committed files; loading them here (not hand-typing) keeps every
+    # figure in the headline sentence below derived from an artifact.
+    panel2 = panel2 if panel2 is not None else _load_json(PANEL2_SILVER_PATH)
+    pros_gold = pros_gold if pros_gold is not None else _load_json(PROS_GOLD_ANALYSIS_PATH)
+    adj = _adjudicated_headline_parts(data, panel2)
     grid = data["headline_grid"]
     pub = grid[data["headline_policy"]["cell"]]
     sha = data.get("git_sha")
@@ -166,10 +264,22 @@ def _render_held_out_grid_md(data: dict[str, Any]) -> str:
         f"**{_fmt_pct(pub['as_deployed']['score'])} "
         f"[{_fmt_pct(pub['as_deployed']['ci_95']['lower'])}, "
         f"{_fmt_pct(pub['as_deployed']['ci_95']['upper'])}] on {pub['n']} unseen reviews, scored "
-        f"where the three-judge panel reached consensus; {_fmt_pct(un['unscored_fraction'])} of "
+        f"only where the three-judge panel agreed. {_fmt_pct(un['unscored_fraction'])} of "
         f"field-pairs ({un['n_pairs_unscored']} of {un['n_pairs']}) had no consensus and are "
-        "unscored.**",
+        "unscored. Those are the hardest cases: on the "
+        f"{adj['n_resolved']} of them a second, independent LLM panel could settle, the model "
+        f"scores {adj['range'][0]}-{adj['range'][1]}% depending on the field. So overall "
+        f"accuracy is probably lower than the headline — independent estimates range "
+        f"{adj['overall_range']} (exploratory, LLM-judged, not human-verified).**",
         "",
+        "Second-panel scores by field on those pairs (LLM-consensus silver, not ground truth; "
+        + ", ".join(
+            f"`{f}` {_fmt_pct(v['mean_score_on_resolved_vs_silver'])} (n={v['resolved']})"
+            for f, v in adj["per_field"].items()
+        )
+        + "): small samples, so each is a rough indication only.",
+        "",
+        *_pros_separate_md(data, pros_gold),
         "| Condition | Score (headline fields) | 95% CI | n | Field-pairs unscored |",
         "|---|---|---|---|---|",
         f"| **As actually deployed** (real language routing) | "
@@ -188,8 +298,8 @@ def _render_held_out_grid_md(data: dict[str, Any]) -> str:
         f"{_fmt_pct(pros['score_excluding_split'])} with them excluded against "
         f"{_fmt_pct(pros['score_all_pairs'])} with the defaults scored (all reviews). "
         f"{un['n_reviews_with_any_unscored_pair']} of {un['n_reviews']} reviews have at least one "
-        "unscored pair. **No point estimate of overall accuracy is identifiable from this "
-        "data.** The assumption-free interval (every unscored pair all wrong / all right) is "
+        "unscored pair. **No assumption-free point estimate of overall accuracy is "
+        "identifiable from this data.** The assumption-free interval (every unscored pair all wrong / all right) is "
         f"[{_fmt_pct(lo_b)}, {_fmt_pct(hi_b)}]; that is a bound, not a result.",
         "",
         "**What this headline is.** The average of "
@@ -305,7 +415,11 @@ def _render_held_out_grid_md(data: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def render_held_out_table_md(data: dict[str, Any]) -> str:
+def render_held_out_table_md(
+    data: dict[str, Any],
+    panel2: dict[str, Any] | None = None,
+    pros_gold: dict[str, Any] | None = None,
+) -> str:
     """Render the real-world, uncontaminated held-out measurement (README.md).
 
     Session 11 P4b: this is a DIFFERENT number from `extraction_table` above, and
@@ -316,7 +430,7 @@ def render_held_out_table_md(data: dict[str, Any]) -> str:
     never seen, via `eval/score_held_out_corpus_v2.py`, cassette-replay reproducible.
     """
     if "headline_grid" in data:
-        return _render_held_out_grid_md(data)
+        return _render_held_out_grid_md(data, panel2, pros_gold)
     as_dep = data["as_deployed"]
     forced = data["language_forced"]
     models = f"{data['groq_model_small']} / {data['groq_model_large']}"
