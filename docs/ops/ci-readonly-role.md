@@ -1,5 +1,25 @@
 # CI read-only database role (`ci_readonly`)
 
+## GG: exact steps when time allows
+
+Order matters. #472 stays a DRAFT until step 5 is green: merging earlier turns the nightly backup red
+(the workflows would read `SUPABASE_RO_URL` before it exists). Details for each step are in
+"GG-session steps" below. Never paste the password into chat or argv.
+
+1. Generate a password (>= 24 chars) into Secret Manager as `ci-readonly-password`.
+2. Supabase SQL Editor / local `psql` as the `postgres` admin role: run `supabase/ops/ci_readonly_role.sql`
+   with the password supplied via the environment only (`CI_READONLY_PASSWORD=... psql "<admin DSN>" -f supabase/ops/ci_readonly_role.sql`);
+   the script reads it with `\getenv`, so the SQL Editor cannot supply it, use local `psql`.
+3. Post-apply checks: the SECURITY DEFINER EXECUTE query (expect empty) and
+   `SELECT has_schema_privilege('ci_readonly','public','CREATE');` (expect `false`), both given in step 4 below.
+4. Build the session-mode pooler URL (port 5432, user `ci_readonly.<project-ref>`, percent-encode the password)
+   and set it: `gh secret set SUPABASE_RO_URL --repo gaurav-gandhi-2411/review-iq` (value on stdin).
+5. Dispatch and confirm green: `gh workflow run db-backup.yml`, `schema-drift-check.yml`,
+   `migration-drift-check.yml`, then `db-restore-test.yml` on the new backup artifact.
+   (Run them from this PR's branch so they use the new secret: add `--ref chore/s23-readonly-ci-role`.)
+6. Merge #472 (human merge). Only after step 5 is green.
+7. Only then: `gh secret delete SUPABASE_DIRECT_URL --repo gaurav-gandhi-2411/review-iq`.
+
 Rule (GG, S23): **no write-capable production credential in CI.** CI workflows that touch
 production use `SUPABASE_RO_URL`, the `ci_readonly` role. Migrations stay local (`supabase/push.py`).
 
@@ -39,7 +59,7 @@ everyone). The rehearsal asserts the snapshot taken as `ci_readonly` equals the 
 
 ## GG-session steps (order matters)
 
-1. Merge this PR (human merge; touches workflows/secrets). Confirm `CI Read-only Role Rehearsal` was green.
+1. Confirm `CI Read-only Role Rehearsal` was green on this PR. Merge only after step 6 (see the section at the top: the merge comes after the workflows are proven green on this branch).
 2. Generate a >= 24 char password into Secret Manager (secret name of your choice, e.g. `ci-readonly-password`).
    Do not paste it in chat or argv.
 3. Locally, as the Supabase `postgres` admin role (member of `review_iq_migrator`), with the password in the

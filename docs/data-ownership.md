@@ -35,6 +35,11 @@ application bug drops a `WHERE org_id` clause. Unlike the old superuser connecti
 skips the `SET LOCAL ROLE` call now runs at `review_iq_app`'s own (still non-superuser, still
 schema-scoped) privilege level, not full cluster-wide access.
 
+**Named exception: `ci_readonly`.** `BYPASSRLS` is allowed for the role `ci_readonly` only: SELECT-only
+grants, used for backups and drift checks in CI, and never for `review_iq_app`. Defined in
+`supabase/ops/ci_readonly_role.sql` (applied by hand, not a migration); rationale and runbook in
+`docs/ops/ci-readonly-role.md`.
+
 Cross-tenant isolation is proven via a rollback-wrapped test in
 `tests/integration/test_rls_isolation.py` and by the corrections-specific proof run during
 migration verification:
