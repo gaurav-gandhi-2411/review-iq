@@ -10,6 +10,9 @@ weighted (E2's default; selective prediction ranks by calibrated confidence so n
 macro-F1 across tasks (E2 kept the best of a fixed number of epochs); max length 128 tokens instead of E2's 64 (reviews
 are longer than banking utterances); loss = sum over tasks of the mean cross-entropy over the items labelled for that
 task (missing labels are masked with -100). Temperature per task is fitted on validation only (`engine.scoring`).
+Run 2 (S23) changes ONLY the training length: `--epochs 30 --patience 3`, every other setting as above. The linear
+lr decay is scheduled over the epoch budget, so it is slower than run 1's (part of 'more epochs'). Early stopping
+uses validation only; `epoch_log.json` holds the per-epoch validation curve.
 Outputs: pred_<task>.json (ids and calibrated probabilities for val and test) and metadata.json. No review text.
 """
 
@@ -17,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
 import random
 import time
@@ -99,21 +103,30 @@ def infer(
     return {t: np.concatenate(v) if v else np.zeros((0, model.sizes[t])) for t, v in parts.items()}
 
 
-def mean_macro_f1(logits: dict[str, np.ndarray], y: dict[str, np.ndarray]) -> float:
-    """Mean over tasks with validation labels of macro-F1 on the labelled items."""
-    f1s = []
+def per_task_macro_f1(logits: dict[str, np.ndarray], y: dict[str, np.ndarray]) -> dict[str, float]:
+    """task -> macro-F1 on the validation items labelled for it (tasks with no validation label omitted)."""
+    out = {}
     for t, lg in logits.items():
         m = y[t] != IGNORE
         if m.any():
-            f1s.append(M.macro_f1(y[t][m], lg[m].argmax(1)))
+            out[t] = M.macro_f1(y[t][m], lg[m].argmax(1))
+    return out
+
+
+def mean_macro_f1(logits: dict[str, np.ndarray], y: dict[str, np.ndarray]) -> float:
+    """Mean over tasks with validation labels of macro-F1 on the labelled items."""
+    f1s = list(per_task_macro_f1(logits, y).values())
     return float(np.mean(f1s)) if f1s else 0.0
 
 
 def fit(
     cfg: IntentConfig, model: MultiHeadClassifier, tok, train: tuple[list[str], dict],  # noqa: ANN001
-    val: tuple[list[str], dict], device: str,
+    val: tuple[list[str], dict], device: str, log_path: Path | None = None,
 ) -> dict:  # fmt: skip
-    """Train in place, restore the best-validation weights, return the history."""
+    """Train in place, restore the best-validation weights, return the history.
+
+    Early stopping looks at VALIDATION only (never the sealed set). When `log_path` is given the per-epoch history
+    (mean and per-task validation macro-F1) is rewritten after every epoch so a killed run still leaves its curve."""
     seed_everything(cfg.seed)
     rng = random.Random(cfg.seed)
     if cfg.freeze_embeddings:
@@ -147,8 +160,15 @@ def fit(
             scaler.step(opt)
             scaler.update()
             sched.step()
-        f1 = mean_macro_f1(infer(model, tok, val[0], cfg, device), val[1])
-        history.append({"epoch": epoch + 1, "val_mean_macro_f1": round(f1, 4), "loss": float(loss)})
+        per_task = per_task_macro_f1(infer(model, tok, val[0], cfg, device), val[1])
+        f1 = float(np.mean(list(per_task.values()))) if per_task else 0.0
+        history.append({
+            "epoch": epoch + 1, "val_mean_macro_f1": round(f1, 4), "loss": float(loss),
+            "lr": float(sched.get_last_lr()[0]),
+            "val_macro_f1_by_task": {t: round(v, 4) for t, v in per_task.items()},
+        })  # fmt: skip
+        if log_path is not None:
+            log_path.write_text(json.dumps(history, indent=1) + "\n", encoding="utf-8")
         print(f"epoch {epoch + 1}/{cfg.epochs} val_mean_macro_f1={f1:.4f}", flush=True)
         if f1 > best:
             best, bad = f1, 0
@@ -158,12 +178,16 @@ def fit(
             if bad >= cfg.patience:
                 break
     model.load_state_dict(best_state)
-    return {"history": history, "best_val_mean_macro_f1": best}
+    return {
+        "history": history, "best_val_mean_macro_f1": best,
+        "best_epoch": max(history, key=lambda h: h["val_mean_macro_f1"])["epoch"],
+        "stopped_early": len(history) < cfg.epochs,
+    }
 
 
 def run(
     cfg: IntentConfig, data: dict, texts: dict[str, str], out_dir: Path, device: str,
-    loader: Loader = load_pretrained,
+    loader: Loader = load_pretrained, save_weights: bool = False, inputs: dict | None = None,
 ) -> dict:  # fmt: skip
     """data = {"classes", "labels", "ids": {split: [id]}} -> writes predictions + metadata, returns metadata.
 
@@ -178,10 +202,13 @@ def run(
             ids = [i for i in ids if any(i in data["labels"][s][t] for t in classes)]
         arr[s] = (ids, build_arrays(ids, data["labels"][s], classes))
         txt[s] = [texts[i] for i in ids]
-    info = fit(
-        cfg, model, tok, (txt["train"], arr["train"][1]), (txt["val"], arr["val"][1]), device
-    )
     out_dir.mkdir(parents=True, exist_ok=True)
+    info = fit(
+        cfg, model, tok, (txt["train"], arr["train"][1]), (txt["val"], arr["val"][1]), device,
+        out_dir / "epoch_log.json",
+    )  # fmt: skip
+    if save_weights:  # best-validation weights, fp32, for the int8 export; far too large to commit
+        torch.save({k: v.float().cpu() for k, v in model.state_dict().items()}, out_dir / "model.pt")
     logits = {s: infer(model, tok, txt[s], cfg, device) for s in ("val", "test")}
     temps: dict[str, float | None] = {}
     for t, cl in classes.items():
@@ -206,7 +233,7 @@ def run(
         "n_items": {s: len(arr[s][0]) for s in arr}, "temperatures": temps,
         "n_labelled": {s: {t: int((v != IGNORE).sum()) for t, v in arr[s][1].items()} for s in arr},
         "calibration": "per-task temperature on validation only; null = fewer than 2 validation labels",
-        "train_info": info, "seconds": round(time.time() - t0, 1),
+        "train_info": info, "seconds": round(time.time() - t0, 1), "inputs_sha256_16": inputs or {},
     }  # fmt: skip
     (out_dir / "metadata.json").write_text(json.dumps(meta, indent=1) + "\n", encoding="utf-8")
     return meta
@@ -225,6 +252,7 @@ def main() -> None:
     ap.add_argument("--max-len", type=int, default=128)
     ap.add_argument("--patience", type=int, default=2)
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--save-weights", action="store_true", help="write the best checkpoint to out-dir/model.pt")
     ap.add_argument("--device", default="auto", choices=["auto", "cpu", "cuda"])
     a = ap.parse_args()
     cfg = IntentConfig(a.model, a.epochs, a.lr, a.batch_size, a.seed, a.max_len, a.patience)
@@ -236,7 +264,11 @@ def main() -> None:
         "ids": {s: [r["id"] for r in man["items"] if r["split"] == s] for s in lab["labels"]},
     }
     device = ("cuda" if torch.cuda.is_available() else "cpu") if a.device == "auto" else a.device
-    run(cfg, data, load_texts(Path(a.texts)), Path(a.out_dir), device)
+    inputs = {
+        Path(p).name: hashlib.sha256(Path(p).read_bytes()).hexdigest()[:16]
+        for p in (a.labels, a.texts, a.manifest)
+    }
+    run(cfg, data, load_texts(Path(a.texts)), Path(a.out_dir), device, save_weights=a.save_weights, inputs=inputs)
 
 
 if __name__ == "__main__":

@@ -117,3 +117,18 @@ def test_deterministic_and_temperature_none_without_val_labels(tmp_path: Path) -
     assert a["temperatures"]["needs_action"] is not None
     f = "pred_needs_action.json"
     assert (tmp_path / "a" / f).read_text() == (tmp_path / "b" / f).read_text()
+
+
+def test_epoch_log_best_epoch_and_weights_saved(tmp_path: Path) -> None:
+    data, texts = synthetic()
+    cfg = T.IntentConfig(model="stub", epochs=12, lr=5e-2, batch_size=16, max_len=8, patience=2)
+    meta = T.run(cfg, data, texts, tmp_path, "cpu", loader=stub_loader, save_weights=True)
+    log = json.loads((tmp_path / "epoch_log.json").read_text(encoding="utf-8"))
+    info = meta["train_info"]
+    assert [h["epoch"] for h in log] == list(range(1, len(log) + 1))
+    assert set(log[0]["val_macro_f1_by_task"]) == {"needs_action", "sentiment", "aspect:food:taste"}
+    assert info["stopped_early"] == (len(log) < 12) and len(log) >= info["best_epoch"]
+    assert max(h["val_mean_macro_f1"] for h in log) == pytest.approx(
+        info["best_val_mean_macro_f1"], abs=1e-4
+    )
+    assert (tmp_path / "model.pt").exists()
