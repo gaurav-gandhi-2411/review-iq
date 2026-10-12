@@ -72,8 +72,12 @@ def _describe(request: httpx.Request) -> tuple[str, int] | None:
     except ValueError:
         body = {}
     model = str(body.get("model") or "unknown")
-    chars = sum(len(str(m.get("content", ""))) for m in body.get("messages", []) if isinstance(m, dict))
-    completion = int(body.get("max_completion_tokens") or body.get("max_tokens") or DEFAULT_COMPLETION)
+    chars = sum(
+        len(str(m.get("content", ""))) for m in body.get("messages", []) if isinstance(m, dict)
+    )
+    completion = int(
+        body.get("max_completion_tokens") or body.get("max_tokens") or DEFAULT_COMPLETION
+    )
     return model, int(chars / 3.5) + completion
 
 

@@ -13,7 +13,11 @@ import pytest
 from engine import groq_budget_hook as hook
 
 URL = "https://api.groq.com/openai/v1/chat/completions"
-BODY = {"model": "openai/gpt-oss-20b", "messages": [{"role": "user", "content": "x" * 350}], "max_tokens": 50}
+BODY = {
+    "model": "openai/gpt-oss-20b",
+    "messages": [{"role": "user", "content": "x" * 350}],
+    "max_tokens": 50,
+}
 
 
 @dataclass
@@ -166,7 +170,9 @@ def test_missing_ledger_module_fails_closed(monkeypatch: pytest.MonkeyPatch) -> 
     assert httpx.Client.send is hook.httpx.Client.send  # nothing was patched
 
 
-def test_real_ledger_enforces_the_benchmark_cap(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_real_ledger_enforces_the_benchmark_cap(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     try:
         gb_dir = hook._find_module_dir()
     except RuntimeError:
