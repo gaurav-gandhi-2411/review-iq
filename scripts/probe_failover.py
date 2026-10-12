@@ -171,6 +171,85 @@ async def probe_secondary() -> ProbeResult:
     )
 
 
+# Obviously-invalid primary key, applied in-process only (never written to env or Secret
+# Manager): it makes the primary Groq path fail with a 401 so the REAL failover code runs.
+_INVALID_PRIMARY_KEY = "invalid-primary-key-failover-probe"
+
+
+async def probe_failover() -> ProbeResult:
+    """Prove the production failover works end to end: primary fails -> secondary answers.
+
+    Runs `app.core.llm.extract_with_llm` -- the production code path, tiered routing and all --
+    with the primary Groq key replaced IN-PROCESS by an invalid value, so the primary 401s
+    and the secondary must serve the extraction. PASS needs a schema-valid extraction whose
+    model is the secondary model (not a primary one). The real primary key is never read or
+    sent; the dedicated-org primary secret must not be mounted into this job.
+    """
+    from app.core.config import get_settings
+    from app.core.llm import extract_with_llm
+    from structlog.testing import capture_logs
+
+    settings = get_settings()
+    has_key = bool(settings.secondary_provider_api_key)
+    has_model = bool(settings.secondary_provider_model)
+    if not (has_key and has_model):
+        if has_key != has_model:
+            missing = "SECONDARY_PROVIDER_MODEL" if has_key else "SECONDARY_PROVIDER_API_KEY"
+            return ProbeResult(
+                "failover", ProbeState.FAIL, 0, f"partially configured: {missing} absent"
+            )
+        return ProbeResult(
+            "failover",
+            ProbeState.NOT_CONFIGURED,
+            0,
+            "SECONDARY_PROVIDER_API_KEY / SECONDARY_PROVIDER_MODEL absent",
+        )
+
+    settings.groq_api_key = _INVALID_PRIMARY_KEY
+    prompt = await _build_probe_prompt()
+    t0 = time.monotonic()
+    events: list[dict[str, object]] = []
+    try:
+        # The model name cannot prove which backend served (production's secondary model id
+        # equals a primary tier id), so require production's own `llm.failover` success event.
+        with capture_logs() as events:
+            extraction, model, _lat, tokens_in, tokens_out, _degraded = await extract_with_llm(
+                prompt
+            )
+    except Exception as exc:  # noqa: BLE001 -- any failure here is a probe finding, not a crash
+        latency_ms = int((time.monotonic() - t0) * 1000)
+        # Production swallows the provider errors into log events; surface them here (masked).
+        causes = "; ".join(
+            f"{e.get('event')}: {e.get('error') or e.get('outcome')}"
+            for e in events
+            if e.get("log_level") in ("warning", "error") and e.get("event") != "llm.failover"
+        )[:600]
+        detail = f"{type(exc).__name__}: {exc} [{causes}]".replace(
+            settings.secondary_provider_api_key, "***"
+        )
+        return ProbeResult("failover", ProbeState.FAIL, latency_ms, detail)
+    latency_ms = int((time.monotonic() - t0) * 1000)
+
+    failed_over = any(
+        e.get("event") == "llm.failover" and e.get("outcome") == "success" for e in events
+    )
+    if not failed_over or model != settings.secondary_provider_model:
+        return ProbeResult(
+            "failover",
+            ProbeState.FAIL,
+            latency_ms,
+            f"no secondary failover success recorded (model={model}, failover_event={failed_over})",
+        )
+    return ProbeResult(
+        "failover",
+        ProbeState.PASS,
+        latency_ms,
+        f"primary forced invalid in-process; served by secondary "
+        f"kind={settings.secondary_provider_kind} model={model} "
+        f"tokens_in={tokens_in} tokens_out={tokens_out} schema_ok={extraction is not None}",
+    )
+
+
 def parse_acknowledged(raw: str) -> set[str]:
     """Parse FAILOVER_ACKNOWLEDGED_UNCONFIGURED (comma/space-separated, case-insensitive)."""
     return {token for token in re.split(r"[,\s]+", raw.strip().lower()) if token}
@@ -276,9 +355,29 @@ def _notify_slack(webhook_url: str, blocking: list[ProbeResult]) -> None:
     post(webhook_url, payload)
 
 
+PATHS_ENV_VAR = "PROBE_PATHS"
+
+
 async def run_probe() -> list[ProbeResult]:
-    """Run the failover-path probes and return their results (today: the secondary path only)."""
-    return [await probe_secondary()]
+    """Run the probes named in $PROBE_PATHS (default: secondary) and return their results.
+
+    `secondary` = one direct call through the production factory; `failover` = forced
+    primary failure through `extract_with_llm`. Each costs one ~2K-token call; the GCP job
+    runs `failover` only, which exercises the secondary too. An unknown name is a FAIL so a
+    typo cannot silently turn the probe into a no-op.
+    """
+    probes = {"secondary": probe_secondary, "failover": probe_failover}
+    names = [n for n in re.split(r"[,\s]+", os.environ.get(PATHS_ENV_VAR, "secondary")) if n]
+    results: list[ProbeResult] = []
+    for name in names or ["secondary"]:
+        probe = probes.get(name)
+        if probe is None:
+            results.append(
+                ProbeResult(name, ProbeState.FAIL, 0, f"unknown probe path in {PATHS_ENV_VAR}")
+            )
+        else:
+            results.append(await probe())
+    return results
 
 
 def main() -> int:
@@ -318,6 +417,11 @@ def main() -> int:
         print(f"\n{len(blocking)} of {len(results)} failover path(s) BLOCKING the job:")
         for r in blocking:
             print(f"  - {r.path}: {state_label(r, acknowledged)}: {r.detail}")
+        # stderr -> severity ERROR on Cloud Run; the GCP log-based alert keys on this marker.
+        print(
+            "FAILOVER_PROBE_FAILED " + "; ".join(f"{r.path}={r.state.value}" for r in blocking),
+            file=sys.stderr,
+        )
         if args.slack_webhook:
             try:
                 _notify_slack(args.slack_webhook, blocking)

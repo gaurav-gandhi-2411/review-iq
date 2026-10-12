@@ -13,6 +13,7 @@ from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
 import pytest
+import structlog
 from app.core.config import Settings
 from app.core.schemas import ReviewExtractionLLMOutput
 
@@ -51,6 +52,8 @@ def _settings(**overrides: object) -> Settings:
     base = dict(
         SECONDARY_PROVIDER_API_KEY="",
         SECONDARY_PROVIDER_MODEL="",
+        # Explicit: an unset kind with a key configured is a startup error (S23).
+        SECONDARY_PROVIDER_KIND="openrouter",
     )
     return Settings(**{**base, **overrides})  # type: ignore[arg-type]
 
@@ -404,3 +407,98 @@ async def test_probe_failure_detail_never_contains_the_key() -> None:
         result = await probe_failover.probe_secondary()
     assert result.state is FAIL
     assert "sekrit-key-123" not in result.detail
+
+
+# ---------------------------------------------------------------------------
+# probe_failover (forced primary failure through the production extract path)
+# ---------------------------------------------------------------------------
+
+_GROQ_SECONDARY = dict(
+    SECONDARY_PROVIDER_KIND="groq",
+    SECONDARY_PROVIDER_API_KEY="sekrit-key-123",
+    SECONDARY_PROVIDER_MODEL="openai/gpt-oss-120b",
+)
+
+
+def _extract_result(model: str) -> tuple[ReviewExtractionLLMOutput, str, int, int, int, bool]:
+    return _GOOD_EXTRACTION, model, 10, 2000, 100, False
+
+
+@pytest.mark.asyncio
+async def test_probe_failover_passes_only_when_secondary_serves_and_primary_is_invalid() -> None:
+    settings = _settings(GROQ_API_KEY="real-looking-primary", **_GROQ_SECONDARY)
+    seen: list[str] = []
+
+    async def _fake_extract(*_a: object, **_k: object) -> tuple:
+        seen.append(settings.groq_api_key)  # what the production path would see as primary
+        structlog.get_logger("t").warning("llm.failover", outcome="success")
+        return _extract_result("openai/gpt-oss-120b")
+
+    with (
+        patch("app.core.config.get_settings", lambda: settings),
+        patch("app.core.llm.extract_with_llm", _fake_extract),
+    ):
+        result = await probe_failover.probe_failover()
+    assert result.state is PASS, result.detail
+    assert seen == [probe_failover._INVALID_PRIMARY_KEY]  # real primary key never reaches it
+    assert "real-looking-primary" not in result.detail
+
+
+@pytest.mark.asyncio
+async def test_probe_failover_fails_when_no_failover_event_was_recorded() -> None:
+    settings = _settings(**_GROQ_SECONDARY)
+    with (
+        patch("app.core.config.get_settings", lambda: settings),
+        patch(
+            "app.core.llm.extract_with_llm",
+            AsyncMock(return_value=_extract_result(settings.secondary_provider_model)),
+        ),
+    ):
+        result = await probe_failover.probe_failover()
+    assert result.state is FAIL
+
+
+@pytest.mark.asyncio
+async def test_probe_failover_fails_loudly_and_masks_key_when_all_providers_fail() -> None:
+    settings = _settings(**_GROQ_SECONDARY)
+    with (
+        patch("app.core.config.get_settings", lambda: settings),
+        patch(
+            "app.core.llm.extract_with_llm",
+            AsyncMock(side_effect=RuntimeError("401 sekrit-key-123 rejected")),
+        ),
+    ):
+        result = await probe_failover.probe_failover()
+    assert result.state is FAIL
+    assert "sekrit-key-123" not in result.detail
+
+
+@pytest.mark.asyncio
+async def test_probe_failover_unconfigured_is_not_pass() -> None:
+    settings = _settings()
+    with patch("app.core.config.get_settings", lambda: settings):
+        result = await probe_failover.probe_failover()
+    assert result.state is NOT_CONFIGURED
+
+
+@pytest.mark.asyncio
+async def test_probe_paths_env_selects_probes_and_unknown_name_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    ok = probe_failover.ProbeResult("x", PASS, 1, "ok")
+    monkeypatch.setattr(probe_failover, "probe_failover", AsyncMock(return_value=ok))
+    monkeypatch.setattr(probe_failover, "probe_secondary", AsyncMock(return_value=ok))
+    monkeypatch.setenv("PROBE_PATHS", "failover")
+    assert [r.state for r in await probe_failover.run_probe()] == [PASS]
+    monkeypatch.setenv("PROBE_PATHS", "failover,bogus")
+    assert [r.state for r in await probe_failover.run_probe()] == [PASS, FAIL]
+
+
+def test_blocking_failure_writes_marker_to_stderr_for_log_alerting(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    bad = probe_failover.ProbeResult("failover", FAIL, 5, "boom")
+    monkeypatch.setattr(probe_failover, "run_probe", AsyncMock(return_value=[bad]))
+    monkeypatch.setattr(sys, "argv", ["probe_failover.py"])
+    assert probe_failover.main() == 1
+    assert "FAILOVER_PROBE_FAILED failover=FAIL" in capsys.readouterr().err
