@@ -161,7 +161,7 @@ drift as vars are added; this table is a snapshot, not a live source.
 `DIGEST_TRIGGER_TOKEN`, `RESEND_FROM_NAME`, `API_PUBLIC_BASE_URL`, `INGEST_TICK_TOKEN`,
 `INGEST_TICK_ROWS`.
 
-**Secret-backed env vars (9, via Secret Manager, `latest` version):** `GROQ_API_KEY`,
+**Secret-backed env vars (9, via Secret Manager, `latest` version; `GEMINI_API_KEY` is no longer read by the app since S17 and is to be unbound, GG action in ADR 0035):** `GROQ_API_KEY`,
 `GEMINI_API_KEY`, `SUPABASE_DATABASE_URL`, `ADMIN_PASSWORD_HASH`, `RESEND_API_KEY`,
 `RESEND_FROM_EMAIL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `UNSUBSCRIBE_SIGNING_KEY`.
 
