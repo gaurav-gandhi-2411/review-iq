@@ -63,6 +63,8 @@ def aggregate(runs: list[dict]) -> dict:
                 "B_minus_A": {"per_seed": [None if d is None else round(d, 4) for d in diff], **interval(diff)},
             }  # fmt: skip
         out["variants"][variant] = table
+    keep = ("arm", "seed", "train_commit", "device", "torch", "best_epoch", "stopped_early", "best_val_mean_macro_f1", "train_seconds")
+    out["runs"] = [{k: by[a][s][k] for k in keep} for s in seeds for a in ("A", "B")]
     out["decision"] = decision(out["variants"][HEADLINE]) if HEADLINE in out["variants"] else None
     return out
 
@@ -85,6 +87,46 @@ def decision(table: dict) -> dict:
         "c3_precision_interval_lower_bound_ge_minus_0.05": {"pass": bool(c3), "paired_diff": prec},
         "outcome": "PROMOTED" if c1 and c2 and c3 else "NOT PROMOTED" if refuted else "INCONCLUSIVE",
     }  # fmt: skip
+
+
+def _row(name: str, m: dict) -> str:
+    from engine.intent.report import ci, f
+
+    cell = lambda x: f"{f(x['mean'])} +/- {f(x['sd'])} {ci(x['t95'])}"  # noqa: E731
+    d = m["B_minus_A"]
+    return f"| {name} | {cell(m['A'])} | {cell(m['B'])} | {f(d['mean'])} {ci(d['t95'])} | {', '.join(f(x) for x in d['per_seed'])} |"
+
+
+HEAD = ["| Metric | Arm A mean +/- sd [t 95%] | Arm B mean +/- sd [t 95%] | Paired B - A mean [t 95% over seeds] | Paired B - A per seed |", "|---|---|---|---|---|"]  # fmt: skip
+
+
+def render_seeds(path: str) -> str:
+    """Markdown for the seed-level sections of reports/intent/model_report.md; every number sits in a METRICS block."""
+    from engine.intent.report import block, ci, f
+
+    agg = json.loads(Path(path).read_text(encoding="utf-8"))
+    d, tbl = agg["decision"], agg["variants"]
+    runs = ["| Arm | Seed | Training commit | Device / torch | Best epoch / stopped early | Best val mean macro-F1 | Training wall time (s) |", "|---|---|---|---|---|---|---|"]  # fmt: skip
+    runs += [f"| {r['arm']} | {r['seed']} | `{r['train_commit']}` | {r['device']} / {r['torch']} | {r['best_epoch']} / {'yes' if r['stopped_early'] else 'no'} | {f(r['best_val_mean_macro_f1'], 4)} | {r['train_seconds']} |" for r in agg["runs"]]  # fmt: skip
+    verdict = [
+        f"- {k}: {'PASS' if v['pass'] else 'FAIL'}; "
+        + (", ".join(f"{t} {f(x)}" for t, x in v["mean_diffs"].items()) if "mean_diffs" in v else f"paired difference {f(v['paired_diff']['mean'])} {ci(v['paired_diff']['t95'])}")
+        for k, v in d.items() if isinstance(v, dict) and "pass" in v
+    ]  # fmt: skip
+    verdict.append(f"- **Seed-level outcome (Amendment 8): {d['outcome']}**")
+    int8 = [_row(f"{v}: {k}", m) for v, t in tbl.items() if v != HEADLINE for k, m in t.items() if not k.startswith("A/argmax")]
+    parts = [
+        "## Seed-level comparison of run 3 against the run 2 recipe (Amendment 8)\n",
+        f"Arm A = run 2 recipe (no safety data); arm B = run 3 recipe (safety stratum in training). Seeds {agg['seeds']} for both arms (paired by seed), "
+        "local RTX 3070, recipe otherwise identical. Intervals are 95 percent t-intervals over the seeds (df = n - 1); `+/-` is the sample sd. "
+        "Decisioning is the serving default: `urgency=high` by a threshold fitted on validation only, never argmax; argmax rows (`argmax`, `P_argmax`) are an ABLATION. "
+        "Evaluation B is **enriched, keyword-mined, silver (panel) labels**; each seed's estimate rests on 130 independent positive groups. "
+        "Conclusions are stated only at the seed level.\n",
+        block("seeds_runs", runs), "### Pre-registered decision (fp32 GPU model, point S)\n", block("seeds_decision", verdict),
+        "### fp32 GPU model: all metrics\n", block("seeds_fp32", HEAD + [_row(k, m) for k, m in tbl[HEADLINE].items()]),
+        "### CPU int8 variants (thresholds refit on validation per variant), default decisioning\n", block("seeds_int8", HEAD + int8),
+    ]  # fmt: skip
+    return "\n".join(parts)
 
 
 def load_runs(d: Path) -> list[dict]:

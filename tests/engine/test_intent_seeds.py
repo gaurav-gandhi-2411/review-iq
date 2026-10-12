@@ -19,7 +19,8 @@ def test_interval_matches_the_t_formula_by_hand() -> None:
 
 def _run(arm: str, seed: int, rec: float, prec: float, macro: float) -> dict:
     a = {t: macro for t in CORE}
-    return {"arm": arm, "seed": seed, "variants": {S.HEADLINE: {
+    meta = {"train_commit": "abc", "device": "cuda", "torch": "2.6", "best_epoch": 9, "stopped_early": True, "best_val_mean_macro_f1": 0.7, "train_seconds": 300}  # fmt: skip
+    return meta | {"arm": arm, "seed": seed, "variants": {S.HEADLINE: {
         "A": {"threshold": a, "argmax": a},
         "B": {S.S_OP: {"recall": rec, "precision": prec}, "P_argmax": {"recall": 0.1, "precision": 1.0}},
     }}}  # fmt: skip
@@ -53,3 +54,15 @@ def test_decision_rule_promoted_not_promoted_inconclusive() -> None:
     assert drop["outcome"] == "NOT PROMOTED"
     # recall interval wholly at or below zero refutes
     assert S.aggregate(_runs([-0.1, -0.11, -0.09, -0.1, -0.1], [0.0] * 5))["decision"]["outcome"] == "NOT PROMOTED"
+
+
+def test_render_wraps_every_number_in_a_metrics_block_and_states_the_outcome(tmp_path) -> None:  # noqa: ANN001
+    import json
+
+    runs = _runs([0.1, 0.12, 0.09, 0.11, 0.1], [0.0, 0.01, -0.01, 0.0, 0.0])
+    p = tmp_path / "agg.json"
+    p.write_text(json.dumps(S.aggregate(runs)), encoding="utf-8")
+    md = S.render_seeds(str(p))
+    assert md.count("<!-- METRICS:START:") == 4 == md.count("<!-- METRICS:END -->")
+    assert "Seed-level outcome (Amendment 8): PROMOTED" in md and "silver (panel) labels" in md
+    assert "ABLATION" in md
