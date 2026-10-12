@@ -25,6 +25,7 @@ from app.core.storage_pg import (
     check_and_increment_demo_request_pg,
     record_demo_extraction_cost_pg,
 )
+from app.core.token_ledger import demo_ceiling_tokens, demo_ledger
 
 router = APIRouter(prefix="/demo", tags=["demo"])
 log = structlog.get_logger(__name__)
@@ -155,6 +156,23 @@ def _effective_demo_daily_budget() -> int:
     return configured
 
 
+_QUOTA_DETAIL = (
+    "The free public demo has used its shared allowance for the rolling last 24 hours. "
+    "Capacity frees up gradually as earlier usage ages out (there is no midnight reset), so "
+    "try again in about {minutes} minute(s). This limit protects the same LLM quota real "
+    "customers' API keys use. Sign up for an API key for guaranteed capacity: POST /v2/extract."
+)
+
+
+def _quota_refusal(retry_after_s: float) -> HTTPException:
+    seconds = int(min(max(retry_after_s, 60.0), 24 * 3600.0))
+    return HTTPException(
+        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        detail=_QUOTA_DETAIL.format(minutes=-(-seconds // 60)),
+        headers={"Retry-After": str(seconds)},
+    )
+
+
 async def _check_demo_quota() -> bool:
     """Return True if today's global demo budget has room for one more real call.
 
@@ -240,18 +258,31 @@ async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtractio
 
     # Global daily quota gate -- BEFORE spending any tokens. See DEMO_DAILY_REQUEST_
     # BUDGET's docstring above for why this exists and how the number was chosen.
+    # Rolling-24h token gate first (cheap, in-memory, and it must not burn a DB request unit
+    # when it refuses). Groq's TPD is a rolling window, so the demo is held to a share of it.
+    settings = get_settings()
+    ceiling = demo_ceiling_tokens(
+        settings.groq_tpd_pool_tokens, settings.demo_max_share, settings.demo_max_instances
+    )
+    estimate = settings.demo_call_token_estimate
+    ledger_entry = demo_ledger.try_admit(estimate, ceiling)
+    if ledger_entry is None:
+        retry_s = demo_ledger.retry_after_seconds(estimate, ceiling)
+        log.warning(
+            "demo.token_ceiling_reached",
+            used_tokens=demo_ledger.used(),
+            ceiling_tokens=ceiling,
+            estimate_tokens=estimate,
+            recent_429_hold_s=round(demo_ledger.blocked_for(), 1),
+            retry_after_s=round(retry_s),
+        )
+        raise _quota_refusal(retry_s)
+
     if not await _check_demo_quota():
         log.warning("demo.quota_exhausted", daily_budget=_effective_demo_daily_budget())
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail=(
-                "The free public demo has reached its shared daily capacity and will "
-                "reset at midnight UTC. This limit protects the same LLM quota real "
-                "customers' API keys use. Sign up for an API key for guaranteed "
-                "capacity: POST /v2/extract."
-            ),
-            headers={"Retry-After": "3600"},
-        )
+        # The admission above reserved tokens that will never be spent; release them.
+        demo_ledger.settle(ledger_entry, 0)
+        raise _quota_refusal(3600.0)
 
     # Session 13 P4a: same second layer as /v2/extract -- see
     # app/core/injection_guard.py's module docstring. The public, keyless demo is arguably
@@ -274,11 +305,14 @@ async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtractio
             user_prompt
         )
     except RuntimeError as exc:
+        # The estimate stays in the ledger: a failed call may still have spent tokens.
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Upstream LLM unavailable — try again in a moment.",
             headers={"Retry-After": "30"},
         ) from exc
+
+    demo_ledger.settle(ledger_entry, tokens_in + tokens_out)
 
     # Session 14 P4b: same output-grounding check as /v2/extract -- see
     # app/core/grounding.py's module docstring. The public, keyless demo is arguably the
