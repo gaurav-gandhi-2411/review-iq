@@ -1,0 +1,1100 @@
+{
+ "judges": [
+  "llama31_8b",
+  "qwen3_8b",
+  "gemma2_9b",
+  "mistral_7b"
+ ],
+ "n_items": 1800,
+ "overall": {
+  "n_candidates": 1800,
+  "no_consensus": 201,
+  "high": {
+   "k": 365,
+   "n": 1800,
+   "p": 0.2028,
+   "wilson95": [
+    0.1848,
+    0.222
+   ]
+  },
+  "medium_or_high": {
+   "k": 894,
+   "n": 1800,
+   "p": 0.4967,
+   "wilson95": [
+    0.4736,
+    0.5197
+   ]
+  }
+ },
+ "per_src": {
+  "apparel": {
+   "n_candidates": 150,
+   "no_consensus": 13,
+   "high": {
+    "k": 0,
+    "n": 150,
+    "p": 0.0,
+    "wilson95": [
+     0.0,
+     0.025
+    ]
+   },
+   "medium_or_high": {
+    "k": 42,
+    "n": 150,
+    "p": 0.28,
+    "wilson95": [
+     0.2143,
+     0.3567
+    ]
+   }
+  },
+  "flipkart": {
+   "n_candidates": 1350,
+   "no_consensus": 166,
+   "high": {
+    "k": 350,
+    "n": 1350,
+    "p": 0.2593,
+    "wilson95": [
+     0.2366,
+     0.2833
+    ]
+   },
+   "medium_or_high": {
+    "k": 792,
+    "n": 1350,
+    "p": 0.5867,
+    "wilson95": [
+     0.5602,
+     0.6127
+    ]
+   }
+  },
+  "food": {
+   "n_candidates": 150,
+   "no_consensus": 12,
+   "high": {
+    "k": 7,
+    "n": 150,
+    "p": 0.0467,
+    "wilson95": [
+     0.0228,
+     0.0932
+    ]
+   },
+   "medium_or_high": {
+    "k": 20,
+    "n": 150,
+    "p": 0.1333,
+    "wilson95": [
+     0.088,
+     0.197
+    ]
+   }
+  },
+  "sephora": {
+   "n_candidates": 150,
+   "no_consensus": 10,
+   "high": {
+    "k": 8,
+    "n": 150,
+    "p": 0.0533,
+    "wilson95": [
+     0.0273,
+     0.1017
+    ]
+   },
+   "medium_or_high": {
+    "k": 40,
+    "n": 150,
+    "p": 0.2667,
+    "wilson95": [
+     0.2024,
+     0.3426
+    ]
+   }
+  }
+ },
+ "per_keyword": {
+  "allergy": {
+   "n_candidates": 93,
+   "no_consensus": 9,
+   "high": {
+    "k": 6,
+    "n": 93,
+    "p": 0.0645,
+    "wilson95": [
+     0.0299,
+     0.1337
+    ]
+   },
+   "medium_or_high": {
+    "k": 25,
+    "n": 93,
+    "p": 0.2688,
+    "wilson95": [
+     0.1892,
+     0.3668
+    ]
+   }
+  },
+  "burn": {
+   "n_candidates": 501,
+   "no_consensus": 67,
+   "high": {
+    "k": 122,
+    "n": 501,
+    "p": 0.2435,
+    "wilson95": [
+     0.208,
+     0.283
+    ]
+   },
+   "medium_or_high": {
+    "k": 329,
+    "n": 501,
+    "p": 0.6567,
+    "wilson95": [
+     0.6141,
+     0.6969
+    ]
+   }
+  },
+  "choking": {
+   "n_candidates": 14,
+   "no_consensus": 1,
+   "high": {
+    "k": 0,
+    "n": 14,
+    "p": 0.0,
+    "wilson95": [
+     0.0,
+     0.2153
+    ]
+   },
+   "medium_or_high": {
+    "k": 4,
+    "n": 14,
+    "p": 0.2857,
+    "wilson95": [
+     0.1172,
+     0.5465
+    ]
+   }
+  },
+  "explode": {
+   "n_candidates": 75,
+   "no_consensus": 12,
+   "high": {
+    "k": 17,
+    "n": 75,
+    "p": 0.2267,
+    "wilson95": [
+     0.1466,
+     0.3334
+    ]
+   },
+   "medium_or_high": {
+    "k": 30,
+    "n": 75,
+    "p": 0.4,
+    "wilson95": [
+     0.2966,
+     0.5131
+    ]
+   }
+  },
+  "fire": {
+   "n_candidates": 40,
+   "no_consensus": 2,
+   "high": {
+    "k": 14,
+    "n": 40,
+    "p": 0.35,
+    "wilson95": [
+     0.2213,
+     0.5049
+    ]
+   },
+   "medium_or_high": {
+    "k": 23,
+    "n": 40,
+    "p": 0.575,
+    "wilson95": [
+     0.4219,
+     0.7149
+    ]
+   }
+  },
+  "hospital": {
+   "n_candidates": 75,
+   "no_consensus": 6,
+   "high": {
+    "k": 8,
+    "n": 75,
+    "p": 0.1067,
+    "wilson95": [
+     0.055,
+     0.1966
+    ]
+   },
+   "medium_or_high": {
+    "k": 19,
+    "n": 75,
+    "p": 0.2533,
+    "wilson95": [
+     0.1686,
+     0.3621
+    ]
+   }
+  },
+  "injury": {
+   "n_candidates": 55,
+   "no_consensus": 9,
+   "high": {
+    "k": 7,
+    "n": 55,
+    "p": 0.1273,
+    "wilson95": [
+     0.063,
+     0.2402
+    ]
+   },
+   "medium_or_high": {
+    "k": 31,
+    "n": 55,
+    "p": 0.5636,
+    "wilson95": [
+     0.4327,
+     0.6863
+    ]
+   }
+  },
+  "melt": {
+   "n_candidates": 135,
+   "no_consensus": 12,
+   "high": {
+    "k": 16,
+    "n": 135,
+    "p": 0.1185,
+    "wilson95": [
+     0.0743,
+     0.1839
+    ]
+   },
+   "medium_or_high": {
+    "k": 58,
+    "n": 135,
+    "p": 0.4296,
+    "wilson95": [
+     0.3492,
+     0.5139
+    ]
+   }
+  },
+  "rash": {
+   "n_candidates": 450,
+   "no_consensus": 44,
+   "high": {
+    "k": 101,
+    "n": 450,
+    "p": 0.2244,
+    "wilson95": [
+     0.1883,
+     0.2652
+    ]
+   },
+   "medium_or_high": {
+    "k": 191,
+    "n": 450,
+    "p": 0.4244,
+    "wilson95": [
+     0.3796,
+     0.4706
+    ]
+   }
+  },
+  "sharp": {
+   "n_candidates": 23,
+   "no_consensus": 6,
+   "high": {
+    "k": 4,
+    "n": 23,
+    "p": 0.1739,
+    "wilson95": [
+     0.0698,
+     0.3714
+    ]
+   },
+   "medium_or_high": {
+    "k": 15,
+    "n": 23,
+    "p": 0.6522,
+    "wilson95": [
+     0.4489,
+     0.8119
+    ]
+   }
+  },
+  "shock": {
+   "n_candidates": 244,
+   "no_consensus": 21,
+   "high": {
+    "k": 65,
+    "n": 244,
+    "p": 0.2664,
+    "wilson95": [
+     0.2149,
+     0.3252
+    ]
+   },
+   "medium_or_high": {
+    "k": 130,
+    "n": 244,
+    "p": 0.5328,
+    "wilson95": [
+     0.4702,
+     0.5944
+    ]
+   }
+  },
+  "smoke": {
+   "n_candidates": 141,
+   "no_consensus": 19,
+   "high": {
+    "k": 26,
+    "n": 141,
+    "p": 0.1844,
+    "wilson95": [
+     0.1291,
+     0.2565
+    ]
+   },
+   "medium_or_high": {
+    "k": 71,
+    "n": 141,
+    "p": 0.5035,
+    "wilson95": [
+     0.422,
+     0.5849
+    ]
+   }
+  },
+  "spark": {
+   "n_candidates": 42,
+   "no_consensus": 4,
+   "high": {
+    "k": 26,
+    "n": 42,
+    "p": 0.619,
+    "wilson95": [
+     0.4681,
+     0.75
+    ]
+   },
+   "medium_or_high": {
+    "k": 32,
+    "n": 42,
+    "p": 0.7619,
+    "wilson95": [
+     0.6147,
+     0.8652
+    ]
+   }
+  }
+ },
+ "per_keyword_flipkart": {
+  "allergy": {
+   "n_candidates": 49,
+   "no_consensus": 7,
+   "high": {
+    "k": 5,
+    "n": 49,
+    "p": 0.102,
+    "wilson95": [
+     0.0444,
+     0.2176
+    ]
+   },
+   "medium_or_high": {
+    "k": 19,
+    "n": 49,
+    "p": 0.3878,
+    "wilson95": [
+     0.2643,
+     0.5275
+    ]
+   }
+  },
+  "burn": {
+   "n_candidates": 422,
+   "no_consensus": 54,
+   "high": {
+    "k": 115,
+    "n": 422,
+    "p": 0.2725,
+    "wilson95": [
+     0.2322,
+     0.3169
+    ]
+   },
+   "medium_or_high": {
+    "k": 312,
+    "n": 422,
+    "p": 0.7393,
+    "wilson95": [
+     0.6954,
+     0.7789
+    ]
+   }
+  },
+  "choking": {
+   "n_candidates": 1,
+   "no_consensus": 0,
+   "high": {
+    "k": 0,
+    "n": 1,
+    "p": 0.0,
+    "wilson95": [
+     0.0,
+     0.7935
+    ]
+   },
+   "medium_or_high": {
+    "k": 0,
+    "n": 1,
+    "p": 0.0,
+    "wilson95": [
+     0.0,
+     0.7935
+    ]
+   }
+  },
+  "explode": {
+   "n_candidates": 68,
+   "no_consensus": 11,
+   "high": {
+    "k": 17,
+    "n": 68,
+    "p": 0.25,
+    "wilson95": [
+     0.1623,
+     0.3644
+    ]
+   },
+   "medium_or_high": {
+    "k": 29,
+    "n": 68,
+    "p": 0.4265,
+    "wilson95": [
+     0.316,
+     0.5448
+    ]
+   }
+  },
+  "fire": {
+   "n_candidates": 38,
+   "no_consensus": 2,
+   "high": {
+    "k": 13,
+    "n": 38,
+    "p": 0.3421,
+    "wilson95": [
+     0.2121,
+     0.5011
+    ]
+   },
+   "medium_or_high": {
+    "k": 22,
+    "n": 38,
+    "p": 0.5789,
+    "wilson95": [
+     0.4219,
+     0.7215
+    ]
+   }
+  },
+  "hospital": {
+   "n_candidates": 55,
+   "no_consensus": 4,
+   "high": {
+    "k": 8,
+    "n": 55,
+    "p": 0.1455,
+    "wilson95": [
+     0.0756,
+     0.2616
+    ]
+   },
+   "medium_or_high": {
+    "k": 18,
+    "n": 55,
+    "p": 0.3273,
+    "wilson95": [
+     0.2181,
+     0.459
+    ]
+   }
+  },
+  "injury": {
+   "n_candidates": 49,
+   "no_consensus": 8,
+   "high": {
+    "k": 6,
+    "n": 49,
+    "p": 0.1224,
+    "wilson95": [
+     0.0573,
+     0.2424
+    ]
+   },
+   "medium_or_high": {
+    "k": 30,
+    "n": 49,
+    "p": 0.6122,
+    "wilson95": [
+     0.4725,
+     0.7357
+    ]
+   }
+  },
+  "melt": {
+   "n_candidates": 76,
+   "no_consensus": 11,
+   "high": {
+    "k": 15,
+    "n": 76,
+    "p": 0.1974,
+    "wilson95": [
+     0.1234,
+     0.3004
+    ]
+   },
+   "medium_or_high": {
+    "k": 49,
+    "n": 76,
+    "p": 0.6447,
+    "wilson95": [
+     0.5326,
+     0.743
+    ]
+   }
+  },
+  "rash": {
+   "n_candidates": 263,
+   "no_consensus": 31,
+   "high": {
+    "k": 97,
+    "n": 263,
+    "p": 0.3688,
+    "wilson95": [
+     0.3128,
+     0.4286
+    ]
+   },
+   "medium_or_high": {
+    "k": 136,
+    "n": 263,
+    "p": 0.5171,
+    "wilson95": [
+     0.4569,
+     0.5768
+    ]
+   }
+  },
+  "sharp": {
+   "n_candidates": 22,
+   "no_consensus": 6,
+   "high": {
+    "k": 4,
+    "n": 22,
+    "p": 0.1818,
+    "wilson95": [
+     0.0731,
+     0.3852
+    ]
+   },
+   "medium_or_high": {
+    "k": 15,
+    "n": 22,
+    "p": 0.6818,
+    "wilson95": [
+     0.4732,
+     0.8364
+    ]
+   }
+  },
+  "shock": {
+   "n_candidates": 214,
+   "no_consensus": 18,
+   "high": {
+    "k": 65,
+    "n": 214,
+    "p": 0.3037,
+    "wilson95": [
+     0.246,
+     0.3684
+    ]
+   },
+   "medium_or_high": {
+    "k": 121,
+    "n": 214,
+    "p": 0.5654,
+    "wilson95": [
+     0.4984,
+     0.6301
+    ]
+   }
+  },
+  "smoke": {
+   "n_candidates": 126,
+   "no_consensus": 18,
+   "high": {
+    "k": 25,
+    "n": 126,
+    "p": 0.1984,
+    "wilson95": [
+     0.1382,
+     0.2765
+    ]
+   },
+   "medium_or_high": {
+    "k": 69,
+    "n": 126,
+    "p": 0.5476,
+    "wilson95": [
+     0.4606,
+     0.6318
+    ]
+   }
+  },
+  "spark": {
+   "n_candidates": 42,
+   "no_consensus": 4,
+   "high": {
+    "k": 26,
+    "n": 42,
+    "p": 0.619,
+    "wilson95": [
+     0.4681,
+     0.75
+    ]
+   },
+   "medium_or_high": {
+    "k": 32,
+    "n": 42,
+    "p": 0.7619,
+    "wilson95": [
+     0.6147,
+     0.8652
+    ]
+   }
+  }
+ },
+ "hinglish": {
+  "definition": "text matches a Hindi token of the mined patterns (HINGLISH regex) or app.core.language.detect_language says hi-en/hi (imperfect detector)",
+  "hinglish": {
+   "n_candidates": 1,
+   "no_consensus": 0,
+   "high": {
+    "k": 0,
+    "n": 1,
+    "p": 0.0,
+    "wilson95": [
+     0.0,
+     0.7935
+    ]
+   },
+   "medium_or_high": {
+    "k": 1,
+    "n": 1,
+    "p": 1.0,
+    "wilson95": [
+     0.2065,
+     1.0
+    ]
+   }
+  },
+  "english_only": {
+   "n_candidates": 1799,
+   "no_consensus": 201,
+   "high": {
+    "k": 365,
+    "n": 1799,
+    "p": 0.2029,
+    "wilson95": [
+     0.1849,
+     0.2221
+    ]
+   },
+   "medium_or_high": {
+    "k": 893,
+    "n": 1799,
+    "p": 0.4964,
+    "wilson95": [
+     0.4733,
+     0.5195
+    ]
+   }
+  },
+  "per_keyword": {
+   "allergy": {
+    "n_candidates": 0,
+    "no_consensus": 0,
+    "high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    },
+    "medium_or_high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    }
+   },
+   "burn": {
+    "n_candidates": 0,
+    "no_consensus": 0,
+    "high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    },
+    "medium_or_high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    }
+   },
+   "choking": {
+    "n_candidates": 0,
+    "no_consensus": 0,
+    "high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    },
+    "medium_or_high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    }
+   },
+   "explode": {
+    "n_candidates": 1,
+    "no_consensus": 0,
+    "high": {
+     "k": 0,
+     "n": 1,
+     "p": 0.0,
+     "wilson95": [
+      0.0,
+      0.7935
+     ]
+    },
+    "medium_or_high": {
+     "k": 1,
+     "n": 1,
+     "p": 1.0,
+     "wilson95": [
+      0.2065,
+      1.0
+     ]
+    }
+   },
+   "fire": {
+    "n_candidates": 0,
+    "no_consensus": 0,
+    "high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    },
+    "medium_or_high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    }
+   },
+   "hospital": {
+    "n_candidates": 0,
+    "no_consensus": 0,
+    "high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    },
+    "medium_or_high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    }
+   },
+   "injury": {
+    "n_candidates": 0,
+    "no_consensus": 0,
+    "high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    },
+    "medium_or_high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    }
+   },
+   "melt": {
+    "n_candidates": 0,
+    "no_consensus": 0,
+    "high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    },
+    "medium_or_high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    }
+   },
+   "rash": {
+    "n_candidates": 0,
+    "no_consensus": 0,
+    "high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    },
+    "medium_or_high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    }
+   },
+   "sharp": {
+    "n_candidates": 0,
+    "no_consensus": 0,
+    "high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    },
+    "medium_or_high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    }
+   },
+   "shock": {
+    "n_candidates": 0,
+    "no_consensus": 0,
+    "high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    },
+    "medium_or_high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    }
+   },
+   "smoke": {
+    "n_candidates": 0,
+    "no_consensus": 0,
+    "high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    },
+    "medium_or_high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    }
+   },
+   "spark": {
+    "n_candidates": 0,
+    "no_consensus": 0,
+    "high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    },
+    "medium_or_high": {
+     "k": 0,
+     "n": 0,
+     "p": null,
+     "wilson95": [
+      null,
+      null
+     ]
+    }
+   }
+  }
+ },
+ "positives_by_split": {
+  "train": 273,
+  "val": 39,
+  "test": 53
+ },
+ "candidates_by_split": {
+  "train": 1403,
+  "val": 149,
+  "test": 248
+ },
+ "positives_train_plus_val": 312,
+ "positives_sealed_stratum": 53,
+ "urgency_consensus_counts": {
+  "medium": 529,
+  "low": 705,
+  "None": 201,
+  "high": 365
+ },
+ "agreement": {
+  "C1_needs_action": {
+   "n_units": 1800,
+   "alpha": 0.875,
+   "fleiss_kappa": 0.8749,
+   "fleiss_n_complete": 1800,
+   "pairwise_agreement": 0.94,
+   "clear_consensus": 0.9717,
+   "unanimous": 0.8894,
+   "gate": "PASS",
+   "gwet_ac1": 0.8847
+  },
+  "C2_broad_intent": {
+   "n_units": 1800,
+   "alpha": 0.7989,
+   "fleiss_kappa": 0.7989,
+   "fleiss_n_complete": 1800,
+   "pairwise_agreement": 0.891,
+   "clear_consensus": 0.9328,
+   "unanimous": 0.8139,
+   "gate": "USABLE-WITH-CAVEAT",
+   "gwet_ac1": 0.8739
+  },
+  "T2_sentiment": {
+   "n_units": 1800,
+   "alpha": 0.7682,
+   "fleiss_kappa": 0.7681,
+   "fleiss_n_complete": 1800,
+   "pairwise_agreement": 0.8675,
+   "clear_consensus": 0.9106,
+   "unanimous": 0.7856,
+   "gate": "USABLE-WITH-CAVEAT",
+   "gwet_ac1": 0.8363
+  },
+  "T3_urgency": {
+   "n_units": 1800,
+   "alpha": 0.8459,
+   "fleiss_kappa": 0.6897,
+   "fleiss_n_complete": 1800,
+   "pairwise_agreement": 0.7987,
+   "clear_consensus": 0.8883,
+   "unanimous": 0.6367,
+   "gate": "PASS",
+   "gwet_ac1": 0.7021
+  }
+ },
+ "caveat": "Candidates are keyword-mined (enriched). Miner recall is unmeasured; precision here is the share of mined hits the panel calls high, not a base rate, and a classifier scored on this stratum is not scored on the natural distribution. Keyword rows overlap (an item with two keywords counts in both).",
+ "meta": {
+  "commit": "39f488596b11d8cd19961d28ce303f3e7c261a82"
+ }
+}

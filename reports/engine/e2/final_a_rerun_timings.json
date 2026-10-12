@@ -1,0 +1,92 @@
+{
+ "gpu": "Tesla T4, 15360 MiB\nTesla T4, 15360 MiB",
+ "commit": "7faba6871e643ebb0a8db4153bf8902ebfdfdf33",
+ "mode": "final_a",
+ "jobs": {
+  "e5_clinc_A_s42": {
+   "rc": 0,
+   "seconds": 412.9
+  },
+  "e5_clinc_A_s43": {
+   "rc": 0,
+   "seconds": 255.3
+  },
+  "e5_clinc_A_s44": {
+   "rc": 0,
+   "seconds": 256.1
+  },
+  "e5_banking77_A_s42": {
+   "rc": 0,
+   "seconds": 256.2
+  },
+  "e5_banking77_A_s43": {
+   "rc": 0,
+   "seconds": 255.5
+  },
+  "e5_banking77_A_s44": {
+   "rc": 0,
+   "seconds": 255.0
+  },
+  "e5_massive_en_A_s42": {
+   "rc": 0,
+   "seconds": 186.4
+  },
+  "e5_massive_en_A_s43": {
+   "rc": 0,
+   "seconds": 186.7
+  },
+  "e5_massive_en_A_s44": {
+   "rc": 0,
+   "seconds": 189.1
+  },
+  "minilm_clinc_A_s42": {
+   "rc": 0,
+   "seconds": 204.6
+  },
+  "minilm_clinc_A_s43": {
+   "rc": 0,
+   "seconds": 158.2
+  },
+  "minilm_clinc_A_s44": {
+   "rc": 0,
+   "seconds": 155.9
+  },
+  "minilm_banking77_A_s42": {
+   "rc": 0,
+   "seconds": 123.1
+  },
+  "minilm_banking77_A_s43": {
+   "rc": 0,
+   "seconds": 121.0
+  },
+  "minilm_banking77_A_s44": {
+   "rc": 0,
+   "seconds": 121.0
+  },
+  "minilm_massive_en_A_s42": {
+   "rc": 0,
+   "seconds": 115.7
+  },
+  "minilm_massive_en_A_s43": {
+   "rc": 0,
+   "seconds": 116.0
+  },
+  "minilm_massive_en_A_s44": {
+   "rc": 0,
+   "seconds": 114.2
+  },
+  "xlmr_clinc_A_s42": {
+   "rc": 0,
+   "seconds": 258.8
+  },
+  "xlmr_banking77_A_s42": {
+   "rc": 0,
+   "seconds": 253.0
+  },
+  "xlmr_massive_en_A_s42": {
+   "rc": 0,
+   "seconds": 187.4
+  }
+ },
+ "total_seconds": 4194.5
+}
