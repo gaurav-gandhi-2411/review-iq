@@ -24,6 +24,7 @@ from app.core.providers.base import assert_privacy_safe
 from app.core.providers.groq import GroqProvider
 from app.core.routing_policy import choose_tier, escalation_triggers
 from app.core.schemas import ReviewExtractionLLMOutput
+from app.core.token_ledger import observe_groq_429
 
 log = structlog.get_logger(__name__)
 
@@ -92,6 +93,9 @@ async def _call_provider(
         except (APIError, APIStatusError) as exc:
             api_error_count += 1
             last_exc = exc
+            if isinstance(exc, APIStatusError) and exc.status_code == 429:
+                # Lets the keyless demo back off while the shared TPD window is exhausted.
+                observe_groq_429(str(exc))
             log.warning("router.api_error", model=provider.model, attempt=api_error_count)
             if api_error_count >= 2:
                 break
