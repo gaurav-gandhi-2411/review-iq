@@ -384,3 +384,33 @@ The split is computed once and committed as ids and hashes only.
 **Leakage.** The safety test hashes form a second sealed list checked by the same CI test as the first (`leakage_ledger`: ledger
 overlap, digest, tracked-file scan, near-duplicate and quote scan). Safety train and validation hashes enter the ledger as used
 items. Any safety train or validation item that near-duplicates a safety test item is dropped from training and listed.
+
+### Amendment 7 (2026-10-12, S23 moat): the `gpt-oss-20b-local` arm; registered before any local row exists
+
+Context: the LLM-vs-encoder comparison protocol is the docstring of `engine/intent/llm_moat.py`. Its Groq arms share an org with the
+production failover (evals must stay off that pool) and the benchmark key now returns HTTP 401. GG decision: the gpt-oss-20b arm is
+RESTARTED ENTIRELY on free Kaggle GPUs with local inference. The 120b arms stay on Groq and are not changed. The 502 existing Groq
+20b rows are kept read-only as a cross-check; Groq and local rows are NEVER mixed inside one arm. Local rows are an INFRASTRUCTURE
+change (runtime, quantisation, sampling implementation), not a replication of the Groq rows; the cross-check measures that difference.
+
+- Arm name `gpt-oss-20b-local`; output stem `openai_gpt-oss-20b__local` (appears in `compare()` as the 20b zero-shot arm).
+- Same `PROMPT`, same four tasks, same `sealed_ids()` order, same row schema `{id, ans, tokens}`, same scoring (`llm_arrays`,
+  `SEL.summarize`, `decide`). Request: temperature 0, seed 42, max_tokens 600 (counting reasoning tokens, as on Groq), and
+  `response_format={"type": "json_object"}`. Parse: `json.loads(content)`; if that fails, the outermost `{...}` substring is tried
+  once (the runtime may emit text around the JSON); otherwise the answer is unparseable.
+- Reasoning effort: the Groq arm never set it, so it ran at the provider default (not knowable beyond that). The local arm also
+  sets none and runs the model default. No tuning of any kind.
+- Stack: Ollama (latest linux-amd64 release at run time; version recorded in the run's `status.json`), model tag `gpt-oss:20b`
+  (OpenAI release, MXFP4 weights, 13,793,422,816 bytes). Registry manifest of 2026-10-12: manifest sha256
+  `f38aa0c53da5f8c49d08c43a99df24ff53167fe68e24664a7777288e7656fdfe`, weights blob
+  `sha256:8ecb5d4ad6172c63f9cbf1a07a04e525985a8a11a6e516da02b674c4010de716`. The digest actually pulled is recorded and must match;
+  a mismatch is reported, not hidden. Context 4096. Two T4s, one server per GPU, items split by parity, sequential per server.
+- Stopping rule exactly as for the other arms: the first 300 sealed items (sealed order) are run, `decide()` is applied once on
+  them, and the run continues to all sealed items unless all four tasks are decided.
+- Unparseable output counts as wrong at confidence 0 (kept). Runtime errors (connection, 5xx, timeout) are retried and never
+  recorded as answers; a non-200 other than 5xx is also not an answer.
+- Smoke test: the first 20 sealed items are run once to measure throughput and to check that the runtime honours JSON mode. Smoke
+  rows are discarded and never scored. If more than 2 of 20 contents are empty or not JSON, the arm is rerun WITHOUT
+  `response_format` using the extraction rule above, and that change is reported.
+- Cross-check against the Groq 20b rows on the overlapping ids: per task label agreement, Cohen's kappa, Spearman correlation of
+  confidences, with n and item-bootstrap 95 percent CIs. No gate depends on it.
