@@ -173,7 +173,8 @@ def predict(a: argparse.Namespace) -> None:
     labels = json.loads(Path(a.labels).read_text(encoding="utf-8"))
     sizes = {t: len(c) for t, c in labels["classes"].items()}
     meta = json.loads(Path(a.meta).read_text(encoding="utf-8"))
-    cfg = T.IntentConfig(**meta["config"])
+    train_meta = json.loads(Path(a.train_meta or a.meta).read_text(encoding="utf-8"))
+    cfg = T.IntentConfig(**train_meta["config"])
     temp = (meta["variants"][a.variant]["temperatures"] if a.variant else meta["temperatures"])[
         "urgency"
     ]
@@ -255,6 +256,7 @@ def main() -> None:
         help="metadata.json (GPU) or the quantize metadata.json with --variant",
     )
     p.add_argument("--variant")
+    p.add_argument("--train-meta", help="train metadata.json (config); needed with --variant")
     p.add_argument(
         "--labels", required=True, help="reports/intent/labels/labels.json (class lists)"
     )
