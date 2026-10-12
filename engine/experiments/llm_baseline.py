@@ -162,7 +162,7 @@ def main() -> None:
         }  # fmt: skip
         t0 = time.perf_counter()
         r = None
-        for _ in range(4):
+        for attempt in range(6):
             try:
                 r = httpx.post(
                     GROQ, headers={"Authorization": "Bearer " + key}, json=body, timeout=90
@@ -173,6 +173,14 @@ def main() -> None:
                 continue
             if r.status_code == 429:
                 time.sleep(float(r.headers.get("retry-after", 8)) + 1)
+                continue
+            if r.status_code in (
+                500,
+                502,
+                503,
+                504,
+            ):  # e.g. 'model is over capacity': back off, do not stop the run
+                time.sleep(15 * (attempt + 1))
                 continue
             break
         lat = time.perf_counter() - t0
