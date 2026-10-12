@@ -134,10 +134,14 @@ def evaluate(
             "P_argmax": p["argmax_high"]["test"][keep],
             "S_val_f1_threshold": p["p_high"]["test"][keep] >= thr,
         }
+        dthr = p.get("decision_threshold")  # serving default (Amendment 8): fitted on the Amendment 5 validation set
+        if dthr is not None:
+            flags["D_serving_default"] = p["p_high"]["test"][keep] >= dthr
         out["runs"][name] = {
             "temperature_urgency": p.get("temperature"),
             "variant": p.get("variant"),
             "S_threshold_on_safety_val": round(thr, 6),
+            "D_threshold_on_base_val": dthr,
         }
         for op, flag in flags.items():
             a = aggregates(y, flag, g)
@@ -151,7 +155,9 @@ def evaluate(
         if name == baseline:
             continue
         d = {}
-        for op in ("P_argmax", "S_val_f1_threshold"):
+        for op in ("P_argmax", "S_val_f1_threshold", "D_serving_default"):
+            if op not in out["runs"][name] or op not in out["runs"][baseline]:
+                continue
             (r0, p0), (r1, p1) = boot(agg[f"{baseline}/{op}"], w), boot(agg[f"{name}/{op}"], w)
             a0, a1 = out["runs"][baseline][op], out["runs"][name][op]
             d[op] = {
@@ -193,10 +199,14 @@ def predict(a: argparse.Namespace) -> None:
     }
     splits = {s: [r["id"] for r in safety_items() if r["split"] == s] for s in ("val", "test")}
     classes = list(labels["classes"]["urgency"])
+    dec = (meta["variants"][a.variant] if a.variant else meta).get("decision", {})
+    if isinstance(dec, dict) and "thresholds" in dec:  # train metadata nests under "thresholds"
+        dec = dec["thresholds"]
     out: dict = {
         "task": "urgency",
         "classes": classes,
         "temperature": temp,
+        "decision_threshold": dec.get("urgency", {}).get(HIGH, {}).get("threshold"),
         "variant": a.variant or f"gpu_fp16:{device}",
         "splits": {},
     }

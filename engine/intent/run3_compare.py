@@ -22,6 +22,7 @@ from pathlib import Path
 import numpy as np
 
 from engine import metrics as M
+from engine.intent.decide import DEFAULT_MODE, decide, fit_thresholds, rare_for
 from engine.intent.evaluate import MIN_POSITIVES, SEED, _f1_matrix, drop_excluded, task_arrays
 
 CORE = ("needs_action", "broad_intent", "sentiment", "urgency")
@@ -39,15 +40,21 @@ def load_run(d: Path, manifest: dict, excluded: set[str]) -> dict[str, dict]:
     return preds
 
 
-def macro_arrays(labels: dict, p: dict, task: str) -> tuple[list[str], np.ndarray, np.ndarray]:
-    ids, y, probs = task_arrays(labels, p, task)["test"]
-    return ids, y, probs.argmax(1)
+def macro_arrays(
+    labels: dict, p: dict, task: str, mode: str = DEFAULT_MODE
+) -> tuple[list[str], np.ndarray, np.ndarray]:
+    """Predictions by `engine.intent.decide`: rare-class thresholds fitted on this run's own validation (default), or argmax."""
+    arrs = task_arrays(labels, p, task)
+    ids, y, probs = arrs["test"]
+    thr = fit_thresholds(arrs["val"][1], arrs["val"][2], p["classes"], rare_for(task)) if mode == "threshold" else {}
+    return ids, y, decide(probs, p["classes"], thr, mode)
 
 
 def compare_task(
-    labels: dict, runs: dict[str, dict], baseline: str, task: str, n_boot: int
-) -> dict:
-    arr = {n: macro_arrays(labels, r[task], task) for n, r in runs.items()}
+    labels: dict, runs: dict[str, dict], baseline: str, task: str, n_boot: int,
+    mode: str = DEFAULT_MODE,
+) -> dict:  # fmt: skip
+    arr = {n: macro_arrays(labels, r[task], task, mode) for n, r in runs.items()}
     ids, y, _ = arr[baseline]
     assert all(a[0] == ids for a in arr.values()), "runs must score the same sealed items"
     k = len(labels["classes"][task])
@@ -115,6 +122,7 @@ def main() -> None:
     ap.add_argument("--ledger", default="reports/labelling/ledger.json")
     ap.add_argument("--safety", required=True, help="safety_eval.json")
     ap.add_argument("--n-boot", type=int, default=1000)
+    ap.add_argument("--decision", default=DEFAULT_MODE, choices=["threshold", "argmax"])
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
     load = lambda p: json.loads(Path(p).read_text(encoding="utf-8"))  # noqa: E731
@@ -123,11 +131,11 @@ def main() -> None:
     runs = {
         kv.split("=", 1)[0]: load_run(Path(kv.split("=", 1)[1]), manifest, excluded) for kv in a.run
     }
-    base = {t: compare_task(labels, runs, a.baseline, t, a.n_boot) for t in CORE}
+    base = {t: compare_task(labels, runs, a.baseline, t, a.n_boot, a.decision) for t in CORE}
     safety = load(a.safety)
     res = {
         "bootstrap": f"{a.n_boot} paired resamples of ITEMS, seed {SEED}, no product ids; seed-to-seed variance not measured",
-        "baseline": a.baseline, "base_sealed_set": base,
+        "baseline": a.baseline, "decision_mode": a.decision, "base_sealed_set": base,
         "verdict": verdict(base, safety, a.baseline, a.challenger, a.control if a.control in runs else None),
     }  # fmt: skip
     Path(a.out).write_text(json.dumps(res, indent=1) + "\n", encoding="utf-8")
