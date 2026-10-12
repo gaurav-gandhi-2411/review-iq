@@ -52,6 +52,15 @@ class Settings(BaseSettings):
     demo_daily_request_budget_override_expires_at: str = Field(
         default="", alias="DEMO_DAILY_REQUEST_BUDGET_OVERRIDE_EXPIRES_AT"
     )
+    # Rolling-24h token ceiling for the demo (app/core/token_ledger.py). Groq's per-model TPD
+    # is a rolling window, so the demo is held to a share of the pool; the share is clamped to
+    # 0.5 in code so at least half always stays with production. Each of up to
+    # DEMO_MAX_INSTANCES Cloud Run instances enforces share/instances (in-memory ledger).
+    # Per-call estimate = p95 small-tier tokens (eval/results/token_cost_measurement_n106.json).
+    groq_tpd_pool_tokens: int = Field(default=200_000, alias="GROQ_TPD_POOL_TOKENS")
+    demo_max_share: float = Field(default=0.25, alias="DEMO_MAX_SHARE")
+    demo_max_instances: int = Field(default=3, alias="DEMO_MAX_INSTANCES")
+    demo_call_token_estimate: int = Field(default=3300, alias="DEMO_CALL_TOKEN_ESTIMATE")
     environment: str = Field(default="development", alias="ENVIRONMENT")
 
     # LLM model names
