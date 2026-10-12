@@ -12,6 +12,11 @@ from pathlib import Path
 
 import pytest
 from eval.consensus import panel, panel2
+from eval.heldout_exposure import (
+    BENCHMARK_GOLD,
+    DEV_FIXTURE_GLOBS,
+    HELD_OUT_DIR,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -42,6 +47,123 @@ def _out(**kw):
     }
     base.update(kw)
     return base
+
+
+class TestEquivalence:
+    def test_product_null_spellings_collapse(self):
+        assert panel2.equivalent("product", "unknown product", "product")
+        assert not panel2.equivalent("product", "earphone", "headphones")
+
+    def test_topics_use_adr0030_canonical_form(self):
+        assert panel2.equivalent("topics", ["battery_life"], ["battery"])
+        assert not panel2.equivalent("topics", ["battery"], ["price"])
+
+    def test_pros_jaccard_threshold(self):
+        assert panel2.equivalent("pros", ["good sound", "cheap"], ["good sound"])  # 0.5
+        assert not panel2.equivalent("pros", ["a", "b", "c"], ["a"])  # 0.33
+
+    def test_stars_within_one(self):
+        assert panel2.equivalent("stars_inferred", 4, 5)
+        assert not panel2.equivalent("stars_inferred", 3, 5)
+
+
+class TestResolveField:
+    def test_unanimous_majority_split(self):
+        outs = {
+            J[0]: _out(sentiment="positive"),
+            J[1]: _out(sentiment="positive"),
+            J[2]: _out(sentiment="positive"),
+        }
+        assert panel2.resolve_field("sentiment", outs)["level"] == "unanimous"
+        outs[J[2]] = _out(sentiment="negative")
+        r = panel2.resolve_field("sentiment", outs)
+        assert (r["level"], r["silver"]) == ("majority", "positive")
+        outs[J[1]] = _out(sentiment="mixed")
+        assert panel2.resolve_field("sentiment", outs)["level"] == "split"
+
+    def test_no_response_blocks_unanimity(self):
+        outs = {J[0]: _out(), J[1]: _out(), J[2]: None}
+        assert panel2.resolve_field("sentiment", outs)["level"] == "majority"
+        outs[J[1]] = None
+        assert panel2.resolve_field("sentiment", outs)["level"] == "insufficient"
+
+    def test_product_resolved_via_adr0030_but_not_by_panel1_literal(self):
+        outs = {
+            J[0]: _out(product="unknown"),
+            J[1]: _out(product="product"),
+            J[2]: _out(product="general product"),
+        }
+        assert panel2.resolve_field("product", outs, "adr0030")["level"] == "unanimous"
+        assert panel2.resolve_field("product", outs, "panel1_literal")["level"] == "split"
+
+    def test_list_silver_is_longest_agreeing(self):
+        outs = {J[0]: _out(pros=["a b", "c d"]), J[1]: _out(pros=["a b"]), J[2]: _out(pros=["x"])}
+        r = panel2.resolve_field("pros", outs)
+        assert r["level"] == "majority" and r["silver"] == ["a b", "c d"]
+
+
+class TestAgreement:
+    def test_perfect_agreement_stats(self):
+        per_review = {
+            f"r{i}": {j: _out(sentiment=s) for j in J}
+            for i, s in enumerate(["positive", "negative", "mixed", "positive"])
+        }
+        stats = panel2.field_agreement(per_review, list(per_review), J)
+        assert stats["sentiment"]["alpha"] == pytest.approx(1.0)
+        assert stats["sentiment"]["fleiss_kappa"] == pytest.approx(1.0)
+
+    def test_disagreement_lowers_alpha(self):
+        per_review = {
+            "a": {
+                J[0]: _out(sentiment="positive"),
+                J[1]: _out(sentiment="negative"),
+                J[2]: _out(sentiment="positive"),
+            },
+            "b": {
+                J[0]: _out(sentiment="negative"),
+                J[1]: _out(sentiment="negative"),
+                J[2]: _out(sentiment="negative"),
+            },
+            "c": {
+                J[0]: _out(sentiment="mixed"),
+                J[1]: _out(sentiment="mixed"),
+                J[2]: _out(sentiment="positive"),
+            },
+        }
+        stats = panel2.field_agreement(per_review, list(per_review), J)
+        assert stats["sentiment"]["alpha"] < 1.0
+
+
+class TestSelectActivePanel:
+    def _res(self, misses, cost=0.001):
+        return {"misses": misses, "mean_cost_per_call": cost}
+
+    def test_picks_three_best_distinct_vendors(self):
+        results = {
+            "deepseek/deepseek-v4-flash": self._res(0),
+            "nvidia/nemotron-3-super-120b-a12b": self._res(1),
+            "mistralai/mistral-small-2603": self._res(2),
+            "z-ai/glm-4.7-flash": self._res(5),
+            "thinkingmachines/inkling-small": self._res(3),
+        }
+        assert panel2.select_active_panel(results) == [
+            "deepseek/deepseek-v4-flash",
+            "nvidia/nemotron-3-super-120b-a12b",
+            "mistralai/mistral-small-2603",
+        ]
+
+    def test_fewer_than_three_passing_returns_empty(self):
+        results = {m: self._res(9) for m in J}
+        results[J[0]] = self._res(0)
+        assert panel2.select_active_panel(results) == []
+
+    def test_same_vendor_twice_counts_once(self):
+        results = {
+            "deepseek/deepseek-v4-flash": self._res(0),
+            "deepseek/deepseek-v4-pro": self._res(0),
+            "mistralai/mistral-small-2603": self._res(1),
+        }
+        assert panel2.select_active_panel(results) == []
 
 
 class TestRoster:
@@ -162,3 +284,37 @@ class TestParseRaw:
     def test_garbage_is_none(self):
         assert panel2.parse_raw("no json here") is None
         assert panel2.parse_raw("") is None
+
+
+class TestHinglishControlSet:
+    items = json.loads(panel2.HINGLISH_CONTROL_PATH.read_text(encoding="utf-8"))
+
+    def test_shape(self):
+        assert len(self.items) == 12
+        for it in self.items:
+            assert it["why_unambiguous"].strip()
+            assert it["expected"]
+            assert it["id"].startswith("calh-")
+
+    def test_no_sentence_occurs_in_any_corpus_fixture(self):
+        corpus: list[str] = []
+        for p in HELD_OUT_DIR.glob("*.json"):
+            d = json.loads(p.read_text(encoding="utf-8"))
+            corpus.append(d.get("review_text", ""))
+        for pattern in DEV_FIXTURE_GLOBS:
+            for p in ROOT.glob(pattern):
+                corpus.append(json.loads(p.read_text(encoding="utf-8")).get("review_text", ""))
+        if BENCHMARK_GOLD.exists():
+            for line in BENCHMARK_GOLD.read_text(encoding="utf-8").splitlines():
+                if line.strip():
+                    corpus.append(json.loads(line)["text"])
+        blob = [normalize_review_text(t) for t in corpus]
+        assert len(blob) > 100  # the corpora were actually loaded
+        for it in self.items:
+            whole = normalize_review_text(it["text"])
+            assert not any(whole in b for b in blob), it["id"]
+            for sent in re.split(r"[.!?।]+", it["text"]):
+                key = normalize_review_text(sent)
+                # very short sentences ("Paisa vasool!") are common phrases, not copies.
+                if len(key) >= 20:
+                    assert not any(key in b for b in blob), (it["id"], sent)

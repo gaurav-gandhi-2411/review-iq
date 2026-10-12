@@ -24,8 +24,10 @@ import asyncio
 import hashlib
 import json
 import os
+import random
 import re
 import sys
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -33,7 +35,13 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
+from eval.agreement import fleiss_kappa, krippendorff_alpha  # noqa: E402
 from eval.consensus import calibration, panel, voting  # noqa: E402
+from eval.free_text_scoring import (  # noqa: E402
+    canonical_competitor,
+    canonical_product,
+    canonical_topic,
+)
 
 RESULTS_DIR = ROOT / "eval" / "consensus" / "results"
 CASSETTE_PATH = ROOT / "eval" / "cassettes" / "panel2_cassettes.json"
@@ -339,3 +347,375 @@ class Runner:
         self.ledger.add(vote, live=live)
         self.votes.append(vote)
         return vote
+
+
+# ---------------------------------------------------------------------------------------------
+# Calibration
+# ---------------------------------------------------------------------------------------------
+
+
+def load_control_items() -> list[dict[str, Any]]:
+    base = calibration.load_control_set()
+    hinglish = json.loads(HINGLISH_CONTROL_PATH.read_text(encoding="utf-8"))
+    return [*base, *hinglish]
+
+
+def count_checks(item: dict[str, Any]) -> int:
+    return len(item.get("expected", {})) + len(item.get("expected_list_contains", {}))
+
+
+def select_active_panel(
+    results: dict[str, dict[str, Any]], max_misses: int = CALIBRATION_MAX_MISSES
+) -> list[str]:
+    """3 passing candidates with the fewest misses from 3 distinct vendors (spec: Design).
+
+    Tie-break: lower mean cost per call, then id. Returns [] when fewer than 3 distinct vendors
+    pass (the caller must STOP, not relax the gate).
+    """
+    passing = [m for m, r in results.items() if r["misses"] <= max_misses]
+    ranked = sorted(
+        passing, key=lambda m: (results[m]["misses"], results[m]["mean_cost_per_call"], m)
+    )
+    chosen: list[str] = []
+    families: set[str] = set()
+    for m in ranked:
+        fam = panel.model_family(m)
+        if fam not in families:
+            chosen.append(m)
+            families.add(fam)
+        if len(chosen) == 3:
+            return chosen
+    return []
+
+
+async def run_calibration(runner: Runner, zdr_models: set[str] | None) -> dict[str, Any]:
+    items = load_control_items()
+    total_checks = sum(count_checks(i) for i in items)
+    candidates = [dict(c) for c in CANDIDATES]
+    dropped: list[dict[str, Any]] = []
+    live_candidates: list[dict[str, str]] = []
+    for c in candidates:
+        c["family"] = panel.model_family(c["id"])
+        if zdr_models is not None and c["id"] not in zdr_models:
+            dropped.append({"model_id": c["id"], "reason": "no ZDR endpoint in /endpoints/zdr"})
+        else:
+            live_candidates.append(c)
+    # Independence guard before any call.
+    panel.assert_no_self_judging(
+        tuple(live_candidates), extra_forbidden_families=PANEL1_FORBIDDEN_FAMILIES
+    )
+
+    misses: dict[str, list[dict[str, Any]]] = {c["id"]: [] for c in live_candidates}
+    parse_fail: dict[str, int] = {c["id"]: 0 for c in live_candidates}
+    call_errors: dict[str, list[str]] = {c["id"]: [] for c in live_candidates}
+    for item in items:
+        votes = await asyncio.gather(
+            *[
+                runner.judge("calibration", item["id"], c["id"], item["text"])
+                for c in live_candidates
+            ]
+        )
+        for c, v in zip(live_candidates, votes, strict=True):
+            if v["parsed"] is None:
+                parse_fail[c["id"]] += 1
+                if v.get("error"):
+                    call_errors[c["id"]].append(f"{item['id']}: {str(v['error'])[:120]}")
+            missed = calibration.check_item_against_expected(item, v["parsed"])
+            if missed:
+                misses[c["id"]].append({"item_id": item["id"], "fields": missed})
+        await asyncio.sleep(PACE_SECONDS if runner.mode == "record" else 0)
+
+    results: dict[str, dict[str, Any]] = {}
+    for c in live_candidates:
+        m = c["id"]
+        n_miss = sum(len(d["fields"]) for d in misses[m])
+        cost = runner.ledger.cost.get(m, 0.0)
+        calls = max(runner.ledger.calls.get(m, 0), 1)
+        results[m] = {
+            "vendor_family": c["family"],
+            "owner": c["owner"],
+            "misses": n_miss,
+            "miss_details": misses[m],
+            "n_checks": total_checks,
+            "passed": n_miss <= CALIBRATION_MAX_MISSES,
+            "parse_failures_or_errors": parse_fail[m],
+            "call_errors": call_errors[m][:5],
+            "mean_cost_per_call": cost / calls,
+        }
+    # v1 gate (pre-registered): every checked field. v2 gate (POST-HOC amendment, written after
+    # seeing the v1 results; see spec Amendment A1): only the headline fields plus `stars`.
+    scoped_checks = sum(
+        1
+        for i in items
+        for f in (*i.get("expected", {}), *i.get("expected_list_contains", {}))
+        if f in SCOPED_FIELDS
+    )
+    for r in results.values():
+        details = [
+            {"item_id": d["item_id"], "fields": [f for f in d["fields"] if f in SCOPED_FIELDS]}
+            for d in r["miss_details"]
+        ]
+        r["v2_scoped_miss_details"] = [d for d in details if d["fields"]]
+        r["v2_scoped_misses"] = sum(len(d["fields"]) for d in details)
+        r["v2_scoped_passed"] = r["v2_scoped_misses"] <= CALIBRATION_MAX_MISSES
+        r["v2_scoped_n_checks"] = scoped_checks
+    active_v1 = select_active_panel(results)
+    active_v2 = select_active_panel(
+        {m: {**r, "misses": r["v2_scoped_misses"]} for m, r in results.items()}
+    )
+    for r in results.values():
+        r["mean_cost_per_call"] = round(r["mean_cost_per_call"], 8)
+    return {
+        "label": SILVER_LABEL,
+        "prompt_hash": PROMPT_HASH,
+        "control_items": len(items),
+        "total_checks_per_candidate": total_checks,
+        "max_allowed_misses": CALIBRATION_MAX_MISSES,
+        "candidates": results,
+        "dropped_no_zdr": dropped,
+        "active_panel_v1": active_v1,
+        "gate_outcome_v1": "pass"
+        if active_v1
+        else "FAIL: fewer than 3 passing candidates from 3 vendors (pre-registered gate)",
+        "v2_scoped_gate": {
+            "status": "POST-HOC amendment A1, written AFTER the v1 calibration results were seen",
+            "scope": list(SCOPED_FIELDS),
+            "n_checks_per_candidate": scoped_checks,
+            "max_allowed_misses": CALIBRATION_MAX_MISSES,
+        },
+        "active_panel": active_v2,
+        "gate_outcome_v2": "pass"
+        if active_v2
+        else "FAIL: fewer than 3 passing candidates from 3 vendors (scoped gate)",
+        "cost": runner.ledger.summary(),
+    }
+
+
+# ---------------------------------------------------------------------------------------------
+# Equivalence, resolution, agreement
+# ---------------------------------------------------------------------------------------------
+
+NO_RESPONSE = voting.NO_RESPONSE
+
+
+def _norm_items(field_name: str, items: Sequence[str] | None) -> set[str]:
+    out = items or []
+    if field_name == "topics":
+        return {canonical_topic(i) for i in out if str(i).strip()}
+    if field_name == "competitor_mentions":
+        return {canonical_competitor(i) for i in out if str(i).strip()}
+    return voting._normalize_list(out)
+
+
+def equivalent(field_name: str, a: Any, b: Any) -> bool:
+    """Pre-registered equivalence relation per field (spec: Equivalence classes)."""
+    if field_name == "product":
+        ca, cb = canonical_product(a), canonical_product(b)
+        return ca == cb
+    if field_name in LIST_FIELDS:
+        return voting._jaccard(_norm_items(field_name, a), _norm_items(field_name, b)) >= JACCARD
+    if field_name == "stars_inferred":
+        if a is None or b is None:
+            return a is None and b is None
+        return abs(int(a) - int(b)) <= 1
+    return a == b
+
+
+def resolve_field(
+    field_name: str, outputs: dict[str, dict[str, Any] | None], variant: str = "adr0030"
+) -> dict[str, Any]:
+    """Resolve one field across the panel. Returns level, silver, classes (judge order).
+
+    `variant="panel1_literal"` is voting.consensus_for_item unchanged; `adr0030` uses
+    `equivalent()` with the panel-1 unanimous/majority/split semantics (ADR 0020: an invited judge
+    that did not respond prevents "unanimous").
+    """
+    judges = list(outputs)
+    vals = {
+        j: (outputs[j].get(field_name) if outputs[j] is not None else NO_RESPONSE) for j in judges
+    }
+    if variant == "panel1_literal":
+        res = voting.consensus_for_item(outputs)[field_name]
+        return {
+            "level": res["agreement"],
+            "silver": res["silver"],
+            "classes": _classes(field_name, vals),
+        }
+    present = [j for j in judges if vals[j] is not NO_RESPONSE]
+    classes = _classes(field_name, vals)
+    if len(present) < 2:
+        return {"level": "insufficient", "silver": None, "classes": classes}
+
+    if field_name == "stars_inferred":
+        silver, level = voting.vote_scalar_tolerant(vals, 1)
+        return {"level": level, "silver": silver, "classes": classes}
+
+    pairs = [
+        (a, b)
+        for i, a in enumerate(present)
+        for b in present[i + 1 :]
+        if equivalent(field_name, vals[a], vals[b])
+    ]
+    all_pairs = len(present) * (len(present) - 1) // 2
+    if len(present) == len(judges) and len(pairs) == all_pairs:
+        level = "unanimous"
+        agreeing = present
+    elif pairs:
+        level = "majority"
+        agreeing = list(pairs[0])
+    else:
+        return {"level": "split", "silver": None, "classes": classes}
+    if field_name in LIST_FIELDS:
+        rep = max(agreeing, key=lambda j: len(vals[j] or []))
+        silver = list(vals[rep] or [])
+    else:
+        silver = vals[agreeing[0]]
+    return {"level": level, "silver": silver, "classes": classes}
+
+
+def _classes(field_name: str, vals: dict[str, Any]) -> dict[str, Any]:
+    """Class id per judge (first-appearance order over connected components); None = no response."""
+    judges = list(vals)
+    parent = {j: j for j in judges}
+
+    def find(x: str) -> str:
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    present = [j for j in judges if vals[j] is not NO_RESPONSE]
+    for i, a in enumerate(present):
+        for b in present[i + 1 :]:
+            if equivalent(field_name, vals[a], vals[b]):
+                parent[find(a)] = find(b)
+    ids: dict[str, int] = {}
+    out: dict[str, Any] = {}
+    for j in judges:
+        if vals[j] is NO_RESPONSE:
+            out[j] = None
+            continue
+        root = find(j)
+        ids.setdefault(root, len(ids))
+        out[j] = ids[root]
+    return out
+
+
+def agreement_stats(
+    unit_classes: list[dict[str, Any]], judges: list[str], *, ordinal: bool = False
+) -> dict[str, Any]:
+    """Krippendorff alpha + Fleiss kappa over per-unit class assignments {judge: class|None}."""
+    matrix = [[u[j] for u in unit_classes] for j in judges]
+    # Ordinal rank uses the categories actually observed (eval.agreement needs a marginal for
+    # every ranked category; an unobserved 1..5 value would KeyError). Disclosed in spec D2.
+    observed = sorted({v for row in matrix for v in row if v is not None}) if ordinal else []
+    alpha = (
+        krippendorff_alpha(matrix, "ordinal", categories=observed)
+        if ordinal
+        else krippendorff_alpha(matrix, "nominal")
+    )
+    full = [u for u in unit_classes if all(u[j] is not None for j in judges)]
+    cats = sorted({u[j] for u in full for j in judges}, key=str)
+    table = [[sum(1 for j in judges if u[j] == c) for c in cats] for u in full]
+    kappa = fleiss_kappa(table) if table else None
+    return {
+        "alpha": alpha,
+        "alpha_level": "ordinal" if ordinal else "nominal",
+        "fleiss_kappa": kappa,
+        "n_units": len(unit_classes),
+        "n_units_fully_covered": len(full),
+    }
+
+
+def _scalar_classes(field_name: str, vals: dict[str, Any]) -> dict[str, Any]:
+    """For scalar closed-set fields the class is the value itself (None stays a real answer)."""
+    return {
+        j: ("null" if v is None else v) if v is not NO_RESPONSE else None for j, v in vals.items()
+    }
+
+
+def field_agreement(
+    per_review: dict[str, dict[str, dict[str, dict[str, Any] | None]]],
+    review_ids: list[str],
+    judges: list[str],
+) -> dict[str, Any]:
+    """Per-field and pooled alpha/kappa over the given reviews.
+
+    per_review[rid][judge] -> parsed output or None. Free-text classes are connected components
+    of the pre-registered equivalence (arbitrary ids; within-item concordance, see spec).
+    """
+    out: dict[str, Any] = {}
+    pooled: list[dict[str, Any]] = []
+    for f in HEADLINE_FIELDS:
+        units = []
+        for rid in review_ids:
+            outputs = per_review[rid]
+            vals = {
+                j: (outputs[j].get(f) if outputs[j] is not None else NO_RESPONSE) for j in judges
+            }
+            if f in ("buy_again", "sentiment"):
+                cls = _scalar_classes(f, vals)
+            elif f == "stars_inferred":
+                cls = {j: (v if v is not NO_RESPONSE else None) for j, v in vals.items()}
+                cls = {j: (v if v in (1, 2, 3, 4, 5) else None) for j, v in cls.items()}
+            else:
+                cls = _classes(f, vals)
+            units.append(cls)
+        out[f] = agreement_stats(units, judges, ordinal=(f == "stars_inferred"))
+        pooled.extend({j: (None if c is None else f"{f}:{c}") for j, c in u.items()} for u in units)
+    out["_pooled_nominal"] = agreement_stats(pooled, judges)
+    return out
+
+
+# ---------------------------------------------------------------------------------------------
+# Target sets
+# ---------------------------------------------------------------------------------------------
+
+
+def load_targets() -> dict[str, Any]:
+    """Fixtures, held-out records, T and V ids (spec: Target sets)."""
+    from eval.score_held_out_corpus_v2 import load_quarantined_fixtures
+
+    artifact = json.loads(HELD_OUT_ARTIFACT.read_text(encoding="utf-8"))
+    fixtures = {fx["id"]: fx for fx in load_quarantined_fixtures()}
+    records = [r for r in artifact["records"] if not r.get("exposure")]
+    fields = artifact["headline_fields"]
+    unscored = {r["id"]: sorted(set(r["unresolved_fields"]) & set(fields)) for r in records}
+    t_ids = sorted(i for i, u in unscored.items() if u)
+    pool = sorted(i for i, u in unscored.items() if not u)
+    v_ids = sorted(random.Random(SEED).sample(pool, min(N_VALIDATION, len(pool))))  # noqa: S311
+    return {
+        "artifact": artifact,
+        "fixtures": fixtures,
+        "records": records,
+        "headline_fields": fields,
+        "unscored": unscored,
+        "T": t_ids,
+        "V": v_ids,
+        "V_pool_size": len(pool),
+    }
+
+
+async def run_main(runner: Runner, active: list[str], targets: dict[str, Any]) -> dict[str, Any]:
+    fixtures = targets["fixtures"]
+    units = [("T", rid) for rid in targets["T"]] + [("V", rid) for rid in targets["V"]]
+    for arm, rid in units:
+        text = fixtures[rid]["review_text"]
+        await asyncio.gather(*[runner.judge(f"main_{arm}", rid, m, text) for m in active])
+        await asyncio.sleep(PACE_SECONDS if runner.mode == "record" else 0)
+    for rid in targets["T"][:SELF_CONSISTENCY_N]:
+        text = fixtures[rid]["review_text"]
+        await asyncio.gather(
+            *[runner.judge("self_consistency", rid, m, text, rep=1) for m in active]
+        )
+        await asyncio.sleep(PACE_SECONDS if runner.mode == "record" else 0)
+    return {}
+
+
+def outputs_by_review(
+    votes: list[dict[str, Any]], phase_prefix: str, rep: int = 0
+) -> dict[str, Any]:
+    out: dict[str, dict[str, Any]] = {}
+    for v in votes:
+        if v["phase"].startswith(phase_prefix) and v["rep"] == rep:
+            out.setdefault(v["unit_id"], {})[v["model"]] = v["parsed"]
