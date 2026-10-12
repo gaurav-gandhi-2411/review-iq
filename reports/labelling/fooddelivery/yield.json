@@ -1,0 +1,119 @@
+{
+ "source": {
+  "title": "Food Delivery Apps (DoorDash, Grubhub & UberEats) Reviews",
+  "doi": "10.17632/m5jk7wzyg7.1",
+  "version": 1,
+  "licence": "CC BY 4.0",
+  "file": "Final data.csv",
+  "sha256": "05441910ca614d49fd0744e115c1d32fe0b9ac3c8181c41742f9f5382101e7f0"
+ },
+ "seed": 42,
+ "raw_rows_in_csv": 1694581,
+ "pool_after_clean_len_english_dedupe": 977188,
+ "sample_n": 2000,
+ "sample_regex_matches": {
+  "delivery": 600,
+  "service": 436,
+  "either": 846,
+  "both": 190
+ },
+ "sample_regex_prevalence": {
+  "delivery": 0.3,
+  "service": 0.218,
+  "either": 0.423,
+  "both": 0.095
+ },
+ "sample_regex_wilson95": {
+  "delivery": [
+   0.2803,
+   0.3205
+  ],
+  "service": [
+   0.2005,
+   0.2366
+  ],
+  "either": [
+   0.4015,
+   0.4448
+  ],
+  "both": [
+   0.0829,
+   0.1086
+  ]
+ },
+ "expected_regex_matches_in_pool_from_sample": {
+  "delivery": 293156,
+  "service": 213027,
+  "either": 413351,
+  "both": 92833
+ },
+ "exact_regex_matches_in_pool": {
+  "delivery": 282017,
+  "service": 203511,
+  "either": 393108
+ },
+ "expected_regex_matches_in_candidate_pool_of_N": {
+  "1500": {
+   "delivery": 450,
+   "service": 327,
+   "either": 634
+  },
+  "3000": {
+   "delivery": 900,
+   "service": 654,
+   "either": 1269
+  },
+  "10000": {
+   "delivery": 3000,
+   "service": 2180,
+   "either": 4230
+  }
+ },
+ "strict_enrichment_regex_sample_matches": {
+  "delivery": 287,
+  "service": 285,
+  "either": 482
+ },
+ "strict_enrichment_regex_prevalence": {
+  "delivery": 0.1435,
+  "service": 0.1425,
+  "either": 0.241
+ },
+ "strict_enrichment_regex_wilson95": {
+  "delivery": [
+   0.1288,
+   0.1595
+  ],
+  "service": [
+   0.1279,
+   0.1585
+  ],
+  "either": [
+   0.2228,
+   0.2602
+  ]
+ },
+ "expected_strict_matches_in_pool": {
+  "delivery": 140226,
+  "service": 139249,
+  "either": 235502
+ },
+ "expected_strict_matches_in_candidate_pool_of_N": {
+  "1500": {
+   "delivery": 215,
+   "service": 214,
+   "either": 362
+  },
+  "3000": {
+   "delivery": 430,
+   "service": 427,
+   "either": 723
+  },
+  "10000": {
+   "delivery": 1435,
+   "service": 1425,
+   "either": 2410
+  }
+ },
+ "caveat": "regex hits are CANDIDATES, not labels: the judge consensus rate among them is unknown until labelled"
+}

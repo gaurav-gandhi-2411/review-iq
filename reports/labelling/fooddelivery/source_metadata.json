@@ -1,0 +1,28 @@
+{
+ "id": "m5jk7wzyg7",
+ "name": "Food Delivery Apps (DoorDash, Grubhub & UberEats) Reviews",
+ "version": 1,
+ "publish_date": "2025-03-03T01:04:52.669Z",
+ "data_licence": {
+  "id": "01d9c749-3c4d-4431-9df3-620b2dcfe144",
+  "description": "You can share, copy and modify this dataset so long as you give appropriate credit, provide a link to the CC BY license, and indicate if changes were made, but you may not do so in a way that suggests the rights holder has endorsed you or your use of the dataset. Note that further permission may be required for any content within the dataset that is identified as belonging to a third party.",
+  "url": "http://creativecommons.org/licenses/by/4.0",
+  "category": "Creative",
+  "short_name": "CC BY 4.0",
+  "full_name": "Creative Commons Attribution 4.0 International"
+ },
+ "doi": {
+  "id": "10.17632/m5jk7wzyg7.1",
+  "status": "allocated",
+  "prefix": "10.17632"
+ },
+ "description": "This dataset contains user-generated reviews collected from the Google Play Store for three major food delivery applications: DoorDash, Grubhub, and Uber Eats. The dataset was compiled through web scraping on November 10, 2023, and includes various attributes that capture user sentiments, textual content, and keyword-based analysis related to the Technology Acceptance Model (TAM).\nData Collection Process:\n\n    Source: Google Play Store user reviews \n    Scraping Method: A Python-based web scraping script\n    Language: English-language reviews from the US were retained\n    Final Dataset Size (after cleaning): 1,694,581 reviews\n    Processing Tools: Python (pandas, NRCLex, nltk, seaborn, sklearn, vaderSentiment, numpy, matplotlib)\n    Sentiment Classification:\n        Positive: 4-5 star ratings\n        Neutral: 3-star ratings\n        Negative: 1-2 star ratings\n    Lexicon-Based Sentiment Analysis: VADER and AFINN scores were calculated to enhance sentiment classification accuracy.\n\nDataset Columns & Descriptions:\nColumn Name\tDescription\ncontent\tThe full text of the user review.\nscore\tThe star rating given by the user (1-5).\nthumbsUpCount\tThe number of likes (thumbs up) a review received.\nApps\tThe app to which the review belongs (DoorDash, Grubhub, or Uber Eats).\nsentiment\tThe sentiment category assigned based on the star rating (Positive, Neutral, Negative).\nafinn_score\tSentiment score based on the AFINN lexicon (higher values indicate positive sentiment, lower values indicate negative sentiment).\nvader_neg\tNegative sentiment score assigned by VADER (closer to 1 indicates stronger negativity).\nvader_neu\tNeutral sentiment score assigned by VADER (closer to 1 indicates a more neutral review).\nvader_pos\tPositive sentiment score assigned by VADER (closer to 1 indicates stronger positivity).\nvader_compound\tOverall sentiment score from VADER.\nword_count\tThe total number of words in the review .\nEase_of_Use\tA value indicating whether the review contains keywords related to perceived ease of use (1 = present and positive, -1 = present and negative, 0 = absent).\nIntention_to_Use\tA value indicating whether the review contains keywords related to perceived intention to use the app (1 = present and positive, -1 = present and negative, 0 = absent).\nUsefulness\tA value indicating whether the review contains keywords related to perceived usefulness of the app (1 = present and positive, -1 = present and negative, 0 = absent).\n\nPotential Use Cases:\n    Sentiment Analysis of user experiences with food delivery apps.\n    User Behavior Analysis to identify factors influencing app adoption.\n    TAM Model Validation in the context of online food delivery services.\n    Comparative Analysis of DoorDash, Grubhub, and Uber Eats based on user feedback.\n    Natural Language Processing (NLP) & Machine Learning Applications for review classification.",
+ "files": [
+  {
+   "filename": "Final data.csv",
+   "size": 237199879,
+   "sha256": "05441910ca614d49fd0744e115c1d32fe0b9ac3c8181c41742f9f5382101e7f0"
+  }
+ ],
+ "retrieved": "2026-10-12 via data.mendeley.com/public-api/datasets/m5jk7wzyg7 ; download SHA-256 re-verified locally"
+}
