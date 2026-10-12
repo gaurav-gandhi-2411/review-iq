@@ -1,0 +1,98 @@
+name: Failover Probe
+
+# Wave 1 Section F ("Reliability"): nightly REAL live-call probe of the LLM failover
+# path. S23: the probe now builds the secondary through the SAME factory production uses
+# (app.core.llm._build_secondary), so SECONDARY_PROVIDER_KIND is honoured: production runs
+# KIND=groq, model openai/gpt-oss-120b, on the shared-account Groq key (Secret Manager
+# `groq-api-key`). It previously probed OpenRouter, which production does not use (402 on
+# 2026-10-11). The Gemini fallback was retired in S17, ADR 0035. "A config fix without the probe is not a fix" -- see
+# docs/specs/wave1-commercialization.md Section 4.F and scripts/probe_failover.py's
+# module docstring. Mirrors eval.yml's nightly-cron + conditional-Slack-notify
+# convention (the established house pattern for scheduled jobs in this repo) --
+# no new scheduling mechanism introduced.
+#
+# Session 15c D4: each path is PASS / FAIL / NOT CONFIGURED (three-state); an unconfigured
+# path is reported loudly on every run, never silently skipped -- see the probe docstring.
+#
+# Cost: 1 live Groq call/night (~2.1K tokens) on the Groq FREE tier: $0. The key is the
+# shared-account SECONDARY key, never the dedicated-org primary key (groq-api-key-samidha).
+
+on:
+  schedule:
+    - cron: "30 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: failover-probe
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04 # pinned: unverified on 26.04 (S17 H3); move to ubuntu-latest after a main-branch dry run
+    permissions:
+      contents: read
+      issues: write # only used by the scheduled-run failure-alert step below
+    env:
+      # Must match production (Cloud Run review-iq). The secret holds the Groq secondary key:
+      #   gcloud secrets versions access latest --secret=groq-api-key ... | gh secret set ...
+      SECONDARY_PROVIDER_KIND: groq
+      SECONDARY_PROVIDER_API_KEY: ${{ secrets.SECONDARY_PROVIDER_API_KEY }}
+      # Fallback to the production model so a stale repo variable (it was the OpenRouter
+      # llama id) can never silently re-point the probe at a path production does not run.
+      SECONDARY_PROVIDER_MODEL: ${{ vars.SECONDARY_PROVIDER_MODEL || 'openai/gpt-oss-120b' }}
+      API_KEY: ci-key
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Run failover probe
+        id: probe
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          # S23: the real production failover is the Groq secondary (Cloud Run review-iq
+          # revision 00074 reads its key from Secret Manager `groq-api-key`); the same key
+          # must live in GitHub secret SECONDARY_PROVIDER_API_KEY. Until it does, this probe
+          # reports NOT CONFIGURED / FAIL and exits 1 -- loudly, by design.
+          # The GG decision D4 acknowledgement (2026-09-20) is REMOVED: an unconfigured or
+          # broken secondary path now exits 1 instead of passing silently, so this probe can
+          # no longer be green without having exercised the path it guards.
+        run: |
+          # Free-tier-friendly: probe still runs and fails the job (exit 1) without a
+          # webhook -- Slack notification is a bonus, not the pass/fail signal itself.
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            uv run python scripts/probe_failover.py
+          else
+            uv run python scripts/probe_failover.py --slack-webhook "$SLACK_WEBHOOK_URL"
+          fi
+
+      # SLACK_WEBHOOK_URL has never been configured, so before this step a failing
+      # probe reached nobody (7 consecutive red nightly runs, 2026-09-13..19).
+      - name: Alert on failure / close alert on recovery (scheduled runs only)
+        if: always() && !cancelled() && github.event_name == 'schedule'
+        uses: ./.github/actions/schedule-failure-alert
+        with:
+          status: ${{ job.status == 'success' && 'success' || 'failure' }}
+          title: "Failover probe is failing"
+          details: |
+            `failover-probe.yml` makes a real live call to the LLM failover path
+            (the Groq secondary production runs, built by the production factory). Path states this run:
+            `${{ steps.probe.outputs.states }}`. A path is FAIL (configured but broken) or
+            NOT CONFIGURED without acknowledgement (secret/var absent and not listed in
+            FAILOVER_ACKNOWLEDGED_UNCONFIGURED). Check the
+            SECONDARY_PROVIDER_API_KEY secret and the SECONDARY_PROVIDER_MODEL variable, and
+            see scripts/probe_failover.py.
