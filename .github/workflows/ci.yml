@@ -79,6 +79,9 @@ jobs:
 
       # Truth-reconciliation gates (Wave 1 Section A) -- see
       # docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md.
+      - name: Leakage ledger (sealed review-intent set, Amendment 2)
+        run: uv run python -m engine.labelling.leakage_ledger check
+
       - name: No hand-typed accuracy numbers in docs
         run: uv run python scripts/check_no_hardcoded_metrics.py
 
@@ -251,7 +254,9 @@ jobs:
         working-directory: web
         run: npm run lint
 
-      - name: Unit tests (node --test)
+      # S17 G3f: `npm test` = main's node --test (retry-after) then Vitest (dashboard logic,
+      # component states, tokens.test.ts drift check against design/tokens.json).
+      - name: Unit tests (node --test + vitest)
         working-directory: web
         run: npm test
 
@@ -262,6 +267,14 @@ jobs:
       - name: Build (vite build)
         working-directory: web
         run: npx vite build
+
+      # The dashboard dev preview (src/dev, fixture reviews) is guarded by import.meta.env.DEV.
+      # If that guard ever stops working, fixture text would ship to customers; fail loudly.
+      - name: Dev preview must not be in the production bundle
+        run: |
+          if grep -rqE "Ordered this as a gift three weeks ago|__preview/dashboard" web/dist; then
+            echo "dev preview fixtures leaked into web/dist"; exit 1
+          fi
 
       # An empty or partial build must not pass: index.html has to exist and reference at
       # least one hashed JS asset that is actually on disk.
