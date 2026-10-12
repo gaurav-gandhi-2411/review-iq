@@ -358,3 +358,29 @@ four-judge set: precision at coverage with the CONSERVATIVE rule (the threshold 
 confidence whose Wilson lower bound for precision reaches the target; the oracle threshold is also reported and labelled as
 oracle), macro-F1, per-class F1 with the Amendment 2 floor, the consensus ceiling, bootstrap and Wilson intervals, and plain-
 prompted LLMs at matched coverage. Anything not in this list is exploratory and labelled so.
+
+### Amendment 6 (2026-10-12, S23 6a): the safety stratum, a separate enriched sealed stratum; registered before any model is evaluated on it
+
+The Amendment 5 sealed set holds too few `urgency=high` items to measure a safety classifier. A keyword miner fixed before any
+label existed (`engine/labelling/mine_safety.py`) produced candidates, and the four-judge panel (Amendment 5) labelled 1,800 of
+them (`reports/labelling/safety/panel_report.json`, source of every count below): 365 have consensus `urgency=high`.
+
+**What the stratum is.** A separate, ENRICHED, keyword-mined stratum, disjoint from the Amendment 5 sealed set (candidates exclude
+every ledger entry, every `sealed_excluded` hash, and anything that near-duplicates or quotes a sealed item). Labelled by the
+four-judge panel with `consensus_label` on every item, train items included. It is reported separately and NEVER pooled with the
+base-rate numbers of Amendment 5: the miner's recall is unmeasurable and a precision measured here is not a base-rate precision.
+It supports precision and recall of the `urgency=high` decision among safety-language reviews, not prevalence or deployment rates.
+
+**Split.** A pure function of the content hash with its own salt, `review-intent-safety-split-v1`, same construction as
+`scale_sample.split_of`: test share 0.40; of the rest, 0.10 is validation, the remainder training. Test is 0.40 (not 0.15)
+because 0.15 would give about 55 sealed positives against the 138 that Amendment 5 set as the minimum for a usable interval.
+
+**Expected values, stated before the split is computed.** The hash is independent of the label, so the sealed positives are
+Binomial(365, 0.40): expected 146.0, standard deviation 9.4. The probability of fewer than 138 is about 0.18 (normal approximation
+with continuity correction). Train plus validation expected 219. A realised count below 138 is reported plainly with the interval
+it supports (at n = 138 and p = 0.5, a Wilson half-width of about 0.083); the bar is not lowered and the salt is not changed.
+The split is computed once and committed as ids and hashes only.
+
+**Leakage.** The safety test hashes form a second sealed list checked by the same CI test as the first (`leakage_ledger`: ledger
+overlap, digest, tracked-file scan, near-duplicate and quote scan). Safety train and validation hashes enter the ledger as used
+items. Any safety train or validation item that near-duplicates a safety test item is dropped from training and listed.
