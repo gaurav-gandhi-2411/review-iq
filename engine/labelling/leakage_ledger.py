@@ -149,6 +149,13 @@ def check() -> list[str]:
     manifest = _load(SCALE)
     if bad := [i["id"] for i in manifest["items"] if i["split"] != "test" and i["sha"] in sealed]:
         problems.append(f"(b) {len(bad)} train/val manifest items share a sealed hash")
+    aux = ROOT / "reports" / "labelling" / "fooddelivery" / "manifest.json"
+    if aux.exists():  # S23 out-of-domain auxiliary set: training only, never sealed, never val/test
+        rows = json.loads(aux.read_text(encoding="utf-8"))["items"]
+        if shared := [r["id"] for r in rows if r["sha"] in sealed]:
+            problems.append(f"(e) {len(shared)} aux food-delivery items share a sealed hash")
+        if wrong := [r["id"] for r in rows if r.get("split") != "aux_train"]:
+            problems.append(f"(e) {len(wrong)} aux food-delivery items are not split aux_train")
     if digest(sealed) != ledger["sealed_digest"]:
         problems.append("(c) sealed-set digest differs from the one recorded in the ledger")
     expected = build_ledger()["entries"]

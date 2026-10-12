@@ -270,7 +270,16 @@ def main() -> None:
         "--save-weights", action="store_true", help="write the best checkpoint to out-dir/model.pt"
     )
     ap.add_argument("--device", default="auto", choices=["auto", "cpu", "cuda"])
+    ap.add_argument("--aux-manifest", default="", help="out-of-domain auxiliary manifest (S23)")
+    ap.add_argument("--aux-labels", default="", help="labels.json from engine.intent.aux_domain")
+    ap.add_argument("--aux-texts", default="", help="private text file of the auxiliary items")
+    ap.add_argument(
+        "--aux-domain", default="exclude", choices=["include", "exclude"],
+        help="add domain=out_of_domain_food_delivery items to TRAIN only (default: exclude)",
+    )  # fmt: skip
     a = ap.parse_args()
+    if a.aux_domain == "include" and not (a.aux_manifest and a.aux_labels and a.aux_texts):
+        ap.error("--aux-domain include needs --aux-manifest, --aux-labels and --aux-texts")
     cfg = IntentConfig(a.model, a.epochs, a.lr, a.batch_size, a.seed, a.max_len, a.patience)
     lab = json.loads(Path(a.labels).read_text(encoding="utf-8"))
     man = json.loads(Path(a.manifest).read_text(encoding="utf-8"))
@@ -279,6 +288,15 @@ def main() -> None:
         "labels": lab["labels"],
         "ids": {s: [r["id"] for r in man["items"] if r["split"] == s] for s in lab["labels"]},
     }
+    texts = load_texts(Path(a.texts))
+    if a.aux_manifest:  # validated even when excluded, so a bad aux file is never silently ignored
+        from engine.intent.aux_domain import merge_aux
+
+        aux_man = json.loads(Path(a.aux_manifest).read_text(encoding="utf-8"))
+        aux_lab = json.loads(Path(a.aux_labels).read_text(encoding="utf-8"))["labels"]
+        data, texts = merge_aux(
+            data, texts, aux_man, aux_lab, load_texts(Path(a.aux_texts)), a.aux_domain == "include"
+        )
     device = ("cuda" if torch.cuda.is_available() else "cpu") if a.device == "auto" else a.device
     inputs = {
         Path(p).name: hashlib.sha256(Path(p).read_bytes()).hexdigest()[:16]
@@ -287,7 +305,7 @@ def main() -> None:
     run(
         cfg,
         data,
-        load_texts(Path(a.texts)),
+        texts,
         Path(a.out_dir),
         device,
         save_weights=a.save_weights,
