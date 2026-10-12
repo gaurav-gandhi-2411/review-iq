@@ -9,10 +9,11 @@ cap).  A REAL provider reachability probe is available behind ?deep=1.
 from __future__ import annotations
 
 import asyncio
+import os
 from typing import Any
 
 import structlog
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Request
 from fastapi.responses import JSONResponse
 from starlette import status
 
@@ -21,6 +22,39 @@ from app.core.config import get_settings
 log = structlog.get_logger(__name__)
 
 router = APIRouter(tags=["ops"])
+
+# Public URLs surfaced by GET /. Fixed constants, not settings: they are the product's own
+# canonical addresses and must not vary per deploy.
+_SITE_URL = "https://samidhareviews.xyz"
+_PRIVACY_URL = "https://github.com/gaurav-gandhi-2411/review-iq/blob/main/legal/privacy-policy.md"
+
+
+# Separate router: main.py mounts it on Cloud Run only. On hf-spaces/local, GET / is the v1 HTML
+# dashboard (dashboard_router) and must not be shadowed.
+root_router = APIRouter()
+
+
+@root_router.get("/", include_in_schema=False)
+async def root(request: Request) -> dict[str, Any]:
+    """Unauthenticated service index: name, version, deployed commit and public links.
+
+    GIT_SHA is set by the deploy workflow (--update-env-vars) to the commit being deployed;
+    "unknown" means this revision was not deployed by CI (local run, or pre-dating this field).
+    """
+    return {
+        "name": "Samidha Reviews API",
+        "version": request.app.version,
+        "commit": os.environ.get("GIT_SHA", "unknown"),
+        "description": "Review intelligence for Indian e-commerce: sentiment and urgency "
+        "extraction for English and Hinglish customer reviews.",
+        "links": {
+            "docs": "/docs",
+            "health": "/health",
+            "site": _SITE_URL,
+            "privacy": _PRIVACY_URL,
+        },
+    }
+
 
 # ---------------------------------------------------------------------------
 # Internal DB ping helpers

@@ -181,3 +181,55 @@ async def test_metrics(client: AsyncClient) -> None:
     response = await client.get("/metrics")
     assert response.status_code == 200
     assert "text/plain" in response.headers["content-type"]
+
+
+# ---------------------------------------------------------------------------
+# GET / -- service index (unauthenticated, not in OpenAPI)
+# ---------------------------------------------------------------------------
+
+
+def _cloud_run_client() -> AsyncClient:
+    from app.core.config import Settings
+    from app.main import create_app
+    from httpx import ASGITransport
+
+    app = create_app(Settings(deploy_target="cloud-run"))
+    return AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
+
+
+@pytest.mark.asyncio
+async def test_root_index_is_json_unauthenticated(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("GIT_SHA", "abc1234")
+    async with _cloud_run_client() as c:
+        response = await c.get("/")
+        schema = (await c.get("/openapi.json")).json()
+    assert response.status_code == 200
+    body = response.json()
+    assert body["name"] == "Samidha Reviews API"
+    assert body["version"]
+    assert body["commit"] == "abc1234"
+    assert body["links"]["docs"] == "/docs"
+    assert body["links"]["health"] == "/health"
+    assert body["links"]["site"].startswith("https://samidhareviews.xyz")
+    assert body["links"]["privacy"].startswith("https://")
+    assert "/" not in schema["paths"]  # include_in_schema=False
+
+
+@pytest.mark.asyncio
+async def test_root_index_commit_unknown_without_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("GIT_SHA", raising=False)
+    async with _cloud_run_client() as c:
+        assert (await c.get("/")).json()["commit"] == "unknown"
+
+
+@pytest.mark.asyncio
+async def test_root_index_not_mounted_off_cloud_run(client: AsyncClient) -> None:
+    """Local/HF Spaces keep the v1 HTML dashboard at GET / (not shadowed by the JSON index)."""
+    with (
+        patch("app.api.dashboard.get_insights", new_callable=AsyncMock) as mock_insights,
+        patch("app.api.dashboard.query_extractions", new_callable=AsyncMock) as mock_query,
+    ):
+        mock_insights.side_effect = RuntimeError("dashboard handler reached")
+        mock_query.return_value = []
+        with pytest.raises(RuntimeError, match="dashboard handler reached"):
+            await client.get("/")
