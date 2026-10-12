@@ -9,6 +9,12 @@ requests (retry + escalation) almost instantly. The only fix that actually remov
 prod from the blast radius is a separate quota bucket: a dedicated API key used
 ONLY for benchmark/eval load, never prod's key.
 
+CAVEAT (2026-10-12): a separate KEY isolates the per-minute burst only. Groq's daily token pool (TPD) is
+per model per ACCOUNT, and this key is on the same Personal account as production's, so it still draws on the
+production pool: on 2026-10-11 it spent about 300K tokens on gpt-oss-120b and 230K on gpt-oss-20b and a
+TriageIQ deploy smoke test failed on a 429. Loading it therefore installs the machine-wide budget ledger hook
+(engine/groq_budget_hook.py). A key in a separate Groq org would isolate the pool itself.
+
 Setup (one-time, GG):
     1. Create a new key at https://console.groq.com/keys (name it e.g. "review-iq-benchmark").
     2. Create benchmark/vernacular_v2/.env.benchmark.local (gitignored — matches the
@@ -74,6 +80,11 @@ def load_benchmark_groq_key() -> str:
         )
         sys.exit(1)
 
+    # 2026-10-12: this key shares the Personal account's per-model Groq pools with production, so every
+    # script that loads it also goes through the machine-wide budget ledger (see engine/groq_budget_hook.py).
+    from engine.groq_budget_hook import install
+
+    install()
     return benchmark_key
 
 
