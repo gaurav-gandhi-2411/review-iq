@@ -1,7 +1,7 @@
 """Confirm a configured LLM model actually GENERATES, not merely that its name is advertised.
 
 Why (Session 15d): model-availability-check.yml only tested that the model id appears in the
-provider's `models` LIST. Verified against the production Gemini key on 2026-09-20:
+provider's `models` LIST. Verified against the (since retired, ADR 0035) production Gemini key on 2026-09-20:
 `gemini-2.5-flash-lite` is present in models.list with `generateContent` in its
 supportedGenerationMethods, yet generateContent returns HTTP 404 "no longer available to new
 users". A list-membership check reports that model live while every real call fails -- a control
@@ -16,7 +16,6 @@ Verdicts (stdlib only, so the workflow needs no dependency install):
 
 Usage:
     GROQ_KEY=... python3 scripts/check_model_generation.py groq openai/gpt-oss-20b
-    GEMINI_KEY=... python3 scripts/check_model_generation.py gemini gemini-2.5-flash
 Exit 0 ok/warn, 1 fail, 2 usage error. Keys are read from the environment and never printed.
 """
 
@@ -63,21 +62,6 @@ def _request(provider: str, model: str, key: str) -> urllib.request.Request:
             },
             method="POST",
         )
-    if provider == "gemini":
-        body = {
-            "contents": [{"parts": [{"text": "Reply with the single word: ok"}]}],
-            "generationConfig": {"maxOutputTokens": 16},
-        }
-        return urllib.request.Request(
-            f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
-            data=json.dumps(body).encode(),
-            headers={
-                "x-goog-api-key": key,
-                "Content-Type": "application/json",
-                "User-Agent": USER_AGENT,
-            },
-            method="POST",
-        )
     raise ValueError(f"unknown provider {provider!r}")
 
 
@@ -109,11 +93,11 @@ def check(provider: str, model: str, key: str, *, opener=urllib.request.urlopen)
 
 
 def main(argv: list[str]) -> int:
-    if len(argv) != 3 or argv[1] not in {"groq", "gemini"}:
+    if len(argv) != 3 or argv[1] != "groq":
         print(__doc__)
         return 2
     provider, model = argv[1], argv[2]
-    key = os.environ.get("GROQ_KEY" if provider == "groq" else "GEMINI_KEY", "")
+    key = os.environ.get("GROQ_KEY", "")
     v = check(provider, model, key)
     if v.status == "ok":
         print(f"  [ok] {provider}/{model} generated (HTTP {v.http_status})")
