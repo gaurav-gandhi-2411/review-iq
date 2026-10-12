@@ -6,11 +6,14 @@ Usage: python -m engine.experiments.llm_baseline --dataset banking77 --model ope
 The key is read from Secret Manager in-process and never printed. Public benchmark text only (no
 customer data).
 
-RESUMABLE ACROSS UTC DAYS. The output file holds one record per classified item. A re-run with the
-same --out continues down the same deterministic, label-balanced item order (stratified_subsample is
-prefix-stable, so a larger --n only appends) and stops when either --token-budget for THIS invocation
-or the 100K per-model per-UTC-day ceiling (counted from the records already in the file, by date) would
-be exceeded. The summary is recomputed over all records.
+RESUMABLE ACROSS INVOCATIONS. The output file holds one record per classified item. A re-run with
+the same --out continues down the same deterministic, label-balanced item order (stratified_subsample
+is prefix-stable, so a larger --n only appends) and stops when either --token-budget for THIS
+invocation or the 100K per-model TRAILING-24h ceiling (counted from the `ts` of the records already in
+the file; Groq's TPD is a rolling window, not a 00:00 UTC reset, see eval/rolling_window.py) would be
+exceeded. Records written before `ts` existed are placed at the end of their `utc_date` (conservative).
+The summary is recomputed over all records. The ledger sees only THIS file: other experiments' usage
+on the same model is invisible to it.
 
 Every record carries the item's index into the dataset's test split (so it can be paired with the
 fine-tuned model's prediction for the same item), the predicted label, a verbalised confidence
@@ -29,6 +32,7 @@ from pathlib import Path
 
 import httpx
 import numpy as np
+from eval.rolling_window import EVAL_CAP_TOKENS_PER_MODEL, date_to_end_of_day_ts, used_in_window
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from engine import data as D
@@ -36,7 +40,9 @@ from engine import metrics as M
 from engine.experiments.run import _git_sha
 
 GROQ = "https://api.groq.com/openai/v1/chat/completions"
-DAY_CEILING = 100_000  # tokens per model per UTC day (S20 policy: half of the BELIEVED 200K pool)
+# Tokens per model per TRAILING 24h: half of the 200K TPD pool, which is a rolling window
+# (VERIFIED 429 body 2026-10-12 00:07 UTC, see eval/rolling_window.py).
+ROLLING_CAP = EVAL_CAP_TOKENS_PER_MODEL
 PRICE = {  # USD per 1M tokens (in, out): app/core/pricing.py, verified 2026-09-10
     "openai/gpt-oss-20b": (0.075, 0.30),
     "openai/gpt-oss-120b": (0.15, 0.60),
@@ -99,6 +105,18 @@ def _summary(records: list[dict], a: argparse.Namespace, labels: list[str]) -> d
     }  # fmt: skip
 
 
+def _ledger(records: list[dict], model: str) -> list[dict]:
+    """Records as rolling-window entries; a record with no `ts` sits at the end of its utc_date."""
+    return [
+        {
+            "ts": r["ts"] if "ts" in r else date_to_end_of_day_ts(r["utc_date"]),
+            "model": model,
+            "tokens": r["tokens_in"] + r["tokens_out"],
+        }
+        for r in records
+    ]
+
+
 def _by_day(records: list[dict]) -> dict[str, int]:
     out: dict[str, int] = {}
     for r in records:
@@ -137,7 +155,6 @@ def main() -> None:
         records = old["records"]
     done_idx = {r["test_idx"] for r in records}
     today = datetime.datetime.now(datetime.UTC).date().isoformat()
-    used_today = _by_day(records).get(today, 0)
 
     vec = TfidfVectorizer(ngram_range=(1, 2), sublinear_tf=True).fit([e.text for e in sp.train])
     xtr = vec.transform([e.text for e in sp.train])
@@ -148,8 +165,9 @@ def main() -> None:
         if ti in done_idx:
             continue
         # stop before a call that could cross either ceiling (3K = largest call seen so far)
-        if spent + 3000 > a.token_budget or used_today + spent + 3000 > DAY_CEILING:
-            print("stopping: budget reached", {"spent": spent, "used_today_before": used_today})
+        used_24h = used_in_window(_ledger(records, a.model), a.model, time.time())
+        if spent + 3000 > a.token_budget or used_24h + 3000 > ROLLING_CAP:
+            print("stopping: budget reached", {"spent": spent, "used_trailing_24h": used_24h})
             break
         shots: list[D.Example] = []
         if a.shots:
@@ -198,7 +216,7 @@ def main() -> None:
         records.append({
             "test_idx": ti, "label": e.label, "pred": pred, "confidence": conf,
             "correct": pred == e.label, "tokens_in": tin, "tokens_out": tout,
-            "latency_s": round(lat, 3), "utc_date": today,
+            "latency_s": round(lat, 3), "utc_date": today, "ts": time.time(),
         })  # fmt: skip
         out.parent.mkdir(parents=True, exist_ok=True)
         # persist after every item: a crash or a 429 wall never loses the quota already spent

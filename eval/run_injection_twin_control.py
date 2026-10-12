@@ -18,7 +18,7 @@ Attack types and N (the S1c recommended plan): buy_again forced true (f4-01) N=1
 forced 5 (f4-03) N=12, topics suppressed to empty (f4-05) N=50. 74 pairs = 148 calls; at the
 measured ~2.5K tokens per small-tier call that is ~370K tokens. The guard's per-call estimate is
 conservative (>= 3,000, adapting up to the largest call seen), so one invocation stops at about
-15 pairs and the full set takes about 5 invocations, one per UTC day. Types are processed in that
+15 pairs and the full set takes about 5 invocations, each spaced so the trailing 24h has room. Types are processed in that
 order so the two cheap types finish first.
 
 Base reviews (deterministic, seed 42): each type uses the review sentence of its suite attack
@@ -37,11 +37,13 @@ Modes:
     report                     summarise the state file (no calls)
 
 Resume and budget: reports/eval/injection_twin/injection_twin_control_state.json lists completed
-pair ids (and any half-finished pair, so a crash between its two calls never loses accounting) and the tokens spent per
-UTC day per model. Every `record` invocation (a) stops before any call that could push a model past
-INVOCATION_CEILING (95K) for this invocation, and (b) reads the day's prior usage from the state
-file and stops before any call that could push a model past DAY_CEILING (100K) for the UTC day, so
-two invocations on the same day cannot exceed 100K per model. The per-call estimate is the largest
+pair ids (and any half-finished pair, so a crash between its two calls never loses accounting) and a
+timestamped `usage_log` of every call's tokens per model. Every `record` invocation (a) stops before
+any call that could push a model past INVOCATION_CEILING (95K) for this invocation, and (b) stops
+before any call that could push a model past ROLLING_CAP (100K) in the TRAILING 24h (Groq's TPD is a
+rolling window, not a 00:00 UTC reset; see eval/rolling_window.py), so no two invocations within 24h
+can together exceed 100K per model. State version 1 (per-UTC-day totals) is migrated on load, each
+day placed at its last second (conservative). The per-call estimate is the largest
 call seen so far (persisted), never below MIN_EST_TOKENS_PER_CALL. The state file only knows THIS
 experiment's usage: production traffic and other evals share the same per-model pool, so the caller
 must leave room for them (see "Quota" below).
@@ -65,9 +67,9 @@ import math
 import os
 import random
 import sys
+import time
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -75,6 +77,12 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from eval.provenance import get_git_sha, now_iso  # noqa: E402
+from eval.rolling_window import (  # noqa: E402
+    EVAL_CAP_TOKENS_PER_MODEL,
+    date_to_end_of_day_ts,
+    next_allowed_at,
+    used_in_window,
+)
 from eval.wilson import wilson_ci  # noqa: E402
 
 CASSETTE_PATH = ROOT / "reports" / "eval" / "injection_twin" / "injection_twin_cassettes.json"
@@ -83,7 +91,9 @@ RESULT_PATH = ROOT / "reports" / "eval" / "injection_twin" / "injection_twin_con
 
 SEED = 42
 INVOCATION_CEILING = 95_000  # per model, per record invocation (50% of a 200K pool, minus margin)
-DAY_CEILING = 100_000  # per model, per UTC day, across invocations (the brief's stricter pool)
+# Per model, TRAILING 24h, across invocations. Rolling, not per UTC day: Groq's TPD is a rolling
+# window (VERIFIED 429 body 2026-10-12 00:07 UTC, see eval/rolling_window.py).
+ROLLING_CAP = EVAL_CAP_TOKENS_PER_MODEL
 MIN_EST_TOKENS_PER_CALL = 3_000  # measured mean is ~2.5K; the guard adapts upward to the max seen
 PACING_SECONDS = 25.0  # ~2.5K tokens/call vs an 8K TPM per-model limit
 
@@ -249,10 +259,10 @@ def mcnemar_exact_p(b: int, c: int) -> float:
 # --------------------------------------------------------------------------------------------
 def new_state() -> dict[str, Any]:
     return {
-        "version": 1,
+        "version": 2,
         "completed": {},
         "partial": {},
-        "usage_by_day": {},
+        "usage_log": [],
         "max_call_tokens_seen": 0,
     }
 
@@ -261,6 +271,23 @@ def load_state(path: Path) -> dict[str, Any]:
     if not path.exists():
         return new_state()
     data: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
+    return migrate_state(data)
+
+
+def migrate_state(data: dict[str, Any]) -> dict[str, Any]:
+    """v1 kept tokens per UTC day with no timestamps. Turn each (day, model) total into one log
+    entry at that day's LAST second: the latest possible spend time keeps it in the window longest,
+    so migration can only over-refuse, never over-spend."""
+    if "usage_by_day" in data:
+        log = data.setdefault("usage_log", [])
+        for day, per_model in sorted(data.pop("usage_by_day").items()):
+            ts = date_to_end_of_day_ts(day)
+            log.extend(
+                {"ts": ts, "model": m, "tokens": int(t), "legacy_day": day}
+                for m, t in sorted(per_model.items())
+            )
+        data["version"] = 2
+    data.setdefault("usage_log", [])
     return data
 
 
@@ -273,38 +300,56 @@ def save_state(path: Path, state: dict[str, Any]) -> None:
 
 
 class Budget:
-    """Per-model token guard: per-invocation ceiling and per-UTC-day ceiling (both hard)."""
+    """Per-model token guard: per-invocation ceiling and trailing-24h ceiling (both hard)."""
 
     def __init__(
         self,
         models: list[str],
-        day_usage: dict[str, int],
+        usage_log: list[dict[str, Any]],
         *,
         est_call_tokens: int,
         invocation_ceiling: int = INVOCATION_CEILING,
-        day_ceiling: int = DAY_CEILING,
+        rolling_cap: int = ROLLING_CAP,
+        now_fn: Callable[[], float] = time.time,
     ) -> None:
         self.models = models
-        self.day_usage = day_usage  # the state's dict for today: read AND written through
+        self.usage_log = usage_log  # the state's list: read AND appended through
+        self.now_fn = now_fn
         self.inv_usage: dict[str, int] = {}
         self.est_call_tokens = max(est_call_tokens, MIN_EST_TOKENS_PER_CALL)
         self.invocation_ceiling = invocation_ceiling
-        self.day_ceiling = day_ceiling
+        self.rolling_cap = rolling_cap
+
+    @property
+    def day_usage(self) -> dict[str, int]:
+        """Trailing-24h tokens per model right now (name kept for the stop message)."""
+        now = self.now_fn()
+        return {m: used_in_window(self.usage_log, m, now) for m in self.models}
 
     def can_afford(self, n_calls: int) -> bool:
         """True iff n more calls cannot push ANY configured model past either ceiling. Checks
         every model because an escalation moves a call to the large pool unpredictably."""
         est = n_calls * self.est_call_tokens
+        rolling = self.day_usage
         return all(
             self.inv_usage.get(m, 0) + est <= self.invocation_ceiling
-            and self.day_usage.get(m, 0) + est <= self.day_ceiling
+            and rolling[m] + est <= self.rolling_cap
             for m in self.models
         )
 
+    def next_allowed_at(self, n_calls: int) -> float | None:
+        """Epoch time when n_calls more calls fit under the rolling cap for EVERY model."""
+        need, now = n_calls * self.est_call_tokens, self.now_fn()
+        times = [
+            next_allowed_at(self.usage_log, m, now, need, self.rolling_cap) for m in self.models
+        ]
+        return None if None in times else max(t for t in times if t is not None)
+
     def charge(self, spent: dict[str, int], call_tokens: int) -> None:
+        now = self.now_fn()
         for m, t in spent.items():
             self.inv_usage[m] = self.inv_usage.get(m, 0) + t
-            self.day_usage[m] = self.day_usage.get(m, 0) + t
+            self.usage_log.append({"ts": now, "model": m, "tokens": t})
         self.est_call_tokens = max(self.est_call_tokens, call_tokens)
 
 
@@ -377,7 +422,8 @@ async def record(
         if not budget.can_afford(len(remaining)):
             stopped = (
                 f"BUDGET GUARD: {pair.pair_id} needs {len(remaining)} call(s) at an estimated "
-                f"{budget.est_call_tokens} tokens; inv={budget.inv_usage} day={budget.day_usage}"
+                f"{budget.est_call_tokens} tokens; inv={budget.inv_usage} rolling24h={budget.day_usage}"
+                f"; next allowed at epoch {budget.next_allowed_at(len(remaining))}"
             )
             break
         state["partial"][pair.pair_id] = part
@@ -481,7 +527,7 @@ def build_report(
         "seed": SEED,
         "pairs_done": len(completed),
         "pairs_planned": n_total,
-        "usage_by_utc_day": (state or {}).get("usage_by_day"),
+        "usage_rolling_24h_at_report": rolling_usage(state, time.time()),
         **summarize(completed),
         "pairs": [completed[k] for k in sorted(completed)],
     }
@@ -498,8 +544,8 @@ def print_report(rep: dict[str, Any]) -> None:
             f"McNemar exact p={v['mcnemar_exact_p_two_sided']}"
         )
     print(f"tokens by model (reported calls): {rep['tokens_by_model_reported_calls_only']}")
-    if rep.get("usage_by_utc_day"):
-        print(f"tokens by UTC day (state): {rep['usage_by_utc_day']}")
+    if rep.get("usage_rolling_24h_at_report"):
+        print(f"tokens in trailing 24h (state): {rep['usage_rolling_24h_at_report']}")
 
 
 def write_report(path: Path, rep: dict[str, Any]) -> None:
@@ -510,8 +556,10 @@ def write_report(path: Path, rep: dict[str, Any]) -> None:
 # --------------------------------------------------------------------------------------------
 # CLI
 # --------------------------------------------------------------------------------------------
-def utc_today() -> str:
-    return datetime.now(UTC).strftime("%Y-%m-%d")
+def rolling_usage(state: dict[str, Any] | None, now: float) -> dict[str, int]:
+    """Trailing-24h tokens per model from the state's usage_log ({} when no state)."""
+    log = (state or {}).get("usage_log", [])
+    return {m: used_in_window(log, m, now) for m in sorted({e["model"] for e in log})}
 
 
 async def _cli_extract(text: str) -> dict[str, Any]:
@@ -548,12 +596,10 @@ async def _run(args: argparse.Namespace) -> None:
 
     settings = get_settings()
     state = load_state(STATE_PATH)
-    today = utc_today()
-    day_usage: dict[str, int] = state["usage_by_day"].setdefault(today, {})
-    print(f"UTC day {today}: prior usage from state = {day_usage}")
+    print(f"trailing-24h usage from state = {rolling_usage(state, time.time())}")
     budget = Budget(
         [settings.groq_model_small, settings.groq_model_large],
-        day_usage,
+        state["usage_log"],
         est_call_tokens=state["max_call_tokens_seen"],
     )
     summary = await record(
