@@ -31,6 +31,7 @@ _BASE_SETTINGS = dict(
     GROQ_API_KEY="fake-groq-key",
     SECONDARY_PROVIDER_API_KEY="",
     SECONDARY_PROVIDER_MODEL="",
+    SECONDARY_PROVIDER_KIND="openrouter",  # explicit: unset + key configured is an error (S23)
     GROQ_MODEL="llama-3.3-70b-versatile",
     LLM_MAX_RETRIES=0,
     LLM_TIMEOUT_SECONDS=30,
