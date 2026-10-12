@@ -1,15 +1,17 @@
 """Nightly synthetic failover probe — Wave 1 Section F ("Reliability").
 
 Context: `app/core/llm.py::extract_with_llm`'s org-key path had ZERO working failover
-until this section (Section F) landed a real `SecondaryProvider` (OpenRouter, ZDR-
-enforced — see `app/core/providers/secondary.py`'s docstring). "A config fix without
+until this section (Section F) landed a real secondary provider (built by
+`app.core.llm._build_secondary`: Groq when SECONDARY_PROVIDER_KIND=groq, as in production;
+OpenRouter ZDR-only otherwise — see `app/core/providers/secondary.py`). "A config fix without
 the probe is not a fix" — this script is that probe. It makes REAL live calls (no
 mocks, no cassettes) against both failover paths on a fixed cadence and fails LOUDLY,
 naming exactly which path broke, instead of silently degrading.
 
 One path is exercised, independently of the primary Groq path:
-  SecondaryProvider — the ONLY failover (OpenRouter, ZDR-only). The Gemini fallback was
-  retired in S17 (ADR 0035), so there is no longer a Gemini probe.
+  Secondary provider — the ONLY failover, built by the production factory so KIND/model/key
+  match Cloud Run (production: Groq openai/gpt-oss-120b on the shared-account key). The
+  Gemini fallback was retired in S17 (ADR 0035), so there is no longer a Gemini probe.
 
 Each path either returns a valid `ReviewExtractionLLMOutput` or the probe records it
 as a hard failure. Exit code is non-zero if either path fails — this is what should
@@ -19,9 +21,9 @@ Usage:
     uv run python scripts/probe_failover.py
     uv run python scripts/probe_failover.py --slack-webhook "$SLACK_WEBHOOK_URL"
 
-Cost: 1 tiny live call per invocation (~150-250 tokens total). At one nightly run,
-this is a few hundred tokens/month — negligible against both providers' free/low
-tiers (see PLAN.md Section F entry for the $/month estimate).
+Cost: 1 live Groq call per invocation (~2.1K tokens measured 2026-10-12 incl. the
+production system prompt) on the Groq FREE tier, shared-account key: $0. Never the
+dedicated-org primary key.
 
 Session 15c amendment (D4, GG decision 2026-09-20) -- three-state result per path:
   PASS            live call succeeded and parsed.
@@ -110,25 +112,24 @@ async def _build_probe_prompt() -> str:
 
 
 async def probe_secondary() -> ProbeResult:
-    """Exercise the SecondaryProvider (OpenRouter, ZDR-only) path with a real live call.
+    """Exercise the secondary failover path production actually builds, with a live call.
 
-    Calls `SecondaryProvider.complete()` directly rather than through
-    `extract_with_llm()` -- isolates this path from tiered-routing/Groq-primary
-    config, which would otherwise be attempted first and mask a broken secondary path.
+    The provider comes from `app.core.llm._build_secondary` -- the SAME factory
+    `extract_with_llm` uses -- so SECONDARY_PROVIDER_KIND is honoured (production: a Groq
+    secondary; legacy default: OpenRouter ZDR). Hard-wiring a provider class here made this
+    probe test an OpenRouter path production did not use (S23: decorative control).
+    Calls `provider.complete()` directly rather than through `extract_with_llm()` --
+    isolates this path from tiered-routing/Groq-primary config, which would otherwise be
+    attempted first and mask a broken secondary path.
     """
     from app.core.config import get_settings
-    from app.core.llm import _SYSTEM_PROMPT, _parse_response
+    from app.core.llm import _SYSTEM_PROMPT, _build_secondary, _parse_response
     from app.core.providers.base import assert_privacy_safe
-    from app.core.providers.secondary import SecondaryProvider
 
     settings = get_settings()
-    provider = SecondaryProvider(
-        api_key=settings.secondary_provider_api_key,
-        model=settings.secondary_provider_model,
-    )
-    if not provider.is_configured:
-        has_key = bool(settings.secondary_provider_api_key)
-        has_model = bool(settings.secondary_provider_model)
+    has_key = bool(settings.secondary_provider_api_key)
+    has_model = bool(settings.secondary_provider_model)
+    if not (has_key and has_model):  # same gate as extract_with_llm's secondary branch
         if has_key != has_model:
             # Someone tried to configure this path and got it half-wrong: that is a broken
             # config (FAIL, not acknowledgeable), not a deliberate "not configured".
@@ -143,6 +144,7 @@ async def probe_secondary() -> ProbeResult:
             "SECONDARY_PROVIDER_API_KEY / SECONDARY_PROVIDER_MODEL absent",
         )
 
+    provider = _build_secondary(settings)
     try:
         assert_privacy_safe(provider, context="nightly failover probe")
     except RuntimeError as exc:
@@ -155,13 +157,16 @@ async def probe_secondary() -> ProbeResult:
         _parse_response(raw)  # raises on schema mismatch -- that IS a probe failure
     except Exception as exc:  # noqa: BLE001 -- any failure here is a probe finding, not a crash
         latency_ms = int((time.monotonic() - t0) * 1000)
-        return ProbeResult("secondary", ProbeState.FAIL, latency_ms, f"{type(exc).__name__}: {exc}")
+        # Mask the key defensively: this detail reaches CI logs, the step summary and Slack.
+        detail = f"{type(exc).__name__}: {exc}".replace(settings.secondary_provider_api_key, "***")
+        return ProbeResult("secondary", ProbeState.FAIL, latency_ms, detail)
     latency_ms = int((time.monotonic() - t0) * 1000)
 
     return ProbeResult(
         "secondary",
         ProbeState.PASS,
         latency_ms,
+        f"kind={settings.secondary_provider_kind} provider={type(provider).__name__} "
         f"model={settings.secondary_provider_model} tokens_in={tokens_in} tokens_out={tokens_out}",
     )
 
