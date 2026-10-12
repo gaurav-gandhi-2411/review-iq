@@ -44,10 +44,19 @@ def build_report(manifest: dict, items: dict, texts: dict[str, str], yield_rep: 
     pool_of = {r["id"]: r["pool"] for r in rows}
     labelled = {i: TJ.label_item(*(items[i].get(j) for j in PANEL)) for i in ids}
     rep: dict = {"domain": manifest["domain"], "split": manifest["split"], "n_items": len(ids)}
+    # Two raters: task_report's clear-consensus fields need three and would overwrite n_units with 0.
     rep["first_pass_agreement_llama_vs_qwen"] = {
-        t: A.task_report(
-            [[_v(items[i].get(PANEL[0]), t), _v(items[i].get(PANEL[1]), t)] for i in ids], lv
-        )
+        t: {
+            **{
+                k: v
+                for k, v in A.task_report(
+                    [[_v(items[i].get(PANEL[0]), t), _v(items[i].get(PANEL[1]), t)] for i in ids],
+                    lv,
+                ).items()
+                if k in ("alpha", "pairwise_agreement")
+            },
+            "n_units": len(ids),
+        }
         for t, lv in LEVELS.items()
     }
     sub = [i for i in ids if items[i].get(PANEL[2])]
@@ -145,13 +154,14 @@ def render_md(rep: dict, source: dict) -> str:
         L.append(f"| {t} | {v['alpha']} | {v['pairwise_agreement']} | {v['n_units']} |")
     mt = rep["mistral_tiebreak"]
     L += ["", f"Mistral tiebreak ran on {mt['ran_on']} items ({mt['fraction']}; planning assumption {mt['planning_assumption']}).",
-          "", "Three-judge agreement on that subset (clear consensus needs three raters):", "",
+          "", "Three-judge agreement on that subset (clear consensus needs three raters). The subset is the items where llama and qwen",
+          "already disagreed on some task, so these are lower than a random-item figure by construction:", "",
           "| task | alpha | clear consensus | unanimous | n |", "|---|---|---|---|---|"]  # fmt: skip
     for t, v in mt["three_judge_agreement_on_subset"].items():
         L.append(
             f"| {t} | {v['alpha']} | {v.get('clear_consensus')} | {v.get('unanimous')} | {v['n_units']} |"
         )
-    L += ["", "## delivery / service: food-app specific vs transferable (lexical proxy)", "",
+    L += ["", "## delivery / service: food-app specific vs transferable (lexical proxy, an UPPER bound on specificity: broad words such as order/app/food count as specific)", "",
           "| class | n | food-app specific | transferable | share specific |", "|---|---|---|---|---|"]  # fmt: skip
     for k, v in rep["delivery_service_transfer_proxy"].items():
         L.append(

@@ -1,0 +1,199 @@
+{
+ "domain": "out_of_domain_food_delivery",
+ "split": "aux_train",
+ "n_items": 3000,
+ "first_pass_agreement_llama_vs_qwen": {
+  "needs_action": {
+   "alpha": 0.9003,
+   "pairwise_agreement": 0.9533,
+   "n_units": 3000
+  },
+  "broad_intent": {
+   "alpha": 0.4458,
+   "pairwise_agreement": 0.5737,
+   "n_units": 3000
+  },
+  "sentiment": {
+   "alpha": 0.8345,
+   "pairwise_agreement": 0.9163,
+   "n_units": 3000
+  },
+  "urgency": {
+   "alpha": 0.4618,
+   "pairwise_agreement": 0.6477,
+   "n_units": 3000
+  }
+ },
+ "mistral_tiebreak": {
+  "ran_on": 1850,
+  "fraction": 0.6167,
+  "planning_assumption": 0.3,
+  "three_judge_agreement_on_subset": {
+   "needs_action": {
+    "n_units": 1850,
+    "alpha": 0.7469,
+    "fleiss_kappa": 0.7469,
+    "fleiss_n_complete": 1850,
+    "pairwise_agreement": 0.9319,
+    "clear_consensus": 0.8978,
+    "unanimous": 0.8978
+   },
+   "broad_intent": {
+    "n_units": 1850,
+    "alpha": 0.2325,
+    "fleiss_kappa": 0.2324,
+    "fleiss_n_complete": 1850,
+    "pairwise_agreement": 0.4263,
+    "clear_consensus": 0.2319,
+    "unanimous": 0.2319
+   },
+   "sentiment": {
+    "n_units": 1850,
+    "alpha": 0.5764,
+    "fleiss_kappa": 0.5763,
+    "fleiss_n_complete": 1850,
+    "pairwise_agreement": 0.849,
+    "clear_consensus": 0.8038,
+    "unanimous": 0.8038
+   },
+   "urgency": {
+    "n_units": 1850,
+    "alpha": 0.3327,
+    "fleiss_kappa": 0.3326,
+    "fleiss_n_complete": 1850,
+    "pairwise_agreement": 0.5737,
+    "clear_consensus": 0.3681,
+    "unanimous": 0.3681
+   }
+  }
+ },
+ "label_provenance": {
+  "needs_action": {
+   "agree": 2860,
+   "tiebreak": 140
+  },
+  "broad_intent": {
+   "agree": 1721,
+   "tiebreak": 937,
+   "abstain": 342
+  },
+  "sentiment": {
+   "agree": 2749,
+   "tiebreak": 139,
+   "abstain": 112
+  },
+  "urgency": {
+   "agree": 1943,
+   "tiebreak": 1029,
+   "abstain": 28
+  }
+ },
+ "broad_intent": {
+  "n_labelled": 2658,
+  "abstained": 342,
+  "labelled_fraction_wilson95": [
+   0.8741,
+   0.8969
+  ],
+  "classes": {
+   "product_issue": {
+    "n": 171,
+    "by_pool": {
+     "regex_enriched": 78,
+     "random": 93
+    },
+    "insufficient_data_at_sealed_threshold": false
+   },
+   "delivery": {
+    "n": 545,
+    "by_pool": {
+     "regex_enriched": 376,
+     "random": 169
+    },
+    "insufficient_data_at_sealed_threshold": false
+   },
+   "service": {
+    "n": 694,
+    "by_pool": {
+     "regex_enriched": 478,
+     "random": 216
+    },
+    "insufficient_data_at_sealed_threshold": false
+   },
+   "praise": {
+    "n": 831,
+    "by_pool": {
+     "regex_enriched": 235,
+     "random": 596
+    },
+    "insufficient_data_at_sealed_threshold": false
+   },
+   "other": {
+    "n": 417,
+    "by_pool": {
+     "regex_enriched": 128,
+     "random": 289
+    },
+    "insufficient_data_at_sealed_threshold": false
+   }
+  }
+ },
+ "sentiment_labels": {
+  "None": 112,
+  "mixed": 32,
+  "negative": 1846,
+  "neutral": 97,
+  "positive": 913
+ },
+ "urgency_labels": {
+  "None": 28,
+  "high": 821,
+  "low": 1157,
+  "medium": 994
+ },
+ "needs_action_labels": {
+  "no": 1065,
+  "yes": 1935
+ },
+ "delivery_service_transfer_proxy": {
+  "delivery": {
+   "n": 545,
+   "food_app_specific_lexical": 504,
+   "transferable_lexical": 41,
+   "share_food_app_specific": 0.9248,
+   "note": "lexical proxy (FOOD_SPECIFIC_RE: dasher/driver/restaurant/food/menu/tip/app/order...); not a judged label"
+  },
+  "service": {
+   "n": 694,
+   "food_app_specific_lexical": 589,
+   "transferable_lexical": 105,
+   "share_food_app_specific": 0.8487,
+   "note": "lexical proxy (FOOD_SPECIFIC_RE: dasher/driver/restaurant/food/menu/tip/app/order...); not a judged label"
+  }
+ },
+ "regex_vs_label": {
+  "delivery": {
+   "label_in_regex_enriched": 376,
+   "strict_regex_precision": 0.3663
+  },
+  "service": {
+   "label_in_regex_enriched": 478,
+   "strict_regex_precision": 0.4404
+  }
+ },
+ "yield_estimate_ref": {
+  "seed": 42,
+  "pool_after_clean_len_english_dedupe": 977188,
+  "sample_regex_prevalence": {
+   "delivery": 0.3,
+   "service": 0.218,
+   "either": 0.423,
+   "both": 0.095
+  },
+  "strict_enrichment_regex_prevalence": {
+   "delivery": 0.1435,
+   "service": 0.1425,
+   "either": 0.241
+  }
+ }
+}
