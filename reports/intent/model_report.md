@@ -394,3 +394,184 @@ Best epoch 7 of at most 30; stopped early: yes; patience 3; best validation mean
 | int8_ffn_full | 1 | 200 | 78.19 | 117.31 | 118.45 | 1.05 | 77.26 |
 | int8_ffn_full | 32 | 200 | 2697.46 | 2741.51 | 2753.66 | 10.33 | 2687.1 |
 <!-- METRICS:END -->
+
+## Run 3: training with the safety stratum (Amendment 7, registered before any run-3 training step)
+
+Run 3 is the run 2 recipe (seed 42, up to 30 epochs, patience 3, validation-only early stopping) with the safety stratum's TRAIN items
+added. Safety VAL and TEST items never enter training. Two comparisons are reported and they are separate questions. **Evaluation A**
+is the Amendment 5 sealed set, run 3 versus run 2 on the same items, as before. **Evaluation B** is the safety stratum, which is
+**enriched, keyword-mined, with silver (panel) labels**: it is never pooled with A and its precision and recall are not base-rate
+numbers. Intervals are written as "item bootstrap, no product ids" for A, and as group bootstrap (independent near-duplicate groups) for B.
+`run2_local` is the run 2 recipe re-run on this machine with no safety data, to separate environment from data; run 2 itself
+was trained on Kaggle. Single seeds throughout: "outside noise" below means the paired item-bootstrap interval excludes 0 and does
+not exclude seed noise.
+
+### Run 3 setup (provenance of the training runs)
+
+<!-- METRICS:START:run3_setup -->
+| Run | Training commit | Device / torch | Train items | Best epoch / stopped early | Best val mean macro-F1 | Training wall time (s) | Safety stratum |
+|---|---|---|---|---|---|---|---|
+| run2_local | `ad622b2` | cuda / 2.6.0+cu124 | 3777 | 7 / yes | 0.7367 | 245.6 | excluded |
+| run3 | `ad622b2` | cuda / 2.6.0+cu124 | 4549 | 11 / yes | 0.7680 | 374.5 | included: 787 train items, 157 urgency=high |
+<!-- METRICS:END -->
+
+### Evaluation A: Amendment 5 sealed set, run 3 versus run 2
+
+<!-- METRICS:START:run3_base -->
+| Task | n (sealed, ledger exclusions dropped) | Run | Macro-F1 | Accuracy | Difference vs run 2 [paired item bootstrap 95%, no product ids] | Outside noise |
+|---|---|---|---|---|---|---|
+| needs_action | 717 | run2 | 0.929 | 0.962 | baseline |  |
+| needs_action | 717 | run2_local | 0.929 | 0.964 | +0.000 [-0.020, 0.021] | no |
+| needs_action | 717 | run3 | 0.911 | 0.953 | -0.018 [-0.039, 0.002] | no |
+| broad_intent | 700 | run2 | 0.844 | 0.919 | baseline |  |
+| broad_intent | 700 | run2_local | 0.818 | 0.903 | -0.026 [-0.055, 0.001] | no |
+| broad_intent | 700 | run3 | 0.837 | 0.926 | -0.007 [-0.046, 0.030] | no |
+| sentiment | 673 | run2 | 0.939 | 0.948 | baseline |  |
+| sentiment | 673 | run2_local | 0.921 | 0.933 | -0.018 [-0.040, 0.003] | no |
+| sentiment | 673 | run3 | 0.933 | 0.945 | -0.006 [-0.026, 0.016] | no |
+| urgency | 703 | run2 | 0.894 | 0.955 | baseline |  |
+| urgency | 703 | run2_local | 0.900 | 0.957 | +0.007 [-0.020, 0.037] | no |
+| urgency | 703 | run3 | 0.885 | 0.950 | -0.008 [-0.040, 0.021] | no |
+<!-- METRICS:END -->
+
+### Evaluation B: safety stratum (enriched, keyword-mined, silver panel labels; reported separately)
+
+<!-- METRICS:START:run3_safety -->
+Label basis: enriched, keyword-mined, silver (panel) labels; not a base-rate number; never pooled with the Amendment 5 sealed set. Bootstrap: 1000 resamples of independent near-duplicate GROUPS, seed 42; no product ids exist for this stratum.
+Test items 720; with a panel urgency label 656; ledger-excluded dropped 4; evaluated 654. Independent positive groups (BINDING n): 130 after exclusions, 131 before; nominal positive items before exclusions: 143 (shown beside, not used as n). Safety validation: 80 items, 17 urgency=high.
+
+| Run | Operating point | Independent positive groups | Recall [Wilson 95%] [group bootstrap 95%] | Precision [Wilson 95%] [group bootstrap 95%] | Nominal items beside: positives / flagged / true positives |
+|---|---|---|---|---|---|
+| run2 | P: argmax (primary) | 130 | 0.119 [0.077, 0.191] [0.068, 0.179] | 0.838 [0.672, 0.969] [0.636, 1.000] | 142 / 20 / 17 |
+| run2 | S: threshold 0.145509 chosen on safety validation (secondary) | 130 | 0.865 [0.792, 0.911] [0.804, 0.918] | 0.643 [0.567, 0.707] [0.572, 0.708] | 142 / 190 / 122 |
+| run2_local | P: argmax (primary) | 130 | 0.319 [0.249, 0.407] [0.240, 0.399] | 0.838 [0.715, 0.917] [0.733, 0.935] | 142 / 54 / 46 |
+| run2_local | S: threshold 0.213334 chosen on safety validation (secondary) | 130 | 0.781 [0.706, 0.847] [0.707, 0.845] | 0.672 [0.597, 0.745] [0.601, 0.745] | 142 / 164 / 111 |
+| run3 | P: argmax (primary) | 130 | 0.877 [0.809, 0.923] [0.823, 0.933] | 0.669 [0.597, 0.737] [0.598, 0.733] | 142 / 185 / 125 |
+| run3 | S: threshold 0.280969 chosen on safety validation (secondary) | 130 | 0.931 [0.874, 0.963] [0.886, 0.971] | 0.635 [0.566, 0.702] [0.569, 0.694] | 142 / 208 / 132 |
+| run3_fp32_cpu | P: argmax (primary) | 130 | 0.877 [0.809, 0.923] [0.823, 0.933] | 0.669 [0.597, 0.737] [0.598, 0.733] | 142 / 185 / 125 |
+| run3_fp32_cpu | S: threshold 0.281462 chosen on safety validation (secondary) | 130 | 0.931 [0.874, 0.963] [0.886, 0.971] | 0.635 [0.566, 0.702] [0.569, 0.694] | 142 / 208 / 132 |
+| run3_int8_linear | P: argmax (primary) | 130 | 0.058 [0.032, 0.117] [0.022, 0.102] | 1.000 [0.676, 1.000] [1.000, 1.000] | 142 / 8 / 8 |
+| run3_int8_linear | S: threshold 0.069121 chosen on safety validation (secondary) | 130 | 0.708 [0.624, 0.779] [0.626, 0.783] | 0.639 [0.558, 0.713] [0.559, 0.709] | 142 / 156 / 100 |
+| run3_int8_full | P: argmax (primary) | 130 | 0.035 [0.012, 0.076] [0.008, 0.069] | 1.000 [0.510, 1.000] [1.000, 1.000] | 142 / 5 / 5 |
+| run3_int8_full | S: threshold 0.067028 chosen on safety validation (secondary) | 130 | 0.742 [0.657, 0.806] [0.665, 0.817] | 0.629 [0.545, 0.696] [0.554, 0.697] | 142 / 168 / 104 |
+| run3_int8_perchannel | P: argmax (primary) | 130 | 0.046 [0.021, 0.097] [0.015, 0.084] | 1.000 [0.610, 1.000] [1.000, 1.000] | 142 / 6 / 6 |
+| run3_int8_perchannel | S: threshold 0.079855 chosen on safety validation (secondary) | 130 | 0.650 [0.561, 0.723] [0.566, 0.734] | 0.713 [0.625, 0.786] [0.632, 0.784] | 142 / 128 / 91 |
+| run3_int8_perchannel_full | P: argmax (primary) | 130 | 0.058 [0.032, 0.117] [0.023, 0.100] | 1.000 [0.676, 1.000] [1.000, 1.000] | 142 / 8 / 8 |
+| run3_int8_perchannel_full | S: threshold 0.065462 chosen on safety validation (secondary) | 130 | 0.750 [0.673, 0.820] [0.676, 0.822] | 0.608 [0.535, 0.684] [0.536, 0.676] | 142 / 178 / 106 |
+| run3_int8_ffn_full | P: argmax (primary) | 130 | 0.154 [0.102, 0.226] [0.098, 0.217] | 1.000 [0.839, 1.000] [1.000, 1.000] | 142 / 21 / 21 |
+| run3_int8_ffn_full | S: threshold 0.070848 chosen on safety validation (secondary) | 130 | 0.719 [0.641, 0.793] [0.642, 0.802] | 0.693 [0.614, 0.767] [0.616, 0.762] | 142 / 149 / 102 |
+<!-- METRICS:END -->
+
+<!-- METRICS:START:run3_safety_paired -->
+| Run | Operating point | Recall difference vs run2 [paired group bootstrap 95%] | Precision difference [paired group bootstrap 95%] |
+|---|---|---|---|
+| run2_local | P_argmax | +0.200 [0.132, 0.271] | 0.001 [-0.143, 0.172] |
+| run2_local | S_val_f1_threshold | -0.085 [-0.150, -0.021] | 0.029 [-0.020, 0.085] |
+| run3 | P_argmax | +0.758 [0.688, 0.832] | -0.169 [-0.325, 0.017] |
+| run3 | S_val_f1_threshold | +0.065 [0.016, 0.122] | -0.008 [-0.057, 0.038] |
+| run3_fp32_cpu | P_argmax | +0.758 [0.688, 0.832] | -0.169 [-0.325, 0.017] |
+| run3_fp32_cpu | S_val_f1_threshold | +0.065 [0.016, 0.122] | -0.008 [-0.057, 0.038] |
+| run3_int8_linear | P_argmax | -0.061 [-0.118, -0.007] | 0.162 [0.000, 0.364] |
+| run3_int8_linear | S_val_f1_threshold | -0.158 [-0.258, -0.069] | -0.004 [-0.071, 0.064] |
+| run3_int8_full | P_argmax | -0.085 [-0.149, -0.023] | 0.162 [0.000, 0.364] |
+| run3_int8_full | S_val_f1_threshold | -0.123 [-0.213, -0.036] | -0.014 [-0.083, 0.053] |
+| run3_int8_perchannel | P_argmax | -0.073 [-0.134, -0.017] | 0.162 [0.000, 0.358] |
+| run3_int8_perchannel | S_val_f1_threshold | -0.215 [-0.312, -0.126] | 0.070 [-0.001, 0.134] |
+| run3_int8_perchannel_full | P_argmax | -0.061 [-0.124, 0.000] | 0.162 [0.000, 0.364] |
+| run3_int8_perchannel_full | S_val_f1_threshold | -0.115 [-0.203, -0.028] | -0.035 [-0.099, 0.028] |
+| run3_int8_ffn_full | P_argmax | +0.035 [-0.039, 0.112] | 0.162 [0.000, 0.364] |
+| run3_int8_ffn_full | S_val_f1_threshold | -0.146 [-0.242, -0.057] | 0.050 [-0.019, 0.115] |
+<!-- METRICS:END -->
+
+### Verdict against the pre-registered criteria
+
+<!-- METRICS:START:run3_verdict -->
+- Criterion A (every core task's macro-F1 difference vs run 2 >= -0.02): PASS; differences needs_action -0.018, broad_intent -0.007, sentiment -0.006, urgency -0.008
+- Criterion B (urgency=high recall up with an interval excluding 0, precision not down by more than 0.05; operating point P): FAIL; recall difference +0.758 [0.688, 0.832]; precision difference -0.169
+- run2_local differs from run 2 by more than 0.02 macro-F1 on a core task (environment-confounded): yes
+- **Outcome: NEGATIVE RESULT (not promoted)**
+<!-- METRICS:END -->
+
+### Run 3 int8 CPU export: probabilities recomputed, temperatures and thresholds refit on validation
+
+<!-- METRICS:START:int8 -->
+| Task | Variant | Accuracy | Macro-F1 | Conservative p0.95 coverage | precision | Reached | Accuracy delta vs GPU fp16 | Macro-F1 delta | Coverage delta | Argmax agreement with GPU on sealed |
+|---|---|---|---|---|---|---|---|---|---|---|
+| needs_action | GPU fp16 (reference) | 0.953 | 0.911 | 0.912 | 0.982 | yes | | | | |
+| needs_action | fp32_cpu | 0.953 | 0.911 | 0.912 | 0.982 | yes | 0.000 | 0.000 | 0.000 | 1.000 |
+| needs_action | int8_linear | 0.941 | 0.873 | 0.837 | 0.985 | yes | -0.011 | -0.038 | -0.075 | 0.940 |
+| needs_action | int8_full | 0.950 | 0.893 | 0.842 | 0.983 | yes | -0.003 | -0.018 | -0.070 | 0.941 |
+| needs_action | int8_perchannel | 0.951 | 0.897 | 0.877 | 0.984 | yes | -0.001 | -0.014 | -0.035 | 0.946 |
+| needs_action | int8_perchannel_full | 0.954 | 0.903 | 0.831 | 0.985 | yes | 0.001 | -0.008 | -0.081 | 0.949 |
+| needs_action | int8_ffn_full | 0.955 | 0.908 | 0.851 | 0.987 | yes | 0.003 | -0.003 | -0.061 | 0.953 |
+| broad_intent | GPU fp16 (reference) | 0.926 | 0.837 | 0.776 | 0.980 | yes | | | | |
+| broad_intent | fp32_cpu | 0.927 | 0.839 | 0.776 | 0.980 | yes | 0.001 | 0.002 | 0.000 | 0.999 |
+| broad_intent | int8_linear | 0.894 | 0.750 | 0.691 | 0.984 | yes | -0.031 | -0.087 | -0.084 | 0.898 |
+| broad_intent | int8_full | 0.893 | 0.755 | 0.674 | 0.983 | yes | -0.033 | -0.082 | -0.101 | 0.886 |
+| broad_intent | int8_perchannel | 0.899 | 0.761 | 0.686 | 0.983 | yes | -0.027 | -0.076 | -0.090 | 0.902 |
+| broad_intent | int8_perchannel_full | 0.903 | 0.785 | 0.640 | 0.989 | yes | -0.023 | -0.053 | -0.136 | 0.899 |
+| broad_intent | int8_ffn_full | 0.903 | 0.783 | 0.670 | 0.989 | yes | -0.023 | -0.055 | -0.106 | 0.911 |
+| sentiment | GPU fp16 (reference) | 0.945 | 0.933 | 0.877 | 0.995 | yes | | | | |
+| sentiment | fp32_cpu | 0.945 | 0.933 | 0.877 | 0.995 | yes | 0.000 | 0.000 | 0.000 | 1.000 |
+| sentiment | int8_linear | 0.902 | 0.846 | 0.805 | 0.983 | yes | -0.043 | -0.087 | -0.071 | 0.870 |
+| sentiment | int8_full | 0.900 | 0.842 | 0.828 | 0.979 | yes | -0.045 | -0.092 | -0.049 | 0.868 |
+| sentiment | int8_perchannel | 0.899 | 0.844 | 0.793 | 0.985 | yes | -0.046 | -0.090 | -0.083 | 0.866 |
+| sentiment | int8_perchannel_full | 0.896 | 0.837 | 0.834 | 0.982 | yes | -0.049 | -0.097 | -0.043 | 0.864 |
+| sentiment | int8_ffn_full | 0.902 | 0.848 | 0.825 | 0.986 | yes | -0.043 | -0.085 | -0.052 | 0.877 |
+| urgency | GPU fp16 (reference) | 0.950 | 0.885 | 0.854 | 0.992 | yes | | | | |
+| urgency | fp32_cpu | 0.950 | 0.885 | 0.854 | 0.992 | yes | 0.000 | 0.000 | 0.000 | 1.000 |
+| urgency | int8_linear | 0.935 | 0.792 | 0.787 | 0.989 | yes | -0.016 | -0.093 | -0.067 | 0.902 |
+| urgency | int8_full | 0.926 | 0.761 | 0.795 | 0.991 | yes | -0.024 | -0.124 | -0.058 | 0.899 |
+| urgency | int8_perchannel | 0.939 | 0.813 | 0.747 | 0.992 | yes | -0.011 | -0.073 | -0.107 | 0.908 |
+| urgency | int8_perchannel_full | 0.937 | 0.801 | 0.754 | 0.993 | yes | -0.013 | -0.084 | -0.100 | 0.899 |
+| urgency | int8_ffn_full | 0.939 | 0.813 | 0.797 | 0.991 | yes | -0.011 | -0.073 | -0.057 | 0.910 |
+| aspect:beauty:results_efficacy | GPU fp16 (reference) | 0.922 | 0.867 | 0.938 | 0.950 | yes | | | | |
+| aspect:beauty:results_efficacy | fp32_cpu | 0.922 | 0.867 | 0.938 | 0.950 | yes | 0.000 | 0.000 | 0.000 | 1.000 |
+| aspect:beauty:results_efficacy | int8_linear | 0.896 | 0.760 | 0.859 | 0.958 | yes | -0.026 | -0.107 | -0.078 | 0.915 |
+| aspect:beauty:results_efficacy | int8_full | 0.880 | 0.695 | 0.854 | 0.963 | yes | -0.042 | -0.172 | -0.083 | 0.908 |
+| aspect:beauty:results_efficacy | int8_perchannel | 0.906 | 0.798 | 0.875 | 0.941 | no | -0.016 | -0.069 | -0.062 | 0.911 |
+| aspect:beauty:results_efficacy | int8_perchannel_full | 0.901 | 0.780 | 0.844 | 0.963 | yes | -0.021 | -0.088 | -0.094 | 0.902 |
+| aspect:beauty:results_efficacy | int8_ffn_full | 0.891 | 0.740 | 0.802 | 0.987 | yes | -0.031 | -0.128 | -0.135 | 0.906 |
+| aspect:food:taste | GPU fp16 (reference) | 0.908 | 0.884 | 0.000 | n/a | no | | | | |
+| aspect:food:taste | fp32_cpu | 0.908 | 0.884 | 0.000 | n/a | no | 0.000 | 0.000 | 0.000 | 1.000 |
+| aspect:food:taste | int8_linear | 0.890 | 0.829 | 0.000 | n/a | no | -0.018 | -0.054 | 0.000 | 0.927 |
+| aspect:food:taste | int8_full | 0.917 | 0.865 | 0.000 | n/a | no | 0.009 | -0.019 | 0.000 | 0.932 |
+| aspect:food:taste | int8_perchannel | 0.881 | 0.812 | 0.000 | n/a | no | -0.028 | -0.072 | 0.000 | 0.927 |
+| aspect:food:taste | int8_perchannel_full | 0.908 | 0.862 | 0.000 | n/a | no | 0.000 | -0.021 | 0.000 | 0.933 |
+| aspect:food:taste | int8_ffn_full | 0.908 | 0.858 | 0.000 | n/a | no | 0.000 | -0.026 | 0.000 | 0.941 |
+<!-- METRICS:END -->
+
+<!-- METRICS:START:int8_sizes -->
+| Model | File size (MB) |
+|---|---|
+| fp32 checkpoint | 1112.4 |
+| fp32_cpu state dict | 1112.4 |
+| int8_linear state dict | 855.8 |
+| int8_full state dict | 281.8 |
+| int8_perchannel state dict | 857.2 |
+| int8_perchannel_full state dict | 283.2 |
+| int8_ffn_full state dict | 369.3 |
+<!-- METRICS:END -->
+
+### Run 3 CPU latency (measured exactly as run 2)
+
+<!-- METRICS:START:latency -->
+- CPU: AMD Ryzen 7 6800H with Radeon Graphics         ; cores 8, logical processors 16; torch threads 8; torch 2.6.0+cu124; Windows-11-10.0.26300-SP0
+- inputs: 757 real sealed review texts, mean 75.9 tokens, p95 128.0, share truncated at the 128-token limit 0.168; 20 warm-up calls discarded per configuration
+- system CPU use before / after the run: 26.8 / 27.2 percent
+
+| Variant | Batch | Timed calls | Total p50 ms | p95 ms | p99 ms | Tokenise p50 ms | Forward p50 ms |
+|---|---|---|---|---|---|---|---|
+| fp32_cpu | 1 | 200 | 100.17 | 150.33 | 151.65 | 1.02 | 99.14 |
+| fp32_cpu | 32 | 200 | 3477.54 | 3623.64 | 3648.69 | 10.4 | 3467.64 |
+| int8_linear | 1 | 200 | 79.05 | 114.14 | 117.03 | 1.01 | 78.06 |
+| int8_linear | 32 | 200 | 1758.62 | 2117.35 | 2123.44 | 8.61 | 1750.68 |
+| int8_full | 1 | 200 | 71.57 | 107.8 | 113.36 | 0.85 | 70.7 |
+| int8_full | 32 | 200 | 1722.65 | 2071.5 | 2099.22 | 7.93 | 1714.58 |
+| int8_perchannel | 1 | 200 | 81.93 | 127.68 | 146.7 | 0.97 | 80.93 |
+| int8_perchannel | 32 | 200 | 1962.69 | 2099.13 | 2398.94 | 9.52 | 1953.65 |
+| int8_perchannel_full | 1 | 200 | 90.82 | 165.15 | 237.51 | 0.92 | 89.63 |
+| int8_perchannel_full | 32 | 200 | 1835.76 | 3066.73 | 8368.54 | 9.38 | 1825.88 |
+| int8_ffn_full | 1 | 200 | 94.27 | 1779.05 | 2173.61 | 0.92 | 93.37 |
+| int8_ffn_full | 32 | 200 | 2335.57 | 6388.74 | 6952.46 | 9.88 | 2327.23 |
+<!-- METRICS:END -->
