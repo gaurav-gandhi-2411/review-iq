@@ -25,11 +25,12 @@ Modes:
 
 Safety rails (record mode):
   - per-model token guard: never start a call if used(model, last 24h) + EST_TOKENS_PER_CALL would
-    exceed TOKEN_CEILING_PER_MODEL (95K, i.e. 5% inside the 100K/model/day budget; the pools are
+    exceed TOKEN_CEILING_PER_MODEL (95K, i.e. 5% inside the 100K/model/rolling-24h eval cap; the pools are
     independent, each model's TPD is 200K). An escalated call charges BOTH pools.
   - day ledger (eval/results/no_routing_stage1_ledger.json): a rolling 24h window of every call's
     tokens per model, persisted after every call, so separate invocations cannot exceed the ceiling.
-    Rolling rather than calendar day because Groq's TPD window is not guaranteed to reset at 00:00 UTC.
+    Rolling rather than calendar day: Groq's TPD window is rolling (VERIFIED 429 body 2026-10-12
+    00:07 UTC: "Limit 200000, Used 199445 ... try again in 3m0s"), there is no 00:00 UTC reset.
   - pacing: PACING_SECONDS between calls keeps ~3K-token calls under the 8K TPM per-model limit.
   - resume: rows are persisted after every call; a re-run skips ids already done.
   - own cassette file (eval/cassettes/no_routing_stage1_cassettes.json).
@@ -77,7 +78,7 @@ REPORT_PATH = ROOT / "eval" / "results" / "no_routing_stage1_report.json"
 DESIGN_PATH = ROOT / "eval" / "results" / "no_routing_stage1_design.json"
 
 # ---- budget (spec S2c: 100K tokens per model per day; each pool independent, TPD is 200K) ----
-TOKEN_CEILING_PER_MODEL = 95_000  # 5% inside the 100K/model/day experiment budget
+TOKEN_CEILING_PER_MODEL = 95_000  # 5% inside the 100K/model/rolling-24h eval cap
 EST_TOKENS_PER_CALL = 3_200  # ~p95 of the measured small-tier tokens per extraction (3,265)
 PACING_SECONDS = 28.0  # ~3K-token calls under the 8K TPM per-model limit
 LEDGER_WINDOW_SECONDS = 24 * 3600
