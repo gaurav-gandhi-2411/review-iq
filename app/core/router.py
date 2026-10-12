@@ -132,6 +132,7 @@ async def route_extraction(
         model=settings.groq_model_large,
         api_key=settings.groq_api_key,
         timeout=settings.llm_timeout_seconds,
+        tier="large",
     )
     assert_privacy_safe(large_provider)
 
@@ -177,6 +178,7 @@ async def route_extraction(
         model=settings.groq_model_small,
         api_key=settings.groq_api_key,
         timeout=settings.llm_timeout_seconds,
+        tier="small",
     )
     assert_privacy_safe(small_provider)
 
