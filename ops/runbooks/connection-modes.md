@@ -38,6 +38,13 @@ Never swap them incorrectly: direct in multi-instance app traffic exhausts conne
 - `app/auth/api_key.py` — key lookup, quota check, usage record insert
 - All future v2 endpoint DB calls
 
+**Client-side pool (S23):** app code reuses connections via `app/core/db_pool.py` instead of
+opening one per call. Per instance: `DB_POOL_MAXCONN` (default 5), `DB_POOL_WAIT_SECONDS`
+(default 5; then HTTP 503 + `Retry-After`). Cloud Run `maxScale=3` x 5 = 15 pooled-client
+connections worst case (limit above: ~60), plus a second revision's instances during a deploy.
+Watch for `db_pool.exhausted` / `db_pool.leaked_connection` warnings. There is no off switch
+(`DB_POOL_MAXCONN=1` still reuses the connection); rollback = revert the PR.
+
 ---
 
 ## Direct — session mode (port 5432)
