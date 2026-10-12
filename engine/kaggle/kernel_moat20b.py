@@ -129,10 +129,12 @@ items_file = glob.glob("/kaggle/input/**/items.jsonl", recursive=True)[0]
 with open(items_file, encoding="utf-8") as fh:
     status["n_items"] = sum(1 for x in fh if x.strip())
 install_ollama()
-status["ollama_version"] = sh(
-    f"{OLLAMA_DIR}/bin/ollama --version", capture_output=True, text=True
-).stdout.strip()
 servers = [start_server(g) for g in (0, 1)]
+status["ollama_version"] = sh(  # with the server up, --version prints the server version first
+    f"OLLAMA_HOST=127.0.0.1:{PORT[0]} {OLLAMA_DIR}/bin/ollama --version",
+    capture_output=True,
+    text=True,
+).stdout.strip()
 try:
     pull = subprocess.run(
         [str(OLLAMA_DIR / "bin" / "ollama"), "pull", MODEL],
