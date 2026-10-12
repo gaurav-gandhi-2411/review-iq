@@ -1,0 +1,2421 @@
+{
+ "provenance": {
+  "evaluation_commit": "a74d535",
+  "training_metadata": {
+   "commit": "58b7de1",
+   "config": {
+    "model": "intfloat/multilingual-e5-base",
+    "epochs": 30,
+    "lr": 5e-05,
+    "batch_size": 32,
+    "seed": 42,
+    "max_len": 128,
+    "patience": 3,
+    "freeze_embeddings": true
+   },
+   "device": "cuda",
+   "torch": "2.11.0+cu128",
+   "n_items": {
+    "train": 3777,
+    "val": 460,
+    "test": 763
+   },
+   "temperatures": {
+    "needs_action": 1.3731372922824219,
+    "broad_intent": 1.1706167423346407,
+    "sentiment": 1.1994039643533618,
+    "urgency": 1.2876873117790142,
+    "aspect:beauty:results_efficacy": 0.8206529062492797,
+    "aspect:beauty:texture": 1.668323699251641,
+    "aspect:beauty:skin_reaction": 1.989360810568129,
+    "aspect:beauty:fragrance": 2.214769111796432,
+    "aspect:beauty:value": 1.6896540138400642,
+    "aspect:food:taste": 1.0462825146248538,
+    "aspect:food:value": 0.9601813948757112,
+    "aspect:food:ingredient_quality": 1.9793173803351076,
+    "aspect:food:efficacy_claims": 0.12167753466515642,
+    "aspect:food:quantity": null
+   },
+   "n_labelled": {
+    "train": {
+     "needs_action": 3775,
+     "broad_intent": 3718,
+     "sentiment": 3502,
+     "urgency": 3773,
+     "aspect:beauty:results_efficacy": 712,
+     "aspect:beauty:texture": 358,
+     "aspect:beauty:skin_reaction": 166,
+     "aspect:beauty:fragrance": 182,
+     "aspect:beauty:value": 87,
+     "aspect:food:taste": 193,
+     "aspect:food:value": 120,
+     "aspect:food:ingredient_quality": 163,
+     "aspect:food:efficacy_claims": 51,
+     "aspect:food:quantity": 36
+    },
+    "val": {
+     "needs_action": 460,
+     "broad_intent": 454,
+     "sentiment": 435,
+     "urgency": 460,
+     "aspect:beauty:results_efficacy": 104,
+     "aspect:beauty:texture": 53,
+     "aspect:beauty:skin_reaction": 29,
+     "aspect:beauty:fragrance": 25,
+     "aspect:beauty:value": 14,
+     "aspect:food:taste": 23,
+     "aspect:food:value": 12,
+     "aspect:food:ingredient_quality": 19,
+     "aspect:food:efficacy_claims": 2,
+     "aspect:food:quantity": 0
+    },
+    "test": {
+     "needs_action": 723,
+     "broad_intent": 706,
+     "sentiment": 679,
+     "urgency": 708,
+     "aspect:beauty:results_efficacy": 192,
+     "aspect:beauty:texture": 69,
+     "aspect:beauty:skin_reaction": 33,
+     "aspect:beauty:fragrance": 51,
+     "aspect:beauty:value": 14,
+     "aspect:food:taste": 109,
+     "aspect:food:value": 39,
+     "aspect:food:ingredient_quality": 17,
+     "aspect:food:efficacy_claims": 13,
+     "aspect:food:quantity": 3
+    }
+   },
+   "calibration": "per-task temperature on validation only; null = fewer than 2 validation labels",
+   "train_info": {
+    "history": [
+     {
+      "epoch": 1,
+      "val_mean_macro_f1": 0.5123,
+      "loss": 0.3465505540370941,
+      "lr": 2.7102803738317755e-05,
+      "val_macro_f1_by_task": {
+       "needs_action": 0.7929,
+       "broad_intent": 0.405,
+       "sentiment": 0.4223,
+       "urgency": 0.4777,
+       "aspect:beauty:results_efficacy": 0.7567,
+       "aspect:beauty:texture": 0.2908,
+       "aspect:beauty:skin_reaction": 0.4399,
+       "aspect:beauty:fragrance": 0.3043,
+       "aspect:beauty:value": 0.6333,
+       "aspect:food:taste": 0.9562,
+       "aspect:food:value": 0.4231,
+       "aspect:food:ingredient_quality": 0.4238,
+       "aspect:food:efficacy_claims": 0.3333
+      }
+     },
+     {
+      "epoch": 2,
+      "val_mean_macro_f1": 0.6254,
+      "loss": 2.615199565887451,
+      "lr": 4.666666666666667e-05,
+      "val_macro_f1_by_task": {
+       "needs_action": 0.8701,
+       "broad_intent": 0.4955,
+       "sentiment": 0.4374,
+       "urgency": 0.5479,
+       "aspect:beauty:results_efficacy": 0.9399,
+       "aspect:beauty:texture": 0.5245,
+       "aspect:beauty:skin_reaction": 0.5563,
+       "aspect:beauty:fragrance": 0.3968,
+       "aspect:beauty:value": 0.5093,
+       "aspect:food:taste": 0.9129,
+       "aspect:food:value": 0.4889,
+       "aspect:food:ingredient_quality": 0.45,
+       "aspect:food:efficacy_claims": 1.0
+      }
+     },
+     {
+      "epoch": 3,
+      "val_mean_macro_f1": 0.6614,
+      "loss": 0.07538701593875885,
+      "lr": 4.5e-05,
+      "val_macro_f1_by_task": {
+       "needs_action": 0.8688,
+       "broad_intent": 0.4993,
+       "sentiment": 0.4384,
+       "urgency": 0.5432,
+       "aspect:beauty:results_efficacy": 0.9787,
+       "aspect:beauty:texture": 0.5245,
+       "aspect:beauty:skin_reaction": 0.5046,
+       "aspect:beauty:fragrance": 0.4279,
+       "aspect:beauty:value": 0.6333,
+       "aspect:food:taste": 0.9565,
+       "aspect:food:value": 0.5583,
+       "aspect:food:ingredient_quality": 0.6646,
+       "aspect:food:efficacy_claims": 1.0
+      }
+     },
+     {
+      "epoch": 4,
+      "val_mean_macro_f1": 0.6919,
+      "loss": 0.09173537790775299,
+      "lr": 4.3333333333333334e-05,
+      "val_macro_f1_by_task": {
+       "needs_action": 0.8773,
+       "broad_intent": 0.5215,
+       "sentiment": 0.4432,
+       "urgency": 0.5589,
+       "aspect:beauty:results_efficacy": 0.9787,
+       "aspect:beauty:texture": 0.5273,
+       "aspect:beauty:skin_reaction": 0.5563,
+       "aspect:beauty:fragrance": 0.4279,
+       "aspect:beauty:value": 0.7963,
+       "aspect:food:taste": 0.9565,
+       "aspect:food:value": 0.6857,
+       "aspect:food:ingredient_quality": 0.6646,
+       "aspect:food:efficacy_claims": 1.0
+      }
+     },
+     {
+      "epoch": 5,
+      "val_mean_macro_f1": 0.6771,
+      "loss": 0.041501060128211975,
+      "lr": 4.166666666666667e-05,
+      "val_macro_f1_by_task": {
+       "needs_action": 0.8599,
+       "broad_intent": 0.5541,
+       "sentiment": 0.4714,
+       "urgency": 0.7506,
+       "aspect:beauty:results_efficacy": 0.9587,
+       "aspect:beauty:texture": 0.5446,
+       "aspect:beauty:skin_reaction": 0.5025,
+       "aspect:beauty:fragrance": 0.3968,
+       "aspect:beauty:value": 0.5093,
+       "aspect:food:taste": 0.9129,
+       "aspect:food:value": 0.6857,
+       "aspect:food:ingredient_quality": 0.6551,
+       "aspect:food:efficacy_claims": 1.0
+      }
+     },
+     {
+      "epoch": 6,
+      "val_mean_macro_f1": 0.6695,
+      "loss": 0.033950112760066986,
+      "lr": 4e-05,
+      "val_macro_f1_by_task": {
+       "needs_action": 0.8638,
+       "broad_intent": 0.5351,
+       "sentiment": 0.5119,
+       "urgency": 0.6096,
+       "aspect:beauty:results_efficacy": 0.956,
+       "aspect:beauty:texture": 0.5717,
+       "aspect:beauty:skin_reaction": 0.5357,
+       "aspect:beauty:fragrance": 0.2946,
+       "aspect:beauty:value": 0.5664,
+       "aspect:food:taste": 0.9562,
+       "aspect:food:value": 0.7444,
+       "aspect:food:ingredient_quality": 0.5576,
+       "aspect:food:efficacy_claims": 1.0
+      }
+     },
+     {
+      "epoch": 7,
+      "val_mean_macro_f1": 0.7267,
+      "loss": 0.02828875184059143,
+      "lr": 3.8333333333333334e-05,
+      "val_macro_f1_by_task": {
+       "needs_action": 0.8793,
+       "broad_intent": 0.567,
+       "sentiment": 0.4866,
+       "urgency": 0.683,
+       "aspect:beauty:results_efficacy": 0.9175,
+       "aspect:beauty:texture": 0.6628,
+       "aspect:beauty:skin_reaction": 0.5285,
+       "aspect:beauty:fragrance": 0.4098,
+       "aspect:beauty:value": 0.8042,
+       "aspect:food:taste": 0.8869,
+       "aspect:food:value": 0.8413,
+       "aspect:food:ingredient_quality": 0.7807,
+       "aspect:food:efficacy_claims": 1.0
+      }
+     },
+     {
+      "epoch": 8,
+      "val_mean_macro_f1": 0.6921,
+      "loss": 0.008116128854453564,
+      "lr": 3.666666666666667e-05,
+      "val_macro_f1_by_task": {
+       "needs_action": 0.8548,
+       "broad_intent": 0.5665,
+       "sentiment": 0.5449,
+       "urgency": 0.67,
+       "aspect:beauty:results_efficacy": 0.9773,
+       "aspect:beauty:texture": 0.6228,
+       "aspect:beauty:skin_reaction": 0.5463,
+       "aspect:beauty:fragrance": 0.5238,
+       "aspect:beauty:value": 0.6333,
+       "aspect:food:taste": 0.9565,
+       "aspect:food:value": 0.4889,
+       "aspect:food:ingredient_quality": 0.6127,
+       "aspect:food:efficacy_claims": 1.0
+      }
+     },
+     {
+      "epoch": 9,
+      "val_mean_macro_f1": 0.6949,
+      "loss": 0.10850238800048828,
+      "lr": 3.5e-05,
+      "val_macro_f1_by_task": {
+       "needs_action": 0.8254,
+       "broad_intent": 0.5523,
+       "sentiment": 0.5792,
+       "urgency": 0.6591,
+       "aspect:beauty:results_efficacy": 0.8778,
+       "aspect:beauty:texture": 0.6651,
+       "aspect:beauty:skin_reaction": 0.5463,
+       "aspect:beauty:fragrance": 0.4697,
+       "aspect:beauty:value": 0.7491,
+       "aspect:food:taste": 0.9565,
+       "aspect:food:value": 0.5583,
+       "aspect:food:ingredient_quality": 0.5942,
+       "aspect:food:efficacy_claims": 1.0
+      }
+     },
+     {
+      "epoch": 10,
+      "val_mean_macro_f1": 0.6565,
+      "loss": 0.27281665802001953,
+      "lr": 3.333333333333334e-05,
+      "val_macro_f1_by_task": {
+       "needs_action": 0.8309,
+       "broad_intent": 0.5626,
+       "sentiment": 0.4747,
+       "urgency": 0.6598,
+       "aspect:beauty:results_efficacy": 0.9267,
+       "aspect:beauty:texture": 0.619,
+       "aspect:beauty:skin_reaction": 0.5357,
+       "aspect:beauty:fragrance": 0.2857,
+       "aspect:beauty:value": 0.5664,
+       "aspect:food:taste": 0.9565,
+       "aspect:food:value": 0.5583,
+       "aspect:food:ingredient_quality": 0.5576,
+       "aspect:food:efficacy_claims": 1.0
+      }
+     }
+    ],
+    "best_val_mean_macro_f1": 0.7267290631119055,
+    "best_epoch": 7,
+    "stopped_early": true
+   },
+   "seconds": 260.3,
+   "inputs_sha256_16": {
+    "labels.json": "8f3b582082e4cf17",
+    "scale.jsonl": "d49895744c2e9a83",
+    "manifest.json": "ae1ffa10b56b1040"
+   }
+  },
+  "artifacts_sha256_16": {
+   "labels.json": "8f3b582082e4cf17",
+   "manifest.json": "a29c235e88162304",
+   "pred_aspect__beauty__fragrance.json": "73a39d15e2b5d0cc",
+   "pred_aspect__beauty__results_efficacy.json": "aab8c359e3c081e0",
+   "pred_aspect__beauty__skin_reaction.json": "49e5bc1c0723dc85",
+   "pred_aspect__beauty__texture.json": "f7ad8e3dfea6f381",
+   "pred_aspect__beauty__value.json": "f37fb4e75c90746c",
+   "pred_aspect__food__efficacy_claims.json": "4f861bd430275a8f",
+   "pred_aspect__food__ingredient_quality.json": "61efd3580726f60e",
+   "pred_aspect__food__quantity.json": "a053334a46dff464",
+   "pred_aspect__food__taste.json": "85bc0d486cbfcc28",
+   "pred_aspect__food__value.json": "96b3c5edf3a35825",
+   "pred_broad_intent.json": "d6abd6f1c0d2d169",
+   "pred_needs_action.json": "2b7e9c6c75e01ea4",
+   "pred_sentiment.json": "b391069687c9133b",
+   "pred_urgency.json": "ede146e0daaac675"
+  },
+  "ledger_sealed_excluded": {
+   "file_sha256_16": "b1b51f87f8e57c55",
+   "n_hashes": 6,
+   "n_sealed_items_dropped": 6
+  },
+  "clusters": {
+   "file_sha256_16": "3a220a3a853dae91",
+   "stats": {
+    "n_wanted": 763,
+    "n_matched": 763,
+    "n_text_under_several_products": 66,
+    "n_products": 507
+   },
+   "per_stratum": {
+    "apparel": {
+     "n_sealed": 260,
+     "n_with_product_id": 260,
+     "n_products": 123
+    },
+    "beauty": {
+     "n_sealed": 246,
+     "n_with_product_id": 246,
+     "n_products": 131
+    },
+    "food": {
+     "n_sealed": 237,
+     "n_with_product_id": 237,
+     "n_products": 234
+    },
+    "vernacular": {
+     "n_sealed": 20,
+     "n_with_product_id": 20,
+     "n_products": 19
+    }
+   }
+  },
+  "label_basis": "silver: sealed labels are four-judge consensus (Amendment 5), not human truth"
+ },
+ "n_boot": 1000,
+ "seed": 42,
+ "bootstrap_unit": "items; plus products (cluster bootstrap) where --clusters maps an item to a product id",
+ "tasks": {
+  "needs_action": {
+   "insufficient_data": false,
+   "n": 717,
+   "accuracy": 0.9623,
+   "accuracy_wilson95": [
+    0.9458,
+    0.974
+   ],
+   "classes": {
+    "yes": {
+     "n": 111,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.88,
+     "f1_ci95": [
+      0.8305,
+      0.9192
+     ],
+     "below_floor": false,
+     "f1_cluster_ci95": [
+      0.83,
+      0.9231
+     ]
+    },
+    "no": {
+     "n": 606,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.9777,
+     "f1_ci95": [
+      0.9686,
+      0.9851
+     ],
+     "below_floor": false,
+     "f1_cluster_ci95": [
+      0.969,
+      0.9858
+     ]
+    }
+   },
+   "macro_f1": 0.9288,
+   "macro_f1_ci95": [
+    0.9002,
+    0.952
+   ],
+   "macro_f1_classes": [
+    "yes",
+    "no"
+   ],
+   "selective": {
+    "conservative_p0.95": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 460,
+     "target": 0.95,
+     "threshold": 0.8599,
+     "n_answered": 641,
+     "coverage": 0.894,
+     "coverage_ci95": [
+      0.8689,
+      0.9163
+     ],
+     "precision": 0.9875,
+     "precision_wilson95": [
+      0.9756,
+      0.9937
+     ],
+     "precision_ci95": [
+      0.9781,
+      0.9953
+     ],
+     "reached_target": true,
+     "coverage_cluster_ci95": [
+      0.8708,
+      0.9174
+     ],
+     "precision_cluster_ci95": [
+      0.9777,
+      0.9953
+     ]
+    },
+    "conservative_p0.9": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 460,
+     "target": 0.9,
+     "threshold": 0.503358,
+     "n_answered": 717,
+     "coverage": 1.0,
+     "coverage_ci95": [
+      1.0,
+      1.0
+     ],
+     "precision": 0.9623,
+     "precision_wilson95": [
+      0.9458,
+      0.974
+     ],
+     "precision_ci95": [
+      0.947,
+      0.9749
+     ],
+     "reached_target": true,
+     "coverage_cluster_ci95": [
+      1.0,
+      1.0
+     ],
+     "precision_cluster_ci95": [
+      0.9481,
+      0.9758
+     ]
+    },
+    "oracle": {
+     "label": "ORACLE: best on the sealed set itself, not deployable",
+     "n": 717,
+     "accuracy": 0.9623,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9644,
+      "precision_p2_5_p97_5": [
+       0.9499,
+       0.9776
+      ],
+      "coverage_mean": 0.9969,
+      "coverage_p2_5_p97_5": [
+       0.9861,
+       1.0
+      ],
+      "hit_rate": 0.965
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": 0.972,
+      "precision_p2_5_p97_5": [
+       0.9499,
+       0.9908
+      ],
+      "coverage_mean": 0.9644,
+      "coverage_p2_5_p97_5": [
+       0.8997,
+       1.0
+      ],
+      "hit_rate": 0.965
+     },
+     "coverage_at_precision_0.95": 1.0,
+     "coverage_at_precision_0.95_ci95": [
+      0.9944,
+      1.0
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.9861,
+      "achieved_coverage": 0.901,
+      "ci95": [
+       0.9706,
+       0.9938
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.9965,
+      "achieved_coverage": 0.8006,
+      "ci95": [
+       0.9895,
+       1.0
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 1.0,
+      "achieved_coverage": 0.7001,
+      "ci95": [
+       0.996,
+       1.0
+      ]
+     }
+    }
+   },
+   "cluster": {
+    "unit": "products (items without a product id are their own cluster)",
+    "n_items": 717,
+    "n_items_with_product_id": 717,
+    "n_clusters": 475
+   },
+   "accuracy_cluster_ci95": [
+    0.9481,
+    0.9758
+   ],
+   "macro_f1_cluster_ci95": [
+    0.8994,
+    0.9545
+   ],
+   "consensus_ceiling": {
+    "n_labelled": 717,
+    "n_sealed": 757,
+    "fraction": 0.9472,
+    "wilson95": [
+     0.9288,
+     0.961
+    ],
+    "note": "share of sealed items with a four-judge consensus label"
+   },
+   "slices_accuracy": {
+    "apparel": {
+     "n": 243,
+     "claimed": true,
+     "accuracy": 0.9506
+    },
+    "beauty": {
+     "n": 232,
+     "claimed": true,
+     "accuracy": 0.9784
+    },
+    "food": {
+     "n": 228,
+     "claimed": true,
+     "accuracy": 0.9605
+    },
+    "vernacular": {
+     "n": 14,
+     "claimed": false
+    }
+   }
+  },
+  "broad_intent": {
+   "insufficient_data": false,
+   "n": 700,
+   "accuracy": 0.9171,
+   "accuracy_wilson95": [
+    0.8944,
+    0.9354
+   ],
+   "classes": {
+    "product_issue": {
+     "n": 115,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.887,
+     "f1_ci95": [
+      0.8421,
+      0.9274
+     ],
+     "below_floor": false,
+     "f1_cluster_ci95": [
+      0.8362,
+      0.9301
+     ]
+    },
+    "delivery": {
+     "n": 1,
+     "insufficient_data": true
+    },
+    "service": {
+     "n": 0,
+     "insufficient_data": true
+    },
+    "praise": {
+     "n": 515,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.9608,
+     "f1_ci95": [
+      0.948,
+      0.973
+     ],
+     "below_floor": false,
+     "f1_cluster_ci95": [
+      0.9471,
+      0.9736
+     ]
+    },
+    "other": {
+     "n": 69,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.6711,
+     "f1_ci95": [
+      0.5793,
+      0.7519
+     ],
+     "below_floor": false,
+     "f1_cluster_ci95": [
+      0.575,
+      0.7551
+     ]
+    }
+   },
+   "macro_f1": 0.8396,
+   "macro_f1_ci95": [
+    0.8005,
+    0.8764
+   ],
+   "macro_f1_classes": [
+    "product_issue",
+    "praise",
+    "other"
+   ],
+   "selective": {
+    "conservative_p0.95": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 454,
+     "target": 0.95,
+     "threshold": 0.856593,
+     "n_answered": 553,
+     "coverage": 0.79,
+     "coverage_ci95": [
+      0.7614,
+      0.8186
+     ],
+     "precision": 0.9765,
+     "precision_wilson95": [
+      0.9602,
+      0.9862
+     ],
+     "precision_ci95": [
+      0.9636,
+      0.9886
+     ],
+     "reached_target": true,
+     "coverage_cluster_ci95": [
+      0.76,
+      0.8204
+     ],
+     "precision_cluster_ci95": [
+      0.9616,
+      0.9875
+     ]
+    },
+    "conservative_p0.9": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 454,
+     "target": 0.9,
+     "threshold": 0.703129,
+     "n_answered": 620,
+     "coverage": 0.8857,
+     "coverage_ci95": [
+      0.8614,
+      0.91
+     ],
+     "precision": 0.9581,
+     "precision_wilson95": [
+      0.9393,
+      0.9712
+     ],
+     "precision_ci95": [
+      0.9424,
+      0.9729
+     ],
+     "reached_target": true,
+     "coverage_cluster_ci95": [
+      0.8626,
+      0.9087
+     ],
+     "precision_cluster_ci95": [
+      0.9387,
+      0.9736
+     ]
+    },
+    "oracle": {
+     "label": "ORACLE: best on the sealed set itself, not deployable",
+     "n": 700,
+     "accuracy": 0.9171,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9498,
+      "precision_p2_5_p97_5": [
+       0.912,
+       0.9797
+      ],
+      "coverage_mean": 0.9066,
+      "coverage_p2_5_p97_5": [
+       0.84,
+       0.9744
+      ],
+      "hit_rate": 0.525
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": 0.9746,
+      "precision_p2_5_p97_5": [
+       0.9417,
+       0.9963
+      ],
+      "coverage_mean": 0.8009,
+      "coverage_p2_5_p97_5": [
+       0.7256,
+       0.8829
+      ],
+      "hit_rate": 0.955
+     },
+     "coverage_at_precision_0.95": 0.9043,
+     "coverage_at_precision_0.95_ci95": [
+      0.8457,
+      0.9714
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.954,
+      "achieved_coverage": 0.9,
+      "ci95": [
+       0.9333,
+       0.9698
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.975,
+      "achieved_coverage": 0.8,
+      "ci95": [
+       0.9607,
+       0.9875
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 0.9939,
+      "achieved_coverage": 0.7,
+      "ci95": [
+       0.9817,
+       1.0
+      ]
+     }
+    }
+   },
+   "cluster": {
+    "unit": "products (items without a product id are their own cluster)",
+    "n_items": 700,
+    "n_items_with_product_id": 700,
+    "n_clusters": 470
+   },
+   "accuracy_cluster_ci95": [
+    0.896,
+    0.937
+   ],
+   "macro_f1_cluster_ci95": [
+    0.797,
+    0.8769
+   ],
+   "consensus_ceiling": {
+    "n_labelled": 700,
+    "n_sealed": 757,
+    "fraction": 0.9247,
+    "wilson95": [
+     0.9037,
+     0.9414
+    ],
+    "note": "share of sealed items with a four-judge consensus label"
+   },
+   "slices_accuracy": {
+    "apparel": {
+     "n": 235,
+     "claimed": true,
+     "accuracy": 0.9064
+    },
+    "beauty": {
+     "n": 228,
+     "claimed": true,
+     "accuracy": 0.9561
+    },
+    "food": {
+     "n": 224,
+     "claimed": true,
+     "accuracy": 0.9018
+    },
+    "vernacular": {
+     "n": 13,
+     "claimed": false
+    }
+   }
+  },
+  "sentiment": {
+   "insufficient_data": false,
+   "n": 673,
+   "accuracy": 0.948,
+   "accuracy_wilson95": [
+    0.9285,
+    0.9624
+   ],
+   "classes": {
+    "positive": {
+     "n": 541,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.9788,
+     "f1_ci95": [
+      0.9697,
+      0.9867
+     ],
+     "below_floor": false,
+     "f1_cluster_ci95": [
+      0.9699,
+      0.9878
+     ]
+    },
+    "negative": {
+     "n": 102,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.8995,
+     "f1_ci95": [
+      0.8492,
+      0.939
+     ],
+     "below_floor": false,
+     "f1_cluster_ci95": [
+      0.8529,
+      0.9417
+     ]
+    },
+    "neutral": {
+     "n": 11,
+     "insufficient_data": true
+    },
+    "mixed": {
+     "n": 19,
+     "insufficient_data": true
+    }
+   },
+   "macro_f1": 0.9392,
+   "macro_f1_ci95": [
+    0.9125,
+    0.9608
+   ],
+   "macro_f1_classes": [
+    "positive",
+    "negative"
+   ],
+   "selective": {
+    "conservative_p0.95": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 435,
+     "target": 0.95,
+     "threshold": 0.841877,
+     "n_answered": 559,
+     "coverage": 0.8306,
+     "coverage_ci95": [
+      0.8024,
+      0.8588
+     ],
+     "precision": 0.9893,
+     "precision_wilson95": [
+      0.9768,
+      0.9951
+     ],
+     "precision_ci95": [
+      0.9801,
+      0.9964
+     ],
+     "reached_target": true,
+     "coverage_cluster_ci95": [
+      0.8012,
+      0.8582
+     ],
+     "precision_cluster_ci95": [
+      0.9802,
+      0.9966
+     ]
+    },
+    "conservative_p0.9": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 435,
+     "target": 0.9,
+     "threshold": 0.478597,
+     "n_answered": 636,
+     "coverage": 0.945,
+     "coverage_ci95": [
+      0.9272,
+      0.9614
+     ],
+     "precision": 0.9717,
+     "precision_wilson95": [
+      0.9557,
+      0.982
+     ],
+     "precision_ci95": [
+      0.9574,
+      0.9841
+     ],
+     "reached_target": true,
+     "coverage_cluster_ci95": [
+      0.9255,
+      0.9633
+     ],
+     "precision_cluster_ci95": [
+      0.9581,
+      0.9848
+     ]
+    },
+    "oracle": {
+     "label": "ORACLE: best on the sealed set itself, not deployable",
+     "n": 673,
+     "accuracy": 0.948,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9549,
+      "precision_p2_5_p97_5": [
+       0.9345,
+       0.9786
+      ],
+      "coverage_mean": 0.9872,
+      "coverage_p2_5_p97_5": [
+       0.9555,
+       1.0
+      ],
+      "hit_rate": 0.61
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": 0.9743,
+      "precision_p2_5_p97_5": [
+       0.9449,
+       0.9937
+      ],
+      "coverage_mean": 0.9359,
+      "coverage_p2_5_p97_5": [
+       0.8991,
+       0.9733
+      ],
+      "hit_rate": 0.96
+     },
+     "coverage_at_precision_0.95": 0.997,
+     "coverage_at_precision_0.95_ci95": [
+      0.9525,
+      1.0
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.9851,
+      "achieved_coverage": 0.9004,
+      "ci95": [
+       0.9719,
+       0.9934
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.9926,
+      "achieved_coverage": 0.8009,
+      "ci95": [
+       0.9833,
+       0.9982
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 0.9979,
+      "achieved_coverage": 0.7013,
+      "ci95": [
+       0.9915,
+       1.0
+      ]
+     }
+    }
+   },
+   "cluster": {
+    "unit": "products (items without a product id are their own cluster)",
+    "n_items": 673,
+    "n_items_with_product_id": 673,
+    "n_clusters": 456
+   },
+   "accuracy_cluster_ci95": [
+    0.93,
+    0.9658
+   ],
+   "macro_f1_cluster_ci95": [
+    0.914,
+    0.9628
+   ],
+   "consensus_ceiling": {
+    "n_labelled": 673,
+    "n_sealed": 757,
+    "fraction": 0.889,
+    "wilson95": [
+     0.8647,
+     0.9095
+    ],
+    "note": "share of sealed items with a four-judge consensus label"
+   },
+   "slices_accuracy": {
+    "apparel": {
+     "n": 215,
+     "claimed": true,
+     "accuracy": 0.9581
+    },
+    "beauty": {
+     "n": 230,
+     "claimed": true,
+     "accuracy": 0.9478
+    },
+    "food": {
+     "n": 215,
+     "claimed": true,
+     "accuracy": 0.9442
+    },
+    "vernacular": {
+     "n": 13,
+     "claimed": false
+    }
+   }
+  },
+  "urgency": {
+   "insufficient_data": false,
+   "n": 703,
+   "accuracy": 0.9545,
+   "accuracy_wilson95": [
+    0.9364,
+    0.9676
+   ],
+   "classes": {
+    "low": {
+     "n": 622,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.9756,
+     "f1_ci95": [
+      0.9658,
+      0.9838
+     ],
+     "below_floor": false,
+     "f1_cluster_ci95": [
+      0.9668,
+      0.9843
+     ]
+    },
+    "medium": {
+     "n": 77,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.8118,
+     "f1_ci95": [
+      0.7442,
+      0.8692
+     ],
+     "below_floor": false,
+     "f1_cluster_ci95": [
+      0.7445,
+      0.8696
+     ]
+    },
+    "high": {
+     "n": 4,
+     "insufficient_data": true
+    }
+   },
+   "macro_f1": 0.8937,
+   "macro_f1_ci95": [
+    0.8564,
+    0.9264
+   ],
+   "macro_f1_classes": [
+    "low",
+    "medium"
+   ],
+   "selective": {
+    "conservative_p0.95": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 460,
+     "target": 0.95,
+     "threshold": 0.884549,
+     "n_answered": 583,
+     "coverage": 0.8293,
+     "coverage_ci95": [
+      0.798,
+      0.8592
+     ],
+     "precision": 0.9914,
+     "precision_wilson95": [
+      0.9801,
+      0.9963
+     ],
+     "precision_ci95": [
+      0.983,
+      0.9983
+     ],
+     "reached_target": true,
+     "coverage_cluster_ci95": [
+      0.804,
+      0.8551
+     ],
+     "precision_cluster_ci95": [
+      0.9834,
+      0.9983
+     ]
+    },
+    "conservative_p0.9": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 460,
+     "target": 0.9,
+     "threshold": 0.599632,
+     "n_answered": 676,
+     "coverage": 0.9616,
+     "coverage_ci95": [
+      0.9459,
+      0.9744
+     ],
+     "precision": 0.9675,
+     "precision_wilson95": [
+      0.9512,
+      0.9784
+     ],
+     "precision_ci95": [
+      0.9529,
+      0.9793
+     ],
+     "reached_target": true,
+     "coverage_cluster_ci95": [
+      0.9463,
+      0.9752
+     ],
+     "precision_cluster_ci95": [
+      0.9536,
+      0.9803
+     ]
+    },
+    "oracle": {
+     "label": "ORACLE: best on the sealed set itself, not deployable",
+     "n": 703,
+     "accuracy": 0.9545,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9571,
+      "precision_p2_5_p97_5": [
+       0.9402,
+       0.9768
+      ],
+      "coverage_mean": 0.9939,
+      "coverage_p2_5_p97_5": [
+       0.9715,
+       1.0
+      ],
+      "hit_rate": 0.765
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": 0.9728,
+      "precision_p2_5_p97_5": [
+       0.9425,
+       0.9936
+      ],
+      "coverage_mean": 0.941,
+      "coverage_p2_5_p97_5": [
+       0.8863,
+       0.9943
+      ],
+      "hit_rate": 0.92
+     },
+     "coverage_at_precision_0.95": 1.0,
+     "coverage_at_precision_0.95_ci95": [
+      0.9658,
+      1.0
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.9826,
+      "achieved_coverage": 0.9004,
+      "ci95": [
+       0.9716,
+       0.9921
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.9964,
+      "achieved_coverage": 0.8009,
+      "ci95": [
+       0.9858,
+       1.0
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 1.0,
+      "achieved_coverage": 0.7013,
+      "ci95": [
+       1.0,
+       1.0
+      ]
+     }
+    }
+   },
+   "cluster": {
+    "unit": "products (items without a product id are their own cluster)",
+    "n_items": 703,
+    "n_items_with_product_id": 703,
+    "n_clusters": 466
+   },
+   "accuracy_cluster_ci95": [
+    0.9389,
+    0.9692
+   ],
+   "macro_f1_cluster_ci95": [
+    0.8574,
+    0.9262
+   ],
+   "consensus_ceiling": {
+    "n_labelled": 703,
+    "n_sealed": 757,
+    "fraction": 0.9287,
+    "wilson95": [
+     0.9081,
+     0.9449
+    ],
+    "note": "share of sealed items with a four-judge consensus label"
+   },
+   "slices_accuracy": {
+    "apparel": {
+     "n": 238,
+     "claimed": true,
+     "accuracy": 0.9328
+    },
+    "beauty": {
+     "n": 229,
+     "claimed": true,
+     "accuracy": 0.9738
+    },
+    "food": {
+     "n": 224,
+     "claimed": true,
+     "accuracy": 0.9554
+    },
+    "vernacular": {
+     "n": 12,
+     "claimed": false
+    }
+   }
+  },
+  "aspect:beauty:results_efficacy": {
+   "insufficient_data": false,
+   "n": 192,
+   "accuracy": 0.9531,
+   "accuracy_wilson95": [
+    0.9133,
+    0.9751
+   ],
+   "classes": {
+    "positive": {
+     "n": 161,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.9752,
+     "f1_ci95": [
+      0.9551,
+      0.9909
+     ],
+     "below_floor": false,
+     "f1_cluster_ci95": [
+      0.9585,
+      0.9908
+     ]
+    },
+    "negative": {
+     "n": 27,
+     "insufficient_data": false,
+     "low_support_lt30": true,
+     "f1": 0.8772,
+     "f1_ci95": [
+      0.7778,
+      0.96
+     ],
+     "below_floor": false,
+     "f1_cluster_ci95": [
+      0.7893,
+      0.9539
+     ]
+    },
+    "neutral": {
+     "n": 4,
+     "insufficient_data": true
+    }
+   },
+   "macro_f1": 0.9262,
+   "macro_f1_ci95": [
+    0.8714,
+    0.9746
+   ],
+   "macro_f1_classes": [
+    "positive",
+    "negative"
+   ],
+   "selective": {
+    "conservative_p0.95": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 104,
+     "target": 0.95,
+     "threshold": 0.838895,
+     "n_answered": 175,
+     "coverage": 0.9115,
+     "coverage_ci95": [
+      0.8698,
+      0.9531
+     ],
+     "precision": 0.9771,
+     "precision_wilson95": [
+      0.9427,
+      0.9911
+     ],
+     "precision_ci95": [
+      0.9532,
+      0.9945
+     ],
+     "reached_target": true,
+     "coverage_cluster_ci95": [
+      0.8717,
+      0.9455
+     ],
+     "precision_cluster_ci95": [
+      0.9548,
+      0.9947
+     ]
+    },
+    "conservative_p0.9": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 104,
+     "target": 0.9,
+     "threshold": 0.48042,
+     "n_answered": 192,
+     "coverage": 1.0,
+     "coverage_ci95": [
+      1.0,
+      1.0
+     ],
+     "precision": 0.9531,
+     "precision_wilson95": [
+      0.9133,
+      0.9751
+     ],
+     "precision_ci95": [
+      0.9219,
+      0.9844
+     ],
+     "reached_target": true,
+     "coverage_cluster_ci95": [
+      1.0,
+      1.0
+     ],
+     "precision_cluster_ci95": [
+      0.9256,
+      0.9798
+     ]
+    },
+    "oracle": {
+     "label": "ORACLE: best on the sealed set itself, not deployable",
+     "n": 192,
+     "accuracy": 0.9531,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9572,
+      "precision_p2_5_p97_5": [
+       0.9271,
+       0.989
+      ],
+      "coverage_mean": 0.976,
+      "coverage_p2_5_p97_5": [
+       0.9062,
+       1.0
+      ],
+      "hit_rate": 0.55
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": 0.9852,
+      "precision_p2_5_p97_5": [
+       0.9535,
+       1.0
+      ],
+      "coverage_mean": 0.6404,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.9271
+      ],
+      "hit_rate": 0.785
+     },
+     "coverage_at_precision_0.95": 1.0,
+     "coverage_at_precision_0.95_ci95": [
+      0.8906,
+      1.0
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.9769,
+      "achieved_coverage": 0.901,
+      "ci95": [
+       0.948,
+       1.0
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.987,
+      "achieved_coverage": 0.8021,
+      "ci95": [
+       0.9677,
+       1.0
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 1.0,
+      "achieved_coverage": 0.7031,
+      "ci95": [
+       1.0,
+       1.0
+      ]
+     }
+    }
+   },
+   "cluster": {
+    "unit": "products (items without a product id are their own cluster)",
+    "n_items": 192,
+    "n_items_with_product_id": 192,
+    "n_clusters": 111
+   },
+   "accuracy_cluster_ci95": [
+    0.9256,
+    0.9798
+   ],
+   "macro_f1_cluster_ci95": [
+    0.8779,
+    0.9694
+   ],
+   "consensus_ceiling": {
+    "n_labelled": 192,
+    "n_sealed": 757,
+    "fraction": 0.2536,
+    "wilson95": [
+     0.2239,
+     0.2858
+    ],
+    "note": "aspect tasks: relative to all sealed items, not only those that mention the aspect"
+   },
+   "slices_accuracy": {
+    "beauty": {
+     "n": 192,
+     "claimed": true,
+     "accuracy": 0.9531
+    }
+   }
+  },
+  "aspect:beauty:texture": {
+   "insufficient_data": false,
+   "n": 69,
+   "accuracy": 0.8841,
+   "accuracy_wilson95": [
+    0.7875,
+    0.9401
+   ],
+   "classes": {
+    "positive": {
+     "n": 59,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.9333,
+     "f1_ci95": [
+      0.8833,
+      0.9752
+     ],
+     "below_floor": false,
+     "f1_cluster_ci95": [
+      0.8793,
+      0.976
+     ]
+    },
+    "negative": {
+     "n": 6,
+     "insufficient_data": true
+    },
+    "neutral": {
+     "n": 4,
+     "insufficient_data": true
+    }
+   },
+   "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)",
+   "selective": {
+    "conservative_p0.95": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 53,
+     "target": 0.95,
+     "threshold": null,
+     "n_answered": 0,
+     "coverage": 0.0,
+     "coverage_ci95": null,
+     "precision": null,
+     "precision_wilson95": null,
+     "precision_ci95": null,
+     "reached_target": false,
+     "coverage_cluster_ci95": [
+      0.0,
+      0.0
+     ],
+     "precision_cluster_ci95": null
+    },
+    "conservative_p0.9": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 53,
+     "target": 0.9,
+     "threshold": null,
+     "n_answered": 0,
+     "coverage": 0.0,
+     "coverage_ci95": null,
+     "precision": null,
+     "precision_wilson95": null,
+     "precision_ci95": null,
+     "reached_target": false,
+     "coverage_cluster_ci95": [
+      0.0,
+      0.0
+     ],
+     "precision_cluster_ci95": null
+    },
+    "oracle": {
+     "label": "ORACLE: best on the sealed set itself, not deployable",
+     "n": 69,
+     "accuracy": 0.8841,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9408,
+      "precision_p2_5_p97_5": [
+       0.8,
+       1.0
+      ],
+      "coverage_mean": 0.6267,
+      "coverage_p2_5_p97_5": [
+       0.1993,
+       0.9714
+      ],
+      "hit_rate": 0.645
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": null,
+      "precision_p2_5_p97_5": [
+       null,
+       null
+      ],
+      "coverage_mean": 0.0,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.0
+      ],
+      "hit_rate": 0.0
+     },
+     "coverage_at_precision_0.95": 0.7246,
+     "coverage_at_precision_0.95_ci95": [
+      0.2029,
+      1.0
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.9048,
+      "achieved_coverage": 0.913,
+      "ci95": [
+       0.8125,
+       0.9688
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.9286,
+      "achieved_coverage": 0.8116,
+      "ci95": [
+       0.8393,
+       0.9828
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 0.9592,
+      "achieved_coverage": 0.7101,
+      "ci95": [
+       0.86,
+       1.0
+      ]
+     }
+    }
+   },
+   "cluster": {
+    "unit": "products (items without a product id are their own cluster)",
+    "n_items": 69,
+    "n_items_with_product_id": 69,
+    "n_clusters": 53
+   },
+   "accuracy_cluster_ci95": [
+    0.7973,
+    0.9565
+   ],
+   "consensus_ceiling": {
+    "n_labelled": 69,
+    "n_sealed": 757,
+    "fraction": 0.0911,
+    "wilson95": [
+     0.0727,
+     0.1138
+    ],
+    "note": "aspect tasks: relative to all sealed items, not only those that mention the aspect"
+   },
+   "slices_accuracy": {
+    "beauty": {
+     "n": 69,
+     "claimed": false
+    }
+   }
+  },
+  "aspect:beauty:skin_reaction": {
+   "insufficient_data": false,
+   "n": 33,
+   "accuracy": 0.9394,
+   "accuracy_wilson95": [
+    0.8039,
+    0.9832
+   ],
+   "classes": {
+    "positive": {
+     "n": 12,
+     "insufficient_data": true
+    },
+    "negative": {
+     "n": 20,
+     "insufficient_data": false,
+     "low_support_lt30": true,
+     "f1": 0.9524,
+     "f1_ci95": [
+      0.875,
+      1.0
+     ],
+     "below_floor": false,
+     "f1_cluster_ci95": [
+      0.8837,
+      1.0
+     ]
+    },
+    "neutral": {
+     "n": 1,
+     "insufficient_data": true
+    }
+   },
+   "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)",
+   "selective": {
+    "conservative_p0.95": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 29,
+     "target": 0.95,
+     "threshold": null,
+     "n_answered": 0,
+     "coverage": 0.0,
+     "coverage_ci95": null,
+     "precision": null,
+     "precision_wilson95": null,
+     "precision_ci95": null,
+     "reached_target": false,
+     "coverage_cluster_ci95": [
+      0.0,
+      0.0
+     ],
+     "precision_cluster_ci95": null
+    },
+    "conservative_p0.9": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 29,
+     "target": 0.9,
+     "threshold": null,
+     "n_answered": 0,
+     "coverage": 0.0,
+     "coverage_ci95": null,
+     "precision": null,
+     "precision_wilson95": null,
+     "precision_ci95": null,
+     "reached_target": false,
+     "coverage_cluster_ci95": [
+      0.0,
+      0.0
+     ],
+     "precision_cluster_ci95": null
+    },
+    "oracle": {
+     "label": "ORACLE: best on the sealed set itself, not deployable",
+     "n": 33,
+     "accuracy": 0.9394,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9433,
+      "precision_p2_5_p97_5": [
+       0.8569,
+       1.0
+      ],
+      "coverage_mean": 0.6974,
+      "coverage_p2_5_p97_5": [
+       0.3529,
+       1.0
+      ],
+      "hit_rate": 0.445
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": null,
+      "precision_p2_5_p97_5": [
+       null,
+       null
+      ],
+      "coverage_mean": 0.0,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.0
+      ],
+      "hit_rate": 0.0
+     },
+     "coverage_at_precision_0.95": 0.8182,
+     "coverage_at_precision_0.95_ci95": [
+      0.3939,
+      1.0
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.9333,
+      "achieved_coverage": 0.9091,
+      "ci95": [
+       0.8333,
+       1.0
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.963,
+      "achieved_coverage": 0.8182,
+      "ci95": [
+       0.8214,
+       1.0
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 0.9583,
+      "achieved_coverage": 0.7273,
+      "ci95": [
+       0.84,
+       1.0
+      ]
+     }
+    }
+   },
+   "cluster": {
+    "unit": "products (items without a product id are their own cluster)",
+    "n_items": 33,
+    "n_items_with_product_id": 33,
+    "n_clusters": 25
+   },
+   "accuracy_cluster_ci95": [
+    0.8529,
+    1.0
+   ],
+   "consensus_ceiling": {
+    "n_labelled": 33,
+    "n_sealed": 757,
+    "fraction": 0.0436,
+    "wilson95": [
+     0.0312,
+     0.0606
+    ],
+    "note": "aspect tasks: relative to all sealed items, not only those that mention the aspect"
+   },
+   "slices_accuracy": {
+    "beauty": {
+     "n": 33,
+     "claimed": false
+    }
+   }
+  },
+  "aspect:beauty:fragrance": {
+   "insufficient_data": false,
+   "n": 51,
+   "accuracy": 0.8039,
+   "accuracy_wilson95": [
+    0.6754,
+    0.8898
+   ],
+   "classes": {
+    "positive": {
+     "n": 41,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.8889,
+     "f1_ci95": [
+      0.8052,
+      0.9524
+     ],
+     "below_floor": false,
+     "f1_cluster_ci95": [
+      0.8205,
+      0.9459
+     ]
+    },
+    "negative": {
+     "n": 8,
+     "insufficient_data": true
+    },
+    "neutral": {
+     "n": 2,
+     "insufficient_data": true
+    }
+   },
+   "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)",
+   "selective": {
+    "conservative_p0.95": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 25,
+     "target": 0.95,
+     "threshold": null,
+     "n_answered": 0,
+     "coverage": 0.0,
+     "coverage_ci95": null,
+     "precision": null,
+     "precision_wilson95": null,
+     "precision_ci95": null,
+     "reached_target": false,
+     "coverage_cluster_ci95": [
+      0.0,
+      0.0
+     ],
+     "precision_cluster_ci95": null
+    },
+    "conservative_p0.9": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 25,
+     "target": 0.9,
+     "threshold": null,
+     "n_answered": 0,
+     "coverage": 0.0,
+     "coverage_ci95": null,
+     "precision": null,
+     "precision_wilson95": null,
+     "precision_ci95": null,
+     "reached_target": false,
+     "coverage_cluster_ci95": [
+      0.0,
+      0.0
+     ],
+     "precision_cluster_ci95": null
+    },
+    "oracle": {
+     "label": "ORACLE: best on the sealed set itself, not deployable",
+     "n": 51,
+     "accuracy": 0.8039,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9374,
+      "precision_p2_5_p97_5": [
+       0.8333,
+       1.0
+      ],
+      "coverage_mean": 0.5931,
+      "coverage_p2_5_p97_5": [
+       0.2308,
+       0.9615
+      ],
+      "hit_rate": 0.44
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": null,
+      "precision_p2_5_p97_5": [
+       null,
+       null
+      ],
+      "coverage_mean": 0.0,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.0
+      ],
+      "hit_rate": 0.0
+     },
+     "coverage_at_precision_0.95": 0.5882,
+     "coverage_at_precision_0.95_ci95": [
+      0.2941,
+      0.9412
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.8913,
+      "achieved_coverage": 0.902,
+      "ci95": [
+       0.75,
+       0.9783
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.9268,
+      "achieved_coverage": 0.8039,
+      "ci95": [
+       0.8221,
+       1.0
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 0.9167,
+      "achieved_coverage": 0.7059,
+      "ci95": [
+       0.8333,
+       1.0
+      ]
+     }
+    }
+   },
+   "cluster": {
+    "unit": "products (items without a product id are their own cluster)",
+    "n_items": 51,
+    "n_items_with_product_id": 51,
+    "n_clusters": 36
+   },
+   "accuracy_cluster_ci95": [
+    0.7,
+    0.9
+   ],
+   "consensus_ceiling": {
+    "n_labelled": 51,
+    "n_sealed": 757,
+    "fraction": 0.0674,
+    "wilson95": [
+     0.0516,
+     0.0875
+    ],
+    "note": "aspect tasks: relative to all sealed items, not only those that mention the aspect"
+   },
+   "slices_accuracy": {
+    "beauty": {
+     "n": 51,
+     "claimed": false
+    }
+   }
+  },
+  "aspect:beauty:value": {
+   "n_sealed_labelled": 14,
+   "insufficient_data": true,
+   "consensus_ceiling": {
+    "n_labelled": 14,
+    "n_sealed": 757,
+    "fraction": 0.0185,
+    "wilson95": [
+     0.011,
+     0.0308
+    ],
+    "note": "aspect tasks: relative to all sealed items, not only those that mention the aspect"
+   }
+  },
+  "aspect:food:taste": {
+   "insufficient_data": false,
+   "n": 109,
+   "accuracy": 0.8991,
+   "accuracy_wilson95": [
+    0.8283,
+    0.9427
+   ],
+   "classes": {
+    "positive": {
+     "n": 86,
+     "insufficient_data": false,
+     "low_support_lt30": false,
+     "f1": 0.9349,
+     "f1_ci95": [
+      0.8933,
+      0.9718
+     ],
+     "below_floor": false,
+     "f1_cluster_ci95": [
+      0.8933,
+      0.9704
+     ]
+    },
+    "negative": {
+     "n": 23,
+     "insufficient_data": false,
+     "low_support_lt30": true,
+     "f1": 0.7917,
+     "f1_ci95": [
+      0.6486,
+      0.9049
+     ],
+     "below_floor": false,
+     "f1_cluster_ci95": [
+      0.645,
+      0.902
+     ]
+    },
+    "neutral": {
+     "n": 0,
+     "insufficient_data": true
+    }
+   },
+   "macro_f1": 0.8633,
+   "macro_f1_ci95": [
+    0.7784,
+    0.9361
+   ],
+   "macro_f1_classes": [
+    "positive",
+    "negative"
+   ],
+   "selective": {
+    "conservative_p0.95": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 23,
+     "target": 0.95,
+     "threshold": null,
+     "n_answered": 0,
+     "coverage": 0.0,
+     "coverage_ci95": null,
+     "precision": null,
+     "precision_wilson95": null,
+     "precision_ci95": null,
+     "reached_target": false,
+     "coverage_cluster_ci95": [
+      0.0,
+      0.0
+     ],
+     "precision_cluster_ci95": null
+    },
+    "conservative_p0.9": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 23,
+     "target": 0.9,
+     "threshold": null,
+     "n_answered": 0,
+     "coverage": 0.0,
+     "coverage_ci95": null,
+     "precision": null,
+     "precision_wilson95": null,
+     "precision_ci95": null,
+     "reached_target": false,
+     "coverage_cluster_ci95": [
+      0.0,
+      0.0
+     ],
+     "precision_cluster_ci95": null
+    },
+    "oracle": {
+     "label": "ORACLE: best on the sealed set itself, not deployable",
+     "n": 109,
+     "accuracy": 0.8991,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9402,
+      "precision_p2_5_p97_5": [
+       0.8487,
+       1.0
+      ],
+      "coverage_mean": 0.822,
+      "coverage_p2_5_p97_5": [
+       0.545,
+       0.9641
+      ],
+      "hit_rate": 0.47
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": null,
+      "precision_p2_5_p97_5": [
+       null,
+       null
+      ],
+      "coverage_mean": 0.0,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.0
+      ],
+      "hit_rate": 0.0
+     },
+     "coverage_at_precision_0.95": 0.8257,
+     "coverage_at_precision_0.95_ci95": [
+      0.4493,
+      1.0
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.9293,
+      "achieved_coverage": 0.9083,
+      "ci95": [
+       0.8585,
+       0.97
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.9545,
+      "achieved_coverage": 0.8073,
+      "ci95": [
+       0.8989,
+       1.0
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 0.974,
+      "achieved_coverage": 0.7064,
+      "ci95": [
+       0.9231,
+       1.0
+      ]
+     }
+    }
+   },
+   "cluster": {
+    "unit": "products (items without a product id are their own cluster)",
+    "n_items": 109,
+    "n_items_with_product_id": 109,
+    "n_clusters": 109
+   },
+   "accuracy_cluster_ci95": [
+    0.844,
+    0.9541
+   ],
+   "macro_f1_cluster_ci95": [
+    0.7768,
+    0.9324
+   ],
+   "consensus_ceiling": {
+    "n_labelled": 109,
+    "n_sealed": 757,
+    "fraction": 0.144,
+    "wilson95": [
+     0.1208,
+     0.1708
+    ],
+    "note": "aspect tasks: relative to all sealed items, not only those that mention the aspect"
+   },
+   "slices_accuracy": {
+    "food": {
+     "n": 109,
+     "claimed": true,
+     "accuracy": 0.8991
+    }
+   }
+  },
+  "aspect:food:value": {
+   "insufficient_data": false,
+   "n": 39,
+   "accuracy": 0.7692,
+   "accuracy_wilson95": [
+    0.6166,
+    0.8735
+   ],
+   "classes": {
+    "positive": {
+     "n": 26,
+     "insufficient_data": false,
+     "low_support_lt30": true,
+     "f1": 0.8696,
+     "f1_ci95": [
+      0.75,
+      0.9615
+     ],
+     "below_floor": false,
+     "f1_cluster_ci95": [
+      0.75,
+      0.9584
+     ]
+    },
+    "negative": {
+     "n": 11,
+     "insufficient_data": true
+    },
+    "neutral": {
+     "n": 2,
+     "insufficient_data": true
+    }
+   },
+   "macro_f1": "insufficient data (fewer than 2 classes with 20 sealed positives)",
+   "selective": {
+    "conservative_p0.95": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 12,
+     "target": 0.95,
+     "threshold": null,
+     "n_answered": 0,
+     "coverage": 0.0,
+     "coverage_ci95": null,
+     "precision": null,
+     "precision_wilson95": null,
+     "precision_ci95": null,
+     "reached_target": false,
+     "coverage_cluster_ci95": [
+      0.0,
+      0.0
+     ],
+     "precision_cluster_ci95": null
+    },
+    "conservative_p0.9": {
+     "rule": "lowest validation confidence whose Wilson lower bound reaches the target",
+     "n_validation": 12,
+     "target": 0.9,
+     "threshold": null,
+     "n_answered": 0,
+     "coverage": 0.0,
+     "coverage_ci95": null,
+     "precision": null,
+     "precision_wilson95": null,
+     "precision_ci95": null,
+     "reached_target": false,
+     "coverage_cluster_ci95": [
+      0.0,
+      0.0
+     ],
+     "precision_cluster_ci95": null
+    },
+    "oracle": {
+     "label": "ORACLE: best on the sealed set itself, not deployable",
+     "n": 39,
+     "accuracy": 0.7692,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9817,
+      "precision_p2_5_p97_5": [
+       0.7775,
+       1.0
+      ],
+      "coverage_mean": 0.6222,
+      "coverage_p2_5_p97_5": [
+       0.4,
+       0.85
+      ],
+      "hit_rate": 0.89
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": null,
+      "precision_p2_5_p97_5": [
+       null,
+       null
+      ],
+      "coverage_mean": 0.0,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.0
+      ],
+      "hit_rate": 0.0
+     },
+     "coverage_at_precision_0.95": 0.6667,
+     "coverage_at_precision_0.95_ci95": [
+      0.4872,
+      0.8462
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.8056,
+      "achieved_coverage": 0.9231,
+      "ci95": [
+       0.6486,
+       0.9444
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.8438,
+      "achieved_coverage": 0.8205,
+      "ci95": [
+       0.7059,
+       0.9706
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 0.9286,
+      "achieved_coverage": 0.7179,
+      "ci95": [
+       0.7498,
+       1.0
+      ]
+     }
+    }
+   },
+   "cluster": {
+    "unit": "products (items without a product id are their own cluster)",
+    "n_items": 39,
+    "n_items_with_product_id": 39,
+    "n_clusters": 39
+   },
+   "accuracy_cluster_ci95": [
+    0.6404,
+    0.8974
+   ],
+   "consensus_ceiling": {
+    "n_labelled": 39,
+    "n_sealed": 757,
+    "fraction": 0.0515,
+    "wilson95": [
+     0.0379,
+     0.0697
+    ],
+    "note": "aspect tasks: relative to all sealed items, not only those that mention the aspect"
+   },
+   "slices_accuracy": {
+    "food": {
+     "n": 39,
+     "claimed": false
+    }
+   }
+  },
+  "aspect:food:ingredient_quality": {
+   "n_sealed_labelled": 17,
+   "insufficient_data": true,
+   "consensus_ceiling": {
+    "n_labelled": 17,
+    "n_sealed": 757,
+    "fraction": 0.0225,
+    "wilson95": [
+     0.0141,
+     0.0357
+    ],
+    "note": "aspect tasks: relative to all sealed items, not only those that mention the aspect"
+   }
+  },
+  "aspect:food:efficacy_claims": {
+   "n_sealed_labelled": 13,
+   "insufficient_data": true,
+   "consensus_ceiling": {
+    "n_labelled": 13,
+    "n_sealed": 757,
+    "fraction": 0.0172,
+    "wilson95": [
+     0.0101,
+     0.0292
+    ],
+    "note": "aspect tasks: relative to all sealed items, not only those that mention the aspect"
+   }
+  },
+  "aspect:food:quantity": {
+   "n_sealed_labelled": 3,
+   "insufficient_data": true,
+   "consensus_ceiling": {
+    "n_labelled": 3,
+    "n_sealed": 757,
+    "fraction": 0.004,
+    "wilson95": [
+     0.0013,
+     0.0116
+    ],
+    "note": "aspect tasks: relative to all sealed items, not only those that mention the aspect"
+   }
+  }
+ }
+}
