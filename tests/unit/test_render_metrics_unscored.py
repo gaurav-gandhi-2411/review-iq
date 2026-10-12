@@ -38,10 +38,10 @@ def test_headline_sentence_carries_score_ci_n_and_unscored_fraction_together() -
     assert f"{pub['score'] * 100:.1f}%" in line
     assert f"[{pub['ci_95']['lower'] * 100:.1f}%, {pub['ci_95']['upper'] * 100:.1f}%]" in line
     assert f"on {un['n_reviews']} unseen reviews" in line
-    assert "three-judge panel reached consensus" in line
+    assert "only where the three-judge panel agreed." in line
     assert f"{un['unscored_fraction'] * 100:.1f}% of field-pairs" in line
     assert f"({un['n_pairs_unscored']} of {un['n_pairs']})" in line
-    assert line.endswith("unscored.**")
+    assert line.endswith("(exploratory, LLM-judged, not human-verified).**")
 
 
 def test_unscored_cell_is_in_the_headline_table_row_not_a_footnote() -> None:
@@ -55,7 +55,7 @@ def test_per_field_unscored_table_lists_every_headline_field_and_the_bounds() ->
     md = render_held_out_table_md(HELD)
     for f in HELD["headline_fields"]:
         assert any(line.startswith(f"| `{f}` | ") and " of 70 " in line for line in md.splitlines())
-    assert "No point estimate of overall accuracy is identifiable" in md
+    assert "No assumption-free point estimate of overall accuracy is identifiable" in md
     assert "a bound, not a result" in md
     lo = HELD["unscored"]["bounds"]["lower_unscored_all_wrong"]["score"]
     hi = HELD["unscored"]["bounds"]["upper_unscored_all_correct"]["score"]
