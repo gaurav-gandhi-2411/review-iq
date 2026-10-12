@@ -3,6 +3,8 @@ from __future__ import annotations
 import httpx
 import structlog
 
+from app.core.rate_limit_events import log_rate_limited
+
 log = structlog.get_logger(__name__)
 
 _OPENROUTER_CHAT_URL = "https://openrouter.ai/api/v1/chat/completions"
@@ -106,6 +108,15 @@ class SecondaryProvider:
             try:
                 response.raise_for_status()
             except httpx.HTTPError:
+                if response.status_code == 429:
+                    log_rate_limited(
+                        provider="openrouter",
+                        model=self._model,
+                        tier=None,
+                        role="secondary",
+                        body=response.text,
+                        headers=response.headers,
+                    )
                 log.warning(
                     "secondary.openrouter_http_error",
                     status_code=response.status_code,

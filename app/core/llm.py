@@ -19,7 +19,7 @@ from app.core.metrics import FAILOVER_TOTAL
 from app.core.providers.base import assert_privacy_safe
 from app.core.providers.groq import GroqProvider
 from app.core.providers.secondary import SecondaryProvider
-from app.core.router import route_extraction
+from app.core.router import _is_quota_error, route_extraction
 from app.core.schemas import ReviewExtractionLLMOutput
 
 log = structlog.get_logger(__name__)
@@ -63,6 +63,7 @@ def _build_secondary(settings: Any) -> SecondaryProvider | GroqProvider:
             model=settings.secondary_provider_model,
             api_key=settings.secondary_provider_api_key,
             timeout=settings.llm_timeout_seconds,
+            role="secondary",
         )
     return SecondaryProvider(
         api_key=settings.secondary_provider_api_key,
@@ -93,6 +94,7 @@ async def extract_with_llm(
     settings = get_settings()
     t0 = time.monotonic()
     _tiered_failed = False  # set True when tiered routing exhausts and falls through
+    _failover_reason = "error"  # "rate_limited" when the primary failure was a 429/quota
 
     # --- Tiered routing (when enabled and no explicit model hint) ---
     if settings.enable_tiered_routing and model_hint is None:
@@ -113,7 +115,9 @@ async def extract_with_llm(
                 degraded=degraded,
             )
             return extraction, model, latency_ms, tokens_in, tokens_out, degraded
-        except RuntimeError:
+        except RuntimeError as exc:
+            if _is_quota_error(exc):
+                _failover_reason = "rate_limited"
             log.warning("llm.tiered_groq_exhausted_falling_back")
             FAILOVER_TOTAL.labels(from_provider="groq_tiered").inc()
             _tiered_failed = True
@@ -154,6 +158,8 @@ async def extract_with_llm(
                     log.error("llm.groq_exhausted_parse_retries")
             except (APIError, APIStatusError) as exc:
                 api_error_attempts += 1
+                if getattr(exc, "status_code", None) == 429:
+                    _failover_reason = "rate_limited"
                 log.warning(
                     "llm.api_error",
                     provider="groq",
@@ -175,6 +181,12 @@ async def extract_with_llm(
         secondary = _build_secondary(settings)
         if not _tiered_failed:
             FAILOVER_TOTAL.labels(from_provider="groq").inc()
+        failover_fields = {
+            "from_provider": "groq_tiered" if _tiered_failed else "groq",
+            "to_provider": "groq" if settings.secondary_provider_kind == "groq" else "openrouter",
+            "to_model": settings.secondary_provider_model,
+            "reason": _failover_reason,
+        }
         try:
             assert_privacy_safe(secondary, context="secondary failover path")
             raw, tokens_in, tokens_out = await secondary.complete(
@@ -182,6 +194,7 @@ async def extract_with_llm(
                 system_prompt=_SYSTEM_PROMPT,
             )
             result = _parse_response(raw)
+            log.warning("llm.failover", outcome="success", **failover_fields)
             latency_ms = int((time.monotonic() - t0) * 1000)
             log.info(
                 "llm.extracted",
@@ -200,8 +213,10 @@ async def extract_with_llm(
                 False,
             )
         except RuntimeError:
+            log.warning("llm.failover", outcome="failed", **failover_fields)
             raise
         except Exception as exc:  # noqa: BLE001
+            log.warning("llm.failover", outcome="failed", **failover_fields)
             log.error("llm.secondary_failed", error=str(exc))
 
     raise RuntimeError("All LLM providers failed to extract the review.")
