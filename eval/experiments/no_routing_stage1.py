@@ -702,6 +702,10 @@ def main(argv: list[str] | None = None) -> int:
     cassette_module.CASSETTES_PATH = CASSETTE_PATH
     settings = get_settings()
     if args.mode == "record":
+        # Shared Groq budget ledger (budget gating only).
+        from engine.groq_budget_hook import install
+
+        install()
         # Offline check of the persisted 429 floor (eval/quota_guard.py): refuse a model that a
         # recent TPD 429 showed to be near-exhausted. No probe call is made here.
         from eval.quota_guard import check_persisted_floor
