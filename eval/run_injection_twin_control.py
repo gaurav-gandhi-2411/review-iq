@@ -36,8 +36,8 @@ Modes:
     replay                     re-derive every pair the cassette holds; zero quota; no state writes
     report                     summarise the state file (no calls)
 
-Resume and budget: eval/results/injection_twin_control_state.json lists completed pair ids (and any
-half-finished pair, so a crash between its two calls never loses accounting) and the tokens spent per
+Resume and budget: reports/eval/injection_twin/injection_twin_control_state.json lists completed
+pair ids (and any half-finished pair, so a crash between its two calls never loses accounting) and the tokens spent per
 UTC day per model. Every `record` invocation (a) stops before any call that could push a model past
 INVOCATION_CEILING (95K) for this invocation, and (b) reads the day's prior usage from the state
 file and stops before any call that could push a model past DAY_CEILING (100K) for the UTC day, so
@@ -77,9 +77,9 @@ sys.path.insert(0, str(ROOT))
 from eval.provenance import get_git_sha, now_iso  # noqa: E402
 from eval.wilson import wilson_ci  # noqa: E402
 
-CASSETTE_PATH = ROOT / "eval" / "cassettes" / "injection_twin_cassettes.json"
-STATE_PATH = ROOT / "eval" / "results" / "injection_twin_control_state.json"
-RESULT_PATH = ROOT / "eval" / "results" / "injection_twin_control.json"
+CASSETTE_PATH = ROOT / "reports" / "eval" / "injection_twin" / "injection_twin_cassettes.json"
+STATE_PATH = ROOT / "reports" / "eval" / "injection_twin" / "injection_twin_control_state.json"
+RESULT_PATH = ROOT / "reports" / "eval" / "injection_twin" / "injection_twin_control.json"
 
 SEED = 42
 INVOCATION_CEILING = 95_000  # per model, per record invocation (50% of a 200K pool, minus margin)

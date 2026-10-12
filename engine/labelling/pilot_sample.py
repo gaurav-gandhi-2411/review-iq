@@ -65,6 +65,12 @@ def main() -> None:
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--exclude", default="", help="manifest.json of earlier pilots to avoid")
     ap.add_argument("--tag", default="pilot1")
+    ap.add_argument(
+        "--mined-per-class", type=int, default=0, help="re-pilot: candidates mined per rare class"
+    )
+    ap.add_argument(
+        "--mined-classes", default="", help="comma list restricting which mine.PATTERNS are mined"
+    )
     a = ap.parse_args()
 
     banned: set[str] = set()
@@ -73,6 +79,8 @@ def main() -> None:
             banned |= {r["sha"] for r in json.loads(Path(m).read_text(encoding="utf-8"))["items"]}
     rng = random.Random(a.seed)
     rows, manifest = [], []
+    pools: dict[str, list] = {}
+    picked: set[str] = set()
     for stratum, df in load_all(Path(a.corpus), Path(a.flipkart)).items():
         lo, hi = LIMITS[stratum]
         seen: set[str] = set()
@@ -86,7 +94,9 @@ def main() -> None:
                 continue
             seen.add(sha)
             pool.append((t, float(stars), sha))
+        pools[stratum] = pool
         for n, (t, stars, sha) in enumerate(rng.sample(pool, PER_STRATUM)):
+            picked.add(sha)
             rid = f"{a.tag}-{stratum}-{n:03d}"
             rows.append(
                 {"id": rid, "stratum": stratum, "category": stratum, "text": t, "stars": stars}
@@ -94,6 +104,49 @@ def main() -> None:
             manifest.append(
                 {"id": rid, "stratum": stratum, "sha": sha, "stars": stars, "chars": len(t)}
             )
+    if a.mined_per_class:
+        from engine.labelling import mine
+
+        wanted = [c for c in a.mined_classes.split(",") if c]
+        for cls in mine.PATTERNS:
+            if wanted and cls not in wanted:
+                continue
+            cands = {
+                st: [x for x in pl if x[2] not in picked and mine.matches(x[0], cls)]
+                for st, pl in pools.items()
+            }
+            take: list[tuple[str, tuple]] = []
+            per = max(
+                1, a.mined_per_class // len(cands)
+            )  # equal quota per stratum where it has matches
+            for st, lst in cands.items():
+                for x in rng.sample(lst, min(per, len(lst))):
+                    take.append((st, x))
+            rest = [(st, x) for st, lst in cands.items() for x in lst if (st, x) not in take]
+            rng.shuffle(rest)
+            take += rest[: max(0, a.mined_per_class - len(take))]
+            for n, (st, (t, stars, sha)) in enumerate(take[: a.mined_per_class]):
+                picked.add(sha)
+                rid = f"{a.tag}-mined_{cls}-{n:03d}"
+                rows.append(
+                    {
+                        "id": rid,
+                        "stratum": f"mined_{cls}",
+                        "category": st,
+                        "text": t,
+                        "stars": stars,
+                    }
+                )
+                manifest.append(
+                    {
+                        "id": rid,
+                        "stratum": f"mined_{cls}",
+                        "sha": sha,
+                        "stars": stars,
+                        "chars": len(t),
+                        "corpus": st,
+                    }
+                )
     out = Path(a.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(
