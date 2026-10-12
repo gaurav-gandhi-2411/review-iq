@@ -70,7 +70,9 @@ def test_quota_exhausted_returns_429_before_any_llm_call() -> None:
 
     assert resp.status_code == 429
     assert mock_llm.call_count == 0, "LLM must not be called once the daily quota is exhausted"
-    assert "daily capacity" in resp.json()["detail"]
+    detail = resp.json()["detail"]
+    assert "rolling last 24 hours" in detail
+    assert "no midnight reset" in detail
 
 
 def test_quota_check_db_error_fails_closed() -> None:

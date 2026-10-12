@@ -170,13 +170,21 @@ async def _nosleep(_: float) -> None:
     return None
 
 
-def _new_budget(state: dict[str, Any], today: str = "2026-09-20", **kw: Any) -> tw.Budget:
+NOW = 1_800_000_000.0  # injected clock; no test reads the wall clock
+
+
+def _new_budget(state: dict[str, Any], now: float = NOW, **kw: Any) -> tw.Budget:
     return tw.Budget(
         [SMALL, LARGE],
-        state["usage_by_day"].setdefault(today, {}),
+        state["usage_log"],
         est_call_tokens=state["max_call_tokens_seen"],
+        now_fn=lambda: now,
         **kw,
     )
+
+
+def _logged(state: dict[str, Any], model: str = SMALL) -> int:
+    return sum(e["tokens"] for e in state["usage_log"] if e["model"] == model)
 
 
 async def _record(
@@ -231,7 +239,7 @@ async def test_half_finished_pair_resumes_with_only_the_missing_call() -> None:
     assert "call failed" in out["stopped"] and out["pairs_finished_this_invocation"] == 0
     assert list(state["partial"]) == ["buy_again-00"] and len(state["partial"]["buy_again-00"]) == 1
     # the successful first call was charged before the crash
-    assert sum(state["usage_by_day"]["2026-09-20"].values()) == 1500
+    assert _logged(state) + _logged(state, LARGE) == 1500
     calls2: list[str] = []
     await _record(state, make_extract(calls2), _new_budget(state), max_pairs=1)
     assert len(calls2) == 1  # only the missing arm ran
@@ -251,28 +259,29 @@ async def test_invocation_guard_refuses_to_exceed_95k_per_model() -> None:
 
 
 @pytest.mark.asyncio
-async def test_two_invocations_the_same_utc_day_cannot_exceed_100k_per_model() -> None:
+async def test_two_invocations_within_24h_cannot_exceed_100k_per_model() -> None:
     state = tw.new_state()
     first = await _record(state, make_extract([]), _new_budget(state))
     assert first["stopped"].startswith("BUDGET GUARD")
-    used_after_first = state["usage_by_day"]["2026-09-20"][SMALL]
-    # second invocation, same day, fresh Budget reading the day's prior usage from the state
-    second = await _record(state, make_extract([]), _new_budget(state))
-    total = state["usage_by_day"]["2026-09-20"][SMALL]
-    assert total <= tw.DAY_CEILING
+    used_after_first = _logged(state)
+    # second invocation 23h59m later: nothing has rolled off, so the cap still binds
+    later = NOW + 24 * 3600 - 60
+    second = await _record(state, make_extract([]), _new_budget(state, now=later))
+    total = _logged(state)
+    assert total <= tw.ROLLING_CAP
     assert total >= used_after_first
     assert second["stopped"].startswith("BUDGET GUARD")
-    # a different UTC day starts from zero again
-    third = await _record(state, make_extract([]), _new_budget(state, today="2026-09-21"))
+    # just past 24h the first invocation's calls have rolled off: capacity returns with no
+    # midnight involved
+    third = await _record(state, make_extract([]), _new_budget(state, now=NOW + 24 * 3600 + 1))
     assert third["pairs_finished_this_invocation"] > 0
-    assert state["usage_by_day"]["2026-09-21"][SMALL] <= tw.DAY_CEILING
-    assert state["usage_by_day"]["2026-09-20"][SMALL] == total
+    assert _logged(state) > total
 
 
 @pytest.mark.asyncio
 async def test_guard_checks_the_large_pool_too_and_adapts_to_big_calls() -> None:
     state = tw.new_state()
-    state["usage_by_day"]["2026-09-20"] = {LARGE: 99_000}  # large pool nearly spent today
+    state["usage_log"].append({"ts": NOW - 60, "model": LARGE, "tokens": 99_000})  # nearly spent
     out = await _record(state, make_extract([]), _new_budget(state))
     assert out["stopped"].startswith("BUDGET GUARD") and not state["completed"]
     state2 = tw.new_state()
@@ -426,3 +435,24 @@ async def test_e2e_main_controls_flag_selects_output_path(
         assert f401_on["landed"] == 0 and f401_on["runs"][0]["injection_controls"]["needs_review"]
     finally:
         get_settings.cache_clear()
+
+
+def test_v1_state_migrates_each_day_to_its_last_second_and_blocks_until_it_rolls_off() -> None:
+    v1 = {
+        "version": 1,
+        "completed": {},
+        "partial": {},
+        "usage_by_day": {"2026-10-10": {SMALL: 94_765}, "2026-10-11": {SMALL: 89_051}},
+        "max_call_tokens_seen": 2878,
+    }
+    state = tw.migrate_state(json.loads(json.dumps(v1)))
+    assert "usage_by_day" not in state and state["version"] == 2
+    eod = {e["legacy_day"]: e["ts"] for e in state["usage_log"]}
+    assert eod["2026-10-11"] == 1_791_763_199.0  # 2026-10-11T23:59:59Z
+    now = eod["2026-10-11"] + 1  # 00:00:00 UTC on the 12th: NOT a reset
+    b = _new_budget(state, now=now)
+    assert b.day_usage[SMALL] == 89_051  # the 10th rolled off, the 11th has not
+    assert not b.can_afford(4)  # 4 x 3000 > 100K - 89,051
+    assert b.can_afford(3)
+    assert b.next_allowed_at(30) == eod["2026-10-11"] + 24 * 3600  # 90K needs the 11th gone
+    assert tw.migrate_state(json.loads(json.dumps(state))) == state  # idempotent
