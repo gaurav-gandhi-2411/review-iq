@@ -237,3 +237,25 @@ async def require_session_read(
     user = await verify_supabase_jwt(jwt)
 
     return await asyncio.to_thread(_lookup_context_for_read, str(user.id))
+
+
+async def require_verified_user_id(
+    bearer: HTTPAuthorizationCredentials | None = Security(_BEARER),
+) -> str:
+    """FastAPI dependency for USER-scoped (not org-scoped) BFF endpoints.
+
+    Returns the Supabase user id from the verified JWT -- the only source of a user id for
+    these endpoints, never a query/body parameter. Does no org lookup, quota check or usage
+    record: a user with no org yet (not provisioned) still authenticates here, and the
+    storage layer simply finds no member row.
+
+    Raises 401 for a missing, invalid or expired token.
+    """
+    if bearer is None or not bearer.credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing Authorization: Bearer <supabase_token>.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    user = await verify_supabase_jwt(bearer.credentials)
+    return str(user.id)
