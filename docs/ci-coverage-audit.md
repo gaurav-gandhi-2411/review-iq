@@ -41,7 +41,11 @@ the table means "runs on PRs", not "blocks the merge".
 | `migration-drift-check.yml`, `schema-drift-check.yml` | push `main` (paths `supabase/**`), 6-hourly / daily cron | no (compare against prod DB) |
 | `security-bypassrls-check.yml`, `model-availability-check.yml` | push `main` / cron | no |
 | `app-mount-check.yml` | `workflow_dispatch` only | no |
+<<<<<<< HEAD
 | `web-surface-probe.yml`, `alert-path-canary.yml`, `failover-probe.yml`, `demo-quota-probe.yml`, `db-backup.yml` | cron / dispatch only (probes of live prod, not of a PR) | no |
+=======
+| `web-surface-probe.yml`, `uptime-alert.yml`, `alert-path-canary.yml`, `demo-quota-probe.yml`, `db-backup.yml` | cron / dispatch only (probes of live prod, not of a PR) | no |
+>>>>>>> origin/main
 
 ## Surface-by-surface coverage
 
