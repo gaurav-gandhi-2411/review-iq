@@ -6,9 +6,14 @@ PRE-REGISTERED (committed before any LLM call is made on the sealed set):
   * Tasks: needs_action, broad_intent, sentiment, urgency (aspect sentiment is not compared: stated limit).
   * LLM arm: one zero-shot call per item returning all four tasks as JSON, each with an integer confidence 0-100.
     Same class definitions as the labelling spec in one short paragraph, NO few-shots, temperature 0, fixed seed.
-    Models: openai/gpt-oss-20b and openai/gpt-oss-120b on the dedicated Groq org via the benchmark key
-    (`benchmark_groq_key.load_benchmark_groq_key`), paced under the TPM limit and a per-model daily token budget
-    (default 180,000 of the 200,000 TPD). The run is resumable across days.
+    Models: openai/gpt-oss-20b and openai/gpt-oss-120b via the benchmark key
+    (`benchmark_groq_key.load_benchmark_groq_key`), paced under the TPM limit and a per-model rolling-24h token cap
+    (100,000 of the 200,000 TPD). The run is resumable across days.
+    CORRECTION 2026-10-12 (comment only, no change to design, prompts or parameters): the benchmark key is NOT on a
+    separate Groq org. It sits on the same Personal account as the production key, so its tokens draw on the SAME
+    per-model pools (VERIFIED in the Groq console 2026-10-12: about 340 requests / 300K tokens on gpt-oss-120b and
+    about 400 requests / 230K on gpt-oss-20b on Oct 11). Calls therefore also go through the machine-wide budget
+    ledger (`engine.groq_budget_hook`).
   * Metric: for each task, coverage at which precision (vs consensus) reaches 0.95, using the SAME function as the
     BANKING77 comparison (`engine.experiments.selective.summarize`), item bootstrap 1,000 resamples, 95 percent CI.
     This is the ORACLE curve (best threshold on the sealed set), which FAVOURS both arms equally; the deployable
@@ -26,8 +31,11 @@ PRE-REGISTERED (committed before any LLM call is made on the sealed set):
     (deterministic: shuffled with Random(42), greedy cover of unseen task/class pairs, review <= 220 chars).
     Example ids are written to `fewshot_ids.json`; sealed and validation items are never eligible. Example
     confidences are fixed at 90 (illustrative); this may bias calibration and is disclosed.
-  * Quota: the arm may use up to 180,000 tokens per model per UTC day (U4d is paused by decision until the
-    comparison finishes); prod keeps the remaining headroom.
+  * Quota (CORRECTED 2026-10-12 by GG): Groq's per-model daily limit is a ROLLING 24h window, and the org is
+    Samidha's production org. All eval traffic is capped at 100,000 tokens per model per trailing 24h, so
+    production keeps a 50 percent reserve. The two arms of a model share one usage ledger (one pool). The run
+    waits in-process when the cap is reached. U4d is paused until the comparison finishes. An earlier version of this
+    harness assumed a UTC-midnight reset and spent up to 170K per day; the overrun is recorded in the report.
 
     python -m engine.intent.llm_moat run --model openai/gpt-oss-20b --texts <scale.jsonl> --out <dir> [--arm fewshot]
     python -m engine.intent.llm_moat compare --out <dir> --pred-dir reports/intent/run1 --report <json>
@@ -66,8 +74,13 @@ JSON:"""
 FEWSHOT_HEADER = "Worked examples (from labelled training data):\n"
 URL = "https://api.groq.com/openai/v1/chat/completions"
 TPM_BUDGET = 6500  # of 8,000 TPM, headroom for the other jobs on the org
-# U4d is paused until this comparison finishes (GG decision); prod keeps ~20K of the 200K pool.
-DAILY_BUDGET = int(os.environ.get("MOAT_DAILY_BUDGET", "180000"))
+# Groq's per-model daily token limit is a ROLLING 24h window, not a midnight reset (VERIFIED from a 429 body on
+# 2026-10-12 00:07 UTC: 'tokens per day (TPD): Limit 200000, Used 199445 ... try again in 3m0s'). GG decision
+# (2026-10-12): all eval traffic on the production org is capped at 100K tokens per model per trailing 24h so
+# production always keeps a 50% reserve. The usage ledger is shared by both arms of a model (one pool).
+ROLLING_CAP = int(os.environ.get("MOAT_ROLLING_CAP", "100000"))
+WINDOW_S = 24 * 3600
+EST_TOKENS = 1000  # one request is ~970 tokens zero-shot; few-shot uses the recent mean instead
 
 
 class InfraError(RuntimeError):
@@ -113,6 +126,33 @@ def ask(key: str, model: str, text: str, shots: str = "") -> tuple[dict | None, 
         except (ValueError, KeyError, IndexError):
             return None, used
     raise InfraError("rate limit or transport failure after 5 attempts")
+
+
+def usage_path(out: Path, model: str) -> Path:
+    return out / f"{model.replace('/', '_')}__usage.jsonl"
+
+
+def read_usage(path: Path) -> list[tuple[float, int]]:
+    if not path.exists():
+        return []
+    rows = [json.loads(ln) for ln in path.open(encoding="utf-8") if ln.strip()]
+    return sorted((float(r["ts"]), int(r["tokens"])) for r in rows)
+
+
+def wait_seconds(
+    entries: list[tuple[float, int]], need: int, now: float, cap: int = ROLLING_CAP
+) -> float:
+    """Seconds until `need` more tokens fit under `cap` in the trailing 24h (0 if they fit now)."""
+    live = [(t, n) for t, n in entries if now - t < WINDOW_S]
+    total = sum(n for _, n in live)
+    for t, n in live:  # oldest first
+        if total + need <= cap:
+            break
+        total -= n
+        wait = t + WINDOW_S - now
+        if total + need <= cap:
+            return max(0.0, wait)
+    return 0.0 if total + need <= cap else float(WINDOW_S)
 
 
 def sealed_ids() -> list[str]:
@@ -176,6 +216,10 @@ def run(model: str, texts: Path, out: Path, arm: str = "zeroshot") -> int:
     from benchmark.vernacular_v2.benchmark_groq_key import load_benchmark_groq_key
 
     key = load_benchmark_groq_key()
+    # Shared Groq budget ledger (budget gating only); a no-op if the key loader already installed it.
+    from engine.groq_budget_hook import install
+
+    install()
     out.mkdir(parents=True, exist_ok=True)
     stem = model.replace("/", "_") + ("" if arm == "zeroshot" else f"__{arm}")
     f = out / f"{stem}.jsonl"
@@ -197,6 +241,8 @@ def run(model: str, texts: Path, out: Path, arm: str = "zeroshot") -> int:
         d = json.loads(ln)
         text_of[d["id"]] = d["text"]
     day_tokens, window = 0, []
+    upath = usage_path(out, model)
+    usage = read_usage(upath)
     interim = out / f"{stem}__interim300.json"
     if (
         len(done) >= 300 and not interim.exists()
@@ -208,11 +254,14 @@ def run(model: str, texts: Path, out: Path, arm: str = "zeroshot") -> int:
         for i in sealed_ids():
             if i in done:
                 continue
-            if day_tokens >= DAILY_BUDGET:
+            recent = [n for _, n in usage[-20:] if n > 0]
+            need = max(EST_TOKENS, int(sum(recent) / len(recent))) if recent else EST_TOKENS
+            while (wait := wait_seconds(usage, need, time.time())) > 0:
                 print(
-                    f"daily token budget reached at {day_tokens}; resume after the 00:00 UTC reset"
+                    f"rolling-24h cap {ROLLING_CAP} reached; waiting {wait / 3600:.2f} h",
+                    flush=True,
                 )
-                return 2
+                time.sleep(min(wait, 900))
             now = time.time()
             window = [(t, n) for t, n in window if now - t < 60]
             if sum(n for _, n in window) > TPM_BUDGET:
@@ -224,6 +273,9 @@ def run(model: str, texts: Path, out: Path, arm: str = "zeroshot") -> int:
                 return 3
             window.append((time.time(), used))
             day_tokens += used
+            usage.append((time.time(), used))
+            with upath.open("a", encoding="utf-8") as uw:
+                uw.write(json.dumps({"ts": usage[-1][0], "tokens": used}) + "\n")
             w.write(json.dumps({"id": i, "ans": ans, "tokens": used}) + "\n")
             w.flush()
             done.add(i)
