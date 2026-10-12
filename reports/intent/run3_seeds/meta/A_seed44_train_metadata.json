@@ -1,0 +1,387 @@
+{
+ "commit": "2e9a267",
+ "config": {
+  "model": "intfloat/multilingual-e5-base",
+  "epochs": 30,
+  "lr": 5e-05,
+  "batch_size": 32,
+  "seed": 44,
+  "max_len": 128,
+  "patience": 3,
+  "freeze_embeddings": true
+ },
+ "device": "cuda",
+ "torch": "2.6.0+cu124",
+ "n_items": {
+  "train": 3777,
+  "val": 460,
+  "test": 763
+ },
+ "temperatures": {
+  "needs_action": 1.839583850056604,
+  "broad_intent": 1.4677634949871576,
+  "sentiment": 1.5398155977116992,
+  "urgency": 1.5240540956714488,
+  "aspect:beauty:results_efficacy": 1.1013414267233723,
+  "aspect:beauty:texture": 2.1874337931239545,
+  "aspect:beauty:skin_reaction": 2.514429651259,
+  "aspect:beauty:fragrance": 2.22302498331087,
+  "aspect:beauty:value": 1.4635517515786758,
+  "aspect:food:taste": 0.05000403625181906,
+  "aspect:food:value": 1.1042999241336944,
+  "aspect:food:ingredient_quality": 2.6181492365246273,
+  "aspect:food:efficacy_claims": 0.1802176217020168,
+  "aspect:food:quantity": null
+ },
+ "n_labelled": {
+  "train": {
+   "needs_action": 3775,
+   "broad_intent": 3718,
+   "sentiment": 3502,
+   "urgency": 3773,
+   "aspect:beauty:results_efficacy": 712,
+   "aspect:beauty:texture": 358,
+   "aspect:beauty:skin_reaction": 166,
+   "aspect:beauty:fragrance": 182,
+   "aspect:beauty:value": 87,
+   "aspect:food:taste": 193,
+   "aspect:food:value": 120,
+   "aspect:food:ingredient_quality": 163,
+   "aspect:food:efficacy_claims": 51,
+   "aspect:food:quantity": 36
+  },
+  "val": {
+   "needs_action": 460,
+   "broad_intent": 454,
+   "sentiment": 435,
+   "urgency": 460,
+   "aspect:beauty:results_efficacy": 104,
+   "aspect:beauty:texture": 53,
+   "aspect:beauty:skin_reaction": 29,
+   "aspect:beauty:fragrance": 25,
+   "aspect:beauty:value": 14,
+   "aspect:food:taste": 23,
+   "aspect:food:value": 12,
+   "aspect:food:ingredient_quality": 19,
+   "aspect:food:efficacy_claims": 2,
+   "aspect:food:quantity": 0
+  },
+  "test": {
+   "needs_action": 723,
+   "broad_intent": 706,
+   "sentiment": 679,
+   "urgency": 708,
+   "aspect:beauty:results_efficacy": 192,
+   "aspect:beauty:texture": 69,
+   "aspect:beauty:skin_reaction": 33,
+   "aspect:beauty:fragrance": 51,
+   "aspect:beauty:value": 14,
+   "aspect:food:taste": 109,
+   "aspect:food:value": 39,
+   "aspect:food:ingredient_quality": 17,
+   "aspect:food:efficacy_claims": 13,
+   "aspect:food:quantity": 3
+  }
+ },
+ "calibration": "per-task temperature on validation only; null = fewer than 2 validation labels",
+ "decision": {
+  "mode": "threshold",
+  "thresholds": {
+   "urgency": {
+    "high": {
+     "threshold": 0.585509,
+     "n_val_positives": 8,
+     "fallback_argmax": false
+    }
+   }
+  },
+  "fitted_on": "validation only"
+ },
+ "train_info": {
+  "history": [
+   {
+    "epoch": 1,
+    "val_mean_macro_f1": 0.4908,
+    "loss": 0.3546539843082428,
+    "lr": 2.7102803738317755e-05,
+    "val_macro_f1_by_task": {
+     "needs_action": 0.4741,
+     "broad_intent": 0.3932,
+     "sentiment": 0.4234,
+     "urgency": 0.3577,
+     "aspect:beauty:results_efficacy": 0.834,
+     "aspect:beauty:texture": 0.2971,
+     "aspect:beauty:skin_reaction": 0.4613,
+     "aspect:beauty:fragrance": 0.3043,
+     "aspect:beauty:value": 0.5664,
+     "aspect:food:taste": 1.0,
+     "aspect:food:value": 0.4762,
+     "aspect:food:ingredient_quality": 0.4591,
+     "aspect:food:efficacy_claims": 0.3333
+    }
+   },
+   {
+    "epoch": 2,
+    "val_mean_macro_f1": 0.6108,
+    "loss": 0.07090005278587341,
+    "lr": 4.666666666666667e-05,
+    "val_macro_f1_by_task": {
+     "needs_action": 0.8444,
+     "broad_intent": 0.421,
+     "sentiment": 0.4273,
+     "urgency": 0.5342,
+     "aspect:beauty:results_efficacy": 0.9052,
+     "aspect:beauty:texture": 0.5446,
+     "aspect:beauty:skin_reaction": 0.5287,
+     "aspect:beauty:fragrance": 0.3968,
+     "aspect:beauty:value": 0.5664,
+     "aspect:food:taste": 0.8686,
+     "aspect:food:value": 0.4889,
+     "aspect:food:ingredient_quality": 0.4137,
+     "aspect:food:efficacy_claims": 1.0
+    }
+   },
+   {
+    "epoch": 3,
+    "val_mean_macro_f1": 0.6674,
+    "loss": 1.2764297723770142,
+    "lr": 4.5e-05,
+    "val_macro_f1_by_task": {
+     "needs_action": 0.8619,
+     "broad_intent": 0.537,
+     "sentiment": 0.477,
+     "urgency": 0.5484,
+     "aspect:beauty:results_efficacy": 0.9773,
+     "aspect:beauty:texture": 0.5381,
+     "aspect:beauty:skin_reaction": 0.5563,
+     "aspect:beauty:fragrance": 0.4697,
+     "aspect:beauty:value": 0.4967,
+     "aspect:food:taste": 1.0,
+     "aspect:food:value": 0.5583,
+     "aspect:food:ingredient_quality": 0.6551,
+     "aspect:food:efficacy_claims": 1.0
+    }
+   },
+   {
+    "epoch": 4,
+    "val_mean_macro_f1": 0.6854,
+    "loss": 2.0708913803100586,
+    "lr": 4.3333333333333334e-05,
+    "val_macro_f1_by_task": {
+     "needs_action": 0.8728,
+     "broad_intent": 0.4972,
+     "sentiment": 0.5222,
+     "urgency": 0.7364,
+     "aspect:beauty:results_efficacy": 0.9175,
+     "aspect:beauty:texture": 0.5559,
+     "aspect:beauty:skin_reaction": 0.5458,
+     "aspect:beauty:fragrance": 0.4832,
+     "aspect:beauty:value": 0.7269,
+     "aspect:food:taste": 0.9129,
+     "aspect:food:value": 0.5583,
+     "aspect:food:ingredient_quality": 0.581,
+     "aspect:food:efficacy_claims": 1.0
+    }
+   },
+   {
+    "epoch": 5,
+    "val_mean_macro_f1": 0.6937,
+    "loss": 0.03809221461415291,
+    "lr": 4.166666666666667e-05,
+    "val_macro_f1_by_task": {
+     "needs_action": 0.856,
+     "broad_intent": 0.5128,
+     "sentiment": 0.468,
+     "urgency": 0.7075,
+     "aspect:beauty:results_efficacy": 0.9175,
+     "aspect:beauty:texture": 0.4848,
+     "aspect:beauty:skin_reaction": 0.5904,
+     "aspect:beauty:fragrance": 0.4697,
+     "aspect:beauty:value": 0.5664,
+     "aspect:food:taste": 0.8231,
+     "aspect:food:value": 0.9111,
+     "aspect:food:ingredient_quality": 0.7111,
+     "aspect:food:efficacy_claims": 1.0
+    }
+   },
+   {
+    "epoch": 6,
+    "val_mean_macro_f1": 0.7058,
+    "loss": 0.08215916156768799,
+    "lr": 4e-05,
+    "val_macro_f1_by_task": {
+     "needs_action": 0.8806,
+     "broad_intent": 0.5361,
+     "sentiment": 0.5203,
+     "urgency": 0.6913,
+     "aspect:beauty:results_efficacy": 0.9175,
+     "aspect:beauty:texture": 0.6593,
+     "aspect:beauty:skin_reaction": 0.5858,
+     "aspect:beauty:fragrance": 0.5238,
+     "aspect:beauty:value": 0.7269,
+     "aspect:food:taste": 1.0,
+     "aspect:food:value": 0.6746,
+     "aspect:food:ingredient_quality": 0.4591,
+     "aspect:food:efficacy_claims": 1.0
+    }
+   },
+   {
+    "epoch": 7,
+    "val_mean_macro_f1": 0.7194,
+    "loss": 2.2855613231658936,
+    "lr": 3.8333333333333334e-05,
+    "val_macro_f1_by_task": {
+     "needs_action": 0.8565,
+     "broad_intent": 0.5531,
+     "sentiment": 0.6295,
+     "urgency": 0.6987,
+     "aspect:beauty:results_efficacy": 0.8598,
+     "aspect:beauty:texture": 0.588,
+     "aspect:beauty:skin_reaction": 0.5458,
+     "aspect:beauty:fragrance": 0.5333,
+     "aspect:beauty:value": 0.5664,
+     "aspect:food:taste": 1.0,
+     "aspect:food:value": 0.9111,
+     "aspect:food:ingredient_quality": 0.6095,
+     "aspect:food:efficacy_claims": 1.0
+    }
+   },
+   {
+    "epoch": 8,
+    "val_mean_macro_f1": 0.7125,
+    "loss": 0.27044329047203064,
+    "lr": 3.666666666666667e-05,
+    "val_macro_f1_by_task": {
+     "needs_action": 0.8327,
+     "broad_intent": 0.5785,
+     "sentiment": 0.5432,
+     "urgency": 0.5264,
+     "aspect:beauty:results_efficacy": 0.8681,
+     "aspect:beauty:texture": 0.5717,
+     "aspect:beauty:skin_reaction": 0.6138,
+     "aspect:beauty:fragrance": 0.5238,
+     "aspect:beauty:value": 0.7269,
+     "aspect:food:taste": 0.9565,
+     "aspect:food:value": 0.9111,
+     "aspect:food:ingredient_quality": 0.6095,
+     "aspect:food:efficacy_claims": 1.0
+    }
+   },
+   {
+    "epoch": 9,
+    "val_mean_macro_f1": 0.7385,
+    "loss": 5.587530136108398,
+    "lr": 3.5e-05,
+    "val_macro_f1_by_task": {
+     "needs_action": 0.8607,
+     "broad_intent": 0.5554,
+     "sentiment": 0.5841,
+     "urgency": 0.7573,
+     "aspect:beauty:results_efficacy": 0.9121,
+     "aspect:beauty:texture": 0.7006,
+     "aspect:beauty:skin_reaction": 0.5205,
+     "aspect:beauty:fragrance": 0.5149,
+     "aspect:beauty:value": 0.7491,
+     "aspect:food:taste": 1.0,
+     "aspect:food:value": 0.8413,
+     "aspect:food:ingredient_quality": 0.6051,
+     "aspect:food:efficacy_claims": 1.0
+    }
+   },
+   {
+    "epoch": 10,
+    "val_mean_macro_f1": 0.7589,
+    "loss": 0.32204312086105347,
+    "lr": 3.333333333333334e-05,
+    "val_macro_f1_by_task": {
+     "needs_action": 0.8731,
+     "broad_intent": 0.5659,
+     "sentiment": 0.6142,
+     "urgency": 0.7185,
+     "aspect:beauty:results_efficacy": 0.9121,
+     "aspect:beauty:texture": 0.5717,
+     "aspect:beauty:skin_reaction": 0.6103,
+     "aspect:beauty:fragrance": 0.5683,
+     "aspect:beauty:value": 0.8713,
+     "aspect:food:taste": 1.0,
+     "aspect:food:value": 0.9111,
+     "aspect:food:ingredient_quality": 0.6485,
+     "aspect:food:efficacy_claims": 1.0
+    }
+   },
+   {
+    "epoch": 11,
+    "val_mean_macro_f1": 0.7432,
+    "loss": 0.00160691246856004,
+    "lr": 3.1666666666666666e-05,
+    "val_macro_f1_by_task": {
+     "needs_action": 0.8758,
+     "broad_intent": 0.581,
+     "sentiment": 0.6071,
+     "urgency": 0.7393,
+     "aspect:beauty:results_efficacy": 0.9121,
+     "aspect:beauty:texture": 0.6547,
+     "aspect:beauty:skin_reaction": 0.6512,
+     "aspect:beauty:fragrance": 0.5683,
+     "aspect:beauty:value": 0.6333,
+     "aspect:food:taste": 0.9562,
+     "aspect:food:value": 0.9111,
+     "aspect:food:ingredient_quality": 0.5718,
+     "aspect:food:efficacy_claims": 1.0
+    }
+   },
+   {
+    "epoch": 12,
+    "val_mean_macro_f1": 0.7172,
+    "loss": 0.007518931291997433,
+    "lr": 3e-05,
+    "val_macro_f1_by_task": {
+     "needs_action": 0.8616,
+     "broad_intent": 0.5527,
+     "sentiment": 0.6228,
+     "urgency": 0.7372,
+     "aspect:beauty:results_efficacy": 0.9529,
+     "aspect:beauty:texture": 0.7006,
+     "aspect:beauty:skin_reaction": 0.527,
+     "aspect:beauty:fragrance": 0.5238,
+     "aspect:beauty:value": 0.5664,
+     "aspect:food:taste": 1.0,
+     "aspect:food:value": 0.7444,
+     "aspect:food:ingredient_quality": 0.5343,
+     "aspect:food:efficacy_claims": 1.0
+    }
+   },
+   {
+    "epoch": 13,
+    "val_mean_macro_f1": 0.7444,
+    "loss": 0.6291907429695129,
+    "lr": 2.8333333333333335e-05,
+    "val_macro_f1_by_task": {
+     "needs_action": 0.8616,
+     "broad_intent": 0.6694,
+     "sentiment": 0.5659,
+     "urgency": 0.7205,
+     "aspect:beauty:results_efficacy": 0.9318,
+     "aspect:beauty:texture": 0.6547,
+     "aspect:beauty:skin_reaction": 0.6103,
+     "aspect:beauty:fragrance": 0.5238,
+     "aspect:beauty:value": 0.8042,
+     "aspect:food:taste": 1.0,
+     "aspect:food:value": 0.9111,
+     "aspect:food:ingredient_quality": 0.4238,
+     "aspect:food:efficacy_claims": 1.0
+    }
+   }
+  ],
+  "best_val_mean_macro_f1": 0.7588510251764499,
+  "best_epoch": 10,
+  "stopped_early": true
+ },
+ "seconds": 752.2,
+ "inputs_sha256_16": {
+  "labels.json": "8f3b582082e4cf17",
+  "scale.jsonl": "d49895744c2e9a83",
+  "manifest.json": "a29c235e88162304"
+ },
+ "safety_stratum": "exclude"
+}
