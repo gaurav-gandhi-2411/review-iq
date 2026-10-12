@@ -51,6 +51,8 @@ def _settings(**overrides: object) -> Settings:
     base = dict(
         SECONDARY_PROVIDER_API_KEY="",
         SECONDARY_PROVIDER_MODEL="",
+        # Explicit: an unset kind with a key configured is a startup error (S23).
+        SECONDARY_PROVIDER_KIND="openrouter",
     )
     return Settings(**{**base, **overrides})  # type: ignore[arg-type]
 
