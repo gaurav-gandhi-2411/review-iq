@@ -126,7 +126,14 @@ async def _wait_async(model: str, est: int) -> None:
 
 
 def install(ledger: Any = None, module: Any = None) -> None:
-    """Patch httpx once per process. `ledger`/`module` are injectable for tests."""
+    """Patch httpx once per process. `ledger`/`module` are injectable for tests.
+
+    GROQ_BUDGET_SEPARATE_ORG=1 turns the gate off. Set it ONLY after the benchmark key has been moved to
+    its own Groq org: that org has its own pools, so counting its tokens against the shared pool would
+    just block benchmark runs for no reason.
+    """
+    if os.environ.get("GROQ_BUDGET_SEPARATE_ORG") == "1":
+        return
     if _state["installed"]:
         return
     if ledger is None:

@@ -170,6 +170,16 @@ def test_missing_ledger_module_fails_closed(monkeypatch: pytest.MonkeyPatch) -> 
     assert httpx.Client.send is hook.httpx.Client.send  # nothing was patched
 
 
+def test_separate_org_switch_turns_the_gate_off(monkeypatch: pytest.MonkeyPatch) -> None:
+    hook.uninstall()
+    original = httpx.Client.send
+    monkeypatch.setenv("GROQ_BUDGET_SEPARATE_ORG", "1")
+    hook.install(ledger=FakeLedger(), module=object())
+    assert (
+        httpx.Client.send is original
+    )  # nothing patched; the benchmark key's own org has its own pools
+
+
 def test_real_ledger_enforces_the_benchmark_cap(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
