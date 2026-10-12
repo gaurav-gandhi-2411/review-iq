@@ -3,8 +3,8 @@
 Status: accepted. **The panel that produced the results below was chosen by a gate written AFTER the pre-registered
 gate had failed. Everything under "Result (v2)" is a post-hoc, exploratory analysis relative to the pre-registration.**
 Pre-registration and amendment: `docs/specs/s17-panel2-adjudication.md` (Amendment A1). Numbers come from
-`eval/consensus/results/panel2_calibration.json`, `panel2_votes.jsonl`, `panel2_silver.json`; every one reproduces at zero cost with
-`python -m eval.consensus.panel2 --mode replay --phase all` against `eval/cassettes/panel2_cassettes.json` (verified
+`reports/eval/consensus/panel2_calibration.json`, `eval/consensus/results/panel2_votes.jsonl`, `reports/eval/consensus/panel2_silver.json`; every one reproduces at zero cost with
+`python -m eval.consensus.panel2 --mode replay --phase all` against `reports/eval/consensus/panel2_cassettes.json` (verified
 byte for byte, run twice). LLM-consensus silver (panel 2), disjoint from production; NOT ground truth.
 
 ## Context

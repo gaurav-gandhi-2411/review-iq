@@ -45,8 +45,9 @@ from eval.free_text_scoring import (  # noqa: E402
 )
 
 RESULTS_DIR = ROOT / "eval" / "consensus" / "results"
-CASSETTE_PATH = ROOT / "eval" / "cassettes" / "panel2_cassettes.json"
-CALIBRATION_PATH = RESULTS_DIR / "panel2_calibration.json"
+# Generated artifacts (cassette, calibration) live under reports/ beside the silver file.
+CASSETTE_PATH = ROOT / "reports" / "eval" / "consensus" / "panel2_cassettes.json"
+CALIBRATION_PATH = ROOT / "reports" / "eval" / "consensus" / "panel2_calibration.json"
 VOTES_PATH = RESULTS_DIR / "panel2_votes.jsonl"
 # Generated artifact: lives under reports/ (S23 large-JSON path migration), not RESULTS_DIR.
 SILVER_PATH = ROOT / "reports" / "eval" / "consensus" / "panel2_silver.json"
