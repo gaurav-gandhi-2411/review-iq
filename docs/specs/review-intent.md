@@ -384,3 +384,53 @@ The split is computed once and committed as ids and hashes only.
 **Leakage.** The safety test hashes form a second sealed list checked by the same CI test as the first (`leakage_ledger`: ledger
 overlap, digest, tracked-file scan, near-duplicate and quote scan). Safety train and validation hashes enter the ledger as used
 items. Any safety train or validation item that near-duplicates a safety test item is dropped from training and listed.
+
+### Amendment 7 (2026-10-12, S23 run 3): training with the safety stratum, registered before any run-3 training step
+
+Run 3 asks one question: does adding the safety stratum's TRAIN items to training raise `urgency=high` recall on the sealed safety
+stratum without degrading the Amendment 5 sealed set. Nothing else changes. No food-delivery or other auxiliary-domain data is used;
+`delivery` and `service` stay "insufficient data" (the safety train items carry 2 and 3 such labels, which does not change that).
+
+**Training data.** Run 2's train items (3,777) plus the safety TRAIN items of `reports/labelling/safety/split.json` (787 items,
+157 `urgency=high`; `dropped` items are excluded). Safety labels are the four-judge consensus of Amendment 6 (stronger than the
+two-judge base train labels; stated, not corrected), for `needs_action`, `broad_intent` and `urgency`; an abstention, the whole
+`sentiment` task and all aspect tasks are masked (-100), as in run 1/2. Safety VAL items (87, 17 high) and TEST items never enter
+training; any id in a val/test list or a sealed list aborts the run (`leakage_ledger check` must report ok first). Review text is read from the
+private `D:/ml-cache/s23/safety_items.jsonl` and is never written to the repo.
+
+**Hyperparameters = run 2.** Seed 42, `multilingual-e5-base`, lr 5e-5, batch 32, max length 128, frozen embeddings, up to 30 epochs,
+patience 3, linear warm-up/decay over the epoch budget, no class weights. Early stopping and the per-task temperatures use the
+Amendment 5 VALIDATION set exactly as run 2 (mean macro-F1 over tasks with validation labels), so the stopping rule and the
+base-set calibration do not move. The safety validation items are held out of that rule and used only for the `urgency=high`
+decision threshold below. Consequence: the stopping epoch is not selected for safety recall; if that is the weak point it is reported, not tuned.
+
+**Control (environment).** Run 2 ran on Kaggle (torch 2.11); run 3 runs on the local RTX 3070 (torch 2.6, a different machine).
+To separate environment from data, the run 2 recipe is re-run locally with NO safety data (`run2_local`, seed 42) and reported beside run 2 and run 3.
+If `run2_local` differs from run 2 by more than 0.02 macro-F1 on any core task, the verdict is labelled "environment-confounded".
+
+**Evaluation A: Amendment 5 sealed set (n = 757 after ledger exclusions), all four core tasks plus aspects, exactly the run 1/2
+pipeline** (`engine.intent.evaluate`, 1,000 bootstrap resamples, seed 42, item bootstrap; the run 1/2 product-cluster intervals are produced too).
+Run 3 is compared with run 2 on the SAME items: paired item-bootstrap 95 percent CI of the difference in macro-F1 per core task.
+A difference is "outside noise" only if that CI excludes 0. Seed-to-seed variance is NOT measured (one seed each), so "inside noise" means
+"not distinguishable from item sampling noise", and "outside noise" does not exclude seed noise.
+
+**Evaluation B: the safety sealed stratum, reported SEPARATELY and labelled "enriched, keyword-mined, silver (panel) labels".** Never pooled
+with A and not a base-rate or prevalence number. Test = `split.json` test items minus the ledger's `sealed_excluded` hashes. The binding n
+for `urgency=high` recall is the number of INDEPENDENT positive groups (near-duplicate groups at Jaccard 0.9, the construction of
+`safety_split.neardup_clusters`): 131 before ledger exclusions. The nominal item count (143 before, 142 after exclusions) is shown only beside it.
+Each group counts once: a group's hit is the share of its positive members flagged; Wilson 95 percent intervals use n = number of groups and k = the
+rounded group-hit sum; the bootstrap resamples groups (the item bootstrap is not used because it would treat near-duplicates as independent). Reported: recall, precision
+(group-weighted, 1/group size per item) of the decision `urgency = high`, with Wilson 95 percent CIs, at two operating points: (P) the argmax of the
+validation-calibrated probabilities (PRIMARY); (S) a threshold on p(high) chosen on safety VALIDATION only, maximising F1 of the high class
+(17 positives: noisy, secondary). The same procedure is applied to run 2 and `run2_local`, which never saw safety data.
+Run 2 vs run 3 on the stratum is a paired group-bootstrap difference.
+
+**Int8.** The six run-2 CPU variants are re-exported from run 3's checkpoint; temperatures are refit and thresholds re-picked on VALIDATION only, and CPU latency
+is measured exactly as run 2 (`engine.intent.latency`, same local CPU).
+
+**Success criteria (fixed now).** Run 3 is PROMOTED only if BOTH hold:
+1. A (non-degradation): for each of the four core tasks, the point difference in macro-F1 versus run 2 is at least -0.02;
+2. B (safety gain): at operating point (P), `urgency=high` recall on the stratum is higher than run 2's by a paired group-bootstrap 95 percent CI
+   that excludes 0, and group-weighted precision is not lower than run 2's by more than 0.05.
+Otherwise run 3 is reported as a NEGATIVE RESULT with the same tables; no threshold, tolerance, epoch count or seed is changed afterwards, and
+no second run is made to rescue it without a new amendment. Whatever the outcome, `docs/STATUS.md` is not updated by this run and nothing is deployed.
