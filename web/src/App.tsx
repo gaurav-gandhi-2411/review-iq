@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
@@ -6,6 +6,11 @@ import { provision } from './lib/api'
 import { FilterProvider } from './lib/filterContext'
 
 const PUBLIC_PATHS = ['/', '/try']
+
+// DEV-only fixture preview of the dashboard (no login needed). import.meta.env.DEV is a
+// compile-time false in production builds, so this lazy import and its fixtures are dropped.
+const DashboardPreview = import.meta.env.DEV ? lazy(() => import('./dev/DashboardPreview')) : null
+const isDevPreviewPath = () => import.meta.env.DEV && window.location.pathname.startsWith('/__preview/')
 import LoginPage from './pages/Login'
 import TryPage from './pages/Try'
 import UploadPage from './pages/Upload'
@@ -33,7 +38,7 @@ function AuthRouter() {
         // New sign-in → go to upload so they can add data.
         // Guard against session-restore on refresh (SIGNED_IN fires for both).
         if (_event === 'SIGNED_IN' && window.location.pathname === '/') navigate('/upload')
-      } else if (!PUBLIC_PATHS.includes(window.location.pathname)) {
+      } else if (!PUBLIC_PATHS.includes(window.location.pathname) && !isDevPreviewPath()) {
         // Only force back to "/" from a protected route (e.g. after sign-out or an
         // expired session). Public routes like /try must stay reachable without a
         // session -- this listener fires on initial mount too (Supabase's
@@ -58,8 +63,14 @@ function AuthRouter() {
       <Routes>
         <Route path="/" element={session ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
         <Route path="/try" element={<TryPage />} />
+        {DashboardPreview && (
+          <Route
+            path="/__preview/dashboard"
+            element={<Suspense fallback={null}><DashboardPreview /></Suspense>}
+          />
+        )}
         <Route path="/upload" element={session ? <UploadPage /> : <Navigate to="/" replace />} />
-        <Route path="/dashboard" element={session ? <DashboardPage /> : <Navigate to="/" replace />} />
+        <Route path="/dashboard" element={session ? <DashboardPage userId={session.user.id} /> : <Navigate to="/" replace />} />
         <Route path="/reviews" element={session ? <ReviewsPage /> : <Navigate to="/" replace />} />
         <Route path="/reviews/:reviewHash" element={session ? <ReviewDetailPage /> : <Navigate to="/" replace />} />
         <Route path="/keys" element={session ? <ApiKeysPage /> : <Navigate to="/" replace />} />
