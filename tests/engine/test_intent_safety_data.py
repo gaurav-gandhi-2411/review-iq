@@ -51,7 +51,9 @@ def test_adds_only_train_items_with_masked_abstentions_and_no_sentiment() -> Non
     t = new["labels"]["train"]
     assert t["urgency"] == {"b1": "low", "s-tr": "high"}  # abstention left out of this task only
     assert t["broad_intent"] == {"s-tr": "product_issue", "s-tr2": "other"}
-    assert t["sentiment"] == {} and "s-tr2" not in t["needs_action"]  # sentiment never taught by safety
+    assert (
+        t["sentiment"] == {} and "s-tr2" not in t["needs_action"]
+    )  # sentiment never taught by safety
     assert info["n_added_train"] == 2 and info["n_urgency_high"] == 1
     assert (data, texts) == before  # inputs not modified
 

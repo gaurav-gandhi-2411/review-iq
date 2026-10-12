@@ -12,7 +12,11 @@ import copy
 import json
 from pathlib import Path
 
-TASKS = ("needs_action", "broad_intent", "urgency")  # panel-labelled; sentiment and aspects stay masked
+TASKS = (
+    "needs_action",
+    "broad_intent",
+    "urgency",
+)  # panel-labelled; sentiment and aspects stay masked
 
 
 def load_jsonl(path: Path) -> list[dict]:
@@ -47,9 +51,13 @@ def add_safety_train(
         if i in existing:
             raise ValueError(f"safety id {i} already present in the base data")
         if i not in text_of or text_of[i]["sha"] != sha:
-            raise ValueError(f"safety item {i}: private text missing or hash differs from split.json")
+            raise ValueError(
+                f"safety item {i}: private text missing or hash differs from split.json"
+            )
         if i not in labels or labels[i]["sha"] != sha:
-            raise ValueError(f"safety item {i}: panel label missing or hash differs from split.json")
+            raise ValueError(
+                f"safety item {i}: panel label missing or hash differs from split.json"
+            )
         new["ids"]["train"].append(i)
         new_texts[i] = text_of[i]["text"]
         for t in TASKS:
