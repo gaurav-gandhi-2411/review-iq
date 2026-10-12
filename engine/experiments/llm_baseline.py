@@ -133,6 +133,9 @@ def main() -> None:
     ap.add_argument("--token-budget", type=int, default=90_000, help="tokens for THIS invocation")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
+    from engine.groq_budget_hook import install  # shared Groq budget ledger (budget gating only)
+
+    install()
 
     sp = D.load_clinc() if a.dataset == "clinc" else D.load_banking77()
     first = {}
