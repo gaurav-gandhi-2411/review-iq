@@ -4,9 +4,9 @@ description: >
   `title`, deduplicated by exact title match. On success: closes that issue if
   one is open, with a recovery comment. No external secret, no new billable
   service -- uses the workflow's own `issues: write` permission and
-  `GITHUB_TOKEN`. Same mechanism as .github/workflows/uptime-alert.yml, which
-  self-corrected an identical silent-failure incident on 2026-08-14; factored
-  out here so every scheduled job in this repo shares one proven alert path
+  `GITHUB_TOKEN`. Same mechanism as the former uptime-alert.yml (retired in S23,
+  replaced by Cloud Monitoring), which self-corrected an identical silent-failure
+  incident on 2026-08-14; factored out here so every scheduled job in this repo shares one proven alert path
   instead of each depending on a secret (SLACK_WEBHOOK_URL) that has never
   actually been configured (see docs/audit/2026-09-06-unwatched-scheduled-jobs.md).
 
