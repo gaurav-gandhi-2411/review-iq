@@ -1,0 +1,1721 @@
+{
+  "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth",
+  "active_panel": [
+    "deepseek/deepseek-v4-flash",
+    "nvidia/nemotron-3-super-120b-a12b",
+    "thinkingmachines/inkling-small"
+  ],
+  "n_T_reviews": 46,
+  "n_V_reviews": 20,
+  "V_pool_size": 24,
+  "V_review_ids": [
+    "hien-0001",
+    "hien-0009",
+    "hien-0011",
+    "hien-0012",
+    "hien-0016",
+    "hien-0023",
+    "hien-0030",
+    "hien-0038",
+    "hien-0039",
+    "hien-0043",
+    "hien-0046",
+    "hien-0056",
+    "hien-0058",
+    "hien-0060",
+    "hien-0066",
+    "hien-0071",
+    "hien-0079",
+    "hien-0082",
+    "hien-0089",
+    "hien-0090"
+  ],
+  "variants": {
+    "adr0030": {
+      "T_unscored_pairs": {
+        "overall": {
+          "pairs": 60,
+          "unanimous": 5,
+          "majority_only": 24,
+          "resolved": 29
+        },
+        "per_field": {
+          "product": {
+            "pairs": 16,
+            "unanimous": 3,
+            "majority_only": 5,
+            "resolved": 8
+          },
+          "buy_again": {
+            "pairs": 0,
+            "unanimous": 0,
+            "majority_only": 0,
+            "resolved": 0
+          },
+          "sentiment": {
+            "pairs": 0,
+            "unanimous": 0,
+            "majority_only": 0,
+            "resolved": 0
+          },
+          "topics": {
+            "pairs": 15,
+            "unanimous": 2,
+            "majority_only": 8,
+            "resolved": 10
+          },
+          "competitor_mentions": {
+            "pairs": 0,
+            "unanimous": 0,
+            "majority_only": 0,
+            "resolved": 0
+          },
+          "pros": {
+            "pairs": 17,
+            "unanimous": 0,
+            "majority_only": 8,
+            "resolved": 8
+          },
+          "cons": {
+            "pairs": 12,
+            "unanimous": 0,
+            "majority_only": 3,
+            "resolved": 3
+          },
+          "stars_inferred": {
+            "pairs": 0,
+            "unanimous": 0,
+            "majority_only": 0,
+            "resolved": 0
+          }
+        }
+      },
+      "r_primary_resolved": 0.48333333333333334,
+      "r_strict_unanimous": 0.08333333333333333,
+      "r_majority_of_3": 0.48333333333333334,
+      "r_per_field_primary": {
+        "product": 0.5,
+        "buy_again": null,
+        "sentiment": null,
+        "topics": 0.6666666666666666,
+        "competitor_mentions": null,
+        "pros": 0.47058823529411764,
+        "cons": 0.25,
+        "stars_inferred": null
+      }
+    },
+    "panel1_literal": {
+      "T_unscored_pairs": {
+        "overall": {
+          "pairs": 60,
+          "unanimous": 4,
+          "majority_only": 22,
+          "resolved": 26
+        },
+        "per_field": {
+          "product": {
+            "pairs": 16,
+            "unanimous": 3,
+            "majority_only": 4,
+            "resolved": 7
+          },
+          "buy_again": {
+            "pairs": 0,
+            "unanimous": 0,
+            "majority_only": 0,
+            "resolved": 0
+          },
+          "sentiment": {
+            "pairs": 0,
+            "unanimous": 0,
+            "majority_only": 0,
+            "resolved": 0
+          },
+          "topics": {
+            "pairs": 15,
+            "unanimous": 1,
+            "majority_only": 7,
+            "resolved": 8
+          },
+          "competitor_mentions": {
+            "pairs": 0,
+            "unanimous": 0,
+            "majority_only": 0,
+            "resolved": 0
+          },
+          "pros": {
+            "pairs": 17,
+            "unanimous": 0,
+            "majority_only": 8,
+            "resolved": 8
+          },
+          "cons": {
+            "pairs": 12,
+            "unanimous": 0,
+            "majority_only": 3,
+            "resolved": 3
+          },
+          "stars_inferred": {
+            "pairs": 0,
+            "unanimous": 0,
+            "majority_only": 0,
+            "resolved": 0
+          }
+        }
+      },
+      "r_primary_resolved": 0.43333333333333335,
+      "r_strict_unanimous": 0.06666666666666667,
+      "r_majority_of_3": 0.43333333333333335,
+      "r_per_field_primary": {
+        "product": 0.4375,
+        "buy_again": null,
+        "sentiment": null,
+        "topics": 0.5333333333333333,
+        "competitor_mentions": null,
+        "pros": 0.47058823529411764,
+        "cons": 0.25,
+        "stars_inferred": null
+      }
+    }
+  },
+  "silver_pairs": {
+    "hien-0002.cons": {
+      "review_id": "hien-0002",
+      "field": "cons",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "cable management issue",
+          "cable might come out with force"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "design issue",
+          "not properly cable management"
+        ],
+        "thinkingmachines/inkling-small": [
+          "Poor cable management",
+          "Cable seems like it will come out",
+          "Requires force to keep cable in place"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0003.cons": {
+      "review_id": "hien-0003",
+      "field": "cons",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "sound quality becomes bad after 20 days",
+          "waste of money"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "sound quality deteriorates after 20 days",
+          "waste of money"
+        ],
+        "thinkingmachines/inkling-small": [
+          "sound quality is bad after 20 days"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0005.cons": {
+      "review_id": "hien-0005",
+      "field": "cons",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "battery is worst",
+          "battery only lasted 1 month"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "battery is worst",
+          "only 1 month chli hai battery"
+        ],
+        "thinkingmachines/inkling-small": [
+          "battery is worst",
+          "battery only lasts 1 month"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0005.product": {
+      "review_id": "hien-0005",
+      "field": "product",
+      "level": "unanimous",
+      "silver": "battery",
+      "votes": {
+        "deepseek/deepseek-v4-flash": "battery",
+        "nvidia/nemotron-3-super-120b-a12b": "battery",
+        "thinkingmachines/inkling-small": "battery"
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0007.product": {
+      "review_id": "hien-0007",
+      "field": "product",
+      "level": "unanimous",
+      "silver": "speaker",
+      "votes": {
+        "deepseek/deepseek-v4-flash": "speaker",
+        "nvidia/nemotron-3-super-120b-a12b": "speaker",
+        "thinkingmachines/inkling-small": "speaker"
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0010.pros": {
+      "review_id": "hien-0010",
+      "field": "pros",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "achcha"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "good quality",
+          "liked"
+        ],
+        "thinkingmachines/inkling-small": [
+          "Very good quality",
+          "Liked the product"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0013.topics": {
+      "review_id": "hien-0013",
+      "field": "topics",
+      "level": "majority",
+      "silver": [],
+      "votes": {
+        "deepseek/deepseek-v4-flash": [],
+        "nvidia/nemotron-3-super-120b-a12b": [],
+        "thinkingmachines/inkling-small": [
+          "quality",
+          "value"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0017.pros": {
+      "review_id": "hien-0017",
+      "field": "pros",
+      "level": "majority",
+      "silver": [
+        "bass is awesome",
+        "sound is very clear on high volume",
+        "build quality is very nice",
+        "best in this range",
+        "love realme",
+        "love flipkart"
+      ],
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "bass is awesome",
+          "sound is very clear on high volume",
+          "build quality is very nice"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "bass is awesome",
+          "sound is very clear on high volume",
+          "build quality is very nice",
+          "best in this range",
+          "love realme",
+          "love flipkart"
+        ],
+        "thinkingmachines/inkling-small": [
+          "Bass is awesome",
+          "Sound is very clear on high volume",
+          "Build quality is very nice",
+          "Very good in this price range"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0018.cons": {
+      "review_id": "hien-0018",
+      "field": "cons",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "battery drops from 100% to 80% directly",
+          "then drops to 30% after some use"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "battery drops from 100% to 80% directly, then to 30% quickly"
+        ],
+        "thinkingmachines/inkling-small": [
+          "battery drops from 100% to 80% directly",
+          "battery drops to 30% quickly"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0018.product": {
+      "review_id": "hien-0018",
+      "field": "product",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": "battery backup device",
+        "nvidia/nemotron-3-super-120b-a12b": "battery backup",
+        "thinkingmachines/inkling-small": "product"
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0019.product": {
+      "review_id": "hien-0019",
+      "field": "product",
+      "level": "majority",
+      "silver": "unknown product",
+      "votes": {
+        "deepseek/deepseek-v4-flash": "unknown product",
+        "nvidia/nemotron-3-super-120b-a12b": "unknown product",
+        "thinkingmachines/inkling-small": "unknown device"
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0025.cons": {
+      "review_id": "hien-0025",
+      "field": "cons",
+      "level": "majority",
+      "silver": [
+        "sound is not so good",
+        "comfort is not so good",
+        "ears hurt after 15 minutes of use"
+      ],
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "sound is not so good",
+          "comfort is not so good",
+          "ears hurt after 15 minutes of use"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "sound is not so good",
+          "comfort is not so good",
+          "ears hurt a lot after 15 minutes of use"
+        ],
+        "thinkingmachines/inkling-small": [
+          "poor sound quality",
+          "poor comfort",
+          "ear pain after 15 minutes"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0028.cons": {
+      "review_id": "hien-0028",
+      "field": "cons",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "sometimes its break sounds"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "breaks sometimes",
+          "makes break sounds"
+        ],
+        "thinkingmachines/inkling-small": [
+          "sometimes breaks",
+          "makes break sounds"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0031.cons": {
+      "review_id": "hien-0031",
+      "field": "cons",
+      "level": "majority",
+      "silver": [
+        "Delivery took very long time of 11 days"
+      ],
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "long delivery time of 11 days"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "Delivery took very long time of 11 days"
+        ],
+        "thinkingmachines/inkling-small": [
+          "Delivery took very long time of 11 days"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0031.topics": {
+      "review_id": "hien-0031",
+      "field": "topics",
+      "level": "majority",
+      "silver": [
+        "delivery_time",
+        "value_for_money",
+        "general_satisfaction"
+      ],
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "delivery_time",
+          "value_for_money"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "delivery_time",
+          "value_for_money",
+          "general_satisfaction"
+        ],
+        "thinkingmachines/inkling-small": [
+          "value_for_money",
+          "delivery",
+          "quality"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0032.pros": {
+      "review_id": "hien-0032",
+      "field": "pros",
+      "level": "majority",
+      "silver": [
+        "excellent",
+        "ful paisa vasol"
+      ],
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "ful paisa vasol"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "excellent",
+          "ful paisa vasol"
+        ],
+        "thinkingmachines/inkling-small": [
+          "excellent quality",
+          "worth the money",
+          "loved it"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0034.topics": {
+      "review_id": "hien-0034",
+      "field": "topics",
+      "level": "majority",
+      "silver": [
+        "value",
+        "quality"
+      ],
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "value_for_money"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [],
+        "thinkingmachines/inkling-small": [
+          "value",
+          "quality"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0035.topics": {
+      "review_id": "hien-0035",
+      "field": "topics",
+      "level": "majority",
+      "silver": [
+        "sound_quality",
+        "call_quality",
+        "battery",
+        "price",
+        "compatibility"
+      ],
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "sound_quality",
+          "bass_quality",
+          "calling_experience",
+          "battery_life",
+          "price"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "sound_quality",
+          "call_quality",
+          "battery_life",
+          "compatibility"
+        ],
+        "thinkingmachines/inkling-small": [
+          "sound_quality",
+          "call_quality",
+          "battery",
+          "price",
+          "compatibility"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0036.product": {
+      "review_id": "hien-0036",
+      "field": "product",
+      "level": "majority",
+      "silver": "OnePlus",
+      "votes": {
+        "deepseek/deepseek-v4-flash": "OnePlus",
+        "nvidia/nemotron-3-super-120b-a12b": "oneplus",
+        "thinkingmachines/inkling-small": "OnePlus phone"
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0036.pros": {
+      "review_id": "hien-0036",
+      "field": "pros",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "excellent",
+          "value for money",
+          "love the brand"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "Excellent",
+          "Paisa wasool",
+          "I love oneplus"
+        ],
+        "thinkingmachines/inkling-small": [
+          "Excellent value for money",
+          "Love OnePlus brand"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0040.cons": {
+      "review_id": "hien-0040",
+      "field": "cons",
+      "level": "majority",
+      "silver": [
+        "bass is not like wings and Philip's earphones"
+      ],
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "bass is not like wings and Philip's earphones"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "bass is not like wings and Philip's earphones"
+        ],
+        "thinkingmachines/inkling-small": [
+          "bass is not like Wings and Philips earphones",
+          "last in comparison to Wings, Philips, and Intex"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0040.product": {
+      "review_id": "hien-0040",
+      "field": "product",
+      "level": "majority",
+      "silver": "boat earphones",
+      "votes": {
+        "deepseek/deepseek-v4-flash": "boat earphones",
+        "nvidia/nemotron-3-super-120b-a12b": "boat earphones",
+        "thinkingmachines/inkling-small": "Boat wireless earphones"
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0041.topics": {
+      "review_id": "hien-0041",
+      "field": "topics",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "overall_satisfaction"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [],
+        "thinkingmachines/inkling-small": [
+          "quality",
+          "value"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0042.cons": {
+      "review_id": "hien-0042",
+      "field": "cons",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "material lacks elasticity",
+          "needs more super bass"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "material not elastic enough",
+          "insufficient super bass"
+        ],
+        "thinkingmachines/inkling-small": [
+          "Material needs more elasticity",
+          "Needs super bass improvement"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0047.product": {
+      "review_id": "hien-0047",
+      "field": "product",
+      "level": "majority",
+      "silver": "OnePlus",
+      "votes": {
+        "deepseek/deepseek-v4-flash": "OnePlus",
+        "nvidia/nemotron-3-super-120b-a12b": "one plus",
+        "thinkingmachines/inkling-small": "OnePlus product"
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0047.pros": {
+      "review_id": "hien-0047",
+      "field": "pros",
+      "level": "majority",
+      "silver": [
+        "sound was excellent",
+        "bass was fadu",
+        "battery backup is best",
+        "10 min charging gives 10 hours use"
+      ],
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "excellent sound",
+          "fadu bass",
+          "best battery backup",
+          "10 min charging gives 10 hours use"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "sound was excellent",
+          "bass was fadu",
+          "battery backup is best",
+          "10 min charging gives 10 hours use"
+        ],
+        "thinkingmachines/inkling-small": [
+          "Sound was excellent",
+          "Bass was great",
+          "Battery backup is best",
+          "10 min charging gives 10 hours use"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0048.pros": {
+      "review_id": "hien-0048",
+      "field": "pros",
+      "level": "majority",
+      "silver": [
+        "superb bass",
+        "extremely good battery backup",
+        "can watch almost two movies at a time",
+        "comes with a wire for continued use",
+        "good value for money"
+      ],
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "superb bass",
+          "extremely good battery backup",
+          "can watch almost two movies at a time",
+          "comes with a wire for continued use",
+          "good value for money"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "superb bass",
+          "extremely good battery backup",
+          "can watch almost two movies at a time",
+          "includes wire"
+        ],
+        "thinkingmachines/inkling-small": [
+          "superb bass",
+          "extremely good battery backup",
+          "can watch almost two movies at a time",
+          "includes wire",
+          "great value for the price"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0048.topics": {
+      "review_id": "hien-0048",
+      "field": "topics",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "bass",
+          "battery_backup",
+          "value_for_money",
+          "wired_option"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "sound_quality",
+          "battery",
+          "accessories"
+        ],
+        "thinkingmachines/inkling-small": [
+          "bass",
+          "battery",
+          "value_for_money",
+          "build_quality"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0049.product": {
+      "review_id": "hien-0049",
+      "field": "product",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": "speaker",
+        "nvidia/nemotron-3-super-120b-a12b": "this",
+        "thinkingmachines/inkling-small": "sound device"
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0051.pros": {
+      "review_id": "hien-0051",
+      "field": "pros",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "worth product",
+          "paisa wasol (value for money)",
+          "look wise great",
+          "good deal"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "worth product",
+          "paisa wasool",
+          "look wise great",
+          "deal",
+          "will make you more happy"
+        ],
+        "thinkingmachines/inkling-small": [
+          "worth the money",
+          "great look",
+          "good deal",
+          "makes you happy"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0053.pros": {
+      "review_id": "hien-0053",
+      "field": "pros",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "great",
+          "paisa wasool"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "great",
+          "fully paisa wasool"
+        ],
+        "thinkingmachines/inkling-small": [
+          "great headphone",
+          "worth the money"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0053.topics": {
+      "review_id": "hien-0053",
+      "field": "topics",
+      "level": "unanimous",
+      "silver": [
+        "sound_quality",
+        "value_for_money"
+      ],
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "value_for_money"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "sound_quality",
+          "value_for_money"
+        ],
+        "thinkingmachines/inkling-small": [
+          "value_for_money",
+          "sound_quality"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0055.product": {
+      "review_id": "hien-0055",
+      "field": "product",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": "Ekach Number",
+        "nvidia/nemotron-3-super-120b-a12b": "Mast Ekach Number",
+        "thinkingmachines/inkling-small": "speaker"
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0057.topics": {
+      "review_id": "hien-0057",
+      "field": "topics",
+      "level": "majority",
+      "silver": [],
+      "votes": {
+        "deepseek/deepseek-v4-flash": [],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "product_quality"
+        ],
+        "thinkingmachines/inkling-small": []
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0065.product": {
+      "review_id": "hien-0065",
+      "field": "product",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": "h betray backup",
+        "nvidia/nemotron-3-super-120b-a12b": "backup",
+        "thinkingmachines/inkling-small": "backup device"
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0065.topics": {
+      "review_id": "hien-0065",
+      "field": "topics",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "backup"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [],
+        "thinkingmachines/inkling-small": [
+          "reliability",
+          "performance"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0067.product": {
+      "review_id": "hien-0067",
+      "field": "product",
+      "level": "unanimous",
+      "silver": "product",
+      "votes": {
+        "deepseek/deepseek-v4-flash": "product",
+        "nvidia/nemotron-3-super-120b-a12b": "product",
+        "thinkingmachines/inkling-small": "product"
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0068.pros": {
+      "review_id": "hien-0068",
+      "field": "pros",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "good for 2 hour use",
+          "very good sound for the price range"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "good sound",
+          "best for 2 hour use",
+          "good for price range"
+        ],
+        "thinkingmachines/inkling-small": [
+          "good for 2 hour use",
+          "very good sound in this price range"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0069.product": {
+      "review_id": "hien-0069",
+      "field": "product",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": "real me bluetooth headset",
+        "nvidia/nemotron-3-super-120b-a12b": "blue tooth headset from real me",
+        "thinkingmachines/inkling-small": "bluetooth headset"
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0077.pros": {
+      "review_id": "hien-0077",
+      "field": "pros",
+      "level": "majority",
+      "silver": [],
+      "votes": {
+        "deepseek/deepseek-v4-flash": [],
+        "nvidia/nemotron-3-super-120b-a12b": [],
+        "thinkingmachines/inkling-small": [
+          "good quality"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0080.product": {
+      "review_id": "hien-0080",
+      "field": "product",
+      "level": "majority",
+      "silver": "realme",
+      "votes": {
+        "deepseek/deepseek-v4-flash": "realme",
+        "nvidia/nemotron-3-super-120b-a12b": "realme",
+        "thinkingmachines/inkling-small": "Realme product"
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0083.topics": {
+      "review_id": "hien-0083",
+      "field": "topics",
+      "level": "unanimous",
+      "silver": [
+        "value_for_money",
+        "quality"
+      ],
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "value_for_money"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "value_for_money",
+          "quality"
+        ],
+        "thinkingmachines/inkling-small": [
+          "value_for_money",
+          "overall_quality"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0084.pros": {
+      "review_id": "hien-0084",
+      "field": "pros",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "good for PC gaming",
+          "can connect to PC",
+          "good for PUBG"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "good for PUBG on PC",
+          "can connect to PC",
+          "thankful to Boat and Flipkart"
+        ],
+        "thinkingmachines/inkling-small": [
+          "Best from Boat Company",
+          "Can connect to PC",
+          "Good for PUBG on PC",
+          "Works without a mic"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0085.cons": {
+      "review_id": "hien-0085",
+      "field": "cons",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "tight fit",
+          "ears pain after 30-45 minutes"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "tight fit causing ear pain after 30-45 minutes"
+        ],
+        "thinkingmachines/inkling-small": [
+          "tight fit causes ear pain after 30-45 minutes"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0085.pros": {
+      "review_id": "hien-0085",
+      "field": "pros",
+      "level": "majority",
+      "silver": [
+        "works with both Bluetooth and aux cable",
+        "good voice quality",
+        "connectivity working fine",
+        "good bass",
+        "good build and looks",
+        "good value for price"
+      ],
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "works with bluetooth and aux cable",
+          "good voice",
+          "good connectivity",
+          "good bass",
+          "good build quality",
+          "good value for money at 1399"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "works with both bluetooth and aux cable",
+          "good voice quality",
+          "good connectivity",
+          "good bass",
+          "good build and looks"
+        ],
+        "thinkingmachines/inkling-small": [
+          "works with both Bluetooth and aux cable",
+          "good voice quality",
+          "connectivity working fine",
+          "good bass",
+          "good build and looks",
+          "good value for price"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0091.topics": {
+      "review_id": "hien-0091",
+      "field": "topics",
+      "level": "majority",
+      "silver": [
+        "quality",
+        "value"
+      ],
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "usability"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "product_quality"
+        ],
+        "thinkingmachines/inkling-small": [
+          "quality",
+          "value"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0096.pros": {
+      "review_id": "hien-0096",
+      "field": "pros",
+      "level": "majority",
+      "silver": [
+        "very good",
+        "full paisa wasool"
+      ],
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "full paisa wasool"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "very good",
+          "full paisa wasool"
+        ],
+        "thinkingmachines/inkling-small": [
+          "Very good product",
+          "Worth the money"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0097.cons": {
+      "review_id": "hien-0097",
+      "field": "cons",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "ear hurts after an hour of use"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "ear hurts after one hour of use"
+        ],
+        "thinkingmachines/inkling-small": [
+          "ear pain after using for an hour",
+          "uncomfortable to wear for extended periods"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0098.pros": {
+      "review_id": "hien-0098",
+      "field": "pros",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "good product",
+          "value for money"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "very good",
+          "worth the money"
+        ],
+        "thinkingmachines/inkling-small": [
+          "Very good product",
+          "Worth the money",
+          "Highly recommended"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0098.topics": {
+      "review_id": "hien-0098",
+      "field": "topics",
+      "level": "majority",
+      "silver": [
+        "value_for_money",
+        "satisfaction"
+      ],
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "value_for_money"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "value_for_money",
+          "satisfaction"
+        ],
+        "thinkingmachines/inkling-small": [
+          "value_for_money",
+          "recommendation"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0099.product": {
+      "review_id": "hien-0099",
+      "field": "product",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": "back up mast",
+        "nvidia/nemotron-3-super-120b-a12b": "Better back up",
+        "thinkingmachines/inkling-small": "backup mast"
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0099.topics": {
+      "review_id": "hien-0099",
+      "field": "topics",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "overall_satisfaction"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "build_quality",
+          "battery_life",
+          "general_satisfaction"
+        ],
+        "thinkingmachines/inkling-small": [
+          "performance",
+          "quality"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0100.product": {
+      "review_id": "hien-0100",
+      "field": "product",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": "voice quality aur battery backup",
+        "nvidia/nemotron-3-super-120b-a12b": "Voice quality and battery backup",
+        "thinkingmachines/inkling-small": "unknown"
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0100.topics": {
+      "review_id": "hien-0100",
+      "field": "topics",
+      "level": "majority",
+      "silver": [
+        "voice_quality",
+        "battery_backup"
+      ],
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "voice_quality",
+          "battery_backup"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "voice_quality",
+          "battery_backup"
+        ],
+        "thinkingmachines/inkling-small": [
+          "voice_quality",
+          "battery",
+          "sound_quality"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0101.cons": {
+      "review_id": "hien-0101",
+      "field": "cons",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "Bass misses boom effect due to plastic body",
+          "Not good for gaming like PUBG",
+          "Clip broke or missing"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "Bass is good but because of plastic body it's misses boom effect",
+          "Not suitable for gaming like PUBG",
+          "Clip issue (unclear due to typo)"
+        ],
+        "thinkingmachines/inkling-small": [
+          "Bass misses boom effect due to plastic body",
+          "Not suitable for gaming (e.g., PUBG)",
+          "Clip broken / missing"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0102.pros": {
+      "review_id": "hien-0102",
+      "field": "pros",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "quality sound"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "mast bass",
+          "good quality sound"
+        ],
+        "thinkingmachines/inkling-small": [
+          "great bass",
+          "good quality sound"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0103.product": {
+      "review_id": "hien-0103",
+      "field": "product",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": "unknown product",
+        "nvidia/nemotron-3-super-120b-a12b": "bass speaker",
+        "thinkingmachines/inkling-small": "speaker"
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0105.pros": {
+      "review_id": "hien-0105",
+      "field": "pros",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "best product for the price"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "best product",
+          "good price"
+        ],
+        "thinkingmachines/inkling-small": [
+          "best product at this price"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0106.pros": {
+      "review_id": "hien-0106",
+      "field": "pros",
+      "level": "majority",
+      "silver": [
+        "Zabardast product",
+        "Highly praised with excitement"
+      ],
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "excellent quality"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [
+          "Zabardast product"
+        ],
+        "thinkingmachines/inkling-small": [
+          "Zabardast product",
+          "Highly praised with excitement"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    },
+    "hien-0106.topics": {
+      "review_id": "hien-0106",
+      "field": "topics",
+      "level": "split",
+      "silver": null,
+      "votes": {
+        "deepseek/deepseek-v4-flash": [
+          "overall_quality"
+        ],
+        "nvidia/nemotron-3-super-120b-a12b": [],
+        "thinkingmachines/inkling-small": [
+          "general_quality"
+        ]
+      },
+      "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth"
+    }
+  },
+  "validation_concordance": {
+    "all": {
+      "pairs": 160,
+      "panel2_resolved": 149,
+      "concordant": 133,
+      "concordance_among_resolved": 0.8926174496644296,
+      "concordance_counting_unresolved_as_miss": 0.83125
+    },
+    "panel1_unanimous_only": {
+      "pairs": 115,
+      "panel2_resolved": 114,
+      "concordant": 109,
+      "concordance_among_resolved": 0.956140350877193,
+      "concordance_counting_unresolved_as_miss": 0.9478260869565217
+    },
+    "per_field": {
+      "product": {
+        "pairs": 20,
+        "panel2_resolved": 18,
+        "concordant": 17,
+        "concordance_among_resolved": 0.9444444444444444,
+        "concordance_counting_unresolved_as_miss": 0.85
+      },
+      "buy_again": {
+        "pairs": 20,
+        "panel2_resolved": 20,
+        "concordant": 19,
+        "concordance_among_resolved": 0.95,
+        "concordance_counting_unresolved_as_miss": 0.95
+      },
+      "sentiment": {
+        "pairs": 20,
+        "panel2_resolved": 20,
+        "concordant": 19,
+        "concordance_among_resolved": 0.95,
+        "concordance_counting_unresolved_as_miss": 0.95
+      },
+      "topics": {
+        "pairs": 20,
+        "panel2_resolved": 18,
+        "concordant": 16,
+        "concordance_among_resolved": 0.8888888888888888,
+        "concordance_counting_unresolved_as_miss": 0.8
+      },
+      "competitor_mentions": {
+        "pairs": 20,
+        "panel2_resolved": 20,
+        "concordant": 19,
+        "concordance_among_resolved": 0.95,
+        "concordance_counting_unresolved_as_miss": 0.95
+      },
+      "pros": {
+        "pairs": 20,
+        "panel2_resolved": 16,
+        "concordant": 9,
+        "concordance_among_resolved": 0.5625,
+        "concordance_counting_unresolved_as_miss": 0.45
+      },
+      "cons": {
+        "pairs": 20,
+        "panel2_resolved": 17,
+        "concordant": 14,
+        "concordance_among_resolved": 0.8235294117647058,
+        "concordance_counting_unresolved_as_miss": 0.7
+      },
+      "stars_inferred": {
+        "pairs": 20,
+        "panel2_resolved": 20,
+        "concordant": 20,
+        "concordance_among_resolved": 1.0,
+        "concordance_counting_unresolved_as_miss": 1.0
+      }
+    }
+  },
+  "agreement": {
+    "T": {
+      "product": {
+        "alpha": -0.034370069867027286,
+        "alpha_level": "nominal",
+        "fleiss_kappa": -0.041920216362406865,
+        "n_units": 46,
+        "n_units_fully_covered": 46
+      },
+      "buy_again": {
+        "alpha": 0.7112750263435195,
+        "alpha_level": "nominal",
+        "fleiss_kappa": 0.709167544783983,
+        "n_units": 46,
+        "n_units_fully_covered": 46
+      },
+      "sentiment": {
+        "alpha": 0.8508978777435153,
+        "alpha_level": "nominal",
+        "fleiss_kappa": 0.8498095410847089,
+        "n_units": 46,
+        "n_units_fully_covered": 46
+      },
+      "topics": {
+        "alpha": 0.004153686396676903,
+        "alpha_level": "nominal",
+        "fleiss_kappa": -0.0031152647975079086,
+        "n_units": 46,
+        "n_units_fully_covered": 46
+      },
+      "competitor_mentions": {
+        "alpha": 0.0,
+        "alpha_level": "nominal",
+        "fleiss_kappa": -0.007299270072991067,
+        "n_units": 46,
+        "n_units_fully_covered": 46
+      },
+      "pros": {
+        "alpha": -0.038525441329179566,
+        "alpha_level": "nominal",
+        "fleiss_kappa": -0.04610591900311552,
+        "n_units": 46,
+        "n_units_fully_covered": 46
+      },
+      "cons": {
+        "alpha": 0.05103194797851285,
+        "alpha_level": "nominal",
+        "fleiss_kappa": 0.044105173876166165,
+        "n_units": 46,
+        "n_units_fully_covered": 46
+      },
+      "stars_inferred": {
+        "alpha": 0.8698319438643474,
+        "alpha_level": "ordinal",
+        "fleiss_kappa": 0.7100840336134451,
+        "n_units": 46,
+        "n_units_fully_covered": 46
+      },
+      "_pooled_nominal": {
+        "alpha": 0.7005095474020135,
+        "alpha_level": "nominal",
+        "fleiss_kappa": 0.7002380238729133,
+        "n_units": 368,
+        "n_units_fully_covered": 368
+      }
+    },
+    "V": {
+      "product": {
+        "alpha": 0.07417974322396581,
+        "alpha_level": "nominal",
+        "fleiss_kappa": 0.05848787446505023,
+        "n_units": 20,
+        "n_units_fully_covered": 20
+      },
+      "buy_again": {
+        "alpha": 0.857487922705314,
+        "alpha_level": "nominal",
+        "fleiss_kappa": 0.8550724637681157,
+        "n_units": 20,
+        "n_units_fully_covered": 20
+      },
+      "sentiment": {
+        "alpha": 0.8096774193548387,
+        "alpha_level": "nominal",
+        "fleiss_kappa": 0.8064516129032259,
+        "n_units": 20,
+        "n_units_fully_covered": 20
+      },
+      "topics": {
+        "alpha": 0.03504672897196259,
+        "alpha_level": "nominal",
+        "fleiss_kappa": 0.018691588785047317,
+        "n_units": 20,
+        "n_units_fully_covered": 20
+      },
+      "competitor_mentions": {
+        "alpha": 1.0,
+        "alpha_level": "nominal",
+        "fleiss_kappa": 1.0,
+        "n_units": 20,
+        "n_units_fully_covered": 20
+      },
+      "pros": {
+        "alpha": -0.09259259259259256,
+        "alpha_level": "nominal",
+        "fleiss_kappa": -0.11111111111111113,
+        "n_units": 20,
+        "n_units_fully_covered": 20
+      },
+      "cons": {
+        "alpha": 0.03742802303262949,
+        "alpha_level": "nominal",
+        "fleiss_kappa": 0.021113243761996397,
+        "n_units": 20,
+        "n_units_fully_covered": 20
+      },
+      "stars_inferred": {
+        "alpha": 0.7726117261172611,
+        "alpha_level": "ordinal",
+        "fleiss_kappa": 0.5078125000000002,
+        "n_units": 20,
+        "n_units_fully_covered": 20
+      },
+      "_pooled_nominal": {
+        "alpha": 0.7387731307356702,
+        "alpha_level": "nominal",
+        "fleiss_kappa": 0.7382277719271846,
+        "n_units": 160,
+        "n_units_fully_covered": 160
+      }
+    },
+    "caveat": "Free-text classes are connected components of the pre-registered equivalence (arbitrary ids across items): alpha/kappa there measure within-item concordance."
+  },
+  "self_consistency": {
+    "deepseek/deepseek-v4-flash": {
+      "pairs_compared": 80,
+      "equivalent": 71,
+      "rate": 0.8875
+    },
+    "nvidia/nemotron-3-super-120b-a12b": {
+      "pairs_compared": 80,
+      "equivalent": 74,
+      "rate": 0.925
+    },
+    "thinkingmachines/inkling-small": {
+      "pairs_compared": 80,
+      "equivalent": 76,
+      "rate": 0.95
+    }
+  },
+  "narrowed_bounds": {
+    "label": "LLM-consensus silver (panel 2), disjoint from production; NOT ground truth",
+    "n_pairs": 560,
+    "n_pairs_unscored_by_panel1": 60,
+    "n_resolved_by_panel2": 29,
+    "r_resolved_fraction_of_unscored": 0.48333333333333334,
+    "n_still_unresolved": 31,
+    "still_unresolved_fraction_of_all_pairs": 0.055357142857142855,
+    "per_field": {
+      "product": {
+        "unscored": 16,
+        "resolved": 8,
+        "mean_score_on_resolved_vs_silver": 0.625
+      },
+      "buy_again": {
+        "unscored": 0,
+        "resolved": 0,
+        "mean_score_on_resolved_vs_silver": null
+      },
+      "sentiment": {
+        "unscored": 0,
+        "resolved": 0,
+        "mean_score_on_resolved_vs_silver": null
+      },
+      "topics": {
+        "unscored": 15,
+        "resolved": 10,
+        "mean_score_on_resolved_vs_silver": 0.4727272727272727
+      },
+      "competitor_mentions": {
+        "unscored": 0,
+        "resolved": 0,
+        "mean_score_on_resolved_vs_silver": null
+      },
+      "pros": {
+        "unscored": 17,
+        "resolved": 8,
+        "mean_score_on_resolved_vs_silver": 0.5052423747276689
+      },
+      "cons": {
+        "unscored": 12,
+        "resolved": 3,
+        "mean_score_on_resolved_vs_silver": 0.7124183006535948
+      },
+      "stars_inferred": {
+        "unscored": 0,
+        "resolved": 0,
+        "mean_score_on_resolved_vs_silver": null
+      }
+    },
+    "original_manski_bounds": {
+      "lower": 0.7088930339477844,
+      "upper": 0.8160358910906416
+    },
+    "narrowed_manski_lower_unresolved_all_wrong": {
+      "score": 0.7372974386389538,
+      "ci_95": {
+        "lower": 0.7038447735042163,
+        "upper": 0.7695181888851725,
+        "n": 70
+      }
+    },
+    "narrowed_manski_upper_unresolved_all_correct": {
+      "score": 0.7926545814960967,
+      "ci_95": {
+        "lower": 0.7621725041246631,
+        "upper": 0.8212945463426445,
+        "n": 70
+      }
+    },
+    "silver_adjudicated_estimate_conditional_on_panel2_agreement": {
+      "score": 0.7804614985519633,
+      "ci_95": {
+        "lower": 0.7487862071093438,
+        "upper": 0.8103733543308699,
+        "n": 70
+      }
+    },
+    "point_estimate_defensible": false,
+    "point_estimate_note": "A silver-adjudicated estimate conditional on panel-2 agreement; never ground truth. Pairs panel 2 also cannot resolve remain unobserved and are the ambiguous ones, so the selection effect repeats on them; only the narrowed Manski interval is assumption-free (and even it treats panel-2 silver as the truth on resolved pairs)."
+  },
+  "cost": {
+    "total_cost_usd": 0.046648,
+    "total_tokens_in": 231836,
+    "total_tokens_out": 41808,
+    "total_calls": 368,
+    "per_model": {
+      "deepseek/deepseek-v4-flash": {
+        "calls": 104,
+        "cost_usd": 0.005246,
+        "tokens_in": 65074,
+        "tokens_out": 10563
+      },
+      "mistralai/mistral-small-2603": {
+        "calls": 28,
+        "cost_usd": 0.002836,
+        "tokens_in": 17477,
+        "tokens_out": 2709
+      },
+      "nvidia/nemotron-3-super-120b-a12b": {
+        "calls": 104,
+        "cost_usd": 0.010808,
+        "tokens_in": 66638,
+        "tokens_out": 12464
+      },
+      "thinkingmachines/inkling-small": {
+        "calls": 104,
+        "cost_usd": 0.025932,
+        "tokens_in": 64331,
+        "tokens_out": 12942
+      },
+      "z-ai/glm-4.7-flash": {
+        "calls": 28,
+        "cost_usd": 0.001826,
+        "tokens_in": 18316,
+        "tokens_out": 3130
+      }
+    }
+  }
+}
