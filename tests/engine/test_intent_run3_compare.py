@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip("sklearn")  # absent from the CI venv: skip, as test_intent_evaluate does
+
 
 def _base(diffs: dict[str, float]) -> dict:
     return {

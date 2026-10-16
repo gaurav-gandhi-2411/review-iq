@@ -46,7 +46,11 @@ def macro_arrays(
     """Predictions by `engine.intent.decide`: rare-class thresholds fitted on this run's own validation (default), or argmax."""
     arrs = task_arrays(labels, p, task)
     ids, y, probs = arrs["test"]
-    thr = fit_thresholds(arrs["val"][1], arrs["val"][2], p["classes"], rare_for(task)) if mode == "threshold" else {}
+    thr = (
+        fit_thresholds(arrs["val"][1], arrs["val"][2], p["classes"], rare_for(task))
+        if mode == "threshold"
+        else {}
+    )
     return ids, y, decide(probs, p["classes"], thr, mode)
 
 

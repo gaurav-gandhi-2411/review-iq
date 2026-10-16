@@ -216,10 +216,15 @@ def write_predictions(
         if decisions is not None and thr:
             decisions[t] = thr
         (out_dir / f"pred_{t.replace(':', '__')}.json").write_text(
-            json.dumps({
-                "task": t, "classes": list(cl), "temperature": temp,
-                "decision": {"mode": D.DEFAULT_MODE, "thresholds": thr}, "splits": splits,
-            })  # fmt: skip
+            json.dumps(
+                {
+                    "task": t,
+                    "classes": list(cl),
+                    "temperature": temp,
+                    "decision": {"mode": D.DEFAULT_MODE, "thresholds": thr},
+                    "splits": splits,
+                }
+            )  # fmt: skip
             + "\n",
             encoding="utf-8",
         )

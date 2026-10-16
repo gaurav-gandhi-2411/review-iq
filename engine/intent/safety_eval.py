@@ -134,7 +134,9 @@ def evaluate(
             "P_argmax": p["argmax_high"]["test"][keep],
             "S_val_f1_threshold": p["p_high"]["test"][keep] >= thr,
         }
-        dthr = p.get("decision_threshold")  # serving default (Amendment 8): fitted on the Amendment 5 validation set
+        dthr = p.get(
+            "decision_threshold"
+        )  # serving default (Amendment 8): fitted on the Amendment 5 validation set
         if dthr is not None:
             flags["D_serving_default"] = p["p_high"]["test"][keep] >= dthr
         out["runs"][name] = {
