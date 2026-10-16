@@ -22,6 +22,8 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 # Copy application code
 COPY app/ ./app/
+# Nightly failover probe (Cloud Run Job `failover-probe` reuses this image; ops/probes/).
+COPY scripts/probe_failover.py ./scripts/probe_failover.py
 
 # Non-root user for security
 RUN adduser --disabled-password --gecos "" appuser && \

@@ -60,6 +60,12 @@ FAILOVER_TOTAL = Counter(
     ["from_provider"],
 )
 
+RATE_LIMITED_TOTAL = Counter(
+    "review_iq_llm_rate_limited_total",
+    "Provider 429 responses (see llm.rate_limited log event)",
+    ["provider", "model", "tier", "limit_type"],
+)
+
 AUTHENTICITY_LABEL_TOTAL = Counter(
     "review_iq_authenticity_label_total",
     "Authenticity scoring results by label",

@@ -623,7 +623,13 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("mode", choices=["record", "replay", "report"])
     ap.add_argument("--max-pairs", type=int, default=None)
-    asyncio.run(_run(ap.parse_args()))
+    args = ap.parse_args()
+    if args.mode == "record":
+        # Shared Groq budget ledger (budget gating only).
+        from engine.groq_budget_hook import install
+
+        install()
+    asyncio.run(_run(args))
 
 
 if __name__ == "__main__":

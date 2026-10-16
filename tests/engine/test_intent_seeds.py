@@ -5,6 +5,7 @@ import math
 import pytest
 
 pytest.importorskip("scipy")
+pytest.importorskip("sklearn")  # absent from the CI venv: skip, as test_intent_evaluate does
 from engine.intent import seeds as S  # noqa: E402
 from engine.intent.run3_compare import CORE  # noqa: E402
 
@@ -29,7 +30,10 @@ def _run(arm: str, seed: int, rec: float, prec: float, macro: float) -> dict:
 def _runs(db_rec: list[float], db_prec: list[float], db_macro: float = 0.0) -> list[dict]:
     out = []
     for i, (r, p) in enumerate(zip(db_rec, db_prec, strict=True)):
-        out += [_run("A", 42 + i, 0.60, 0.70, 0.90), _run("B", 42 + i, 0.60 + r, 0.70 + p, 0.90 + db_macro)]
+        out += [
+            _run("A", 42 + i, 0.60, 0.70, 0.90),
+            _run("B", 42 + i, 0.60 + r, 0.70 + p, 0.90 + db_macro),
+        ]
     return out
 
 
@@ -42,18 +46,31 @@ def test_pairs_by_seed_and_drops_an_unpaired_seed_from_both_arms() -> None:
 
 
 def test_decision_rule_promoted_not_promoted_inconclusive() -> None:
-    good = S.aggregate(_runs([0.10, 0.12, 0.09, 0.11, 0.10], [0.01, -0.01, 0.0, 0.01, 0.0]))["decision"]
+    good = S.aggregate(_runs([0.10, 0.12, 0.09, 0.11, 0.10], [0.01, -0.01, 0.0, 0.01, 0.0]))[
+        "decision"
+    ]
     assert good["outcome"] == "PROMOTED"
     # a noisy recall gain whose interval includes 0 is INCONCLUSIVE, not promoted and not refuted
     noisy = S.aggregate(_runs([0.30, -0.20, 0.25, -0.10, 0.20], [0.0] * 5))["decision"]
-    assert noisy["outcome"] == "INCONCLUSIVE" and not noisy["c1_recall_interval_lower_bound_above_0"]["pass"]
+    assert (
+        noisy["outcome"] == "INCONCLUSIVE"
+        and not noisy["c1_recall_interval_lower_bound_above_0"]["pass"]
+    )
     # base-set degradation beyond 0.02 refutes regardless of the safety gain
-    assert S.aggregate(_runs([0.1] * 5, [0.0] * 5, db_macro=-0.03))["decision"]["outcome"] == "NOT PROMOTED"
+    assert (
+        S.aggregate(_runs([0.1] * 5, [0.0] * 5, db_macro=-0.03))["decision"]["outcome"]
+        == "NOT PROMOTED"
+    )
     # a precision drop that is established (interval entirely below -0.05) refutes
-    drop = S.aggregate(_runs([0.1, 0.1, 0.11, 0.1, 0.09], [-0.2, -0.21, -0.19, -0.2, -0.2]))["decision"]
+    drop = S.aggregate(_runs([0.1, 0.1, 0.11, 0.1, 0.09], [-0.2, -0.21, -0.19, -0.2, -0.2]))[
+        "decision"
+    ]
     assert drop["outcome"] == "NOT PROMOTED"
     # recall interval wholly at or below zero refutes
-    assert S.aggregate(_runs([-0.1, -0.11, -0.09, -0.1, -0.1], [0.0] * 5))["decision"]["outcome"] == "NOT PROMOTED"
+    assert (
+        S.aggregate(_runs([-0.1, -0.11, -0.09, -0.1, -0.1], [0.0] * 5))["decision"]["outcome"]
+        == "NOT PROMOTED"
+    )
 
 
 def test_render_wraps_every_number_in_a_metrics_block_and_states_the_outcome(tmp_path) -> None:  # noqa: ANN001

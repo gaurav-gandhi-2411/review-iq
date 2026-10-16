@@ -36,7 +36,9 @@ OPS = ("D_serving_default", "S_val_f1_threshold", "P_argmax")
 
 def _sh(*args: str, log: Path) -> None:
     with log.open("a", encoding="utf-8") as fh:
-        subprocess.run([sys.executable, "-m", *args], check=True, stdout=fh, stderr=subprocess.STDOUT)  # noqa: S603
+        subprocess.run(
+            [sys.executable, "-m", *args], check=True, stdout=fh, stderr=subprocess.STDOUT
+        )  # noqa: S603
 
 
 def dirs(arm: str, seed: int, root: Path) -> dict[str, Path]:
@@ -59,7 +61,10 @@ def execute(arm: str, seed: int, root: Path) -> None:
         _sh("engine.intent.quantize", "--weights", str(d["out"] / "model.pt"), "--pred-dir", str(d["out"]), "--labels", LABELS,
             "--texts", TEXTS, "--out-dir", str(d["cpu"]), "--scratch", str(d["scratch"]), log=log)  # fmt: skip
     common = ["--labels", LABELS, "--texts", SAFETY_TEXTS]
-    targets = {"fp32_gpu": (d["out"], []), **{v: (d["cpu"] / v, ["--variant", v]) for v in VARIANTS}}
+    targets = {
+        "fp32_gpu": (d["out"], []),
+        **{v: (d["cpu"] / v, ["--variant", v]) for v in VARIANTS},
+    }
     for where, extra in targets.values():
         out = where / "safety_pred.json"
         if out.exists():
@@ -78,7 +83,9 @@ def base_macros(labels: dict, preds: dict, mode: str) -> dict[str, float | None]
     out: dict[str, float | None] = {}
     for t in CORE:
         _, y, pred = macro_arrays(labels, preds[t], t, mode)
-        scored = [c for c in range(len(labels["classes"][t])) if int((y == c).sum()) >= MIN_POSITIVES]
+        scored = [
+            c for c in range(len(labels["classes"][t])) if int((y == c).sum()) >= MIN_POSITIVES
+        ]
         out[t] = round(float(M.macro_f1(y, pred, scored)), 4) if len(scored) >= 2 else None
     return out
 
@@ -101,7 +108,9 @@ def summarize(arm: str, seed: int, root: Path) -> dict:
     for name, p in where.items():
         preds = load_run(p, manifest, excluded)
         sp = SE.load_pred(p / "safety_pred.json")
-        res = SE.evaluate({name: sp}, name, ctx["urgency"], ctx["shas"], ctx["groups"], ctx["excluded"], 1000)["runs"][name]
+        res = SE.evaluate(
+            {name: sp}, name, ctx["urgency"], ctx["shas"], ctx["groups"], ctx["excluded"], 1000
+        )["runs"][name]
         run["variants"][name] = {
             "A": {m: base_macros(labels, preds, m) for m in MODES},
             "B": {op: {k: res[op][k] for k in ("recall", "precision", "independent_positive_groups")} for op in OPS if op in res},
@@ -117,14 +126,18 @@ def main() -> None:
     ap.add_argument("cmd", choices=["run", "summarize"])
     ap.add_argument("--arm", required=True, choices=["A", "B"])
     ap.add_argument("--seed", type=int, required=True)
-    ap.add_argument("--root", required=True, help="where weights and prediction files live (not in git)")
+    ap.add_argument(
+        "--root", required=True, help="where weights and prediction files live (not in git)"
+    )
     ap.add_argument("--out", required=True, help="directory for <arm>_seed<N>.json")
     a = ap.parse_args()
     if a.cmd == "run":
         execute(a.arm, a.seed, Path(a.root))
     res = summarize(a.arm, a.seed, Path(a.root))
     Path(a.out).mkdir(parents=True, exist_ok=True)
-    (Path(a.out) / f"{a.arm}_seed{a.seed}.json").write_text(json.dumps(res, indent=1) + "\n", encoding="utf-8")
+    (Path(a.out) / f"{a.arm}_seed{a.seed}.json").write_text(
+        json.dumps(res, indent=1) + "\n", encoding="utf-8"
+    )
     print(f"wrote {a.arm}_seed{a.seed}.json")
 
 

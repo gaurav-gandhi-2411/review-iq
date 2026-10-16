@@ -331,7 +331,8 @@ def main() -> None:
         "--run3", help="reports/intent/run3/report_inputs.json: appends the run 3 sections"
     )
     ap.add_argument(
-        "--seeds", help="reports/intent/run3_seeds/aggregate.json: appends the seed-level section (Amendment 8)"
+        "--seeds",
+        help="reports/intent/run3_seeds/aggregate.json: appends the seed-level section (Amendment 8)",
     )
     a = ap.parse_args()
     load = lambda p: json.loads(Path(p).read_text(encoding="utf-8"))  # noqa: E731

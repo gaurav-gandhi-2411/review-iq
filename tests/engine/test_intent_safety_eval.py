@@ -92,10 +92,21 @@ def load_pred_obj(d: dict) -> dict:
         return load_pred(p)
 
 
-def test_serving_default_point_D_uses_the_stored_validation_threshold_and_catches_what_argmax_misses() -> None:
+def test_serving_default_point_D_uses_the_stored_validation_threshold_and_catches_what_argmax_misses() -> (
+    None
+):
     ids = [f"t{i}" for i in range(4)]
     vids = ["v0", "v1", "v2", "v3"]
-    urgency = {"t0": "high", "t1": "high", "t2": "low", "t3": "low", "v0": "high", "v1": "low", "v2": "high", "v3": "low"}
+    urgency = {
+        "t0": "high",
+        "t1": "high",
+        "t2": "low",
+        "t3": "low",
+        "v0": "high",
+        "v1": "low",
+        "v2": "high",
+        "v3": "low",
+    }
     shas = {i: f"h{i}" for i in urgency}
     groups = {i: j for j, i in enumerate(ids)}
     # p(high) = 0.3 is below argmax (0.35 per other class) but above the validated threshold 0.25
@@ -105,5 +116,12 @@ def test_serving_default_point_D_uses_the_stored_validation_threshold_and_catche
     r = res["runs"]["run"]
     assert r["P_argmax"]["recall"] == 0.0  # argmax misses both
     assert r["D_serving_default"]["recall"] == 1.0 and r["D_threshold_on_base_val"] == 0.25
-    q = pred([0.3, 0.3, 0.05, 0.05], ids, [0.3, 0.05, 0.3, 0.05], vids)  # legacy file, no stored threshold
-    assert "D_serving_default" not in evaluate({"run": load_pred_obj(q)}, "run", urgency, shas, groups, set(), n_boot=50)["runs"]["run"]
+    q = pred(
+        [0.3, 0.3, 0.05, 0.05], ids, [0.3, 0.05, 0.3, 0.05], vids
+    )  # legacy file, no stored threshold
+    assert (
+        "D_serving_default"
+        not in evaluate({"run": load_pred_obj(q)}, "run", urgency, shas, groups, set(), n_boot=50)[
+            "runs"
+        ]["run"]
+    )

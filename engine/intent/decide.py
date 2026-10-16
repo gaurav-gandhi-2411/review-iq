@@ -31,7 +31,10 @@ def rare_for(task: str) -> tuple[str, ...]:
 
 
 def fit_thresholds(
-    y_val: np.ndarray, p_val: np.ndarray, classes: list[str] | tuple[str, ...], rare: tuple[str, ...]
+    y_val: np.ndarray,
+    p_val: np.ndarray,
+    classes: list[str] | tuple[str, ...],
+    rare: tuple[str, ...],
 ) -> dict[str, dict]:
     """Per rare class: {"threshold": float | None, "n_val_positives": int, "fallback_argmax": bool}.
 
@@ -61,12 +64,16 @@ def decide(
     if mode == "argmax" or not thresholds:
         return pred
     cls = list(classes)
-    active = {cls.index(n): t["threshold"] for n, t in thresholds.items() if t["threshold"] is not None}
+    active = {
+        cls.index(n): t["threshold"] for n, t in thresholds.items() if t["threshold"] is not None
+    }
     if not active:
         return pred
     rare_idx = sorted(active)
     other = [c for c in range(len(cls)) if c not in active]
-    pred = np.array(other)[p[:, other].argmax(1)] if other else pred  # argmax among non-rare classes
+    pred = (
+        np.array(other)[p[:, other].argmax(1)] if other else pred
+    )  # argmax among non-rare classes
     flagged = np.stack([p[:, c] >= active[c] for c in rare_idx], axis=1)
     score = np.where(flagged, p[:, rare_idx], -1.0)
     hit = flagged.any(1)

@@ -35,7 +35,10 @@ def interval(vals: list[float]) -> dict:
     if n >= 2:
         sd = float(v.std(ddof=1))
         h = float(stats.t.ppf(0.975, n - 1)) * sd / math.sqrt(n)
-        out["sd"], out["t95"] = round(sd, 4), [round(float(v.mean()) - h, 4), round(float(v.mean()) + h, 4)]
+        out["sd"], out["t95"] = (
+            round(sd, 4),
+            [round(float(v.mean()) - h, 4), round(float(v.mean()) + h, 4)],
+        )
     return out
 
 
@@ -43,7 +46,12 @@ def metrics_of(run: dict, variant: str) -> dict[str, float | None]:
     """Flat metric name -> value for one run and variant."""
     v = run["variants"][variant]
     flat = {f"A/{mode}/{t}": x for mode, d in v["A"].items() for t, x in d.items()}
-    flat |= {f"B/{op}/{k}": x for op, d in v["B"].items() for k, x in d.items() if k in ("recall", "precision")}
+    flat |= {
+        f"B/{op}/{k}": x
+        for op, d in v["B"].items()
+        for k, x in d.items()
+        if k in ("recall", "precision")
+    }
     return flat
 
 
@@ -51,7 +59,11 @@ def aggregate(runs: list[dict]) -> dict:
     """runs = per-run summaries. A seed missing from either arm is dropped from both (paired design)."""
     by = {a: {r["seed"]: r for r in runs if r["arm"] == a} for a in ("A", "B")}
     seeds = sorted(set(by["A"]) & set(by["B"]))
-    out: dict = {"seeds": seeds, "dropped_unpaired": sorted(set(by["A"]) ^ set(by["B"])), "variants": {}}
+    out: dict = {
+        "seeds": seeds,
+        "dropped_unpaired": sorted(set(by["A"]) ^ set(by["B"])),
+        "variants": {},
+    }
     for variant in by["A"][seeds[0]]["variants"]:
         flat = {a: {s: metrics_of(by[a][s], variant) for s in seeds} for a in by}
         table = {}
@@ -63,7 +75,17 @@ def aggregate(runs: list[dict]) -> dict:
                 "B_minus_A": {"per_seed": [None if d is None else round(d, 4) for d in diff], **interval(diff)},
             }  # fmt: skip
         out["variants"][variant] = table
-    keep = ("arm", "seed", "train_commit", "device", "torch", "best_epoch", "stopped_early", "best_val_mean_macro_f1", "train_seconds")
+    keep = (
+        "arm",
+        "seed",
+        "train_commit",
+        "device",
+        "torch",
+        "best_epoch",
+        "stopped_early",
+        "best_val_mean_macro_f1",
+        "train_seconds",
+    )
     out["runs"] = [{k: by[a][s][k] for k in keep} for s in seeds for a in ("A", "B")]
     out["decision"] = decision(out["variants"][HEADLINE]) if HEADLINE in out["variants"] else None
     return out
@@ -114,7 +136,13 @@ def render_seeds(path: str) -> str:
         for k, v in d.items() if isinstance(v, dict) and "pass" in v
     ]  # fmt: skip
     verdict.append(f"- **Seed-level outcome (Amendment 8): {d['outcome']}**")
-    int8 = [_row(f"{v}: {k}", m) for v, t in tbl.items() if v != HEADLINE for k, m in t.items() if not k.startswith("A/argmax")]
+    int8 = [
+        _row(f"{v}: {k}", m)
+        for v, t in tbl.items()
+        if v != HEADLINE
+        for k, m in t.items()
+        if not k.startswith("A/argmax")
+    ]
     parts = [
         "## Seed-level comparison of run 3 against the run 2 recipe (Amendment 8)\n",
         f"Arm A = run 2 recipe (no safety data); arm B = run 3 recipe (safety stratum in training). Seeds {agg['seeds']} for both arms (paired by seed), "
