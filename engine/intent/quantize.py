@@ -134,7 +134,10 @@ def main() -> None:
         logits = {s: T.infer(model, tok, txt[s], cfg, "cpu") for s in ids}
         out = Path(a.out_dir) / v
         out.mkdir(parents=True, exist_ok=True)
-        temps = T.write_predictions(out, classes, arr, logits)
+        decisions: dict[
+            str, dict
+        ] = {}  # rare-class thresholds refit on validation for THIS variant
+        temps = T.write_predictions(out, classes, arr, logits, decisions)
         agree = {
             s: {
                 t: round(float((logits[s][t].argmax(1) == np.array(ref[t]["splits"][s]["probs"]).argmax(1)).mean()), 4)
@@ -144,7 +147,7 @@ def main() -> None:
         }  # fmt: skip
         meta["variants"][v] = {
             "model_file_mb": file_mb(model, scratch / f"{v}.pt"), "temperatures": temps,
-            "argmax_agreement_with_gpu_fp16": agree, "seconds": round(time.time() - t0, 1),
+            "decision": decisions, "argmax_agreement_with_gpu_fp16": agree, "seconds": round(time.time() - t0, 1),
         }  # fmt: skip
         print(
             v,

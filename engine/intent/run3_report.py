@@ -57,12 +57,16 @@ def safety_table(sa: dict) -> str:
             f"nominal positive items before exclusions: {sa['nominal_positive_items_before_ledger_exclusions']} (shown beside, not used as n). Safety validation: {sa['n_val_items_evaluated']} items, {sa['n_val_high']} urgency=high.",
             "", "| Run | Operating point | Independent positive groups | Recall [Wilson 95%] [group bootstrap 95%] | Precision [Wilson 95%] [group bootstrap 95%] | Nominal items beside: positives / flagged / true positives |", "|---|---|---|---|---|---|"]  # fmt: skip
     for n, r in sa["runs"].items():
-        for op in ("P_argmax", "S_val_f1_threshold"):
+        for op in ("P_argmax", "S_val_f1_threshold", "D_serving_default"):
+            if op not in r:
+                continue
             x, nb = r[op], r[op]["nominal_items_shown_beside"]
             label = (
                 "P: argmax (primary)"
                 if op == "P_argmax"
                 else f"S: threshold {r['S_threshold_on_safety_val']} chosen on safety validation (secondary)"
+                if op == "S_val_f1_threshold"
+                else f"D: serving default, threshold {r['D_threshold_on_base_val']} fitted on the Amendment 5 validation set"
             )
             rows.append(f"| {n} | {label} | {x['independent_positive_groups']} | {f(x['recall'])} {ci(x['recall_wilson95'])} {ci(x['recall_group_boot95'])} | {f(x['precision'])} {ci(x['precision_wilson95'])} {ci(x['precision_group_boot95'])} | {nb['positive_items']} / {nb['flagged_items']} / {nb['true_positive_items']} |")  # fmt: skip
     return block("run3_safety", rows)

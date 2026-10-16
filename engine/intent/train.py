@@ -36,6 +36,7 @@ from torch import nn
 from engine import metrics as M
 from engine import scoring as SC
 from engine.experiments.run import _git_sha
+from engine.intent import decide as D
 from engine.intent import safety_data as SD
 from engine.intent.labels import load_texts
 from engine.intent.model import E5, MultiHeadClassifier, load_pretrained
@@ -188,12 +189,15 @@ def fit(
 
 
 def write_predictions(
-    out_dir: Path, classes: dict[str, tuple[str, ...]], arr: dict, logits: dict[str, dict]
-) -> dict[str, float | None]:
+    out_dir: Path, classes: dict[str, tuple[str, ...]], arr: dict, logits: dict[str, dict],
+    decisions: dict[str, dict] | None = None,
+) -> dict[str, float | None]:  # fmt: skip
     """Fit a per-task temperature on validation only and write pred_<task>.json for val and test.
 
     arr[split] = (ids, {task: labels}); logits[split][task] = raw logits. -> task -> temperature
-    (None = fewer than 2 validation labels). Shared with `engine.intent.quantize`."""
+    (None = fewer than 2 validation labels). Shared with `engine.intent.quantize`. The decision thresholds of rare classes
+    (`engine.intent.decide`, the serving default) are fitted here on the same calibrated VALIDATION probabilities, written
+    into each pred file under "decision" and, when `decisions` is given, collected there as task -> {class: record}."""
     temps: dict[str, float | None] = {}
     for t, cl in classes.items():
         yv = arr["val"][1][t]
@@ -207,8 +211,20 @@ def write_predictions(
             }
             for s in ("val", "test")
         }
+        pv = np.array(splits["val"]["probs"]).reshape(len(splits["val"]["ids"]), len(cl))
+        thr = D.fit_thresholds(yv[m], pv[m], cl, D.rare_for(t))
+        if decisions is not None and thr:
+            decisions[t] = thr
         (out_dir / f"pred_{t.replace(':', '__')}.json").write_text(
-            json.dumps({"task": t, "classes": list(cl), "temperature": temp, "splits": splits})
+            json.dumps(
+                {
+                    "task": t,
+                    "classes": list(cl),
+                    "temperature": temp,
+                    "decision": {"mode": D.DEFAULT_MODE, "thresholds": thr},
+                    "splits": splits,
+                }
+            )  # fmt: skip
             + "\n",
             encoding="utf-8",
         )
@@ -243,12 +259,14 @@ def run(
             {k: v.float().cpu() for k, v in model.state_dict().items()}, out_dir / "model.pt"
         )
     logits = {s: infer(model, tok, txt[s], cfg, device) for s in ("val", "test")}
-    temps = write_predictions(out_dir, classes, arr, logits)
+    decisions: dict[str, dict] = {}
+    temps = write_predictions(out_dir, classes, arr, logits, decisions)
     meta = {
         "commit": _git_sha(), "config": asdict(cfg), "device": device, "torch": torch.__version__,
         "n_items": {s: len(arr[s][0]) for s in arr}, "temperatures": temps,
         "n_labelled": {s: {t: int((v != IGNORE).sum()) for t, v in arr[s][1].items()} for s in arr},
         "calibration": "per-task temperature on validation only; null = fewer than 2 validation labels",
+        "decision": {"mode": D.DEFAULT_MODE, "thresholds": decisions, "fitted_on": "validation only"},
         "train_info": info, "seconds": round(time.time() - t0, 1), "inputs_sha256_16": inputs or {},
     } | (extra or {})  # fmt: skip
     (out_dir / "metadata.json").write_text(json.dumps(meta, indent=1) + "\n", encoding="utf-8")
