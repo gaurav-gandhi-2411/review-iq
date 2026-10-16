@@ -36,6 +36,7 @@ from torch import nn
 from engine import metrics as M
 from engine import scoring as SC
 from engine.experiments.run import _git_sha
+from engine.intent import safety_data as SD
 from engine.intent.labels import load_texts
 from engine.intent.model import E5, MultiHeadClassifier, load_pretrained
 from engine.train import _batches, seed_everything
@@ -217,6 +218,7 @@ def write_predictions(
 def run(
     cfg: IntentConfig, data: dict, texts: dict[str, str], out_dir: Path, device: str,
     loader: Loader = load_pretrained, save_weights: bool = False, inputs: dict | None = None,
+    extra: dict | None = None,
 ) -> dict:  # fmt: skip
     """data = {"classes", "labels", "ids": {split: [id]}} -> writes predictions + metadata, returns metadata.
 
@@ -248,7 +250,7 @@ def run(
         "n_labelled": {s: {t: int((v != IGNORE).sum()) for t, v in arr[s][1].items()} for s in arr},
         "calibration": "per-task temperature on validation only; null = fewer than 2 validation labels",
         "train_info": info, "seconds": round(time.time() - t0, 1), "inputs_sha256_16": inputs or {},
-    }  # fmt: skip
+    } | (extra or {})  # fmt: skip
     (out_dir / "metadata.json").write_text(json.dumps(meta, indent=1) + "\n", encoding="utf-8")
     return meta
 
@@ -270,6 +272,13 @@ def main() -> None:
         "--save-weights", action="store_true", help="write the best checkpoint to out-dir/model.pt"
     )
     ap.add_argument("--device", default="auto", choices=["auto", "cpu", "cuda"])
+    ap.add_argument(
+        "--safety-stratum", default="exclude", choices=["include", "exclude"],
+        help="include: add the safety stratum's TRAIN items (spec Amendment 7); val/test never enter training",
+    )  # fmt: skip
+    ap.add_argument("--safety-split", default="reports/labelling/safety/split.json")
+    ap.add_argument("--safety-labels", default="reports/labelling/safety/labels.jsonl")
+    ap.add_argument("--safety-texts", help="private safety_items.jsonl (required with include)")
     a = ap.parse_args()
     cfg = IntentConfig(a.model, a.epochs, a.lr, a.batch_size, a.seed, a.max_len, a.patience)
     lab = json.loads(Path(a.labels).read_text(encoding="utf-8"))
@@ -280,19 +289,26 @@ def main() -> None:
         "ids": {s: [r["id"] for r in man["items"] if r["split"] == s] for s in lab["labels"]},
     }
     device = ("cuda" if torch.cuda.is_available() else "cpu") if a.device == "auto" else a.device
-    inputs = {
-        Path(p).name: hashlib.sha256(Path(p).read_bytes()).hexdigest()[:16]
-        for p in (a.labels, a.texts, a.manifest)
-    }
+    paths = [a.labels, a.texts, a.manifest]
+    texts = load_texts(Path(a.texts))
+    extra: dict = {"safety_stratum": "exclude"}
+    if a.safety_stratum == "include":
+        if not a.safety_texts:
+            ap.error("--safety-stratum include needs --safety-texts")
+        from engine.labelling import leakage_ledger as LL
+
+        sp = json.loads(Path(a.safety_split).read_text(encoding="utf-8"))
+        data, texts, info = SD.add_safety_train(
+            data, texts, sp, SD.load_jsonl(Path(a.safety_labels)),
+            SD.load_jsonl(Path(a.safety_texts)), LL.sealed_hashes(),
+        )  # fmt: skip
+        extra = {"safety_stratum": "include", "safety_train": info}
+        paths += [a.safety_split, a.safety_labels, a.safety_texts]
+    inputs = {Path(p).name: hashlib.sha256(Path(p).read_bytes()).hexdigest()[:16] for p in paths}
     run(
-        cfg,
-        data,
-        load_texts(Path(a.texts)),
-        Path(a.out_dir),
-        device,
-        save_weights=a.save_weights,
-        inputs=inputs,
-    )
+        cfg, data, texts, Path(a.out_dir), device,
+        save_weights=a.save_weights, inputs=inputs, extra=extra,
+    )  # fmt: skip
 
 
 if __name__ == "__main__":

@@ -202,7 +202,7 @@ is not modelled and is not claimed.
    - The consensus-ceiling fraction from the panel (point 1).
    - Cost per 1,000 items and p50/p95 CPU latency of the int8 model (E3 method, thresholds recalibrated on int8).
 5. **LLM comparison at MATCHED coverage.** On the same sealed items, plain-prompted Llama 3.3 70B (Groq, dedicated
-   org, within the 100K tokens per model per UTC day ceiling, so the comparison is spread over days), and the
+   org, within the 100K tokens per model per rolling 24h ceiling, so the comparison is spread over days), and the
    current extraction pipeline, each with a verbalised confidence. Coverage is matched by choosing each arm's
    threshold to answer the same fraction of items (the fine-tuned model's coverage at its validated threshold);
    precision is then compared item-paired, with a paired bootstrap over products. A task SHIPS only if, at matched
