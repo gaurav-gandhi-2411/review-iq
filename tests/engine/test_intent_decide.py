@@ -6,8 +6,11 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from engine.intent import decide as D
-from engine.intent import evaluate as EV
+
+pytest.importorskip("sklearn")  # absent from the CI venv: skip, as test_intent_evaluate does
+
+from engine.intent import decide as D  # noqa: E402
+from engine.intent import evaluate as EV  # noqa: E402
 
 CLASSES = ["low", "medium", "high"]
 HIGH = 2
