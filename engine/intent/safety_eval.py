@@ -134,7 +134,9 @@ def evaluate(
             "P_argmax": p["argmax_high"]["test"][keep],
             "S_val_f1_threshold": p["p_high"]["test"][keep] >= thr,
         }
-        dthr = p.get("decision_threshold")  # serving default (Amendment 8): fitted on the Amendment 5 validation set
+        dthr = p.get(
+            "decision_threshold"
+        )  # serving default (Amendment 8): fitted on the Amendment 5 validation set
         if dthr is not None:
             flags["D_serving_default"] = p["p_high"]["test"][keep] >= dthr
         out["runs"][name] = {
@@ -227,8 +229,13 @@ def load_context(labels: str, texts: str, ledger: str) -> dict:
     from engine.labelling.leakage_ledger import safety_items
 
     rows = {r["id"]: r for r in safety_items()}
-    lab = {r["id"]: r for r in map(json.loads, Path(labels).read_text(encoding="utf-8").splitlines())}
-    text = {r["id"]: r["text"] for r in map(json.loads, Path(texts).read_text(encoding="utf-8").splitlines())}
+    lab = {
+        r["id"]: r for r in map(json.loads, Path(labels).read_text(encoding="utf-8").splitlines())
+    }
+    text = {
+        r["id"]: r["text"]
+        for r in map(json.loads, Path(texts).read_text(encoding="utf-8").splitlines())
+    }
     test_ids = [i for i, r in rows.items() if r["split"] == "test"]
     return {
         "urgency": {i: lab[i]["urgency"] for i in rows}, "shas": {i: rows[i]["sha"] for i in rows},

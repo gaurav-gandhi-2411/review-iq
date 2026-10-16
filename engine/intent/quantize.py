@@ -134,7 +134,9 @@ def main() -> None:
         logits = {s: T.infer(model, tok, txt[s], cfg, "cpu") for s in ids}
         out = Path(a.out_dir) / v
         out.mkdir(parents=True, exist_ok=True)
-        decisions: dict[str, dict] = {}  # rare-class thresholds refit on validation for THIS variant
+        decisions: dict[
+            str, dict
+        ] = {}  # rare-class thresholds refit on validation for THIS variant
         temps = T.write_predictions(out, classes, arr, logits, decisions)
         agree = {
             s: {
