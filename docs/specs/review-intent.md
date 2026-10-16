@@ -434,3 +434,37 @@ is measured exactly as run 2 (`engine.intent.latency`, same local CPU).
    that excludes 0, and group-weighted precision is not lower than run 2's by more than 0.05.
 Otherwise run 3 is reported as a NEGATIVE RESULT with the same tables; no threshold, tolerance, epoch count or seed is changed afterwards, and
 no second run is made to rescue it without a new amendment. Whatever the outcome, `docs/STATUS.md` is not updated by this run and nothing is deployed.
+
+### Amendment 8 (2026-10-12, S23 run 3, seed level): registered before any seed run
+
+Why: Amendment 7 ran one seed per arm. A control re-run of run 2 on the same machine (`run2_local`) differed from the Kaggle run 2 by
+more than 0.02 macro-F1 on a core task and its argmax recall on `urgency=high` was 0.319 against 0.119: seed/environment noise is as large as
+every difference seen. No conclusion is drawn from single runs. This amendment replaces them with a seed-level comparison. It does not change
+Amendment 7's data, recipe, early stopping or evaluation sets.
+
+**Design.** Arm A = run 2 recipe, `--safety-stratum exclude`. Arm B = run 3 recipe, `--safety-stratum include`. Both arms: seeds 42, 43, 44, 45, 46
+(the same five seeds, so differences are paired by seed), up to 30 epochs, patience 3, lr 5e-5, batch 32, early stopping on base validation only,
+local RTX 3070 (CUDA fp16 autocast), one commit for all ten runs. Each run is also exported to the six CPU variants of Amendment 7.
+If a run fails or a seed is dropped, it is dropped from BOTH arms and said so. No latency re-measurement (the serving path does not change the compute).
+
+**Decisioning (serving default).** Rare classes are decided by a per-class threshold on the calibrated probability, never argmax: the threshold
+maximises F1 of that class on VALIDATION only (ties to the higher threshold; the rule of `safety_eval.f1_threshold`), per task, per model variant (int8
+variants refit it, as they refit temperatures). Rare classes: `urgency=high` only; a rare class with fewer than 5 validation positives falls back to
+argmax and is flagged. Every other class is decided by argmax among the non-rare classes. Argmax for all classes stays available only as an explicit
+opt-in and is reported as an ABLATION, never as a result. Thresholds for Evaluation A and the serving default (point D) are fitted on the
+Amendment 5 validation set; point S (safety validation, Amendment 7) is kept.
+
+**Reported (all on the 5 seeds, per arm and per CPU variant).** Per-seed values, mean, sd, and the 95 percent t-interval over seeds (df = 4).
+For differences B - A: the per-seed paired difference, its mean, sd and 95 percent t-interval. Metrics: Evaluation A macro-F1 per core task
+(default decisioning; argmax ablation beside it); Evaluation B `urgency=high` recall and precision at D, S and (ablation) P, with the 130
+independent positive groups as the binding n of each seed's estimate, labelled "enriched, keyword-mined, silver (panel) labels". Within-seed
+Wilson/bootstrap intervals are shown in the per-seed artifacts only; conclusions use the seed level.
+
+**Decision rule (fixed now), fp32 GPU model, point S for Evaluation B.** Arm B (run 3 recipe) is PROMOTED only if ALL hold:
+1. the 95 percent t-interval of the paired B - A difference in safety recall at S has a lower bound above 0;
+2. the mean B - A macro-F1 difference is at least -0.02 on EVERY core task (needs_action, broad_intent, sentiment, urgency), default decisioning;
+3. the 95 percent t-interval of the paired B - A difference in precision at S has a lower bound of at least -0.05 (it excludes a drop larger than 0.05).
+
+NOT PROMOTED if criterion 2 fails, or the recall interval's upper bound is at most 0, or the precision interval's upper bound is below -0.05.
+Otherwise INCONCLUSIVE (reported as such; no further seeds without a new amendment). Conclusions are stated only at the seed level; any single
+seed's numbers, and every argmax-at-P number, are reported as ablation/descriptive only. Nothing is deployed and `docs/STATUS.md` is not touched.
