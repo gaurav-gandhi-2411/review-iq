@@ -330,6 +330,10 @@ def main() -> None:
     ap.add_argument(
         "--run3", help="reports/intent/run3/report_inputs.json: appends the run 3 sections"
     )
+    ap.add_argument(
+        "--seeds",
+        help="reports/intent/run3_seeds/aggregate.json: appends the seed-level section (Amendment 8)",
+    )
     a = ap.parse_args()
     load = lambda p: json.loads(Path(p).read_text(encoding="utf-8"))  # noqa: E731
     cpu = {kv.split("=", 1)[0]: load(kv.split("=", 1)[1]) for kv in a.cpu}
@@ -341,6 +345,10 @@ def main() -> None:
         from engine.intent.run3_report import render_run3  # lazy: run3_report imports this module
 
         sys.stdout.write("\n" + render_run3(a.run3))
+    if a.seeds:
+        from engine.intent.seeds import render_seeds  # lazy: seeds imports this module
+
+        sys.stdout.write("\n" + render_seeds(a.seeds))
 
 
 if __name__ == "__main__":

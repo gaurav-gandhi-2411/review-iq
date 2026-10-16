@@ -224,28 +224,36 @@ def predict(a: argparse.Namespace) -> None:
     print(f"wrote {a.out}")
 
 
-def run_evaluate(a: argparse.Namespace) -> None:
+def load_context(labels: str, texts: str, ledger: str) -> dict:
+    """Everything `evaluate` needs besides the predictions: panel urgency, content hashes, near-duplicate groups, exclusions."""
     from engine.labelling.leakage_ledger import safety_items
 
     rows = {r["id"]: r for r in safety_items()}
     lab = {
-        r["id"]: r for r in map(json.loads, Path(a.labels).read_text(encoding="utf-8").splitlines())
+        r["id"]: r for r in map(json.loads, Path(labels).read_text(encoding="utf-8").splitlines())
     }
     text = {
         r["id"]: r["text"]
-        for r in map(json.loads, Path(a.texts).read_text(encoding="utf-8").splitlines())
+        for r in map(json.loads, Path(texts).read_text(encoding="utf-8").splitlines())
     }
     test_ids = [i for i, r in rows.items() if r["split"] == "test"]
-    cl = neardup_clusters({i: fingerprint(text[i]) for i in test_ids})
-    excluded = set(
-        json.loads(Path(a.ledger).read_text(encoding="utf-8")).get("sealed_excluded", [])
-    )
+    return {
+        "urgency": {i: lab[i]["urgency"] for i in rows}, "shas": {i: rows[i]["sha"] for i in rows},
+        "groups": neardup_clusters({i: fingerprint(text[i]) for i in test_ids}),
+        "excluded": set(json.loads(Path(ledger).read_text(encoding="utf-8")).get("sealed_excluded", [])),
+        "test_ids": test_ids, "lab": lab,
+    }  # fmt: skip
+
+
+def run_evaluate(a: argparse.Namespace) -> None:
+    c = load_context(a.labels, a.texts, a.ledger)
+    cl, lab, test_ids = c["groups"], c["lab"], c["test_ids"]
     preds = {}
     for kv in a.run:
         name, path = kv.split("=", 1)
         preds[name] = load_pred(Path(path))
     res = evaluate(
-        preds, a.baseline, {i: lab[i]["urgency"] for i in rows}, {i: rows[i]["sha"] for i in rows}, cl, excluded, a.n_boot,
+        preds, a.baseline, c["urgency"], c["shas"], cl, c["excluded"], a.n_boot,
     )  # fmt: skip
     res["independent_positive_groups_before_ledger_exclusions"] = len(
         {cl[i] for i in test_ids if lab[i]["urgency"] == HIGH}
