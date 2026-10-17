@@ -562,6 +562,51 @@ Smoke result and decisions (recorded after the two discarded 20-item smokes and 
 - Runtime: the smoke servers ran Ollama 0.40.5 (the zero-shot arm ran 0.40.3, "latest at run time"); the model digest equals the
   registered manifest sha256. The version difference is disclosed in the report.
 
+
+### Amendment 11 (2026-10-17, S24 moat compare report): decision rule and matched-coverage comparison; registered before the 20b compare numbers were computed
+
+Context: three arms now have answers on the same sealed ids: the encoder, `gpt-oss-20b-local` (zero-shot, Amendment 9) and
+`gpt-oss-20b-local-fewshot` (Amendment 10, stopped at the first 300 sealed ids by the registered rule). This amendment fixes how they are
+compared, before any encoder-vs-20b number under THIS rule exists. Disclosure of what was already visible: the few-shot-vs-zero-shot
+paired differences (`moat_local20b_fewshot/paired_vs_zeroshot.json`) and the `decide()` intervals at n = 300 were published before this
+amendment; the Wilson-lower-bound operating points and the three-way paired bootstrap defined below had not been computed. Nothing is
+tuned after seeing results; if the rule turns out badly chosen, that is reported, not repaired.
+
+- Labels and ids. Gold is the four-judge panel consensus (SILVER), not human truth. MATCHED ids, per task: the first 300 ids of
+  `sealed_ids()` (sealed order) that every compared arm has a row for and that have a gold label for that task and an encoder
+  prediction. Unparseable or empty LLM answers stay in the denominator, wrong, at confidence 0 (as in Amendments 9 and 10).
+- Encoder: the run-2 model (`reports/intent/run2`, the checkpoint behind `model_report.md`; run 3 was a negative result and is not
+  promoted). Label = argmax of the temperature-scaled probabilities stored in the pred files; score = their maximum. The same
+  confidence-ordered rule below is applied to every arm, which makes the encoder number an in-sample operating point like the others.
+  As a supplementary, deployable reading the encoder is also evaluated at the conservative threshold chosen on VALIDATION and stored
+  in `eval_run2.json` (`selective.conservative_p0.95.threshold`), applied once to the matched ids.
+- (a) Operating point per arm and task: among thresholds equal to an observed confidence value, take the one with the HIGHEST coverage
+  such that the Wilson 95 percent (z = 1.96) LOWER bound of precision among answered items is at least the target (0.95). Answered =
+  items whose confidence is at least the threshold (tie groups are therefore always included whole); precision = correct / answered;
+  coverage = answered / n matched. If no threshold qualifies the coverage is 0 and that is stated ("no qualifying threshold").
+- (b) Matched-coverage comparison: per task, c* = the smallest NON-ZERO operating-point coverage among the compared arms (all arms
+  zero: not computed). Each arm is read at the largest whole-tie-group answered set containing at most ceil(c* x n) items (if the top
+  tie group alone is larger, that top group, flagged as overshoot). Reported: each arm's actual coverage, precision, and Wilson 95
+  percent interval, so an arm that answers fewer items is not rewarded. Descriptive; no verdict is drawn from this block alone.
+- (c) Paired item bootstrap: seed 42, 2000 resamples, items resampled once per replicate and the same index set used for every arm
+  (per task). In each replicate the operating point of (a) is recomputed for every arm. Quantities: coverage at the operating point
+  and plain accuracy (all matched items), differences for each pair of arms; percentile 95 percent intervals (2.5 and 97.5).
+  Pairs: encoder vs zero-shot, encoder vs few-shot, few-shot vs zero-shot.
+- (d) Verdicts. For a pair and a task, A "beats" B on the operating-point coverage only if the bootstrap interval of (coverage A minus
+  coverage B) excludes 0 on A's side AND the point operating-point coverages differ in the same direction. A "beats" B on accuracy only
+  if the bootstrap interval of the accuracy difference excludes 0 on A's side AND the Wilson-lower-bound operating-point coverages
+  also favour A (A strictly higher). Anything else is "not separated" (this includes the case where one criterion holds and the other
+  does not; the report prints both so the reader can see which failed).
+- Unmatched reading (labelled as such): the zero-shot local arm on ALL sealed ids it covers vs the encoder on the same ids, same rules.
+  It is not used for the matched verdicts.
+- Cross-check (never mixed into any verdict): the 502 Groq gpt-oss-20b rows, read read-only, on the matched ids they cover, with the
+  same functions, beside the local zero-shot arm.
+- The gpt-oss-120b arms are not part of this report (the benchmark key returns HTTP 401); no workaround is attempted.
+- Stated confounds, to be repeated in the report: n = 300 is small; verbalised confidence is coarse and 35 percent of few-shot
+  confidences equal exactly 90 (copied from the shots); 27 of 300 few-shot and 6 of 300 zero-shot answers are empty or unparseable
+  (600-token cap spent on reasoning) and count wrong at confidence 0; the two local arms ran different Ollama builds (0.40.5 vs 0.40.3);
+  the Groq rows differ in infrastructure (runtime, quantisation, sampling).
+
 ### Amendment 12 (2026-10-17, S25 moat): re-run of the 20b local arms with a token budget that does not truncate; registered before any v2 row exists
 
 Context: in Amendment 10's run 27 of 300 few-shot completions (and 6 of 300 zero-shot) ended at the 600-token cap with empty content,
