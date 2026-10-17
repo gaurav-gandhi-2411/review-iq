@@ -50,6 +50,7 @@ from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Request, 
 
 from app.auth.api_key import ApiKeyContext
 from app.core.config import get_settings
+from app.core.db_pool import db_connect
 from app.core.ingestion.shopify_source import _node_to_review_row
 from app.core.storage_pg import _set_tenant, get_org_retention_pg
 
@@ -139,7 +140,7 @@ def _get_shopify_installation_pg(shop_domain: str) -> dict[str, Any] | None:
     settings = get_settings()
     if not settings.supabase_database_url:
         return None
-    conn = psycopg2.connect(settings.supabase_database_url)
+    conn = db_connect(settings.supabase_database_url)
     try:
         cur = conn.cursor()
         cur.execute("SELECT public.resolve_org_for_shopify_shop(%s)", (shop_domain,))
