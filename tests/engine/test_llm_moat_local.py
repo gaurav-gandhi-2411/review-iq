@@ -73,6 +73,18 @@ def test_body_matches_groq_request(monkeypatch):
     assert local == captured
 
 
+def test_gen_overrides_reach_the_body_and_defaults_do_not_change_it(monkeypatch):
+    base = L.build_body("m", "hello")
+    assert base["max_tokens"] == 600 and "reasoning_effort" not in base
+    monkeypatch.setitem(L.GEN, "max_tokens", 1500)
+    monkeypatch.setitem(L.GEN, "reasoning_effort", "low")
+    over = L.build_body("m", "hello")
+    assert over["max_tokens"] == 1500 and over["reasoning_effort"] == "low"
+    assert {k: v for k, v in over.items() if k not in ("max_tokens", "reasoning_effort")} == {
+        k: v for k, v in base.items() if k != "max_tokens"
+    }
+
+
 def test_parse_content():
     assert L.parse_content(json.dumps(GOOD)) == GOOD
     assert L.parse_content("Here:\n" + json.dumps(GOOD) + "\nDone") == GOOD

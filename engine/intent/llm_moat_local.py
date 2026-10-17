@@ -39,15 +39,22 @@ def render_prompt(text: str, shots: str = "") -> str:
     return head.format() + shots + "Review: " + text[:1500] + tail.format()
 
 
+# Generation settings. The defaults are Amendments 9 and 10; spec Amendment 12 overrides them from the CLI because a reasoning
+# model can spend the whole 600-token cap before it answers (empty content). Module-level so the plumbing stays unchanged.
+GEN: dict = {"max_tokens": 600, "reasoning_effort": None}
+
+
 def build_body(model: str, text: str, json_mode: bool = True, shots: str = "") -> dict:
-    """Identical to the request body of `llm_moat.ask` (zero-shot) apart from the model name."""
+    """Identical to the request body of `llm_moat.ask` (zero-shot) apart from the model name (and `GEN`, spec Amendment 12)."""
     body = {
         "model": model,
         "messages": [{"role": "user", "content": render_prompt(text, shots)}],
         "temperature": 0,
         "seed": 42,
-        "max_tokens": 600,
+        "max_tokens": GEN["max_tokens"],
     }
+    if GEN["reasoning_effort"]:
+        body["reasoning_effort"] = GEN["reasoning_effort"]
     if json_mode:
         body["response_format"] = {"type": "json_object"}
     return body
@@ -98,6 +105,7 @@ def ask_local(
             used = int(j.get("usage", {}).get("total_tokens", 0))
             if meta is not None:
                 meta["prompt_tokens"] = int(j.get("usage", {}).get("prompt_tokens", 0))
+                meta["finish"] = j["choices"][0].get("finish_reason")
         except (ValueError, KeyError, IndexError, TypeError):
             last = "malformed envelope"
             time.sleep(sleep * 2**attempt)
@@ -188,6 +196,10 @@ def _work(
             st["tokens"] += used
             st["unparseable"] += ans is None
             row = {"id": it["id"], "ans": ans, "tokens": used}
+            if (
+                GEN["max_tokens"] != 600 or GEN["reasoning_effort"]
+            ):  # Amendment 12: why an answer is empty
+                row["fin"] = meta.get("finish")
             if shots:  # few-shot only: lets the smoke check the context budget; `merge` drops it
                 row["ptoks"] = meta.get("prompt_tokens", 0)
                 st["max_prompt_tokens"] = max(st.get("max_prompt_tokens", 0), row["ptoks"])
@@ -274,7 +286,15 @@ def main() -> int:
         "--shots", type=Path, help="private {id,text,gold} jsonl: few-shot arm (Amendment 10)"
     )
     ap.add_argument("--stem", help="output stem; defaults to the zero-shot or the few-shot stem")
+    ap.add_argument("--max-tokens", type=int, default=600, help="completion cap (Amendment 12)")
+    ap.add_argument(
+        "--reasoning-effort",
+        choices=["low", "medium", "high"],
+        help="Amendment 12; default: none sent",
+    )
     a = ap.parse_args()
+    GEN["max_tokens"] = a.max_tokens
+    GEN["reasoning_effort"] = a.reasoning_effort
     if a.cmd == "merge":
         ids = M.sealed_ids()
         rows = merge(a.shards, ids, a.stem or "")
