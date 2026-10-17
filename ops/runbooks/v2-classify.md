@@ -67,7 +67,7 @@ docker build -f Dockerfile.classify -t review-iq-classify:local --build-context 
 
 `requirements-classify.txt` (torch 2.6.0 CPU, transformers 4.57.6, numpy 2.4.4) is installed on top of the locked app
 dependencies; it is not in `uv.lock`, so a deploy change should decide whether to lock it. Benchmark and parity:
-`scripts/bench_classify.py`, `scripts/check_classify_parity.py` (pytest: `tests/engine/test_classify_parity.py`, skips without
+`scripts/bench_classify.py`, `scripts/classify_parity.py` (pytest: `tests/engine/test_classify_parity.py`, skips without
 artifacts and the private texts).
 
 ## Enabling it later (a deliberate, reviewed change)

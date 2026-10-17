@@ -2,7 +2,7 @@
 
 Needs: torch + transformers + scikit-learn, the model artifacts (CLASSIFY_PARITY_ARTIFACTS, default
 D:/ml-cache/s24/classify_artifacts) and the private review texts (CLASSIFY_PARITY_TEXTS, default
-D:/ml-cache/review-intent/scale.jsonl). Review text is never written. Runs the same checks as scripts/check_classify_parity.py.
+D:/ml-cache/review-intent/scale.jsonl). Review text is never written. Runs the same checks as scripts/classify_parity.py.
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ pytest.importorskip("sklearn")
 pytest.importorskip("torch")
 pytest.importorskip("transformers")
 
-from scripts import check_classify_parity as P  # noqa: E402
+from scripts import classify_parity as P  # noqa: E402
 
 ARTIFACTS = Path(os.environ.get("CLASSIFY_PARITY_ARTIFACTS", "D:/ml-cache/s24/classify_artifacts"))
 TEXTS = Path(os.environ.get("CLASSIFY_PARITY_TEXTS", "D:/ml-cache/review-intent/scale.jsonl"))

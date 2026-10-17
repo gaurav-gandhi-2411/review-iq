@@ -1,6 +1,6 @@
 """Parity check: the SERVED code path (app.core.classify.runtime) against the OFFLINE evaluation artifacts, on the sealed set.
 
-    PYTHONPATH=. python scripts/check_classify_parity.py --artifacts D:/ml-cache/s24/classify_artifacts \
+    PYTHONPATH=. python scripts/classify_parity.py --artifacts D:/ml-cache/s24/classify_artifacts \
         --texts D:/ml-cache/review-intent/scale.jsonl --out <result.json>
 
 Offline reference: `reports/intent/run2_cpu/int8_ffn_full/pred_<task>.json` (calibrated probabilities of the int8 variant) and

@@ -1,7 +1,7 @@
 """Local Docker benchmark of POST /v2/classify. NOT Cloud Run: numbers are for one container on a shared, loaded dev machine.
 
     PYTHONPATH=. python scripts/bench_classify.py --image review-iq-classify:a6local --cpus 1 --memory 1g \
-        --texts D:/ml-cache/review-intent/scale.jsonl --host-parity <check_classify_parity output> --out <json>
+        --texts D:/ml-cache/review-intent/scale.jsonl --host-parity <classify_parity output> --out <json>
 
 Starts a container (named below; only that container is ever removed), measures: cold start (docker run -> first 200 from
 /v2/classify, with the model-load part read from the app's own `classify.model_loaded` log line), peak memory from the
@@ -25,8 +25,8 @@ from pathlib import Path
 
 from app.core.classify import runtime
 
-from scripts.check_classify_parity import PRED_DIR, offline_decisions
-from scripts.check_classify_parity import TASKS as TASKS
+from scripts.classify_parity import PRED_DIR, offline_decisions
+from scripts.classify_parity import TASKS as TASKS
 
 NAME = "a6-classify-bench"
 PORT = 18080

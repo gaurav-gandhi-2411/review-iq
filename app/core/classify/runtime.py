@@ -171,7 +171,7 @@ class TorchInt8Backend:
 
     def logits_batched(self, texts: list[str], batch: int) -> dict[str, np.ndarray]:
         """Forward in padded batches of `batch`. Dynamic int8 quantises activations PER TENSOR, so a logit depends on which
-        other items share its batch (up to 0.61 in probability on the sealed set, scripts/check_classify_parity.py). The
+        other items share its batch (up to 0.61 in probability on the sealed set, scripts/classify_parity.py). The
         offline evaluation ran batches of 128; this exists to reproduce it. Serving uses `logits`."""
         out: dict[str, list[np.ndarray]] = {t: [] for t in self._sizes}
         for k in range(0, len(texts), batch):
