@@ -136,3 +136,123 @@ def test_uncommitted_write_from_a_failed_request_is_rolled_back(
         assert cur.fetchone()[0] == 0
     finally:
         sup.close()
+
+
+@pytest.fixture
+def two_connection_pool(monkeypatch: pytest.MonkeyPatch) -> Iterator[str]:
+    monkeypatch.setenv("DB_POOL_MAXCONN", "2")
+    db_pool.close_all_pools()
+    yield os.environ["SUPABASE_DATABASE_URL"]
+    db_pool.close_all_pools()
+
+
+def test_interleaved_open_transactions_across_orgs_never_cross(
+    two_connection_pool: str, two_orgs: tuple[str, str, str, str]
+) -> None:
+    """Two threads hold open transactions for different orgs at the same instant, on two
+    different physical connections, then return them and borrow again. Every read, at every
+    stage, must show only that thread's own org; across rounds the pool must have handed at
+    least one physical connection to both orgs (otherwise the interleaving proved nothing)."""
+    import threading
+
+    org_a, org_b, ext_a, ext_b = two_orgs
+    rounds = 25
+    barrier = threading.Barrier(2, timeout=30)
+    seen: dict[str, list[set[str]]] = {"a": [], "b": []}
+    physical: dict[str, list[int]] = {"a": [], "b": []}
+    errors: list[BaseException] = []
+
+    def worker(name: str, org: str) -> None:
+        try:
+            for _ in range(rounds):
+                conn = db_pool.db_connect(two_connection_pool)
+                cur = conn.cursor()
+                _set_tenant(cur, org)
+                physical[name].append(id(conn._conn))
+                seen[name].append(_visible_extractions(cur))
+                barrier.wait()  # both transactions are open on separate connections here
+                seen[name].append(_visible_extractions(cur))  # still only my org, mid-overlap
+                barrier.wait()
+                conn.close()  # returned mid-transaction
+                barrier.wait()  # both released before either borrows again
+        except BaseException as exc:  # noqa: BLE001 -- surface any thread failure to the test
+            errors.append(exc)
+            barrier.abort()
+
+    threads = [
+        threading.Thread(target=worker, args=("a", org_a)),
+        threading.Thread(target=worker, args=("b", org_b)),
+    ]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join(timeout=60)
+    assert not errors, errors
+    assert len(seen["a"]) == len(seen["b"]) == 2 * rounds
+    assert all(s == {ext_a} for s in seen["a"])
+    assert all(s == {ext_b} for s in seen["b"])
+    assert set(physical["a"]) & set(physical["b"]), "no physical connection served both orgs"
+
+
+def test_randomized_borrow_sequence_never_sees_a_foreign_org(
+    one_connection_pool: str, two_orgs: tuple[str, str, str, str]
+) -> None:
+    import random
+
+    org_a, org_b, ext_a, ext_b = two_orgs
+    rng = random.Random(42)  # noqa: S311 -- deterministic test sequence, not security
+    expected = {"a": {ext_a}, "b": {ext_b}, "none": set()}
+    for _ in range(80):
+        who = rng.choice(["a", "b", "none"])
+        conn = db_pool.db_connect(one_connection_pool)
+        cur = conn.cursor()
+        if who != "none":
+            _set_tenant(cur, org_a if who == "a" else org_b)
+        assert _visible_extractions(cur) == expected[who], who
+        if rng.random() < 0.5:
+            conn.close()  # returned mid-transaction, no commit/rollback by the caller
+        else:
+            conn.commit()
+            conn.close()
+
+
+def test_failed_statement_does_not_poison_or_leak_into_the_next_borrow(
+    one_connection_pool: str, two_orgs: tuple[str, str, str, str]
+) -> None:
+    org_a, org_b, _, ext_b = two_orgs
+    with pytest.raises(psycopg2.Error):
+        with db_pool.pooled_connection(one_connection_pool) as conn:
+            cur = conn.cursor()
+            _set_tenant(cur, org_a)
+            cur.execute("SELECT 1/0")  # leaves the txn in the aborted state
+    with db_pool.pooled_connection(one_connection_pool) as conn:
+        cur = conn.cursor()  # InFailedSqlTransaction here would mean the abort was carried over
+        _set_tenant(cur, org_b)
+        assert _visible_extractions(cur) == {ext_b}
+
+
+def test_cross_org_write_is_rejected_on_a_reused_connection(
+    one_connection_pool: str, two_orgs: tuple[str, str, str, str]
+) -> None:
+    org_a, org_b, _, _ = two_orgs
+    marker = f"pool_xorg_{uuid.uuid4().hex[:8]}"
+    with db_pool.pooled_connection(one_connection_pool) as conn:  # warm the one connection as A
+        _set_tenant(conn.cursor(), org_a)
+    with pytest.raises(psycopg2.Error):
+        with db_pool.pooled_connection(one_connection_pool) as conn:
+            cur = conn.cursor()
+            _set_tenant(cur, org_b)  # now B, on A's old physical connection
+            cur.execute(
+                "INSERT INTO public.extractions "
+                "(id, org_id, input_hash, extraction, model, prompt_version, schema_version) "
+                "VALUES (%s, %s, %s, '{}'::jsonb, 'm', 'v1', 'v1')",
+                (str(uuid.uuid4()), org_a, marker),  # B writing a row owned by A
+            )
+            conn.commit()
+    sup = _super()
+    try:
+        cur = sup.cursor()
+        cur.execute("SELECT count(*) FROM public.extractions WHERE input_hash = %s", (marker,))
+        assert cur.fetchone()[0] == 0
+    finally:
+        sup.close()

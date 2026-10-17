@@ -1,0 +1,59 @@
+"""Push the gpt-oss-20b-local moat kernel (spec Amendment 9) as a PRIVATE Kaggle kernel; the kernel slug must differ from the dataset slug.
+
+    python -m engine.kaggle.push_moat20b --mode smoke --dataset gauravgandhi2411/review-intent-moat-items --slug review-intent-moat-run \
+        --branch feat/s23-moat-20b-local [--prior gauravgandhi2411/review-intent-moat-prior] [--budget-hours 8]
+
+`--mode smoke` runs the first 20 sealed items only (throughput and JSON-mode check; rows discarded). `--prior` is a private dataset with the
+previous session's `shards/` folder (ids, answers, token counts; no text).
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import subprocess
+import tempfile
+from pathlib import Path
+
+
+def build(branch: str, mode: str, budget_h: float) -> str:
+    src = (Path(__file__).parent / "kernel_moat20b.py").read_text(encoding="utf-8")
+    return (
+        src.replace("__BRANCH__", branch)
+        .replace("__MODE__", mode)
+        .replace("__BUDGET_H__", str(budget_h))
+    )
+
+
+def metadata(slug: str, datasets: list[str]) -> dict:
+    return {
+        "id": f"gauravgandhi2411/{slug}", "title": slug, "code_file": "kernel.py",
+        "language": "python", "kernel_type": "script", "is_private": True,
+        "enable_gpu": True, "enable_internet": True, "dataset_sources": datasets,
+        "competition_sources": [], "kernel_sources": [],
+    }  # fmt: skip
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--mode", required=True, choices=["smoke", "full"])
+    ap.add_argument("--dataset", required=True)
+    ap.add_argument("--prior", default="")
+    ap.add_argument("--branch", default="main")
+    ap.add_argument("--slug", required=True)
+    ap.add_argument("--budget-hours", type=float, default=8.0)
+    a = ap.parse_args()
+    if a.slug == a.dataset.split("/")[-1]:
+        raise SystemExit("kernel slug must differ from the dataset slug")
+    datasets = [a.dataset] + ([a.prior] if a.prior else [])
+    with tempfile.TemporaryDirectory() as d:
+        (Path(d) / "kernel.py").write_text(
+            build(a.branch, a.mode, a.budget_hours), encoding="utf-8"
+        )
+        meta = metadata(a.slug, datasets)
+        (Path(d) / "kernel-metadata.json").write_text(json.dumps(meta, indent=1), encoding="utf-8")
+        subprocess.run(["kaggle", "kernels", "push", "-p", d], check=True)
+
+
+if __name__ == "__main__":
+    main()
