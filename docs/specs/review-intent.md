@@ -501,3 +501,63 @@ change (runtime, quantisation, sampling implementation), not a replication of th
 - Cross-check against the Groq 20b rows on the overlapping ids: per task label agreement, Cohen's kappa, Spearman correlation of
   confidences, with n and item-bootstrap 95 percent CIs. No gate depends on it.
 
+
+### Amendment 10 (2026-10-17, S24 moat): the `gpt-oss-20b-local-fewshot` arm; registered before any few-shot local row exists
+
+Context: Amendment 9 ran gpt-oss-20b zero-shot on local inference. The Groq 120b few-shot arm exists in the protocol (`llm_moat`
+FEW-SHOT ARM); this amendment adds the matching few-shot arm for 20b on the same local stack, so that "does worked-example
+prompting close any of the gap to the encoder" is answered on one runtime. Registration commit (before any few-shot local row
+existed): recorded in the PR description and in `reports/intent/moat_local20b_fewshot/run_status.json`.
+
+- Arm name `gpt-oss-20b-local-fewshot`; output stem `openai_gpt-oss-20b__local_fewshot`.
+- Model, stack, sampling and request exactly as Amendment 9 (Ollama `gpt-oss:20b`, manifest sha256
+  `f38aa0c53da5f8c49d08c43a99df24ff53167fe68e24664a7777288e7656fdfe`, context 4096, temperature 0, seed 42, max_tokens 600, JSON mode,
+  two T4 servers, items split by parity, default reasoning effort). The Ollama version and digest actually used are recorded and a
+  mismatch is reported, not hidden.
+- Prompt: the existing `PROMPT` with the `shots_text` block inserted before `Review:` exactly as `llm_moat.ask` does for the
+  Groq few-shot arm. Example confidences are the fixed value 90 that `shots_text` writes today. KNOWN LIMITATION, not tuned: the
+  constant may pull verbalised confidences towards 90 and so distort calibration, which is the quantity the coverage-at-precision
+  metric measures; the result is read with that in mind.
+- Shot selection: `llm_moat.pick_shots(scale.jsonl, n_max=8)` unchanged (training split only, review at most 220 characters, all
+  four labels present, `random.Random(42)` shuffle, greedy cover of unseen task/class pairs). It returned 7 shots (the greedy cover
+  is exhausted after 7); they cover 13 of the 14 task/class pairs. NOT covered: `broad_intent=service`. This is reported, not
+  repaired. Shot ids (ids only; all have `split == "train"` in the scale manifest and labels in `labels.json` train):
+  `scale-food-0367`, `scale-food-1219`, `scale-food-1341`, `scale-food-0839`, `scale-vernacular-0030`, `scale-apparel-0890`,
+  `scale-vernacular-0083`. The order is the selection order and is the prompt order. `urgency=high` appears once.
+- Leakage checks, run before this registration on the private texts: none of the 7 shot ids is in `sealed_ids()`; none of the 7
+  content hashes (`text_sha(clean(text))`) is in `leakage_ledger.sealed_hashes()` (scale test plus safety test) or in
+  `leakage_ledger.exclusions()`; each shot's hash equals the scale manifest hash for its id; against the 1,483 committed sealed
+  fingerprints of `reports/labelling/sealed_fingerprints.json` no shot reaches the near-duplicate rule (4-character Jaccard at least
+  0.9) nor the quoted-substring rule (12-character containment at least 0.9); the maxima were far below both thresholds.
+- Token budget: the full prompt (shots plus a review truncated to 1500 characters) plus up to 600 completion tokens must fit in the
+  4096 context. Measured on the smoke run from the server's `prompt_eval_count`, reported. Decided BEFORE the full run: if the
+  smoke maximum of prompt tokens plus 600 exceeds 4096, the arm drops to the first 5 shots in order and the smoke is repeated; that
+  change would be recorded in the run status.
+- Same sealed order, same stopping rule (the first 300 sealed items are run, `decide()` is applied once, the run continues to
+  all sealed items unless all four tasks are decided), same handling of unparseable output (wrong at confidence 0, kept) and of
+  runtime errors (retried, never recorded as answers). Smoke test of the first 20 sealed items first; those rows are discarded and
+  never scored; JSON-mode fallback rule as Amendment 9.
+- Comparison targets: few-shot local vs zero-shot local (matched ids, paired differences of the same statistics) and vs the
+  encoder, on the same labels (SILVER, four-judge panel consensus). No gate depends on the Groq cross-check.
+
+Implementation note (added with the code, still before any few-shot local row exists; no design change): `llm_moat.ask` builds a
+few-shot prompt by `str.replace` followed by `str.format`, which cannot work when the shots block contains the JSON braces that
+`shots_text` writes. The local runner therefore renders the prompt as head, shots block, `Review: <text up to 1500 characters>`,
+tail. The model sees the same text order as the specification above; with no shots the zero-shot prompt is byte-identical to
+Amendment 9 (unit-tested). The few-shot rows carry an extra `ptoks` field in the shard files (the server's prompt token count) and
+`merge` drops it. The smoke also probes the longest and the most non-ASCII sealed reviews with the server prefix cache defeated
+(a leading marker line, which makes the count an upper bound) to apply the token budget rule above.
+
+Smoke result and decisions (recorded after the two discarded 20-item smokes and before the full run; no few-shot row has been scored).
+- Context budget: the largest prompt measured was 1143 tokens (cache-defeating probe on the ten longest or most non-ASCII sealed
+  reviews; the longest sealed review is under 1000 characters), so prompt plus 600 completion tokens is far below the 4096 context.
+  All 7 shots are kept; the reduction to 5 shots is not triggered.
+- JSON-mode rule: the first smoke (with `response_format`) returned 3 of 20 empty or unparseable answers, which is more than 2 and so
+  triggers the Amendment 9 fallback. All 3 completions stopped at exactly 600 completion tokens (reasoning consumed the budget, so the
+  content was empty): a token-cap truncation, not a JSON-mode non-compliance. As registered, the smoke was repeated WITHOUT
+  `response_format`: the same 3 items failed and every item's token count was identical to the first smoke, i.e. on this Ollama
+  build the request flag had no measurable effect. The registered rule is applied literally: the full run uses no `response_format`
+  and the extraction rule. The 600-token cap is NOT raised (same as the zero-shot arm); the truncation rate is reported and those
+  items score as wrong at confidence 0, which penalises the few-shot arm in a way the shots themselves do not cause.
+- Runtime: the smoke servers ran Ollama 0.40.5 (the zero-shot arm ran 0.40.3, "latest at run time"); the model digest equals the
+  registered manifest sha256. The version difference is disclosed in the report.

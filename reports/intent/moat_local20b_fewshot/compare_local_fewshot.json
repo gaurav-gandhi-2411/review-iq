@@ -1,0 +1,801 @@
+{
+ "n_sealed_after_ledger_exclusions": 757,
+ "tasks": {
+  "needs_action": {
+   "encoder": {
+    "n": 717,
+    "accuracy": 0.9596,
+    "split_half_transfer_p95": {
+     "target": 0.95,
+     "n_splits": 200,
+     "rule": "point_estimate",
+     "precision_mean": 0.9597,
+     "precision_p2_5_p97_5": [
+      0.9443,
+      0.9719
+     ],
+     "coverage_mean": 0.9967,
+     "coverage_p2_5_p97_5": [
+      0.9833,
+      1.0
+     ],
+     "hit_rate": 0.89
+    },
+    "split_half_transfer_p95_conservative": {
+     "target": 0.95,
+     "n_splits": 200,
+     "rule": "wilson_lower_bound",
+     "precision_mean": 0.9724,
+     "precision_p2_5_p97_5": [
+      0.9443,
+      0.9912
+     ],
+     "coverage_mean": 0.9614,
+     "coverage_p2_5_p97_5": [
+      0.9219,
+      0.9973
+     ],
+     "hit_rate": 0.93
+    },
+    "coverage_at_precision_0.95": 1.0,
+    "coverage_at_precision_0.95_ci95": [
+     0.9818,
+     1.0
+    ],
+    "precision_at_coverage_0.9": {
+     "precision": 0.9861,
+     "achieved_coverage": 0.901,
+     "ci95": [
+      0.9752,
+      0.9954
+     ]
+    },
+    "precision_at_coverage_0.8": {
+     "precision": 0.993,
+     "achieved_coverage": 0.8006,
+     "ci95": [
+      0.9826,
+      0.9983
+     ]
+    },
+    "precision_at_coverage_0.7": {
+     "precision": 0.998,
+     "achieved_coverage": 0.7001,
+     "ci95": [
+      0.992,
+      1.0
+     ]
+    }
+   },
+   "llm": {
+    "openai_gpt-oss-20b__local_fewshot": {
+     "n": 281,
+     "accuracy": 0.7936,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9555,
+      "precision_p2_5_p97_5": [
+       0.9309,
+       0.9691
+      ],
+      "coverage_mean": 0.5073,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.6879
+      ],
+      "hit_rate": 0.57
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": 0.9204,
+      "precision_p2_5_p97_5": [
+       0.9196,
+       0.9213
+      ],
+      "coverage_mean": 0.0062,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.0
+      ],
+      "hit_rate": 0.0
+     },
+     "coverage_at_precision_0.95": 0.6406,
+     "coverage_at_precision_0.95_ci95": [
+      0.0,
+      0.6904
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.878,
+      "achieved_coverage": 0.9039,
+      "ci95": [
+       0.7473,
+       0.9109
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.878,
+      "achieved_coverage": 0.9039,
+      "ci95": [
+       0.836,
+       0.9147
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 0.878,
+      "achieved_coverage": 0.9039,
+      "ci95": [
+       0.836,
+       0.9228
+      ]
+     }
+    },
+    "openai_gpt-oss-20b__local_first300": {
+     "n": 281,
+     "accuracy": 0.9004,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9664,
+      "precision_p2_5_p97_5": [
+       0.8985,
+       0.9917
+      ],
+      "coverage_mean": 0.8557,
+      "coverage_p2_5_p97_5": [
+       0.7941,
+       0.9718
+      ],
+      "hit_rate": 0.84
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": 0.9605,
+      "precision_p2_5_p97_5": [
+       0.9492,
+       0.9667
+      ],
+      "coverage_mean": 0.1507,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.8582
+      ],
+      "hit_rate": 0.17
+     },
+     "coverage_at_precision_0.95": 0.8363,
+     "coverage_at_precision_0.95_ci95": [
+      0.79,
+      0.9751
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.9366,
+      "achieved_coverage": 0.9537,
+      "ci95": [
+       0.9067,
+       0.9662
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.9784,
+      "achieved_coverage": 0.8256,
+      "ci95": [
+       0.9198,
+       0.9957
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 0.9784,
+      "achieved_coverage": 0.8256,
+      "ci95": [
+       0.9583,
+       0.9957
+      ]
+     }
+    }
+   }
+  },
+  "broad_intent": {
+   "encoder": {
+    "n": 700,
+    "accuracy": 0.9214,
+    "split_half_transfer_p95": {
+     "target": 0.95,
+     "n_splits": 200,
+     "rule": "point_estimate",
+     "precision_mean": 0.9491,
+     "precision_p2_5_p97_5": [
+      0.9195,
+      0.9803
+     ],
+     "coverage_mean": 0.9166,
+     "coverage_p2_5_p97_5": [
+      0.8714,
+      0.9629
+     ],
+     "hit_rate": 0.445
+    },
+    "split_half_transfer_p95_conservative": {
+     "target": 0.95,
+     "n_splits": 200,
+     "rule": "wilson_lower_bound",
+     "precision_mean": 0.9728,
+     "precision_p2_5_p97_5": [
+      0.9421,
+      0.9932
+     ],
+     "coverage_mean": 0.8375,
+     "coverage_p2_5_p97_5": [
+      0.7771,
+      0.8972
+     ],
+     "hit_rate": 0.95
+    },
+    "coverage_at_precision_0.95": 0.9171,
+    "coverage_at_precision_0.95_ci95": [
+     0.87,
+     0.9686
+    ],
+    "precision_at_coverage_0.9": {
+     "precision": 0.9556,
+     "achieved_coverage": 0.9,
+     "ci95": [
+      0.9351,
+      0.973
+     ]
+    },
+    "precision_at_coverage_0.8": {
+     "precision": 0.9821,
+     "achieved_coverage": 0.8,
+     "ci95": [
+      0.9661,
+      0.9929
+     ]
+    },
+    "precision_at_coverage_0.7": {
+     "precision": 0.9918,
+     "achieved_coverage": 0.7,
+     "ci95": [
+      0.9837,
+      0.998
+     ]
+    }
+   },
+   "llm": {
+    "openai_gpt-oss-20b__local_fewshot": {
+     "n": 273,
+     "accuracy": 0.7619,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9357,
+      "precision_p2_5_p97_5": [
+       0.9129,
+       0.9462
+      ],
+      "coverage_mean": 0.3057,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.6863
+      ],
+      "hit_rate": 0.0
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": NaN,
+      "precision_p2_5_p97_5": [
+       NaN,
+       NaN
+      ],
+      "coverage_mean": 0.0,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.0
+      ],
+      "hit_rate": 0.0
+     },
+     "coverage_at_precision_0.95": 0.0,
+     "coverage_at_precision_0.95_ci95": [
+      0.0,
+      0.696
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.8387,
+      "achieved_coverage": 0.9084,
+      "ci95": [
+       0.7179,
+       0.8795
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.8387,
+      "achieved_coverage": 0.9084,
+      "ci95": [
+       0.7936,
+       0.8848
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 0.8387,
+      "achieved_coverage": 0.9084,
+      "ci95": [
+       0.7936,
+       0.9338
+      ]
+     }
+    },
+    "openai_gpt-oss-20b__local_first300": {
+     "n": 273,
+     "accuracy": 0.8168,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9455,
+      "precision_p2_5_p97_5": [
+       0.9112,
+       0.9637
+      ],
+      "coverage_mean": 0.2203,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.4307
+      ],
+      "hit_rate": 0.29
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": NaN,
+      "precision_p2_5_p97_5": [
+       NaN,
+       NaN
+      ],
+      "coverage_mean": 0.0,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.0
+      ],
+      "hit_rate": 0.0
+     },
+     "coverage_at_precision_0.95": 0.3663,
+     "coverage_at_precision_0.95_ci95": [
+      0.0,
+      0.4287
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.8511,
+      "achieved_coverage": 0.9597,
+      "ci95": [
+       0.8113,
+       0.8906
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.8511,
+      "achieved_coverage": 0.9597,
+      "ci95": [
+       0.8113,
+       0.8923
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 0.9086,
+      "achieved_coverage": 0.7216,
+      "ci95": [
+       0.8264,
+       0.9439
+      ]
+     }
+    }
+   }
+  },
+  "sentiment": {
+   "encoder": {
+    "n": 673,
+    "accuracy": 0.9361,
+    "split_half_transfer_p95": {
+     "target": 0.95,
+     "n_splits": 200,
+     "rule": "point_estimate",
+     "precision_mean": 0.9528,
+     "precision_p2_5_p97_5": [
+      0.9219,
+      0.9813
+     ],
+     "coverage_mean": 0.9734,
+     "coverage_p2_5_p97_5": [
+      0.9377,
+      0.9971
+     ],
+     "hit_rate": 0.6
+    },
+    "split_half_transfer_p95_conservative": {
+     "target": 0.95,
+     "n_splits": 200,
+     "rule": "wilson_lower_bound",
+     "precision_mean": 0.9751,
+     "precision_p2_5_p97_5": [
+      0.95,
+      0.9966
+     ],
+     "coverage_mean": 0.9283,
+     "coverage_p2_5_p97_5": [
+      0.8901,
+      0.9614
+     ],
+     "hit_rate": 0.975
+    },
+    "coverage_at_precision_0.95": 0.9762,
+    "coverage_at_precision_0.95_ci95": [
+     0.9421,
+     1.0
+    ],
+    "precision_at_coverage_0.9": {
+     "precision": 0.9835,
+     "achieved_coverage": 0.9004,
+     "ci95": [
+      0.9719,
+      0.9934
+     ]
+    },
+    "precision_at_coverage_0.8": {
+     "precision": 0.9963,
+     "achieved_coverage": 0.8009,
+     "ci95": [
+      0.9907,
+      1.0
+     ]
+    },
+    "precision_at_coverage_0.7": {
+     "precision": 0.9979,
+     "achieved_coverage": 0.7013,
+     "ci95": [
+      0.9936,
+      1.0
+     ]
+    }
+   },
+   "llm": {
+    "openai_gpt-oss-20b__local_fewshot": {
+     "n": 253,
+     "accuracy": 0.8498,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.983,
+      "precision_p2_5_p97_5": [
+       0.8956,
+       1.0
+      ],
+      "coverage_mean": 0.7022,
+      "coverage_p2_5_p97_5": [
+       0.622,
+       0.937
+      ],
+      "hit_rate": 0.885
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": 0.9883,
+      "precision_p2_5_p97_5": [
+       0.9873,
+       0.9893
+      ],
+      "coverage_mean": 0.3789,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.7244
+      ],
+      "hit_rate": 0.56
+     },
+     "coverage_at_precision_0.95": 0.6719,
+     "coverage_at_precision_0.95_ci95": [
+      0.6165,
+      0.921
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.9304,
+      "achieved_coverage": 0.9091,
+      "ci95": [
+       0.8103,
+       0.9571
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.9304,
+      "achieved_coverage": 0.9091,
+      "ci95": [
+       0.895,
+       0.9602
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 0.9304,
+      "achieved_coverage": 0.9091,
+      "ci95": [
+       0.895,
+       1.0
+      ]
+     }
+    },
+    "openai_gpt-oss-20b__local_first300": {
+     "n": 253,
+     "accuracy": 0.9368,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9514,
+      "precision_p2_5_p97_5": [
+       0.9134,
+       0.9919
+      ],
+      "coverage_mean": 0.9745,
+      "coverage_p2_5_p97_5": [
+       0.9134,
+       1.0
+      ],
+      "hit_rate": 0.61
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": 0.978,
+      "precision_p2_5_p97_5": [
+       0.9372,
+       0.9909
+      ],
+      "coverage_mean": 0.5779,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.953
+      ],
+      "hit_rate": 0.635
+     },
+     "coverage_at_precision_0.95": 0.9842,
+     "coverage_at_precision_0.95_ci95": [
+      0.8933,
+      1.0
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.9828,
+      "achieved_coverage": 0.917,
+      "ci95": [
+       0.9419,
+       0.9958
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.9952,
+      "achieved_coverage": 0.8182,
+      "ci95": [
+       0.9722,
+       1.0
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 0.9952,
+      "achieved_coverage": 0.8182,
+      "ci95": [
+       0.9848,
+       1.0
+      ]
+     }
+    }
+   }
+  },
+  "urgency": {
+   "encoder": {
+    "n": 703,
+    "accuracy": 0.9545,
+    "split_half_transfer_p95": {
+     "target": 0.95,
+     "n_splits": 200,
+     "rule": "point_estimate",
+     "precision_mean": 0.9566,
+     "precision_p2_5_p97_5": [
+      0.9375,
+      0.9771
+     ],
+     "coverage_mean": 0.9947,
+     "coverage_p2_5_p97_5": [
+      0.9744,
+      1.0
+     ],
+     "hit_rate": 0.705
+    },
+    "split_half_transfer_p95_conservative": {
+     "target": 0.95,
+     "n_splits": 200,
+     "rule": "wilson_lower_bound",
+     "precision_mean": 0.9729,
+     "precision_p2_5_p97_5": [
+      0.943,
+      0.9938
+     ],
+     "coverage_mean": 0.9496,
+     "coverage_p2_5_p97_5": [
+      0.9091,
+      0.9943
+     ],
+     "hit_rate": 0.955
+    },
+    "coverage_at_precision_0.95": 1.0,
+    "coverage_at_precision_0.95_ci95": [
+     0.973,
+     1.0
+    ],
+    "precision_at_coverage_0.9": {
+     "precision": 0.9858,
+     "achieved_coverage": 0.9004,
+     "ci95": [
+      0.9747,
+      0.9953
+     ]
+    },
+    "precision_at_coverage_0.8": {
+     "precision": 0.9929,
+     "achieved_coverage": 0.8009,
+     "ci95": [
+      0.9858,
+      1.0
+     ]
+    },
+    "precision_at_coverage_0.7": {
+     "precision": 1.0,
+     "achieved_coverage": 0.7013,
+     "ci95": [
+      0.996,
+      1.0
+     ]
+    }
+   },
+   "llm": {
+    "openai_gpt-oss-20b__local_fewshot": {
+     "n": 275,
+     "accuracy": 0.8145,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9747,
+      "precision_p2_5_p97_5": [
+       0.9494,
+       1.0
+      ],
+      "coverage_mean": 0.5712,
+      "coverage_p2_5_p97_5": [
+       0.5143,
+       0.6306
+      ],
+      "hit_rate": 0.955
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": 0.9495,
+      "precision_p2_5_p97_5": [
+       0.9454,
+       0.9523
+      ],
+      "coverage_mean": 0.0288,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.5725
+      ],
+      "hit_rate": 0.02
+     },
+     "coverage_at_precision_0.95": 0.5818,
+     "coverage_at_precision_0.95_ci95": [
+      0.0,
+      0.64
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.8996,
+      "achieved_coverage": 0.9055,
+      "ci95": [
+       0.7673,
+       0.9325
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.8996,
+      "achieved_coverage": 0.9055,
+      "ci95": [
+       0.8623,
+       0.9357
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 0.8996,
+      "achieved_coverage": 0.9055,
+      "ci95": [
+       0.8623,
+       0.9357
+      ]
+     }
+    },
+    "openai_gpt-oss-20b__local_first300": {
+     "n": 275,
+     "accuracy": 0.8327,
+     "split_half_transfer_p95": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "point_estimate",
+      "precision_mean": 0.9335,
+      "precision_p2_5_p97_5": [
+       0.8927,
+       1.0
+      ],
+      "coverage_mean": 0.2425,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.5145
+      ],
+      "hit_rate": 0.14
+     },
+     "split_half_transfer_p95_conservative": {
+      "target": 0.95,
+      "n_splits": 200,
+      "rule": "wilson_lower_bound",
+      "precision_mean": NaN,
+      "precision_p2_5_p97_5": [
+       NaN,
+       NaN
+      ],
+      "coverage_mean": 0.0,
+      "coverage_p2_5_p97_5": [
+       0.0,
+       0.0
+      ],
+      "hit_rate": 0.0
+     },
+     "coverage_at_precision_0.95": 0.1273,
+     "coverage_at_precision_0.95_ci95": [
+      0.0,
+      0.52
+     ],
+     "precision_at_coverage_0.9": {
+      "precision": 0.8513,
+      "achieved_coverage": 0.9782,
+      "ci95": [
+       0.8104,
+       0.9189
+      ]
+     },
+     "precision_at_coverage_0.8": {
+      "precision": 0.8902,
+      "achieved_coverage": 0.8945,
+      "ci95": [
+       0.8535,
+       0.9258
+      ]
+     },
+     "precision_at_coverage_0.7": {
+      "precision": 0.8902,
+      "achieved_coverage": 0.8945,
+      "ci95": [
+       0.8535,
+       0.9258
+      ]
+     }
+    }
+   }
+  }
+ }
+}
