@@ -162,10 +162,18 @@ def test_interleaved_open_transactions_across_orgs_never_cross(
     physical: dict[str, list[int]] = {"a": [], "b": []}
     errors: list[BaseException] = []
 
+    # Borrow order and release order vary per round (all four combinations), so whether the pool
+    # hands back connections LIFO or FIFO, some round gives org A the connection org B just used.
+    borrowed = [threading.Event() for _ in range(rounds)]
+    released = [threading.Event() for _ in range(rounds)]
+
     def worker(name: str, org: str) -> None:
         try:
-            for _ in range(rounds):
+            for r in range(rounds):
+                if name != ("a" if r % 2 == 0 else "b"):
+                    assert borrowed[r].wait(30)
                 conn = db_pool.db_connect(two_connection_pool)
+                borrowed[r].set()
                 cur = conn.cursor()
                 _set_tenant(cur, org)
                 physical[name].append(id(conn._conn))
@@ -173,7 +181,10 @@ def test_interleaved_open_transactions_across_orgs_never_cross(
                 barrier.wait()  # both transactions are open on separate connections here
                 seen[name].append(_visible_extractions(cur))  # still only my org, mid-overlap
                 barrier.wait()
+                if name != ("a" if (r // 2) % 2 == 0 else "b"):
+                    assert released[r].wait(30)
                 conn.close()  # returned mid-transaction
+                released[r].set()
                 barrier.wait()  # both released before either borrows again
         except BaseException as exc:  # noqa: BLE001 -- surface any thread failure to the test
             errors.append(exc)
