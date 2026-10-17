@@ -547,3 +547,17 @@ tail. The model sees the same text order as the specification above; with no sho
 Amendment 9 (unit-tested). The few-shot rows carry an extra `ptoks` field in the shard files (the server's prompt token count) and
 `merge` drops it. The smoke also probes the longest and the most non-ASCII sealed reviews with the server prefix cache defeated
 (a leading marker line, which makes the count an upper bound) to apply the token budget rule above.
+
+Smoke result and decisions (recorded after the two discarded 20-item smokes and before the full run; no few-shot row has been scored).
+- Context budget: the largest prompt measured was 1143 tokens (cache-defeating probe on the ten longest or most non-ASCII sealed
+  reviews; the longest sealed review is under 1000 characters), so prompt plus 600 completion tokens is far below the 4096 context.
+  All 7 shots are kept; the reduction to 5 shots is not triggered.
+- JSON-mode rule: the first smoke (with `response_format`) returned 3 of 20 empty or unparseable answers, which is more than 2 and so
+  triggers the Amendment 9 fallback. All 3 completions stopped at exactly 600 completion tokens (reasoning consumed the budget, so the
+  content was empty): a token-cap truncation, not a JSON-mode non-compliance. As registered, the smoke was repeated WITHOUT
+  `response_format`: the same 3 items failed and every item's token count was identical to the first smoke, i.e. on this Ollama
+  build the request flag had no measurable effect. The registered rule is applied literally: the full run uses no `response_format`
+  and the extraction rule. The 600-token cap is NOT raised (same as the zero-shot arm); the truncation rate is reported and those
+  items score as wrong at confidence 0, which penalises the few-shot arm in a way the shots themselves do not cause.
+- Runtime: the smoke servers ran Ollama 0.40.5 (the zero-shot arm ran 0.40.3, "latest at run time"); the model digest equals the
+  registered manifest sha256. The version difference is disclosed in the report.
