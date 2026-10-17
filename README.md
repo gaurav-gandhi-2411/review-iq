@@ -243,7 +243,7 @@ n=70 reviews the prompt-development process had not seen; the 36 of 106 it had s
 
 Reproducible from the same committed cassettes, zero additional quota: `uv run python eval/analyze_coverage_metrics.py`.
 
-**The single headline claim this data supports** (Session 13 P1b — see [ADR 0027](docs/architecture/adr/0027-n23-discrepancy-resolved-and-headline-claim.md) for why a blended "rarely wrong when it commits" claim is not published):
+**The committed-answer claim this data supports** (Session 13 P1b — see [ADR 0027](docs/architecture/adr/0027-n23-discrepancy-resolved-and-headline-claim.md) for why a blended "rarely wrong when it commits" claim is not published):
 
 <!-- METRICS:START:committed_accuracy_headline -->**When it commits to an answer, this model is correct 88.0% of the time for sentiment (95% CI 78.0%–96.0%, n=70 unseen reviews) and 70.6% of the time for buy-again (95% CI 47.1%–88.2%, n=70 unseen reviews) -- rates divergent enough that a single blended "rarely wrong when it commits" claim would misrepresent buy-again.** See [ADR 0027](docs/architecture/adr/0027-n23-discrepancy-resolved-and-headline-claim.md) for why this is reported per-field, never blended into one number, and for the separate (and separately true) abstention-rate figures.<!-- METRICS:END -->
 
@@ -414,7 +414,7 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 **Phase 2.1** ✓ (shipped June 2026 — v0.5.0):
 - Provider abstraction — Python `Protocol`-based adapter layer; `GroqProvider` and `SecondaryProvider` with `assert_privacy_safe()` enforcement
 - SecondaryProvider failover — configurable fallback when Groq exhausts; `trains_on_input=True` providers rejected in code on the org-key path
-- Tiered router — small model (llama-3.1-8b-instant) for en/hi, large model (llama-3.3-70b-versatile) for hi-en and escalations; escalation triggers: schema validation failure, low confidence (<0.6), star/sentiment signal mismatch
+- Tiered router — every language starts on the small model (`openai/gpt-oss-20b`) and escalates to the large model (`openai/gpt-oss-120b`) on a trigger (at v0.5.0 the models were llama-3.1-8b-instant / llama-3.3-70b-versatile, retired 2026-08-16); escalation triggers: schema validation failure, low confidence (<0.6), star/sentiment signal mismatch
 - Routed eval (v0.5.0, prompt v2.1): <!-- METRICS:HISTORICAL -->84.4% overall (86.3% en / 83.2% hi-en / 80.7% hi)<!-- /METRICS:HISTORICAL -->; tiered routing was OFF by default at this point, pending that release's overall-accuracy gate. **Correction (2026-07-30):** tiered routing is now ON by default in production (`ENABLE_TIERED_ROUTING` defaults `true`, no override in CI or Cloud Run) — this bullet describes v0.5.0's ship-time state only; see [Eval results](#eval-results) for current status.
 - Prometheus metrics: tier distribution, escalation rate, per-tier token counts, failover count
 
