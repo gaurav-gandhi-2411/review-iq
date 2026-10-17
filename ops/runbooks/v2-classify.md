@@ -1,4 +1,24 @@
-# POST /v2/classify runbook (S24 A6) -- built, OFF, not deployed
+# POST /v2/classify runbook (S24 A6, updated S25) -- built, OFF, not deployed
+
+## S25 update: the served model is now static-int8 on ONNX Runtime (supersedes the torch sections below)
+
+Why: torch dynamic int8 picks activation scales per batch, so scoring one review at a time flipped 166 of 3028 sealed decisions
+(answer versus abstain) relative to the batch-128 offline evaluation. Static quantisation fixes the scales from TRAINING-text
+calibration, so a review's result no longer depends on its batch-mates. Method, the pre-registered criteria and the post-hoc
+Addendum 1 (the three registered candidates missed their 0.90 validation threshold; the second feed-forward MatMul was the cause;
+mixed precision m1 chosen on VALIDATION only): `docs/specs/review-intent-serving.md`. Numbers: `reports/serving/v2_classify_onnx.{md,json}`.
+
+- Artifacts under `CLASSIFY_ARTIFACT_DIR`: `model.onnx` (415 MB) and `hf/tokenizer.json`. `model.onnx` present selects the ONNX backend and
+  `app/core/classify/thresholds_run2_onnx_static_int8.json` (refit on validation for this model); otherwise the torch backend as before.
+- Image: `Dockerfile.classify` (onnxruntime 1.31.0, tokenizers 0.22.2, no torch/transformers). Build with
+  `--build-context artifacts=D:/ml-cache/s25/classify_artifacts_onnx`. Rebuild the model with `scripts/onnx_static_quantize.py`, score with
+  `scripts/onnx_eval.py`, write pred files with `scripts/onnx_pred_files.py`, thresholds with `scripts/build_classify_thresholds.py --variant onnx_static_int8`.
+- Threads: ONNX Runtime sizes its pool from the host's cores, not the CPU quota; the backend reads the cgroup quota
+  (`cgroup_cpus`). Without it a 1 vCPU container measured over a second per review. `CLASSIFY_TORCH_THREADS` (name kept) overrides.
+- Measured locally (Docker, 1 vCPU, 1 GiB, loaded workstation, NOT Cloud Run): fits without OOM, peak RSS about 0.9 GB of 1.07 GB, so
+  co-hosting inside the existing 1Gi service leaves almost no headroom for that service's own work; a separate 1Gi service is the
+  minimum, 2Gi is the comfortable choice. Cloud Run behaviour remains unmeasured (BELIEVED).
+- The 1 GiB question is answered for the container, not for the shared `review-iq` service.
 
 Status: the endpoint exists on `main` behind `ENABLE_V2_CLASSIFY` (default false: the route answers 404 `Not found.` to
 everyone, before auth, like the other flagged v2 endpoints). Nothing in this change deploys it, edits a workflow, or sets the
