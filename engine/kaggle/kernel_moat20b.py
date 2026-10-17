@@ -22,6 +22,7 @@ import urllib.request
 BRANCH = "__BRANCH__"
 MODE = "__MODE__"
 ARM = "__ARM__"
+NO_JSON_MODE = "__NOJSON__" == "1"  # Amendment 9 fallback: rerun without response_format
 BUDGET_S = float("__BUDGET_H__") * 3600
 MODEL = "gpt-oss:20b"
 REPO = "https://github.com/gaurav-gandhi-2411/review-iq.git"
@@ -31,7 +32,7 @@ OLLAMA_DIR = pathlib.Path("/opt/ollama")
 MODELS = "/tmp/ollama_models"  # one shared, read-only-in-use model store for both servers
 PORT = {0: 11434, 1: 11435}
 T0 = time.time()
-status: dict = {"mode": MODE, "arm": ARM, "model_tag": MODEL}
+status: dict = {"mode": MODE, "arm": ARM, "model_tag": MODEL, "no_json_mode": NO_JSON_MODE}
 
 
 def sh(cmd, **kw):
@@ -169,6 +170,8 @@ try:
     args += ["--model", MODEL, "--budget-h", str(BUDGET_S / 3600)]
     if shots_file:
         args += ["--shots", shots_file]
+    if NO_JSON_MODE:
+        args += ["--no-json-mode"]
     if MODE == "smoke":
         args += ["--limit", "20"]
     r = subprocess.run(

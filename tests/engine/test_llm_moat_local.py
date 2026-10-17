@@ -245,7 +245,11 @@ def test_push_build_fills_every_placeholder_and_compiles():
     for arm in ("zeroshot", "fewshot"):
         src = P.build("some-branch", "smoke", 1.5, arm)
         assert "__" not in "".join(
-            f for f in ("__BRANCH__", "__MODE__", "__BUDGET_H__", "__ARM__") if f in src
+            f
+            for f in ("__BRANCH__", "__MODE__", "__BUDGET_H__", "__ARM__", "__NOJSON__")
+            if f in src
         )
         assert f'ARM = "{arm}"' in src and 'BRANCH = "some-branch"' in src
         compile(src, "kernel.py", "exec")
+    assert 'NO_JSON_MODE = "1" == "1"' in P.build("b", "full", 1.0, "fewshot", True)
+    assert 'NO_JSON_MODE = "0" == "1"' in src
