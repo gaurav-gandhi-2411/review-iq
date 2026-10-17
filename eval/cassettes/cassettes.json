@@ -144,6 +144,11 @@
     "tokens_in": 1628,
     "tokens_out": 118
   },
+  "21d917d97545c0d53ba58004e2e188f705c1c3ae42420ff2cbc40d9c5c9e420e": {
+    "raw": "{\"reply_text\":\"\u0939\u092e \u0906\u092a\u0915\u0947 \u0905\u0928\u0941\u092d\u0935 \u0915\u094b \u0928\u094b\u091f \u0915\u0930 \u0930\u0939\u0947 \u0939\u0948\u0902\u0964 \u0915\u0943\u092a\u092f\u093e \u0905\u092a\u0928\u0947 \u0911\u0930\u094d\u0921\u0930 \u0935\u093f\u0935\u0930\u0923 \u0915\u0947 \u0938\u093e\u0925 \u0939\u092e\u093e\u0930\u0947 \u0938\u092a\u094b\u0930\u094d\u091f \u091f\u0940\u092e \u0938\u0947 \u0938\u0902\u092a\u0930\u094d\u0915 \u0915\u0930\u0947\u0902, \u0924\u093e\u0915\u093f \u0939\u092e \u092c\u0948\u091f\u0930\u0940 \u0932\u093e\u0907\u092b \u0915\u0940 \u0938\u092e\u0938\u094d\u092f\u093e \u0915\u094b \u0926\u0947\u0916 \u0938\u0915\u0947\u0902\u0964 \u0906\u092a [your support contact] \u092a\u0930 \u0938\u0902\u092a\u0930\u094d\u0915 \u0915\u0930 \u0938\u0915\u0924\u0947 \u0939\u0948\u0902\u0964\"}",
+    "tokens_in": 1119,
+    "tokens_out": 396
+  },
   "2202dc9ba32afe898252d9541edad3a325c1be133260d05b21214bb74b96a3b1": {
     "raw": "{\"product\":\"vacuum cleaner\",\"stars\":null,\"stars_inferred\":4,\"pros\":[\"excellent suction\",\"fast cleaning\"],\"cons\":[\"weak battery life\",\"high price\"],\"buy_again\":true,\"sentiment\":\"positive\",\"topics\":[\"suction\",\"battery_life\",\"price\",\"cleaning_speed\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"hi\",\"confidence\":0.9}",
     "tokens_in": 943,
@@ -258,6 +263,11 @@
     "raw": "{\n  \"product\": \"this product\",\n   \"stars\": null,\n   \"stars_inferred\": 1,\n   \"pros\": [],\n   \"cons\": [\"not charging\", \"cheap quality\"],\n   \"buy_again\": false,\n   \"sentiment\": \"negative\",\n   \"topics\": [\"charging\", \"quality\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"high\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
     "tokens_in": 1681,
     "tokens_out": 105
+  },
+  "3e7332dfa175d1df776e5758b69a8ce519aa4f185e30b156480fe4ce63a84c00": {
+    "raw": "{\"reply_text\":\"\u0939\u092e\u0947\u0902 \u092c\u0939\u0941\u0924 \u0916\u0947\u0926 \u0939\u0948 \u0915\u093f \u0906\u092a\u0915\u093e \u092a\u094d\u0930\u094b\u0921\u0915\u094d\u091f \u090f\u0915 \u0939\u092b\u094d\u0924\u0947 \u092e\u0947\u0902 \u0939\u0940 \u0916\u0930\u093e\u092c \u0939\u094b \u0917\u092f\u093e \u0914\u0930 \u0917\u0941\u0923\u0935\u0924\u094d\u0924\u093e \u0906\u092a\u0915\u0947 \u0905\u092a\u0947\u0915\u094d\u0937\u093e \u092a\u0930 \u0916\u0930\u093e \u0928\u0939\u0940\u0902 \u0909\u0924\u0930\u093e\u0964 \u092f\u0939 \u0939\u092e\u093e\u0930\u0947 \u092e\u093e\u0928\u0915\u094b\u0902 \u0915\u0947 \u0905\u0928\u0941\u0930\u0942\u092a \u0928\u0939\u0940\u0902 \u0925\u093e\u0964 \u0915\u0943\u092a\u092f\u093e \u0939\u092e\u093e\u0930\u0947 \u0938\u092a\u094b\u0930\u094d\u091f \u091f\u0940\u092e \u0938\u0947 \u0938\u0902\u092a\u0930\u094d\u0915 \u0915\u0930\u0947\u0902, \u0939\u092e \u0907\u0938 \u0938\u092e\u0938\u094d\u092f\u093e \u0915\u094b \u0938\u092e\u091d\u0915\u0930 \u0906\u092a\u0915\u0947 \u0938\u093e\u0925 \u0938\u092e\u093e\u0927\u093e\u0928 \u0915\u0940 \u0926\u093f\u0936\u093e \u092e\u0947\u0902 \u0915\u093e\u092e \u0915\u0930\u0947\u0902\u0917\u0947\u0964\"}",
+    "tokens_in": 1104,
+    "tokens_out": 742
   },
   "3eab160839058dfee910da1bfdc95650ac9d25a57fb3e38a9d16907e889955e2": {
     "raw": "{\n  \"product\": \"noise cancellation earphone\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\"excellent performance\", \"good passive noise cancellation\", \"can be worn while studying\"],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\"performance\", \"noise_cancellation\", \"portability\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.95\n}",
@@ -444,6 +454,11 @@
     "tokens_in": 1682,
     "tokens_out": 125
   },
+  "64180df358d96e62cf604f45236af595e8a8c2094fd82455ea39b08d526fa89c": {
+    "raw": "{\"reply_text\":\"Khed hai ki aapko aisa anubhav hua. The product you received was defective and stopped working after just one week, which is unacceptable. Please reach out to us so we can look into this issue and work with you to resolve it.\"}",
+    "tokens_in": 1092,
+    "tokens_out": 271
+  },
   "64ade6320e8c0cb89d1560ddac32487697ff82d38229435eea5cc7a3d282a483": {
     "raw": "{\"product\":\"FreshBreeze air cooler\",\"stars\":null,\"stars_inferred\":5,\"pros\":[\"works well for small rooms\",\"cools down in 10 minutes\",\"water tank is easy to fill\"],\"cons\":[],\"buy_again\":true,\"sentiment\":\"positive\",\"topics\":[\"performance\",\"water_tank\",\"room_size\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
     "tokens_in": 1717,
@@ -468,6 +483,11 @@
     "raw": "{\n  \"product\": \"Portronics sound\",\n   \"stars\": null,\n   \"stars_inferred\": 3,\n   \"pros\": [\"good sound\"],\n   \"cons\": [\"no bluetooth\"],\n   \"buy_again\": null,\n   \"sentiment\": \"neutral\",\n   \"topics\": [\"sound_quality\", \"bluetooth\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [\"add bluetooth\"],\n   \"language\": \"hi\",\n   \"confidence\": 0.85\n}",
     "tokens_in": 896,
     "tokens_out": 110
+  },
+  "67acd0aab454a91222183aaf4576e3ccc35b1845bd994bebb097c6c99cc1691c": {
+    "raw": "{\"reply_text\":\"\u0939\u092e\u0928\u0947 \u0906\u092a\u0915\u093e \u092b\u0940\u0921\u092c\u0948\u0915 \u0928\u094b\u091f \u0915\u093f\u092f\u093e \u0939\u0948\u0964 \u0915\u0943\u092a\u092f\u093e \u0905\u092a\u0928\u0947 \u0911\u0930\u094d\u0921\u0930 \u0935\u093f\u0935\u0930\u0923 \u0939\u092e\u093e\u0930\u0947 \u0938\u092a\u094b\u0930\u094d\u091f \u091f\u0940\u092e \u0915\u094b \u092d\u0947\u091c\u0947\u0902, \u0924\u093e\u0915\u093f \u0939\u092e \u0938\u094d\u0925\u093f\u0924\u093f \u0915\u0940 \u091c\u093e\u0901\u091a \u0915\u0930 \u0938\u0915\u0947\u0902\u0964 \u0906\u092a [your support contact] \u0938\u0947 \u0938\u0902\u092a\u0930\u094d\u0915 \u0915\u0930 \u0938\u0915\u0924\u0947 \u0939\u0948\u0902\u0964\"}",
+    "tokens_in": 1125,
+    "tokens_out": 325
   },
   "67ef776fba793ac4001a9d2149912a60f975c3a40cd256953b7a25d0ff9d00c8": {
     "raw": "{\n  \"product\": \"headphones\",\n   \"stars\": 10,\n   \"stars_inferred\": 5,\n   \"pros\": [\"great quality\"],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\"overall_quality\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
@@ -529,6 +549,11 @@
     "tokens_in": 1655,
     "tokens_out": 94
   },
+  "75e278d57bce3211ae481352974525505990f860be0b0b98046e0a8f60dfb053": {
+    "raw": "{\"reply_text\":\"\u092f\u0939 \u092c\u093f\u0932\u094d\u0915\u0941\u0932 \u0928\u0939\u0940\u0902 \u0939\u094b\u0928\u093e \u091a\u093e\u0939\u093f\u090f \u0925\u093e\u0964 \u0939\u092e\u0947\u0902 \u092c\u0939\u0941\u0924 \u0905\u092b\u093c\u0938\u094b\u0938 \u0939\u0948 \u0915\u093f \u092a\u0948\u0915\u0947\u091c\u093f\u0902\u0917 \u0916\u0930\u093e\u092c \u0925\u0940 \u0914\u0930 \u092a\u094d\u0930\u094b\u0921\u0915\u094d\u091f \u091f\u0942\u091f\u093e \u0939\u0941\u0906 \u0906\u092f\u093e\u0964 \u0939\u092e \u0907\u0938 \u0938\u092e\u0938\u094d\u092f\u093e \u0915\u094b \u0938\u0941\u0932\u091d\u093e\u0928\u0947 \u0915\u0947 \u0932\u093f\u090f \u0924\u0924\u094d\u092a\u0930 \u0939\u0948\u0902\u0964 \u0915\u0943\u092a\u092f\u093e \u0939\u092e\u093e\u0930\u0947 \u0917\u094d\u0930\u093e\u0939\u0915 \u0938\u092e\u0930\u094d\u0925\u0928 \u0938\u0947 \u0938\u0902\u092a\u0930\u094d\u0915 \u0915\u0930\u0947\u0902, \u0939\u092e \u0906\u092a\u0915\u0947 \u0938\u093e\u0925 \u0907\u0938 \u092e\u0941\u0926\u094d\u0926\u0947 \u0915\u094b \u0939\u0932 \u0915\u0930\u0947\u0902\u0917\u0947\u0964\"}",
+    "tokens_in": 1113,
+    "tokens_out": 615
+  },
   "76744fef2a37ce4abe8335c6a57beac94e71e9828e7012f5c89efa60ccbd93ac": {
     "raw": "{\n  \"product\": \"sound quality\",\n   \"stars\": null,\n   \"stars_inferred\": 1,\n   \"pros\": [],\n   \"cons\": [\n      \"irritating sound quality\",\n      \"annoying sound quality\",\n      \"sound disappears in between\",\n      \"old version\"\n   ],\n   \"buy_again\": false,\n   \"sentiment\": \"negative\",\n   \"topics\": [\n      \"sound_quality\",\n      \"delivery_service\"\n   ],\n   \"competitor_mentions\": [],\n   \"urgency\": \"high\",\n   \"feature_requests\": [],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.81\n}",
     "tokens_in": 1809,
@@ -553,6 +578,11 @@
     "raw": "{\n  \"product\": \"air purifier\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\n      \"fresh and clean air\",\n      \"incredibly quiet operation\",\n      \"easy setup\",\n      \"easy filter replacement\"\n   ],\n   \"cons\": [],\n   \"buy_again\": true,\n   \"sentiment\": \"positive\",\n   \"topics\": [\n      \"air_quality\",\n      \"noise\",\n      \"setup\",\n      \"filter\"\n   ],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.95\n}",
     "tokens_in": 1683,
     "tokens_out": 141
+  },
+  "82887a3cf4bd3310dd887e60f99a125674fbcae1dad187a767700d91f1c39ca9": {
+    "raw": "{\"reply_text\":\"We have noted your feedback regarding the damaged product and packaging. To address this, please share your order information with us so we can review the packaging process and the condition of the item. Kindly contact our support team at [your support contact] and we will look into this promptly.\"}",
+    "tokens_in": 1107,
+    "tokens_out": 343
   },
   "82c617ad4f1be096eef1dda48fd8a572c45ff8a7b874e64a23cb241ea0fdc4d4": {
     "raw": "{\n  \"product\": \"Product\",\n   \"stars\": null,\n   \"stars_inferred\": 5,\n   \"pros\": [\"amazing\", \"original\"],\n   \"cons\": [\"missing logo\"],\n   \"buy_again\": null,\n   \"sentiment\": \"positive\",\n   \"topics\": [\"product\", \"design\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
@@ -739,6 +769,11 @@
     "tokens_in": 1703,
     "tokens_out": 106
   },
+  "acdf8d45ef9808b9e6ca1cf7eda727648674a8b240237b7fe289e16aa2f4aee7": {
+    "raw": "{\"reply_text\":\"Hi, we\u2019re sorry to hear that the battery life didn\u2019t meet your expectations and that it only lasts about two hours. We understand how frustrating that can be, especially given the price. Your feedback about battery performance and value is important to us. Please reach out to us so we can learn more about your experience and see how we can assist. Thank you for bringing this to our attention.\"}",
+    "tokens_in": 1111,
+    "tokens_out": 414
+  },
   "ad3a5a7de3c43c5c7b9cf6589aafc62585777257119adc5ea0534d247b9755ec": {
     "raw": "{\n  \"product\": \"general product\",\n   \"stars\": null,\n   \"stars_inferred\": 3,\n   \"pros\": [\"good product quality\"],\n   \"cons\": [\"late delivery\", \"slow delivery\", \"delivery boy doesn't come to door\"],\n   \"buy_again\": null,\n   \"sentiment\": \"negative\",\n   \"topics\": [\"product_quality\", \"delivery_service\", \"delivery_speed\", \"customer_service\"],\n   \"competitor_mentions\": [],\n   \"urgency\": \"medium\",\n   \"feature_requests\": [],\n   \"language\": \"hi-en\",\n   \"confidence\": 0.88\n}",
     "tokens_in": 1797,
@@ -914,6 +949,11 @@
     "tokens_in": 1663,
     "tokens_out": 108
   },
+  "da37951bccfb8a9eccb6fe55610de66623d82f75040210e080995e47090850c0": {
+    "raw": "{\"reply_text\":\"Yeh bilkul nahi hona chahiye tha. We sincerely apologize for the delay in delivering your order, the lack of tracking updates, and the missing response from our customer support team. We understand how frustrating this experience has been. Please reach out to us so we can investigate further and work towards a resolution. We will follow up with you soon.\\n\\nWarm regards, Customer Care Team\"}",
+    "tokens_in": 1110,
+    "tokens_out": 417
+  },
   "dbbae19ca415d511ff66bc7a0b919ea872a09727a7f3c43f688df49fe0e25eeb": {
     "raw": "{\"product\":\"FitBand Lite\",\"stars\":null,\"stars_inferred\":3,\"pros\":[\"battery lasts about 7 days\",\"price is fair for what you get\"],\"cons\":[],\"buy_again\":null,\"sentiment\":\"neutral\",\"topics\":[\"battery\",\"price\",\"steps\",\"sleep\",\"heart_rate\"],\"competitor_mentions\":[],\"urgency\":\"low\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.9}",
     "tokens_in": 1717,
@@ -993,6 +1033,11 @@
     "raw": "{\"product\":\"CoolAir AC unit\",\"stars\":0,\"stars_inferred\":1,\"pros\":[],\"cons\":[\"caught fire after 3 days\",\"smoke damage to living room\",\"dangerous product\",\"legal action taken\",\"refund demanded\"],\"buy_again\":false,\"sentiment\":\"negative\",\"topics\":[\"fire\",\"damage\",\"safety\",\"legal_action\",\"refund\"],\"competitor_mentions\":[],\"urgency\":\"high\",\"feature_requests\":[],\"language\":\"en\",\"confidence\":0.95}",
     "tokens_in": 1721,
     "tokens_out": 1534
+  },
+  "ed487bbf57805daa9e45bc1fb2cd6f8c0746048d75e9fb6f03800d3e1c18fc4f": {
+    "raw": "{\"reply_text\":\"Hey, I\u2019m really sorry to hear you had trouble getting through. I understand calling three times and sending two emails without a response is frustrating. We aim to be more responsive, and we\u2019d like to look into what happened. Could you please reach out to us at [your support contact] so we can sort this out together? Thanks for letting us know, and we hope to make things right.\"}",
+    "tokens_in": 1130,
+    "tokens_out": 419
   },
   "edeef2bf1a4845d32efd67d6b724ea78486322b11b6aad11f8295bd23789ae93": {
     "raw": "{\n  \"product\": \"product\",\n   \"stars\": null,\n   \"stars_inferred\": 4,\n   \"pros\": [\n      \"good product\",\n      \"good technology\",\n      \"attractive\"\n   ],\n   \"cons\": [],\n   \"buy_again\": null,\n   \"sentiment\": \"positive\",\n   \"topics\": [\n      \"technology\",\n      \"design\"\n   ],\n   \"competitor_mentions\": [],\n   \"urgency\": \"low\",\n   \"feature_requests\": [],\n   \"language\": \"en\",\n   \"confidence\": 0.8\n}",
