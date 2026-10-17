@@ -32,7 +32,9 @@ def _sha(p: Path) -> str:
     return hashlib.sha256(p.read_bytes()).hexdigest()
 
 
-def build(pred_dir: Path, labels_path: Path, eval_path: Path) -> dict:
+def build(
+    pred_dir: Path, labels_path: Path, eval_path: Path, variant: str = "int8_ffn_full"
+) -> dict:
     """Thresholds document for the four core tasks (values are python floats, serialised with their shortest repr)."""
     labels = json.loads(labels_path.read_text(encoding="utf-8"))
     ev = json.loads(eval_path.read_text(encoding="utf-8"))
@@ -62,7 +64,7 @@ def build(pred_dir: Path, labels_path: Path, eval_path: Path) -> dict:
             "n_validation_labelled": int(len(yv)),
         }  # fmt: skip
     return {
-        "schema": 1, "run": "run2", "variant": "int8_ffn_full", "max_len": 128, "head_outputs": head_outputs,
+        "schema": 1, "run": "run2", "variant": variant, "max_len": 128, "head_outputs": head_outputs,
         "decision": {
             "mode": "threshold",
             "abstention": f"max calibrated softmax < abstain_below -> 'abstained' (conservative rule, target {TARGET}); "
@@ -83,8 +85,9 @@ def main() -> None:
     ap.add_argument("--labels", default="reports/intent/labels/labels.json")
     ap.add_argument("--eval", required=True)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--variant", default="int8_ffn_full")
     a = ap.parse_args()
-    doc = build(Path(a.pred_dir), Path(a.labels), Path(a.eval))
+    doc = build(Path(a.pred_dir), Path(a.labels), Path(a.eval), a.variant)
     Path(a.out).write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
     print("wrote", a.out)
 

@@ -58,7 +58,7 @@ candidates, validation only: d1 quantises only the second feed-forward MatMul of
 activation) and d2 only the first (`intermediate/dense`). Results: d1 0.8571, d2 0.9880. The loss comes from the second feed-forward
 MatMul: per-tensor uint8 activation scales cannot cover the heavy-tailed GELU output.
 
-Post-hoc rule, fixed here before the per-layer numbers exist: score each layer's second feed-forward MatMul alone (the others fp32) on
+Post-hoc rule, fixed here before any per-layer number was read (the sensitivity run had already been started, its output not yet seen): score each layer's second feed-forward MatMul alone (the others fp32) on
 the same validation items; layers whose mean agreement is below 0.995 keep that MatMul in fp32. Candidate m1 = every first
 feed-forward MatMul quantised + the second feed-forward MatMul quantised in the layers that pass. m1 and d2 are both scored on
 validation; among candidates with mean validation agreement of at least 0.90 the smaller file wins if it is within 0.01 of the best

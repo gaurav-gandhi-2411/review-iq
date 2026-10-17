@@ -15,6 +15,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import os
 import threading
 import time
 from dataclasses import dataclass
@@ -29,6 +30,7 @@ from app.core.classify.errors import ClassifyUnavailableError
 
 log = structlog.get_logger(__name__)
 THRESHOLDS_PATH = Path(__file__).with_name("thresholds_run2_int8_ffn_full.json")
+THRESHOLDS_ONNX_PATH = Path(__file__).with_name("thresholds_run2_onnx_static_int8.json")
 TASKS = ("needs_action", "broad_intent", "sentiment", "urgency")
 ABSTAINED = "abstained"
 _GRID = 6  # offline probabilities (and the thresholds fitted on them) are on a 6-decimal grid; decide on the same grid
@@ -197,16 +199,99 @@ class TorchInt8Backend:
         return {t: np.concatenate([p[t] for p in parts]) for t in self._sizes}
 
 
+def cgroup_cpus(cpu_max: Path = Path("/sys/fs/cgroup/cpu.max")) -> int:
+    """CPUs this container may use: the cgroup-v2 quota (rounded up), else the process affinity, else 1."""
+    try:
+        quota, period = cpu_max.read_text(encoding="utf-8").split()[:2]
+        if quota != "max":
+            return max(1, math.ceil(int(quota) / int(period)))
+    except (OSError, ValueError):
+        pass
+    try:
+        return max(1, len(os.sched_getaffinity(0)))
+    except AttributeError:  # not available on Windows/macOS
+        return max(1, os.cpu_count() or 1)
+
+
+class OnnxBackend:
+    """Static-int8 ONNX model (docs/specs/review-intent-serving.md): `<dir>/model.onnx` + `<dir>/hf/tokenizer.json`.
+
+    ONNX Runtime and the `tokenizers` library only (no torch, no transformers). Activation scales are fixed at export from
+    calibration data, so a review's logits do not depend on its batch-mates; the endpoint still runs one review per forward,
+    which also avoids padding."""
+
+    def __init__(self, artifact_dir: Path, th: Thresholds, threads: int = 0) -> None:
+        model, tok = artifact_dir / "model.onnx", artifact_dir / "hf" / "tokenizer.json"
+        if not model.is_file() or not tok.is_file():
+            raise ClassifyUnavailableError(
+                "classify_artifacts_missing", f"model artifacts not found under {artifact_dir}"
+            )
+        try:
+            import onnxruntime as ort
+            from tokenizers import Tokenizer
+        except ImportError as e:
+            raise ClassifyUnavailableError(
+                "classify_runtime_missing", f"onnxruntime/tokenizers not installed: {e}"
+            ) from e
+        so = ort.SessionOptions()
+        # ONNX Runtime sizes its pool from the host's cores, not the container's CPU quota; with 16 visible cores and a 1 vCPU
+        # quota the extra threads only get throttled (measured: >1 s per review instead of tens of ms).
+        so.intra_op_num_threads = threads or cgroup_cpus()
+        so.inter_op_num_threads = 1
+        # Arena and memory-pattern caching trade resident memory for speed; a small container prefers the memory.
+        so.enable_cpu_mem_arena = False
+        so.enable_mem_pattern = False
+        so.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+        self._sess = ort.InferenceSession(str(model), so, providers=["CPUExecutionProvider"])
+        self._tok = Tokenizer.from_file(str(tok))
+        self._tok.enable_truncation(max_length=th.max_len)
+        self._sizes = {t: len(s.classes) for t, s in th.tasks.items()}
+        self._lock = threading.Lock()
+
+    def token_ids(self, text: str) -> list[int]:
+        return self._tok.encode(text).ids
+
+    def logits_batched(self, texts: list[str], batch: int) -> dict[str, np.ndarray]:
+        """Forward in padded batches of `batch` (the parity check compares this with one review per forward)."""
+        out: dict[str, list[np.ndarray]] = {t: [] for t in self._sizes}
+        self._tok.enable_padding(pad_id=1, pad_token="<pad>")  # xlm-roberta pad id
+        for k in range(0, len(texts), batch):
+            enc = self._tok.encode_batch(texts[k : k + batch])
+            feed = {
+                "input_ids": np.array([e.ids for e in enc], dtype=np.int64),
+                "attention_mask": np.array([e.attention_mask for e in enc], dtype=np.int64),
+            }
+            with self._lock:
+                lg = self._sess.run(["logits"], feed)[0].astype(np.float32)
+            i = 0
+            for t, n in self._sizes.items():
+                out[t].append(lg[:, i : i + n])
+                i += n
+        return {t: np.concatenate(v) for t, v in out.items()}
+
+    def logits(self, texts: list[str]) -> dict[str, np.ndarray]:
+        parts = [self.logits_batched([x], 1) for x in texts]
+        return {t: np.concatenate([p[t] for p in parts]) for t in self._sizes}
+
+
 _state: dict[str, Any] = {}
 _state_lock = threading.Lock()
 
 
 def get_backend(artifact_dir: str, threads: int = 0) -> tuple[LogitsBackend, Thresholds]:
-    """Lazily load the model once per process. Raises ClassifyUnavailableError (-> 503) if it cannot be served."""
+    """Lazily load the model once per process. Raises ClassifyUnavailableError (-> 503) if it cannot be served.
+
+    `model.onnx` in the artifact directory selects the ONNX backend and its thresholds; otherwise the torch dynamic-int8 backend
+    (`model_int8.pt`) is used, as in the first build."""
     with _state_lock:
         if "backend" not in _state:
-            t0, th = time.perf_counter(), load_thresholds()
-            _state["backend"], _state["th"] = TorchInt8Backend(Path(artifact_dir), th, threads), th
+            t0, d = time.perf_counter(), Path(artifact_dir)
+            if (d / "model.onnx").is_file():
+                th = load_thresholds(THRESHOLDS_ONNX_PATH)
+                _state["backend"], _state["th"] = OnnxBackend(d, th, threads), th
+            else:
+                th = load_thresholds()
+                _state["backend"], _state["th"] = TorchInt8Backend(d, th, threads), th
             log.info(
                 "classify.model_loaded", load_s=round(time.perf_counter() - t0, 2), threads=threads
             )

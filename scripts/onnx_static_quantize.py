@@ -32,6 +32,12 @@ VARIANTS = {
     # post-hoc diagnostics, added after s1-s3 all missed the 0.90 validation threshold (spec: Addendum 1); chosen on validation only
     "d1_ffn_out_minmax": {"scope": "ffn_out", "method": "minmax"},
     "d2_ffn_in_minmax": {"scope": "ffn_in", "method": "minmax"},
+    # Addendum 1 post-hoc rule: second FFN MatMul quantised only in layers whose single-layer validation agreement was >= 0.995
+    "m1_ffn_in_plus_safe_out": {
+        "scope": "ffn_in",
+        "method": "minmax",
+        "plus": {"scope": "ffn_out", "skip_layers": [2, 3, 4, 5, 6, 7, 8]},
+    },
 }
 
 
@@ -85,7 +91,10 @@ def embed_int8(src: Path, dst: Path) -> dict:
     name = gather.input[0]
     m.graph.initializer.remove(inits[name])
     m.graph.initializer.extend(
-        [numpy_helper.from_array(q, name + "_q"), numpy_helper.from_array(scale.astype(np.float32), name + "_scale")]
+        [
+            numpy_helper.from_array(q, name + "_q"),
+            numpy_helper.from_array(scale.astype(np.float32), name + "_scale"),
+        ]
     )
     ids, out = gather.input[1], gather.output[0]
     axes = numpy_helper.from_array(np.array([-1], dtype=np.int64), name + "_ax")
@@ -102,7 +111,10 @@ def embed_int8(src: Path, dst: Path) -> dict:
     for k, n in enumerate(new):
         m.graph.node.insert(pos + k, n)
     onnx.save(m, str(dst))
-    return {"table_shape": list(table.shape), "max_abs_err": float(np.abs(q * scale[:, None] - table).max())}
+    return {
+        "table_shape": list(table.shape),
+        "max_abs_err": float(np.abs(q * scale[:, None] - table).max()),
+    }
 
 
 def pick_nodes(model_path: Path, scope: str, skip_layers: tuple[int, ...] = ()) -> list[str]:
@@ -203,13 +215,27 @@ def main() -> None:
     tok = AutoTokenizer.from_pretrained(a.hf)
     Tokenizer.from_file(str(a.hf / "tokenizer.json"))  # the serving image reads exactly this file
     ids, texts = calib_texts(a.texts, a.labels)
-    manifest = {"calibration_ids": ids, "n_calib": N_CALIB, "seed": SEED, "max_len": MAX_LEN, "embedding": info, "variants": {}}
+    manifest = {
+        "calibration_ids": ids,
+        "n_calib": N_CALIB,
+        "seed": SEED,
+        "max_len": MAX_LEN,
+        "embedding": info,
+        "variants": {},
+    }
     for name in a.variants.split(","):
         cfg = VARIANTS[name]
         nodes = pick_nodes(emb, cfg["scope"], tuple(cfg.get("skip_layers", ())))
+        if "plus" in cfg:
+            nodes += pick_nodes(emb, cfg["plus"]["scope"], tuple(cfg["plus"]["skip_layers"]))
         dst = a.out / f"model_{name}.onnx"
         quantize(emb, dst, nodes, cfg["method"], tok, texts)
-        manifest["variants"][name] = {**cfg, "n_quantized_matmuls": len(nodes), "bytes": dst.stat().st_size, "sha256": sha256(dst)}
+        manifest["variants"][name] = {
+            **cfg,
+            "n_quantized_matmuls": len(nodes),
+            "bytes": dst.stat().st_size,
+            "sha256": sha256(dst),
+        }
         print(name, len(nodes), "matmuls", round(dst.stat().st_size / 1e6, 1), "MB", flush=True)
     (a.out / "manifest.json").write_text(json.dumps(manifest, indent=1) + "\n", encoding="utf-8")
 

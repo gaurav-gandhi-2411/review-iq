@@ -1,6 +1,6 @@
 # Inference stack for Dockerfile.classify (NOT in pyproject/uv.lock: the default app image and CI do not need it).
-# Pinned to the versions the offline int8 evaluation and the parity check ran with (2026-10-17, torch 2.6.0 / transformers 4.57.6).
-# torch comes from the PyTorch CPU wheel index (no CUDA libraries).
-torch==2.6.0
-transformers==4.57.6
+# ONNX Runtime + the `tokenizers` library only: no torch, no transformers (docs/specs/review-intent-serving.md).
+# Pinned to the versions the offline evaluation and the sealed-set parity check ran with (2026-10-18).
+onnxruntime==1.31.0
+tokenizers==0.22.2
 numpy==2.4.4

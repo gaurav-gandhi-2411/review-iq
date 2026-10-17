@@ -28,26 +28,33 @@ from engine.intent.decide import decide
 from scripts.build_classify_thresholds import TASKS, build
 
 ROOT = Path(__file__).resolve().parents[1]
-PRED_DIR = ROOT / "reports/intent/run2_cpu/int8_ffn_full"
-EVAL = ROOT / "reports/intent/eval_run2_int8_ffn_full.json"
+CFGS = {
+    "torch": {"pred": ROOT / "reports/intent/run2_cpu/int8_ffn_full", "eval": ROOT / "reports/intent/eval_run2_int8_ffn_full.json", "variant": "int8_ffn_full", "thresholds": runtime.THRESHOLDS_PATH},
+    "onnx": {"pred": ROOT / "reports/intent/run2_cpu/onnx_static_int8", "eval": ROOT / "reports/intent/eval_run2_onnx_static_int8.json", "variant": "onnx_static_int8", "thresholds": runtime.THRESHOLDS_ONNX_PATH},
+}  # fmt: skip
+CFG = dict(CFGS["torch"])  # main() switches it with --backend
+
 LABELS = ROOT / "reports/intent/labels/labels.json"
 OFFLINE_BATCH = 128  # engine.intent.train.infer
 
 
 def thresholds_bit_for_bit() -> dict:
     """Committed thresholds file vs a fresh recomputation from the offline artifacts (exact equality of every value)."""
-    committed = json.loads(runtime.THRESHOLDS_PATH.read_text(encoding="utf-8"))
+    committed = json.loads(CFG["thresholds"].read_text(encoding="utf-8"))
     fresh = json.loads(
-        json.dumps(build(PRED_DIR, LABELS, EVAL))
+        json.dumps(build(CFG["pred"], LABELS, CFG["eval"], CFG["variant"]))
     )  # round-trip: same float repr as the file
-    return {"equal": committed == fresh, "committed_sha256": runtime.load_thresholds().sha256}
+    return {
+        "equal": committed == fresh,
+        "committed_sha256": runtime.load_thresholds(CFG["thresholds"]).sha256,
+    }
 
 
 def offline_decisions(th: runtime.Thresholds) -> tuple[list[str], dict[str, dict]]:
     """-> (test ids in pred-file order, task -> {probs, label list}) from the offline pred files."""
     out, ids = {}, None
     for t in TASKS:
-        d = json.loads((PRED_DIR / f"pred_{t}.json").read_text(encoding="utf-8"))
+        d = json.loads((CFG["pred"] / f"pred_{t}.json").read_text(encoding="utf-8"))
         ids = d["splits"]["test"]["ids"]
         spec = th.tasks[t]
         p = np.array(d["splits"]["test"]["probs"]).reshape(len(ids), len(spec.classes))
@@ -116,8 +123,11 @@ def run(artifacts: Path, texts_path: Path) -> dict:
     from engine.intent.labels import load_texts
     from engine.intent.llm_moat import sealed_ids
 
-    th = runtime.load_thresholds()
-    backend = runtime.TorchInt8Backend(artifacts, th)
+    th = runtime.load_thresholds(CFG["thresholds"])
+    onnx = CFG["variant"] == "onnx_static_int8"
+    backend = (
+        runtime.OnnxBackend(artifacts, th) if onnx else runtime.TorchInt8Backend(artifacts, th)
+    )
     ids, off = offline_decisions(th)
     sealed = set(sealed_ids())
     texts_by_id = load_texts(texts_path)
@@ -137,9 +147,34 @@ def run(artifacts: Path, texts_path: Path) -> dict:
         "served_per_item": lambda: backend.logits(texts),
         "batch_8": lambda: backend.logits_batched(texts, 8),
     }
+    if onnx:
+        # The ONNX reference (the pred files) is itself scored one review per forward with the transformers tokenizer, so
+        # `served_per_item` is the implementation parity (tokenizers library, runtime.py) and the padded batches test batch
+        # independence, the property the dynamic variant lacked.
+        runs = {
+            "served_per_item": runs["served_per_item"],
+            "padded_batches_128": runs["offline_batches"],
+            "batch_8": runs["batch_8"],
+        }
+        res["tokenization"] = tokenization_check(artifacts, backend, texts)
     for name, fn in runs.items():
         res["modes"][name] = compare(th, fn(), ids, sealed, off)
     return res
+
+
+def tokenization_check(artifacts: Path, backend: runtime.OnnxBackend, texts: list[str]) -> dict:
+    """Token ids from the `tokenizers` library (served) against the transformers tokenizer (offline), item by item."""
+    try:
+        from transformers import AutoTokenizer
+    except ImportError:
+        return {"checked": False, "reason": "transformers not installed"}
+    tok = AutoTokenizer.from_pretrained(artifacts / "hf")
+    bad = [
+        i
+        for i, t in enumerate(texts)
+        if backend.token_ids(t) != tok(t, truncation=True, max_length=128)["input_ids"]
+    ]
+    return {"checked": True, "n_texts": len(texts), "n_different": len(bad)}
 
 
 def main() -> None:
@@ -147,7 +182,9 @@ def main() -> None:
     ap.add_argument("--artifacts", required=True)
     ap.add_argument("--texts", required=True)
     ap.add_argument("--out")
+    ap.add_argument("--backend", choices=sorted(CFGS), default="torch")
     a = ap.parse_args()
+    CFG.update(CFGS[a.backend])
     res = run(Path(a.artifacts), Path(a.texts))
     for k, v in res["modes"].items():
         print(k, {x: v[x] for x in ("n_items", "n_mismatches", "max_abs_prob_diff")})

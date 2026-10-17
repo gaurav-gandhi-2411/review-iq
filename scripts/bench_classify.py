@@ -25,7 +25,7 @@ from pathlib import Path
 
 from app.core.classify import runtime
 
-from scripts.classify_parity import PRED_DIR, offline_decisions
+from scripts.classify_parity import CFG, CFGS, offline_decisions
 from scripts.classify_parity import TASKS as TASKS
 
 NAME = "a6-classify-bench"
@@ -86,7 +86,7 @@ def write(res: dict, out: str) -> None:
         "platform": platform.platform(),
         "note": "shared dev machine under load; latency pessimistic",
     }
-    res["pred_dir"] = str(PRED_DIR.relative_to(PRED_DIR.parents[3]))
+    res["pred_dir"] = str(CFG["pred"].relative_to(CFG["pred"].parents[3]))
     Path(out).write_text(json.dumps(res, indent=1) + "\n", encoding="utf-8")
     print(json.dumps({k: v for k, v in res.items() if k != "host"}, indent=1))
 
@@ -102,11 +102,13 @@ def main() -> None:
     ap.add_argument(
         "--quick", action="store_true", help="stop after the first request (memory probe)"
     )
+    ap.add_argument("--backend", choices=sorted(CFGS), default="torch")
     a = ap.parse_args()
     from engine.intent.labels import load_texts
     from engine.intent.llm_moat import sealed_ids
 
-    th = runtime.load_thresholds()
+    CFG.update(CFGS[a.backend])
+    th = runtime.load_thresholds(CFG["thresholds"])
     ids, off = offline_decisions(th)
     sealed = [i for i in ids if i in set(sealed_ids())]
     texts = load_texts(Path(a.texts))

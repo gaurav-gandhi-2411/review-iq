@@ -219,6 +219,62 @@ def test_null_abstention_threshold_means_always_abstain(tmp_path: Path) -> None:
     assert d[0]["urgency"]["label"] == "abstained" and d[0]["needs_action"]["label"] != "abstained"
 
 
+def test_onnx_thresholds_are_a_separate_validation_fit_for_the_same_tasks() -> None:
+    onnx_th = runtime.load_thresholds(runtime.THRESHOLDS_ONNX_PATH)
+    assert onnx_th.variant == "onnx_static_int8" and onnx_th.run == TH.run
+    assert (
+        onnx_th.sha256 != TH.sha256
+    )  # the static model is a different function: its thresholds are refit, not reused
+    for t in runtime.TASKS:
+        assert onnx_th.tasks[t].classes == TH.tasks[t].classes
+        assert 0 < onnx_th.tasks[t].abstain_below < 1
+
+
+def test_onnx_backend_typed_errors_when_artifacts_or_runtime_missing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from app.core.classify.errors import ClassifyUnavailableError
+
+    onnx_th = runtime.load_thresholds(runtime.THRESHOLDS_ONNX_PATH)
+    with pytest.raises(ClassifyUnavailableError) as e:
+        runtime.OnnxBackend(tmp_path, onnx_th)
+    assert e.value.code == "classify_artifacts_missing"
+    (tmp_path / "hf").mkdir()
+    (tmp_path / "model.onnx").write_bytes(b"x")
+    (tmp_path / "hf" / "tokenizer.json").write_text("{}", encoding="utf-8")
+    monkeypatch.setitem(sys.modules, "onnxruntime", None)  # an import of it now raises ImportError
+    with pytest.raises(ClassifyUnavailableError) as e:
+        runtime.OnnxBackend(tmp_path, onnx_th)
+    assert e.value.code == "classify_runtime_missing"
+
+
+def test_get_backend_prefers_onnx_when_model_onnx_exists(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    (tmp_path / "model.onnx").write_bytes(b"x")
+    seen: dict = {}
+
+    class Stub:
+        def __init__(self, d: Path, th: runtime.Thresholds, threads: int = 0) -> None:
+            seen["th"] = th
+
+    monkeypatch.setattr(runtime, "_state", {})
+    monkeypatch.setattr(runtime, "OnnxBackend", Stub)
+    backend, th = runtime.get_backend(str(tmp_path))
+    assert isinstance(backend, Stub) and th.variant == "onnx_static_int8" and seen["th"] is th
+
+
+def test_cgroup_cpus_reads_the_quota_and_falls_back(tmp_path: Path) -> None:
+    f = tmp_path / "cpu.max"
+    f.write_text("100000 100000\n", encoding="utf-8")
+    assert runtime.cgroup_cpus(f) == 1
+    f.write_text("250000 100000\n", encoding="utf-8")
+    assert runtime.cgroup_cpus(f) == 3  # rounded up
+    f.write_text("max 100000\n", encoding="utf-8")
+    assert runtime.cgroup_cpus(f) >= 1  # no quota: affinity
+    assert runtime.cgroup_cpus(tmp_path / "missing") >= 1
+
+
 def test_default_app_import_needs_neither_torch_nor_the_runtime() -> None:
     code = (
         "import sys, app.main; "

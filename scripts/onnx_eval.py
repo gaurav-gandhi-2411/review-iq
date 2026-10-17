@@ -48,8 +48,17 @@ def split(lg: np.ndarray) -> dict[str, np.ndarray]:
 def run_batches(sess, tok, texts: list[str], batch: int) -> dict[str, np.ndarray]:  # noqa: ANN001
     parts = []
     for k in range(0, len(texts), batch):
-        e = tok(texts[k : k + batch], padding=True, truncation=True, max_length=MAX_LEN, return_tensors="np")
-        feed = {"input_ids": e["input_ids"].astype(np.int64), "attention_mask": e["attention_mask"].astype(np.int64)}
+        e = tok(
+            texts[k : k + batch],
+            padding=True,
+            truncation=True,
+            max_length=MAX_LEN,
+            return_tensors="np",
+        )
+        feed = {
+            "input_ids": e["input_ids"].astype(np.int64),
+            "attention_mask": e["attention_mask"].astype(np.int64),
+        }
         parts.append(sess.run(["logits"], feed)[0].astype(np.float32))
     return split(np.concatenate(parts))
 
@@ -86,8 +95,14 @@ def main() -> None:
             lg = run_batches(sess, tok, texts, batch)
             for t, v in lg.items():
                 arrays[f"{s}/{mode}/{t}"] = v
-        agree = {t: float((arrays[f"{s}/b1/{t}"].argmax(1) == ref_probs(s, t).argmax(1)).mean()) for t in SERVED}
-        flips = {t: int((arrays[f"{s}/b1/{t}"].argmax(1) != arrays[f"{s}/b128/{t}"].argmax(1)).sum()) for t in SERVED}
+        agree = {
+            t: float((arrays[f"{s}/b1/{t}"].argmax(1) == ref_probs(s, t).argmax(1)).mean())
+            for t in SERVED
+        }
+        flips = {
+            t: int((arrays[f"{s}/b1/{t}"].argmax(1) != arrays[f"{s}/b128/{t}"].argmax(1)).sum())
+            for t in SERVED
+        }
         print(s, "argmax agreement with fp32 torch (batch 1):", {t: round(v, 4) for t, v in agree.items()},
               "mean", round(float(np.mean(list(agree.values()))), 4), "| argmax flips b1 vs b128:", flips, flush=True)  # fmt: skip
     np.savez(a.out, **arrays)
