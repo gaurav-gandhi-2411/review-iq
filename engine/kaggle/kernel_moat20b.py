@@ -24,6 +24,10 @@ MODE = "__MODE__"
 ARM = "__ARM__"
 NO_JSON_MODE = "__NOJSON__" == "1"  # Amendment 9 fallback: rerun without response_format
 BUDGET_S = float("__BUDGET_H__") * 3600
+MAX_TOKENS = "__MAXTOK__"  # spec Amendment 12; 600 and "none" reproduce Amendments 9 and 10
+EFFORT = "__EFFORT__"  # none | low | medium | high
+# Amendment 12 canary ladder, fixed before any rung runs: (reasoning effort, max_tokens); stop at the first rung with 0 empties.
+RUNGS = [("low", 1500), ("low", 2500), ("medium", 2900)]
 MODEL = "gpt-oss:20b"
 REPO = "https://github.com/gaurav-gandhi-2411/review-iq.git"
 W = pathlib.Path("/kaggle/working")
@@ -132,7 +136,7 @@ items_file = glob.glob("/kaggle/input/**/items.jsonl", recursive=True)[0]
 with open(items_file, encoding="utf-8") as fh:
     status["n_items"] = sum(1 for x in fh if x.strip())
 shots_file = None
-if ARM == "fewshot":
+if ARM in ("fewshot", "both"):
     shots_file = glob.glob("/kaggle/input/**/shots.jsonl", recursive=True)[0]
     with open(shots_file, encoding="utf-8") as fh:
         shot_rows = [json.loads(x) for x in fh if x.strip()]
@@ -174,11 +178,60 @@ try:
         args += ["--no-json-mode"]
     if MODE == "smoke":
         args += ["--limit", "20"]
-    r = subprocess.run(
-        [sys.executable, "-m", "engine.intent.llm_moat_local", "run", *args],
-        capture_output=True,
-        text=True,
+    gen = ["--max-tokens", MAX_TOKENS] + (
+        [] if EFFORT == "none" else ["--reasoning-effort", EFFORT]
     )
+    runner = [sys.executable, "-m", "engine.intent.llm_moat_local", "run"]
+    if (
+        MODE == "canary"
+    ):  # few-shot prompt, first 30 sealed items per rung; rows are discarded, only counts are kept
+        status["canary"] = []
+        for i, (eff, mt) in enumerate(RUNGS):
+            cdir = OUT / f"canary_L{i + 1}"
+            cargs = (
+                args[:2] + ["--out", str(cdir)] + args[4:] + ["--limit", "30", "--stem", "canary"]
+            )
+            cargs += ["--max-tokens", str(mt), "--reasoning-effort", eff]
+            cr = subprocess.run([*runner, *cargs], capture_output=True, text=True)
+            rows = [
+                json.loads(x)
+                for f in sorted((cdir / "shards").glob("*.jsonl"))
+                for x in f.read_text().splitlines()
+                if x.strip()
+            ]
+            rung = {
+                "rung": i + 1,
+                "effort": eff,
+                "max_tokens": mt,
+                "rc": cr.returncode,
+                "n": len(rows),
+            }
+            rung["empty"] = sum(r["ans"] is None for r in rows)
+            rung["mean_total_tokens"] = round(sum(r["tokens"] for r in rows) / max(1, len(rows)), 1)
+            rung["max_total_tokens"] = max((r["tokens"] for r in rows), default=0)
+            rung["finish_length"] = sum(r.get("fin") == "length" for r in rows)
+            status["canary"].append(rung)
+            if cr.returncode == 0 and rung["n"] == 30 and rung["empty"] == 0:
+                break
+        r = subprocess.CompletedProcess([], 0, "", "")
+    elif (
+        ARM == "both"
+    ):  # Amendment 12 full run: few-shot to the stopping rule, then zero-shot on the first 300 with identical settings
+        r = subprocess.run(
+            [*runner, *args, *gen, "--stem", "openai_gpt-oss-20b__local_fewshot_v2"],
+            capture_output=True, text=True,
+        )  # fmt: skip
+        status["fewshot_rc"] = r.returncode
+        status["fewshot_stdout_tail"] = r.stdout[-600:]
+        zargs = [
+            a for i, a in enumerate(args) if a != "--shots" and (i == 0 or args[i - 1] != "--shots")
+        ]
+        r = subprocess.run(
+            [*runner, *zargs, *gen, "--limit", "300", "--stem", "openai_gpt-oss-20b__local_v2"],
+            capture_output=True, text=True,
+        )  # fmt: skip
+    else:
+        r = subprocess.run([*runner, *args, *gen], capture_output=True, text=True)
     status["run_rc"] = r.returncode
     if (
         shots_file and MODE == "smoke"

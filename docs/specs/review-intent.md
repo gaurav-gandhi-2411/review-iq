@@ -606,3 +606,26 @@ tuned after seeing results; if the rule turns out badly chosen, that is reported
   confidences equal exactly 90 (copied from the shots); 27 of 300 few-shot and 6 of 300 zero-shot answers are empty or unparseable
   (600-token cap spent on reasoning) and count wrong at confidence 0; the two local arms ran different Ollama builds (0.40.5 vs 0.40.3);
   the Groq rows differ in infrastructure (runtime, quantisation, sampling).
+
+### Amendment 12 (2026-10-17, S25 moat): re-run of the 20b local arms with a token budget that does not truncate; registered before any v2 row exists
+
+Context: in Amendment 10's run 27 of 300 few-shot completions (and 6 of 300 zero-shot) ended at the 600-token cap with empty content,
+because gpt-oss spends completion tokens on reasoning before it answers. Those items score wrong at confidence 0, so the Amendment 10
+conclusion "few-shot is worse than zero-shot" mixes worse answers with empty answers and is NOT a finding about worked examples. This
+amendment re-runs both arms with settings chosen only by an empty-completion canary. The Amendment 10 and Amendment 9 results stay on
+file unchanged and are labelled "cap 600" wherever they are cited.
+
+- Canary (before any scored row): the few-shot prompt on the first 30 sealed items; the rows are discarded and only counts are kept. A
+  fixed ladder, stopping at the first rung with 0 empty or unparseable answers of 30: L1 reasoning effort low, max_tokens 1500; L2 low,
+  2500; L3 medium (the model default), 2900. Context stays 4096 (largest measured prompt 1143 tokens, so 1143 + 2900 fits). If no rung
+  reaches 0, the arm is reported as blocked, with the three rungs' counts, and nothing is run. The request field is `reasoning_effort`;
+  whether this Ollama build honours it is read from the mean completion tokens of L1 against L3 and reported (not assumed).
+- v2 runs, same model digest, Ollama build as installed at run time (recorded), temperature 0, seed 42, no `response_format` (as
+  Amendment 10), same 7 shots, same sealed order, with the canary's settings: (a) the few-shot arm under the Amendment 10 stopping rule
+  (n=300, then on unless all four tasks are decided), stem `openai_gpt-oss-20b__local_fewshot_v2`; (b) the zero-shot arm on the first 300
+  sealed items with IDENTICAL settings, stem `openai_gpt-oss-20b__local_v2`, so that the comparison varies only the shots.
+- Reported beside every result: number of empty or unparseable answers (and, for rows carrying `fin`, how many ended at the cap).
+- Comparisons: PRIMARY, few-shot v2 vs zero-shot v2 on matched ids (paired item-bootstrap, same statistics as Amendment 10); SECONDARY,
+  each v2 arm vs the encoder with the Amendment 10 interval rule; the v2 zero-shot vs the cap-600 zero-shot is reported as the size of the
+  truncation artefact. A difference is called only if the interval excludes zero. Labels are SILVER (four-judge panel consensus).
+- Not changed: shots, prompt, scoring, sealed set, the encoder's numbers. Amendment 11 (the compare rule) is registered separately.

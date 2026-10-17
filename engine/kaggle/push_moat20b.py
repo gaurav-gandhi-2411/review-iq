@@ -18,8 +18,9 @@ from pathlib import Path
 
 
 def build(
-    branch: str, mode: str, budget_h: float, arm: str = "zeroshot", no_json_mode: bool = False
-) -> str:
+    branch: str, mode: str, budget_h: float, arm: str = "zeroshot", no_json_mode: bool = False,
+    max_tokens: int = 600, effort: str = "none",
+) -> str:  # fmt: skip
     src = (Path(__file__).parent / "kernel_moat20b.py").read_text(encoding="utf-8")
     return (
         src.replace("__BRANCH__", branch)
@@ -27,6 +28,8 @@ def build(
         .replace("__BUDGET_H__", str(budget_h))
         .replace("__ARM__", arm)
         .replace("__NOJSON__", "1" if no_json_mode else "0")
+        .replace("__MAXTOK__", str(max_tokens))
+        .replace("__EFFORT__", effort)
     )
 
 
@@ -41,21 +44,24 @@ def metadata(slug: str, datasets: list[str]) -> dict:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", required=True, choices=["smoke", "full"])
+    ap.add_argument("--mode", required=True, choices=["smoke", "full", "canary"])
     ap.add_argument("--dataset", required=True)
     ap.add_argument("--prior", default="")
     ap.add_argument("--branch", default="main")
     ap.add_argument("--slug", required=True)
     ap.add_argument("--budget-hours", type=float, default=8.0)
-    ap.add_argument("--arm", choices=["zeroshot", "fewshot"], default="zeroshot")
+    ap.add_argument("--arm", choices=["zeroshot", "fewshot", "both"], default="zeroshot")
     ap.add_argument("--no-json-mode", action="store_true")
+    ap.add_argument("--max-tokens", type=int, default=600)
+    ap.add_argument("--effort", choices=["none", "low", "medium", "high"], default="none")
     a = ap.parse_args()
     if a.slug == a.dataset.split("/")[-1]:
         raise SystemExit("kernel slug must differ from the dataset slug")
     datasets = [a.dataset] + ([a.prior] if a.prior else [])
     with tempfile.TemporaryDirectory() as d:
         (Path(d) / "kernel.py").write_text(
-            build(a.branch, a.mode, a.budget_hours, a.arm, a.no_json_mode), encoding="utf-8"
+            build(a.branch, a.mode, a.budget_hours, a.arm, a.no_json_mode, a.max_tokens, a.effort),
+            encoding="utf-8",
         )
         meta = metadata(a.slug, datasets)
         (Path(d) / "kernel-metadata.json").write_text(json.dumps(meta, indent=1), encoding="utf-8")

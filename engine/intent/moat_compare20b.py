@@ -474,7 +474,20 @@ def _stats_table(res: dict) -> str:
     return "\n".join(rows)
 
 
-def render_md(res: dict) -> str:
+CAP600_NOTICE = (
+    "> **Read with Amendment 12.** Both local arms here ran with the 600-token cap: 27 of 300 few-shot and 6 of 300 zero-shot completions ended "
+    "empty (reasoning spent the budget) and count wrong. Any few-shot-versus-zero-shot difference below therefore mixes worse answers with "
+    "empty answers and is NOT a finding about worked examples. The re-run without that artefact is under `reports/intent/moat_local20b_fewshot_v2/`.\n"
+)
+V2_NOTICE = (
+    "> **Amendment 12 re-run.** Both local arms here ran with reasoning effort low and a 1500-token cap chosen by an empty-completion canary: 0 "
+    "empty or unparseable completions in every arm (counts in `run_status.json`). Reasoning effort low is itself a change from the earlier arms, "
+    "so the zero-shot arm here is re-run with identical settings and is the matched comparator for the few-shot arm; do not compare either arm "
+    "with the cap-600 report as if only the cap had changed.\n"
+)
+
+
+def render_md(res: dict, v2: bool = False) -> str:
     s = res["settings"]
     out = [
         "# gpt-oss-20b moat compare: encoder vs local zero-shot vs local few-shot\n",
@@ -482,9 +495,7 @@ def render_md(res: dict) -> str:
         "(computed from the artifacts listed in `moat_compare_20b.json` under `provenance`, with path, sha256 and git blob sha). Statements outside "
         "generated blocks that interpret results are marked BELIEVED. Decision rules: `docs/specs/review-intent.md`, Amendment 11 "
         "(registered and pushed before these numbers were computed). Aggregates only; no review text.\n",
-        "> **Read with Amendment 12.** Both local arms here ran with the 600-token cap: 27 of 300 few-shot and 6 of 300 zero-shot completions ended "
-        "empty (reasoning spent the budget) and count wrong. Any few-shot-versus-zero-shot difference below therefore mixes worse answers with "
-        "empty answers and is NOT a finding about worked examples. The re-run without that artefact is under `reports/intent/moat_local20b_fewshot_v2/`.\n",
+        V2_NOTICE if v2 else CAP600_NOTICE,
         "## Setup\n",
         "- Labels: four-judge panel consensus (SILVER), not human gold. Sample: the first 300 sealed ids in sealed order, MATCHED per task across all "
         "compared arms; a sample this small gives wide intervals and coverage at a precision floor is a knife-edge statistic.\n"
@@ -569,10 +580,13 @@ def main() -> int:
     ap.add_argument("--groq", type=Path, default=DEFAULTS["groq"])
     ap.add_argument("--out-json", type=Path, required=True)
     ap.add_argument("--out-md", type=Path, required=True)
+    ap.add_argument(
+        "--v2", action="store_true", help="the Amendment 12 re-run: replaces the cap-600 notice"
+    )
     a = ap.parse_args()
     res = build(a.zs, a.fs, a.groq)
     a.out_json.write_text(json.dumps(res, indent=1) + "\n", encoding="utf-8")
-    a.out_md.write_text(render_md(res), encoding="utf-8")
+    a.out_md.write_text(render_md(res, a.v2), encoding="utf-8")
     return 0
 
 
