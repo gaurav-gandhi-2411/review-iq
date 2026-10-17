@@ -159,6 +159,17 @@ class Settings(BaseSettings):
     # provider call.
     enable_reply_drafting: bool = Field(default=False, alias="ENABLE_REPLY_DRAFTING")
 
+    # POST /v2/classify (review-intent int8 model, app/api/v2/classify.py) -- OFF by default: 404 when off.
+    # Needs the model artifacts under CLASSIFY_ARTIFACT_DIR and torch+transformers in the image (Dockerfile.classify);
+    # without them the endpoint returns 503 `classify_artifacts_missing`. Runbook: ops/runbooks/v2-classify.md.
+    enable_v2_classify: bool = Field(default=False, alias="ENABLE_V2_CLASSIFY")
+    classify_artifact_dir: str = Field(
+        default="/app/artifacts/classify", alias="CLASSIFY_ARTIFACT_DIR"
+    )
+    classify_torch_threads: int = Field(
+        default=0, ge=0, alias="CLASSIFY_TORCH_THREADS"
+    )  # 0 = torch default
+
     # Tiered model names — both Groq (privacy-vetted)
     # Groq deprecated llama-3.1-8b-instant on 2026-08-16; openai/gpt-oss-20b is their
     # documented replacement, same fast/cheap tier (Item G1).
