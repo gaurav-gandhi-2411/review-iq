@@ -539,3 +539,11 @@ existed): recorded in the PR description and in `reports/intent/moat_local20b_fe
   never scored; JSON-mode fallback rule as Amendment 9.
 - Comparison targets: few-shot local vs zero-shot local (matched ids, paired differences of the same statistics) and vs the
   encoder, on the same labels (SILVER, four-judge panel consensus). No gate depends on the Groq cross-check.
+
+Implementation note (added with the code, still before any few-shot local row exists; no design change): `llm_moat.ask` builds a
+few-shot prompt by `str.replace` followed by `str.format`, which cannot work when the shots block contains the JSON braces that
+`shots_text` writes. The local runner therefore renders the prompt as head, shots block, `Review: <text up to 1500 characters>`,
+tail. The model sees the same text order as the specification above; with no shots the zero-shot prompt is byte-identical to
+Amendment 9 (unit-tested). The few-shot rows carry an extra `ptoks` field in the shard files (the server's prompt token count) and
+`merge` drops it. The smoke also probes the longest and the most non-ASCII sealed reviews with the server prefix cache defeated
+(a leading marker line, which makes the count an upper bound) to apply the token budget rule above.
