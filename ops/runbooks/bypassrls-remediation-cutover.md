@@ -145,7 +145,7 @@ Live query (read-only, run 2026-08-01) found **one existing `organization_member
 with 3 rows**, which statement 6's `UNIQUE (user_id)` constraint would reject outright:
 
 ```
-user_id 521b043b-f442-435a-ada6-6c8d69f804eb (gg5678g@gmail.com):
+user_id 521b043b-f442-435a-ada6-6c8d69f804eb (the project owner's test account):
   org gg5678g-ff3d3e (e784fc49-...)  created 2026-06-20T17:33:21.107012Z  0 usage records
   org gg5678g-e9d02a (d96ddca6-...)  created 2026-06-20T17:33:21.107012Z  3 usage records
   org gg5678g-eaf5f5 (d58203be-...)  created 2026-06-20T17:33:22.292027Z  103 usage records, quota=10000

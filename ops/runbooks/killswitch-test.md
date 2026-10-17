@@ -2,7 +2,7 @@
 
 **Purpose:** Prove the kill switch fires correctly before any paid services are deployed.  
 **When to run:** Once after initial deployment; re-run after any changes to `ops/budget-killswitch/`.  
-**Owner:** gaurav.gandhi2411@gmail.com  
+**Owner:** the project owner  
 **Last executed:** 2026-05-10 (full disable path verified)  
 **Re-verified:** 2026-05-11 — `terraform plan -detailed-exitcode` exit 0, zero drift, pre-Step-7 Cloud Run deploy
 
@@ -37,14 +37,14 @@ Budget cap: **₹100/mo** (≈$1.20 USD; tight cap chosen because GCP billing la
 
 Sub-threshold invocations: the function receives every Pub/Sub message but only acts at `alertThresholdExceeded >= 1.0`. Sub-threshold logs read: `[kill-switch] threshold X.X% < 100% — no action taken`.
 
-Email delivery: controlled by `disable_default_iam_recipients = false` in the budget's `all_updates_rule`. GCP automatically emails all billing account IAM recipients (incl. gaurav.gandhi2411@gmail.com) at every threshold crossing. This is separate from and independent of the Pub/Sub + function path.
+Email delivery: controlled by `disable_default_iam_recipients = false` in the budget's `all_updates_rule`. GCP automatically emails all billing account IAM recipients (incl. the project owner) at every threshold crossing. This is separate from and independent of the Pub/Sub + function path.
 
 ---
 
 ## Pre-flight checklist
 
 - [ ] `gcloud config get-value project` returns `review-iq-prod`
-- [ ] `gcloud config get-value account` returns `gaurav.gandhi2411@gmail.com`
+- [ ] `gcloud config get-value account` returns the project owner's account
 - [ ] `terraform plan` shows no changes
 - [ ] Function env: `gcloud functions describe billing-killswitch --region us-central1 --format="value(environmentVariables)"` shows `DRY_RUN=false`
 
@@ -175,7 +175,7 @@ Services restart automatically once billing is re-linked (Cloud Run cold-starts 
 
 ## Canonical test record — 2026-05-10
 
-**Operator:** gaurav.gandhi2411@gmail.com  
+**Operator:** the project owner  
 **Function config at test time:** `DRY_RUN=false`, budget cap ₹100 INR
 
 ### Phase 1 — DRY_RUN path (18:45 UTC)
@@ -235,7 +235,7 @@ Result: **PASS** — billing disabled in 2.6 seconds.
 
 ### Phase 4 — Re-enable and restore (19:57 UTC)
 
-Verified in GCP Console by gaurav.gandhi2411@gmail.com. Re-enabled:
+Verified in GCP Console by the project owner. Re-enabled:
 
 ```bash
 gcloud billing projects link review-iq-prod --billing-account=014DAE-6B3556-077365
@@ -252,5 +252,5 @@ Result: **PASS** — project fully restored.
 ---
 
 **Overall result: ALL PHASES PASS**  
-**Kill switch verified by:** gaurav.gandhi2411@gmail.com, 2026-05-10  
+**Kill switch verified by:** the project owner, 2026-05-10  
 **GCP cost incurred during test: ₹0.00**

@@ -6,7 +6,7 @@ budget.
 
 ## Context
 
-GG has put all of his products on one Groq account (gg5678g@gmail.com; stated by GG in the S19 R
+GG has put all of his products on one Groq account (the project owner's account; stated by GG in the S19 R
 brief, **BELIEVED**: no Groq console or API call in this session shows the account/org of a key).
 Groq enforces limits per organisation, and the free tier gives each model its own pool
 (`openai/gpt-oss-20b` and `openai/gpt-oss-120b`: 30 RPM, 1K RPD, 8K TPM, 200K TPD, see

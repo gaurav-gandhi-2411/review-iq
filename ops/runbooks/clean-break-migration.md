@@ -1,6 +1,6 @@
 # Clean-break migration: review-iq-prod → reviewiq-prod-260813
 
-Target billing account: `01285B-91E4CB-70AD7E` (gandhi1129). Old project (`review-iq-prod`,
+Target billing account: `01285B-91E4CB-70AD7E` (the project owner's account). Old project (`review-iq-prod`,
 still on `01285B` from the earlier in-place migration) stays live as fallback until the new
 project is verified, then gets deleted. Do not start until the `01285B` project-link quota is
 confirmed resolved.
