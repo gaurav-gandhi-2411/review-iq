@@ -12,7 +12,7 @@ Provenance: kernel `review-intent-moat-run` v2 ran commit `b77c598` (`run_status
 |---|---|
 | `compare_local.json` | `llm_moat compare` on the local arm vs the encoder (coverage at 0.95 precision, CIs) |
 | `interim300.json` | n=300 decision (`decide()`), recomputed locally and identical to the kernel's |
-| `agreement.json` | Groq-20b vs local-20b on the 502 overlapping ids: label agreement, Cohen kappa, Spearman of confidences, item-bootstrap 95% CIs |
+| `agreement.json` | Groq-20b vs local-20b on the 502 overlapping ids: label agreement, Cohen kappa, Spearman of confidences, item-bootstrap confidence intervals |
 | `run_status.json` | model digest, versions, GPU, per-shard throughput |
 
 Reproduce: `python -m engine.intent.llm_moat_local merge ...`, `python -m engine.intent.llm_moat compare ...`, `python -m engine.intent.llm_moat_agreement ...`.
