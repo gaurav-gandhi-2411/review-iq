@@ -44,6 +44,27 @@ meaningful target and is not claimed. The targets are:
 Silver labels (four-judge panel consensus), not human gold. Provenance for every number: commit SHA and the artifact under
 `reports/serving/`.
 
+## Addendum 1 (written after the three candidates were scored on validation, before any sealed item and before the sensitivity run below)
+
+Validation result of the three registered candidates (mean argmax agreement with fp32 over the four served tasks, batch 1, 460
+validation items): s1_ffn_minmax 0.8636, s2_ffn_percentile 0.8511, s3_all_minmax 0.8261. None reaches 0.90, so the static route AS
+REGISTERED failed its own criterion. Context, from the same validation set: the fp32 ONNX export agrees with the fp32 torch model on 1.0
+of items, the int8 per-row embedding table alone on 0.9989, and the torch dynamic `int8_ffn_full` variant on 0.9000 (committed
+`reports/intent/run2_cpu/metadata.json`, reference GPU fp16, which fp32 CPU matches on 1.0). Batch independence holds for all three: 0
+argmax flips between batch 1 and batches of 128.
+
+Diagnosis, not tuning on the test items (101c: a failed measurement is diagnosed before the route is written off). Two diagnostic
+candidates, validation only: d1 quantises only the second feed-forward MatMul of each layer (`output/dense`, whose input is the GELU
+activation) and d2 only the first (`intermediate/dense`). Results: d1 0.8571, d2 0.9880. The loss comes from the second feed-forward
+MatMul: per-tensor uint8 activation scales cannot cover the heavy-tailed GELU output.
+
+Post-hoc rule, fixed here before the per-layer numbers exist: score each layer's second feed-forward MatMul alone (the others fp32) on
+the same validation items; layers whose mean agreement is below 0.995 keep that MatMul in fp32. Candidate m1 = every first
+feed-forward MatMul quantised + the second feed-forward MatMul quantised in the layers that pass. m1 and d2 are both scored on
+validation; among candidates with mean validation agreement of at least 0.90 the smaller file wins if it is within 0.01 of the best
+(this addendum replaces the 0.005 tie rule for the post-hoc set only). These candidates are post-hoc and are labelled so wherever
+they are reported. The sealed set is scored once, for the winner.
+
 ## Resource targets reported (not gates)
 
 Image size, resident memory, cold start and batch-1 p50/p95 in a local Docker container limited to 1 vCPU and 1 GiB (`--memory 1g
