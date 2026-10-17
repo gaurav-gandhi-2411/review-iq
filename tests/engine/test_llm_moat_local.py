@@ -25,7 +25,10 @@ class _Fake:
                 status, content = fake.script(fake.calls, body)
                 fake.calls += 1
                 payload = json.dumps(
-                    {"choices": [{"message": {"content": content}}], "usage": {"total_tokens": 7}}
+                    {
+                        "choices": [{"message": {"content": content}}],
+                        "usage": {"total_tokens": 7, "prompt_tokens": 5},
+                    }
                 ).encode()
                 self.send_response(status)
                 self.send_header("Content-Length", str(len(payload)))
@@ -168,3 +171,81 @@ def test_smoke_limit_runs_only_limit(tmp_path, fake_ok):
     items = [{"id": f"i{k}", "text": "t"} for k in range(6)]
     res = L.run_local(items, [fake_ok.url], tmp_path, limit=2)
     assert fake_ok.calls == 2 and res["interim"] is None
+
+
+SHOTS = M.shots_text(
+    [
+        ("s1", "great {phone}", {t: M.CLASSES[t][0] for t in M.TASKS}),
+        ("s2", "broke on day 2", {t: M.CLASSES[t][-1] for t in M.TASKS}),
+    ]
+)
+
+
+def test_render_prompt_zero_shot_is_byte_identical():
+    for text in ("hello", "has {braces} and {0}", "x" * 3000):
+        assert L.render_prompt(text) == M.PROMPT.format(text=text[:1500])
+
+
+def test_render_prompt_inserts_shots_before_review_and_tolerates_braces():
+    out = L.render_prompt("the review {x}", SHOTS)
+    assert SHOTS in out and out.index(SHOTS) < out.index("Review: the review {x}")
+    assert out.startswith(M.PROMPT.split("Review: {text}")[0].format())
+    assert out.endswith("Review: the review {x}\nJSON:")
+    assert out.count("Review:") == 3  # two shots + the item
+    # the review is still truncated to 1500 characters
+    assert "y" * 1501 not in L.render_prompt("y" * 2000, SHOTS)
+
+
+def test_few_shot_run_records_prompt_tokens_but_merge_strips_them(tmp_path, fake_ok):
+    items = [{"id": f"i{k}", "text": "t"} for k in range(4)]
+    res = L.run_local(items, [fake_ok.url], tmp_path, stem=L.STEM_FEWSHOT, shots=SHOTS, n=2)
+    assert res["complete"] and res["stats"][0]["max_prompt_tokens"] == 5
+    assert all(SHOTS in b["messages"][0]["content"] for b in fake_ok.bodies)
+    shard = tmp_path / "shards" / f"{L.STEM_FEWSHOT}__shard0.jsonl"
+    assert all(json.loads(ln)["ptoks"] == 5 for ln in shard.read_text().splitlines())
+    rows = L.merge(tmp_path / "shards", [i["id"] for i in items], L.STEM_FEWSHOT)
+    assert [set(r) for r in rows] == [{"id", "ans", "tokens"}] * 4
+    assert (tmp_path / f"{L.STEM_FEWSHOT}__interim2.json").exists() is False  # no decide_fn given
+
+
+def test_merge_stem_keeps_arms_apart(tmp_path):
+    d = tmp_path
+    for stem, ans in ((L.STEM, "zs"), (L.STEM_FEWSHOT, "fs")):
+        (d / f"{stem}__shard0.jsonl").write_text(
+            json.dumps({"id": "a", "ans": ans, "tokens": 1}) + "\n"
+        )
+    assert L.merge(d, ["a"], L.STEM)[0]["ans"] == "zs"
+    assert L.merge(d, ["a"], L.STEM_FEWSHOT)[0]["ans"] == "fs"
+
+
+def test_zero_shot_rows_have_no_extra_fields(tmp_path, fake_ok):
+    L.run_local([{"id": "a", "text": "t"}], [fake_ok.url], tmp_path, limit=1)
+    row = json.loads((tmp_path / "shards" / f"{L.STEM}__shard0.jsonl").read_text())
+    assert set(row) == {"id", "ans", "tokens"}
+
+
+def test_read_shots_and_probe(tmp_path, fake_ok):
+    f = tmp_path / "shots.jsonl"
+    f.write_text(
+        json.dumps({"id": "s1", "text": "great", "gold": {t: M.CLASSES[t][0] for t in M.TASKS}})
+        + "\n"
+    )
+    shots = L.read_shots(f)
+    assert shots.startswith(M.FEWSHOT_HEADER) and "Review: great\nJSON: " in shots
+    items = [{"id": "a", "text": "short"}, {"id": "b", "text": "a much longer reviewé"}]
+    res = L.probe_prompt_tokens(fake_ok.url, "m", items, shots, k=1)
+    assert res["max_prompt_tokens"] == 5 and res["probed"][0]["id"] == "b"
+    assert all(b["max_tokens"] == 1 for b in fake_ok.bodies)
+    assert all(b["messages"][0]["content"].startswith("x\n") for b in fake_ok.bodies)
+
+
+def test_push_build_fills_every_placeholder_and_compiles():
+    from engine.kaggle import push_moat20b as P
+
+    for arm in ("zeroshot", "fewshot"):
+        src = P.build("some-branch", "smoke", 1.5, arm)
+        assert "__" not in "".join(
+            f for f in ("__BRANCH__", "__MODE__", "__BUDGET_H__", "__ARM__") if f in src
+        )
+        assert f'ARM = "{arm}"' in src and 'BRANCH = "some-branch"' in src
+        compile(src, "kernel.py", "exec")

@@ -1,6 +1,7 @@
 """Kaggle kernel body: the gpt-oss-20b-local moat arm (spec Amendment 9) on two Ollama servers (one per T4). RESUMABLE.
 
-Filled in by engine/kaggle/push_moat20b.py (__BRANCH__, __MODE__ = smoke|full, __BUDGET_H__). Reads `items.jsonl`
+Filled in by engine/kaggle/push_moat20b.py (__BRANCH__, __MODE__ = smoke|full, __BUDGET_H__, __ARM__ = zeroshot|fewshot;
+the few-shot arm of spec Amendment 10 also reads a private `shots.jsonl` {id, text, gold}). Reads `items.jsonl`
 ({id, text} for the sealed items only, in sealed order) from a PRIVATE Kaggle dataset; review text stays out of the repo and out
 of every output. Output: /kaggle/working/out/{shards/*.jsonl, status.json, run_result.json, *interim300.json}; rows carry ids,
 parsed answers and token counts only. Prior shards (a `shards/` folder in a second private dataset) are copied in first so a
@@ -20,6 +21,7 @@ import urllib.request
 
 BRANCH = "__BRANCH__"
 MODE = "__MODE__"
+ARM = "__ARM__"
 BUDGET_S = float("__BUDGET_H__") * 3600
 MODEL = "gpt-oss:20b"
 REPO = "https://github.com/gaurav-gandhi-2411/review-iq.git"
@@ -29,7 +31,7 @@ OLLAMA_DIR = pathlib.Path("/opt/ollama")
 MODELS = "/tmp/ollama_models"  # one shared, read-only-in-use model store for both servers
 PORT = {0: 11434, 1: 11435}
 T0 = time.time()
-status: dict = {"mode": MODE, "model_tag": MODEL}
+status: dict = {"mode": MODE, "arm": ARM, "model_tag": MODEL}
 
 
 def sh(cmd, **kw):
@@ -128,6 +130,12 @@ for prior in glob.glob("/kaggle/input/**/shards/*.jsonl", recursive=True):
 items_file = glob.glob("/kaggle/input/**/items.jsonl", recursive=True)[0]
 with open(items_file, encoding="utf-8") as fh:
     status["n_items"] = sum(1 for x in fh if x.strip())
+shots_file = None
+if ARM == "fewshot":
+    shots_file = glob.glob("/kaggle/input/**/shots.jsonl", recursive=True)[0]
+    with open(shots_file, encoding="utf-8") as fh:
+        shot_rows = [json.loads(x) for x in fh if x.strip()]
+    status["shot_ids"] = [r["id"] for r in shot_rows]  # ids only, never text
 install_ollama()
 servers = [start_server(g) for g in (0, 1)]
 status["ollama_version"] = sh(  # with the server up, --version prints the server version first
@@ -159,6 +167,8 @@ try:
         ",".join(f"http://127.0.0.1:{PORT[g]}" for g in (0, 1)),
     ]
     args += ["--model", MODEL, "--budget-h", str(BUDGET_S / 3600)]
+    if shots_file:
+        args += ["--shots", shots_file]
     if MODE == "smoke":
         args += ["--limit", "20"]
     r = subprocess.run(
@@ -167,6 +177,17 @@ try:
         text=True,
     )
     status["run_rc"] = r.returncode
+    if (
+        shots_file and MODE == "smoke"
+    ):  # context budget: prompt tokens with the prefix cache defeated
+        pr = subprocess.run(
+            [sys.executable, "-m", "engine.intent.llm_moat_local", "probe", *args[:4], "--urls",
+             f"http://127.0.0.1:{PORT[0]}", "--model", MODEL, "--shots", shots_file],
+            capture_output=True, text=True,
+        )  # fmt: skip
+        status["probe_rc"] = pr.returncode
+        status["probe_stdout_tail"] = pr.stdout[-400:]
+        status["probe_stderr_tail"] = pr.stderr[-400:]
     status["run_stdout_tail"] = r.stdout[-1500:]
     status["run_stderr_tail"] = r.stderr[-800:]
 except Exception as e:  # noqa: BLE001
