@@ -1,6 +1,6 @@
 # Samidha Reviews: status
 
-Updated at the end of every session. Last update: 2026-10-17 (S24, autonomous; S23 text below is kept where still true and corrected where S24 changed it). Labels: VERIFIED = observed this
+Updated at the end of every session. Last update: 2026-10-18 (S25, autonomous; S24 on 2026-10-17; S23 text below is kept where still true and corrected where S24 changed it). Labels: VERIFIED = observed this
 session or by a committed artifact (command and output exist); BELIEVED = inferred or stated by someone else,
 not observed. Synthetic = produced on generated data, never a statement about real customers.
 
@@ -140,13 +140,24 @@ All labels are the four-judge panel consensus (SILVER), never human gold. Pre-re
   agreement on the 502 overlapping ids is in `reports/intent/moat_local20b/agreement.json`. VERIFIED, committed
   artifacts under `reports/intent/moat_local20b/`.
 - **20b few-shot, local (Amendment 10, merged #530).** 7 worked examples from TRAINING items only. The stopping rule
-  fired at n=300: the LLM interval was below the encoder interval on all four tasks, so the run stopped at 300.
-  Few-shot was NOT better than zero-shot on matched ids: the accuracy point estimate fell on every task, and the
-  interval excludes zero on three of four (urgency spans zero). Confound: 27 of 300 few-shot completions hit the token cap with empty content, which the comparison does not
-  decompose. VERIFIED, `reports/intent/moat_local20b_fewshot/`. BELIEVED, from the subagent reading the code and not
-  executed: `llm_moat.ask` cannot render a few-shot prompt itself; the local runner builds it.
-- **Compare rule, Wilson lower bound, matched coverage (Amendment 11).** Report PR #531 is a DRAFT and parked: it
-  fails gate 3 on size. It is not on main.
+  fired at n=300 and the run stopped there. **RETRACTED reading:** that run said few-shot was worse on every task, but 27 of
+  300 few-shot (and 6 of 300 zero-shot) completions hit the 600-token cap with empty content and scored wrong, so the
+  difference was largely a harness artefact. The artefacts stay on main, labelled cap 600, under
+  `reports/intent/moat_local20b_fewshot/`.
+- **20b re-run without truncation (Amendment 12, merged #538).** Canary rung 1 (reasoning effort low, max_tokens 1500) gave 0 of
+  30 empty; the few-shot arm was re-run from the start on Kaggle (all 757 sealed ids; the stopping rule left sentiment and
+  urgency undecided at n=300) with a zero-shot arm of identical settings on the first 300. Empty or unparseable completions:
+  0 of 757 and 0 of 300. VERIFIED, `reports/intent/moat_local20b_fewshot_v2/`. Findings on matched ids (silver, n about 250 to
+  280 per task): few-shot is worse than zero-shot on needs_action, better on urgency, not separated on broad_intent accuracy
+  and sentiment. Against the encoder (Amendment 11 rule): the encoder beats both arms on broad_intent, beats zero-shot on
+  urgency, and is NOT separated from zero-shot on needs_action or from either arm on sentiment. So the moat claim stands for
+  broad_intent and urgency only; the earlier "encoder ahead on every task" was built on arms with empty answers. Caveats:
+  reasoning effort low is itself a change (the zero-shot v2 arm differs from the cap-600 zero-shot in both directions), whether this
+  Ollama build honours `reasoning_effort` was not isolated (the canary stopped at rung 1), three Ollama builds were used across
+  the arms, n is 300.
+- **Compare rule, Wilson lower bound, matched coverage (Amendment 11).** Merged as #535 (statistics, spec) and #536 (loading,
+  writer, cap-600 report with a notice); #531 closed as superseded. #531 failed gate 3 because of the 577-line module, not the
+  generated files, which were already under the designated path.
 - **Run 3 seeds (#529).** Merged as generated artifacts under `reports/intent/run3_seeds/`.
 - **120b: PENDING.** The benchmark Groq key returns HTTP 401 and no workaround was attempted. The 120b arm needs a
   valid key in an org separate from the failover pool, or another provider. No 120b comparison number exists, and
@@ -154,9 +165,30 @@ All labels are the four-judge panel consensus (SILVER), never human gold. Pre-re
 
 ### Served model: `POST /v2/classify` is BUILT, NOT DEPLOYED (S24 A6, draft PR #533)
 
+**S25 state (draft #533, head after the ONNX commits; flag off, nothing deployed).** Served model switched from torch dynamic
+int8 to **static int8 on ONNX Runtime with no PyTorch in the image** (`docs/specs/review-intent-serving.md`, numbers in
+`reports/serving/v2_classify_onnx.{md,json}` on the PR branch, silver labels, local Docker 1 vCPU, NOT Cloud Run). VERIFIED:
+- Batch independence: 0 of 3028 sealed task decisions differ between one review per forward, padded batches of 128 and of 8
+  (max probability difference 1e-6); 0 of 757 items differ over HTTP inside the container; token ids from the `tokenizers`
+  library equal the transformers tokenizer on 763 texts. The torch variant had 166 of 3028 flips.
+- Honest history: the three pre-registered static candidates all missed the 0.90 validation-agreement criterion (0.86, 0.85,
+  0.83); the cause was the second feed-forward MatMul (GELU outliers under per-tensor uint8). A mixed-precision candidate was
+  chosen on validation only under a rule fixed before its numbers were read (Addendum 1); post-hoc candidates are labelled so.
+  Chosen: validation agreement 0.9842 (torch dynamic: 0.9000), test 0.9794.
+- Quality at batch 1 vs the torch numbers (different model, thresholds refit): coverage higher on all four tasks; precision about
+  equal, urgency slightly lower (still above the 0.95 target). Intervals in the report.
+- Container at 1 vCPU / 1 GiB: no OOM, peak RSS about 0.9 GB; cold start 7.5 s (torch 21.3 s); batch 1 p50 137 ms / p95 246 ms
+  (torch 803 / 1200 ms); image 1.38 GB on disk (torch 2.21 GB). It fits a 1 GiB container but with about 120 MB headroom:
+  co-hosting in the existing `review-iq` service is not advisable; a separate service (1Gi minimum, 2Gi comfortable).
+- A defect found and fixed on the way: ONNX Runtime sized its thread pool from the host's cores, not the CPU quota (over a second
+  per review in a 1 vCPU container); the backend now reads the cgroup quota.
+- BELIEVED / not measured: Cloud Run cold start with a real image pull, CPU throttling, int8 kernel differences on other CPUs.
+
+Below is the S24 torch-variant record, kept as history.
+
 Flag `ENABLE_V2_CLASSIFY`, default off (404 before auth). Outputs needs_action, broad intent, sentiment and urgency
 with per-class thresholds and an explicit `abstained` (urgency high is chosen by its validation-fitted threshold,
-never argmax). Served variant: run 2, `int8_ffn_full` (no doc designated one; chosen by best agreement with the fp32
+never argmax). S24 variant: run 2, `int8_ffn_full` (no doc designated one; chosen by best agreement with the fp32
 CPU model under the served decision rule, a margin that is within noise). Run 3 is not served. Numbers are in
 `reports/serving/v2_classify_bench.{md,json}` on the PR branch (code commit 8953ecf), all on a loaded workstation in
 local Docker with 1 vCPU, NOT on Cloud Run:
@@ -281,9 +313,9 @@ branch for a few minutes (fixed in `c969e11`, nothing merged).
 | Shopify stack #291 to #293 | GG: needs the Shopify app registration |
 | Gemini clean-up (ADR 0035) | GG: GitHub secret `GEMINI_API_KEY` and Secret Manager `gemini-api-key` still exist. OpenRouter binding is already removed (see production table) |
 | `SUPABASE_DIRECT_URL` (write-capable GitHub secret) | Removal waits on #472 (read-only role, draft, GG's steps) |
-| Parked PRs (GG merges; S24 merged #505 to #507, #513, #514, #521, #525 to #527, #529, #530, #532) | #485 (runbook wording), #499 (DB latency report and region plan), #508 (admin rotation script), #512 (admin doc correction), #515 (all call sites on the pool; isolation 6 of 6 pass, conflict-free; gate 4), #472 (read-only role), #502 (retire `uptime-alert.yml`; waits on GG's `s23-alert-test` email confirmation), claude-config #49 and #50 (billing-blocked CI; only GG merges), #531 (moat compare report; fails gate 3, draft), #533 (`/v2/classify`; draft, fails gate 3, new Dockerfile) |
+| Parked PRs (GG merges; S24 merged #505 to #507, #513, #514, #521, #525 to #527, #529, #530, #532) | #485 (runbook wording), #499 (DB latency report and region plan), #508 (admin rotation script), #512 (admin doc correction), #515 (all call sites on the pool; isolation 6 of 6 pass, conflict-free; gate 4), #472 (read-only role), #502 (retire `uptime-alert.yml`; waits on GG's `s23-alert-test` email confirmation), claude-config #49 and #50 (billing-blocked CI; only GG merges), #533 (`/v2/classify` on ONNX; draft, fails gate 3, new Dockerfile), #537 (recovered reply-placeholder fix `exp/q3b-reply-eval`, draft, not rebased, needs triage). S25 merged #535, #536, #538, and the S25 docs PR; #531 closed as superseded. #318 (U4d twin control, parked) gained one commit with progress that had been left uncommitted in a worktree |
 | Moat comparison, 120b arm | A valid Groq benchmark key in an org separate from the failover pool, or another provider |
-| `/v2/classify` deployment | #533 split and merged by GG, a separate service of 2 GiB or more, weights delivery decision, requirements added to the lock, then a Cloud Run cold-start and latency measurement (none exists) |
+| `/v2/classify` deployment | #533 split and merged by GG (proposed split in its body), a separate service (1Gi minimum, 2Gi comfortable), weights delivery decision (415 MB `model.onnx`: bake-in or bucket with a checksum pin), requirements added to the lock, then a Cloud Run cold-start and latency measurement (none exists) |
 | DB region (Sydney pooler, Cloud Run in Mumbai) | GG decides among options A to D in #499; Mumbai move is a plan only, about 20 to 30 min write freeze (BELIEVED), the backup lacks `auth.users` |
 | Engine deployment | Waits for the review-intent model |
 | Tailwind 4 (#106) | Plan in `docs/ops/tailwind4-migration-plan.md`, before the braces allowlist expires 2026-12-31 |
@@ -299,7 +331,7 @@ In unblock order (S24; trigger-token rotation and Secret Manager audit logs are 
 3. #472 read-only role steps, then remove `SUPABASE_DIRECT_URL` from GitHub secrets.
 4. Provide a valid Groq benchmark key in an org separate from the failover pool (or choose another provider) to run the 120b arm.
 5. Decide the DB region move (#499); confirm in the Groq console which org each key is in.
-6. Review #531 (moat compare report) and #533 (`/v2/classify`) and decide the split and the serving shape.
+6. Review #533 (`/v2/classify` on ONNX) and decide the split and the serving shape; triage #537 (recovered reply fix).
 7. Decide on a persisted shared demo/prod token ledger (needs an RLS policy change, gate 4).
 8. Check the Console cost view (no billing export exists) and the new audit-log volume after a month.
-9. A `python -` spinner process (PID 15252, started 19:36 local, about 3 CPU-hours) is not Claude's as far as known; check it.
+9. PID 15252 (a `python -` spinner, not Claude's) was no longer running when checked in S24; nothing to do unless it returns.
