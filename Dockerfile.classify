@@ -1,0 +1,44 @@
+# Image for POST /v2/classify (int8 multilingual-e5 on CPU). NOT built by CI and NOT referenced by any deploy workflow:
+# a separate service, deployed only by a deliberate, reviewed change (ops/runbooks/v2-classify.md).
+#
+#   docker build -f Dockerfile.classify -t review-iq-classify:local \
+#       --build-context artifacts=D:/ml-cache/s24/classify_artifacts .
+#
+# `artifacts` is a directory holding model_int8.pt and hf/ (config + tokenizer); weights are never committed to the repo.
+FROM python:3.11-slim AS base
+
+WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+# ---- deps layer: the app's locked dependencies, then the CPU-only inference stack on top ----
+FROM base AS deps
+COPY pyproject.toml uv.lock requirements-classify.txt ./
+RUN uv sync --frozen --no-dev --no-install-project \
+    && uv pip install --python /app/.venv/bin/python --index-strategy unsafe-best-match \
+        --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple \
+        -r requirements-classify.txt
+
+# ---- runtime ----
+FROM base AS runtime
+COPY --from=deps /app/.venv /app/.venv
+ENV PATH="/app/.venv/bin:$PATH" \
+    ENABLE_V2_CLASSIFY=false \
+    CLASSIFY_ARTIFACT_DIR=/app/artifacts/classify
+
+COPY app/ ./app/
+# Only the decisioning module of the engine (pure numpy); the rest of engine/ pulls sklearn and is not needed to serve.
+COPY engine/__init__.py ./engine/__init__.py
+COPY engine/intent/__init__.py engine/intent/decide.py ./engine/intent/
+COPY --from=artifacts model_int8.pt ./artifacts/classify/model_int8.pt
+COPY --from=artifacts hf/ ./artifacts/classify/hf/
+
+# /app/data: the app's lifespan opens its local sqlite file there (same as the main Dockerfile)
+RUN adduser --disabled-password --gecos "" appuser && mkdir -p /app/data && chown appuser /app/data
+USER appuser
+EXPOSE 8080
+
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1"]
