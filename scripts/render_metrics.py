@@ -142,7 +142,7 @@ def _label_agreement_text(data: dict[str, Any]) -> str:
 # D6 (2026-10-07): the overall-accuracy clause states a RANGE whose two endpoints are read from the
 # panel-2 artifact (narrowed Manski lower bound, silver adjudicated estimate), never typed. The
 # guard below checks the endpoints themselves, not a phrase: both present, ordered, and strictly
-# below the headline (the sentence says overall accuracy is "probably lower than the headline").
+# below the headline (the sentence says overall accuracy is "probably lower than this figure").
 class OverallRangeGuardError(ValueError):
     """The independent-estimate endpoints are missing or inconsistent with the headline."""
 
@@ -158,7 +158,7 @@ def overall_range_clause(lower: float | None, upper: float | None, headline: flo
         raise OverallRangeGuardError(
             f"overall-accuracy range is inconsistent: lower={lower * 100:.1f}%, "
             f"upper={upper * 100:.1f}%, headline={headline * 100:.1f}%; required lower < upper "
-            "< headline, otherwise the sentence 'probably lower than the headline' is false"
+            "< headline, otherwise the sentence 'probably lower than this figure' is false"
         )
     return f"{_fmt_pct(lower)} to {_fmt_pct(upper)}"
 
@@ -210,7 +210,7 @@ def _pros_separate_md(data: dict[str, Any], pros_gold: dict[str, Any]) -> list[s
         f"validation V-a: {status}, V-b: {status_b}"
         + ("" if v["validated"] else "; NOT validated")
         + ").** "
-        f"The headline above still scores `pros` with the existing token-level F1 scorer, not "
+        f"The held-out figure above still scores `pros` with the existing token-level F1 scorer, not "
         f"with this: the same pairs scored by an item-level phrase matcher swing "
         f"{sweep['swing_max_minus_min'] * 100:.1f} points across matcher thresholds "
         f"({sweep['swing_between_0.3_and_0.7'] * 100:.1f} between 0.3 and 0.7), and the soft "
@@ -261,7 +261,7 @@ def _render_held_out_grid_md(
         # Session 17 (W3): the unscored fraction sits BESIDE the number it qualifies. The score
         # is accuracy where the panel agreed -- split pairs are the hardest reviews -- so it is
         # not overall accuracy and must not be read as such.
-        f"**{_fmt_pct(pub['as_deployed']['score'])} "
+        f"**Held-out figure (not the headline): {_fmt_pct(pub['as_deployed']['score'])} "
         f"[{_fmt_pct(pub['as_deployed']['ci_95']['lower'])}, "
         f"{_fmt_pct(pub['as_deployed']['ci_95']['upper'])}] on {pub['n']} unseen reviews, scored "
         f"only where the three-judge panel agreed. {_fmt_pct(un['unscored_fraction'])} of "
@@ -269,7 +269,7 @@ def _render_held_out_grid_md(
         "unscored. Those are the hardest cases: on the "
         f"{adj['n_resolved']} of them a second, independent LLM panel could settle, the model "
         f"scores {adj['range'][0]}-{adj['range'][1]}% depending on the field. So overall "
-        f"accuracy is probably lower than the headline — independent estimates range "
+        f"accuracy is probably lower than this figure — independent estimates range "
         f"{adj['overall_range']} (exploratory, LLM-judged, not human-verified).**",
         "",
         "Second-panel scores by field on those pairs (LLM-consensus silver, not ground truth; "
@@ -280,7 +280,7 @@ def _render_held_out_grid_md(
         + "): small samples, so each is a rough indication only.",
         "",
         *_pros_separate_md(data, pros_gold),
-        "| Condition | Score (headline fields) | 95% CI | n | Field-pairs unscored |",
+        "| Condition | Score (scored fields) | 95% CI | n | Field-pairs unscored |",
         "|---|---|---|---|---|",
         f"| **As actually deployed** (real language routing) | "
         f"**{_fmt_pct(pub['as_deployed']['score'])}** "
@@ -302,7 +302,7 @@ def _render_held_out_grid_md(
         "identifiable from this data.** The assumption-free interval (every unscored pair all wrong / all right) is "
         f"[{_fmt_pct(lo_b)}, {_fmt_pct(hi_b)}]; that is a bound, not a result.",
         "",
-        "**What this headline is.** The average of "
+        "**What this held-out figure is.** The average of "
         f"{len(data['headline_fields'])} fields ({', '.join(f'`{f}`' for f in data['headline_fields'])}) "
         f"over the {pub['n']} of {data['n_fixtures']} corpus reviews that the prompt-development "
         f"process had **not** seen, with {pub['n_split_pairs_excluded']} gold "
@@ -320,7 +320,7 @@ def _render_held_out_grid_md(
         "all_reviews_all_pairs": ("all", "all"),
         "all_reviews_split_excluded": ("all", "split excluded"),
         "unexposed_all_pairs": ("unseen only", "all"),
-        "unexposed_split_excluded": ("**unseen only (headline)**", "**split excluded**"),
+        "unexposed_split_excluded": ("**unseen only**", "**split excluded**"),
     }
     for key, (who, which) in labels.items():
         c = grid[key]["as_deployed"]
@@ -397,7 +397,7 @@ def _render_held_out_grid_md(
             f"pair against each judge in turn gives {_fmt_pct(min(per_judge))} to "
             f"{_fmt_pct(max(per_judge))} overall, and the per-pair worst/best over the judges "
             f"gives [{_fmt_pct(js['envelope_min_over_judges']['score'])}, "
-            f"{_fmt_pct(js['envelope_max_over_judges']['score'])}] -- all below the headline. "
+            f"{_fmt_pct(js['envelope_max_over_judges']['score'])}] -- all below the held-out figure. "
             "A sensitivity analysis, not an estimate: all three judges can be wrong, and the "
             "unscored pairs have never been adjudicated.",
         ]
@@ -406,7 +406,7 @@ def _render_held_out_grid_md(
         "Gold labels are LLM-consensus silver, not human ground truth. Production's own language "
         "detector, measured against this corpus's language label: "
         f"{_label_agreement_text(data)}. That agreement figure is the number to trust for "
-        "routing; the held-out headline above is real-world extraction accuracy only where the "
+        "routing; the held-out figure above is real-world extraction accuracy only where the "
         "panel agreed, and the CI-gate table above is a regression detector, not a real-world "
         "accuracy claim -- see "
         "[ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) "
