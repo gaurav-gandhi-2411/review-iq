@@ -30,11 +30,13 @@ obligation to provide multiple accounts", and its limits are per organisation.
    held-out corpus. Customer data never goes to a non-ZDR endpoint.
 4. The OpenRouter failover stays the default (`SECONDARY_PROVIDER_KIND=openrouter`) until GG switches it, so
    merging this changes nothing.
+   *Amended S23: there is no longer a default. `SECONDARY_PROVIDER_KIND` must be `groq` or `openrouter`
+   whenever a secondary key/model is configured; otherwise startup fails (Settings validator).*
 
 ## Consequences
 
-- No code path sends customer text to a non-ZDR provider. An unknown `SECONDARY_PROVIDER_KIND` value falls
-  back to the ZDR OpenRouter path, not to anything else.
+- No code path sends customer text to a non-ZDR provider. *(Amended S23)* An unknown or unset
+  `SECONDARY_PROVIDER_KIND` is a startup error, never a silent fallback to OpenRouter.
 - Free-tier capacity for Samidha stays unmeasured until the dedicated org exists (ADR 0037).
 - If Groq as a whole is down, both legs fail. The OpenRouter leg is then no longer a safety net.
   Residual risk, accepted for $0.

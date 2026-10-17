@@ -5,8 +5,10 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+SECONDARY_PROVIDER_KINDS = ("groq", "openrouter")
 
 
 class Settings(BaseSettings):
@@ -15,6 +17,8 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
+        # A startup validation error must never echo input values: they include API keys.
+        hide_input_in_errors=True,
     )
 
     # LLM providers
@@ -178,12 +182,16 @@ class Settings(BaseSettings):
     #   endpoints from 11 upstream providers (see SecondaryProvider's docstring).
     secondary_provider_api_key: str = Field(default="", alias="SECONDARY_PROVIDER_API_KEY")
     secondary_provider_model: str = Field(default="", alias="SECONDARY_PROVIDER_MODEL")
-    # Which backend the secondary failover uses. "openrouter" (default) keeps the ZDR-only
+    # Which backend the secondary failover uses. "openrouter" selects the ZDR-only
     # OpenRouter path above. "groq" makes the secondary a SECOND Groq account (key =
     # SECONDARY_PROVIDER_API_KEY, model = a Groq model id, e.g. openai/gpt-oss-20b): Groq to
     # Groq failover, both ZDR-capable, zero cost. It is a failover only (used after the
     # primary fails), never a load-spreading rotation across accounts: see ADR 0038.
-    secondary_provider_kind: str = Field(default="openrouter", alias="SECONDARY_PROVIDER_KIND")
+    # No default: an unset kind used to select OpenRouter silently (S23: the same drift that
+    # left the nightly probe testing a backend production did not use). Unset is fine while no
+    # secondary is configured (tests, CI, local dev); configuring a key/model without a kind,
+    # or any value outside SECONDARY_PROVIDER_KINDS, fails at startup (_check_secondary_kind).
+    secondary_provider_kind: str = Field(default="", alias="SECONDARY_PROVIDER_KIND")
 
     # CORS allowlist — comma-separated origins (env: ALLOWED_ORIGINS).
     # Default covers local dev: both localhost and 127.0.0.1 aliases on :5173
@@ -351,6 +359,30 @@ class Settings(BaseSettings):
     # app/api/admin.py's _db_connect() when SERVICE_ROLE=admin. Distinct Secret Manager
     # secret from supabase_database_url — never present in the public service's env.
     admin_database_url: str = Field(default="", alias="ADMIN_DATABASE_URL")
+
+    @model_validator(mode="after")
+    def _check_secondary_kind(self) -> Settings:
+        """Fail loudly at startup instead of silently selecting the OpenRouter secondary.
+
+        Error text names the variable and the allowed values only; it never echoes the key.
+        """
+        kind = self.secondary_provider_kind.strip().lower()
+        if kind in SECONDARY_PROVIDER_KINDS:
+            self.secondary_provider_kind = kind
+            return self
+        configured = bool(self.secondary_provider_api_key or self.secondary_provider_model)
+        allowed = ", ".join(SECONDARY_PROVIDER_KINDS)
+        if kind:
+            raise ValueError(
+                f"SECONDARY_PROVIDER_KIND={self.secondary_provider_kind!r} is not valid; "
+                f"allowed values: {allowed}."
+            )
+        if configured:
+            raise ValueError(
+                "SECONDARY_PROVIDER_API_KEY/SECONDARY_PROVIDER_MODEL are set but "
+                f"SECONDARY_PROVIDER_KIND is unset; set it to one of: {allowed}."
+            )
+        return self
 
 
 @lru_cache

@@ -1,0 +1,77 @@
+{
+ "commit": "b77c598a38a91d1fb501ae3d2b0bf32e751b568b",
+ "gpu": "Tesla T4, 15360 MiB\nTesla T4, 15360 MiB",
+ "ollama_version": "ollama version is 0.40.3",
+ "model_tag": "gpt-oss:20b",
+ "tags": [
+  {
+   "name": "gpt-oss:20b",
+   "model": "gpt-oss:20b",
+   "modified_at": "2026-10-12T18:12:31.537116575Z",
+   "size": 13793441566,
+   "digest": "f38aa0c53da5f8c49d08c43a99df24ff53167fe68e24664a7777288e7656fdfe",
+   "details": {
+    "parent_model": "dhiltgen/gpt-oss:20b-llamacpp",
+    "format": "gguf",
+    "family": "gpt-oss",
+    "families": [
+     "gpt-oss"
+    ],
+    "parameter_size": "20.9B",
+    "quantization_level": "MXFP4",
+    "context_length": 131072,
+    "embedding_length": 2880,
+    "runner": "llamacpp"
+   },
+   "capabilities": [
+    "completion",
+    "tools",
+    "thinking"
+   ]
+  }
+ ],
+ "elapsed_s": 3007,
+ "n_items": 757,
+ "pull_rc": 0,
+ "run_rc": 0,
+ "offload_log": [
+  "load_tensors: offloading output layer to GPU",
+  "load_tensors: offloading 23 repeating layers to GPU",
+  "load_tensors: offloaded 25/25 layers to GPU",
+  "llama_kv_cache: size =   96.00 MiB (  4096 cells,  12 layers,  1/1 seqs), K (f16):   48.00 MiB, V (f16):   48.00 MiB",
+  "llama_kv_cache: size =   18.00 MiB (   768 cells,  12 layers,  1/1 seqs), K (f16):    9.00 MiB, V (f16):    9.00 MiB",
+  "load_tensors: offloading output layer to GPU",
+  "load_tensors: offloading 23 repeating layers to GPU",
+  "load_tensors: offloaded 25/25 layers to GPU",
+  "llama_kv_cache: size =   96.00 MiB (  4096 cells,  12 layers,  1/1 seqs), K (f16):   48.00 MiB, V (f16):   48.00 MiB",
+  "llama_kv_cache: size =   18.00 MiB (   768 cells,  12 layers,  1/1 seqs), K (f16):    9.00 MiB, V (f16):    9.00 MiB"
+ ],
+ "full_run_stats": {
+  "0": {
+   "n": 379,
+   "tokens": 207119,
+   "elapsed_s": 2847.258608818054,
+   "unparseable": 7
+  },
+  "1": {
+   "n": 378,
+   "tokens": 209760,
+   "elapsed_s": 2747.2590684890747,
+   "unparseable": 4
+  }
+ },
+ "smoke_stats_discarded_rows": {
+  "1": {
+   "n": 10,
+   "tokens": 5423,
+   "elapsed_s": 176.6400945186615,
+   "unparseable": 0
+  },
+  "0": {
+   "n": 10,
+   "tokens": 5431,
+   "elapsed_s": 177.91258716583252,
+   "unparseable": 0
+  }
+ }
+}
