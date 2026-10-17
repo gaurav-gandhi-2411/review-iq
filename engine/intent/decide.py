@@ -18,8 +18,6 @@ from __future__ import annotations
 
 import numpy as np
 
-from engine.intent.safety_eval import f1_threshold
-
 MODES = ("threshold", "argmax")
 DEFAULT_MODE = "threshold"
 MIN_VAL_POSITIVES = 5  # fewer validation positives cannot support a threshold (Amendment 8)
@@ -40,6 +38,10 @@ def fit_thresholds(
 
     Uses VALIDATION labels and probabilities only (y_val = class indices, p_val = (n, K)). The threshold maximises F1 of the class
     (`safety_eval.f1_threshold`, ties to the higher threshold)."""
+    # Imported here, not at module top: `decide()` is imported by the serving image, which must not pull in
+    # safety_eval's labelling/sklearn import chain (S24 /v2/classify). Behaviour is unchanged.
+    from engine.intent.safety_eval import f1_threshold
+
     out: dict[str, dict] = {}
     for name in rare:
         c = list(classes).index(name)
