@@ -1,4 +1,4 @@
-"""Groq-vs-local agreement for the gpt-oss-20b moat arm (spec Amendment 7). Aggregates only; no review text is read.
+"""Groq-vs-local agreement for the gpt-oss-20b moat arm (spec Amendment 9). Aggregates only; no review text is read.
 
 Per task, on the ids present in BOTH row files: label agreement, Cohen's kappa and Spearman correlation of the verbalised
 confidences, each with an item-bootstrap 95 percent CI (1,000 resamples, seed 42). Pairs where either side is unparseable are

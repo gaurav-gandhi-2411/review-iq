@@ -1,4 +1,4 @@
-"""Kaggle kernel body: the gpt-oss-20b-local moat arm (spec Amendment 7) on two Ollama servers (one per T4). RESUMABLE.
+"""Kaggle kernel body: the gpt-oss-20b-local moat arm (spec Amendment 9) on two Ollama servers (one per T4). RESUMABLE.
 
 Filled in by engine/kaggle/push_moat20b.py (__BRANCH__, __MODE__ = smoke|full, __BUDGET_H__). Reads `items.jsonl`
 ({id, text} for the sealed items only, in sealed order) from a PRIVATE Kaggle dataset; review text stays out of the repo and out

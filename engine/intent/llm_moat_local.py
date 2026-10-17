@@ -1,4 +1,4 @@
-"""Local-inference runner for the moat comparison's gpt-oss-20b arm (spec Amendment 7, arm `gpt-oss-20b-local`).
+"""Local-inference runner for the moat comparison's gpt-oss-20b arm (spec Amendment 9, arm `gpt-oss-20b-local`).
 
 Same PROMPT, row schema `{id, ans, tokens}`, sealed order, scoring and n=300 interim rule as `llm_moat.py`; the only difference
 is the endpoint: an OpenAI-compatible Ollama server (one per GPU on Kaggle). The Groq arms are untouched. Review text is read
