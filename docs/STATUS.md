@@ -1,6 +1,6 @@
 # Samidha Reviews: status
 
-Updated at the end of every session. Last update: 2026-10-13 (S23; work dated 2026-10-12/13). Labels: VERIFIED = observed this
+Updated at the end of every session. Last update: 2026-10-17 (S24, autonomous; S23 text below is kept where still true and corrected where S24 changed it). Labels: VERIFIED = observed this
 session or by a committed artifact (command and output exist); BELIEVED = inferred or stated by someone else,
 not observed. Synthetic = produced on generated data, never a statement about real customers.
 
@@ -20,9 +20,9 @@ not observed. Synthetic = produced on generated data, never a statement about re
 | Admin service | `review-iq-admin` has NO IAM bindings: unauthenticated gets 403; an identity token without Basic gets 401 from the app (Basic is the second factor). The earlier "IAM-gated" claim was FALSE from 2026-08-13 16:43:54Z (`allUsers` run.invoker) to 2026-10-12 07:48:06Z, about 60 days. See the incident section. Doc correction is #512 (draft, gate 4) | VERIFIED 2026-10-12 (audit log, live requests) |
 | Admin secret pinning | `ADMIN_PASSWORD_HASH` is pinned to Secret Manager version 3 on BOTH services (explicit version: `latest` returns FAILED_PRECONDITION when the newest version is disabled). Versions 1 and 2 destroyed 2026-10-12 14:42 UTC. All other secret refs are still `latest` | VERIFIED |
 | API keys and orgs | 0 active API keys (6 unused keys revoked 2026-10-12 14:45 UTC; none used since 2026-07-07; nothing in the repo, workflows or secrets references any). 19 organizations, all GG's or test fixtures | VERIFIED; org ownership confirmed by GG |
-| Trigger tokens | `INGEST_TICK_TOKEN`, `DIGEST_TRIGGER_TOKEN`, `DETECTOR_SWEEP_TRIGGER_TOKEN` are PLAIN env vars on the service (not Secret Manager refs) and their values appeared in an agent transcript on 2026-10-12: treat as EXPOSED. Rotation plus a move to Secret Manager is open (Cloud Scheduler headers must change with them) | VERIFIED as plain env; the exposure is a fact of the transcript. OPEN, GG decision |
-| Uptime monitoring | Monitoring as code (#500, #501 merged): HTTPS check `api-health-https` (6 regions, body must contain `"status":"ok"`, 10 s timeout), availability policy (2 regions, 120 s), NEW failure-rate policy (pass fraction below 0.97 over 900 s; replay of 2026-10-09..12 data opens 2 incidents, silent on 5 probe-side blips and 3 single-region bursts), NEW certificate-expiry policy (under 14 days; currently 50.8 days). The old HTTP check was deleted after the new one proved green. Known gaps: a single-region failure never alerts; one email route; Secret Manager data-access audit logging is NOT enabled, so secret reads are unlogged | VERIFIED (orchestrator record). A temporary failing check opened an incident about 4 min 22 s after creation; inbox RECEIPT is NOT proven (GG to confirm `s23-alert-test`). #502 (retire `uptime-alert.yml`) is HELD until then |
-| `/health` 503s | 23 in 2026-10-10..12 (about 10 bursts of a few to about 20 s), all `reason=db_timeout` with an empty error. ROOT CAUSE NOT PROVEN. Healthy ping 1.77 s fixed cost. Measured from a Cloud Run job in Mumbai (`reports/ops/db_latency_s23.json`, PR #499, open, not on main): DB is the Sydney pooler (transaction mode, port 6543); one TCP round trip p50 218.8 ms; new connection p50 1773.8 ms (connect 1333.3 + `SELECT 1` 440.5); n 60. #494 merged (8 s guard, stage/connect_ms/elapsed_ms diagnostics, `health.db_slow`). Pooling is in draft PRs #513 (pool module), #514 (`/health` pooled), #515 (all call sites, gate 4): unit-tested, the real-Postgres isolation test is written but NOT run. A Mumbai region move is a PLAN only (`docs/ops/db-region-migration-plan.md` in #499) | VERIFIED measurement artifact (on the #499 branch); cause BELIEVED (connection setup cost), unproven |
+| Trigger tokens | ROTATED in S24 (A4). `INGEST_TICK_TOKEN`, `DIGEST_TRIGGER_TOKEN`, `DETECTOR_SWEEP_TRIGGER_TOKEN` are now Secret Manager refs pinned to explicit versions (the plain env vars were removed in the same `gcloud run services update`), and the three Scheduler headers were PATCHed to the new values. Values were generated in memory by `scripts/rotate_trigger_tokens.py` (#532) and never printed, logged, put in argv or written to a file. Live revision `review-iq-00086-v2v`. A first attempt failed at the Cloud Run update because the runtime service account lacked `secretAccessor` on the new secrets; per-secret grants were added and the script re-run. That failed attempt had already dropped the plain vars from the service spec, so the "old plain value now returns 401" check could not be run as a direct test | VERIFIED: a random token returns 401 on all three endpoints, the new ingest token returns 200, secret versions read back equal to what was written (compare only, nothing shown). BELIEVED: the old exposed values are rejected, because nothing accepts them any more (structural, not directly tested). The script disables the previous secret versions only after its checks pass (destroying them is a separate step); older Cloud Run revisions still hold the old plain values in their specs, so they must not be re-routed to |
+| Uptime monitoring | Monitoring as code (#500, #501 merged): HTTPS check `api-health-https` (6 regions, body must contain `"status":"ok"`, 10 s timeout), availability policy (2 regions, 120 s), NEW failure-rate policy (pass fraction below 0.97 over 900 s; replay of 2026-10-09..12 data opens 2 incidents, silent on 5 probe-side blips and 3 single-region bursts), NEW certificate-expiry policy (under 14 days; currently 50.8 days). The old HTTP check was deleted after the new one proved green. Known gaps: a single-region failure never alerts; one email route. Secret Manager data-access logging: ENABLED in S24 (A5) for `secretmanager.googleapis.com` only (DATA_READ, via an etag-guarded `set-iam-policy` that added `auditConfigs` and changed no binding), so secret reads from 2026-10-17 on are logged; earlier reads stay unlogged. Fit to the free Cloud Logging allotment (50 GiB per project per month) was checked against the project's measured ingestion for the last 30 days (`logging.googleapis.com/billing/bytes_ingested`); the result is in the A5 session record, not a committed artifact. Watch it for one month, since secret-read volume is new | VERIFIED (orchestrator record). A temporary failing check opened an incident about 4 min 22 s after creation; inbox RECEIPT is NOT proven (GG to confirm `s23-alert-test`). #502 (retire `uptime-alert.yml`) is HELD until then |
+| `/health` 503s | 23 in 2026-10-10..12 (about 10 bursts of a few to about 20 s), all `reason=db_timeout` with an empty error. ROOT CAUSE NOT PROVEN. Healthy ping 1.77 s fixed cost. Measured from a Cloud Run job in Mumbai (`reports/ops/db_latency_s23.json`, PR #499, open, not on main): DB is the Sydney pooler (transaction mode, port 6543); one TCP round trip p50 218.8 ms; new connection p50 1773.8 ms (connect 1333.3 + `SELECT 1` 440.5); n 60. #494 merged (8 s guard, stage/connect_ms/elapsed_ms diagnostics, `health.db_slow`). S24: #513 (pool module) and #514 (`/health` pooled) are MERGED; #515 (all call sites, gate 4) stays parked for GG. The real-Postgres tenant-isolation suite (`tests/integration/test_pooled_connection_isolation.py` on #515's branch) was RUN in S24 against ephemeral postgres:17 in CI: 6 of 6 cases pass (scope leak to the next borrower, rolled-back uncommitted write, interleaved open transactions across orgs on two physical connections, randomized borrow sequence, failed statement then reuse, cross-org INSERT rejected on a reused connection). Measured live after the merges (S24, from GG's workstation, client wall clock, n 30 each, 1 s apart): `/health` p50 558 ms, p95 2712 ms, max 15599 ms; the no-DB `/openapi.json` p50 699 ms, p95 1087 ms. So the DB ping now adds no visible time over the network floor, against 1.77 s per probe before pooling (Mumbai job measurement). The 15.6 s max is one outlier (BELIEVED cold start, not diagnosed). NOT proven: that the running image contains #514 (the image push time, 07:41Z, is 1 min 41 s after the #514 merge, which fits but does not prove it), and no in-Mumbai after-measurement exists; the workstation numbers include the internet path. A Mumbai region move is a PLAN only (`docs/ops/db-region-migration-plan.md` in #499) | VERIFIED measurement artifact (on the #499 branch); cause BELIEVED (connection setup cost), unproven |
 | Demo allowance | Trailing-24 h token ledger (in-memory, per instance) with `DEMO_MAX_SHARE`; sees only the demo's own tokens, not eval or production extraction (a persisted shared ledger needs an RLS policy change, gate 4). The "resets at midnight UTC" text is gone (#493 merged) | VERIFIED merged |
 | Classification engine | `engine/` on main; not deployed anywhere (deployment waits for the review-intent model) | VERIFIED |
 | Judge.me connector | Code merged behind `ENABLE_JUDGEME_CONNECTOR` (default off): spec, client, mapper and scans, sync engine (#351-#354). Migration and the rest of the stack are open PRs | VERIFIED merged; flag off; nothing applied |
@@ -129,16 +129,51 @@ recall survives (0.650 to 0.750), so rare classes must be served with per-class 
 - delivery and service stay insufficient after the auxiliary-data attempt was dropped; they need real customer
   reviews (Judge.me ingestion), not out-of-domain data.
 
-### Moat comparison (plain-prompted LLMs against the encoder): NOT COMPLETE
+### Moat comparison (plain-prompted LLMs against the encoder): 20b ARMS DONE, 120b PENDING A VALID KEY
 
-The pre-registered harness (#477: coverage at 0.95 precision, stopping rule at n=300) is on main; no result artifact
-is committed and no final comparison number exists. Why it is incomplete (orchestrator record, BELIEVED, no committed
-artifact): gpt-oss-20b has 502 Groq rows and gpt-oss-120b about 425; the first about 100 rows per model predate the
-committed stopping rule; the benchmark Groq key now returns HTTP 401, so the 120b arm is blocked until GG provides a
-valid key in an org that is not the failover pool; the 20b arm is being restarted entirely on Kaggle (local
-gpt-oss-20b) for a consistent paired comparison, with the Groq rows kept as a cross-check; the few-shot arm has not
-been run. Interim clean n=300 verdicts, not a result: 20b, encoder ahead on broad_intent and urgency, needs_action
-and sentiment overlap; 120b, encoder ahead on broad_intent and sentiment, needs_action and urgency overlap.
+All labels are the four-judge panel consensus (SILVER), never human gold. Pre-registered harness: #477; amendments in
+`docs/specs/review-intent.md` (7 and 8 run 3, 9 the local 20b arm, 10 the few-shot arm, 11 the compare rule).
+
+- **20b zero-shot, local (Amendment 9, merged #525 to #527).** gpt-oss-20b on Ollama on two Kaggle T4s, digest equal to
+  the registered manifest, all 757 sealed items. At n=300 the registered rule decided broad_intent and urgency
+  (encoder ahead) and left needs_action and sentiment undecided, so the run continued to 757. Groq-vs-local
+  agreement on the 502 overlapping ids is in `reports/intent/moat_local20b/agreement.json`. VERIFIED, committed
+  artifacts under `reports/intent/moat_local20b/`.
+- **20b few-shot, local (Amendment 10, merged #530).** 7 worked examples from TRAINING items only. The stopping rule
+  fired at n=300: the LLM interval was below the encoder interval on all four tasks, so the run stopped at 300.
+  Few-shot was NOT better than zero-shot on matched ids: the accuracy point estimate fell on every task, and the
+  interval excludes zero on three of four (urgency spans zero). Confound: 27 of 300 few-shot completions hit the token cap with empty content, which the comparison does not
+  decompose. VERIFIED, `reports/intent/moat_local20b_fewshot/`. BELIEVED, from the subagent reading the code and not
+  executed: `llm_moat.ask` cannot render a few-shot prompt itself; the local runner builds it.
+- **Compare rule, Wilson lower bound, matched coverage (Amendment 11).** Report PR #531 is a DRAFT and parked: it
+  fails gate 3 on size. It is not on main.
+- **Run 3 seeds (#529).** Merged as generated artifacts under `reports/intent/run3_seeds/`.
+- **120b: PENDING.** The benchmark Groq key returns HTTP 401 and no workaround was attempted. The 120b arm needs a
+  valid key in an org separate from the failover pool, or another provider. No 120b comparison number exists, and
+  nothing here says 120b loses or wins.
+
+### Served model: `POST /v2/classify` is BUILT, NOT DEPLOYED (S24 A6, draft PR #533)
+
+Flag `ENABLE_V2_CLASSIFY`, default off (404 before auth). Outputs needs_action, broad intent, sentiment and urgency
+with per-class thresholds and an explicit `abstained` (urgency high is chosen by its validation-fitted threshold,
+never argmax). Served variant: run 2, `int8_ffn_full` (no doc designated one; chosen by best agreement with the fp32
+CPU model under the served decision rule, a margin that is within noise). Run 3 is not served. Numbers are in
+`reports/serving/v2_classify_bench.{md,json}` on the PR branch (code commit 8953ecf), all on a loaded workstation in
+local Docker with 1 vCPU, NOT on Cloud Run:
+
+- Memory: OOM-killed at 1 GiB on the first request (twice); runs at 2 GiB, peak RSS 1559 MB, cgroup peak 1087 MB.
+  It needs its own service with at least 2 GiB. VERIFIED locally; which Cloud Run CPU and memory pairs are offered is
+  BELIEVED.
+- Cold start 21.3 s, of which model load 16.3 s. Batch 1: p50 803 ms, p95 1200 ms (n 757). Image 2.21 GB on disk.
+- Parity with the offline evaluation: run in batches of 128 in pred-file order, the served code reproduces all 3028
+  sealed decisions with 0 mismatches. Served one review per forward (what the endpoint does), 166 of 3028 differ, all
+  answer-versus-abstain, 0 class flips, 0 urgency-high flips. Cause: torch dynamic int8 quantises activations per batch
+  tensor, so a logit depends on its batch-mates. Bit-for-bit per-review parity is therefore NOT achievable; thresholds
+  are bit-for-bit equal to a recomputation from the offline artifacts. In the container, 164 differ, a different set
+  by 14 borderline items (torch builds differ).
+- Gates: size fails (1532 hand-written plus 2214 generated lines) and the new Dockerfile is arguably gate 4; the PR body
+  proposes a split. Unblocks: GG chooses the weights delivery (bake-in or bucket with a checksum pin), a separate
+  service at 2 GiB or more, and adds the requirements to the lock.
 
 ## Model: what each feature needs, honest gaps
 
@@ -218,9 +253,12 @@ pre-rotation password cannot be proven. 30-day misuse check (request logs reach 
 successful or guessed admin login and no mutation on `/admin`; only scanner probes on the PUBLIC service, all 404,
 from Google ranges.
 
-Open: (1) NOT checkable: 2026-08-13 to 2026-09-12 and any secret read (Secret Manager data-access audit logs are not
-enabled). (2) The three trigger tokens are plain env vars and were also exposed in a transcript (see the production
-table); rotation is a GG decision. (3) Doc correction #512, rotation script #508, runbook wording #485: open, gate 4,
+S24 closure of the two follow-ups (2026-10-17): the three trigger tokens were rotated and moved to Secret Manager
+(A4, see the production table), and Secret Manager DATA_READ audit logging was enabled (A5). The admin-password
+incident itself is closed; the remaining items below are open for GG.
+
+Open: (1) NOT checkable: 2026-08-13 to 2026-09-12 and any secret read before 2026-10-17 (Secret Manager data-access
+audit logging started in S24). (2) DONE in S24: trigger tokens rotated. (3) Doc correction #512, rotation script #508, runbook wording #485: open, gate 4,
 human merge. (4) Billing: no export in the project; per-SKU cost must be read in the Console. Cloud Run requests rose
 about 13x from 2026-10-05 (BELIEVED: the new uptime checks). (5) Guard: claude-config #49 and #50 (a hook that blocks a
 random token printed beside the words password/secret/key/token, including in the assistant's own message) are open;
@@ -243,8 +281,9 @@ branch for a few minutes (fixed in `c969e11`, nothing merged).
 | Shopify stack #291 to #293 | GG: needs the Shopify app registration |
 | Gemini clean-up (ADR 0035) | GG: GitHub secret `GEMINI_API_KEY` and Secret Manager `gemini-api-key` still exist. OpenRouter binding is already removed (see production table) |
 | `SUPABASE_DIRECT_URL` (write-capable GitHub secret) | Removal waits on #472 (read-only role, draft, GG's steps) |
-| S23 PRs | Draft, gate 4, GG merges: #485, #499, #508, #512, #513, #514, #515, #472, claude-config #49 and #50. Open for review: #495 to #498 (run 3; #498 is on an `exp/` branch and gets renamed), #502 (held), #505 to #507 |
+| Parked PRs (GG merges; S24 merged #505 to #507, #513, #514, #521, #525 to #527, #529, #530, #532) | #485 (runbook wording), #499 (DB latency report and region plan), #508 (admin rotation script), #512 (admin doc correction), #515 (all call sites on the pool; isolation 6 of 6 pass, conflict-free; gate 4), #472 (read-only role), #502 (retire `uptime-alert.yml`; waits on GG's `s23-alert-test` email confirmation), claude-config #49 and #50 (billing-blocked CI; only GG merges), #531 (moat compare report; fails gate 3, draft), #533 (`/v2/classify`; draft, fails gate 3, new Dockerfile) |
 | Moat comparison, 120b arm | A valid Groq benchmark key in an org separate from the failover pool, or another provider |
+| `/v2/classify` deployment | #533 split and merged by GG, a separate service of 2 GiB or more, weights delivery decision, requirements added to the lock, then a Cloud Run cold-start and latency measurement (none exists) |
 | DB region (Sydney pooler, Cloud Run in Mumbai) | GG decides among options A to D in #499; Mumbai move is a plan only, about 20 to 30 min write freeze (BELIEVED), the backup lacks `auth.users` |
 | Engine deployment | Waits for the review-intent model |
 | Tailwind 4 (#106) | Plan in `docs/ops/tailwind4-migration-plan.md`, before the braces allowlist expires 2026-12-31 |
@@ -253,13 +292,14 @@ branch for a few minutes (fixed in `c969e11`, nothing merged).
 
 Regenerated each session (S23 list, from the orchestrator record):
 
+In unblock order (S24; trigger-token rotation and Secret Manager audit logs are done and no longer on this list):
+
 1. Confirm the `s23-alert-test` email arrived; then #502 retires `uptime-alert.yml`.
-2. Decide rotation of the three trigger tokens and their move to Secret Manager (Cloud Scheduler headers change with them).
-3. Merge the gate-4 PRs: #485, #508, #512, #499, #515 (and #513, #514), claude-config #49 and #50.
-4. #472 read-only role steps, then remove `SUPABASE_DIRECT_URL` from GitHub secrets.
-5. Provide a valid Groq benchmark key in an org separate from the failover pool (or choose another provider).
-6. Decide the DB region move (#499) and whether to enable Secret Manager data-access audit logs.
-7. Confirm in the Groq console which org each key is in.
-8. Decide on a persisted shared demo/prod token ledger (needs an RLS policy change, gate 4).
-9. Check the Console cost view (no billing export exists).
-10. A `python -` spinner process (PID 15252, started 19:36 local, about 3 CPU-hours) is not Claude's as far as known; check it.
+2. Merge the gate-4 PRs: #485, #508, #512, #499, #515 (isolation suite 6 of 6), then claude-config #49 and #50.
+3. #472 read-only role steps, then remove `SUPABASE_DIRECT_URL` from GitHub secrets.
+4. Provide a valid Groq benchmark key in an org separate from the failover pool (or choose another provider) to run the 120b arm.
+5. Decide the DB region move (#499); confirm in the Groq console which org each key is in.
+6. Review #531 (moat compare report) and #533 (`/v2/classify`) and decide the split and the serving shape.
+7. Decide on a persisted shared demo/prod token ledger (needs an RLS policy change, gate 4).
+8. Check the Console cost view (no billing export exists) and the new audit-log volume after a month.
+9. A `python -` spinner process (PID 15252, started 19:36 local, about 3 CPU-hours) is not Claude's as far as known; check it.
