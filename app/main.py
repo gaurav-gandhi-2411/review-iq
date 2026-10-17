@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 import structlog
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse, Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -44,6 +44,7 @@ from app.api.webhooks.shopify import router as shopify_webhook_router
 from app.auth.signup import router as signup_router
 from app.core.config import Settings, get_settings
 from app.core.cors import PathScopedCORSMiddleware
+from app.core.db_pool import PoolExhaustedError
 from app.core.logging import setup_logging
 from app.core.metrics import PrometheusMiddleware
 from app.core.rate_limit import limiter
@@ -58,6 +59,16 @@ def _rate_limit_handler(request: Request, exc: RateLimitExceeded) -> Response:
     if request.url.path.rstrip("/") == LEADS_PATH:
         return leads_rate_limit_response()
     return _rate_limit_exceeded_handler(request, exc)
+
+
+def _pool_exhausted_handler(request: Request, exc: PoolExhaustedError) -> Response:
+    """Bounded-wait DB pool exhaustion is overload, not a bug: 503 + Retry-After (the web app
+    already reads Retry-After, see expose_headers below) instead of an opaque 500."""
+    return JSONResponse(
+        status_code=503,
+        content={"detail": "Service temporarily busy. Please retry shortly."},
+        headers={"Retry-After": "2"},
+    )
 
 
 # The base URL below is a placeholder — swap in whatever host this deployment
@@ -201,6 +212,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     _app.state.limiter = limiter
     _app.add_exception_handler(RateLimitExceeded, _rate_limit_handler)  # type: ignore[arg-type]
+    _app.add_exception_handler(PoolExhaustedError, _pool_exhausted_handler)  # type: ignore[arg-type]
 
     # Middleware order (last add_middleware = outermost = first to process requests):
     #   SlowAPIMiddleware → PrometheusMiddleware → CORSMiddleware → route handler
