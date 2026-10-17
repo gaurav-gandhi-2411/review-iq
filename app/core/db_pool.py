@@ -93,7 +93,7 @@ class _Pool:
                 "maxconn": self.maxconn,
             }
 
-    def acquire(self) -> _Entry:
+    def acquire(self, validate: bool = False, connect_timeout: int | None = None) -> _Entry:
         deadline = time.monotonic() + self.wait_s
         with self.cond:
             while True:
@@ -112,28 +112,35 @@ class _Pool:
                 self.cond.wait(remaining)
             self.in_use += 1
         try:  # network I/O happens outside the lock
-            if entry is not None and not self._healthy(entry):
+            if entry is not None and not self._healthy(entry, force=validate):
                 _close_quietly(entry.conn)
                 entry = None
             if entry is None:
                 now = time.monotonic()
-                entry = _Entry(psycopg2.connect(self.dsn, **_CONNECT_KWARGS), now, now)
+                kwargs = dict(_CONNECT_KWARGS)
+                if connect_timeout is not None:
+                    kwargs["connect_timeout"] = connect_timeout
+                entry = _Entry(psycopg2.connect(self.dsn, **kwargs), now, now)
+                if validate:
+                    try:
+                        _ping(entry.conn)
+                    except BaseException:
+                        _close_quietly(entry.conn)
+                        raise
         except BaseException:
             self._free_slot()
             raise
         return entry
 
     @staticmethod
-    def _healthy(entry: _Entry) -> bool:
+    def _healthy(entry: _Entry, *, force: bool = False) -> bool:
         now = time.monotonic()
         if entry.conn.closed or now - entry.created > _MAX_AGE_S:
             return False
-        if now - entry.last_used <= _VALIDATE_AFTER_IDLE_S:
+        if not force and now - entry.last_used <= _VALIDATE_AFTER_IDLE_S:
             return True
         try:
-            cur = entry.conn.cursor()
-            cur.execute("SELECT 1")
-            entry.conn.rollback()
+            _ping(entry.conn)
         except Exception:  # noqa: BLE001 -- any failure means the socket is not trustworthy
             log.info("db_pool.stale_connection_dropped")
             return False
@@ -171,6 +178,15 @@ class _Pool:
             entries, self.idle = self.idle, []
         for e in entries:
             _close_quietly(e.conn)
+
+
+def _ping(conn: Any) -> None:
+    """SELECT 1 in autocommit: ONE network round trip (a default-mode txn would add BEGIN and
+    ROLLBACK, 3 round trips ~ 660 ms at the measured 219 ms RTT). Touches no table, no tenant
+    data. Leaves the connection non-autocommit and idle, as every pooled connection must be."""
+    conn.autocommit = True
+    conn.cursor().execute("SELECT 1")
+    conn.autocommit = False
 
 
 def _close_quietly(conn: Any) -> None:
@@ -245,19 +261,26 @@ def _get_pool(dsn: str) -> _Pool:
         return pool
 
 
-def db_connect(dsn: str) -> PooledConnection:
+def db_connect(
+    dsn: str, *, validate: bool = False, connect_timeout: int | None = None
+) -> PooledConnection:
     """Borrow a connection; the caller MUST close() it (or use `pooled_connection`).
 
     `dsn` is required (no settings fallback): a caller that passes an unset admin DSN must not
     silently be handed the public app role's pool instead (rule 98a, fail closed)."""
     pool = _get_pool(dsn)
-    return PooledConnection(pool, pool.acquire())
+    return PooledConnection(pool, pool.acquire(validate, connect_timeout))
 
 
 @contextmanager
-def pooled_connection(dsn: str) -> Iterator[PooledConnection]:
-    """`with pooled_connection() as conn:` -- always rolled back + returned on exit."""
-    conn = db_connect(dsn)
+def pooled_connection(
+    dsn: str, *, validate: bool = False, connect_timeout: int | None = None
+) -> Iterator[PooledConnection]:
+    """`with pooled_connection(dsn) as conn:` -- always rolled back + returned on exit.
+
+    validate=True forces a one-round-trip SELECT 1 before returning (the health check uses it:
+    the borrow IS the ping, no second query needed)."""
+    conn = db_connect(dsn, validate=validate, connect_timeout=connect_timeout)
     try:
         yield conn
     finally:

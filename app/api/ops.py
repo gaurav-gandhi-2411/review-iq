@@ -18,6 +18,7 @@ from fastapi.responses import JSONResponse
 from starlette import status
 
 from app.core.config import get_settings
+from app.core.db_pool import pooled_connection
 
 log = structlog.get_logger(__name__)
 
@@ -54,8 +55,6 @@ async def _ping_postgres(dsn: str) -> None:
     Every other public.* call site in this codebase must call _set_tenant() or carry an
     equivalent documented exemption; this is the health-check exemption.
     """
-    import psycopg2
-
     t0 = time.perf_counter()
     diag: dict[str, Any] = {"stage": "connect"}
 
@@ -63,15 +62,14 @@ async def _ping_postgres(dsn: str) -> None:
         # No _set_tenant() needed: SELECT 1 touches no table, so RLS/tenant-scoping is
         # not applicable -- this connection never reads org-scoped data (BYPASSRLS
         # remediation audit, 2026-08-01: intentional, not an oversight).
-        conn = psycopg2.connect(dsn, connect_timeout=_PG_PING_CONNECT_TIMEOUT_SECONDS)
-        try:
+        # S23: borrow from the shared pool; validate=True makes the borrow itself the ping
+        # (one autocommit SELECT 1 round trip on a reused connection, ~0.22 s, versus a new
+        # connection at p50 1.77 s). The "connect" stage therefore covers borrow + validation.
+        with pooled_connection(
+            dsn, validate=True, connect_timeout=_PG_PING_CONNECT_TIMEOUT_SECONDS
+        ):
             diag["connect_ms"] = round((time.perf_counter() - t0) * 1000)
-            diag["stage"] = "query"
-            cur = conn.cursor()
-            cur.execute("SELECT 1")
             diag["stage"] = "done"
-        finally:
-            conn.close()
 
     try:
         await asyncio.wait_for(asyncio.to_thread(_sync_ping), timeout=_PG_PING_TIMEOUT_SECONDS)

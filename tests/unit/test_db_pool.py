@@ -36,7 +36,11 @@ class FakeCursor:
         c = self.conn
         if c.dead:
             raise psycopg2.OperationalError("server closed the connection unexpectedly")
-        c.status = _INTRANS
+        if not c.autocommit:
+            if c.status == _IDLE:
+                c.round_trips += 1  # implicit BEGIN is its own round trip
+            c.status = _INTRANS
+        c.round_trips += 1
         if sql.startswith("SET LOCAL ROLE"):
             c.local["role"] = sql.split()[-1]
         elif sql.startswith('SET LOCAL "app.current_org_id"'):
@@ -72,21 +76,36 @@ class FakeConn:
         self.pending: list[Any] = []
         self.status = _IDLE
         self.closed = 0
-        self.autocommit = False
+        self._autocommit = False
+        self.round_trips = 0  # network round trips this connection has cost (RTT ~ 219 ms)
         self.dead = False
         self.fail_rollback = False
         self.info = _Info(self)
+
+    @property
+    def autocommit(self) -> bool:
+        return self._autocommit
+
+    @autocommit.setter
+    def autocommit(self, value: bool) -> None:
+        if self.status != _IDLE:  # psycopg2 refuses this inside a transaction
+            raise psycopg2.ProgrammingError("set_session cannot be used inside a transaction")
+        self._autocommit = value
 
     def cursor(self) -> FakeCursor:
         return FakeCursor(self)
 
     def commit(self) -> None:
+        if self.status != _IDLE:
+            self.round_trips += 1
         self.db.rows.extend(self.pending)
         self._end()
 
     def rollback(self) -> None:
         if self.fail_rollback:
             raise psycopg2.OperationalError("rollback failed")
+        if self.status != _IDLE:  # psycopg2: rollback outside a transaction sends nothing
+            self.round_trips += 1
         self._end()
 
     def _end(self) -> None:
@@ -145,6 +164,67 @@ def test_connections_are_reused_not_reopened(fake_db: FakeDB) -> None:
         with pooled_connection(DSN) as conn:
             conn.cursor().execute("SELECT 1")
     assert len(fake_db.conns) == 1  # one connect() for ten borrows
+
+
+RTT_S = 0.219  # measured Mumbai -> Sydney pooler TCP round trip (reports/ops/db_latency_s23.json)
+NEW_CONNECTION_P50_S = 1.774  # measured connect + SELECT 1 + close
+
+
+def test_health_ping_on_a_reused_connection_is_one_round_trip(fake_db: FakeDB) -> None:
+    """Before: every ping = a new connection (p50 1.774 s). After: connect once, then each ping
+    is ONE autocommit SELECT 1 (no BEGIN, no ROLLBACK) = 1 RTT ~ 0.22 s."""
+    for _ in range(5):
+        with pooled_connection(DSN, validate=True):
+            pass
+        _only_pool().idle[0].last_used -= 60  # idle > threshold, as with a 1-minute uptime probe
+    assert len(fake_db.conns) == 1  # was 5 connects
+    assert fake_db.conns[0].round_trips == 5  # 5 pings, 1 round trip each
+    assert not fake_db.conns[0].autocommit  # handed back in the normal mode
+    saved_s = NEW_CONNECTION_P50_S - fake_db.conns[0].round_trips / 5 * RTT_S
+    assert 1.5 < saved_s < 1.6  # ~1.55 s saved per ping from the measured numbers
+
+
+def test_validate_on_a_fresh_connection_pings_once(fake_db: FakeDB) -> None:
+    with pooled_connection(DSN, validate=True):
+        pass
+    assert fake_db.conns[0].round_trips == 1
+
+
+def test_failed_forced_validation_replaces_the_connection(fake_db: FakeDB) -> None:
+    db_connect(DSN).close()
+    fake_db.conns[0].dead = True
+    with pooled_connection(DSN, validate=True) as conn:
+        assert conn._conn is fake_db.conns[1]
+    assert fake_db.conns[0].closed
+    assert fake_db.conns[1].round_trips == 1
+
+
+def test_failed_validation_on_a_fresh_connection_closes_it_and_frees_the_slot(
+    fake_db: FakeDB, monkeypatch
+) -> None:
+    monkeypatch.setenv("DB_POOL_MAXCONN", "1")
+    real_connect = fake_db.connect
+
+    def dead_on_arrival(dsn: str, **kw: Any) -> FakeConn:
+        c = real_connect(dsn, **kw)
+        c.dead = True
+        return c
+
+    monkeypatch.setattr(db_pool.psycopg2, "connect", dead_on_arrival)
+    with pytest.raises(psycopg2.OperationalError):
+        db_connect(DSN, validate=True)
+    assert fake_db.conns[0].closed
+    assert _only_pool().stats()["in_use"] == 0
+
+
+def test_default_mode_read_costs_three_round_trips_documented(fake_db: FakeDB) -> None:
+    """Pins the cost model for ordinary call sites (BEGIN + query + COMMIT). Pooling removes the
+    ~1.55 s connect but cannot remove these without changing every call site's transaction
+    shape; release adds none (status is already idle after the call site's commit)."""
+    with pooled_connection(DSN) as conn:
+        conn.cursor().execute("SELECT 1")
+        conn.commit()
+    assert fake_db.conns[0].round_trips == 3
 
 
 def test_connect_keeps_timeout_application_name_and_keepalives(fake_db: FakeDB) -> None:
