@@ -2,7 +2,7 @@
 
 **Status:** Accepted.
 **Date:** 2026-08-01
-**Scope:** Whether to restrict the project owner account's `roles/owner` grant on
+**Scope:** Whether to restrict the Cloud Run/Firebase account's `roles/owner` grant on
 `review-iq-prod` so that Workload Identity Federation (PR #60's CI pipeline) becomes the
 *only* principal able to deploy Cloud Run, or to rely on the drift check (detective) alone.
 
@@ -12,7 +12,7 @@ PR #60 gives GitHub Actions (via WIF) a real production deploy path. That's only
 architecture if every identity that *could* deploy outside it is trusted and accounted for.
 An audit (session-collision investigation, 2026-08-01) found:
 
-- The project owner account holds `roles/owner` on the project — not a narrow
+- The Cloud Run/Firebase account (the GCP project owner identity) holds `roles/owner` on the project — not a narrow
   `roles/run.developer` grant, the full primitive bundle (billing, IAM administration, every
   resource type). This is the same identity that performed the untracked `v0-19-0` and
   `bypassrls-cutover` manual deploys this project's own incidents are named after.

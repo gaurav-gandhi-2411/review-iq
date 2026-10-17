@@ -6,7 +6,7 @@ budget.
 
 ## Context
 
-GG has put all of his products on one Groq account (the project owner's account; stated by GG in the S19 R
+GG has put all of his products on one Groq account (the Vercel/Cloudflare account, per ADR 0009; stated by GG in the S19 R
 brief, **BELIEVED**: no Groq console or API call in this session shows the account/org of a key).
 Groq enforces limits per organisation, and the free tier gives each model its own pool
 (`openai/gpt-oss-20b` and `openai/gpt-oss-120b`: 30 RPM, 1K RPD, 8K TPM, 200K TPD, see
@@ -59,7 +59,7 @@ not come from Samidha production. The most likely source is another product on t
    decides the org). Free tier, no card.
 2. Create an API key in that org (console). Do not paste it in chat.
 3. Store it: `gcloud secrets versions add groq-api-key --project=reviewiq-prod-260813
-   --account=gaurav.gandhi1129@gmail.com --data-file=-` (pipe the key on stdin).
+   --account=<owner-account> --data-file=-` (pipe the key on stdin; where `<owner-account>` is the project's sole GCP owner identity (substitute at run time)).
 4. Cloud Run already reads `GROQ_API_KEY` from Secret Manager `groq-api-key` at `latest`
    (`ops/runbooks/cloud-run-deploy.md`), but a running revision reads the value only at start,
    so start a new revision ( `gcloud run services update review-iq --region=asia-south1`) to
