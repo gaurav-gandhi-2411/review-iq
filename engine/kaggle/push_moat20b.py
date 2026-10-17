@@ -1,4 +1,4 @@
-"""Push the gpt-oss-20b-local moat kernel (spec Amendment 7) as a PRIVATE Kaggle kernel; the kernel slug must differ from the dataset slug.
+"""Push the gpt-oss-20b-local moat kernel (spec Amendment 9) as a PRIVATE Kaggle kernel; the kernel slug must differ from the dataset slug.
 
     python -m engine.kaggle.push_moat20b --mode smoke --dataset gauravgandhi2411/review-intent-moat-items --slug review-intent-moat-run \
         --branch feat/s23-moat-20b-local [--prior gauravgandhi2411/review-intent-moat-prior] [--budget-hours 8]
