@@ -24,7 +24,7 @@
         "review_length_chars": 402,
         "confidence": 0.94,
         "extraction_meta": {
-          "model": "llama-3.3-70b-versatile",
+          "model": "openai/gpt-oss-120b",
           "prompt_version": "2.1",
           "schema_version": "1.0.0",
           "extracted_at": "2026-06-10T09:14:32Z",
@@ -58,7 +58,7 @@
         "review_length_chars": 95,
         "confidence": 0.91,
         "extraction_meta": {
-          "model": "llama-3.3-70b-versatile",
+          "model": "openai/gpt-oss-120b",
           "prompt_version": "2.1",
           "schema_version": "1.0.0",
           "extracted_at": "2026-06-10T09:14:41Z",
@@ -92,7 +92,7 @@
         "review_length_chars": 167,
         "confidence": 0.88,
         "extraction_meta": {
-          "model": "llama-3.3-70b-versatile",
+          "model": "openai/gpt-oss-120b",
           "prompt_version": "2.1",
           "schema_version": "1.0.0",
           "extracted_at": "2026-06-10T09:14:58Z",

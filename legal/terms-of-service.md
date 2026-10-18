@@ -188,7 +188,7 @@ constitutes acceptance.
 
 ## 11. Contact
 
-- **General/legal inquiries:** `[TODO: GG to provide a support/legal contact email]`
+- **General/legal inquiries:** `gauravgandhi429@gmail.com`
 - **Security disclosures:** see `SECURITY.md` (`gauravgandhi429@gmail.com`, 72-hour
   acknowledgment target).
 - **Data protection / DPDP grievance officer:** see
