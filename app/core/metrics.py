@@ -121,6 +121,12 @@ CLASSIFY_LATENCY_MS = Histogram(
     buckets=[25, 50, 100, 250, 500, 1000, 2500, 5000, 10000],
 )
 
+ENCODER_FIRST_TOTAL = Counter(
+    "review_iq_encoder_first_total",
+    "Encoder-first routing outcomes (routed to LLM / skipped = classified-only / fail_open = classifier problem, routed to LLM)",
+    ["outcome"],
+)
+
 CORRECTIONS_SUBMITTED = Counter(
     "review_iq_corrections_submitted_total",
     "Correction submissions by source_type",
