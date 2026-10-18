@@ -1,6 +1,7 @@
 """Postgres extractions repository for v2 multi-tenant endpoints.
 
-Each public function opens a fresh connection from the pooler
+Each public function borrows a connection from the in-process pool (app/core/db_pool.py,
+rolled back on release) to the pooler
 (SUPABASE_DATABASE_URL, port 6543, transaction mode) and scopes all
 queries to `org_id` at two levels:
 
@@ -16,10 +17,10 @@ import json
 from datetime import datetime
 from typing import Any
 
-import psycopg2
 import structlog
 
 from app.core.config import get_settings
+from app.core.db_pool import PooledConnection, db_connect
 from app.core.schemas import (
     ExtractionMetaV2,
     ReviewExtractionV2,
@@ -39,7 +40,7 @@ def record_quota_request_pg(
     2026-07-11 after the table was found live with no RLS and dangerous default
     anon grants) -- _set_tenant() here matches every other write in this module.
     """
-    conn = psycopg2.connect(get_settings().supabase_database_url)
+    conn = db_connect(get_settings().supabase_database_url)
     try:
         cur = conn.cursor()
         _set_tenant(cur, org_id)
@@ -64,9 +65,9 @@ def record_quota_request_pg(
         conn.close()
 
 
-def _db_connect() -> psycopg2.extensions.connection:
+def _db_connect() -> PooledConnection:
     settings = get_settings()
-    return psycopg2.connect(settings.supabase_database_url)
+    return db_connect(settings.supabase_database_url)
 
 
 def _set_tenant(cur: Any, org_id: str) -> None:

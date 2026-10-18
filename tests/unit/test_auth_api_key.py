@@ -271,14 +271,14 @@ def test_db_error_triggers_rollback() -> None:
 
 
 def test_db_connect_uses_supabase_database_url() -> None:
-    """_db_connect calls psycopg2.connect with the supabase_database_url from settings."""
+    """_db_connect borrows a pooled connection with the supabase_database_url from settings."""
     with (
         patch("app.auth.api_key.get_settings") as mock_settings,
-        patch("app.auth.api_key.psycopg2") as mock_psycopg2,
+        patch("app.auth.api_key.db_connect") as mock_connect,
     ):
         mock_settings.return_value.supabase_database_url = "postgresql://user:pw@host/db"
-        mock_psycopg2.connect.return_value = MagicMock()
+        mock_connect.return_value = MagicMock()
         from app.auth.api_key import _db_connect
 
         _db_connect()
-    mock_psycopg2.connect.assert_called_once_with("postgresql://user:pw@host/db")
+    mock_connect.assert_called_once_with("postgresql://user:pw@host/db")

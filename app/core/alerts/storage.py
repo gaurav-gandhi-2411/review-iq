@@ -15,6 +15,7 @@ import psycopg2
 import structlog
 
 from app.core.config import get_settings
+from app.core.db_pool import PooledConnection, db_connect
 
 log = structlog.get_logger(__name__)
 
@@ -28,8 +29,8 @@ _DEFAULT_ENABLED = True
 _DEFAULT_FREQUENCY = "immediate"
 
 
-def _db_connect() -> psycopg2.extensions.connection:
-    return psycopg2.connect(get_settings().supabase_database_url)
+def _db_connect() -> PooledConnection:
+    return db_connect(get_settings().supabase_database_url)
 
 
 def _set_tenant(cur: Any, org_id: str) -> None:
