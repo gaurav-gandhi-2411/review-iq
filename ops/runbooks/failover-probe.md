@@ -27,7 +27,8 @@ the job does not acknowledge, so a missing secondary key fails the job).
 ## Run and inspect
 
 ```bash
-A=--account=gaurav.gandhi1129@gmail.com; P=--project=reviewiq-prod-260813
+# where `<owner-account>` is the project's sole GCP owner identity (substitute at run time)
+A=--account=<owner-account>; P=--project=reviewiq-prod-260813
 gcloud run jobs execute failover-probe $A $P --region=asia-south1 --wait
 gcloud run jobs executions list --job=failover-probe $A $P --region=asia-south1 --limit=5
 gcloud logging read 'resource.type="cloud_run_job" AND resource.labels.job_name="failover-probe"' $A $P --freshness=1d --order=asc --format='value(textPayload)'

@@ -147,17 +147,17 @@ IAM-protected service with no secrets, not the production service or its revisio
 1. Build an image with the harness: take the production image and add a layer
    (`COPY scripts/load/ ./scripts/load/`). `mock_server.py --host 0.0.0.0` is the only
    non-loopback bind, needed because Cloud Run requires binding 0.0.0.0:$PORT.
-2. Deploy as a separate service with the production sizing, no traffic exposure to the public:
+2. Deploy as a separate service with the production sizing, no traffic exposure to the public (where `<owner-account>` is the project's sole GCP owner identity (substitute at run time)):
 
 ```text
-gcloud run deploy review-iq-loadtest --image=<IMAGE> --region=asia-south1 --project=reviewiq-prod-260813 --account=gaurav.gandhi1129@gmail.com --no-allow-unauthenticated --cpu=1 --memory=1Gi --concurrency=80 --min-instances=1 --max-instances=1 --timeout=120 --command=python --args=scripts/load/mock_server.py,--host,0.0.0.0,--port,8080,--llm-ms,800
+gcloud run deploy review-iq-loadtest --image=<IMAGE> --region=asia-south1 --project=reviewiq-prod-260813 --account=<owner-account> --no-allow-unauthenticated --cpu=1 --memory=1Gi --concurrency=80 --min-instances=1 --max-instances=1 --timeout=120 --command=python --args=scripts/load/mock_server.py,--host,0.0.0.0,--port,8080,--llm-ms,800
 ```
 
 3. Run the harness from a machine with a decent network path, once per `--llm-ms` value
    (redeploy with `--args` changed), authenticating with an identity token:
 
 ```text
-gcloud auth print-identity-token --account=gaurav.gandhi1129@gmail.com
+gcloud auth print-identity-token --account=<owner-account>
 python scripts/load/harness.py --base-url https://<SERVICE_URL> --header "Authorization: Bearer <TOKEN>" --only extract_llm800ms --out reports/load/cloudrun.json
 ```
 

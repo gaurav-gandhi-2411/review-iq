@@ -226,7 +226,7 @@ updated "Effective date" above.
 ## 9. Contact
 
 - **Privacy/data-rights requests:** `privacy@samidhareviews.xyz`
-- **Security disclosures:** see `SECURITY.md` (`gaurav.gandhi2411@gmail.com`).
+- **Security disclosures:** see `SECURITY.md` (`gauravgandhi429@gmail.com`).
 - **DPDP grievance officer (India):** see [`compliance-posture.md`](./compliance-posture.md).
 
 ---
