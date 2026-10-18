@@ -1,6 +1,6 @@
 # Samidha Reviews: status
 
-Updated at the end of every session. Last update: 2026-10-18 (S25, autonomous; S24 on 2026-10-17; S23 text below is kept where still true and corrected where S24 changed it). Labels: VERIFIED = observed this
+Updated at the end of every session. Last update: 2026-10-18 (S26, autonomous; S25 the same day, S24 on 2026-10-17; S23 text below is kept where still true and corrected where S24 changed it). Labels: VERIFIED = observed this
 session or by a committed artifact (command and output exist); BELIEVED = inferred or stated by someone else,
 not observed. Synthetic = produced on generated data, never a statement about real customers.
 
@@ -151,10 +151,35 @@ All labels are the four-judge panel consensus (SILVER), never human gold. Pre-re
   280 per task): few-shot is worse than zero-shot on needs_action, better on urgency, not separated on broad_intent accuracy
   and sentiment. Against the encoder (Amendment 11 rule): the encoder beats both arms on broad_intent, beats zero-shot on
   urgency, and is NOT separated from zero-shot on needs_action or from either arm on sentiment. So the moat claim stands for
-  broad_intent and urgency only; the earlier "encoder ahead on every task" was built on arms with empty answers. Caveats:
-  reasoning effort low is itself a change (the zero-shot v2 arm differs from the cap-600 zero-shot in both directions), whether this
-  Ollama build honours `reasoning_effort` was not isolated (the canary stopped at rung 1), three Ollama builds were used across
-  the arms, n is 300.
+  broad_intent and urgency only; the earlier "encoder ahead on every task" was built on arms with empty answers. Caveats: reasoning
+  effort low is itself a change (the zero-shot v2 arm differs from the cap-600 zero-shot in both directions); n is 300. The two
+  other S25 caveats are resolved by Amendment 13 (next bullet): the effort field is honoured, and both v2 arms (the ones every
+  verdict here uses) ran on ONE Ollama build; only the cap-600 arms ran on others.
+- **One Ollama build, and `reasoning_effort` tested (Amendment 13, S26, registered before any row; #542).** Builds actually used
+  (from the committed `run_status.json` files): cap-600 zero-shot 0.40.3, cap-600 few-shot 0.40.5, BOTH v2 arms 0.40.6. The
+  kernel now downloads the v0.40.6 release asset from GitHub and refuses to continue unless its sha256 equals the published
+  digest (the Kaggle run matched it). Test (20 zero-shot items, same items at none/low/medium/high, completion tokens): mean 558 (default), 379
+  (low), 549 (medium), 822 (high); high longer than low on 20 of 20 items, exact sign test p 2e-06, median 377.5 against 739.5
+  (ratio 1.96); criterion (p below 0.05 and ratio at least 1.25) MET. VERIFIED, `reports/intent/moat_effort_check/`. So "reasoning
+  effort low" in Amendment 12 was a real setting, and the default behaves like medium. Not shown: that answer quality is unchanged
+  across settings, or the same effect on the few-shot prompt. Consequence for comparisons: the v2 few-shot vs v2 zero-shot pairs
+  are same-build, same-settings and stand; any v2-versus-cap-600 difference mixes truncation, effort and build and is not separable.
+- **The moat claim, as far as the evidence goes (S26; silver labels, first 300 sealed ids, matched per task, v2 arms, 20b only).**
+  Accuracy edge over gpt-oss-20b zero-shot: broad_intent 0.916 against 0.747 (paired difference +0.168 [0.117, 0.220]) and urgency
+  0.942 against 0.851 (+0.091 [0.044, 0.142]); the registered rule says the encoder beats it on both. No accuracy edge on
+  needs_action (0.957 against 0.957, difference 0.000 [-0.028, 0.028]) or sentiment (0.960 against 0.941, +0.020 [-0.004, 0.047]):
+  NOT separated, so there the reasons to prefer the encoder are cost, latency and independence from a provider quota, not accuracy.
+  Source: `reports/intent/moat_local20b_fewshot_v2/moat_compare_v2.{json,md}` (code commit in its header). 120b: PENDING (no key), so
+  nothing is claimed against it. Cost and latency per 1,000 reviews, both models, all four tasks in one pass:
+
+  | | encoder (static-int8 ONNX, own Cloud Run service) | gpt-oss-20b via Groq, effort low |
+  |---|---|---|
+  | cost per 1,000 reviews | about $0.0044 outside the free tier, $0 inside it (up to about 1.3 million reviews a month in the free vCPU allowance). BELIEVED: Cloud Run unit prices ($0.000024 per vCPU-s, $0.0000025 per GiB-s, $0.40 per million requests) are recalled, not verified against Google's page this session; the 137.2 ms is VERIFIED local-container p50 | $0.133 (default effort $0.187, high $0.266). Price VERIFIED in `app/core/pricing.py` (as of 2026-09-10); completion tokens VERIFIED (mean 379.1 at low, effort check); prompt tokens ESTIMATED at 260 (911 characters, not tokenised) |
+  | latency per review | batch 1 p50 137.2 ms, p95 245.8 ms in a 1 vCPU container (S25, local Docker); 161.5 / 302.6 ms client side over HTTP (S26 rehearsal). Cloud Run NOT measured | NOT measured on Groq for 20b. Measured only locally: the mixed T4 run took 2086 s for 1,057 reviews on two servers, about 4 s per review per server (mostly few-shot, about 1,112 tokens). One Groq sample exists (120b failover, 259 in/437 out): 4.75 s |
+  | quota | none | about 640 tokens per review means about 313 reviews a day on a 200,000-token daily pool (the figure in this file's failover row, BELIEVED per account) |
+
+  Ratio of cost: about 30 times, on estimates marked above; it moves with the Cloud Run prices and the prompt-token estimate, not with the
+  direction. This is a cost and quota argument at the model-serving layer; it says nothing about Groq's price changing.
 - **Compare rule, Wilson lower bound, matched coverage (Amendment 11).** Merged as #535 (statistics, spec) and #536 (loading,
   writer, cap-600 report with a notice); #531 closed as superseded. #531 failed gate 3 because of the 577-line module, not the
   generated files, which were already under the designated path.
@@ -163,9 +188,25 @@ All labels are the four-judge panel consensus (SILVER), never human gold. Pre-re
   valid key in an org separate from the failover pool, or another provider. No 120b comparison number exists, and
   nothing here says 120b loses or wins.
 
-### Served model: `POST /v2/classify` is BUILT, NOT DEPLOYED (S24 A6, draft PR #533)
+### Served model: `POST /v2/classify` is MERGED (flag OFF), NOT DEPLOYED (S24 A6; split in S26)
 
-**S25 state (draft #533, head after the ONNX commits; flag off, nothing deployed).** Served model switched from torch dynamic
+**S26 state.** #533 was split along its seams and closed as superseded (all 47 files accounted for by blob comparison; 5 changed on
+purpose). Merged, each through the gate, flag `ENABLE_V2_CLASSIFY` still default OFF: #541 thresholds/errors/flag/metrics, #544 runtime,
+#547 endpoint + serving spec, #548 quantization script, #549 evaluation scripts/pred files/report, #550 parity check, #551 benchmark.
+GG's decisions were implemented: own service at 2 GiB, 1 vCPU, min-instances 0; weights baked in (both sha256 pinned in the deploy
+script); `requirements-classify.txt` hash-pinned (`uv pip compile --generate-hashes`, install with `--require-hashes`).
+Parked as drafts (deploy config, gate 4): #545 image and hashed requirements, #546 deploy script + live batch-1 parity check + runbook.
+VERIFIED this session, in the built hash-pinned image run at `--cpus 1 --memory 2g` (local Docker, NOT Cloud Run): 757 sealed reviews sent one
+per HTTP request: 0 errors, 0 mismatches of 3028 decisions, `thresholds_sha256` equal to the committed file's; client latency p50 161.5 ms,
+p95 302.6 ms, cgroup peak 846 MB, not OOM-killed (the check is `scripts/classify_live_parity.py`; result kept at
+`D:/ml-cache/s25/live_parity_rehearsal_s26.json`, not committed). The headline precision/coverage at batch 1 is unchanged from S25.
+NOT done, and why: the deploy was not attempted. (1) The push adds a ~1.4 GB image (compressed size not measured) to Artifact Registry, which already holds
+about 3.8 GB against a 0.5 GB free tier (measured with gcloud, read-only), so it is billed storage (BELIEVED about $0.10 per GB-month): the
+no-paid-spend rule stops it, and the script itself refuses to push without `CONFIRM_REGISTRY_COST=yes`. (2) The service can only authenticate
+callers through the production DB secret (`supabase-database-url`), a credential grant to a new service (gate 4). (3) The live parity run
+needs an API key; production has 0 active keys. No classifier denial occurred; the deploy script has not been executed.
+
+**S25 state (measured on the #533 branch, now merged in pieces; flag off, nothing deployed).** Served model switched from torch dynamic
 int8 to **static int8 on ONNX Runtime with no PyTorch in the image** (`docs/specs/review-intent-serving.md`, numbers in
 `reports/serving/v2_classify_onnx.{md,json}` on the PR branch, silver labels, local Docker 1 vCPU, NOT Cloud Run). VERIFIED:
 - Batch independence: 0 of 3028 sealed task decisions differ between one review per forward, padded batches of 128 and of 8
@@ -313,9 +354,10 @@ branch for a few minutes (fixed in `c969e11`, nothing merged).
 | Shopify stack #291 to #293 | GG: needs the Shopify app registration |
 | Gemini clean-up (ADR 0035) | GG: GitHub secret `GEMINI_API_KEY` and Secret Manager `gemini-api-key` still exist. OpenRouter binding is already removed (see production table) |
 | `SUPABASE_DIRECT_URL` (write-capable GitHub secret) | Removal waits on #472 (read-only role, draft, GG's steps) |
-| Parked PRs (GG merges; S24 merged #505 to #507, #513, #514, #521, #525 to #527, #529, #530, #532) | #485 (runbook wording), #499 (DB latency report and region plan), #508 (admin rotation script), #512 (admin doc correction), #515 (all call sites on the pool; isolation 6 of 6 pass, conflict-free; gate 4), #472 (read-only role), #502 (retire `uptime-alert.yml`; waits on GG's `s23-alert-test` email confirmation), claude-config #49 and #50 (billing-blocked CI; only GG merges), #533 (`/v2/classify` on ONNX; draft, fails gate 3, new Dockerfile), #537 (recovered reply-placeholder fix `exp/q3b-reply-eval`, draft, not rebased, needs triage). S25 merged #535, #536, #538, and the S25 docs PR; #531 closed as superseded. #318 (U4d twin control, parked) gained one commit with progress that had been left uncommitted in a worktree |
+| Parked PRs (GG merges; S24 merged #505 to #507, #513, #514, #521, #525 to #527, #529, #530, #532) | #485 (runbook wording), #499 (DB latency report and region plan), #508 (admin rotation script), #512 (admin doc correction), #472 (read-only role), #502 (retire `uptime-alert.yml`; waits on GG's `s23-alert-test` email confirmation), claude-config #49 and #50 (billing-blocked CI; only GG merges), #545 and #546 (classify image and deploy script, drafts, gate 4), #298 (reply prompt v2.2: no eval run, and its tone examples contradict its own rule 7; #537 was a duplicate of it plus cassettes and is closed, rebased branch `fix/s26-reply-placeholders`). #515 was merged by GG. S25 merged #535, #536, #538, and the S25 docs PR; #531 closed as superseded. S26 merged #541, #544, #547 to #551 (the #533 split), #542 (Amendment 13) and this docs PR; #533 and #537 closed. #318 (U4d twin control, parked) gained one commit with progress that had been left uncommitted in a worktree |
+| Local branch hygiene (S26) | Done, no action. Local branches 502 -> 248: deleted 259 + 7 that were fully merged (154 by ancestry, 105 + 7 squash-merged with the branch tip equal to the merged PR's head commit, checked against `gh pr list --state merged`). Kept: 3 `archive/s25-*`, 26 with an open PR, 3 checked out, and 216 holding unmerged work (not judged). The record of the first 259 tips was overwritten by a second run of the same script (my mistake); they are all merged, so each is recoverable from its PR head on GitHub. The stray `review-iq-wt-c2-before_held_out.json` (a 2026-09-12 held-out eval output, outside any repo) was MOVED, not deleted, to `D:/ml-cache/archive/` |
 | Moat comparison, 120b arm | A valid Groq benchmark key in an org separate from the failover pool, or another provider |
-| `/v2/classify` deployment | #533 split and merged by GG (proposed split in its body), a separate service (1Gi minimum, 2Gi comfortable), weights delivery decision (415 MB `model.onnx`: bake-in or bucket with a checksum pin), requirements added to the lock, then a Cloud Run cold-start and latency measurement (none exists) |
+| `/v2/classify` deployment | GG: merge #545 and #546 (gate 4); accept the billed registry storage (about $0.10 per GB-month, BELIEVED) or free space; grant the new service accessor on `supabase-database-url` (or choose another way to authenticate callers); issue an API key for the post-deploy check; run `bash ops/deploy/deploy-classify.sh <artifacts>` then `scripts/classify_live_parity.py`; then a Cloud Run cold-start and latency measurement (none exists) |
 | DB region (Sydney pooler, Cloud Run in Mumbai) | GG decides among options A to D in #499; Mumbai move is a plan only, about 20 to 30 min write freeze (BELIEVED), the backup lacks `auth.users` |
 | Engine deployment | Waits for the review-intent model |
 | Tailwind 4 (#106) | Plan in `docs/ops/tailwind4-migration-plan.md`, before the braces allowlist expires 2026-12-31 |
@@ -327,11 +369,11 @@ Regenerated each session (S23 list, from the orchestrator record):
 In unblock order (S24; trigger-token rotation and Secret Manager audit logs are done and no longer on this list):
 
 1. Confirm the `s23-alert-test` email arrived; then #502 retires `uptime-alert.yml`.
-2. Merge the gate-4 PRs: #485, #508, #512, #499, #515 (isolation suite 6 of 6), then claude-config #49 and #50.
+2. Merge the gate-4 PRs: #485, #508, #512, #499, then claude-config #49 and #50.
 3. #472 read-only role steps, then remove `SUPABASE_DIRECT_URL` from GitHub secrets.
 4. Provide a valid Groq benchmark key in an org separate from the failover pool (or choose another provider) to run the 120b arm.
 5. Decide the DB region move (#499); confirm in the Groq console which org each key is in.
-6. Review #533 (`/v2/classify` on ONNX) and decide the split and the serving shape; triage #537 (recovered reply fix).
+6. `/v2/classify` deploy (S26; the split is done): decide #545 and #546 and the three items in the deployment row above (billed registry storage, DB secret for the new service, an API key). Reply prompt: #298 needs its two tone examples fixed and a reply eval run (shared Groq quota) before it can merge.
 7. Decide on a persisted shared demo/prod token ledger (needs an RLS policy change, gate 4).
 8. Check the Console cost view (no billing export exists) and the new audit-log volume after a month.
 9. PID 15252 (a `python -` spinner, not Claude's) was no longer running when checked in S24; nothing to do unless it returns.
