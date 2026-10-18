@@ -6,7 +6,7 @@ anywhere (README, blog, site).**
 > **Correction (Session 15d, 2026-09-20): the "language-routing bug (4.6pp)" below is wrong.**
 > The 4.6pp is the `language` output field scoring 100% by echo when routing is forced (the
 > forced prompt states the label), versus the detector's agreement with a noisy corpus label as
-> deployed. Excluding `language`, forcing the correct routing moves the held-out headline by
+> deployed. Excluding `language`, forcing the correct routing moves the held-out figure by
 > -0.63pp [-2.77, +1.51]: no measurable extraction cost of misrouting
 > (`eval/results/routing_cost_n106.json`). The 4.6 + 7.8 = 12.4pp decomposition therefore does
 > not hold; the 7.8pp is not re-derived. Details: the Correction sections of ADR 0021 and ADR
@@ -18,7 +18,7 @@ anywhere (README, blog, site).**
 > examples are rewrites of the dev fixtures. The builder excluded only already-quarantined text,
 > and the leakage check compared only the first 40 characters against prompt text, so nothing
 > failed. Separately, 102 (review, field) gold pairs were a judge-panel split stored as a default
-> and scored as a label. The published headline now covers the 70 unseen reviews with split gold
+> and scored as a label. The published held-out figure now covers the 70 unseen reviews with split gold
 > excluded: 79.5% [76.0, 82.7], against 72.4% [69.8, 75.0] for all 106 with defaults scored. The
 > exposed reviews score no better than the unseen ones (+1.2 pp, 95% CI [-4.2, +6.4]), which is
 > absence of a detected effect, not proof of none. The "12.3 pp gap" and "68.3% held-out" figures
@@ -27,7 +27,7 @@ anywhere (README, blog, site).**
 
 <!-- METRICS:HISTORICAL -->
 > **Correction (Session 17, 2026-10-05): the Session 16 correction above is itself stale, and the
-> headline it quotes is not overall accuracy.** (1) The artifact now reads 79.6% [76.2, 82.8] on
+> figure it quotes is not overall accuracy.** (1) The artifact now reads 79.6% [76.2, 82.8] on
 > n=70 (60 split pairs, 104 over all 106), not 79.5% [76.0, 82.7] / 102; the exposed-vs-unseen
 > difference is +1.0 pp [-4.4, +6.2]. (2) Excluding split-gold pairs is right but is a selection
 > effect: they are the reviews the panel found hardest, so the number is accuracy *where the
