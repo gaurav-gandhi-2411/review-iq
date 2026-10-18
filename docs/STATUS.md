@@ -1,6 +1,6 @@
 # Samidha Reviews: status
 
-Updated at the end of every session. Last update: 2026-10-18 (S27, autonomous; S26 and S25 the same day, S24 on 2026-10-17; S23 text below is kept where still true and corrected where S24 changed it). Labels: VERIFIED = observed this
+Updated at the end of every session. Last update: 2026-10-19 (S28, autonomous; S27 on 2026-10-18; S26 and S25 the same day, S24 on 2026-10-17; S23 text below is kept where still true and corrected where S24 changed it). Labels: VERIFIED = observed this
 session or by a committed artifact (command and output exist); BELIEVED = inferred or stated by someone else,
 not observed. Synthetic = produced on generated data, never a statement about real customers.
 
@@ -193,23 +193,18 @@ All labels are the four-judge panel consensus (SILVER), never human gold. Pre-re
   Cost per 1,000 reviews (all four tasks in one pass): encoder about $0.0044 outside the free tier (BELIEVED unit prices), 20b $0.133 at
   low effort (price VERIFIED, completion tokens VERIFIED, prompt tokens ESTIMATED): about 30 times. Latency: encoder 137 ms p50 per
   review (local container); 20b not measured on Groq. Details and caveats in the S26 bullet above.
-- **Capacity unlock: encoder-first routing (Amendment 14, S27; draft #559, flag OFF, verdict: DO NOT ENABLE).** Registered
-  (commit ed74662) before any router output. Current ceiling (`eval/results/capacity_model.json`, the 120b pool binds at 59 percent of
-  traffic, 2,394 tokens per 120b extraction and 2,525 per 20b extraction): 140.6 extractions a day = 4,217 a month at the hard limit
-  (200K tokens/day/model), 70.3 a day = 2,109 a month inside the 100K working budget. Starter (5,000 a month) needs 167 a day, Growth
-  (25,000) 833 a day: today NEITHER quota is met, since 4,217 a month at the hard limit and 2,109 inside the 100K budget are both
-  below Starter's 5,000. Measured on the 757 sealed ids with the served ONNX decisions: rule R1 (route when
-  needs_action is yes or abstained, or urgency is high-candidate or abstained) sends 208 = 0.275 [0.244, 0.308] to the LLM (expected
-  0.25 to 0.45). Capacity multiplier 2.88 if 10 percent of skipped reviews are later opened (3.64 if none, 2.03 at 30 percent; the open
-  rate is an ASSUMPTION): 405 extractions a day at the hard limit (12,143 a month) and 202 a day at the 100K budget (6,071 a month). Starter is met
-  at the hard limit for every open rate and at the 100K budget for open rates up to 0.1; Growth is NOT reachable (needs 5.9 times).
-  Quality criteria (silver labels): C1 urgent reviews, safety-stratum test (130 independent gold urgency=high groups, ENRICHED not a base
-  rate): R1 routing recall 1.0 [0.971, 1.0], MET. C4, the urgent items the gpt-oss-20b zero-shot path also caught (44 groups, 720 LLM rows,
-  0 empty): recall 1.0 [0.920, 1.0], MET. C3, gold needs_action=yes on the sealed set: 106 of 111 = 0.955 [0.8989, 0.9806], the lower bound
-  misses the 0.90 bar by 0.0011, MISSED (the 5 misses are confident "no" calls, p(yes) 0.035 to 0.099). By the registered rule R1
-  must not be enabled; no criterion was changed after the result. Source `reports/intent/encoder_first/` on #559. Not built: persisting the
-  classification of skipped reviews (a migration, gate 4) and the on-open extraction path, so even a passing verdict would not be shippable
-  yet.
+- **Encoder-first routing (Amendment 14, S27; draft #559, flag OFF, verdict: DO NOT ENABLE).** Registered (commit ed74662 on #559's branch; the spec text
+  lands on main with #561) before any router output. Capacity arithmetic is in the product-wide capacity section below. Measured on the 757 sealed ids
+  with the served ONNX decisions: rule R1 (route when needs_action is yes or abstained, or urgency is high-candidate or abstained) sends 208
+  = 0.275 [0.244, 0.308] to the LLM (expected 0.25 to 0.45). Quality criteria (silver labels): C1 urgent reviews, safety-stratum test (130
+  independent gold urgency=high groups, ENRICHED not a base rate): R1 routing recall 1.0 [0.971, 1.0], MET. C4, the urgent items the
+  gpt-oss-20b zero-shot path also caught (44 groups, 720 LLM rows, 0 empty): 1.0 [0.920, 1.0], MET. C3, gold needs_action=yes on the sealed
+  set: 106 of 111 = 0.955 [0.8989, 0.9806], the lower bound misses the 0.90 bar by 0.0011, MISSED. By the registered rule R1 must not be
+  enabled; no criterion was changed after the result. S28 error analysis of the 5 misses (`reports/intent/fresh15/c3_miss_votes.json`): the
+  four-judge panel did NOT split on them (2 are 4-0 yes, 3 are 3-1 yes; across all 111 gold-yes items 90 are 4-0 and 21 = 18.9 percent are 3-1),
+  the encoder was confident on all five (p(yes) 0.035 to 0.099), so they are not all ambiguous labels. Amendment 15 (S28, registered before any
+  fresh item was drawn) sets a larger fresh test; the set (2,000 English items, zero overlap verified) is being labelled, no result yet. Not built: persisting the classification of skipped reviews (a
+  migration, gate 4) and the on-open extraction path, so even a passing verdict would not be shippable yet.
 - **Compare rule, Wilson lower bound, matched coverage (Amendment 11).** Merged as #535 (statistics, spec) and #536 (loading,
   writer, cap-600 report with a notice); #531 closed as superseded. #531 failed gate 3 because of the 577-line module, not the
   generated files, which were already under the designated path.
@@ -281,6 +276,35 @@ local Docker with 1 vCPU, NOT on Cloud Run:
 - Gates: size fails (1532 hand-written plus 2214 generated lines) and the new Dockerfile is arguably gate 4; the PR body
   proposes a split. Unblocks: GG chooses the weights delivery (bake-in or bucket with a checksum pin), a separate
   service at 2 GiB or more, and adds the requirements to the lock.
+
+## Capacity is product-wide: free inference serves about two Starter customers at best (S28)
+
+Free inference is ONE ceiling for the whole business, not a per-customer allowance. `eval/results/capacity_model.json` says so itself: the
+single production Groq key's per-model pools (200K tokens/day each, 8K TPM; the 120b pool binds) are shared by every consumer: customer
+extraction, CSV ingest, the public demo, and any live eval or CI call. Tokens per extraction are measured (below), so the figures are the TOTAL
+for all customers together:
+
+| | extractions/day | extractions/month (30 d) | Starter customers at full quota (5,000/month) |
+|---|---|---|---|
+| hard limit, no router (today) | 140.6 | 4,217 | 0.8 |
+| 100K working budget, no router | 70.3 | 2,109 | 0.4 |
+| hard limit, encoder-first R1 (open rate 0.1, multiplier 2.88; NOT enabled) | 404.8 | 12,143 | 2.4 (about 2) |
+| 100K budget, R1 | 202.4 | 6,071 | 1.2 |
+
+VERIFIED arithmetic on `capacity_model.json` and the measured routing share (`reports/intent/encoder_first/` on #559); the open rate is an
+ASSUMPTION. So today the whole business can extract 4,217 reviews a month on free inference, less than one Starter customer; with the router
+(which the Amendment 14 verdict says must not be enabled yet) about two. **Growth (25,000/month) is not deliverable on free inference**: one
+Growth customer needs 5.9 times today's hard limit, and 2.06 times the router's entire total.
+
+Paid Groq (pay per token), at MEASURED tokens per review: 106 held-out fixtures replayed from cassettes at $0
+(`eval/results/token_cost_measurement_n106.json`, `docs/cost-model.md` section 1): gpt-oss-20b (40.6 percent of traffic) 1,751 tokens in and 774
+out, gpt-oss-120b (59.4 percent) 1,746 in and 647 out. At the verified unit prices in `app/core/pricing.py` (20b $0.075 in / $0.30 out per M;
+120b $0.15 / $0.60; as of 2026-09-10) that is $0.000363 and $0.000650 per extraction, blended $0.000534 (recomputed this session). Per customer
+at full quota: **Starter 5,000 reviews = $2.67 a month; Growth 25,000 = $13.35 a month.** With R1 at an open rate of 0.1 only 34.75 percent of
+reviews are extracted: Starter $0.93, Growth $4.64, plus the encoder service at about $0.0044 per 1,000 reviews (BELIEVED Cloud Run prices):
+$0.02 and $0.11. The same $0.000534 sits behind the margins in `docs/cost-model.md` (Starter $59, Growth $99). NOT verified: Groq's paid-tier rate
+limits (TPM, requests) at these volumes, any price change after 2026-09-10, and that 106 fixtures represent the production stream. The public
+pricing page and prices are unchanged and are GG's decision.
 
 ## Model: what each feature needs, honest gaps
 
