@@ -1,6 +1,6 @@
 # Samidha Reviews: status
 
-Updated at the end of every session. Last update: 2026-10-18 (S26, autonomous; S25 the same day, S24 on 2026-10-17; S23 text below is kept where still true and corrected where S24 changed it). Labels: VERIFIED = observed this
+Updated at the end of every session. Last update: 2026-10-18 (S27, autonomous; S26 and S25 the same day, S24 on 2026-10-17; S23 text below is kept where still true and corrected where S24 changed it). Labels: VERIFIED = observed this
 session or by a committed artifact (command and output exist); BELIEVED = inferred or stated by someone else,
 not observed. Synthetic = produced on generated data, never a statement about real customers.
 
@@ -180,6 +180,36 @@ All labels are the four-judge panel consensus (SILVER), never human gold. Pre-re
 
   Ratio of cost: about 30 times, on estimates marked above; it moves with the Cloud Run prices and the prompt-token estimate, not with the
   direction. This is a cost and quota argument at the model-serving layer; it says nothing about Groq's price changing.
+- **Moat table (S27 consolidation; silver labels, first 300 sealed ids matched per task, v2 arms, 20b zero-shot only; 120b PENDING).**
+  Source `reports/intent/moat_local20b_fewshot_v2/moat_compare_v2.{json,md}`. Accuracy, paired item bootstrap 95 percent:
+
+  | task (matched n) | encoder | gpt-oss-20b | encoder minus 20b | reading |
+  |---|---|---|---|---|
+  | broad_intent (273) | 0.916 | 0.747 | +0.168 [0.117, 0.220] | accuracy edge |
+  | urgency (275) | 0.942 | 0.851 | +0.091 [0.044, 0.142] | accuracy edge |
+  | needs_action (281) | 0.957 | 0.957 | 0.000 [-0.028, 0.028] | not separated: edge is cost, latency, quota |
+  | sentiment (253) | 0.960 | 0.941 | +0.020 [-0.004, 0.047] | not separated: edge is cost, latency, quota |
+
+  Cost per 1,000 reviews (all four tasks in one pass): encoder about $0.0044 outside the free tier (BELIEVED unit prices), 20b $0.133 at
+  low effort (price VERIFIED, completion tokens VERIFIED, prompt tokens ESTIMATED): about 30 times. Latency: encoder 137 ms p50 per
+  review (local container); 20b not measured on Groq. Details and caveats in the S26 bullet above.
+- **Capacity unlock: encoder-first routing (Amendment 14, S27; draft #559, flag OFF, verdict: DO NOT ENABLE).** Registered
+  (commit ed74662) before any router output. Current ceiling (`eval/results/capacity_model.json`, the 120b pool binds at 59 percent of
+  traffic, 2,394 tokens per 120b extraction and 2,525 per 20b extraction): 140.6 extractions a day = 4,217 a month at the hard limit
+  (200K tokens/day/model), 70.3 a day = 2,109 a month inside the 100K working budget. Starter (5,000 a month) needs 167 a day, Growth
+  (25,000) 833 a day: today NEITHER quota is met, since 4,217 a month at the hard limit and 2,109 inside the 100K budget are both
+  below Starter's 5,000. Measured on the 757 sealed ids with the served ONNX decisions: rule R1 (route when
+  needs_action is yes or abstained, or urgency is high-candidate or abstained) sends 208 = 0.275 [0.244, 0.308] to the LLM (expected
+  0.25 to 0.45). Capacity multiplier 2.88 if 10 percent of skipped reviews are later opened (3.64 if none, 2.03 at 30 percent; the open
+  rate is an ASSUMPTION): 405 extractions a day at the hard limit (12,143 a month) and 202 a day at the 100K budget (6,071 a month). Starter is met
+  at the hard limit for every open rate and at the 100K budget for open rates up to 0.1; Growth is NOT reachable (needs 5.9 times).
+  Quality criteria (silver labels): C1 urgent reviews, safety-stratum test (130 independent gold urgency=high groups, ENRICHED not a base
+  rate): R1 routing recall 1.0 [0.971, 1.0], MET. C4, the urgent items the gpt-oss-20b zero-shot path also caught (44 groups, 720 LLM rows,
+  0 empty): recall 1.0 [0.920, 1.0], MET. C3, gold needs_action=yes on the sealed set: 106 of 111 = 0.955 [0.8989, 0.9806], the lower bound
+  misses the 0.90 bar by 0.0011, MISSED (the 5 misses are confident "no" calls, p(yes) 0.035 to 0.099). By the registered rule R1
+  must not be enabled; no criterion was changed after the result. Source `reports/intent/encoder_first/` on #559. Not built: persisting the
+  classification of skipped reviews (a migration, gate 4) and the on-open extraction path, so even a passing verdict would not be shippable
+  yet.
 - **Compare rule, Wilson lower bound, matched coverage (Amendment 11).** Merged as #535 (statistics, spec) and #536 (loading,
   writer, cap-600 report with a notice); #531 closed as superseded. #531 failed gate 3 because of the 577-line module, not the
   generated files, which were already under the designated path.
@@ -200,11 +230,15 @@ VERIFIED this session, in the built hash-pinned image run at `--cpus 1 --memory 
 per HTTP request: 0 errors, 0 mismatches of 3028 decisions, `thresholds_sha256` equal to the committed file's; client latency p50 161.5 ms,
 p95 302.6 ms, cgroup peak 846 MB, not OOM-killed (the check is `scripts/classify_live_parity.py`; result kept at
 `D:/ml-cache/s25/live_parity_rehearsal_s26.json`, not committed). The headline precision/coverage at batch 1 is unchanged from S25.
-NOT done, and why: the deploy was not attempted. (1) The push adds a ~1.4 GB image (compressed size not measured) to Artifact Registry, which already holds
-about 3.8 GB against a 0.5 GB free tier (measured with gcloud, read-only), so it is billed storage (BELIEVED about $0.10 per GB-month): the
-no-paid-spend rule stops it, and the script itself refuses to push without `CONFIRM_REGISTRY_COST=yes`. (2) The service can only authenticate
-callers through the production DB secret (`supabase-database-url`), a credential grant to a new service (gate 4). (3) The live parity run
-needs an API key; production has 0 active keys. No classifier denial occurred; the deploy script has not been executed.
+S27 (GG decisions): the service is PRIVATE (`--no-allow-unauthenticated`, invoked only by `review-iq-runner@` with a Google identity
+token, no API key, no DB credential). Merged #554: `app/classify_service.py` (only `POST /v2/classify` and `/healthz`, no docs surface,
+model loaded at startup, shares `run_classify` with the unchanged public route). #545 and #546 reworked for it and kept as DRAFTS; the
+deploy is DEFERRED by GG until a product path calls the classifier, so nothing was pushed or deployed and no yes/no is asked now.
+VERIFIED locally (Docker, 1 vCPU, 2 GiB, hash-pinned image of the private app, NOT Cloud Run): 757 sealed reviews one per HTTP request,
+0 errors, 0 mismatches of 3028 decisions, thresholds sha equal; client p50 179 ms, p95 397 ms; cgroup peak 783 MiB, no OOM. Compressed
+image size 526 MB (sum of the local image's compressed layer blobs, 386.7 MB of it the model; the registry was not pushed to). A push
+would add about 0.5 GB to a registry that now holds 0.79 GB against 0.5 GB free: about 5 cents a month (BELIEVED price). Cloud Run p50,
+p95 and cold start are NOT measured. The deploy script asserts no public principal in the IAM policy and a refused unauthenticated request.
 
 **S25 state (measured on the #533 branch, now merged in pieces; flag off, nothing deployed).** Served model switched from torch dynamic
 int8 to **static int8 on ONNX Runtime with no PyTorch in the image** (`docs/specs/review-intent-serving.md`, numbers in
@@ -354,10 +388,11 @@ branch for a few minutes (fixed in `c969e11`, nothing merged).
 | Shopify stack #291 to #293 | GG: needs the Shopify app registration |
 | Gemini clean-up (ADR 0035) | GG: GitHub secret `GEMINI_API_KEY` and Secret Manager `gemini-api-key` still exist. OpenRouter binding is already removed (see production table) |
 | `SUPABASE_DIRECT_URL` (write-capable GitHub secret) | Removal waits on #472 (read-only role, draft, GG's steps) |
-| Parked PRs (GG merges; S24 merged #505 to #507, #513, #514, #521, #525 to #527, #529, #530, #532) | #485 (runbook wording), #499 (DB latency report and region plan), #508 (admin rotation script), #512 (admin doc correction), #472 (read-only role), #502 (retire `uptime-alert.yml`; waits on GG's `s23-alert-test` email confirmation), claude-config #49 and #50 (billing-blocked CI; only GG merges), #545 and #546 (classify image and deploy script, drafts, gate 4), #298 (reply prompt v2.2: no eval run, and its tone examples contradict its own rule 7; #537 was a duplicate of it plus cassettes and is closed, rebased branch `fix/s26-reply-placeholders`). #515 was merged by GG. S25 merged #535, #536, #538, and the S25 docs PR; #531 closed as superseded. S26 merged #541, #544, #547 to #551 (the #533 split), #542 (Amendment 13) and this docs PR; #533 and #537 closed. #318 (U4d twin control, parked) gained one commit with progress that had been left uncommitted in a worktree |
-| Local branch hygiene (S26) | Done, no action. Local branches 502 -> 248: deleted 259 + 7 that were fully merged (154 by ancestry, 105 + 7 squash-merged with the branch tip equal to the merged PR's head commit, checked against `gh pr list --state merged`). Kept: 3 `archive/s25-*`, 26 with an open PR, 3 checked out, and 216 holding unmerged work (not judged). The record of the first 259 tips was overwritten by a second run of the same script (my mistake); they are all merged, so each is recoverable from its PR head on GitHub. The stray `review-iq-wt-c2-before_held_out.json` (a 2026-09-12 held-out eval output, outside any repo) was MOVED, not deleted, to `D:/ml-cache/archive/` |
+| Parked PRs (GG merges; S24 merged #505 to #507, #513, #514, #521, #525 to #527, #529, #530, #532) | #485 (runbook wording), #499 (DB latency report and region plan), #508 (admin rotation script), #512 (admin doc correction), #472 (read-only role), #502 (retire `uptime-alert.yml`; waits on GG's `s23-alert-test` email confirmation), claude-config #49 and #50 (billing-blocked CI; only GG merges), #545 and #546 (private classify image and deploy script, drafts, deploy DEFERRED), #559 (encoder-first, draft, verdict do not enable), #298 (reply prompt v2.2: no eval run, and its tone examples contradict its own rule 7; #537 was a duplicate of it plus cassettes and is closed, rebased branch `fix/s26-reply-placeholders`). #515 was merged by GG. S25 merged #535, #536, #538, and the S25 docs PR; #531 closed as superseded. S26 merged #541, #544, #547 to #551 (the #533 split), #542 (Amendment 13) and this docs PR; #533 and #537 closed. #318 (U4d twin control, parked) gained one commit with progress that had been left uncommitted in a worktree |
+| Local branch hygiene (S26, S27) | Done, no action (S27: 249 local branches after deleting the merged `feat/s27-classify-private`; tips recorded in `D:/ml-cache/archive/s27_deleted_branch_tips.txt`). S26: Local branches 502 -> 248: deleted 259 + 7 that were fully merged (154 by ancestry, 105 + 7 squash-merged with the branch tip equal to the merged PR's head commit, checked against `gh pr list --state merged`). Kept: 3 `archive/s25-*`, 26 with an open PR, 3 checked out, and 216 holding unmerged work (not judged). The record of the first 259 tips was overwritten by a second run of the same script (my mistake); they are all merged, so each is recoverable from its PR head on GitHub. The stray `review-iq-wt-c2-before_held_out.json` (a 2026-09-12 held-out eval output, outside any repo) was MOVED, not deleted, to `D:/ml-cache/archive/` |
+| Artifact Registry (S27) | CLEANED. Before: unique layer bytes 4,216.7 MB (reconstructed from the registry manifests; equals the registry's own 3,742.6 + 474.3), 74 + 3 images, billed above the 0.5 GB free tier: about 37 cents a month (BELIEVED price, $0.10 per GB-month). 69 images in `cloud-run-source-deploy` deleted: each referenced by no serving revision or job and not among the 3 newest per image (re-checked against a fresh inventory right before deleting; the list is `D:/ml-cache/s27/ar_deleted_s27.jsonl`, local only). Kept there: 5 images, 311.2 MB. `gcf-artifacts` (474.3 MB, the gen1 billing-kill-switch function builds) left untouched on purpose. After: 785.6 MB, about 3 cents a month. `review-iq` stayed healthy (`/health` 200, revision 00092). The registry's own size field still shows the old figure (it lags). Policy: #555 merged `ops/artifact-registry-cleanup.json` (keep tags `keep-*`, keep the 3 newest per image, delete older than 30 days) and it was applied to `cloud-run-source-deploy` in DRY-RUN; the failover-probe job image carries the tag `keep-failover-probe`. TO DO on or after 2026-10-25 (one week of dry-run): check the dry-run decisions for a wrongly selected digest, then switch to enforce (`--no-dry-run`). I could not find the dry-run entries in Admin Activity audit logs (searched cleanup-policy methods, last day, nothing), so where they are logged must be confirmed first. A serving revision rolled back to an image older than the 3 newest needs a `keep-` tag before enforcement | VERIFIED (gcloud, manifests); enforcement NOT done |
 | Moat comparison, 120b arm | A valid Groq benchmark key in an org separate from the failover pool, or another provider |
-| `/v2/classify` deployment | GG: merge #545 and #546 (gate 4); accept the billed registry storage (about $0.10 per GB-month, BELIEVED) or free space; grant the new service accessor on `supabase-database-url` (or choose another way to authenticate callers); issue an API key for the post-deploy check; run `bash ops/deploy/deploy-classify.sh <artifacts>` then `scripts/classify_live_parity.py`; then a Cloud Run cold-start and latency measurement (none exists) |
+| `/v2/classify` deployment | DEFERRED (S27 addendum). Returns when a product path calls the classifier: then merge #545 and #546 (gate 4), run `bash ops/deploy/deploy-classify.sh <artifacts>` (it stops at `CONFIRM_REGISTRY_COST=yes`; about 5 cents a month, BELIEVED), then `scripts/classify_live_parity.py` with an identity token, then a Cloud Run cold-start and latency measurement (none exists). No DB secret and no API key are involved any more |
 | DB region (Sydney pooler, Cloud Run in Mumbai) | GG decides among options A to D in #499; Mumbai move is a plan only, about 20 to 30 min write freeze (BELIEVED), the backup lacks `auth.users` |
 | Engine deployment | Waits for the review-intent model |
 | Tailwind 4 (#106) | Plan in `docs/ops/tailwind4-migration-plan.md`, before the braces allowlist expires 2026-12-31 |
@@ -373,7 +408,7 @@ In unblock order (S24; trigger-token rotation and Secret Manager audit logs are 
 3. #472 read-only role steps, then remove `SUPABASE_DIRECT_URL` from GitHub secrets.
 4. Provide a valid Groq benchmark key in an org separate from the failover pool (or choose another provider) to run the 120b arm.
 5. Decide the DB region move (#499); confirm in the Groq console which org each key is in.
-6. `/v2/classify` deploy (S26; the split is done): decide #545 and #546 and the three items in the deployment row above (billed registry storage, DB secret for the new service, an API key). Reply prompt: #298 needs its two tone examples fixed and a reply eval run (shared Groq quota) before it can merge.
+6. Reply prompt: #298 needs its two tone examples fixed and a reply eval run (shared Groq quota) before it can merge. `/v2/classify` deploy is DEFERRED (nothing to decide now).
 7. Decide on a persisted shared demo/prod token ledger (needs an RLS policy change, gate 4).
 8. Check the Console cost view (no billing export exists) and the new audit-log volume after a month.
 9. PID 15252 (a `python -` spinner, not Claude's) was no longer running when checked in S24; nothing to do unless it returns.
