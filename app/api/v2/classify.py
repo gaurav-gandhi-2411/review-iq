@@ -106,6 +106,13 @@ async def classify(
     body: ClassifyRequest, ctx: ApiKeyContext = Depends(require_api_key)
 ) -> ClassifyResponse | JSONResponse:
     """Per review and task: label or 'abstained', calibrated confidence, per-class probabilities. Text is never logged."""
+    return await run_classify(body, ctx.org_id)
+
+
+async def run_classify(body: ClassifyRequest, caller: str) -> ClassifyResponse | JSONResponse:
+    """The endpoint's work, shared with the private service (app/classify_service.py), which authenticates at the Cloud Run edge.
+
+    `caller` is only a log label (an org id on the public route, 'internal' on the private service)."""
     settings = get_settings()
     t0 = time.perf_counter()
     try:
@@ -121,19 +128,19 @@ async def classify(
     except (ClassifyUnavailableError, ImportError) as e:
         code = e.code if isinstance(e, ClassifyUnavailableError) else "classify_runtime_missing"
         CLASSIFY_REQUESTS_TOTAL.labels(outcome="unavailable").inc()
-        log.warning("classify.unavailable", code=code, org_id=ctx.org_id)
+        log.warning("classify.unavailable", code=code, caller=caller)
         return error_response(
             503, code, "Classification is temporarily unavailable.", retry_after=60
         )
     except Exception:
         CLASSIFY_REQUESTS_TOTAL.labels(outcome="error").inc()
-        log.exception("classify.failed", org_id=ctx.org_id, n_reviews=len(body.reviews))
+        log.exception("classify.failed", caller=caller, n_reviews=len(body.reviews))
         return error_response(500, "classify_internal_error", "Classification failed.")
     latency_ms = round((time.perf_counter() - t0) * 1000, 2)
     CLASSIFY_REQUESTS_TOTAL.labels(outcome="ok").inc()
     CLASSIFY_LATENCY_MS.observe(latency_ms)
     log.info(
-        "classify.ok", org_id=ctx.org_id, n_reviews=len(body.reviews), latency_ms=latency_ms,
+        "classify.ok", caller=caller, n_reviews=len(body.reviews), latency_ms=latency_ms,
         model=f"{th.run}-{th.variant}", thresholds_sha256=th.sha256[:12],
         n_abstained=sum(d["abstained"] for item in per_item for d in item.values()),
     )  # fmt: skip
