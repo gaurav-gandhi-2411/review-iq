@@ -1,0 +1,45 @@
+# Image for POST /v2/classify (static-int8 ONNX multilingual-e5 on CPU, no PyTorch). NOT built by CI and NOT referenced by any
+# deploy workflow: a separate service, deployed only by a deliberate, reviewed change (ops/runbooks/v2-classify.md).
+#
+#   docker build -f Dockerfile.classify -t review-iq-classify:local \
+#       --build-context artifacts=D:/ml-cache/s25/classify_artifacts_onnx .
+#
+# `artifacts` is a directory holding model.onnx and hf/tokenizer.json; weights are never committed to the repo.
+# Weights are BAKED into the image (S26 decision), checked against pinned sha256 values by ops/deploy/deploy-classify.sh.
+# requirements-classify.txt is hash-pinned (regenerate: see the header of requirements-classify.in); the install fails on any
+# file whose hash is not listed. Runs at 1 vCPU / 2 GiB / min-instances 0 as its own Cloud Run service.
+FROM python:3.11-slim AS base
+
+WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+# ---- deps layer: the app's locked dependencies, then ONNX Runtime and tokenizers on top ----
+FROM base AS deps
+COPY pyproject.toml uv.lock requirements-classify.txt ./
+RUN uv sync --frozen --no-dev --no-install-project \
+    && uv pip install --python /app/.venv/bin/python --require-hashes -r requirements-classify.txt
+
+# ---- runtime ----
+FROM base AS runtime
+COPY --from=deps /app/.venv /app/.venv
+ENV PATH="/app/.venv/bin:$PATH" \
+    ENABLE_V2_CLASSIFY=false \
+    CLASSIFY_ARTIFACT_DIR=/app/artifacts/classify
+
+COPY app/ ./app/
+# Only the decisioning module of the engine (pure numpy); the rest of engine/ pulls sklearn and is not needed to serve.
+COPY engine/__init__.py ./engine/__init__.py
+COPY engine/intent/__init__.py engine/intent/decide.py ./engine/intent/
+COPY --from=artifacts model.onnx ./artifacts/classify/model.onnx
+COPY --from=artifacts hf/tokenizer.json ./artifacts/classify/hf/tokenizer.json
+
+# /app/data: the app's lifespan opens its local sqlite file there (same as the main Dockerfile)
+RUN adduser --disabled-password --gecos "" appuser && mkdir -p /app/data && chown appuser /app/data
+USER appuser
+EXPOSE 8080
+
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1"]
