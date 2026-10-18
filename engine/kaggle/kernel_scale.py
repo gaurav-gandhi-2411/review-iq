@@ -9,6 +9,7 @@ copied in first) and out/status.json. No secret enters the kernel.
 """
 
 import glob
+import hashlib
 import json
 import os
 import pathlib
@@ -26,6 +27,9 @@ ITEMS_GLOB = "/kaggle/input/**/__ITEMS__"
 PRIOR_GLOB = "/kaggle/input/**/judges/*.jsonl"
 BUDGET_S = float("__BUDGET_H__") * 3600
 REPO = "https://github.com/gaurav-gandhi-2411/review-iq.git"
+# Amendments 13 and 15: one Ollama build, digest-checked (the digest GitHub publishes for the asset).
+OLLAMA_URL = "https://github.com/ollama/ollama/releases/download/v0.40.6/ollama-linux-amd64.tar.zst"
+OLLAMA_SHA256 = "c164ab8b1b28e2a247c29719b8e404c423c5b83ae64c3ab4e59d50c7ff7fc5e0"
 W = pathlib.Path("/kaggle/working")
 OUT = W / "out" / "judges"
 OLLAMA_DIR = pathlib.Path("/opt/ollama")
@@ -44,29 +48,25 @@ def install_ollama() -> None:
     import zstandard
 
     OLLAMA_DIR.mkdir(parents=True, exist_ok=True)
-    last = None
-    for url, kind in (
-        ("https://ollama.com/download/ollama-linux-amd64.tar.zst", "zst"),
-        ("https://ollama.com/download/ollama-linux-amd64.tgz", "tgz"),
+    tmp = "/tmp/ollama.tar.zst"
+    urllib.request.urlretrieve(OLLAMA_URL, tmp)
+    h = hashlib.sha256()
+    with open(tmp, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    status["ollama_sha256"] = h.hexdigest()
+    if (
+        status["ollama_sha256"] != OLLAMA_SHA256
+    ):  # one pinned build (spec Amendments 13 and 15), never "latest"
+        raise RuntimeError("ollama archive sha256 does not match the pinned digest")
+    with (
+        open(tmp, "rb") as fh,
+        zstandard.ZstdDecompressor().stream_reader(fh) as rd,
+        tarfile.open(fileobj=rd, mode="r|") as tf,
     ):
-        try:
-            tmp = f"/tmp/ollama.{kind}"
-            urllib.request.urlretrieve(url, tmp)
-            if kind == "zst":
-                with (
-                    open(tmp, "rb") as fh,
-                    zstandard.ZstdDecompressor().stream_reader(fh) as rd,
-                    tarfile.open(fileobj=rd, mode="r|") as tf,
-                ):
-                    tf.extractall(OLLAMA_DIR)
-            else:
-                with tarfile.open(tmp) as tf:
-                    tf.extractall(OLLAMA_DIR)
-            if (OLLAMA_DIR / "bin" / "ollama").exists():
-                return
-        except Exception as e:  # noqa: BLE001
-            last = e
-    raise RuntimeError(f"could not install ollama: {last}")
+        tf.extractall(OLLAMA_DIR)  # noqa: S202 (a digest-verified release archive)
+    if not (OLLAMA_DIR / "bin" / "ollama").exists():
+        raise RuntimeError("ollama binary missing after extraction")
 
 
 def start_server(gpu: int) -> subprocess.Popen:
