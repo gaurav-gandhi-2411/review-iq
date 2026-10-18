@@ -501,3 +501,131 @@ change (runtime, quantisation, sampling implementation), not a replication of th
 - Cross-check against the Groq 20b rows on the overlapping ids: per task label agreement, Cohen's kappa, Spearman correlation of
   confidences, with n and item-bootstrap 95 percent CIs. No gate depends on it.
 
+
+### Amendment 10 (2026-10-17, S24 moat): the `gpt-oss-20b-local-fewshot` arm; registered before any few-shot local row exists
+
+Context: Amendment 9 ran gpt-oss-20b zero-shot on local inference. The Groq 120b few-shot arm exists in the protocol (`llm_moat`
+FEW-SHOT ARM); this amendment adds the matching few-shot arm for 20b on the same local stack, so that "does worked-example
+prompting close any of the gap to the encoder" is answered on one runtime. Registration commit (before any few-shot local row
+existed): recorded in the PR description and in `reports/intent/moat_local20b_fewshot/run_status.json`.
+
+- Arm name `gpt-oss-20b-local-fewshot`; output stem `openai_gpt-oss-20b__local_fewshot`.
+- Model, stack, sampling and request exactly as Amendment 9 (Ollama `gpt-oss:20b`, manifest sha256
+  `f38aa0c53da5f8c49d08c43a99df24ff53167fe68e24664a7777288e7656fdfe`, context 4096, temperature 0, seed 42, max_tokens 600, JSON mode,
+  two T4 servers, items split by parity, default reasoning effort). The Ollama version and digest actually used are recorded and a
+  mismatch is reported, not hidden.
+- Prompt: the existing `PROMPT` with the `shots_text` block inserted before `Review:` exactly as `llm_moat.ask` does for the
+  Groq few-shot arm. Example confidences are the fixed value 90 that `shots_text` writes today. KNOWN LIMITATION, not tuned: the
+  constant may pull verbalised confidences towards 90 and so distort calibration, which is the quantity the coverage-at-precision
+  metric measures; the result is read with that in mind.
+- Shot selection: `llm_moat.pick_shots(scale.jsonl, n_max=8)` unchanged (training split only, review at most 220 characters, all
+  four labels present, `random.Random(42)` shuffle, greedy cover of unseen task/class pairs). It returned 7 shots (the greedy cover
+  is exhausted after 7); they cover 13 of the 14 task/class pairs. NOT covered: `broad_intent=service`. This is reported, not
+  repaired. Shot ids (ids only; all have `split == "train"` in the scale manifest and labels in `labels.json` train):
+  `scale-food-0367`, `scale-food-1219`, `scale-food-1341`, `scale-food-0839`, `scale-vernacular-0030`, `scale-apparel-0890`,
+  `scale-vernacular-0083`. The order is the selection order and is the prompt order. `urgency=high` appears once.
+- Leakage checks, run before this registration on the private texts: none of the 7 shot ids is in `sealed_ids()`; none of the 7
+  content hashes (`text_sha(clean(text))`) is in `leakage_ledger.sealed_hashes()` (scale test plus safety test) or in
+  `leakage_ledger.exclusions()`; each shot's hash equals the scale manifest hash for its id; against the 1,483 committed sealed
+  fingerprints of `reports/labelling/sealed_fingerprints.json` no shot reaches the near-duplicate rule (4-character Jaccard at least
+  0.9) nor the quoted-substring rule (12-character containment at least 0.9); the maxima were far below both thresholds.
+- Token budget: the full prompt (shots plus a review truncated to 1500 characters) plus up to 600 completion tokens must fit in the
+  4096 context. Measured on the smoke run from the server's `prompt_eval_count`, reported. Decided BEFORE the full run: if the
+  smoke maximum of prompt tokens plus 600 exceeds 4096, the arm drops to the first 5 shots in order and the smoke is repeated; that
+  change would be recorded in the run status.
+- Same sealed order, same stopping rule (the first 300 sealed items are run, `decide()` is applied once, the run continues to
+  all sealed items unless all four tasks are decided), same handling of unparseable output (wrong at confidence 0, kept) and of
+  runtime errors (retried, never recorded as answers). Smoke test of the first 20 sealed items first; those rows are discarded and
+  never scored; JSON-mode fallback rule as Amendment 9.
+- Comparison targets: few-shot local vs zero-shot local (matched ids, paired differences of the same statistics) and vs the
+  encoder, on the same labels (SILVER, four-judge panel consensus). No gate depends on the Groq cross-check.
+
+Implementation note (added with the code, still before any few-shot local row exists; no design change): `llm_moat.ask` builds a
+few-shot prompt by `str.replace` followed by `str.format`, which cannot work when the shots block contains the JSON braces that
+`shots_text` writes. The local runner therefore renders the prompt as head, shots block, `Review: <text up to 1500 characters>`,
+tail. The model sees the same text order as the specification above; with no shots the zero-shot prompt is byte-identical to
+Amendment 9 (unit-tested). The few-shot rows carry an extra `ptoks` field in the shard files (the server's prompt token count) and
+`merge` drops it. The smoke also probes the longest and the most non-ASCII sealed reviews with the server prefix cache defeated
+(a leading marker line, which makes the count an upper bound) to apply the token budget rule above.
+
+Smoke result and decisions (recorded after the two discarded 20-item smokes and before the full run; no few-shot row has been scored).
+- Context budget: the largest prompt measured was 1143 tokens (cache-defeating probe on the ten longest or most non-ASCII sealed
+  reviews; the longest sealed review is under 1000 characters), so prompt plus 600 completion tokens is far below the 4096 context.
+  All 7 shots are kept; the reduction to 5 shots is not triggered.
+- JSON-mode rule: the first smoke (with `response_format`) returned 3 of 20 empty or unparseable answers, which is more than 2 and so
+  triggers the Amendment 9 fallback. All 3 completions stopped at exactly 600 completion tokens (reasoning consumed the budget, so the
+  content was empty): a token-cap truncation, not a JSON-mode non-compliance. As registered, the smoke was repeated WITHOUT
+  `response_format`: the same 3 items failed and every item's token count was identical to the first smoke, i.e. on this Ollama
+  build the request flag had no measurable effect. The registered rule is applied literally: the full run uses no `response_format`
+  and the extraction rule. The 600-token cap is NOT raised (same as the zero-shot arm); the truncation rate is reported and those
+  items score as wrong at confidence 0, which penalises the few-shot arm in a way the shots themselves do not cause.
+- Runtime: the smoke servers ran Ollama 0.40.5 (the zero-shot arm ran 0.40.3, "latest at run time"); the model digest equals the
+  registered manifest sha256. The version difference is disclosed in the report.
+
+
+### Amendment 11 (2026-10-17, S24 moat compare report): decision rule and matched-coverage comparison; registered before the 20b compare numbers were computed
+
+Context: three arms now have answers on the same sealed ids: the encoder, `gpt-oss-20b-local` (zero-shot, Amendment 9) and
+`gpt-oss-20b-local-fewshot` (Amendment 10, stopped at the first 300 sealed ids by the registered rule). This amendment fixes how they are
+compared, before any encoder-vs-20b number under THIS rule exists. Disclosure of what was already visible: the few-shot-vs-zero-shot
+paired differences (`moat_local20b_fewshot/paired_vs_zeroshot.json`) and the `decide()` intervals at n = 300 were published before this
+amendment; the Wilson-lower-bound operating points and the three-way paired bootstrap defined below had not been computed. Nothing is
+tuned after seeing results; if the rule turns out badly chosen, that is reported, not repaired.
+
+- Labels and ids. Gold is the four-judge panel consensus (SILVER), not human truth. MATCHED ids, per task: the first 300 ids of
+  `sealed_ids()` (sealed order) that every compared arm has a row for and that have a gold label for that task and an encoder
+  prediction. Unparseable or empty LLM answers stay in the denominator, wrong, at confidence 0 (as in Amendments 9 and 10).
+- Encoder: the run-2 model (`reports/intent/run2`, the checkpoint behind `model_report.md`; run 3 was a negative result and is not
+  promoted). Label = argmax of the temperature-scaled probabilities stored in the pred files; score = their maximum. The same
+  confidence-ordered rule below is applied to every arm, which makes the encoder number an in-sample operating point like the others.
+  As a supplementary, deployable reading the encoder is also evaluated at the conservative threshold chosen on VALIDATION and stored
+  in `eval_run2.json` (`selective.conservative_p0.95.threshold`), applied once to the matched ids.
+- (a) Operating point per arm and task: among thresholds equal to an observed confidence value, take the one with the HIGHEST coverage
+  such that the Wilson 95 percent (z = 1.96) LOWER bound of precision among answered items is at least the target (0.95). Answered =
+  items whose confidence is at least the threshold (tie groups are therefore always included whole); precision = correct / answered;
+  coverage = answered / n matched. If no threshold qualifies the coverage is 0 and that is stated ("no qualifying threshold").
+- (b) Matched-coverage comparison: per task, c* = the smallest NON-ZERO operating-point coverage among the compared arms (all arms
+  zero: not computed). Each arm is read at the largest whole-tie-group answered set containing at most ceil(c* x n) items (if the top
+  tie group alone is larger, that top group, flagged as overshoot). Reported: each arm's actual coverage, precision, and Wilson 95
+  percent interval, so an arm that answers fewer items is not rewarded. Descriptive; no verdict is drawn from this block alone.
+- (c) Paired item bootstrap: seed 42, 2000 resamples, items resampled once per replicate and the same index set used for every arm
+  (per task). In each replicate the operating point of (a) is recomputed for every arm. Quantities: coverage at the operating point
+  and plain accuracy (all matched items), differences for each pair of arms; percentile 95 percent intervals (2.5 and 97.5).
+  Pairs: encoder vs zero-shot, encoder vs few-shot, few-shot vs zero-shot.
+- (d) Verdicts. For a pair and a task, A "beats" B on the operating-point coverage only if the bootstrap interval of (coverage A minus
+  coverage B) excludes 0 on A's side AND the point operating-point coverages differ in the same direction. A "beats" B on accuracy only
+  if the bootstrap interval of the accuracy difference excludes 0 on A's side AND the Wilson-lower-bound operating-point coverages
+  also favour A (A strictly higher). Anything else is "not separated" (this includes the case where one criterion holds and the other
+  does not; the report prints both so the reader can see which failed).
+- Unmatched reading (labelled as such): the zero-shot local arm on ALL sealed ids it covers vs the encoder on the same ids, same rules.
+  It is not used for the matched verdicts.
+- Cross-check (never mixed into any verdict): the 502 Groq gpt-oss-20b rows, read read-only, on the matched ids they cover, with the
+  same functions, beside the local zero-shot arm.
+- The gpt-oss-120b arms are not part of this report (the benchmark key returns HTTP 401); no workaround is attempted.
+- Stated confounds, to be repeated in the report: n = 300 is small; verbalised confidence is coarse and 35 percent of few-shot
+  confidences equal exactly 90 (copied from the shots); 27 of 300 few-shot and 6 of 300 zero-shot answers are empty or unparseable
+  (600-token cap spent on reasoning) and count wrong at confidence 0; the two local arms ran different Ollama builds (0.40.5 vs 0.40.3);
+  the Groq rows differ in infrastructure (runtime, quantisation, sampling).
+
+### Amendment 12 (2026-10-17, S25 moat): re-run of the 20b local arms with a token budget that does not truncate; registered before any v2 row exists
+
+Context: in Amendment 10's run 27 of 300 few-shot completions (and 6 of 300 zero-shot) ended at the 600-token cap with empty content,
+because gpt-oss spends completion tokens on reasoning before it answers. Those items score wrong at confidence 0, so the Amendment 10
+conclusion "few-shot is worse than zero-shot" mixes worse answers with empty answers and is NOT a finding about worked examples. This
+amendment re-runs both arms with settings chosen only by an empty-completion canary. The Amendment 10 and Amendment 9 results stay on
+file unchanged and are labelled "cap 600" wherever they are cited.
+
+- Canary (before any scored row): the few-shot prompt on the first 30 sealed items; the rows are discarded and only counts are kept. A
+  fixed ladder, stopping at the first rung with 0 empty or unparseable answers of 30: L1 reasoning effort low, max_tokens 1500; L2 low,
+  2500; L3 medium (the model default), 2900. Context stays 4096 (largest measured prompt 1143 tokens, so 1143 + 2900 fits). If no rung
+  reaches 0, the arm is reported as blocked, with the three rungs' counts, and nothing is run. The request field is `reasoning_effort`;
+  whether this Ollama build honours it is read from the mean completion tokens of L1 against L3 and reported (not assumed).
+- v2 runs, same model digest, Ollama build as installed at run time (recorded), temperature 0, seed 42, no `response_format` (as
+  Amendment 10), same 7 shots, same sealed order, with the canary's settings: (a) the few-shot arm under the Amendment 10 stopping rule
+  (n=300, then on unless all four tasks are decided), stem `openai_gpt-oss-20b__local_fewshot_v2`; (b) the zero-shot arm on the first 300
+  sealed items with IDENTICAL settings, stem `openai_gpt-oss-20b__local_v2`, so that the comparison varies only the shots.
+- Reported beside every result: number of empty or unparseable answers (and, for rows carrying `fin`, how many ended at the cap).
+- Comparisons: PRIMARY, few-shot v2 vs zero-shot v2 on matched ids (paired item-bootstrap, same statistics as Amendment 10); SECONDARY,
+  each v2 arm vs the encoder with the Amendment 10 interval rule; the v2 zero-shot vs the cap-600 zero-shot is reported as the size of the
+  truncation artefact. A difference is called only if the interval excludes zero. Labels are SILVER (four-judge panel consensus).
+- Not changed: shots, prompt, scoring, sealed set, the encoder's numbers. Amendment 11 (the compare rule) is registered separately.
