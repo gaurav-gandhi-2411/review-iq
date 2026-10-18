@@ -21,7 +21,6 @@ import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Annotated, Any
 
-import psycopg2
 import structlog
 from fastapi import (
     APIRouter,
@@ -67,6 +66,7 @@ from app.core.csv_ingest import (
     read_and_validate_csv,
 )
 from app.core.dataset.builder import get_dataset_page
+from app.core.db_pool import PooledConnection, db_connect
 from app.core.detectors.batch_defect import WINDOW_DAYS as BATCH_DEFECT_WINDOW_DAYS
 from app.core.detectors.batch_defect import annotated_reviews_from_rows, scan_batch_defects
 from app.core.metrics import CORRECTIONS_SUBMITTED, REPLY_CACHE_HIT_TOTAL
@@ -249,11 +249,10 @@ def _get_quota_and_usage(api_key_id: str, org_id: str) -> tuple[int, int]:
     connection runs outside the `authenticated` role RLS actually checks, leaving
     no second layer if a future edit to the WHERE clause introduces a bug.
     """
-    import psycopg2 as _psycopg2
 
     from app.core.config import get_settings as _gs
 
-    conn = _psycopg2.connect(_gs().supabase_database_url)
+    conn = db_connect(_gs().supabase_database_url)
     try:
         cur = conn.cursor()
         _set_tenant(cur, org_id)
@@ -293,8 +292,8 @@ def _get_quota_and_usage(api_key_id: str, org_id: str) -> tuple[int, int]:
 # ---------------------------------------------------------------------------
 
 
-def _keys_db_connect() -> psycopg2.extensions.connection:
-    return psycopg2.connect(get_settings().supabase_database_url)
+def _keys_db_connect() -> PooledConnection:
+    return db_connect(get_settings().supabase_database_url)
 
 
 def _get_org_plan_pg(org_id: str) -> str:
@@ -303,7 +302,7 @@ def _get_org_plan_pg(org_id: str) -> str:
     the caller's actual entitlement -- see PLAN_QUOTA_LIMITS above bff_create_key().
 
     Bug fix (same pass as the RLS fix below): this and the three functions below all connect
-    via bare psycopg2.connect() and never called _set_tenant() -- every other function in
+    via bare db_connect() and never called _set_tenant() -- every other function in
     app/core/storage_pg.py applies it as a defense-in-depth layer on top of the WHERE-clause
     scoping (both organizations and api_keys have RLS policies requiring
     app.current_org_id() -- see supabase/migrations/20260510000002_rls_policies.sql). The

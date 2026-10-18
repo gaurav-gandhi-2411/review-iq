@@ -10,13 +10,12 @@ import json
 from collections.abc import Iterator
 from typing import Any
 
-import psycopg2
-
 from app.core.config import get_settings
+from app.core.db_pool import PooledConnection, db_connect
 
 
-def _db_connect() -> psycopg2.extensions.connection:
-    return psycopg2.connect(get_settings().supabase_database_url)
+def _db_connect() -> PooledConnection:
+    return db_connect(get_settings().supabase_database_url)
 
 
 def _set_tenant(cur: Any, org_id: str) -> None:

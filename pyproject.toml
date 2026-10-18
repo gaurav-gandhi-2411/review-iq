@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "review-iq"
 version = "0.3.0"
 description = "Production-grade review intelligence service. Unstructured customer reviews → queryable structured insights."
-authors = [{ name = "Gaurav Gandhi", email = "gaurav.gandhi2411@gmail.com" }]
+authors = [{ name = "Gaurav Gandhi", email = "gauravgandhi429@gmail.com" }]
 requires-python = ">=3.11"
 readme = "README.md"
 license = { text = "MIT" }

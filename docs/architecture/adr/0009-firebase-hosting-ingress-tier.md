@@ -24,15 +24,15 @@ Queried Firebase Hosting's own API directly (`firebasehosting.googleapis.com`, n
 - **Custom domain**: `api.samidhareviews.xyz`, `status: DOMAIN_ACTIVE`, `certStatus: CERT_ACTIVE`,
   `dnsStatus: DNS_MATCH`, `updateTime: 2026-07-07T12:14:15Z`.
 - **Latest release** (`releases/1783423643919000`): `rewrites: [{glob: "**", run: {serviceId:
-  "review-iq", region: "asia-south1"}}]` — created and finalized by **`gaurav.gandhi2411@gmail.com`**
+  "review-iq", region: "asia-south1"}}]` — created and finalized by **the Cloud Run/Firebase account** (the project owner)
   on **2026-07-07T11:27:17Z**, `deployment-tool: cli-firebase`.
 
 ## Which Google account owns it
 
-**`gaurav.gandhi2411@gmail.com`** — the same account that owns the `review-iq-prod` GCP project
+**The Cloud Run/Firebase account** — the same account that owns the `review-iq-prod` GCP project
 and deploys the Cloud Run service. Firebase Hosting for this project was set up under this
 account, via the `firebase` CLI, on 2026-07-07 (same day the Vercel domain object for
-`app.samidhareviews.xyz` was created under a **different** account, `gg5678g@gmail.com` — see
+`app.samidhareviews.xyz` was created under a **different** account (the Vercel/Cloudflare account) — see
 "Two-account operational risk" below).
 
 ## Rewrite target and forwarding behavior
@@ -77,20 +77,20 @@ custom proxy or a separately-deployed artifact:
 This project's production ingress now spans **two separate Google/personal accounts with no
 shared recovery path**:
 
-- **`gaurav.gandhi2411@gmail.com`** — owns the `review-iq-prod` GCP project (Cloud Run, Secret
+- **The Cloud Run/Firebase account** — owns the `review-iq-prod` GCP project (Cloud Run, Secret
   Manager, Firebase Hosting, the `api.` ingress).
-- **`gg5678g@gmail.com`** — owns the Cloudflare account (`review-iq-demo` Pages project) and the
+- **The Vercel/Cloudflare account** — owns the Cloudflare account (`review-iq-demo` Pages project) and the
   Vercel account (the domain object for `samidhareviews.xyz`, the `app.` ingress, the new
   `samidha-reviews-web` project from this pass).
 
 **Risk**: loss of either account (credential loss, suspension, 2FA lockout) takes down the
 surfaces it owns, and **the other account has no ability to recover them** — there is no shared
-organization, team, or backup credential bridging the two. A `gg5678g@gmail.com` lockout loses the
-dashboard and marketing site with no path to recreate them from the `gaurav.gandhi2411@gmail.com`
-side (a new Vercel/Cloudflare project could be stood up, but the domain objects/DNS records
-themselves live under the locked account). A `gaurav.gandhi2411@gmail.com` lockout loses the API
+organization, team, or backup credential bridging the two. A Vercel/Cloudflare-account lockout loses the
+dashboard and marketing site with no path to recreate them from the Cloud Run/Firebase
+account side (a new Vercel/Cloudflare project could be stood up, but the domain objects/DNS records
+themselves live under the locked account). A Cloud Run/Firebase-account lockout loses the API
 entirely (Cloud Run, the DB connection secrets, Firebase Hosting) with no path to recover from the
-`gg5678g@gmail.com` side.
+Vercel/Cloudflare account side.
 
 **Not fixed here** — this is a risk finding, not a remediation. The two candidate fixes (consolidate
 onto one account, or add a shared/secondary owner to both) are both real changes to account-level

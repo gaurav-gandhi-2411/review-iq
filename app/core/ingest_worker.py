@@ -33,11 +33,11 @@ import asyncio
 import contextlib
 import json
 
-import psycopg2
 import structlog
 
 from app.auth.api_key import ApiKeyContext
 from app.core.config import get_settings
+from app.core.db_pool import db_connect
 from app.core.ratelimit import set_bulk_call_class
 from app.core.schemas import ReviewRequest
 from app.core.storage_pg import (
@@ -81,7 +81,7 @@ async def _claim_one_row() -> tuple[str, str, bool] | None:
     row was pending.
     """
     settings = get_settings()
-    conn = await asyncio.to_thread(psycopg2.connect, settings.supabase_database_url)
+    conn = await asyncio.to_thread(db_connect, settings.supabase_database_url)
     try:
         cur = conn.cursor()
         await asyncio.to_thread(cur.execute, "SELECT * FROM public.claim_pending_batch_job_row()")

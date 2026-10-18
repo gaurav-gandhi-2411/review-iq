@@ -31,6 +31,7 @@ from app.api.ops import router as ops_router
 from app.api.query import router as query_router
 from app.api.shopify_auth import router as shopify_auth_router
 from app.api.unsubscribe import router as unsubscribe_router
+from app.api.v2.classify import router as v2_classify_router
 from app.api.v2.corrections import router as v2_corrections_router
 from app.api.v2.dataset import router as v2_dataset_router
 from app.api.v2.extract import router as v2_extract_router
@@ -261,6 +262,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         _app.include_router(v2_reviews_router)
         _app.include_router(v2_insights_router)
         _app.include_router(v2_reply_router)
+        _app.include_router(v2_classify_router)
         _app.include_router(v2_corrections_router)
         _app.include_router(v2_dataset_router)
         _app.include_router(shopify_webhook_router)

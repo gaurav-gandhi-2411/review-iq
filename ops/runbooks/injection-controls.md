@@ -93,7 +93,8 @@ service handled it. Use `--update-env-vars` (merges into the existing variables)
 carry forward onto each new revision.
 
 ```bash
-ACCT=gaurav.gandhi1129@gmail.com
+# where `<owner-account>` is the project's sole GCP owner identity (substitute at run time)
+ACCT=<owner-account>
 PROJ=reviewiq-prod-260813
 REGION=asia-south1
 

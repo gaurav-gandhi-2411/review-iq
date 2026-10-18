@@ -32,14 +32,17 @@ SURFACE (what a clean run does NOT prove): it is structural. Any call to `_set_t
 the function body satisfies it -- including one placed AFTER the query, on a dead branch, or
 with the wrong org -- so it proves the convention was remembered, not applied correctly (the
 RLS integration tests are the behavioural check). It recognises `psycopg2.connect`, an
-`import psycopg2 as X` alias and `from psycopg2 import connect`; a function handed an
-already-open connection, a connection pool, or another driver (psycopg 3, asyncpg) is not
+`import psycopg2 as X` alias and `from psycopg2 import connect`, and (S23) a call to
+`db_connect` / `pooled_connection` from app/core/db_pool.py (matched by NAME, so an unrelated
+function that happens to share the name is also treated as a connect -- fails safe). A
+function handed an already-open connection, or another driver (psycopg 3, asyncpg), is not
 seen. Only app/**/*.py is scanned -- not scripts/, eval/ or benchmark/.
 """
 
 from __future__ import annotations
 
 import ast
+import re
 import sys
 from pathlib import Path
 
@@ -106,9 +109,6 @@ ALLOWLIST: dict[tuple[str, str], str] = {
         "attributed per-row via a fresh ApiKeyContext into _set_tenant()-scoped "
         "storage_pg functions downstream."
     ),
-    ("app/api/ops.py", "_sync_ping"): (
-        "SELECT 1 only -- no table access, RLS/tenant-scoping is not applicable."
-    ),
     ("app/api/google_auth.py", "_upsert_installation_pg"): (
         "authenticated holds only a SELECT policy on google_business_installations "
         "(20260702000001_google_business_installations.sql) -- a _set_tenant()-only "
@@ -171,6 +171,13 @@ ALLOWLIST: dict[tuple[str, str], str] = {
 }
 
 _CONNECT_ATTR = "connect"
+# The pool module itself opens the real sockets; it is excluded from scanning and from the
+# global factory-name collection (its internal `acquire` would otherwise count as a factory).
+POOL_MODULE = "app/core/db_pool.py"
+POOL_CONNECT_NAMES = frozenset({"db_connect", "pooled_connection"})
+# Files still allowed a raw psycopg2.connect. Empty by design: every entry is a connection per
+# call that bypasses the pool. app/api/ops.py is converted in the health-check PR stacked on #494.
+RAW_CONNECT_ALLOWLIST: dict[str, str] = {}
 _SET_TENANT_NAME = "_set_tenant"
 
 
@@ -221,6 +228,13 @@ def _is_psycopg2_connect_call(
 ) -> bool:
     modules, functions = aliases
     func = node.func
+    # app/core/db_pool.py (S23): borrowing a pooled connection is "opening a connection" for
+    # this guard's purposes. Without this, converting a `psycopg2.connect` factory to
+    # `db_connect()` would make every caller silently invisible here (rule 85a).
+    if (isinstance(func, ast.Name) and func.id in POOL_CONNECT_NAMES) or (
+        isinstance(func, ast.Attribute) and func.attr in POOL_CONNECT_NAMES
+    ):
+        return True
     if isinstance(func, ast.Attribute) and func.attr == _CONNECT_ATTR:
         value = func.value
         if isinstance(value, ast.Name) and ("psycopg2" in value.id or value.id in modules):
@@ -278,7 +292,7 @@ def _find_factory_names(tree: ast.Module) -> set[str]:
 
 def check_file(path: Path, factory_names: set[str]) -> list[str]:
     rel = path.relative_to(REPO_ROOT).as_posix()
-    if rel in FILE_ALLOWLIST:
+    if rel in FILE_ALLOWLIST or rel == POOL_MODULE:
         return []
     source = path.read_text(encoding="utf-8")
     tree = ast.parse(source, filename=rel)
@@ -305,6 +319,58 @@ def check_file(path: Path, factory_names: set[str]) -> list[str]:
     return failures
 
 
+_SESSION_STATE_SQL = re.compile(
+    # `SET x = ..`/`SET x TO ..`/`SET SESSION`/`SET ROLE`, not prose docstrings like "Set RLS context".
+    r'^\s*(SET\s+(?!LOCAL\b)(SESSION\b|ROLE\b|"?[\w.]+"?\s*(=|TO\b))|PREPARE\s|DEALLOCATE\s)'
+    r"|set_config\s*\([^)]*,\s*false\s*\)",
+    re.IGNORECASE,
+)
+
+
+def check_pool_hygiene(path: Path) -> list[str]:
+    """Pool invariants a pooled connection depends on (app/core/db_pool.py I1): applies to EVERY
+    app file, including FILE_ALLOWLIST ones (admin.py is exempt from tenant scoping, not from
+    pooling hygiene).
+
+    (a) no raw psycopg2.connect -- one connection per call is what the pool replaced, and a
+        raw connection would also bypass the pool's rollback-on-release. A bare REFERENCE
+        (`asyncio.to_thread(psycopg2.connect, dsn)`) counts, not only a call.
+    (b) no session-scoped state in SQL string literals: `SET x` without LOCAL,
+        set_config(..., false), PREPARE/DEALLOCATE would survive on a reused connection (and
+        are unsafe behind the transaction-mode pooler regardless). Literal strings only --
+        SQL assembled at runtime is invisible here (SURFACE note in the module docstring).
+    """
+    rel = path.relative_to(REPO_ROOT).as_posix()
+    if rel == POOL_MODULE:
+        return []
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=rel)
+    modules, functions = _psycopg2_aliases(tree)
+    failures: list[str] = []
+    for node in ast.walk(tree):
+        raw_attr = (
+            isinstance(node, ast.Attribute)
+            and node.attr == _CONNECT_ATTR
+            and isinstance(node.value, ast.Name)
+            and ("psycopg2" in node.value.id or node.value.id in modules)
+        )
+        raw_name = isinstance(node, ast.Name) and node.id in functions
+        if (raw_attr or raw_name) and rel not in RAW_CONNECT_ALLOWLIST:
+            failures.append(
+                f"{rel}:{node.lineno}: raw psycopg2.connect -- use "
+                f"app.core.db_pool.db_connect()/pooled_connection() instead."
+            )
+        if (
+            isinstance(node, ast.Constant)
+            and isinstance(node.value, str)
+            and _SESSION_STATE_SQL.search(node.value)
+        ):
+            failures.append(
+                f"{rel}:{node.lineno}: session-scoped SQL ({node.value.strip()[:40]!r}...) -- "
+                f"only SET LOCAL / set_config(..., true) are safe on a pooled connection."
+            )
+    return failures
+
+
 def main() -> int:
     paths = sorted(APP_DIR.rglob("*.py"))
     if not paths:
@@ -324,13 +390,16 @@ def main() -> int:
     # passing, and green, while quietly covering less than its name implies).
     factory_names: set[str] = set()
     for path in paths:
-        source = path.read_text(encoding="utf-8")
-        tree = ast.parse(source, filename=path.relative_to(REPO_ROOT).as_posix())
+        rel = path.relative_to(REPO_ROOT).as_posix()
+        if rel == POOL_MODULE:
+            continue
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=rel)
         factory_names |= _find_factory_names(tree)
 
     all_failures: list[str] = []
     for path in paths:
         all_failures.extend(check_file(path, factory_names))
+        all_failures.extend(check_pool_hygiene(path))
 
     if all_failures:
         print("FAIL: undocumented / unscoped psycopg2 connect sites found:\n", file=sys.stderr)

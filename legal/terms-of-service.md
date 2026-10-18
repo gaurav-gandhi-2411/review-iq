@@ -189,7 +189,7 @@ constitutes acceptance.
 ## 11. Contact
 
 - **General/legal inquiries:** `[TODO: GG to provide a support/legal contact email]`
-- **Security disclosures:** see `SECURITY.md` (`gaurav.gandhi2411@gmail.com`, 72-hour
+- **Security disclosures:** see `SECURITY.md` (`gauravgandhi429@gmail.com`, 72-hour
   acknowledgment target).
 - **Data protection / DPDP grievance officer:** see
   [`compliance-posture.md`](./compliance-posture.md).

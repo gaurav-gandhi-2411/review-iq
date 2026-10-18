@@ -81,7 +81,7 @@ curl -X POST https://api.samidhareviews.xyz/v2/extract \
   "feature_requests": [],
   "language": "en",
   "extraction_meta": {
-    "model": "llama-3.3-70b-versatile",
+    "model": "openai/gpt-oss-20b",
     "prompt_version": "v2.3",
     "schema_version": "1.0.0",
     "latency_ms": 820
@@ -161,8 +161,8 @@ question — scored against real Indian marketplace reviews. The corpus was mean
 out from prompt development and was not, fully. Correction (Session 16): 36 of its 106
 reviews had been seen by the development process (all four few-shot examples in the `hi_en`
 prompt are rewrites of them, and prompt v2.2/v2.3 were accepted against benchmark labels from
-a benchmark that contains 21 of them), so the headline covers only the 70 that were not.
-Correction (Session 17): that headline is accuracy **where the three-judge panel agreed**, not
+a benchmark that contains 21 of them), so the held-out figure covers only the 70 that were not.
+Correction (Session 17): that figure is accuracy **where the three-judge panel agreed**, not
 overall accuracy; the
 share of field-pairs with no consensus is printed beside it, no assumption-free point estimate
 of overall accuracy is identifiable, and an exploratory second-panel read of the unscored pairs
@@ -170,20 +170,20 @@ of overall accuracy is identifiable, and an exploratory second-panel read of the
 
 <!-- METRICS:START:held_out_table -->Measured 2026-10-07T12:10:52Z &middot; `831a45b` &middot; models: openai/gpt-oss-20b / openai/gpt-oss-120b
 
-**79.6% [76.2%, 82.8%] on 70 unseen reviews, scored only where the three-judge panel agreed. 10.7% of field-pairs (60 of 560) had no consensus and are unscored. Those are the hardest cases: on the 29 of them a second, independent LLM panel could settle, the model scores 47-71% depending on the field. So overall accuracy is probably lower than the headline — independent estimates range 73.7% to 78.0% (exploratory, LLM-judged, not human-verified).**
+**Held-out figure (not the headline): 79.6% [76.2%, 82.8%] on 70 unseen reviews, scored only where the three-judge panel agreed. 10.7% of field-pairs (60 of 560) had no consensus and are unscored. Those are the hardest cases: on the 29 of them a second, independent LLM panel could settle, the model scores 47-71% depending on the field. So overall accuracy is probably lower than this figure — independent estimates range 73.7% to 78.0% (exploratory, LLM-judged, not human-verified).**
 
 Second-panel scores by field on those pairs (LLM-consensus silver, not ground truth; `product` 62.5% (n=8), `topics` 47.3% (n=10), `pros` 50.5% (n=8), `cons` 71.2% (n=3)): small samples, so each is a rough indication only.
 
-**`pros` reported separately: soft recall 69.4% [58.7%, 79.2%] on 46 resolved gold pairs (threshold 0.5, pre-registered; validation V-a: FAIL, V-b: FAIL; NOT validated).** The headline above still scores `pros` with the existing token-level F1 scorer, not with this: the same pairs scored by an item-level phrase matcher swing 27.2 points across matcher thresholds (18.6 between 0.3 and 0.7), and the soft recall itself moves 6.2 points between thresholds 0.4 and 0.6 (pre-registered limit 5.0 points). 7 further resolved pairs have an empty gold list and are excluded. Soft recall on the 8 unresolved `pros` pairs a second panel could settle: 30.7% (n=7 scored, silver labels). Definition, criteria and outcome: [docs/specs/s18-pros-soft-recall.md](docs/specs/s18-pros-soft-recall.md).
+**`pros` reported separately: soft recall 69.4% [58.7%, 79.2%] on 46 resolved gold pairs (threshold 0.5, pre-registered; validation V-a: FAIL, V-b: FAIL; NOT validated).** The held-out figure above still scores `pros` with the existing token-level F1 scorer, not with this: the same pairs scored by an item-level phrase matcher swing 27.2 points across matcher thresholds (18.6 between 0.3 and 0.7), and the soft recall itself moves 6.2 points between thresholds 0.4 and 0.6 (pre-registered limit 5.0 points). 7 further resolved pairs have an empty gold list and are excluded. Soft recall on the 8 unresolved `pros` pairs a second panel could settle: 30.7% (n=7 scored, silver labels). Definition, criteria and outcome: [docs/specs/s18-pros-soft-recall.md](docs/specs/s18-pros-soft-recall.md).
 
-| Condition | Score (headline fields) | 95% CI | n | Field-pairs unscored |
+| Condition | Score (scored fields) | 95% CI | n | Field-pairs unscored |
 |---|---|---|---|---|
 | **As actually deployed** (real language routing) | **79.6%** | [76.2%, 82.8%] | 70 | 60 of 560 (10.7%) |
 | Language routing forced correct | 79.7% | [76.8%, 82.5%] | 70 | 60 of 560 (10.7%) |
 
 **This is accuracy where the panel agreed, not overall accuracy.** A *field-pair* is one (review, field) cell: 70 reviews x 8 fields = 560. A pair is unscored when the three judges split and the stored gold is a default, not a label. Those are the reviews the panel found hardest or most ambiguous, so scoring only the agreed pairs is a selection effect: it is why `pros` reads 73.8% with them excluded against 53.9% with the defaults scored (all reviews). 46 of 70 reviews have at least one unscored pair. **No assumption-free point estimate of overall accuracy is identifiable from this data.** The assumption-free interval (every unscored pair all wrong / all right) is [70.9%, 81.6%]; that is a bound, not a result.
 
-**What this headline is.** The average of 8 fields (`product`, `buy_again`, `sentiment`, `topics`, `competitor_mentions`, `pros`, `cons`, `stars_inferred`) over the 70 of 106 corpus reviews that the prompt-development process had **not** seen, with 60 gold (review, field) pairs excluded because the judge panel split and the stored gold was a default, not a label. `stars` (null everywhere) and `language` (an echo of the detector, agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error)) are excluded as before.
+**What this held-out figure is.** The average of 8 fields (`product`, `buy_again`, `sentiment`, `topics`, `competitor_mentions`, `pros`, `cons`, `stars_inferred`) over the 70 of 106 corpus reviews that the prompt-development process had **not** seen, with 60 gold (review, field) pairs excluded because the judge panel split and the stored gold was a default, not a label. `stars` (null everywhere) and `language` (an echo of the detector, agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error)) are excluded as before.
 
 **Every cell, same recorded model outputs, as deployed** (the change moves the number up, so all four are shown):
 
@@ -192,7 +192,7 @@ Second-panel scores by field on those pairs (LLM-consensus silver, not ground tr
 | all | all | 72.4% | [69.8%, 75.0%] | 106 |
 | all | split excluded | 80.0% | [77.4%, 82.5%] | 106 |
 | unseen only | all | 73.2% | [69.9%, 76.5%] | 70 |
-| **unseen only (headline)** | **split excluded** | 79.6% | [76.2%, 82.8%] | 70 |
+| **unseen only** | **split excluded** | 79.6% | [76.2%, 82.8%] | 70 |
 
 **Why 36 reviews are excluded.** 15 also appear in the prompt-visible development fixtures (`eval/fixtures/hi-en/`; four of the `hi_en` prompt's few-shot examples are rewrites of them) and 21 in the internal benchmark whose adjudicated labels accepted prompt v2.2/v2.3. The builder only excluded already-quarantined text, so nothing stopped this ([ADR 0032](docs/architecture/adr/0032-held-out-exposure-and-split-gold.md)). Exposed reviews score 80.6% vs 79.6% for unseen ones (difference +1.0 pp, 95% CI -4.4 to +6.2): no benefit is detectable at this sample size, but that is absence of evidence, not proof of none.
 
@@ -223,9 +223,9 @@ Second-panel scores by field on those pairs (LLM-consensus silver, not ground tr
 | `stars_inferred` | 0 of 70 | 0.0% | 97.1% | 97.1% | 97.1% |
 | **all 8 (per-review mean)** | **60 of 560** | **10.7%** | **79.6%** | **70.9%** | **81.6%** |
 
-**Sensitivity, conditional on an assumption that is not verified** (the true label of an unscored pair is one of the three judges' own answers): scoring each unscored pair against each judge in turn gives 74.3% to 75.6% overall, and the per-pair worst/best over the judges gives [73.2%, 77.3%] -- all below the headline. A sensitivity analysis, not an estimate: all three judges can be wrong, and the unscored pairs have never been adjudicated.
+**Sensitivity, conditional on an assumption that is not verified** (the true label of an unscored pair is one of the three judges' own answers): scoring each unscored pair against each judge in turn gives 74.3% to 75.6% overall, and the per-pair worst/best over the judges gives [73.2%, 77.3%] -- all below the held-out figure. A sensitivity analysis, not an estimate: all three judges can be wrong, and the unscored pairs have never been adjudicated.
 
-Gold labels are LLM-consensus silver, not human ground truth. Production's own language detector, measured against this corpus's language label: agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error). That agreement figure is the number to trust for routing; the held-out headline above is real-world extraction accuracy only where the panel agreed, and the CI-gate table above is a regression detector, not a real-world accuracy claim -- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) (its misrouting-cost finding was corrected in Session 15d).<!-- METRICS:END -->
+Gold labels are LLM-consensus silver, not human ground truth. Production's own language detector, measured against this corpus's language label: agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error). That agreement figure is the number to trust for routing; the held-out figure above is real-world extraction accuracy only where the panel agreed, and the CI-gate table above is a regression detector, not a real-world accuracy claim -- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) (its misrouting-cost finding was corrected in Session 15d).<!-- METRICS:END -->
 
 Reproducible from committed cassettes: `EVAL_CASSETTE_MODE=replay uv run python eval/score_held_out_corpus_v2.py --mode replay` — $0, zero live calls, byte-identical output. See [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) for the full methodology. Its original "misrouting cost" decomposition was corrected in Session 15d (over all fields, the difference between the two routing conditions was the `language` field echoing the forced label, not an extraction cost).
 
@@ -243,7 +243,7 @@ n=70 reviews the prompt-development process had not seen; the 36 of 106 it had s
 
 Reproducible from the same committed cassettes, zero additional quota: `uv run python eval/analyze_coverage_metrics.py`.
 
-**The single headline claim this data supports** (Session 13 P1b — see [ADR 0027](docs/architecture/adr/0027-n23-discrepancy-resolved-and-headline-claim.md) for why a blended "rarely wrong when it commits" claim is not published):
+**The committed-answer claim this data supports** (Session 13 P1b — see [ADR 0027](docs/architecture/adr/0027-n23-discrepancy-resolved-and-headline-claim.md) for why a blended "rarely wrong when it commits" claim is not published):
 
 <!-- METRICS:START:committed_accuracy_headline -->**When it commits to an answer, this model is correct 88.0% of the time for sentiment (95% CI 78.0%–96.0%, n=70 unseen reviews) and 70.6% of the time for buy-again (95% CI 47.1%–88.2%, n=70 unseen reviews) -- rates divergent enough that a single blended "rarely wrong when it commits" claim would misrepresent buy-again.** See [ADR 0027](docs/architecture/adr/0027-n23-discrepancy-resolved-and-headline-claim.md) for why this is reported per-field, never blended into one number, and for the separate (and separately true) abstention-rate figures.<!-- METRICS:END -->
 
@@ -414,7 +414,7 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 **Phase 2.1** ✓ (shipped June 2026 — v0.5.0):
 - Provider abstraction — Python `Protocol`-based adapter layer; `GroqProvider` and `SecondaryProvider` with `assert_privacy_safe()` enforcement
 - SecondaryProvider failover — configurable fallback when Groq exhausts; `trains_on_input=True` providers rejected in code on the org-key path
-- Tiered router — small model (llama-3.1-8b-instant) for en/hi, large model (llama-3.3-70b-versatile) for hi-en and escalations; escalation triggers: schema validation failure, low confidence (<0.6), star/sentiment signal mismatch
+- Tiered router — every language starts on the small model (`openai/gpt-oss-20b`) and escalates to the large model (`openai/gpt-oss-120b`) on a trigger (at v0.5.0 the models were llama-3.1-8b-instant / llama-3.3-70b-versatile, retired 2026-08-16); escalation triggers: schema validation failure, low confidence (<0.6), star/sentiment signal mismatch
 - Routed eval (v0.5.0, prompt v2.1): <!-- METRICS:HISTORICAL -->84.4% overall (86.3% en / 83.2% hi-en / 80.7% hi)<!-- /METRICS:HISTORICAL -->; tiered routing was OFF by default at this point, pending that release's overall-accuracy gate. **Correction (2026-07-30):** tiered routing is now ON by default in production (`ENABLE_TIERED_ROUTING` defaults `true`, no override in CI or Cloud Run) — this bullet describes v0.5.0's ship-time state only; see [Eval results](#eval-results) for current status.
 - Prometheus metrics: tier distribution, escalation rate, per-tier token counts, failover count
 
@@ -449,7 +449,7 @@ datasets, yields 106 genuine Hinglish candidates (0.74% of the corpus) feeding b
 eval set and a separate quarantined held-out corpus (`eval/fixtures/_held_out_hindi_hinglish/`,
 106 fixtures, intended for held-out measurement rather than prompt development, but 36 of
 them also appear in the prompt-visible eval fixtures or the internal benchmark, so the prompt
-development process had seen them; the headline excludes them and covers only the 70 unseen
+development process had seen them; the held-out figure excludes them and covers only the 70 unseen
 reviews, and only where the judge panel agreed, see
 [ADR 0032](docs/architecture/adr/0032-held-out-exposure-and-split-gold.md) and
 [ADR 0033](docs/architecture/adr/0033-unscored-fraction-beside-the-headline.md)).
