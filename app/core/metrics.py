@@ -109,6 +109,18 @@ REPLY_CACHE_HIT_TOTAL = Counter(
     "Reply draft cache hits (same review/tone/brand/signature re-requested)",
 )
 
+CLASSIFY_REQUESTS_TOTAL = Counter(
+    "review_iq_classify_requests_total",
+    "POST /v2/classify requests by outcome (ok / unavailable / error)",
+    ["outcome"],
+)
+
+CLASSIFY_LATENCY_MS = Histogram(
+    "review_iq_classify_latency_ms",
+    "POST /v2/classify model latency in milliseconds (batch of up to 32 reviews)",
+    buckets=[25, 50, 100, 250, 500, 1000, 2500, 5000, 10000],
+)
+
 CORRECTIONS_SUBMITTED = Counter(
     "review_iq_corrections_submitted_total",
     "Correction submissions by source_type",
