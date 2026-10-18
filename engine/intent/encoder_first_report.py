@@ -112,7 +112,7 @@ def render(res: dict) -> str:
     verdict = (
         "may be enabled behind its flag"
         if not failing
-        else f"must NOT be enabled (not met: {', '.join(failing) or 'none'}; C4 None = not measured)"
+        else f"must NOT be enabled (not met: {', '.join(failing)}{'; C4 not measured' if c4_ok is None else ''})"
     )
     lines += [
         "## Verdict under the registered rule",
