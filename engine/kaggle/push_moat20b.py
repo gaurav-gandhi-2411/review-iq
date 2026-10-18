@@ -44,7 +44,7 @@ def metadata(slug: str, datasets: list[str]) -> dict:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", required=True, choices=["smoke", "full", "canary"])
+    ap.add_argument("--mode", required=True, choices=["smoke", "full", "canary", "effort"])
     ap.add_argument("--dataset", required=True)
     ap.add_argument("--prior", default="")
     ap.add_argument("--branch", default="main")

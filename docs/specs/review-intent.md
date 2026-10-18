@@ -629,3 +629,30 @@ file unchanged and are labelled "cap 600" wherever they are cited.
   each v2 arm vs the encoder with the Amendment 10 interval rule; the v2 zero-shot vs the cap-600 zero-shot is reported as the size of the
   truncation artefact. A difference is called only if the interval excludes zero. Labels are SILVER (four-judge panel consensus).
 - Not changed: shots, prompt, scoring, sealed set, the encoder's numbers. Amendment 11 (the compare rule) is registered separately.
+
+### Amendment 13 (2026-10-18, S26 moat): pin one Ollama build; test whether `reasoning_effort` is honoured; registered before any effort-test row exists
+
+Context: the 20b arms ran on three Ollama builds (`run_status.json`): cap-600 zero-shot 0.40.3, cap-600 few-shot 0.40.5, and BOTH v2 arms 0.40.6.
+The kernel downloaded "latest" at run time, so the build was not controlled. Separately, Amendment 12's canary stopped at its first rung (low,
+1500) with 0 empties, so the ladder's L1-vs-L3 token comparison that was to show whether the build honours `reasoning_effort` never ran: "low
+effort" is a requested setting, not a demonstrated one. This amendment fixes the first and measures the second. Nothing already reported
+changes; statements are restated below.
+
+- Pin (code change, no row yet): `engine/kaggle/kernel_moat20b.py` downloads the release asset
+  `https://github.com/ollama/ollama/releases/download/v0.40.6/ollama-linux-amd64.tar.zst` and refuses to continue unless its sha256 is
+  `c164ab8b1b28e2a247c29719b8e404c423c5b83ae64c3ab4e59d50c7ff7fc5e0` (the digest GitHub publishes for that asset). 0.40.6 is the build both
+  v2 arms ran on. Every later kernel run records the server version and the digest it verified.
+- Effort test (new kernel mode `effort`, discarded rows, counts only): the ZERO-SHOT prompt on the first 20 sealed items, model
+  `gpt-oss:20b`, temperature 0, seed 42, no `response_format`, `max_tokens` 2900 (largest measured prompt 1143, so it fits the 4096 context),
+  at four settings on the same 20 items: no `reasoning_effort` field (server default), `low`, `medium`, `high`. Completion tokens of a call
+  = server `total_tokens` minus server `prompt_tokens`. Reported per setting: mean, median, max completion tokens; calls ending at the cap
+  (`fin == length`); empty or unparseable answers.
+- Criterion, fixed now: `reasoning_effort` is HONOURED iff BOTH (a) the paired two-sided exact sign test on completion tokens, high versus
+  low over the 20 items (ties dropped), has p < 0.05, and (b) the median completion tokens at high is at least 1.25 times the median at low.
+  Medium and the default are reported as context, not part of the test. If either part fails the field is NOT demonstrated to be honoured.
+- If honoured: "low effort" in Amendment 12 is a demonstrated setting. If not honoured: the v2 arms ran at the build's own reasoning depth
+  with a 1500-token cap, the word "low" is removed from every statement about them, and what survives is exactly: the v2 few-shot versus v2
+  zero-shot paired comparison (same build, same cap, same sealed order, same kernel session), each v2 arm versus the encoder, and the 0-empty
+  result. What does NOT survive in that case: any comparison of v2 with a cap-600 arm as a measure of truncation alone, because the cap-600
+  arms ran on 0.40.3 and 0.40.5 and the build also changed; those are reported as "truncation and build, not separable".
+- Not changed: shots, prompt, scoring, sealed set, the encoder's numbers, Amendments 9 to 12.
