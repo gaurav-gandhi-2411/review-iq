@@ -25,8 +25,8 @@ through all three to be considered actually enforced. See ADR 0009 for the full 
 | `app.samidhareviews.xyz` | Vercel (separate project, `web/` frontend) | Yes, Vercel-managed | Reaches the SPA in `web/`, which calls `api.samidhareviews.xyz` — not the same backend process as the two rows above. |
 
 `samidhareviews.xyz` (the bare apex, marketing/demo) and `app.samidhareviews.xyz` are on
-**Vercel**, a separate account (`gg5678g@gmail.com`) from the one running Cloud Run/Firebase
-(`gaurav.gandhi2411@gmail.com`) — see ADR 0009's operational-risk note.
+**Vercel**, a separate account (the Vercel/Cloudflare account) from the one running Cloud Run/Firebase
+(the Cloud Run/Firebase account) — see ADR 0009's operational-risk note.
 
 ## Connection modes
 

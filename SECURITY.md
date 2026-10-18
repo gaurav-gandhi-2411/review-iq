@@ -138,7 +138,7 @@ Cross-tenant isolation is verified by an integration test (`tests/integration/te
 
 If you discover a security vulnerability, please report it privately before opening a public issue.
 
-- **Email:** gaurav.gandhi2411@gmail.com
+- **Email:** gauravgandhi429@gmail.com
 - **GitHub:** https://github.com/gaurav-gandhi-2411/review-iq/issues (label: `security`)
 - **Expected response time:** 72 hours
 

@@ -184,7 +184,7 @@ curl -s -i -X POST https://api.samidhareviews.xyz/v2/extract \
 - API logs: Cloud Run service `review-iq`, region `asia-south1`
   (ops/runbooks/cloud-run-deploy.md). Its GCP project id there is `review-iq-prod`, but a
   memory note says the estate moved to `reviewiq-prod-260813`; the runbook may be stale, so
-  confirm the project (UNVERIFIED) and pass `--account=gaurav.gandhi1129@gmail.com` to gcloud.
+  confirm the project (UNVERIFIED) and pass `--account=<owner-account>` to gcloud (where `<owner-account>` is the project's sole GCP owner identity (substitute at run time)).
   Structured log events to grep: `bff.ingest.job_created`, `bff.keys.created`.
 - Auth/email: Supabase dashboard -> Auth -> Logs; docs/email-deliverability-runbook.md.
 - Web deploy: Vercel project for `web/`.
