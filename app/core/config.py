@@ -170,6 +170,11 @@ class Settings(BaseSettings):
         default=0, ge=0, alias="CLASSIFY_TORCH_THREADS"
     )  # 0 = auto (ONNX backend: the cgroup CPU quota; torch backend: torch default). Name kept for env compatibility
 
+    # Encoder-first routing (spec Amendment 14): OFF by default. When on AND CLASSIFY_SERVICE_URL names the private classify
+    # service, the ingest worker asks it which reviews need full LLM extraction. Any classifier error routes to the LLM path.
+    enable_encoder_first: bool = Field(default=False, alias="ENABLE_ENCODER_FIRST")
+    classify_service_url: str = Field(default="", alias="CLASSIFY_SERVICE_URL")
+
     # Tiered model names — both Groq (privacy-vetted)
     # Groq deprecated llama-3.1-8b-instant on 2026-08-16; openai/gpt-oss-20b is their
     # documented replacement, same fast/cheap tier (Item G1).
