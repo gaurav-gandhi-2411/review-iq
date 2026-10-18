@@ -1,0 +1,98 @@
+"""Encoder-first routing (spec Amendment 14): router R1/R2, capacity arithmetic, fail-open, flag-off no-op."""
+
+from __future__ import annotations
+
+from types import SimpleNamespace
+from typing import Any
+
+import pytest
+from app.core.classify import encoder_first as ef
+
+
+def _t(na: str, urg: str, urg_cand: str | None = None) -> dict[str, dict[str, Any]]:
+    return {
+        "needs_action": {"label": na, "candidate_label": na},
+        "urgency": {"label": urg, "candidate_label": urg_cand or urg},
+    }
+
+
+@pytest.mark.parametrize(
+    ("tasks", "route", "reasons"),
+    [
+        (_t("no", "low"), False, ()),
+        (_t("yes", "low"), True, ("needs_action_yes",)),
+        (_t("abstained", "low"), True, ("needs_action_abstained",)),
+        (_t("no", "high"), True, ("urgency_high_candidate",)),
+        # high by threshold but abstained overall: both clauses fire (the safety reading is candidate_label)
+        (_t("no", "abstained", "high"), True, ("urgency_high_candidate", "urgency_abstained")),
+        (_t("no", "abstained", "medium"), True, ("urgency_abstained",)),
+        (_t("no", "medium"), False, ()),
+    ],
+)
+def test_r1(tasks: dict, route: bool, reasons: tuple[str, ...]) -> None:
+    d = ef.route_r1(tasks)
+    assert (d.route, d.reasons) == (route, reasons)
+
+
+def test_r2_drops_only_the_urgency_abstained_clause() -> None:
+    assert ef.route_r2(_t("no", "abstained", "medium")).route is False
+    assert ef.route_r2(_t("no", "abstained", "high")).route is True
+    assert ef.route_r2(_t("yes", "low")).route is True
+
+
+def test_capacity_multiplier() -> None:
+    assert ef.capacity_multiplier(0.5, 0.0) == pytest.approx(2.0)
+    assert ef.capacity_multiplier(1.0, 0.3) == pytest.approx(1.0)  # nothing skipped: no gain
+    assert ef.capacity_multiplier(0.25, 0.1) == pytest.approx(1 / (0.25 + 0.075))
+
+
+class _Fake:
+    def __init__(self, out: list | Exception) -> None:
+        self.out = out
+
+    async def classify(self, texts: list[str]) -> list:
+        if isinstance(self.out, Exception):
+            raise self.out
+        return self.out
+
+
+@pytest.mark.asyncio
+async def test_plan_routes_and_fail_open() -> None:
+    ok = await ef.plan_routes(_Fake([_t("no", "low"), _t("yes", "low")]), ["a", "b"])
+    assert [d.route for d in ok] == [False, True]
+    for bad in (
+        _Fake(RuntimeError("down")),
+        _Fake([_t("no", "low")]),
+        _Fake([{"x": {}}, {"y": {}}]),
+    ):
+        out = await ef.plan_routes(bad, ["a", "b"])  # error / wrong count / malformed answer
+        assert [d.route for d in out] == [True, True]
+        assert out[0].reasons == ("classifier_unavailable",)
+
+
+@pytest.mark.asyncio
+async def test_should_extract_is_a_no_op_when_off_or_unconfigured(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    for s in (
+        SimpleNamespace(enable_encoder_first=False, classify_service_url="https://x"),
+        SimpleNamespace(enable_encoder_first=True, classify_service_url=""),
+    ):
+        monkeypatch.setattr("app.core.config.get_settings", lambda s=s: s)
+        monkeypatch.setattr(ef, "_remote", None)
+        assert await ef.should_extract("any text") is True
+        assert ef._remote is None  # no client was even created
+
+
+@pytest.mark.asyncio
+async def test_should_extract_skips_classified_only_and_never_raises(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    s = SimpleNamespace(enable_encoder_first=True, classify_service_url="https://svc.example")
+    monkeypatch.setattr("app.core.config.get_settings", lambda: s)
+    fake = _Fake([_t("no", "low")])
+    fake._url = "https://svc.example"  # type: ignore[attr-defined]
+    monkeypatch.setattr(ef, "_remote", fake)
+    assert await ef.should_extract("t") is False
+    fake.out = RuntimeError("boom")
+    assert await ef.should_extract("t") is True  # fail-open
