@@ -9,6 +9,7 @@ later session resumes. No secret enters the kernel.
 """
 
 import glob
+import hashlib
 import json
 import os
 import pathlib
@@ -29,6 +30,9 @@ EFFORT = "__EFFORT__"  # none | low | medium | high
 # Amendment 12 canary ladder, fixed before any rung runs: (reasoning effort, max_tokens); stop at the first rung with 0 empties.
 RUNGS = [("low", 1500), ("low", 2500), ("medium", 2900)]
 MODEL = "gpt-oss:20b"
+# Amendment 13: one Ollama build for every arm. 0.40.6 is what both v2 arms ran on; the digest is the one GitHub publishes for the asset.
+OLLAMA_URL = "https://github.com/ollama/ollama/releases/download/v0.40.6/ollama-linux-amd64.tar.zst"
+OLLAMA_SHA256 = "c164ab8b1b28e2a247c29719b8e404c423c5b83ae64c3ab4e59d50c7ff7fc5e0"
 REPO = "https://github.com/gaurav-gandhi-2411/review-iq.git"
 W = pathlib.Path("/kaggle/working")
 OUT = W / "out"
@@ -49,29 +53,25 @@ def install_ollama() -> None:
     import zstandard
 
     OLLAMA_DIR.mkdir(parents=True, exist_ok=True)
-    last = None
-    for url, kind in (
-        ("https://ollama.com/download/ollama-linux-amd64.tar.zst", "zst"),
-        ("https://ollama.com/download/ollama-linux-amd64.tgz", "tgz"),
+    tmp = "/tmp/ollama.tar.zst"
+    urllib.request.urlretrieve(OLLAMA_URL, tmp)
+    h = hashlib.sha256()
+    with open(tmp, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    status["ollama_sha256"] = h.hexdigest()
+    if (
+        status["ollama_sha256"] != OLLAMA_SHA256
+    ):  # one pinned build (spec Amendment 13), never "latest"
+        raise RuntimeError("ollama archive sha256 does not match the pinned digest")
+    with (
+        open(tmp, "rb") as fh,
+        zstandard.ZstdDecompressor().stream_reader(fh) as rd,
+        tarfile.open(fileobj=rd, mode="r|") as tf,
     ):
-        try:
-            tmp = f"/tmp/ollama.{kind}"
-            urllib.request.urlretrieve(url, tmp)
-            if kind == "zst":
-                with (
-                    open(tmp, "rb") as fh,
-                    zstandard.ZstdDecompressor().stream_reader(fh) as rd,
-                    tarfile.open(fileobj=rd, mode="r|") as tf,
-                ):
-                    tf.extractall(OLLAMA_DIR)
-            else:
-                with tarfile.open(tmp) as tf:
-                    tf.extractall(OLLAMA_DIR)
-            if (OLLAMA_DIR / "bin" / "ollama").exists():
-                return
-        except Exception as e:  # noqa: BLE001
-            last = e
-    raise RuntimeError(f"could not install ollama: {last}")
+        tf.extractall(OLLAMA_DIR)  # noqa: S202 (a digest-verified release archive)
+    if not (OLLAMA_DIR / "bin" / "ollama").exists():
+        raise RuntimeError("ollama binary missing after extraction")
 
 
 def start_server(gpu: int) -> subprocess.Popen:
@@ -213,6 +213,34 @@ try:
             status["canary"].append(rung)
             if cr.returncode == 0 and rung["n"] == 30 and rung["empty"] == 0:
                 break
+        r = subprocess.CompletedProcess([], 0, "", "")
+    elif (
+        MODE == "effort"
+    ):  # Amendment 13: is reasoning_effort honoured? zero-shot, first 20 items, rows discarded
+        status["effort"] = []
+        for eff in ("none", "low", "medium", "high"):
+            edir = OUT / f"effort_{eff}"
+            eargs = args[:2] + ["--out", str(edir)] + args[4:]
+            eargs += ["--limit", "20", "--stem", "effort", "--max-tokens", "2900"]
+            if eff != "none":
+                eargs += ["--reasoning-effort", eff]
+            er = subprocess.run([*runner, *eargs], capture_output=True, text=True)
+            rows = [
+                json.loads(x)
+                for f in sorted((edir / "shards").glob("*.jsonl"))
+                for x in f.read_text().splitlines()
+                if x.strip()
+            ]
+            status["effort"].append(
+                {
+                    "effort": eff,
+                    "rc": er.returncode,
+                    "n": len(rows),
+                    "empty": sum(x["ans"] is None for x in rows),
+                    "finish_length": sum(x.get("fin") == "length" for x in rows),
+                    "completion_tokens": {x["id"]: x["tokens"] - x.get("ptoks", 0) for x in rows},
+                }
+            )
         r = subprocess.CompletedProcess([], 0, "", "")
     elif (
         ARM == "both"
