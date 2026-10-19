@@ -155,7 +155,7 @@ def pii_redacted_text(text: str, max_length: int = 5000) -> str:
     is pinned by tests/unit/test_sanitize.py::TestPiiRedactedText.
 
     Args:
-        text: Review text, in the form sanitize() would receive at the same call site.
+        text: The caller's original review text (not the field-injection-controlled text).
         max_length: Hard cap on characters (same default as sanitize()).
 
     Returns:

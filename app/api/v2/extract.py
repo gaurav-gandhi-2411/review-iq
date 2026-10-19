@@ -99,11 +99,12 @@ async def _run_extraction_v2(
     # app/core/injection_guard.py's module docstring for what it catches that the regex
     # misses (and, honestly, what it still misses too). The guard is a third-party Groq call and
     # legal/sub-processors.md says Groq receives text only after the PII-redaction pass, so it
-    # gets the same text sanitize() sees (ctl.text), truncated and PII-redacted -- but NOT
-    # `clean_text`: injection-removal is deliberately skipped so the classifier still sees the
-    # attack phrasing it scores. End-to-end is_suspicious = regex OR guard is unchanged.
+    # gets the caller's original text, truncated and PII-redacted. Deliberately NOT `clean_text`
+    # (injection-removal would erase the attack phrasing it scores) and NOT `ctl.text` (with the
+    # field-injection input control on, that has the attack sentences stripped, so the guard
+    # would stop flagging exactly those). End-to-end is_suspicious = regex OR guard is unchanged.
     guard_suspicious = await classify_injection_risk(
-        pii_redacted_text(ctl.text), api_key=get_settings().groq_api_key
+        pii_redacted_text(request.text), api_key=get_settings().groq_api_key
     )
     is_suspicious = regex_suspicious or guard_suspicious
     if is_suspicious:

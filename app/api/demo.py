@@ -288,11 +288,12 @@ async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtractio
     # app/core/injection_guard.py's module docstring. The public, keyless demo is arguably
     # the higher-value target for this check (no API key needed to reach it at all).
     # The guard is a third-party Groq call (legal/sub-processors.md: Groq receives text only
-    # after the PII-redaction pass), so it gets the text sanitize() saw (ctl.text), truncated and
-    # PII-redacted, but NOT `clean_text`: injection-removal is skipped so the classifier still
-    # sees the attack phrasing. The decision (regex OR guard) is unchanged.
+    # after the PII-redaction pass), so it gets the caller's original text, truncated and
+    # PII-redacted. Not `clean_text` (injection-removal would erase the attack phrasing) and not
+    # `ctl.text` (with the field-injection input control on, the attack sentences are stripped,
+    # so the guard would stop flagging them). The decision (regex OR guard) is unchanged.
     guard_suspicious = await classify_injection_risk(
-        pii_redacted_text(ctl.text), api_key=get_settings().groq_api_key
+        pii_redacted_text(body.text), api_key=get_settings().groq_api_key
     )
     if regex_suspicious or guard_suspicious:
         log.warning(
