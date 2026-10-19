@@ -176,6 +176,10 @@ try:
         args += ["--shots", shots_file]
     if NO_JSON_MODE:
         args += ["--no-json-mode"]
+    if (
+        MODE == "items"
+    ):  # Amendment 14: every item in the private items file, one phase (no interim rule)
+        args += ["--limit", "100000"]
     if MODE == "smoke":
         args += ["--limit", "20"]
     gen = ["--max-tokens", MAX_TOKENS] + (

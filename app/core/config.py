@@ -170,6 +170,11 @@ class Settings(BaseSettings):
         default=0, ge=0, alias="CLASSIFY_TORCH_THREADS"
     )  # 0 = auto (ONNX backend: the cgroup CPU quota; torch backend: torch default). Name kept for env compatibility
 
+    # Encoder-first routing (spec Amendment 14): OFF by default. When on AND CLASSIFY_SERVICE_URL names the private classify
+    # service, the ingest worker asks it which reviews need full LLM extraction. Any classifier error routes to the LLM path.
+    enable_encoder_first: bool = Field(default=False, alias="ENABLE_ENCODER_FIRST")
+    classify_service_url: str = Field(default="", alias="CLASSIFY_SERVICE_URL")
+
     # Tiered model names — both Groq (privacy-vetted)
     # Groq deprecated llama-3.1-8b-instant on 2026-08-16; openai/gpt-oss-20b is their
     # documented replacement, same fast/cheap tier (Item G1).
@@ -188,9 +193,10 @@ class Settings(BaseSettings):
     # endpoints on every call (app/core/providers/secondary.py enforces `zdr: true`
     # unconditionally, regardless of which model is configured here). Recommended:
     # SECONDARY_PROVIDER_API_KEY = an OpenRouter API key
-    # SECONDARY_PROVIDER_MODEL   = "meta-llama/llama-3.3-70b-instruct" -- same nominal
-    #   family as groq_model_large, live-verified 2026-07-31 to have ZDR-flagged
-    #   endpoints from 11 upstream providers (see SecondaryProvider's docstring).
+    # SECONDARY_PROVIDER_MODEL   = for kind=openrouter, "meta-llama/llama-3.3-70b-instruct"
+    #   was live-verified 2026-07-31 to have ZDR-flagged endpoints from 11 upstream
+    #   providers (see SecondaryProvider's docstring). Production runs kind=groq with
+    #   "openai/gpt-oss-120b" instead (see secondary_provider_kind below, ADR 0038).
     secondary_provider_api_key: str = Field(default="", alias="SECONDARY_PROVIDER_API_KEY")
     secondary_provider_model: str = Field(default="", alias="SECONDARY_PROVIDER_MODEL")
     # Which backend the secondary failover uses. "openrouter" selects the ZDR-only
