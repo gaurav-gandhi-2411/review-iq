@@ -165,12 +165,6 @@ def purge_org_extractions_pg(org_id: str, older_than: datetime | None = None) ->
 # ---------------------------------------------------------------------------
 
 
-def classified_reviews_table_exists_pg(cur: Any) -> bool:
-    cur.execute("SELECT to_regclass('public.classified_reviews') IS NOT NULL")
-    row = cur.fetchone()
-    return bool(row and row[0])
-
-
 def save_classified_review_pg(
     org_id: str,
     input_hash: str,
@@ -301,7 +295,10 @@ def purge_org_classified_reviews_pg(org_id: str, older_than: datetime | None = N
     try:
         cur = conn.cursor()
         _set_tenant(cur, org_id)
-        if not classified_reviews_table_exists_pg(cur):
+        # Inline (not a helper): the pg guard wants every function that runs SQL to call _set_tenant itself.
+        cur.execute("SELECT to_regclass('public.classified_reviews') IS NOT NULL")
+        exists = cur.fetchone()
+        if not (exists and exists[0]):
             conn.commit()
             return 0
         if older_than is None:
