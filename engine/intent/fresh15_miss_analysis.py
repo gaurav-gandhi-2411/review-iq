@@ -19,7 +19,6 @@ from pathlib import Path
 
 from app.core.classify import encoder_first as EF
 from app.core.classify import runtime
-from tokenizers import Tokenizer
 
 from engine.intent.fresh15_eval import load_votes
 from engine.labelling.pilot_diag import consensus_label
@@ -100,6 +99,10 @@ def main() -> None:
     tasks: list[dict] = []
     for s in range(0, len(items), BATCH):
         tasks += runtime.decisions(th, backend.logits([r["text"] for r in items[s : s + BATCH]]))
+    from tokenizers import (
+        Tokenizer,
+    )  # lazy: the unit tests import this module on CI runners without the serving extras
+
     tok = Tokenizer.from_file(str(a.artifacts / "hf" / "tokenizer.json"))
     ntok = {r["id"]: len(tok.encode(r["text"]).ids) for r in items}
     star = {r["id"]: r.get("stars") for r in items}
