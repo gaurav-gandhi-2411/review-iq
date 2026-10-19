@@ -317,7 +317,7 @@ Interactive docs at `/docs` (Swagger) and `/redoc`.
 |---|---|
 | API | FastAPI + Pydantic v2 |
 | LLM (primary) | Groq — tiered routing, `openai/gpt-oss-20b` (small) / `openai/gpt-oss-120b` (large) |
-| LLM (failover) | OpenRouter, ZDR-only, optional (the Gemini fallback was retired, ADR 0035) |
+| LLM (failover) | A second Groq account (`SECONDARY_PROVIDER_KIND=groq`, ADR 0038), optional; an OpenRouter ZDR-only kind is still supported in code but not used in production (the Gemini fallback was retired, ADR 0035) |
 | Auth | argon2id-hashed API keys (per-org, per-tenant) |
 | Auth (self-serve) | Supabase Auth · magic-link email · JWT verification |
 | Storage (v2) | Supabase Postgres + psycopg2 · RLS tenant isolation |
@@ -396,7 +396,7 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 - Kill switch — Pub/Sub budget alert → Cloud Function → Cloud Run traffic = 0
 
 **Phase 2.0b** ✓ (shipped May 2026):
-- Language detection — Devanagari regex + Hinglish keyword heuristics + lingua-py confidence
+- Language detection — Devanagari regex + Hinglish keyword heuristics + lingua-py confidence. Devanagari input is still detected (as `hi`) and attempted via the `hi` prompt, but that is an unvalidated best-effort path with no eval gate and no support claim ([ADR 0022](docs/architecture/adr/0022-hindi-retirement.md))
 - Language-branched prompts (v2.0) — en / hi-en / hi, each with explicit English-output instruction
 - 46-fixture eval suite — 25 English + 16 Hinglish (Claude Sonnet auto-labeled) + 6 Hindi as shipped (synthetic; later retired from scoring — Devanagari Hindi is not supported, see [Corpus and language scope](#corpus-and-language-scope) and [ADR 0022](docs/architecture/adr/0022-hindi-retirement.md))
 - Per-language CI gate — <!-- METRICS:HISTORICAL -->overall ≥ 85%, each language ≥ 80%<!-- /METRICS:HISTORICAL --> as shipped (lowered to the current threshold on 2026-06-14 — see [ADR 0001](docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md) and [Eval results](#eval-results))
