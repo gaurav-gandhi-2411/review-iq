@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 import time
 
-from prometheus_client import Counter, Histogram
+from prometheus_client import Counter, Gauge, Histogram
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import Response
@@ -64,6 +64,18 @@ RATE_LIMITED_TOTAL = Counter(
     "review_iq_llm_rate_limited_total",
     "Provider 429 responses (see llm.rate_limited log event)",
     ["provider", "model", "tier", "limit_type"],
+)
+
+COST_ALERT_TOTAL = Counter(
+    "review_iq_cost_alert_total",
+    "Customers whose month-to-date inference cost exceeded the alert fraction of their plan price (flag-gated sweep)",
+    ["plan"],
+)
+
+ORG_COST_RATIO = Gauge(
+    "review_iq_org_inference_cost_ratio",
+    "Highest month-to-date inference cost / plan price among the paying orgs of a plan (set by the cost-alert sweep)",
+    ["plan"],
 )
 
 AUTHENTICITY_LABEL_TOTAL = Counter(

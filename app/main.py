@@ -21,6 +21,7 @@ from app.api.dashboard import router as dashboard_router
 from app.api.demo import router as demo_router
 from app.api.extract import router as extract_router
 from app.api.google_auth import router as google_auth_router
+from app.api.internal.cost_alerts import router as internal_cost_alerts_router
 from app.api.internal.detectors import router as internal_detectors_router
 from app.api.internal.digest import router as internal_digest_router
 from app.api.internal.ingest_tick import router as internal_ingest_tick_router
@@ -276,6 +277,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         _app.include_router(demo_router)
         _app.include_router(leads_router)
         _app.include_router(internal_digest_router)
+        _app.include_router(internal_cost_alerts_router)
         _app.include_router(internal_ingest_tick_router)
         _app.include_router(internal_detectors_router)
         _app.include_router(internal_retention_router)
