@@ -5,6 +5,8 @@
 #       --build-context artifacts=D:/ml-cache/s25/classify_artifacts_onnx .
 #
 # `artifacts` is a directory holding model.onnx and hf/tokenizer.json; weights are never committed to the repo.
+# PRIVATE service (S27): runs app.classify_service (no API key, no database); Cloud Run IAM is the only authentication, so
+# deploy it with --no-allow-unauthenticated and run.invoker for the review-iq service account only.
 # Weights are BAKED into the image (S26 decision), checked against pinned sha256 values by ops/deploy/deploy-classify.sh.
 # requirements-classify.txt is hash-pinned (regenerate: see the header of requirements-classify.in); the install fails on any
 # file whose hash is not listed. Runs at 1 vCPU / 2 GiB / min-instances 0 as its own Cloud Run service.
@@ -27,7 +29,6 @@ RUN uv sync --frozen --no-dev --no-install-project \
 FROM base AS runtime
 COPY --from=deps /app/.venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH" \
-    ENABLE_V2_CLASSIFY=false \
     CLASSIFY_ARTIFACT_DIR=/app/artifacts/classify
 
 COPY app/ ./app/
@@ -42,4 +43,4 @@ RUN adduser --disabled-password --gecos "" appuser && mkdir -p /app/data && chow
 USER appuser
 EXPOSE 8080
 
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1"]
+CMD ["sh", "-c", "uvicorn app.classify_service:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1"]
