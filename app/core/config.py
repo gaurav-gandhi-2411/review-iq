@@ -193,9 +193,10 @@ class Settings(BaseSettings):
     # endpoints on every call (app/core/providers/secondary.py enforces `zdr: true`
     # unconditionally, regardless of which model is configured here). Recommended:
     # SECONDARY_PROVIDER_API_KEY = an OpenRouter API key
-    # SECONDARY_PROVIDER_MODEL   = "meta-llama/llama-3.3-70b-instruct" -- same nominal
-    #   family as groq_model_large, live-verified 2026-07-31 to have ZDR-flagged
-    #   endpoints from 11 upstream providers (see SecondaryProvider's docstring).
+    # SECONDARY_PROVIDER_MODEL   = for kind=openrouter, "meta-llama/llama-3.3-70b-instruct"
+    #   was live-verified 2026-07-31 to have ZDR-flagged endpoints from 11 upstream
+    #   providers (see SecondaryProvider's docstring). Production runs kind=groq with
+    #   "openai/gpt-oss-120b" instead (see secondary_provider_kind below, ADR 0038).
     secondary_provider_api_key: str = Field(default="", alias="SECONDARY_PROVIDER_API_KEY")
     secondary_provider_model: str = Field(default="", alias="SECONDARY_PROVIDER_MODEL")
     # Which backend the secondary failover uses. "openrouter" selects the ZDR-only
