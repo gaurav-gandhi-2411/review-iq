@@ -317,7 +317,7 @@ Interactive docs at `/docs` (Swagger) and `/redoc`.
 |---|---|
 | API | FastAPI + Pydantic v2 |
 | LLM (primary) | Groq — tiered routing, `openai/gpt-oss-20b` (small) / `openai/gpt-oss-120b` (large) |
-| LLM (failover) | OpenRouter, ZDR-only, optional (the Gemini fallback was retired, ADR 0035) |
+| LLM (failover) | A second Groq account (`SECONDARY_PROVIDER_KIND=groq`, ADR 0038), optional; an OpenRouter ZDR-only kind is still supported in code but not used in production (the Gemini fallback was retired, ADR 0035) |
 | Auth | argon2id-hashed API keys (per-org, per-tenant) |
 | Auth (self-serve) | Supabase Auth · magic-link email · JWT verification |
 | Storage (v2) | Supabase Postgres + psycopg2 · RLS tenant isolation |

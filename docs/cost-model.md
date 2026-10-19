@@ -188,9 +188,9 @@ written and re-runs section 4's margin math at four customer counts. Date: 2026-
 |---|---|---|---|
 | OpenRouter failover call (`meta-llama/llama-3.3-70b-instruct`, DeepInfra, ZDR) -- measured 2026-10-07 on that model; NOT the current production failover (production runs `SECONDARY_PROVIDER_KIND=groq`, `openai/gpt-oss-120b`, per Cloud Run config read 2026-10-18; its rate is the primary-call row below, `app/core/pricing.py`). Figures in this row not re-measured | **$0.000196/call** (INR 0.0187) at the probe's 1,612 in / 108 out | 1,612 x $0.10/M + 108 x $0.32/M = $0.0001612 + $0.0000346 | Tokens VERIFIED (failover-probe run in PR #279 commit message, `0a74db8`: "PASS 6767ms ... tokens 1612/108"). Rates BELIEVED: $0.10/M in, $0.32/M out from third-party aggregator summaries (OpenRouter's own page did not return prices through the fetch tool); re-check at openrouter.ai/meta-llama/llama-3.3-70b-instruct |
 | Same call on the primary (gpt-oss-120b) | $0.000307 | 1,612 x $0.15/M + 108 x $0.60/M (`app/core/pricing.py`) | VERIFIED (pricing table, as_of 2026-09-10) |
-| OpenRouter credit-purchase fee | 5.5%, $0.80 minimum per top-up -> effective ~$0.000207/call with fee; a $5 top-up costs $0.80 (16%) | aggregator summaries | BELIEVED |
-| Failover standing cost | ~$0.07/month (one $0.80 top-up per year) while failover is rare | 0.80/12 | BELIEVED |
-| Secret Manager | $0.06 per active version per month ($0.000082192/hr x 730), first 6 versions free; $0.03 per 10,000 access ops, first 10,000 free; $0.05 per rotation notification after 3 free | 14 secrets (13 in `ops/runbooks/secret-rotation.md` + `secondary-provider-api-key`, 1 version each) -> (14 - 6) x $0.06 = **$0.48/month**. Access ops: each cold start reads ~12 secrets, so ~800 cold starts/month fit the free 10,000 | Rates BELIEVED (cloud.google.com/secret-manager/pricing returned truncated content; figures from costbench.com quoting the SKU). Secret count VERIFIED from the repo runbook, not from `gcloud` (no live call made) |
+| OpenRouter credit-purchase fee (applies only if the openrouter kind were used; production failover is a second Groq account) | 5.5%, $0.80 minimum per top-up -> effective ~$0.000207/call with fee; a $5 top-up costs $0.80 (16%) | aggregator summaries | BELIEVED |
+| Failover standing cost (OpenRouter kind only; not production, where the Groq failover has no top-up) | ~$0.07/month (one $0.80 top-up per year) while failover is rare | 0.80/12 | BELIEVED |
+| Secret Manager | $0.06 per active version per month ($0.000082192/hr x 730), first 6 versions free; $0.03 per 10,000 access ops, first 10,000 free; $0.05 per rotation notification after 3 free | 14 secrets (13 in `ops/runbooks/secret-rotation.md` + `secondary-provider-api-key`, the OpenRouter-era secret: unbound from Cloud Run but kept, 1 version, see docs/STATUS.md; the failover key Cloud Run actually mounts as `SECONDARY_PROVIDER_API_KEY` is `groq-api-key`, read 2026-10-20, already counted in the 13) -> (14 - 6) x $0.06 = **$0.48/month**. Access ops: each cold start reads ~12 secrets, so ~800 cold starts/month fit the free 10,000 | Rates BELIEVED (cloud.google.com/secret-manager/pricing returned truncated content; figures from costbench.com quoting the SKU). Secret count VERIFIED from the repo runbook, not from `gcloud` (no live call made) |
 
 Observations that matter more than the cents:
 
@@ -401,7 +401,7 @@ code survey of the other repos VERIFIED in ADR 0037), and Groq rate-limits per o
 | Free-tier reviews/month we can promise | **None.** The public Free plan quota (1,000/month per user) is an entitlement, not a capacity guarantee |
 
 **Production risk.** A busy day in any other product silently starves Samidha's live traffic: the
-limiter and durable queue turn it into delay, and failover to the OpenRouter ZDR provider bounds
+limiter and durable queue turn it into delay, and failover to the secondary Groq account bounds
 it, but nothing removes the coupling. With no paying customers yet this is a launch blocker for
 the first real signup, not a present outage.
 
