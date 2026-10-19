@@ -213,6 +213,83 @@ def save_classified_review_pg(
         conn.close()
 
 
+def get_classified_review_pg(org_id: str, input_hash: str) -> dict[str, Any] | None:
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+        cur.execute(
+            "SELECT input_hash, review_text, review_date, product, classification, status, extraction_id, created_at "
+            "FROM public.classified_reviews WHERE org_id = %s AND input_hash = %s",
+            (org_id, input_hash),
+        )
+        r = cur.fetchone()
+        conn.commit()
+        if r is None:
+            return None
+        return {
+            "input_hash": r[0], "review_text": r[1], "review_date": r[2], "product": r[3],
+            "classification": r[4], "status": r[5], "extraction_id": str(r[6]) if r[6] else None, "created_at": r[7],
+        }  # fmt: skip
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def list_classified_reviews_pg(org_id: str, limit: int, offset: int) -> list[dict[str, Any]]:
+    """Unextracted (classified_only) reviews of one org, newest first."""
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+        cur.execute(
+            "SELECT input_hash, review_text, product, classification, created_at FROM public.classified_reviews "
+            "WHERE org_id = %s AND status = 'classified_only' ORDER BY created_at DESC LIMIT %s OFFSET %s",
+            (org_id, limit, offset),
+        )
+        rows = cur.fetchall()
+        conn.commit()
+        return [
+            {
+                "input_hash": r[0],
+                "review_text": r[1],
+                "product": r[2],
+                "classification": r[3],
+                "created_at": r[4],
+            }
+            for r in rows
+        ]
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def mark_classified_review_extracted_pg(org_id: str, input_hash: str) -> bool:
+    """classified_only -> extracted: drops the raw text, links the extraction made from it. False if it was not classified_only."""
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+        cur.execute(
+            "UPDATE public.classified_reviews SET status = 'extracted', review_text = NULL, extracted_at = now(), "
+            "extraction_id = (SELECT id FROM public.extractions WHERE org_id = %s AND input_hash = %s) "
+            "WHERE org_id = %s AND input_hash = %s AND status = 'classified_only'",
+            (org_id, input_hash, org_id, input_hash),
+        )
+        changed = cur.rowcount == 1
+        conn.commit()
+        return changed
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
 def purge_org_classified_reviews_pg(org_id: str, older_than: datetime | None = None) -> int:
     """Delete one org's classified_reviews (all, or created before `older_than`). 0 if the table does not exist yet.
 
