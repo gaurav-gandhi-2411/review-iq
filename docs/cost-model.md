@@ -198,12 +198,16 @@ Observations that matter more than the cents:
   $0.000307 on the same tokens; historical measurement of 2026-10-07 on the llama model).
   Production failover is a second Groq account on gpt-oss-120b, whose per-call cost was not
   re-measured here, so this claim is not carried over to production.
-- **The failover model has no entry in `PRICING_TABLE`.** `extract.py` catches `UnknownModelError`,
-  logs `extraction.cost_pricing_missing` and skips the cost row, so failover traffic is currently
-  invisible in `extraction_costs` COGS. Fix is one table entry; not done here (docs-only PR).
+- **Scope of the next two bullets:** OpenRouter kind (llama-3.3-70b-instruct), historical 2026-10-07
+  measurement; production failover is a second Groq account on gpt-oss-120b, not re-measured here.
+- **The OpenRouter-kind failover model (llama-3.3-70b-instruct) had no entry in `PRICING_TABLE`.**
+  `extract.py` catches `UnknownModelError`, logs `extraction.cost_pricing_missing` and skips the
+  cost row, so llama failover traffic was invisible in `extraction_costs` COGS. Fix is one table
+  entry; not done here (docs-only PR). Whether the production failover model is priced was not
+  re-checked here.
 - Per-extraction llama output tokens are unmeasured (the probe prompt is not an extraction). If it
-  emits the gpt-oss-120b mean of 647 tokens, an extraction costs ~$0.00038 on failover vs $0.00065
-  on the primary tier (BELIEVED).
+  emits the gpt-oss-120b mean of 647 tokens, an extraction costs ~$0.00038 on the OpenRouter-kind
+  failover vs $0.00065 on the primary tier (BELIEVED; historical, OpenRouter kind only).
 
 ### 7.2 Shared fixed cost, updated
 
