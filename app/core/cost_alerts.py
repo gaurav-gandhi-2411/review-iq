@@ -63,7 +63,9 @@ def parse_org_plans(raw: str) -> dict[str, str]:
     if not raw.strip():
         return {}
     data = json.loads(raw)
-    if not isinstance(data, dict) or not all(isinstance(k, str) and isinstance(v, str) for k, v in data.items()):
+    if not isinstance(data, dict) or not all(
+        isinstance(k, str) and isinstance(v, str) for k, v in data.items()
+    ):
         raise ValueError("ORG_PLANS_JSON must be a JSON object of org id -> plan id")
     return {k: v.lower() for k, v in data.items()}
 
@@ -103,7 +105,9 @@ def run_sweep(
         except Exception:
             log.error("cost_alert.org_failed", org_id=org_id, exc_info=True)
             failed.append(org_id)
-    worst: dict[str, float] = {}  # per plan: the highest cost / price among its orgs (no org label: bounded cardinality)
+    worst: dict[
+        str, float
+    ] = {}  # per plan: the highest cost / price among its orgs (no org label: bounded cardinality)
     for org_id, cost in costs.items():
         price = PLAN_PRICE_USD.get(org_plans[org_id])
         if price:

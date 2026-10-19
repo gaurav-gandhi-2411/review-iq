@@ -46,7 +46,9 @@ async def run_cost_alert_sweep(
         return {"ok": True, "enabled": False}
     try:
         org_plans = parse_org_plans(settings.org_plans_json)
-    except ValueError as e:  # includes json.JSONDecodeError: a broken alert config must be loud, not silently empty
+    except (
+        ValueError
+    ) as e:  # includes json.JSONDecodeError: a broken alert config must be loud, not silently empty
         log.error("cost_alert_trigger.bad_org_plans_json", error=str(e))
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="ORG_PLANS_JSON is invalid."

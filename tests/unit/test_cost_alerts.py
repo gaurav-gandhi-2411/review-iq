@@ -53,7 +53,9 @@ def test_parse_org_plans_empty_valid_and_malformed():
 
 
 def test_month_start_is_the_first_of_the_utc_month():
-    assert CA.month_start_utc(datetime(2026, 11, 17, 13, 5, tzinfo=UTC)) == datetime(2026, 11, 1, tzinfo=UTC)
+    assert CA.month_start_utc(datetime(2026, 11, 17, 13, 5, tzinfo=UTC)) == datetime(
+        2026, 11, 1, tzinfo=UTC
+    )
 
 
 def test_sweep_isolates_one_orgs_failure_and_reports_the_rest():
@@ -89,7 +91,9 @@ def client() -> TestClient:
     return TestClient(app, raise_server_exceptions=False)
 
 
-def test_endpoint_503_when_no_token_is_configured_and_401_on_a_wrong_or_missing_token(client: TestClient):
+def test_endpoint_503_when_no_token_is_configured_and_401_on_a_wrong_or_missing_token(
+    client: TestClient,
+):
     with patch("app.api.internal.cost_alerts.get_settings", return_value=_settings(token=None)):
         assert client.post("/internal/cost-alerts/run").status_code == 503
     with patch("app.api.internal.cost_alerts.get_settings", return_value=_settings()):
@@ -117,12 +121,15 @@ def test_endpoint_with_the_flag_on_reports_the_alert(client: TestClient):
         r = client.post("/internal/cost-alerts/run", headers={"X-Cost-Alert-Trigger-Token": "tok"})
     body = r.json()
     assert r.status_code == 200 and body["enabled"] is True and body["orgs_checked"] == 1
-    assert body["alerts"][0]["org_id"] == "org-a" and body["alerts"][0]["ratio"] == pytest.approx(15 / 29, abs=1e-3)
+    assert body["alerts"][0]["org_id"] == "org-a" and body["alerts"][0]["ratio"] == pytest.approx(
+        15 / 29, abs=1e-3
+    )
 
 
 def test_endpoint_fails_loudly_on_a_broken_plan_map(client: TestClient):
     with patch(
-        "app.api.internal.cost_alerts.get_settings", return_value=_settings(enabled=True, plans="{oops")
+        "app.api.internal.cost_alerts.get_settings",
+        return_value=_settings(enabled=True, plans="{oops"),
     ):
         r = client.post("/internal/cost-alerts/run", headers={"X-Cost-Alert-Trigger-Token": "tok"})
     assert r.status_code == 500
