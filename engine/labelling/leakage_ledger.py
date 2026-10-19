@@ -31,6 +31,7 @@ LEDGER = ROOT / "reports" / "labelling" / "ledger.json"
 PILOTS = [f"reports/labelling/pilot{i}/manifest.json" for i in (1, 2, 3)]
 SCALE = "reports/labelling/scale/manifest.json"
 SAFETY = "reports/labelling/safety/split.json"
+FRESH15 = "reports/labelling/fresh15/manifest.json"  # Amendment 15: every item is test-only
 MAX_BYTES = 5_000_000
 MIN_CHARS = 20  # shorter strings are not distinctive enough to be a meaningful hit
 SKIP_PARTS = ("reports/labelling/", "reports/intent/")  # id/label tables hold hashes, never text
@@ -44,10 +45,18 @@ def safety_items() -> list[dict]:
     return _load(SAFETY)["items"] if (ROOT / SAFETY).exists() else []
 
 
+def fresh_items() -> list[dict]:
+    return _load(FRESH15)["items"] if (ROOT / FRESH15).exists() else []
+
+
 def sealed_hashes() -> set[str]:
-    """Scale-sample test hashes plus the safety stratum's test hashes (Amendment 6): one sealed list, one set of checks."""
+    """Scale-sample test hashes, the safety stratum's test hashes (Amendment 6) and the fresh15 set (Amendment 15, all test)."""
     scale = {i["sha"] for i in _load(SCALE)["items"] if i["split"] == "test"}
-    return scale | {i["sha"] for i in safety_items() if i["split"] == "test"}
+    return (
+        scale
+        | {i["sha"] for i in safety_items() if i["split"] == "test"}
+        | {i["sha"] for i in fresh_items()}
+    )
 
 
 def exclusions() -> set[str]:
