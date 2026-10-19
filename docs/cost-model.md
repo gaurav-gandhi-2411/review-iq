@@ -194,8 +194,10 @@ written and re-runs section 4's margin math at four customer counts. Date: 2026-
 
 Observations that matter more than the cents:
 
-- **The failover path is cheaper per call than the primary** ($0.000196 vs $0.000307 on the same
-  tokens), so a long Groq outage does not raise COGS. Its risk is capacity and quality, not cost.
+- **The OpenRouter-kind failover path was cheaper per call than the primary** ($0.000196 vs
+  $0.000307 on the same tokens; historical measurement of 2026-10-07 on the llama model).
+  Production failover is a second Groq account on gpt-oss-120b, whose per-call cost was not
+  re-measured here, so this claim is not carried over to production.
 - **The failover model has no entry in `PRICING_TABLE`.** `extract.py` catches `UnknownModelError`,
   logs `extraction.cost_pricing_missing` and skips the cost row, so failover traffic is currently
   invisible in `extraction_costs` COGS. Fix is one table entry; not done here (docs-only PR).
@@ -206,7 +208,9 @@ Observations that matter more than the cents:
 ### 7.2 Shared fixed cost, updated
 
 F = Supabase $25 + Cloud Run $47.34 + Vercel $20 + Resend $0 + Secret Manager $0.48 + failover
-$0.07 = **$92.89/month** (was $92.34). Cloud Run is still the min-instances=1 projection, not
+$0.07 = **$92.89/month** (was $92.34). (The $0.07 is the OpenRouter-kind standing cost, which
+production does not currently incur while the failover is a second Groq account; the total was not
+re-derived.) Cloud Run is still the min-instances=1 projection, not
 today's scale-to-zero. Resend stays $0 only while sends stay under 3,000/month and 100/day.
 
 ### 7.3 Margin per tier at 1, 5, 10, 20, 40 customers
