@@ -11,7 +11,7 @@ const FILTER_LABELS: Record<FilterKey, string> = {
 const VALUE_LABELS: Record<string, string> = {
   high: 'High', medium: 'Medium', low: 'Low',
   positive: 'Positive', negative: 'Negative', neutral: 'Neutral', mixed: 'Mixed',
-  en: 'English', hi: 'Hindi', 'hi-en': 'Hindi/English',
+  en: 'English', 'hi-en': 'Hindi/English',
 }
 
 export default function FilterBar() {
