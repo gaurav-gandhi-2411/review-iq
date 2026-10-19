@@ -70,6 +70,7 @@ the full changed-cases list (below) and confirmed KEEP.
 
 **Eval gate:** 83.8% overall, en 86.2%, hi 80.7% (identical to v2.2), hi-en 80.9% (identical to
 v2.2) — all PASS.
+*[Retired — superseded by 78.6% (95% CI 73–83%, n=43, 2026-09-19)]*
 
 **Files:** `app/core/prompts/en.py` only (hi_en.py untouched — out of scope for this iteration;
 the failing case is in the `en` slice; hi/hi-en confirmed byte-for-byte unaffected, see below).
@@ -150,6 +151,7 @@ reused untouched (never re-recorded — `hi_en.py` unchanged, so their cache key
 
 906 tests pass, `ruff check` clean, eval-replay 83.8% overall / en 86.2% / hi 80.7% / hi-en
 80.9% — all PASS (>=80% per-language gate, >=83% overall gate).
+*[Retired — superseded by 78.6% (95% CI 73–83%, n=43, 2026-09-19)]*
 
 ---
 
