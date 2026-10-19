@@ -159,6 +159,91 @@ def purge_org_extractions_pg(org_id: str, older_than: datetime | None = None) ->
         conn.close()
 
 
+# ---------------------------------------------------------------------------
+# classified_reviews -- reviews the encoder-first router skipped (S29; table from migration 20261020000001, NOT applied until GG
+# merges it). Every function is tenant-scoped via _set_tenant() like the rest of this module. Flag OFF: nothing calls the writers.
+# ---------------------------------------------------------------------------
+
+
+def classified_reviews_table_exists_pg(cur: Any) -> bool:
+    cur.execute("SELECT to_regclass('public.classified_reviews') IS NOT NULL")
+    row = cur.fetchone()
+    return bool(row and row[0])
+
+
+def save_classified_review_pg(
+    org_id: str,
+    input_hash: str,
+    text: str,
+    review_date: datetime | None,
+    product: str | None,
+    classification: dict[str, Any],
+    thresholds_sha256: str,
+) -> bool:
+    """Persist one skipped review (status classified_only). True if inserted, False if (org_id, input_hash) already exists.
+
+    Raises if the table is missing or the insert fails: the caller (ingest worker) then falls back to LLM extraction, so a skipped
+    review is never dropped just because it could not be stored.
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+        cur.execute(
+            "INSERT INTO public.classified_reviews (org_id, input_hash, review_text, review_date, product, "
+            "classification, thresholds_sha256) VALUES (%s, %s, %s, %s, %s, %s::jsonb, %s) "
+            "ON CONFLICT (org_id, input_hash) DO NOTHING",
+            (
+                org_id,
+                input_hash,
+                text,
+                review_date,
+                product,
+                json.dumps(classification),
+                thresholds_sha256,
+            ),
+        )
+        inserted = cur.rowcount == 1
+        conn.commit()
+        return inserted
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def purge_org_classified_reviews_pg(org_id: str, older_than: datetime | None = None) -> int:
+    """Delete one org's classified_reviews (all, or created before `older_than`). 0 if the table does not exist yet.
+
+    Called next to purge_org_extractions_pg by the retention job and POST /v2/purge: raw review text must follow the same
+    retention rules whether or not the encoder-first flag is still on. The existence check keeps both purges working before the
+    migration is applied.
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+        if not classified_reviews_table_exists_pg(cur):
+            conn.commit()
+            return 0
+        if older_than is None:
+            cur.execute("DELETE FROM public.classified_reviews WHERE org_id = %s", (org_id,))
+        else:
+            cur.execute(
+                "DELETE FROM public.classified_reviews WHERE org_id = %s AND created_at < %s",
+                (org_id, older_than),
+            )
+        deleted = cur.rowcount
+        conn.commit()
+        return deleted
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
 def get_by_hash_pg(org_id: str, input_hash: str) -> ReviewExtractionV2 | None:
     """Return cached extraction for this org if input_hash already exists."""
     conn = _db_connect()
