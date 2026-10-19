@@ -158,6 +158,67 @@ def evaluate(items: list[dict], votes: dict, tasks: list[dict], llm: dict[str, d
     }
 
 
+def render_md(res: dict) -> str:
+    """README with every number in a METRICS block; the verdict comes from `criteria_met`, not from prose."""
+    a, b, ll, ro = (
+        res["A_router_routing_recall"],
+        res["B_non_inferiority"],
+        res["llm"],
+        res["report_only"],
+    )
+
+    def blk(name: str, body: str) -> str:
+        return f"<!-- METRICS:START:{name} -->\n{body}\n<!-- METRICS:END -->"
+
+    rows = "\n".join(
+        f"| {k} | {v['k']} of {v['n']} | {v['rate']} | {v['wilson95']} |"
+        for k, v in {
+            "all gold-yes": a,
+            "4-0 yes": ro["router_recall_unanimous_4_0"],
+            "3-1 yes": ro["router_recall_3_1"],
+            **{f"stratum {s}": v for s, v in ro["router_recall_by_stratum"].items()},
+        }.items()
+    )
+    return (
+        "# Fresh sealed set: needs_action routing recall (spec Amendment 15, S28)\n\n"
+        "Registered in `docs/specs/review-intent.md` Amendment 15 before the set was drawn. 2,000 fresh ENGLISH items (the Hinglish pool was exhausted), "
+        "zero overlap with every earlier set (hash, exact text and near-duplicate), labelled by the four-judge panel (SILVER); gold = at least 3 of 4 judges agree. "
+        "Router R1 on the served static-int8 ONNX decisions, thresholds unchanged. The all-LLM comparator is gpt-oss-20b zero-shot answering the same needs_action question "
+        "(Ollama 0.40.6 pinned and digest-checked for this run, effort low); the production extraction has no needs_action field, so this is a stand-in. "
+        "The PANEL run was on an unpinned Ollama build (the pinned kernel version was superseded by a queued earlier version), recorded as a deviation.\n\n"
+        "## Sizes\n\n"
+        + blk(
+            "fresh15_sizes",
+            f"items {res['n_items']}; with consensus {res['n_consensus']}; without {res['n_no_consensus']}; gold needs_action=yes {res['n_gold_yes']} "
+            f"(size rule: at least {res['size_rule']['min_positives']}, met {res['size_rule']['met']}); panel needs_action alpha "
+            f"{ro['panel_needs_action_agreement']['alpha']}, clear consensus {ro['panel_needs_action_agreement']['clear_consensus']}",
+        )
+        + "\n\n## Criteria\n\n"
+        + blk(
+            "fresh15_criteria",
+            f"A (absolute): router routing recall {a['rate']} ({a['k']} of {a['n']}), Wilson 95 {a['wilson95']}; {a['criterion']}: met {a['met']}\n"
+            f"B (relative, non-inferiority): LLM path recall {ll['recall']['rate']} ({ll['recall']['k']} of {ll['recall']['n']}), Wilson 95 {ll['recall']['wilson95']}; "
+            f"delta recall_R minus recall_L {b['delta']}, paired bootstrap 95 {b['boot95']}; {b['criterion']}: met {b['met']}\n"
+            f"LLM rows {ll['rows']}, empty or unparseable or missing {ll['empty_or_unparseable_or_missing']}, ended at the token cap {ll['ended_at_token_cap']}\n"
+            f"BOTH criteria met: {res['criteria_met']}",
+        )
+        + "\n\n## Router recall by subgroup (report only)\n\n"
+        + blk(
+            "fresh15_subgroups",
+            "| subgroup | routed | recall | Wilson 95 |\n|---|---|---|---|\n" + rows,
+        )
+        + "\n\n## Capacity on this set (report only)\n\n"
+        + blk(
+            "fresh15_capacity",
+            f"R1 routes {ro['routed_share_all_items']['k']} of {ro['routed_share_all_items']['n']} = {ro['routed_share_all_items']['rate']}; "
+            f"multiplier by open rate {ro['capacity_multiplier_by_open_rate']}; gold-yes share by stratum "
+            + str({s: v["rate"] for s, v in ro["gold_yes_share_by_stratum"].items()}),
+        )
+        + "\n\nCriteria met does NOT enable anything: it only removes C3 as the stated reason Amendment 14 says the router must not be enabled. "
+        "Persisting skipped reviews (a migration, gate 4) and the on-open extraction path do not exist.\n"
+    )
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--items", required=True, type=Path)
@@ -180,6 +241,7 @@ def main() -> None:
     }
     a.out.parent.mkdir(parents=True, exist_ok=True)
     a.out.write_text(json.dumps(res, indent=1, default=str) + "\n", encoding="utf-8")
+    a.out.with_name("README.md").write_text(render_md(res), encoding="utf-8")
     print(json.dumps({k: res[k] for k in ("n_items", "n_consensus", "n_gold_yes", "criteria_met")}))
 
 

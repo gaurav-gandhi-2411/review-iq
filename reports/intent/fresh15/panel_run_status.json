@@ -1,0 +1,8 @@
+{
+ "stage": "P",
+ "commit": "4c2c7ec8cf8464d309867d3338c089253b0caa48",
+ "gpu": "Tesla T4, 15360 MiB\nTesla T4, 15360 MiB",
+ "elapsed_s": 15487,
+ "budget_hit": false,
+ "note": "ollama build NOT recorded: the panel ran on an unpinned build (deviation from Amendment 15)"
+}
