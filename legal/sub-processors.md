@@ -12,7 +12,9 @@ removed, or changed. `[TODO: GG-DECISION — pick and state a change-notificatio
 "check this page" vs. an email/changelog subscription, before this becomes a binding
 contractual commitment (see dpa-template.md §6).]`
 
-**Last verified against the codebase:** 2026-09-17 (Session 15b, adding Resend — a live sub-processor
+**Last verified against the codebase:** 2026-10-19 (OpenRouter removed as a sub-processor; the Groq
+Zero Data Retention row extended to the second Groq account, account setting confirmed by owner,
+2026-10-19). Previously 2026-09-17 (Session 15b, adding Resend — a live sub-processor
 missing from this document since its 2026-09-12 rewrite). Previously updated 2026-09-12 (Session 13,
 resolving the Groq ZDR TODO and auditing every LLM-provider call site for Batch API usage — see
 [ADR 0028](../docs/architecture/adr/0028-groq-zdr-verification-and-batch-api-audit.md)).
@@ -26,24 +28,12 @@ data-use commitment against its own Services Agreement). Originally drafted 2026
 
 | | |
 |---|---|
-| **Role** | Primary LLM inference provider — currently `openai/gpt-oss-20b` and `openai/gpt-oss-120b`, routed by review length/complexity (`app/core/pricing.py`; model names change over time as Groq's hosted model lineup changes — this table reflects what's configured as of this drafting, not a permanent commitment to these specific models). |
+| **Role** | Primary LLM inference provider — currently `openai/gpt-oss-20b` and `openai/gpt-oss-120b`, routed by review length/complexity (`app/core/pricing.py`; model names change over time as Groq's hosted model lineup changes — this table reflects what's configured as of this drafting, not a permanent commitment to these specific models). Failover: a second Groq account (same provider; model `openai/gpt-oss-120b`), selected in production by `SECONDARY_PROVIDER_KIND=groq` (`app/core/llm.py`, `app/core/providers/secondary.py`). |
 | **What it processes** | Review text submitted to `/v2/extract`, `/v2/ingest/csv`, `/demo/extract`, etc., **after** the PII-redaction pass (`app/core/sanitize.py`) strips detected emails, phone numbers, and credit card numbers. Groq receives this redacted text to generate structured extraction and authenticity signal output. |
 | **Data use commitment — independently verified against Groq's own primary legal document** (2026-09-12, `console.groq.com/docs/legal/services-agreement` §4.2): *"Groq is not permitted to use Inputs or Outputs for training or fine-tuning any AI Model Services or other models, unless explicitly granted permission or instructed by Customer."* Groq additionally does not retain Inputs/Outputs beyond what's needed to serve the request, except temporary logs (up to 30 days) for reliability/abuse monitoring, with a self-serve Zero Data Retention opt-out available in Console Data Controls. **This Services Agreement applies to free-tier/self-serve API use** — it is accepted by "using the Cloud Services," no Order Form or paid plan required, and a Data Processing Addendum is automatically incorporated into it. This supersedes the earlier (2026-07-31) unverified TODO on this row. | |
 | **Their own published documentation** | `https://console.groq.com/docs/legal/services-agreement` (Services Agreement, §4.2 quoted above), `https://console.groq.com/docs/your-data` (Your Data in GroqCloud), `https://console.groq.com/docs/legal/customer-data-processing-addendum` (DPA) — all fetched and read directly, 2026-09-12. |
 | **Data location** | `[TODO: the specific data-center region(s) Groq uses to physically serve inference were not independently verified — only the contractual no-training/limited-retention commitment above is confirmed. Verify before publishing if region-specific transfer language is needed.]` |
-| **Zero Data Retention for this account** | **Inference APIs ZDR: enabled** (2026-09-12, Console Data Controls — reported by the account holder; not independently verifiable via API, see below). Global ZDR (which would also disable Batch/fine-tuning storage) is not yet enabled — safe to enable at any time: an independent code audit (2026-09-12) confirmed this codebase never calls Groq's Batch or fine-tuning APIs anywhere, only `chat.completions.create` and `models.list`, so Global ZDR's Batch/fine-tuning shutoff has zero functional impact. **Verification method note:** Groq's API exposes no response header or endpoint that reports ZDR status (confirmed by inspecting a real, live API response's full header set and Groq's own current API-reference and your-data docs directly — a search result claiming an `x-zero-data-retention` header exists for Groq was found to have conflated xAI's API, a different provider, and was discarded). The only way to check or change this setting is the Console UI; this row is therefore stated as the account holder's report, not an independent API verification. See [ADR 0028](../docs/architecture/adr/0028-groq-zdr-verification-and-batch-api-audit.md). |
-
----
-
-## OpenRouter, Inc.
-
-| | |
-|---|---|
-| **Role** | Secondary/failover LLM inference provider — activates only when Groq is unavailable (`app/core/providers/secondary.py`). Currently configured model: `meta-llama/llama-3.3-70b-instruct`. |
-| **What it processes** | The same PII-redacted review text as Groq, only on Groq failure. |
-| **Data use commitment — mechanism, not a blanket trust of OpenRouter's own policy**: OpenRouter is an aggregator; its own no-train policy does not bind every upstream provider it can route to. Every request from this integration unconditionally includes `"provider": {"zdr": true}`, which restricts OpenRouter's routing to endpoints on its own live Zero-Data-Retention allowlist (`GET /api/v1/endpoints/zdr`) — a model with no ZDR-flagged endpoint is refused (HTTP 404) rather than silently routed to a non-ZDR endpoint. **Live-verified twice**: 2026-07-31 (3 real calls, each cross-checked against the live ZDR allowlist, all 3 matched) and 2026-09-12 (one further real end-to-end call through this exact integration, routed to provider "Parasail," independently confirmed present on the live ZDR allowlist for this model at call time). |
-| **Their own published documentation** | `https://openrouter.ai/docs/guides/features/zdr` (Zero Data Retention), `https://openrouter.ai/api/v1/endpoints/zdr` (the live allowlist itself, machine-readable). |
-| **Data location** | Depends on which upstream ZDR-listed provider serves a given request (verified examples: DeepInfra, AkashML, Parasail) — OpenRouter itself does not commit to a fixed region for a given model; `[TODO: REQUIRES-LEGAL-REVIEW if this variability is acceptable for the transfer-mechanism language in privacy-policy.md §4, given the specific serving provider cannot be predicted in advance.]` |
+| **Zero Data Retention (both Groq accounts)** | **Inference APIs ZDR: enabled on both Groq accounts** — the primary account (2026-09-12, Console Data Controls) and the second, failover account (account setting confirmed by owner, 2026-10-19). Both are reported by the account holder; neither is independently verifiable via API, see below. Global ZDR (which would also disable Batch/fine-tuning storage) is not yet enabled on the primary account, and its status on the second account has not been reported — safe to enable at any time: an independent code audit (2026-09-12) confirmed this codebase never calls Groq's Batch or fine-tuning APIs anywhere, only `chat.completions.create` and `models.list`, so Global ZDR's Batch/fine-tuning shutoff has zero functional impact. **Verification method note:** Groq's API exposes no response header or endpoint that reports ZDR status (confirmed by inspecting a real, live API response's full header set and Groq's own current API-reference and your-data docs directly — a search result claiming an `x-zero-data-retention` header exists for Groq was found to have conflated xAI's API, a different provider, and was discarded). The only way to check or change this setting is the Console UI; this row is therefore stated as the account holder's report, not an independent API verification. See [ADR 0028](../docs/architecture/adr/0028-groq-zdr-verification-and-batch-api-audit.md). |
 
 ---
 
@@ -97,8 +87,7 @@ data-use commitment against its own Services Agreement). Originally drafted 2026
 
 **Resolved since the original 2026-07-31 drafting**: Groq's data-use commitment is now
 independently verified against its own primary legal document (Services Agreement §4.2, fetched
-and read directly — see the Groq row above), and OpenRouter's ZDR enforcement has been
-live-verified twice, most recently via a real end-to-end call through this exact integration.
+and read directly — see the Groq row above).
 
 **Still open, before this document is published to customers:**
 
@@ -108,7 +97,7 @@ live-verified twice, most recently via a real end-to-end call through this exact
 2. Groq's physical data-center region(s) for inference specifically (the no-training/limited-
    retention *commitment* is confirmed; *where* the compute runs is not).
 3. Whether Groq's *Global* Zero Data Retention setting gets enabled (Inference-APIs ZDR is
-   already enabled per the account holder, 2026-09-12 — see the Groq row above; Global ZDR is
+   already enabled on both Groq accounts per the account holder (2026-09-12 and 2026-10-19) — see the Groq row above; Global ZDR is
    confirmed safe to enable, pending the account holder's action, since this codebase never uses
    Groq's Batch or fine-tuning APIs). Note this project has no way to independently re-verify
    *either* ZDR scope via the API going forward — Groq exposes no header or endpoint for this
@@ -120,4 +109,5 @@ live-verified twice, most recently via a real end-to-end call through this exact
 ---
 
 _This document is version-controlled; see git history for changes. Originally drafted 2026-07-31;
-updated 2026-09-12 (OpenRouter added, Groq facts independently verified)._
+updated 2026-09-12 (OpenRouter added, Groq facts independently verified). 2026-10-19: OpenRouter
+removed; second Groq account added to the ZDR row._
