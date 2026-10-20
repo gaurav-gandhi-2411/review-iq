@@ -167,7 +167,7 @@ def cold(a: argparse.Namespace) -> None:
         ]
     }
     samples = []
-    for k in range(a.samples):
+    for _ in range(a.samples):
         t_wait = time.time()
         while instances(a.service) != 0:  # scale-to-zero after the idle timeout (about 15 minutes)
             time.sleep(30)
