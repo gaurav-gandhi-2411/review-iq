@@ -33,7 +33,7 @@ Base items: 344 injection, 458 benign. Third-party text is not committed (ids + 
 | BEN-P | 458 | 458 | 0 |
 | BEN | 916 | 479 | 437 |
 
-## End-to-end results (recall for INJ, FPR for BEN; 95% Wilson CIs)
+## End-to-end results (INJ rows are recall, BEN rows are FPR; Wilson intervals at level 0.95)
 
 | Stratum | n | CURRENT | NEW | b (cur only) | c (new only) | McNemar p | NEW-CURRENT (Newcombe 95% CI) |
 |---|---:|---|---|---:|---:|---:|---|
