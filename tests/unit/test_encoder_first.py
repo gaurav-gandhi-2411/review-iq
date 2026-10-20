@@ -96,3 +96,24 @@ async def test_should_extract_skips_classified_only_and_never_raises(
     assert await ef.should_extract("t") is False
     fake.out = RuntimeError("boom")
     assert await ef.should_extract("t") is True  # fail-open
+
+
+def test_ingest_path_timeout_covers_a_cold_start_and_the_default_stays_short(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # measured Cloud Run cold start 15.2 s (S29): the background ingest path must outlast it with margin; the class default (the
+    # user-facing choice) must not silently grow
+    assert ef.INGEST_TIMEOUT_S >= 3 * 15.2
+    assert ef.RemoteClassifier("https://svc.example")._timeout == 10.0
+    s = SimpleNamespace(enable_encoder_first=True, classify_service_url="https://svc.example")
+    monkeypatch.setattr("app.core.config.get_settings", lambda: s)
+    monkeypatch.setattr(ef, "_remote", None)
+
+    async def fake(self: object, texts: list[str]) -> list:
+        return [_t("no", "low")]
+
+    monkeypatch.setattr(ef.RemoteClassifier, "classify", fake)
+    import asyncio
+
+    assert asyncio.run(ef.should_extract("t")) is False
+    assert ef._remote is not None and ef._remote._timeout == ef.INGEST_TIMEOUT_S
