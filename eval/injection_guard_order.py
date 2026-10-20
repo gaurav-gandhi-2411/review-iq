@@ -1128,7 +1128,7 @@ def render_summary(res: dict[str, Any], manifest: dict[str, Any], missing: Seque
         )
     out += [
         "",
-        "## End-to-end results (recall for INJ, FPR for BEN; 95% Wilson CIs)",
+        "## End-to-end results (INJ rows are recall, BEN rows are FPR; Wilson intervals at level 0.95)",
         "",
         "| Stratum | n | CURRENT | NEW | b (cur only) | c (new only) | McNemar p "
         "| NEW-CURRENT (Newcombe 95% CI) |",
