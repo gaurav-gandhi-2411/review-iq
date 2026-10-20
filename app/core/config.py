@@ -175,6 +175,14 @@ class Settings(BaseSettings):
     enable_encoder_first: bool = Field(default=False, alias="ENABLE_ENCODER_FIRST")
     classify_service_url: str = Field(default="", alias="CLASSIFY_SERVICE_URL")
 
+    # Per-customer inference cost alert (S29, ADR 0041): OFF by default. When on, POST /internal/cost-alerts/run meters each paying org
+    # listed in ORG_PLANS_JSON ({"<org uuid>": "starter"|"growth"|"scale"|"starter_in"|"growth_in"|"scale_in"}) and raises an alert when its month-to-date
+    # inference cost is above COST_ALERT_FRACTION of the plan price. There is no subscription data in the app yet, hence the setting.
+    enable_cost_alerts: bool = Field(default=False, alias="ENABLE_COST_ALERTS")
+    cost_alert_fraction: float = Field(default=0.20, gt=0, le=1, alias="COST_ALERT_FRACTION")
+    org_plans_json: str = Field(default="", alias="ORG_PLANS_JSON")
+    cost_alert_trigger_token: str | None = Field(default=None, alias="COST_ALERT_TRIGGER_TOKEN")
+
     # Tiered model names — both Groq (privacy-vetted)
     # Groq deprecated llama-3.1-8b-instant on 2026-08-16; openai/gpt-oss-20b is their
     # documented replacement, same fast/cheap tier (Item G1).

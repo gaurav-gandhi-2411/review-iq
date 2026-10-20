@@ -136,3 +136,14 @@ reported 83.8%/49-fixture figure (a different, smaller, all-Groq fixture set).
    eval runner, potentially other tooling) depends on its exact `{raw, tokens_in,
    tokens_out}` shape; changing it is unnecessary scope creep for a one-off recording
    gap and risks a schema-drift bug for no real benefit over a sibling file.
+
+## Supersession note (2026-10-20)
+
+Appended note; the text above is unchanged and is the record as of 2026-07-30. The
+**49-fixture / 83.8%** figure that the Decision/Consequences above restore "as the sole
+current gating number" was later retired and is no longer the current gate figure. The 6
+`hi` fixtures were removed from scoring (49 -> 43 fixtures; ADR 0022, Hindi retirement),
+and the free-text normalization fix (ADR 0030) followed. The current headline gate figure
+is **78.6% (95% CI 73–83%, n=43, 2026-09-19)**, produced by `eval/results/latest.json`
+(mirrored in `eval/results.json`) and rendered into the README "Headline accuracy" line.
+Read every "83.8%" / "49-fixture" statement above as historical.
