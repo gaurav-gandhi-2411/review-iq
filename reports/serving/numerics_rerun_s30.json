@@ -1,0 +1,412 @@
+{
+ "old_laptop_numerics": {
+  "val_agreement_with_fp32": {
+   "needs_action": 0.9957,
+   "broad_intent": 0.9739,
+   "sentiment": 0.9783,
+   "urgency": 0.9891,
+   "mean": 0.9842
+  },
+  "thresholds": {
+   "needs_action": {
+    "temperature": 1.3805,
+    "abstain_below": 0.8753780126571655,
+    "rare": {}
+   },
+   "broad_intent": {
+    "temperature": 1.1841,
+    "abstain_below": 0.888034999370575,
+    "rare": {}
+   },
+   "sentiment": {
+    "temperature": 1.1986,
+    "abstain_below": 0.7952240109443665,
+    "rare": {}
+   },
+   "urgency": {
+    "temperature": 1.2739,
+    "abstain_below": 0.8857629895210266,
+    "rare": {
+     "high": {
+      "threshold": 0.384699,
+      "n_val_positives": 8,
+      "fallback_argmax": false
+     }
+    }
+   }
+  },
+  "sealed_headline_p0.95": {
+   "needs_action": {
+    "coverage": 0.8815,
+    "coverage_ci95": [
+     0.8563,
+     0.9052
+    ],
+    "precision": 0.9889,
+    "precision_ci95": [
+     0.9795,
+     0.9953
+    ],
+    "n_answered": 632
+   },
+   "broad_intent": {
+    "coverage": 0.75,
+    "coverage_ci95": [
+     0.7186,
+     0.7815
+    ],
+    "precision": 0.9829,
+    "precision_ci95": [
+     0.971,
+     0.9941
+    ],
+    "n_answered": 525
+   },
+   "sentiment": {
+    "coverage": 0.8529,
+    "coverage_ci95": [
+     0.8261,
+     0.8796
+    ],
+    "precision": 0.9913,
+    "precision_ci95": [
+     0.9829,
+     0.9982
+    ],
+    "n_answered": 574
+   },
+   "urgency": {
+    "coverage": 0.8307,
+    "coverage_ci95": [
+     0.7994,
+     0.8578
+    ],
+    "precision": 0.988,
+    "precision_ci95": [
+     0.9778,
+     0.995
+    ],
+    "n_answered": 584
+   }
+  },
+  "amendment14": {
+   "routed_share_sealed": 0.2748,
+   "multiplier_open_rate_0.1": 2.879,
+   "C1_safety_urgency_high_recall": [
+    0.9713,
+    1.0
+   ],
+   "C2_sealed_urgency_high": {
+    "k": 4,
+    "n": 4,
+    "rate": 1.0,
+    "wilson95": [
+     0.5101,
+     1.0
+    ]
+   },
+   "C3_sealed_needs_action_yes": {
+    "k": 106,
+    "n": 111,
+    "rate": 0.955,
+    "wilson95": [
+     0.8989,
+     0.9806
+    ]
+   }
+  },
+  "amendment15": {
+   "A_router_recall": {
+    "k": 292,
+    "n": 306,
+    "rate": 0.9542,
+    "wilson95": [
+     0.9247,
+     0.9726
+    ],
+    "criterion": "Wilson lower >= 0.9",
+    "met": true
+   },
+   "llm_recall": {
+    "k": 275,
+    "n": 306,
+    "rate": 0.8987,
+    "wilson95": [
+     0.8598,
+     0.9277
+    ]
+   },
+   "B_delta": {
+    "delta": 0.0556,
+    "boot95": [
+     0.0131,
+     0.098
+    ],
+    "n": 306,
+    "margin": 0.05,
+    "criterion": "lower bound of the 95% paired-bootstrap interval of recall_R - recall_L > -0.05",
+    "met": true
+   },
+   "routed_share": {
+    "k": 539,
+    "n": 2000,
+    "rate": 0.2695,
+    "wilson95": [
+     0.2505,
+     0.2894
+    ]
+   },
+   "criteria_met": true
+  }
+ },
+ "new_production_numerics": {
+  "val_agreement_with_fp32": {
+   "needs_action": 0.987,
+   "broad_intent": 0.9739,
+   "sentiment": 0.9826,
+   "urgency": 0.9804,
+   "mean": 0.981
+  },
+  "thresholds": {
+   "needs_action": {
+    "temperature": 1.4057,
+    "abstain_below": 0.8843989968299866,
+    "rare": {}
+   },
+   "broad_intent": {
+    "temperature": 1.1935,
+    "abstain_below": 0.8471860289573669,
+    "rare": {}
+   },
+   "sentiment": {
+    "temperature": 1.1801,
+    "abstain_below": 0.8003119826316833,
+    "rare": {}
+   },
+   "urgency": {
+    "temperature": 1.3057,
+    "abstain_below": 0.8801209926605225,
+    "rare": {
+     "high": {
+      "threshold": 0.37802,
+      "n_val_positives": 8,
+      "fallback_argmax": false
+     }
+    }
+   }
+  },
+  "sealed_headline_p0.95": {
+   "needs_action": {
+    "coverage": 0.8717,
+    "coverage_ci95": [
+     0.8452,
+     0.8954
+    ],
+    "precision": 0.9856,
+    "precision_ci95": [
+     0.9748,
+     0.9937
+    ],
+    "n_answered": 625
+   },
+   "broad_intent": {
+    "coverage": 0.7814,
+    "coverage_ci95": [
+     0.7529,
+     0.8115
+    ],
+    "precision": 0.9781,
+    "precision_ci95": [
+     0.9656,
+     0.9891
+    ],
+    "n_answered": 547
+   },
+   "sentiment": {
+    "coverage": 0.8574,
+    "coverage_ci95": [
+     0.8291,
+     0.8826
+    ],
+    "precision": 0.9879,
+    "precision_ci95": [
+     0.9779,
+     0.9949
+    ],
+    "n_answered": 577
+   },
+   "urgency": {
+    "coverage": 0.8208,
+    "coverage_ci95": [
+     0.7895,
+     0.8492
+    ],
+    "precision": 0.9913,
+    "precision_ci95": [
+     0.9827,
+     0.9982
+    ],
+    "n_answered": 577
+   }
+  },
+  "amendment14": {
+   "routed_share_sealed": 0.2827,
+   "multiplier_open_rate_0.1": 2.821,
+   "C1_safety_urgency_high_recall": [
+    0.9713,
+    1.0
+   ],
+   "C2_sealed_urgency_high": {
+    "k": 4,
+    "n": 4,
+    "rate": 1.0,
+    "wilson95": [
+     0.5101,
+     1.0
+    ]
+   },
+   "C3_sealed_needs_action_yes": {
+    "k": 104,
+    "n": 111,
+    "rate": 0.9369,
+    "wilson95": [
+     0.8755,
+     0.9691
+    ]
+   }
+  },
+  "amendment15": {
+   "A_router_recall": {
+    "k": 295,
+    "n": 306,
+    "rate": 0.9641,
+    "wilson95": [
+     0.9368,
+     0.9798
+    ],
+    "criterion": "Wilson lower >= 0.9",
+    "met": true
+   },
+   "llm_recall": {
+    "k": 275,
+    "n": 306,
+    "rate": 0.8987,
+    "wilson95": [
+     0.8598,
+     0.9277
+    ]
+   },
+   "B_delta": {
+    "delta": 0.0654,
+    "boot95": [
+     0.0261,
+     0.1046
+    ],
+    "n": 306,
+    "margin": 0.05,
+    "criterion": "lower bound of the 95% paired-bootstrap interval of recall_R - recall_L > -0.05",
+    "met": true
+   },
+   "routed_share": {
+    "k": 553,
+    "n": 2000,
+    "rate": 0.2765,
+    "wilson95": [
+     0.2573,
+     0.2965
+    ]
+   },
+   "criteria_met": true
+  }
+ },
+ "equivalence": {
+  "laptop_pinned vs kaggle_pinned": {
+   "label_mismatches": 0,
+   "n_decisions": 800,
+   "max_abs_prob_diff": 0.0,
+   "median_per_review_max_diff": 0.0,
+   "p95_per_review_max_diff": 0.0
+  },
+  "laptop_pinned vs cloudrun_s29_deployed": {
+   "label_mismatches": 1,
+   "n_decisions": 800,
+   "max_abs_prob_diff": 0.08276,
+   "median_per_review_max_diff": 0.0,
+   "p95_per_review_max_diff": 0.002064
+  },
+  "laptop_pinned vs laptop_unpinned": {
+   "label_mismatches": 22,
+   "n_decisions": 800,
+   "max_abs_prob_diff": 0.333988,
+   "median_per_review_max_diff": 0.008289,
+   "p95_per_review_max_diff": 0.16804
+  },
+  "laptop_pinned vs kaggle_unpinned": {
+   "label_mismatches": 22,
+   "n_decisions": 800,
+   "max_abs_prob_diff": 0.333988,
+   "median_per_review_max_diff": 0.008289,
+   "p95_per_review_max_diff": 0.16804
+  },
+  "kaggle_pinned vs cloudrun_s29_deployed": {
+   "label_mismatches": 1,
+   "n_decisions": 800,
+   "max_abs_prob_diff": 0.08276,
+   "median_per_review_max_diff": 0.0,
+   "p95_per_review_max_diff": 0.002064
+  },
+  "kaggle_pinned vs laptop_unpinned": {
+   "label_mismatches": 22,
+   "n_decisions": 800,
+   "max_abs_prob_diff": 0.333988,
+   "median_per_review_max_diff": 0.008289,
+   "p95_per_review_max_diff": 0.16804
+  },
+  "kaggle_pinned vs kaggle_unpinned": {
+   "label_mismatches": 22,
+   "n_decisions": 800,
+   "max_abs_prob_diff": 0.333988,
+   "median_per_review_max_diff": 0.008289,
+   "p95_per_review_max_diff": 0.16804
+  },
+  "cloudrun_s29_deployed vs laptop_unpinned": {
+   "label_mismatches": 21,
+   "n_decisions": 800,
+   "max_abs_prob_diff": 0.333988,
+   "median_per_review_max_diff": 0.007366,
+   "p95_per_review_max_diff": 0.163166
+  },
+  "cloudrun_s29_deployed vs kaggle_unpinned": {
+   "label_mismatches": 21,
+   "n_decisions": 800,
+   "max_abs_prob_diff": 0.333988,
+   "median_per_review_max_diff": 0.007366,
+   "p95_per_review_max_diff": 0.163166
+  },
+  "laptop_unpinned vs kaggle_unpinned": {
+   "label_mismatches": 0,
+   "n_decisions": 800,
+   "max_abs_prob_diff": 0.0,
+   "median_per_review_max_diff": 0.0,
+   "p95_per_review_max_diff": 0.0
+  }
+ },
+ "kaggle_cpu": {
+  "cpu_model": "AMD EPYC 7B12",
+  "n_logical_cpus": 4,
+  "flags_of_interest": {
+   "avx2": true,
+   "avx512f": false,
+   "avx512_vnni": false,
+   "avx_vnni": false,
+   "amx_int8": false,
+   "amx_tile": false
+  },
+  "onnxruntime": "1.31.0",
+  "python": "3.13.15",
+  "model_sha256": "33158169d014fb424b1284dd32474863a62503530b618e4bf3db39210044b414",
+  "n_items": 200,
+  "seconds": 38.2,
+  "max_abs_logit_diff_pinned_vs_unpinned_on_this_cpu": 1.319399118423462
+ }
+}
