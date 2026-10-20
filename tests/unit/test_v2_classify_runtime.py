@@ -97,7 +97,9 @@ def test_get_backend_prefers_onnx_when_model_onnx_exists(
     seen: dict = {}
 
     class Stub:
-        def __init__(self, d: Path, th: runtime.Thresholds, threads: int = 0) -> None:
+        def __init__(
+            self, d: Path, th: runtime.Thresholds, threads: int = 0, max_len: int | None = None
+        ) -> None:
             seen["th"] = th
 
     monkeypatch.setattr(runtime, "_state", {})

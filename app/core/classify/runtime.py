@@ -221,7 +221,9 @@ class OnnxBackend:
     calibration data, so a review's logits do not depend on its batch-mates; the endpoint still runs one review per forward,
     which also avoids padding."""
 
-    def __init__(self, artifact_dir: Path, th: Thresholds, threads: int = 0) -> None:
+    def __init__(
+        self, artifact_dir: Path, th: Thresholds, threads: int = 0, max_len: int | None = None
+    ) -> None:
         model, tok = artifact_dir / "model.onnx", artifact_dir / "hf" / "tokenizer.json"
         if not model.is_file() or not tok.is_file():
             raise ClassifyUnavailableError(
@@ -247,7 +249,10 @@ class OnnxBackend:
         so.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
         self._sess = ort.InferenceSession(str(model), so, providers=["CPUExecutionProvider"])
         self._tok = Tokenizer.from_file(str(tok))
-        self._tok.enable_truncation(max_length=th.max_len)
+        # The contract length is the thresholds file's; an override exists only to PROBE a longer input on a throwaway service
+        # (Amendment 16 capacity probe). Production leaves CLASSIFY_MAX_LEN unset.
+        self.max_len = max_len or th.max_len
+        self._tok.enable_truncation(max_length=self.max_len)
         self._sizes = {t: len(s.classes) for t, s in th.tasks.items()}
         self._lock = threading.Lock()
 
@@ -279,6 +284,26 @@ class OnnxBackend:
 
 _state: dict[str, Any] = {}
 _state_lock = threading.Lock()
+MAX_LEN_BOUNDS = (
+    16,
+    512,
+)  # the encoder's position table ends at 514; shorter than 16 tokens is not a review
+
+
+def max_len_override() -> int | None:
+    """CLASSIFY_MAX_LEN (unset or empty = no override). Anything outside MAX_LEN_BOUNDS or not an integer refuses to start."""
+    raw = os.environ.get("CLASSIFY_MAX_LEN", "").strip()
+    if not raw:
+        return None
+    try:
+        v = int(raw)
+    except ValueError:
+        v = -1
+    if not MAX_LEN_BOUNDS[0] <= v <= MAX_LEN_BOUNDS[1]:
+        raise ClassifyUnavailableError(
+            "classify_bad_config", f"CLASSIFY_MAX_LEN must be an integer in {MAX_LEN_BOUNDS}"
+        )
+    return v
 
 
 def get_backend(artifact_dir: str, threads: int = 0) -> tuple[LogitsBackend, Thresholds]:
@@ -291,7 +316,10 @@ def get_backend(artifact_dir: str, threads: int = 0) -> tuple[LogitsBackend, Thr
             t0, d = time.perf_counter(), Path(artifact_dir)
             if (d / "model.onnx").is_file():
                 th = load_thresholds(THRESHOLDS_ONNX_PATH)
-                _state["backend"], _state["th"] = OnnxBackend(d, th, threads), th
+                _state["backend"], _state["th"] = (
+                    OnnxBackend(d, th, threads, max_len_override()),
+                    th,
+                )
             else:
                 th = load_thresholds()
                 _state["backend"], _state["th"] = TorchInt8Backend(d, th, threads), th
