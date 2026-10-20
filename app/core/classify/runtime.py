@@ -27,6 +27,7 @@ import structlog
 from engine.intent.decide import decide
 
 from app.core.classify.errors import ClassifyUnavailableError
+from app.core.classify.ort_numerics import apply_numerics_pin
 
 log = structlog.get_logger(__name__)
 THRESHOLDS_PATH = Path(__file__).with_name("thresholds_run2_int8_ffn_full.json")
@@ -233,7 +234,9 @@ class OnnxBackend:
             raise ClassifyUnavailableError(
                 "classify_runtime_missing", f"onnxruntime/tokenizers not installed: {e}"
             ) from e
-        so = ort.SessionOptions()
+        so = apply_numerics_pin(
+            ort.SessionOptions()
+        )  # same arithmetic on every x64 host (S30; ort_numerics.py)
         # ONNX Runtime sizes its pool from the host's cores, not the container's CPU quota; with 16 visible cores and a 1 vCPU
         # quota the extra threads only get throttled (measured: >1 s per review instead of tens of ms).
         so.intra_op_num_threads = threads or cgroup_cpus()
