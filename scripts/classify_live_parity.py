@@ -1,6 +1,6 @@
 """Post-deploy check for the PRIVATE classify service: batch-1 sealed-set parity against the live URL (S26, reworked S27).
 
-    CLASSIFY_ID_TOKEN=$(gcloud auth print-identity-token --account=<invoker> --audiences=<url>) PYTHONPATH=. \
+    CLASSIFY_ID_TOKEN=$(gcloud auth print-identity-token --account=<invoker>) PYTHONPATH=. \
         python scripts/classify_live_parity.py --url <url> --texts D:/ml-cache/review-intent/scale.jsonl --out <result.json> \
         [--limit N]
 
