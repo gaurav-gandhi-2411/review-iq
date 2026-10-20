@@ -8,11 +8,19 @@
 ## Key rules (read before rotating anything)
 
 Secret Manager free tier: **6 active (enabled) versions** across all secrets, all time.  
-Steady state: **12 secrets × 1 active version = 12 active versions** (9 as of 2026-07-11,
-+3 from the 2026-08-01 BYPASSRLS remediation cutover: `review-iq-admin-database-url`,
-`review-iq-migrator-database-url`, `supabase-direct-url`) — exceeds the free tier by 6. At
-$0.06/version/month, that's ~$0.36/month — trivial, but not $0, and worth knowing rather than
-assuming free. This runbook previously only tracked 4 of the 9 secrets and its quota loop
+Steady state as designed: **12 secrets × 1 active version = 12 active versions** (9 as of
+2026-07-11, +3 from the 2026-08-01 BYPASSRLS remediation cutover:
+`review-iq-admin-database-url`, `review-iq-migrator-database-url`, `supabase-direct-url`) —
+exceeds the free tier by 6. At $0.06/version/month, that's ~$0.36/month — trivial, but not $0,
+and worth knowing rather than assuming free.
+**Live count, read 2026-10-20 (names and counts only): 17 secrets, 19 enabled versions**
+(`supabase-direct-url` has 3 enabled versions; every other secret has 1), so the real bill is
+(19 - 6) × $0.06 = $0.78/month; see `docs/cost-model.md` section 7.1. The 12-secret figure above
+is the design target and is stale against the live inventory: this table omits
+`digest-trigger-token`, `ingest-tick-token`, `detector-sweep-trigger-token` (bound on the service
+as secrets, not plain env vars) and `secondary-provider-api-key` (unbound, kept), and lists
+`supabase-service-role-key` and `resend-webhook-secret`, which are absent from the live
+`gcloud secrets list`. This runbook previously only tracked 4 of the 9 secrets and its quota loop
 undercounted accordingly; both are fixed below.
 
 **2026-07-11 cleanup:** `resend-from-email` had 2 enabled versions (version 1 from 2026-07-02
@@ -44,7 +52,8 @@ corrected (see that row).
 
 | Secret name (kebab-case) | Cloud Run env var | What it is |
 |--------------------------|-------------------|------------|
-| `groq-api-key` | `GROQ_API_KEY` | Groq LLM API key (primary inference) |
+| `groq-api-key-samidha` | `GROQ_API_KEY` | Groq LLM API key, primary inference (the dedicated Groq org, ADR 0037). Verified on the live service 2026-10-20 |
+| `groq-api-key` | `SECONDARY_PROVIDER_API_KEY` | Groq LLM API key, failover (a second Groq account, ADR 0038). Verified on the live service 2026-10-20 |
 | `gemini-api-key` | `GEMINI_API_KEY` | Google Gemini API key (dev fallback) |
 | `supabase-database-url` | `SUPABASE_DATABASE_URL` | Supabase pooler URL, port 6543 (transaction mode). Connects as `review_iq_app` (non-superuser, member of `authenticated`). **As of the 2026-08-01 BYPASSRLS remediation cutover, this role no longer holds BYPASSRLS** — the 2026-07-26 description below was accurate at the time but is now stale; see `supabase/migrations/20260801000001_role_separation_bypassrls_remediation.sql` and `ops/runbooks/bypassrls-remediation-cutover.md` for the current state and why. Rotating this secret's password also requires `ALTER ROLE review_iq_app WITH PASSWORD '...'` on the database first. |
 | `admin-password-hash` | `ADMIN_PASSWORD_HASH` | argon2id hash of admin HTTP Basic password |
