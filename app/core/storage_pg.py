@@ -1588,6 +1588,29 @@ def record_extraction_cost_pg(
         conn.close()
 
 
+def org_month_cost_usd_pg(org_id: str, since: datetime) -> float:
+    """Sum of one org's `extraction_costs.cost_usd` since `since` (per-customer inference cost metering, S29).
+
+    Tenant-scoped like every per-org read here: `_set_tenant` first, so RLS limits the sum to `org_id` (no cross-org query).
+    """
+    conn = _db_connect()
+    try:
+        cur = conn.cursor()
+        _set_tenant(cur, org_id)
+        cur.execute(
+            "SELECT COALESCE(SUM(cost_usd), 0) FROM public.extraction_costs WHERE org_id = %s AND created_at >= %s",
+            (org_id, since),
+        )
+        row = cur.fetchone()
+        conn.commit()
+        return float(row[0]) if row else 0.0
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
 def aggregate_extraction_costs_pg(since: datetime | None = None) -> list[dict[str, Any]]:
     """Return cost-per-1k-extractions grouped by (language, tier), across all orgs.
 
