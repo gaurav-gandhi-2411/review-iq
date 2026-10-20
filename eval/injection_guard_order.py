@@ -1110,8 +1110,8 @@ def render_summary(res: dict[str, Any], manifest: dict[str, Any], missing: Seque
         cls, src = key.split("/")
         info = manifest["sources"].get(src, {})
         lic = info.get("license", "committed in this repo")
-        rev = info.get("revision", "this repo")
-        out.append(f"| {key} | {cls} | {n} | {lic} | `{rev}` |")
+        rev = f"`{info['revision']}`" if "revision" in info else "in-repo (git history)"
+        out.append(f"| {key} | {cls} | {n} | {lic} | {rev} |")
     out += [
         "",
         f"Base items: {res['n_injection_base']} injection, {res['n_benign_base']} benign. "
