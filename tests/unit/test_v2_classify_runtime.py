@@ -63,7 +63,7 @@ def test_null_abstention_threshold_means_always_abstain(tmp_path: Path) -> None:
 
 def test_onnx_thresholds_are_a_separate_validation_fit_for_the_same_tasks() -> None:
     onnx_th = runtime.load_thresholds(runtime.THRESHOLDS_ONNX_PATH)
-    assert onnx_th.variant == "onnx_static_int8" and onnx_th.run == TH.run
+    assert onnx_th.variant == "onnx_static_int8_x64" and onnx_th.run == TH.run
     assert (
         onnx_th.sha256 != TH.sha256
     )  # the static model is a different function: its thresholds are refit, not reused
@@ -103,7 +103,7 @@ def test_get_backend_prefers_onnx_when_model_onnx_exists(
     monkeypatch.setattr(runtime, "_state", {})
     monkeypatch.setattr(runtime, "OnnxBackend", Stub)
     backend, th = runtime.get_backend(str(tmp_path))
-    assert isinstance(backend, Stub) and th.variant == "onnx_static_int8" and seen["th"] is th
+    assert isinstance(backend, Stub) and th.variant == "onnx_static_int8_x64" and seen["th"] is th
 
 
 def test_cgroup_cpus_reads_the_quota_and_falls_back(tmp_path: Path) -> None:

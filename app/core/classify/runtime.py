@@ -31,7 +31,10 @@ from app.core.classify.ort_numerics import apply_numerics_pin
 
 log = structlog.get_logger(__name__)
 THRESHOLDS_PATH = Path(__file__).with_name("thresholds_run2_int8_ffn_full.json")
-THRESHOLDS_ONNX_PATH = Path(__file__).with_name("thresholds_run2_onnx_static_int8.json")
+# S30: the served thresholds are fitted on VALIDATION predictions made under the production numerics (ort_numerics.py). The S25
+# file (laptop numerics) is kept for the old-vs-new comparison only; nothing serves it any more.
+THRESHOLDS_ONNX_PATH = Path(__file__).with_name("thresholds_run2_onnx_static_int8_x64.json")
+THRESHOLDS_ONNX_S25_PATH = Path(__file__).with_name("thresholds_run2_onnx_static_int8.json")
 TASKS = ("needs_action", "broad_intent", "sentiment", "urgency")
 ABSTAINED = "abstained"
 _GRID = 6  # offline probabilities (and the thresholds fitted on them) are on a 6-decimal grid; decide on the same grid
