@@ -25,6 +25,7 @@ import app.core.providers.cassette as cassette_module
 from app.core.language import detect_language
 from app.core.prompts.authenticity import build_authenticity_prompt
 from app.core.providers.groq import _make_cassette_key
+from app.core.sanitize import pii_redacted_text
 
 AUTHENTICITY_CASSETTES_PATH = (
     Path(__file__).resolve().parents[1] / "cassettes" / "authenticity_cassettes.json"
@@ -44,10 +45,10 @@ def authenticity_cassette_key(review_text: str, model: str) -> str:
     """Cassette key for the authenticity call on `review_text` with `model`.
 
     Mirrors app.core.authenticity.engine._call_authenticity_llm: language is auto-detected and
-    the prompt is built by build_authenticity_prompt.
+    the prompt is built by build_authenticity_prompt over the PII-redacted text.
     """
     language = detect_language(review_text)
-    system_prompt, user_prompt = build_authenticity_prompt(review_text, language)
+    system_prompt, user_prompt = build_authenticity_prompt(pii_redacted_text(review_text), language)
     return _make_cassette_key(model, system_prompt, user_prompt)
 
 
