@@ -58,10 +58,10 @@ processor's name and its own data-handling terms before any paid tier goes live.
    signal. See [`sub-processors.md`](./sub-processors.md) for what Groq receives and Groq's own
    data-handling commitments, now independently verified against Groq's own Services Agreement
    (see that document for the exact clause). If the primary Groq account is unavailable,
-   requests fail over to a **second Groq account** (the same provider under the same
-   data-handling terms; Zero Data Retention is enabled on both accounts — see
-   [`sub-processors.md`](./sub-processors.md)). Every provider is gated by a `trains_on_input`
-   check that unconditionally blocks any provider that trains on customer input (`assert_privacy_safe()` in `app/core/llm.py` —
+   requests fail over to a **second Groq account** (Zero Data Retention is enabled on both
+   accounts — see [`sub-processors.md`](./sub-processors.md)). Every provider is gated by a
+   `trains_on_input` check that unconditionally blocks any provider that trains on customer
+   input (`assert_privacy_safe()` in `app/core/llm.py` —
    see `SECURITY.md` §3). Google Gemini is excluded from the customer-data (`/v2`) path
    entirely.
 3. **Storage.** Extraction output, authenticity audit records (hashed review text only, not
