@@ -179,8 +179,13 @@ def _grant_mismatches(
     mismatches = []
     for table, grantee, expected_privs in expected:
         cur.execute(
-            "SELECT privilege_type FROM information_schema.role_table_grants "
-            "WHERE table_schema='public' AND table_name=%s AND grantee=%s",
+            # pg_class.relacl, not information_schema.role_table_grants: the latter only shows
+            # grants visible to the connecting role, which is wrong for a read-only CI role.
+            "SELECT a.privilege_type FROM pg_class c "
+            "JOIN pg_namespace n ON n.oid = c.relnamespace "
+            "CROSS JOIN LATERAL aclexplode(COALESCE(c.relacl, acldefault('r', c.relowner))) a "
+            "JOIN pg_roles r ON r.oid = a.grantee "
+            "WHERE n.nspname='public' AND c.relname=%s AND r.rolname=%s",
             (table, grantee),
         )
         actual = frozenset(row[0] for row in cur.fetchall())
