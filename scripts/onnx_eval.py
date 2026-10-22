@@ -29,8 +29,9 @@ def sizes() -> dict[str, int]:
 
 def make_session(path: Path, threads: int = 4):  # noqa: ANN201
     import onnxruntime as ort
+    from app.core.classify.ort_numerics import apply_numerics_pin
 
-    so = ort.SessionOptions()
+    so = apply_numerics_pin(ort.SessionOptions())  # S30: production numerics are the reference
     so.intra_op_num_threads = threads
     so.inter_op_num_threads = 1
     so.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
