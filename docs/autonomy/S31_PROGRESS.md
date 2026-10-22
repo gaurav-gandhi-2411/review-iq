@@ -21,6 +21,7 @@ P1 — panel labels (kernel `review-intent-fresh16-panel` reported COMPLETE at P
 | P7 | pending | | |
 | P8 | pending | | |
 | S1 | scheduled ≥ 2026-10-25 00:00 | | |
+| B3 | in progress | six high vite advisories (published 10-20/21) failed `npm-audit` on every PR; #598 bumps vite 8.3.2 → 8.3.5 (local `npm_audit_gate.py` OK) | 2026-10-22 21:15 |
 | S2 | daily | | |
 | S3 | daily 03:30 | | |
 
@@ -59,6 +60,11 @@ P1 — panel labels (kernel `review-intent-fresh16-panel` reported COMPLETE at P
 
 ## PARKED
 
+1. **Primary checkout cleanup** (low value, 1 min). Blocked: this session is confined to its worktree. Steps for GG in `C:\Users\gaura\ml-projects\review-iq`:
+   1. `git restore web/package.json web/package-lock.json` (identical change is in #598).
+   2. `git switch main && git pull --ff-only`.
+   3. `git branch -D fix/s31-vite-advisories` (local only, never pushed, no unique commits).
+
 ## Resource ledger
 
 | Item | Amount | Note |
@@ -69,5 +75,10 @@ P1 — panel labels (kernel `review-intent-fresh16-panel` reported COMPLETE at P
 | GCP actions | none | |
 
 ## Incidents
+
+- 21:14 — **Session working directory moved to `web/`** after `cd web && npm …` in one Bash call. The repo's PreToolUse hook runs `python scripts/hook_guard_secrets.py` by relative path, so every tool call (Bash, PowerShell, Read, Grep) was refused. Not routed around: entered ONE linked worktree via the harness (`.claude/worktrees/review-iq-wt-s31`, branch `worktree-review-iq-wt-s31`), where the hook path resolves again. All further work happens in that worktree; the harness refuses `git -C` into the primary checkout. **Lesson: never `cd` inside a Bash call; use `npm --prefix`.**
+- **Primary checkout left as-is** (cannot reach it from the worktree): branch `fix/s31-vite-advisories` (local only, never pushed) with an UNCOMMITTED copy of the vite bump (`web/package.json`, `web/package-lock.json`); superseded by #598. GG's other untracked files untouched. See PARKED.
+
+Timestamps above P0 rows were first written ~15 min ahead of the real clock; corrected: P0 21:03, #584 merge ~21:05, panel push ~21:08, tag ~21:10.
 
 ## Daily checkpoints
