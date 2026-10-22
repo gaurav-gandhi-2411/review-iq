@@ -86,3 +86,45 @@ only, never review or draft text.
 ### 1.7 Cost
 
 Groq free tier on the failover org: $0. Kaggle GPU: est. 240 judge calls x ~6 s = ~0.5 GPU-h. No paid spend.
+
+---
+
+## 2. Results (added after the run; nothing above changed)
+
+Artifact: `eval/results/reply_v22_eval.json` (ids, arm, model, tokens, caveat kinds, deterministic counts, judge
+verdict counts; no review or draft text). Code under test: v21 = `origin/main` `b3cabc3`; v22 = PR #298 rebased on
+`b3cabc3` (head `24da616`). Drafted 2026-10-22 ~21:59-22:03 UTC; judged by Kaggle kernel
+`review-iq-reply-v22-judge-run` v1 (1,003 s; Ollama sha256 and all three model digests recorded; 0 null verdicts
+of 240). Groq failover org: 120b 59,294 tokens, 20b 61,091 tokens; primary org untouched.
+
+| Arm | Invented contact (served) | Invented contact (raw) | Hard failure (>= 2 of 3) | Any judge | Not coherent | Usable |
+|---|---|---|---|---|---|---|
+| v21-L | **3/20** [0.05, 0.36] | 3/20 | 20/20 | 20/20 | 0/20 | 0/20 |
+| v21-S | 0/20 [0, 0.16] | 0/20 | 19/20 | 20/20 | 0/20 | 1/20 |
+| v22-L | **0/20** [0, 0.16] | 0/20 | 19/20 | 20/20 | 0/20 | 1/20 |
+| v22-S | **0/20** [0, 0.16] | 0/20 | 18/20 | 20/20 | 0/20 | 1/20 |
+
+Detected languages: 15 `en`, 5 `hi-en` per arm (as in N4c). The redaction step never fired in either v22 arm (the
+raw v2.2 text already had no invented contact), so criterion 1 is met by the PROMPT, not by the post-processing.
+
+**Success rule as registered:** c1 met (0/20 and 0/20); c2 met (19 <= 20, 18 <= 19) -> formally PASS.
+
+### 2.1 The judge panel did not apply the rubric (read before using c2)
+
+The hard-failure measure is saturated in every arm (18-20/20, versus 5/20 and 8/20 for the larger N4c judges on the
+same reviews). Inspected locally (not committed, licensed text): all three 8B judges list generic thanks, apologies
+and "please contact our support team" as invented details, which the rubric explicitly excludes. Mean flagged items per
+draft: qwen3 1.35-2.30, gemma2 1.70-2.55, llama3.1 2.05-2.95; llama3.1 flagged at least one item in all 80 drafts.
+Pairwise agreement on `invented_flag` 0.70-0.94, mostly agreement on "flagged". A measure that flags nearly every draft
+cannot show that v2.2 is "not worse", so **c2 is uninformative**, not evidence. (Mean flags are lower for v2.2 than
+v2.1 for qwen3 and gemma2, a direction only.)
+
+### 2.2 Decision
+
+- c1 is VERIFIED (deterministic) and is the change #298 exists for: invented contact details 3/20 -> 0/20 on the large
+  model, from the prompt itself.
+- c2 is NOT established. #298 is **not merged** on this run; it stays open and parked for GG (reply drafting is OFF
+  either way). Treating a saturated judge as a pass would be exactly the broken-measurement trap.
+- Next step, to be pre-registered BEFORE it runs: a calibration gate for judges (synthetic drafts with known invented /
+  clean labels; a judge is admitted only above a fixed accuracy) and a larger non-gpt-oss panel, re-judging the SAME 80
+  drafts (no new drafting, no new Groq spend).
