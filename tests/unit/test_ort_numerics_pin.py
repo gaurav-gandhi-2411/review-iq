@@ -55,6 +55,29 @@ def test_the_pin_is_the_documented_setting() -> None:
     assert (N.CONFIG_KEY, N.CONFIG_VALUE) == ("session.x64quantprecision", "1")
 
 
+class FakeSessionOptions:
+    """The two onnxruntime.SessionOptions methods the pin uses, same contract (get raises when unset)."""
+
+    def __init__(self) -> None:
+        self.entries: dict[str, str] = {}
+
+    def add_session_config_entry(self, key: str, value: str) -> None:
+        self.entries[key] = value
+
+    def get_session_config_entry(self, key: str) -> str:
+        if key not in self.entries:
+            raise RuntimeError(f"no entry {key}")
+        return self.entries[key]
+
+
+def test_apply_numerics_pin_sets_the_entry_without_onnxruntime() -> None:
+    # S31 control audit: CI does not install onnxruntime, so the onnxruntime-backed tests below skip there; this one always runs
+    so = FakeSessionOptions()
+    assert not N.is_pinned(so)
+    assert N.apply_numerics_pin(so) is so
+    assert so.entries == {"session.x64quantprecision": "1"} and N.is_pinned(so)
+
+
 def test_apply_numerics_pin_sets_the_session_config_entry() -> None:
     ort = pytest.importorskip("onnxruntime")
     so = ort.SessionOptions()
