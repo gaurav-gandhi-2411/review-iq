@@ -96,8 +96,16 @@ def probe(a: argparse.Namespace) -> None:
     batch = texts_of_length(texts, tok, a.length, a.n)
     hdr = {"Authorization": "Bearer " + os.environ["CLASSIFY_ID_TOKEN"]}
     lat, reported = [], set()
-    t_start = datetime.now(UTC) - timedelta(seconds=30)
     with httpx.Client(timeout=120, headers=hdr) as c:
+        # The service scales to zero, so the first request is a cold start. Warm it up OUTSIDE the measured window: three
+        # unmeasured requests, then start at the next whole minute, so Cloud Monitoring's per-minute p95 sees only the 50.
+        for t in batch[:3]:
+            c.post(
+                f"{a.url.rstrip('/')}/v2/classify", json={"reviews": [{"id": "warmup", "text": t}]}
+            )
+        now = datetime.now(UTC)
+        t_start = (now + timedelta(minutes=1)).replace(second=0, microsecond=0)
+        time.sleep((t_start - now).total_seconds() + 1)
         for i, t in enumerate(batch):
             t0 = time.perf_counter()
             r = c.post(
