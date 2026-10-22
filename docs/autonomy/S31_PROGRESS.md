@@ -5,25 +5,26 @@ All timestamps UTC. VERIFIED = observed this session with the command or artifac
 
 ## Current task
 
-P3 cold-start samples (need ≥ 15 min idle each); P2 merges serialised behind strict-mode CI; P1 panel session 2 and the B1 judge kernel running on Kaggle.
+P1 waits on panel session 2; P2 merging the stack one strict-mode CI round at a time (#585 next); P7's LLM comparator on Block A running on Kaggle (outputs not opened until P7).
 
 ## Queue
 
 | ID | Status | Evidence | Updated (UTC) |
 |---|---|---|---|
 | P0 | done | snapshot below; spec + this file on `autonomy/s31-progress` | 2026-10-22 21:03 |
-| P1 | in progress — panel session 2 running | session 1: 4,600–4,800 / 6,300 per judge, `budget_hit` true, 36,599 s; `panel_pin` → "recorded and correct" (ollama 0.40.6, sha256 c164ab8b…c0e5e0, 4 model digests). Session 2 = kernel version 2 (~21:08) with `--prior gauravgandhi2411/review-intent-fresh16-panel-out` | 2026-10-22 21:08 |
-| P2 | in progress | #584 MERGED `b3cabc36d2b83d3c4a65fc8470e6dc8c764b7a37`. #598 (vite) gate-eligible but went BEHIND when another actor merged #589 at 22:01 → update-branch, CI rerunning. #585/#587/#591 CI green except npm-audit (fixed by #598). Opened #594–#597 for the run-4 branches | 2026-10-22 22:05 |
-| P3 | in progress — deployed, parity measured, cold starts pending | see P3 section | 2026-10-22 22:07 |
-| P4 | pending (P3 image ready; needs #591 merged or run from its branch) | | |
-| P5 | pending (needs P1, P4) | | |
+| P1 | in progress — panel session 2 running | session 1: 4,600–4,800 / 6,300 per judge, `budget_hit` true, 36,599 s; `panel_pin` → "recorded and correct". Session 2 = kernel version 2 (~21:08) with `--prior …-panel-out`. When done: `panel_pin` on BOTH status files (session-digest equality, added in #592) | 2026-10-22 21:08 |
+| P2 | in progress | MERGED: #584 `b3cabc3`, #598 `01c16f6b5db0d075f75853d914a29314a1f495e5`. #585/#587/#591 updated onto `01c16f6` at 23:06, CI running. #592/#593/#594–#597 stacked behind #587 | 2026-10-22 23:06 |
+| P3 | **done** (target 0 not met → PARKED 1) | P3 section; report PR #603 | 2026-10-22 23:00 |
+| P4 | **done** | 128 pass (p95 355 ms), 256 FAIL (1,107 ms), 512 FAIL (2,137 ms); surviving arms **H128, HT128**; probe service deleted 22:53 and verified absent; report PR #603 | 2026-10-22 22:54 |
+| P5 | pending (needs P1 labels) | arms H128, HT128 only | |
 | P6–P8 | pending | | |
+| P7 (LLM part) | running | kernel `review-intent-fresh16-llm-run` v1: gpt-oss:20b zero-shot, effort low, max_tokens 1500, items mode, pinned 0.40.6; private dataset `review-intent-fresh16-llm-a` = Block A 1,800 (600/category) | 2026-10-22 23:10 |
 | S1 | scheduled ≥ 2026-10-25 00:00 | | |
-| S2 | daily | first run due 2026-10-23 | |
+| S2 | done for 10-22 | 22:10: `/health` 200 1.21 s; classify private; failover-probe daily 02:30 OK; 24 h `llm.rate_limited` 0, `llm.failover` 0, `db_timeout` 0, review-iq ERROR logs 0; open Monitoring incidents NOT readable (gcloud alpha component absent; installing it would modify the system SDK) | 2026-10-22 22:10 |
 | S3 | daily 03:30 | first 2026-10-23 03:30 | |
-| B1 | in progress — judges running on Kaggle | pre-registration `0cc5d9aa` (before any call); 80/80 drafts; kernel `review-iq-reply-v22-judge-run` v1 | 2026-10-22 22:04 |
-| B2 | in progress | numerics pin + cost alert audited (below); branch `test/s31-b2-mutation` | 2026-10-22 21:40 |
-| B3 | in progress | #598 vite 8.3.2 → 8.3.5 (six high advisories, published 10-20/21) | 2026-10-22 22:05 |
+| B1 | **done → #298 PARKED** | PRs #599 (prereg + results), #600 (harness), #601 (judge kernel). c1 met (3/20 → 0/20), c2 unestablished (judge panel saturated) | 2026-10-22 22:35 |
+| B2 | in progress | PR #602 (+ tests in #585, #592) | 2026-10-22 22:25 |
+| B3 | in progress | #598 merged | 2026-10-22 23:05 |
 
 ## P3 — classifier redeploy on pinned numerics (Tier B) — VERIFIED
 
@@ -45,7 +46,8 @@ P3 cold-start samples (need ≥ 15 min idle each); P2 merges serialised behind s
 - Access re-check (22:06): IAM policy has exactly one binding (`roles/run.invoker` → `serviceAccount:review-iq-runner@…`), no allUsers/allAuthenticatedUsers; unauthenticated POST → 403.
 - Registry after the push: `cloud-run-source-deploy` 1,529.9 MB (was 988.0 at P0) + `gcf-artifacts` 452.4 MB = 1,982 MB. The new classify image did not share its model layer with the old one (each ~528 MB); keeping both (`keep-classify-prev`) is what the spec requires. Projected: (1.98 − 0.5 free) GB × ~$0.10/GB-month ≈ **$0.15/month total, BELIEVED rate**; about $0.10 of it is the two classifier images. S1 cleanup (≥ 10-25) removes untagged API images.
 - Evidence (private): `D:/ml-cache/s31/p3/{live_parity,live_prob_diff,monitoring_parity_window}.json`.
-- Pending: 3 cold-start samples, then the report in `docs/reports/serving/`.
+- Cold starts (≥ 15 min idle, service at 0 instances): **12.0 s, 17.3 s, 13.8 s**; warm p50 211 / 124 / 117 ms. All < 60 s ingest timeout.
+- Report: `reports/serving/classify_redeploy_s31.{md,json}` (the repo keeps serving reports in `reports/serving/`, not `docs/reports/serving/`), PR #603.
 
 ## B1 — reply prompt v2.2 (#298)
 
@@ -72,18 +74,27 @@ Remaining: ingest-vs-user timeout split (after #585), leakage near-dup + panel-p
 - ~21:10 — Tier B: `keep-classify-prev` tag (spec P3).
 - 21:45 — Tier B: P3 deploy started although main's CI run had `npm-audit` red: that job fails on six vite dev-server advisories published 10-20/21 (web/ only, fixed by #598); `lint-and-test`, `web-build`, `pip-audit`, `manifest-provenance` were green. The classify image does not contain web/.
 - 21:58 — Live parity 5 ≠ 0 → per spec: recorded, no rollback (nothing calls the service), parked.
+- 22:42–22:53 — Tier B: throwaway private probe service `review-iq-classify-probe` (same image digest `69618259…`, 1 vCPU, 2 GiB, min 0, max 1, no IAM bindings, unauthenticated 403), env `CLASSIFY_MAX_LEN` 128 → 256 → 512, then deleted and the service list re-checked.
+- 22:44 — The B1 result JSON was moved from `eval/results/` to `reports/research/` before opening PRs: `eval/results/*.json` is not a designated generated path, so a 2,759-line data file would have failed gate 3; `reports/` is designated. B1 split into three PRs (doc+results, harness, kernel), each ≤ 400 reviewable lines. Pre-registration provenance stays at `0cc5d9a` (branch `docs/s31-reply-v22-prereg`, pushed, not merged).
+- 23:10 — P7's LLM comparator started early (only needs Block A texts, not labels; a Kaggle slot was free). Its outputs stay unopened until the registered P7 evaluation.
 - 22:03 — B1 drafting used the failover org through the pre-registered ledger: 120b 59,294 tokens, 20b 61,091 tokens (both < 90K stop, < 100K cap).
 
 ## Deviations
 
-- None to registered criteria. Operational: progress timestamps written ~15 min ahead at first (corrected).
+- None to registered criteria.
+- **P4 protocol clarification (Amendment 16 probe):** the probe sends 3 unmeasured warm-up requests and starts the measured window at the next whole minute (commit on #591 before any probe ran), so a 12–17 s scale-from-zero cold start cannot become a minute's p95. Criterion, statistic (max over minutes of the per-minute p95) and the 50 measured requests unchanged. H256 fails on both minute buckets' combination (1,107 / 874 ms) and on client p95 (1,181 ms), so the drop does not hinge on this choice.
+- **B1:** pre-registered rule formally PASSES but #298 not merged: the 8B judge panel did not apply the rubric (generic thanks flagged; 18–20/20 hard failures in every arm), so c2 "not worse" is unestablished. Treated as a broken measurement (CLAUDE.md 101c), reported in #599.
+- Operational: progress timestamps written ~15 min ahead at first (corrected).
 
 ## PARKED
 
 1. **Cloud Run numerics parity** (P3; unblock value: high for Amendment 16 deployment, nil today because nothing calls the service). 5/3,028 decisions differ, all at the abstention boundary; 13% of reviews differ in probability (max 0.31). Steps for GG:
    1. Decide whether exact parity is required, or whether "≤ 5/3,028 boundary flips" is acceptable for the private service.
    2. If exactness is required: approve a debug endpoint (or a one-off Cloud Run job) that reports `/proc/cpuinfo` flags and per-op ORT EP info, so the differing kernel can be found; candidate fixes are `session.intra_op` single-thread determinism checks or a float32 (non-int8) model for the boundary band.
-2. **Primary checkout cleanup** (low value, 1 min). Session confined to its worktree. In `C:\Users\gaura\ml-projects\review-iq`:
+2. **#298 reply prompt v2.2** (medium value; reply drafting is OFF). Evidence #599. Steps for GG:
+   1. Read #599's results: invented contacts 3/20 → 0/20 is solid; "not worse" is not established (8B judges saturated).
+   2. Either accept c1 alone and merge #298 (it rebases cleanly on main as of 22:00), or let a later session pre-register a judge calibration gate + a larger non-gpt-oss panel and re-judge the SAME 80 drafts (no new Groq spend; ~0.5 Kaggle GPU-h).
+3. **Primary checkout cleanup** (low value, 1 min). Session confined to its worktree. In `C:\Users\gaura\ml-projects\review-iq`:
    1. `git restore web/package.json web/package-lock.json` (identical change is in #598).
    2. `git switch main && git pull --ff-only`.
    3. `git branch -D fix/s31-vite-advisories` (local only, never pushed).
@@ -93,7 +104,8 @@ Remaining: ingest-vs-user timeout split (after #585), leakage near-dup + panel-p
 | Item | Amount | Note |
 |---|---|---|
 | Kaggle GPU h (S30 carry-over) | 10.17 | panel session 1 (T4×2), 36,599 s |
-| Kaggle GPU h (S31) | running | panel session 2 (~21:08–); reply judge (~22:04–) |
+| Kaggle GPU h (S31) | 0.28 + running | reply judge 1,003 s (T4); panel session 2 (~21:08–, running); LLM comparator (~23:10–, running) |
+| Cloud Run probe service | created 22:42, deleted 22:53 (verified) | 3 revisions (128/256/512), max 1 instance, ~11 min |
 | Groq eval tokens, failover org, trailing 24 h | 120b 59,294; 20b 61,091 | B1 drafts, ledger `D:/ml-cache/s31/reply/ledger.json` |
 | Groq primary org | 0 eval tokens | |
 | Cloud Build | 1 build, 2 min 6 s | free tier |
