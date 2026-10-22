@@ -66,7 +66,7 @@ Four layers are intended to guard against prompt injection attacks: two pre-filt
 
 **Secondary failover provider:** A configurable secondary provider can be wired via `SECONDARY_PROVIDER_API_KEY` / `SECONDARY_PROVIDER_MODEL`. The code enforces a data-handling check at the call site via `assert_privacy_safe()` — any provider whose `trains_on_input` property is `True` raises `PrivacyViolation` before the prompt is sent, making it impossible to accidentally route client data to a training-on-input provider on the org-key path. This check is unconditional; it cannot be bypassed by configuration.
 
-**Gemini (Google Gemini):** Retired (S17, ADR 0035). The Gemini fallback code, its `GEMINI_API_KEY` / `GEMINI_MODEL` / `ENABLE_GEMINI_FALLBACK` settings and the privacy flag that gated it were removed from the application; it was already excluded from the v2 (client-data) path and dormant in production. Every Groq provider is now asserted privacy-safe unconditionally, and OpenRouter (ZDR-only) is the only failover.
+**Gemini (Google Gemini):** Retired (S17, ADR 0035). The Gemini fallback code, its `GEMINI_API_KEY` / `GEMINI_MODEL` / `ENABLE_GEMINI_FALLBACK` settings and the privacy flag that gated it were removed from the application; it was already excluded from the v2 (client-data) path and dormant in production. Every Groq provider is now asserted privacy-safe unconditionally, the failover is a second Groq account (`SECONDARY_PROVIDER_KIND=groq`, ADR 0038); an OpenRouter (ZDR-only) kind remains supported in code but is not used in production.
 
 All review text is PII-redacted before being sent to any provider.
 
@@ -138,7 +138,7 @@ Cross-tenant isolation is verified by an integration test (`tests/integration/te
 
 If you discover a security vulnerability, please report it privately before opening a public issue.
 
-- **Email:** gaurav.gandhi2411@gmail.com
+- **Email:** gauravgandhi429@gmail.com
 - **GitHub:** https://github.com/gaurav-gandhi-2411/review-iq/issues (label: `security`)
 - **Expected response time:** 72 hours
 

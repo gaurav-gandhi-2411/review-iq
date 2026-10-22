@@ -1,4 +1,7 @@
-"""LLM client — Groq (primary) + OpenRouter ZDR-only (secondary) with Pydantic validation.
+"""LLM client — Groq (primary) + a configurable secondary (production: a second Groq account).
+
+The secondary kind is groq or openrouter (ZDR-only, supported but not used in production).
+Output is validated with Pydantic.
 
 Internal plumbing uses GroqProvider from the provider abstraction layer.
 The external extract_with_llm signature is unchanged from v0.4.0.

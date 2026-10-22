@@ -1,20 +1,17 @@
 [
   {
+    "name": "keep-pinned",
+    "action": { "type": "Keep" },
+    "condition": { "tagState": "tagged", "tagPrefixes": ["keep-"] }
+  },
+  {
     "name": "keep-minimum-versions",
-    "action": {
-      "type": "Keep"
-    },
-    "mostRecentVersions": {
-      "keepCount": 3
-    }
+    "action": { "type": "Keep" },
+    "mostRecentVersions": { "keepCount": 3 }
   },
   {
     "name": "delete-stale",
-    "action": {
-      "type": "Delete"
-    },
-    "condition": {
-      "olderThan": "2592000s"
-    }
+    "action": { "type": "Delete" },
+    "condition": { "olderThan": "2592000s" }
   }
 ]

@@ -19,7 +19,7 @@ from app.core.llm import extract_with_llm
 from app.core.pricing import UnknownModelError, price_extraction
 from app.core.prompts import PROMPT_VERSION, build_prompt
 from app.core.rate_limit import limiter
-from app.core.sanitize import sanitize, wrap_for_llm
+from app.core.sanitize import pii_redacted_text, sanitize, wrap_for_llm
 from app.core.schemas import ExtractionMeta, ReviewExtraction, ReviewRequest
 from app.core.storage_pg import (
     check_and_increment_demo_request_pg,
@@ -287,7 +287,14 @@ async def demo_extract(request: Request, body: ReviewRequest) -> ReviewExtractio
     # Session 13 P4a: same second layer as /v2/extract -- see
     # app/core/injection_guard.py's module docstring. The public, keyless demo is arguably
     # the higher-value target for this check (no API key needed to reach it at all).
-    guard_suspicious = await classify_injection_risk(body.text, api_key=get_settings().groq_api_key)
+    # The guard is a third-party Groq call (legal/sub-processors.md: Groq receives text only
+    # after the PII-redaction pass), so it gets the caller's original text, truncated and
+    # PII-redacted. Not `clean_text` (injection-removal would erase the attack phrasing) and not
+    # `ctl.text` (with the field-injection input control on, the attack sentences are stripped,
+    # so the guard would stop flagging them). The decision (regex OR guard) is unchanged.
+    guard_suspicious = await classify_injection_risk(
+        pii_redacted_text(body.text), api_key=get_settings().groq_api_key
+    )
     if regex_suspicious or guard_suspicious:
         log.warning(
             "demo.suspicious_input",

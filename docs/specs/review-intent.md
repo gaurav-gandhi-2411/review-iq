@@ -434,3 +434,268 @@ is measured exactly as run 2 (`engine.intent.latency`, same local CPU).
    that excludes 0, and group-weighted precision is not lower than run 2's by more than 0.05.
 Otherwise run 3 is reported as a NEGATIVE RESULT with the same tables; no threshold, tolerance, epoch count or seed is changed afterwards, and
 no second run is made to rescue it without a new amendment. Whatever the outcome, `docs/STATUS.md` is not updated by this run and nothing is deployed.
+
+### Amendment 8 (2026-10-12, S23 run 3, seed level): registered before any seed run
+
+Why: Amendment 7 ran one seed per arm. A control re-run of run 2 on the same machine (`run2_local`) differed from the Kaggle run 2 by
+more than 0.02 macro-F1 on a core task and its argmax recall on `urgency=high` was 0.319 against 0.119: seed/environment noise is as large as
+every difference seen. No conclusion is drawn from single runs. This amendment replaces them with a seed-level comparison. It does not change
+Amendment 7's data, recipe, early stopping or evaluation sets.
+
+**Design.** Arm A = run 2 recipe, `--safety-stratum exclude`. Arm B = run 3 recipe, `--safety-stratum include`. Both arms: seeds 42, 43, 44, 45, 46
+(the same five seeds, so differences are paired by seed), up to 30 epochs, patience 3, lr 5e-5, batch 32, early stopping on base validation only,
+local RTX 3070 (CUDA fp16 autocast), one commit for all ten runs. Each run is also exported to the six CPU variants of Amendment 7.
+If a run fails or a seed is dropped, it is dropped from BOTH arms and said so. No latency re-measurement (the serving path does not change the compute).
+
+**Decisioning (serving default).** Rare classes are decided by a per-class threshold on the calibrated probability, never argmax: the threshold
+maximises F1 of that class on VALIDATION only (ties to the higher threshold; the rule of `safety_eval.f1_threshold`), per task, per model variant (int8
+variants refit it, as they refit temperatures). Rare classes: `urgency=high` only; a rare class with fewer than 5 validation positives falls back to
+argmax and is flagged. Every other class is decided by argmax among the non-rare classes. Argmax for all classes stays available only as an explicit
+opt-in and is reported as an ABLATION, never as a result. Thresholds for Evaluation A and the serving default (point D) are fitted on the
+Amendment 5 validation set; point S (safety validation, Amendment 7) is kept.
+
+**Reported (all on the 5 seeds, per arm and per CPU variant).** Per-seed values, mean, sd, and the 95 percent t-interval over seeds (df = 4).
+For differences B - A: the per-seed paired difference, its mean, sd and 95 percent t-interval. Metrics: Evaluation A macro-F1 per core task
+(default decisioning; argmax ablation beside it); Evaluation B `urgency=high` recall and precision at D, S and (ablation) P, with the 130
+independent positive groups as the binding n of each seed's estimate, labelled "enriched, keyword-mined, silver (panel) labels". Within-seed
+Wilson/bootstrap intervals are shown in the per-seed artifacts only; conclusions use the seed level.
+
+**Decision rule (fixed now), fp32 GPU model, point S for Evaluation B.** Arm B (run 3 recipe) is PROMOTED only if ALL hold:
+1. the 95 percent t-interval of the paired B - A difference in safety recall at S has a lower bound above 0;
+2. the mean B - A macro-F1 difference is at least -0.02 on EVERY core task (needs_action, broad_intent, sentiment, urgency), default decisioning;
+3. the 95 percent t-interval of the paired B - A difference in precision at S has a lower bound of at least -0.05 (it excludes a drop larger than 0.05).
+
+NOT PROMOTED if criterion 2 fails, or the recall interval's upper bound is at most 0, or the precision interval's upper bound is below -0.05.
+Otherwise INCONCLUSIVE (reported as such; no further seeds without a new amendment). Conclusions are stated only at the seed level; any single
+seed's numbers, and every argmax-at-P number, are reported as ablation/descriptive only. Nothing is deployed and `docs/STATUS.md` is not touched.
+
+### Amendment 9 (2026-10-12, S23 moat): the `gpt-oss-20b-local` arm; registered before any local row exists
+
+Numbering note: this block was first drafted as "Amendment 7" on its branch; Amendments 7 and 8 were taken by run 3 before it merged, so it is Amendment 9. Registration commit (before any local row existed): bb676e6.
+
+Context: the LLM-vs-encoder comparison protocol is the docstring of `engine/intent/llm_moat.py`. Its Groq arms share an org with the
+production failover (evals must stay off that pool) and the benchmark key now returns HTTP 401. GG decision: the gpt-oss-20b arm is
+RESTARTED ENTIRELY on free Kaggle GPUs with local inference. The 120b arms stay on Groq and are not changed. The 502 existing Groq
+20b rows are kept read-only as a cross-check; Groq and local rows are NEVER mixed inside one arm. Local rows are an INFRASTRUCTURE
+change (runtime, quantisation, sampling implementation), not a replication of the Groq rows; the cross-check measures that difference.
+
+- Arm name `gpt-oss-20b-local`; output stem `openai_gpt-oss-20b__local` (appears in `compare()` as the 20b zero-shot arm).
+- Same `PROMPT`, same four tasks, same `sealed_ids()` order, same row schema `{id, ans, tokens}`, same scoring (`llm_arrays`,
+  `SEL.summarize`, `decide`). Request: temperature 0, seed 42, max_tokens 600 (counting reasoning tokens, as on Groq), and
+  `response_format={"type": "json_object"}`. Parse: `json.loads(content)`; if that fails, the outermost `{...}` substring is tried
+  once (the runtime may emit text around the JSON); otherwise the answer is unparseable.
+- Reasoning effort: the Groq arm never set it, so it ran at the provider default (not knowable beyond that). The local arm also
+  sets none and runs the model default. No tuning of any kind.
+- Stack: Ollama (latest linux-amd64 release at run time; version recorded in the run's `status.json`), model tag `gpt-oss:20b`
+  (OpenAI release, MXFP4 weights, 13,793,422,816 bytes). Registry manifest of 2026-10-12: manifest sha256
+  `f38aa0c53da5f8c49d08c43a99df24ff53167fe68e24664a7777288e7656fdfe`, weights blob
+  `sha256:8ecb5d4ad6172c63f9cbf1a07a04e525985a8a11a6e516da02b674c4010de716`. The digest actually pulled is recorded and must match;
+  a mismatch is reported, not hidden. Context 4096. Two T4s, one server per GPU, items split by parity, sequential per server.
+- Stopping rule exactly as for the other arms: the first 300 sealed items (sealed order) are run, `decide()` is applied once on
+  them, and the run continues to all sealed items unless all four tasks are decided.
+- Unparseable output counts as wrong at confidence 0 (kept). Runtime errors (connection, 5xx, timeout) are retried and never
+  recorded as answers; a non-200 other than 5xx is also not an answer.
+- Smoke test: the first 20 sealed items are run once to measure throughput and to check that the runtime honours JSON mode. Smoke
+  rows are discarded and never scored. If more than 2 of 20 contents are empty or not JSON, the arm is rerun WITHOUT
+  `response_format` using the extraction rule above, and that change is reported.
+- Cross-check against the Groq 20b rows on the overlapping ids: per task label agreement, Cohen's kappa, Spearman correlation of
+  confidences, with n and item-bootstrap 95 percent CIs. No gate depends on it.
+
+
+### Amendment 10 (2026-10-17, S24 moat): the `gpt-oss-20b-local-fewshot` arm; registered before any few-shot local row exists
+
+Context: Amendment 9 ran gpt-oss-20b zero-shot on local inference. The Groq 120b few-shot arm exists in the protocol (`llm_moat`
+FEW-SHOT ARM); this amendment adds the matching few-shot arm for 20b on the same local stack, so that "does worked-example
+prompting close any of the gap to the encoder" is answered on one runtime. Registration commit (before any few-shot local row
+existed): recorded in the PR description and in `reports/intent/moat_local20b_fewshot/run_status.json`.
+
+- Arm name `gpt-oss-20b-local-fewshot`; output stem `openai_gpt-oss-20b__local_fewshot`.
+- Model, stack, sampling and request exactly as Amendment 9 (Ollama `gpt-oss:20b`, manifest sha256
+  `f38aa0c53da5f8c49d08c43a99df24ff53167fe68e24664a7777288e7656fdfe`, context 4096, temperature 0, seed 42, max_tokens 600, JSON mode,
+  two T4 servers, items split by parity, default reasoning effort). The Ollama version and digest actually used are recorded and a
+  mismatch is reported, not hidden.
+- Prompt: the existing `PROMPT` with the `shots_text` block inserted before `Review:` exactly as `llm_moat.ask` does for the
+  Groq few-shot arm. Example confidences are the fixed value 90 that `shots_text` writes today. KNOWN LIMITATION, not tuned: the
+  constant may pull verbalised confidences towards 90 and so distort calibration, which is the quantity the coverage-at-precision
+  metric measures; the result is read with that in mind.
+- Shot selection: `llm_moat.pick_shots(scale.jsonl, n_max=8)` unchanged (training split only, review at most 220 characters, all
+  four labels present, `random.Random(42)` shuffle, greedy cover of unseen task/class pairs). It returned 7 shots (the greedy cover
+  is exhausted after 7); they cover 13 of the 14 task/class pairs. NOT covered: `broad_intent=service`. This is reported, not
+  repaired. Shot ids (ids only; all have `split == "train"` in the scale manifest and labels in `labels.json` train):
+  `scale-food-0367`, `scale-food-1219`, `scale-food-1341`, `scale-food-0839`, `scale-vernacular-0030`, `scale-apparel-0890`,
+  `scale-vernacular-0083`. The order is the selection order and is the prompt order. `urgency=high` appears once.
+- Leakage checks, run before this registration on the private texts: none of the 7 shot ids is in `sealed_ids()`; none of the 7
+  content hashes (`text_sha(clean(text))`) is in `leakage_ledger.sealed_hashes()` (scale test plus safety test) or in
+  `leakage_ledger.exclusions()`; each shot's hash equals the scale manifest hash for its id; against the 1,483 committed sealed
+  fingerprints of `reports/labelling/sealed_fingerprints.json` no shot reaches the near-duplicate rule (4-character Jaccard at least
+  0.9) nor the quoted-substring rule (12-character containment at least 0.9); the maxima were far below both thresholds.
+- Token budget: the full prompt (shots plus a review truncated to 1500 characters) plus up to 600 completion tokens must fit in the
+  4096 context. Measured on the smoke run from the server's `prompt_eval_count`, reported. Decided BEFORE the full run: if the
+  smoke maximum of prompt tokens plus 600 exceeds 4096, the arm drops to the first 5 shots in order and the smoke is repeated; that
+  change would be recorded in the run status.
+- Same sealed order, same stopping rule (the first 300 sealed items are run, `decide()` is applied once, the run continues to
+  all sealed items unless all four tasks are decided), same handling of unparseable output (wrong at confidence 0, kept) and of
+  runtime errors (retried, never recorded as answers). Smoke test of the first 20 sealed items first; those rows are discarded and
+  never scored; JSON-mode fallback rule as Amendment 9.
+- Comparison targets: few-shot local vs zero-shot local (matched ids, paired differences of the same statistics) and vs the
+  encoder, on the same labels (SILVER, four-judge panel consensus). No gate depends on the Groq cross-check.
+
+Implementation note (added with the code, still before any few-shot local row exists; no design change): `llm_moat.ask` builds a
+few-shot prompt by `str.replace` followed by `str.format`, which cannot work when the shots block contains the JSON braces that
+`shots_text` writes. The local runner therefore renders the prompt as head, shots block, `Review: <text up to 1500 characters>`,
+tail. The model sees the same text order as the specification above; with no shots the zero-shot prompt is byte-identical to
+Amendment 9 (unit-tested). The few-shot rows carry an extra `ptoks` field in the shard files (the server's prompt token count) and
+`merge` drops it. The smoke also probes the longest and the most non-ASCII sealed reviews with the server prefix cache defeated
+(a leading marker line, which makes the count an upper bound) to apply the token budget rule above.
+
+Smoke result and decisions (recorded after the two discarded 20-item smokes and before the full run; no few-shot row has been scored).
+- Context budget: the largest prompt measured was 1143 tokens (cache-defeating probe on the ten longest or most non-ASCII sealed
+  reviews; the longest sealed review is under 1000 characters), so prompt plus 600 completion tokens is far below the 4096 context.
+  All 7 shots are kept; the reduction to 5 shots is not triggered.
+- JSON-mode rule: the first smoke (with `response_format`) returned 3 of 20 empty or unparseable answers, which is more than 2 and so
+  triggers the Amendment 9 fallback. All 3 completions stopped at exactly 600 completion tokens (reasoning consumed the budget, so the
+  content was empty): a token-cap truncation, not a JSON-mode non-compliance. As registered, the smoke was repeated WITHOUT
+  `response_format`: the same 3 items failed and every item's token count was identical to the first smoke, i.e. on this Ollama
+  build the request flag had no measurable effect. The registered rule is applied literally: the full run uses no `response_format`
+  and the extraction rule. The 600-token cap is NOT raised (same as the zero-shot arm); the truncation rate is reported and those
+  items score as wrong at confidence 0, which penalises the few-shot arm in a way the shots themselves do not cause.
+- Runtime: the smoke servers ran Ollama 0.40.5 (the zero-shot arm ran 0.40.3, "latest at run time"); the model digest equals the
+  registered manifest sha256. The version difference is disclosed in the report.
+
+
+### Amendment 11 (2026-10-17, S24 moat compare report): decision rule and matched-coverage comparison; registered before the 20b compare numbers were computed
+
+Context: three arms now have answers on the same sealed ids: the encoder, `gpt-oss-20b-local` (zero-shot, Amendment 9) and
+`gpt-oss-20b-local-fewshot` (Amendment 10, stopped at the first 300 sealed ids by the registered rule). This amendment fixes how they are
+compared, before any encoder-vs-20b number under THIS rule exists. Disclosure of what was already visible: the few-shot-vs-zero-shot
+paired differences (`moat_local20b_fewshot/paired_vs_zeroshot.json`) and the `decide()` intervals at n = 300 were published before this
+amendment; the Wilson-lower-bound operating points and the three-way paired bootstrap defined below had not been computed. Nothing is
+tuned after seeing results; if the rule turns out badly chosen, that is reported, not repaired.
+
+- Labels and ids. Gold is the four-judge panel consensus (SILVER), not human truth. MATCHED ids, per task: the first 300 ids of
+  `sealed_ids()` (sealed order) that every compared arm has a row for and that have a gold label for that task and an encoder
+  prediction. Unparseable or empty LLM answers stay in the denominator, wrong, at confidence 0 (as in Amendments 9 and 10).
+- Encoder: the run-2 model (`reports/intent/run2`, the checkpoint behind `model_report.md`; run 3 was a negative result and is not
+  promoted). Label = argmax of the temperature-scaled probabilities stored in the pred files; score = their maximum. The same
+  confidence-ordered rule below is applied to every arm, which makes the encoder number an in-sample operating point like the others.
+  As a supplementary, deployable reading the encoder is also evaluated at the conservative threshold chosen on VALIDATION and stored
+  in `eval_run2.json` (`selective.conservative_p0.95.threshold`), applied once to the matched ids.
+- (a) Operating point per arm and task: among thresholds equal to an observed confidence value, take the one with the HIGHEST coverage
+  such that the Wilson 95 percent (z = 1.96) LOWER bound of precision among answered items is at least the target (0.95). Answered =
+  items whose confidence is at least the threshold (tie groups are therefore always included whole); precision = correct / answered;
+  coverage = answered / n matched. If no threshold qualifies the coverage is 0 and that is stated ("no qualifying threshold").
+- (b) Matched-coverage comparison: per task, c* = the smallest NON-ZERO operating-point coverage among the compared arms (all arms
+  zero: not computed). Each arm is read at the largest whole-tie-group answered set containing at most ceil(c* x n) items (if the top
+  tie group alone is larger, that top group, flagged as overshoot). Reported: each arm's actual coverage, precision, and Wilson 95
+  percent interval, so an arm that answers fewer items is not rewarded. Descriptive; no verdict is drawn from this block alone.
+- (c) Paired item bootstrap: seed 42, 2000 resamples, items resampled once per replicate and the same index set used for every arm
+  (per task). In each replicate the operating point of (a) is recomputed for every arm. Quantities: coverage at the operating point
+  and plain accuracy (all matched items), differences for each pair of arms; percentile 95 percent intervals (2.5 and 97.5).
+  Pairs: encoder vs zero-shot, encoder vs few-shot, few-shot vs zero-shot.
+- (d) Verdicts. For a pair and a task, A "beats" B on the operating-point coverage only if the bootstrap interval of (coverage A minus
+  coverage B) excludes 0 on A's side AND the point operating-point coverages differ in the same direction. A "beats" B on accuracy only
+  if the bootstrap interval of the accuracy difference excludes 0 on A's side AND the Wilson-lower-bound operating-point coverages
+  also favour A (A strictly higher). Anything else is "not separated" (this includes the case where one criterion holds and the other
+  does not; the report prints both so the reader can see which failed).
+- Unmatched reading (labelled as such): the zero-shot local arm on ALL sealed ids it covers vs the encoder on the same ids, same rules.
+  It is not used for the matched verdicts.
+- Cross-check (never mixed into any verdict): the 502 Groq gpt-oss-20b rows, read read-only, on the matched ids they cover, with the
+  same functions, beside the local zero-shot arm.
+- The gpt-oss-120b arms are not part of this report (the benchmark key returns HTTP 401); no workaround is attempted.
+- Stated confounds, to be repeated in the report: n = 300 is small; verbalised confidence is coarse and 35 percent of few-shot
+  confidences equal exactly 90 (copied from the shots); 27 of 300 few-shot and 6 of 300 zero-shot answers are empty or unparseable
+  (600-token cap spent on reasoning) and count wrong at confidence 0; the two local arms ran different Ollama builds (0.40.5 vs 0.40.3);
+  the Groq rows differ in infrastructure (runtime, quantisation, sampling).
+
+### Amendment 12 (2026-10-17, S25 moat): re-run of the 20b local arms with a token budget that does not truncate; registered before any v2 row exists
+
+Context: in Amendment 10's run 27 of 300 few-shot completions (and 6 of 300 zero-shot) ended at the 600-token cap with empty content,
+because gpt-oss spends completion tokens on reasoning before it answers. Those items score wrong at confidence 0, so the Amendment 10
+conclusion "few-shot is worse than zero-shot" mixes worse answers with empty answers and is NOT a finding about worked examples. This
+amendment re-runs both arms with settings chosen only by an empty-completion canary. The Amendment 10 and Amendment 9 results stay on
+file unchanged and are labelled "cap 600" wherever they are cited.
+
+- Canary (before any scored row): the few-shot prompt on the first 30 sealed items; the rows are discarded and only counts are kept. A
+  fixed ladder, stopping at the first rung with 0 empty or unparseable answers of 30: L1 reasoning effort low, max_tokens 1500; L2 low,
+  2500; L3 medium (the model default), 2900. Context stays 4096 (largest measured prompt 1143 tokens, so 1143 + 2900 fits). If no rung
+  reaches 0, the arm is reported as blocked, with the three rungs' counts, and nothing is run. The request field is `reasoning_effort`;
+  whether this Ollama build honours it is read from the mean completion tokens of L1 against L3 and reported (not assumed).
+- v2 runs, same model digest, Ollama build as installed at run time (recorded), temperature 0, seed 42, no `response_format` (as
+  Amendment 10), same 7 shots, same sealed order, with the canary's settings: (a) the few-shot arm under the Amendment 10 stopping rule
+  (n=300, then on unless all four tasks are decided), stem `openai_gpt-oss-20b__local_fewshot_v2`; (b) the zero-shot arm on the first 300
+  sealed items with IDENTICAL settings, stem `openai_gpt-oss-20b__local_v2`, so that the comparison varies only the shots.
+- Reported beside every result: number of empty or unparseable answers (and, for rows carrying `fin`, how many ended at the cap).
+- Comparisons: PRIMARY, few-shot v2 vs zero-shot v2 on matched ids (paired item-bootstrap, same statistics as Amendment 10); SECONDARY,
+  each v2 arm vs the encoder with the Amendment 10 interval rule; the v2 zero-shot vs the cap-600 zero-shot is reported as the size of the
+  truncation artefact. A difference is called only if the interval excludes zero. Labels are SILVER (four-judge panel consensus).
+- Not changed: shots, prompt, scoring, sealed set, the encoder's numbers. Amendment 11 (the compare rule) is registered separately.
+
+### Amendment 13 (2026-10-18, S26 moat): pin one Ollama build; test whether `reasoning_effort` is honoured; registered before any effort-test row exists
+
+Context: the 20b arms ran on three Ollama builds (`run_status.json`): cap-600 zero-shot 0.40.3, cap-600 few-shot 0.40.5, and BOTH v2 arms 0.40.6.
+The kernel downloaded "latest" at run time, so the build was not controlled. Separately, Amendment 12's canary stopped at its first rung (low,
+1500) with 0 empties, so the ladder's L1-vs-L3 token comparison that was to show whether the build honours `reasoning_effort` never ran: "low
+effort" is a requested setting, not a demonstrated one. This amendment fixes the first and measures the second. Nothing already reported
+changes; statements are restated below.
+
+- Pin (code change, no row yet): `engine/kaggle/kernel_moat20b.py` downloads the release asset
+  `https://github.com/ollama/ollama/releases/download/v0.40.6/ollama-linux-amd64.tar.zst` and refuses to continue unless its sha256 is
+  `c164ab8b1b28e2a247c29719b8e404c423c5b83ae64c3ab4e59d50c7ff7fc5e0` (the digest GitHub publishes for that asset). 0.40.6 is the build both
+  v2 arms ran on. Every later kernel run records the server version and the digest it verified.
+- Effort test (new kernel mode `effort`, discarded rows, counts only): the ZERO-SHOT prompt on the first 20 sealed items, model
+  `gpt-oss:20b`, temperature 0, seed 42, no `response_format`, `max_tokens` 2900 (largest measured prompt 1143, so it fits the 4096 context),
+  at four settings on the same 20 items: no `reasoning_effort` field (server default), `low`, `medium`, `high`. Completion tokens of a call
+  = server `total_tokens` minus server `prompt_tokens`. Reported per setting: mean, median, max completion tokens; calls ending at the cap
+  (`fin == length`); empty or unparseable answers.
+- Criterion, fixed now: `reasoning_effort` is HONOURED iff BOTH (a) the paired two-sided exact sign test on completion tokens, high versus
+  low over the 20 items (ties dropped), has p < 0.05, and (b) the median completion tokens at high is at least 1.25 times the median at low.
+  Medium and the default are reported as context, not part of the test. If either part fails the field is NOT demonstrated to be honoured.
+- If honoured: "low effort" in Amendment 12 is a demonstrated setting. If not honoured: the v2 arms ran at the build's own reasoning depth
+  with a 1500-token cap, the word "low" is removed from every statement about them, and what survives is exactly: the v2 few-shot versus v2
+  zero-shot paired comparison (same build, same cap, same sealed order, same kernel session), each v2 arm versus the encoder, and the 0-empty
+  result. What does NOT survive in that case: any comparison of v2 with a cap-600 arm as a measure of truncation alone, because the cap-600
+  arms ran on 0.40.3 and 0.40.5 and the build also changed; those are reported as "truncation and build, not separable".
+- Not changed: shots, prompt, scoring, sealed set, the encoder's numbers, Amendments 9 to 12.
+
+### Amendment 14 (2026-10-18, S27 capacity): encoder-first routing, its capacity multiplier and its urgent-review recall criterion; registered before any router output and before any safety-stratum LLM row exists
+
+Why: LLM extraction (pros, cons, topics, reply context) is the binding quota. `eval/capacity_model.json` (committed; per-model Groq pools of 200K tokens/day and 8K TPM, observed routing mix 40.6 percent gpt-oss-20b at 2,524.8 tokens per extraction and 59.4 percent gpt-oss-120b at 2,393.9) gives a real ceiling of 140.6 extractions a day (the 120b pool binds) = 4,217 a month at the hard limit, and half of that (2,109 a month) inside the 100K working budget used for eval runs. The pricing page quotas are Starter 5,000 and Growth 25,000 reviews a month (`docs/cost-model.md`). One customer at Starter needs 167 extractions a day; at Growth, 833. The encoder (Amendments 5 to 8, served as static-int8 ONNX) classifies a review with no LLM tokens. This amendment fixes, before anything is run, a routing rule that sends a review to full LLM extraction only when the encoder says it needs it, how the capacity gain is computed, and the safety criterion that decides whether the rule may ever be enabled. Nothing here enables anything: the feature flag stays OFF.
+
+**Router R1 (fixed, the only rule eligible to be chosen).** Inputs are the SERVED decisions of the committed model (static-int8 ONNX, thresholds `app/core/classify/thresholds_run2_onnx_static_int8.json`, no re-fitting). A review is routed to LLM extraction iff ANY of: (a) `needs_action` label is `yes` or `abstained`; (b) `urgency` candidate_label is `high` (the per-class validation-fitted threshold decision, never argmax); (c) `urgency` label is `abstained`. Everything else is classified-only and is extracted on demand when the user opens the review. Rule R2 (R1 without clause (c)) is computed and REPORTED as a sensitivity only; it may not be selected because of its results.
+
+**Capacity multiplier.** f = share of reviews routed by R1; o = share of non-routed reviews the user later opens (a product assumption, not measurable here: primary 0.10, sensitivities 0 and 0.30, BELIEVED). Multiplier M = 1 / (f + (1 - f) * o), on the assumption that extraction cost per review is unchanged (the encoder costs no LLM tokens). Extractions per day with the pipeline = 140.6 * M. f is measured on the 757 Amendment 5 sealed ids from the served-equivalent pred files (`served_per_item` parity is 0 mismatches of 3028, `reports/serving/v2_classify_onnx.md`). Caveat stated now: this sample is not a customer stream, so f transfers to a customer only to the extent that its needs_action and urgency mix resembles the corpus (BELIEVED).
+
+**Expected values, written before f is computed.** Gold needs_action=yes is 17 percent of train, 18 percent of validation and 15.5 percent of the sealed test split (`reports/intent/labels/labels.json`, counts only); needs_action coverage at the conservative rule is about 0.89 and urgency coverage about 0.83 (`docs/STATUS.md`, run 2). Expected f(R1) on the sealed set: 0.25 to 0.45. Expected M at o = 0.10: 1.9 to 3.1 (at o = 0: 2.2 to 4.0). Expected consequence: at the hard limit Starter (167 a day) needs M >= 1.19 and is met; inside the 100K working budget (70.3 a day) Starter needs M >= 2.37 and is met only in the upper half of the range; Growth (833 a day) needs M >= 5.9 at the hard limit and is NOT reachable by this change alone. If the measured M falls outside the expected range that is reported as a miss, not tuned.
+
+**Quality criteria (all on served decisions; a failure of C1 or C3 means the router must not be enabled and is reported as such).**
+- C1 (primary, powered): on the safety stratum's sealed TEST split (Amendment 6; enriched, keyword-mined, silver labels; independent near-duplicate groups; NOT a base rate and never pooled with the Amendment 5 set), the share of gold `urgency=high` items routed by R1 (recall, group-weighted exactly as `engine/intent/safety_eval.py`): point estimate >= 0.95 AND Wilson 95 lower bound >= 0.90. This is where urgency-high has enough positives (the Amendment 5 sealed set has 4).
+- C2 (reported, not a pass condition): the same routing recall on the Amendment 5 sealed set, where only 4 gold `urgency=high` items exist (insufficient data: counts and Wilson interval only).
+- C3: routing recall of gold `needs_action=yes` on the Amendment 5 sealed test split (n about 112): point estimate >= 0.95 AND Wilson 95 lower bound >= 0.90.
+- C4 (urgent reviews the LLM path would catch, "at matched precision"): the LLM path is gpt-oss-20b zero-shot with the Amendment 12 settings (reasoning effort low, 1,500-token cap, Ollama 0.40.6 pinned by Amendment 13) run on the same safety TEST items on Kaggle, zero extra cost. LLM-caught = gold `urgency=high` AND the LLM's urgency answer is `high`. Criterion: R1 routing recall on the LLM-caught set >= 0.97 (point estimate; Wilson interval reported). Because the LLM re-judges every routed review, a router's own precision only sets capacity, so precision is not a pass condition; to make the matched-precision reading explicit the report prints, side by side on the same items, the precision and recall of (i) the encoder's urgency=high decision at the committed serving threshold, (ii) the LLM's urgency=high answer, and (iii) R1 as a routing flag.
+- Empty or unparseable LLM completions are reported beside every LLM number (count, and how many ended at the cap); an empty completion counts as not-caught for the LLM and the item is excluded from the LLM-caught set.
+- Verdict rule: "may be enabled behind its flag" iff C1 and C3 and C4 hold; otherwise "must not be enabled" with the failing criterion named. In both cases the flag is OFF by default and nothing is deployed in this session.
+
+**Not changed:** the encoder, its thresholds, the sealed sets, the labels, Amendments 5 to 13. Extraction quality for routed reviews is the existing LLM path and is not re-measured here.
+
+### Amendment 15 (2026-10-19, S28): a fresh sealed set for the needs_action routing recall (Amendment 14, C3); registered before any fresh item is drawn, labelled or scored
+
+Why: Amendment 14's criterion C3 (routing recall of gold `needs_action=yes`, point >= 0.95 and Wilson lower bound >= 0.90) was MISSED on the Amendment 5 sealed set: 106 of 111 routed = 0.955, lower bound 0.8989, by 0.0011. That verdict stands as recorded and is not revised here. Error analysis of the 5 misses (`reports/intent/fresh15/c3_miss_votes.json`): the four-judge panel did not split on them: 2 are unanimous 4-0 `yes` and 3 are 3-1 `yes`; across all 111 gold-yes items 90 are 4-0 and 21 (18.9 percent) are 3-1, so 3 of 5 (60 percent) is higher than the base rate but n = 5 cannot say more. The encoder was confident on all five (p(yes) 0.035 to 0.099). So they are not all ambiguous labels, and nothing about the router changes. n = 111 was simply too small to tell 0.955 from the 0.95 to 0.97 range at the required bound. This amendment adds a larger, fresh test with an absolute and a relative criterion. It does not change Amendment 14, the router R1, the thresholds or any earlier result, and it enables nothing.
+
+**The fresh set (drawn once, sealed, never trained on).** About 2,000 items drawn with the Amendment 5 machinery (`engine/labelling/scale_sample.py` pools, cleaning and length limits; new module `engine/labelling/fresh_sample.py`, tag `fresh15`, seed 45) from the same licensed corpora, equal allocation over the three English strata (apparel, beauty, food). Zero overlap, enforced three ways before anything is labelled: (a) content hash not in any earlier manifest (the three pilots, the Amendment 5 scale manifest, the safety stratum split) or in `reports/labelling/ledger.json`; (b) no item is a near-duplicate of any earlier item of ANY split (exact Jaccard of 4-character shingle sets >= 0.9, the rule of `leakage_neardup`, against the private texts of every earlier set), nor of another fresh item; (c) after the draw the new hashes are added to the sealed list of `leakage_ledger` (all fresh items are test-only) and `leakage_ledger check` must report ok. The vernacular (Hinglish) pool was fully consumed by the Amendment 5 draw (113 items left, all drawn), so the fresh set is ENGLISH ONLY: it says nothing about Hinglish reviews, where the Amendment 5 sealed set has only 20 test items. Stated limit, not a reason to skip the test.
+
+**Labels.** The four-judge panel of Amendment 5 (llama3.1:8b, qwen3:8b, gemma2:9b, mistral:7b; prompt `ri-judge-v3`; stage P of `engine/labelling/scale_plan.py`, every judge on every item) on Kaggle, no extra cost. Gold `needs_action` = a label at least 3 of the 4 judges agree on (the Amendment 5 consensus rule); items without it are excluded and counted. Silver, as before. The Ollama build is pinned (0.40.6, sha256-checked, Amendment 13) for this run; earlier panels used whatever build the kernel downloaded, so that difference is recorded, not corrected.
+
+**Size.** Prior needs_action=yes share by stratum in the labelled scale sample: apparel 0.222, food 0.160, beauty 0.123 (equal allocation: mean 0.168), and 94.8 percent of items reach consensus. 2,000 items therefore give about 2,000 x 0.948 x 0.168 = 319 gold-yes items (expected range 270 to 360). Size rule, fixed now: it looks at LABELS ONLY, never at router output. If fewer than 250 gold-yes items exist after labelling, ONE top-up draw of 500 items (seed 46, same procedure and exclusions) is labelled and added; if still below 250 it is evaluated as it is and the interval says what it can.
+
+**Systems scored on the same items.** (R) router R1 exactly as Amendment 14 (needs_action yes or abstained, urgency high-candidate or abstained) on the served static-int8 ONNX decisions with the committed thresholds, no re-fitting; (L) the all-LLM path. The production extraction schema has NO `needs_action` field (it returns urgency, cons, topics, feature requests), so the all-LLM comparator is the LLM answering the same question: gpt-oss-20b zero-shot with the `llm_moat.PROMPT` and the Amendment 12 settings (reasoning effort low, 1,500-token cap, Ollama 0.40.6; Amendment 13 showed the effort field is honoured), run on Kaggle on all fresh items. L "catches" an item iff its `needs_action` answer is `yes`; an empty or unparseable completion counts as NOT caught (counted and reported beside every number). The 120b model is unavailable (no key), so L is the 20b; this is the closest measurable stand-in for "the LLM path misses action items too" and is labelled as such. Whether the production extraction would surface a given action item through its urgency or cons fields is NOT measured (BELIEVED to be no better than L).
+
+**Criteria (both reported; the verdict is computed, not written).** P = fresh gold-yes items.
+- A, absolute: R's routing recall on P has Wilson 95 percent lower bound >= 0.90.
+- B, relative, NON-INFERIORITY: with recall_R and recall_L on the same P (paired, item level; the fresh corpora carry no product ids), delta = recall_R minus recall_L; R is non-inferior to L iff the lower bound of the 95 percent paired-bootstrap interval of delta (2,000 resamples of items, seed 42) is greater than -0.05. Margin 0.05 absolute, fixed now: it is well inside the 18.9 percent of gold-yes items on which the panel itself split 3-1, so a smaller difference cannot be told from label noise, and it is the amount of recall this change may give up in exchange for a roughly 2.9 times capacity gain. Superiority is not claimed or required.
+- Verdict rule: "criteria met" iff A and B both hold. "Criteria met" does NOT enable anything: it would only remove C3 as the reason Amendment 14 says the router must not be enabled. Enabling also needs the persistence of skipped reviews (a migration, gate 4) and the on-open extraction path, neither of which exists, plus a separate decision. If A or B fails that is reported as such and the router stays off.
+
+**Expected values, written before any fresh item is drawn.** Gold-yes count 270 to 360. recall_R 0.93 to 0.97 (Amendment 14 observed 0.955). recall_L 0.80 to 0.95 (BELIEVED: the 20b zero-shot needs_action accuracy was 0.957 on 281 matched sealed items, but recall of the minority class is lower than accuracy). Share routed by R1 on the English fresh set 0.22 to 0.35 (0.275 observed on the Amendment 5 set, whose strata mix differs). If recall_R falls below 0.90 the miss is reported with the vote tallies of the misses, not tuned away.
+
+**Report only (no pass condition):** recall_R on 4-0 versus 3-1 positives and by stratum; routed share and the capacity multiplier on the fresh set; routing recall of gold `urgency=high` (few positives); recall_L by confidence; per-judge agreement of the new panel against Amendment 5 (alpha, clear-consensus fraction) as a check that the fresh labels are comparable.
+
+**Not changed:** Amendments 5 to 14, the encoder, its thresholds, rule R1, the sealed sets, every earlier result and verdict, the public site and pricing.
