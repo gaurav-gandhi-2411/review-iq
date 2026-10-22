@@ -25,7 +25,9 @@ from engine.intent.safety_eval import HIGH, aggregates, counts, load_context, po
 from engine.labelling.repilot2_report import wilson
 
 ROOT = Path(__file__).resolve().parents[2]
-PRED = ROOT / "reports/intent/run2_cpu/onnx_static_int8"
+PRED = (
+    ROOT / "reports/intent/run2_cpu/onnx_static_int8_x64"
+)  # S30: production numerics; --pred-dir reproduces the S28 run
 CAP = ROOT / "eval/results/capacity_model.json"
 ROUTE_TASKS = ("needs_action", "urgency")
 O_RATES = (0.0, 0.1, 0.3)
@@ -212,13 +214,17 @@ def safety_part(
 
 
 def main() -> None:
+    global PRED
     ap = argparse.ArgumentParser()
     ap.add_argument("--artifacts", required=True, type=Path)
     ap.add_argument("--safety-texts", required=True, type=Path)
     ap.add_argument("--llm-rows", type=Path)
     ap.add_argument("--out", required=True, type=Path)
+    ap.add_argument("--pred-dir", type=Path, default=PRED)
+    ap.add_argument("--thresholds", type=Path, default=runtime.THRESHOLDS_ONNX_PATH)
     a = ap.parse_args()
-    th = runtime.load_thresholds(runtime.THRESHOLDS_ONNX_PATH)
+    PRED = a.pred_dir
+    th = runtime.load_thresholds(a.thresholds)
     res = {
         "spec": "docs/specs/review-intent.md Amendment 14",
         "thresholds_sha256": th.sha256,
