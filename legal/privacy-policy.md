@@ -57,12 +57,11 @@ processor's name and its own data-handling terms before any paid tier goes live.
    routed by review length/complexity) to generate the structured extraction and authenticity
    signal. See [`sub-processors.md`](./sub-processors.md) for what Groq receives and Groq's own
    data-handling commitments, now independently verified against Groq's own Services Agreement
-   (see that document for the exact clause). If Groq is unavailable, requests fail over to
-   **OpenRouter** (a secondary provider), which is instructed, on every request, to route only
-   to endpoints on OpenRouter's live Zero-Data-Retention allowlist — see
-   [`sub-processors.md`](./sub-processors.md) for how this is enforced and independently
-   verified. Both providers are gated by a `trains_on_input` check that unconditionally blocks
-   any provider that trains on customer input (`assert_privacy_safe()` in `app/core/llm.py` —
+   (see that document for the exact clause). If the primary Groq account is unavailable,
+   requests fail over to a **second Groq account** (Zero Data Retention is enabled on both
+   accounts — see [`sub-processors.md`](./sub-processors.md)). Every provider is gated by a
+   `trains_on_input` check that unconditionally blocks any provider that trains on customer
+   input (`assert_privacy_safe()` in `app/core/llm.py` —
    see `SECURITY.md` §3). Google Gemini is excluded from the customer-data (`/v2`) path
    entirely.
 3. **Storage.** Extraction output, authenticity audit records (hashed review text only, not
@@ -117,7 +116,8 @@ and every deletion/purge mechanism. In summary:
   contractually barred from using submitted Inputs/Outputs to train or fine-tune any model
   unless explicitly authorized, and this Agreement applies to free-tier/self-serve API use with
   no Order Form required — the same terms this project's usage is governed by. **Zero Data
-  Retention (Inference APIs) is enabled on this account** (2026-09-12) — under ZDR, Groq does not
+  Retention (Inference APIs) is enabled on both Groq accounts** (the primary account, 2026-09-12;
+  the failover account, account setting confirmed by owner, 2026-10-19) — under ZDR, Groq does not
   retain submitted Inputs/Outputs beyond serving the request, rather than the temporary
   up-to-30-day troubleshooting log window that applies without it. Groq exposes no API-level way
   to independently confirm this setting (no response header, no account/settings endpoint — see
@@ -128,12 +128,6 @@ and every deletion/purge mechanism. In summary:
   independently verified — the contractual no-training/limited-retention commitment above is
   confirmed, but geographic data-residency specifically is not. Verify before publishing if
   region-specific transfer language is needed.]`
-- **OpenRouter** (secondary/failover LLM inference, US-based aggregator). Verified live
-  (2026-07-31, re-confirmed 2026-09-12): every request from this integration carries
-  `provider.zdr=true`, restricting routing to OpenRouter's published Zero-Data-Retention
-  endpoint allowlist; a real end-to-end call was independently cross-checked against that live
-  allowlist and confirmed to have routed to a listed ZDR endpoint. See
-  [`sub-processors.md`](./sub-processors.md) for the full mechanism.
 - **Supabase** (database/auth) — for this specific project, the production Postgres connection is
   hosted on AWS in the `ap-south-1` (Mumbai, India) region, confirmed from this project's own
   connection configuration (`ops/runbooks/connection-modes.md`: pooler host
@@ -237,4 +231,6 @@ this session), and current production model names. **The two-mode retention mode
 §3 is deployed to production** (PR #167, merged 2026-09-12; the migration has been applied and
 the sentinel-string stateless-mode test suite passed against the live schema — see
 [ADR 0025](../docs/architecture/adr/0025-two-modes-retention-schema.md)). Updated again 2026-09-12
-(Session 13) for Groq's Inference-APIs Zero Data Retention status._
+(Session 13) for Groq's Inference-APIs Zero Data Retention status. Updated 2026-10-19:
+OpenRouter removed as a sub-processor; the failover is a second Groq account with Zero Data
+Retention enabled._
