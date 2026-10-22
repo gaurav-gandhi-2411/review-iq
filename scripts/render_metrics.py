@@ -40,6 +40,10 @@ PROS_GOLD_ANALYSIS_PATH = REPO_ROOT / "reports" / "eval" / "pros_gold_analysis.j
 COVERAGE_METRICS_PATH = REPO_ROOT / "eval" / "results" / "coverage_metrics_n106.json"
 INJECTION_SUITE_PATH = REPO_ROOT / "eval" / "results" / "injection_suite_n40.json"
 PROMPT_GUARD_FPR_PATH = REPO_ROOT / "eval" / "results" / "prompt_guard_fpr_n106.json"
+INJECTION_GUARD_ORDER_RESULTS_PATH = (
+    REPO_ROOT / "reports" / "injection_guard_order" / "results.json"
+)
+INJECTION_GUARD_ORDER_CACHE_PATH = REPO_ROOT / "reports" / "injection_guard_order" / "cache.jsonl"
 KNOWN_GAPS_PATH = REPO_ROOT / "eval" / "results" / "known_gaps_n106.json"
 ADR_LINK = "docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md"
 
@@ -959,6 +963,39 @@ def render_prompt_guard_fpr_md(data: dict[str, Any]) -> str:
     )
 
 
+def _cache_eval_date(cache_path: Path) -> str:
+    """Latest UTC `ts` date (YYYY-MM-DD) among the guard-score cache records."""
+    dates = [
+        json.loads(line)["ts"][:10]
+        for line in cache_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    return max(dates)
+
+
+def render_injection_guard_order_md(data: dict[str, Any], eval_date: str) -> str:
+    """Render the injection-guard end-to-end recall headline sentence (SECURITY.md).
+
+    Generated from reports/injection_guard_order/results.json (INJ-A: the unmodified attack
+    texts; CURRENT == NEW there, so the figure is the same before and after redaction) so the
+    published figure cannot drift from a re-run of eval/injection_guard_order.py analyze.
+    """
+    e = data["strata"]["INJ-A"]["end_to_end"]
+    n = e["n"]
+    lo, hi = e["wilson_current"]
+    neither = data["strata"]["INJ-A"]["unique_catches_current"]["neither"]
+    return (
+        f"**{_fmt_pct(e['rate_current'])} end-to-end recall** (Layers 1+2 combined; 95% Wilson CI "
+        f"{_fmt_pct(lo)}-{_fmt_pct(hi)}, n={n}, evaluated {eval_date}) on public prompt-injection "
+        f"datasets (deepset/prompt-injections, Lakera/gandalf_ignore_instructions) plus this "
+        f"repository's own injection cases; see "
+        f"[reports/injection_guard_order/SUMMARY.md](reports/injection_guard_order/SUMMARY.md). "
+        f"Limits: those datasets are not review-shaped; the PII-redaction comparison uses "
+        f"synthetic PII only; {_fmt_pct(neither / n)} ({neither} of {n}) of the attacks were "
+        f"caught by neither layer."
+    )
+
+
 PORTFOLIO_METRICS_PATH = REPO_ROOT / ".portfolio" / "metrics.json"
 
 
@@ -1048,6 +1085,10 @@ BLOCK_RENDERERS: dict[str, Any] = {
         _load_json(INJECTION_SUITE_PATH)
     ),
     "prompt_guard_fpr": lambda: render_prompt_guard_fpr_md(_load_json(PROMPT_GUARD_FPR_PATH)),
+    "injection_guard_order": lambda: render_injection_guard_order_md(
+        _load_json(INJECTION_GUARD_ORDER_RESULTS_PATH),
+        _cache_eval_date(INJECTION_GUARD_ORDER_CACHE_PATH),
+    ),
     "known_gaps_html": lambda: render_known_gaps_html(_load_json(KNOWN_GAPS_PATH)),
 }
 
