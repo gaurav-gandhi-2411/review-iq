@@ -70,3 +70,24 @@ they are reported. The sealed set is scored once, for the winner.
 Image size, resident memory, cold start and batch-1 p50/p95 in a local Docker container limited to 1 vCPU and 1 GiB (`--memory 1g
 --memory-swap 1g`), whether it is OOM-killed, and whether it fits the existing 1 GiB `review-iq` service. Local Docker on a shared
 workstation is not Cloud Run; Cloud Run numbers remain BELIEVED until measured there.
+
+## Addendum 2 (S30, GG decision): production numerics are the reference
+
+Finding (S29, `ops/runbooks/v2-classify.md`): the laptop that produced every offline artifact and the Cloud Run CPU gave different int8 probabilities for
+the same model file (81 of 3028 sealed decisions differed; median per-review difference 0.008, p95 0.143). The cause is ONNX Runtime's x64 u8s8 MatMul
+path, which saturates on CPUs without VNNI (the laptop; also the Kaggle CPU, an AMD EPYC with AVX2 only) and does not on the Cloud Run CPU. The
+S29 experiment showed `session.x64quantprecision=1` brings the laptop to the Cloud Run numbers.
+
+Decision (GG, given before any result below was computed): that setting is pinned in serving, evaluation and the Kaggle kernels
+(`app/core/classify/ort_numerics.py`; `tests/unit/test_ort_numerics_pin.py` fails if any `InferenceSession` in `app`, `engine` or `scripts` is built
+without it), so offline and served arithmetic are identical by construction. Consequences, all mechanical, none a new modelling choice:
+
+- The model FILE, the calibration, the labels and the splits are unchanged. The validation logits, the pred files (`reports/intent/run2_cpu/onnx_static_int8_x64`),
+  the evaluation (`reports/intent/eval_run2_onnx_static_int8_x64.json`) and the served thresholds (`thresholds_run2_onnx_static_int8_x64.json`) are regenerated
+  with the registered procedure unchanged (temperature and rare-class and abstention thresholds fitted on VALIDATION only). The S25 files stay in the repository
+  for the side-by-side comparison and are no longer served.
+- Amendments 14 and 15 are re-run on the pinned numerics with their criteria and the router rule unchanged. They are reported beside the S25/S27/S28 numbers as a
+  re-run under corrected numerics, never as a new result (`reports/serving/numerics_rerun_s30.md`).
+- The three-way equivalence (laptop pinned, Kaggle CPU pinned, live Cloud Run) on 200 sealed reviews is reported with its label mismatches and maximum
+  probability differences. The target "0 mismatches" is stated for the SAME arithmetic on different hosts; whether Cloud Run's CPU reproduces the pinned AVX2
+  arithmetic bit for bit is measured, not assumed.
