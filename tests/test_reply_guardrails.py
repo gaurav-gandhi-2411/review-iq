@@ -249,6 +249,11 @@ def test_run_guardrails_all_pass() -> None:
         "हम इसे ठीक कर देंगे, आप चिंता न करें",
         "आपका रिफंड मिल जाएगा",
         "गलती हमारी थी, हमें खेद है",
+        # S31: the shapes the v2.2 tone examples used, which the earlier patterns missed
+        "Bilkul galat hua — hum zimmedaar hain.",
+        "Hum directly aapke saath is matter ko fix karenge.",
+        "Isko hum suljhaenge — humse baat karo.",
+        "इसके लिए हम ज़िम्मेदार हैं",
     ],
 )
 def test_fabrication_hindi_hinglish_commitments(text: str) -> None:
@@ -260,6 +265,10 @@ def test_fabrication_hindi_hinglish_commitments(text: str) -> None:
     [
         "Aapka feedback note kar liya hai, humse baat karein",
         "आपकी बात हमने नोट कर ली है, कृपया संपर्क करें",
+        # S31: the replacement v2.2 tone examples must not trip the caveat
+        "Sunke dil ko dukh hua — aapke saath aisa nahi hona chahiye tha.",
+        "Humse baat karo — hum is matter ko dhyan se dekhenge.",
+        "Aap humse directly connect karein taaki hum poori baat samajh sakein.",
     ],
 )
 def test_fabrication_hindi_hinglish_benign(text: str) -> None:

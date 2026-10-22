@@ -51,6 +51,13 @@ _FABRICATION_PATTERNS: list[re.Pattern[str]] = [
     re.compile(r"\bgalti\s+(?:hamari|humari|hamara|humara)\s+(?:thi|hai|rahi)\b", re.IGNORECASE),
     re.compile(r"\b(?:hamari|humari)\s+galti\b", re.IGNORECASE),
     re.compile(r"\b(?:hamare|humare)\s+end\s+(?:pe|par)\s+galti\b", re.IGNORECASE),
+    # S31: "hum zimmedaar hain"; and fix/theek/suljha commitments however far from "hum" (the v2.2 tone examples
+    # "Hum directly aapke saath is matter ko fix karenge" and "Isko hum suljhaenge" slipped past the window above)
+    re.compile(
+        r"\b(?:hum|hamari|humari)\s+(?:\w+\s+){0,2}(?:zimmedaar|zimmedar|jimmedar)\b", re.IGNORECASE
+    ),
+    re.compile(r"\b(?:fix|theek|thik)\s+(?:kar\s+)?(?:de(?:nge|ge)|karenge)\b", re.IGNORECASE),
+    re.compile(r"\bsuljha(?:enge|yenge|\s+de(?:nge|ge))\b", re.IGNORECASE),
     # Timeline: "24 ghante mein", "2 din ke andar", "3 hafte me"
     re.compile(
         r"\b\d+\s+(?:din|dino|hafte|ghante|ghanta)\s+(?:ke\s+)?(?:andar|mein|me)\b",
@@ -64,6 +71,7 @@ _FABRICATION_PATTERNS: list[re.Pattern[str]] = [
         r"(?:मिल\s+जाएगा|वापस\s+(?:कर\s+)?देंगे|भेज\s+देंगे|दे\s+देंगे)"
     ),
     re.compile(r"गलती\s+हमारी\s+(?:थी|है)|हमारी\s+गलती"),
+    re.compile(r"हम\s+(?:\S+\s+){0,2}(?:ज़िम्मेदार|जिम्मेदार)"),
     re.compile(r"\d+\s+(?:दिन|दिनों|घंटे|घंटों|हफ्ते|हफ्तों)\s+(?:के\s+)?(?:अंदर|में)"),
     re.compile(r"गारंटी|पक्का\s+(?:\S+\s+){0,2}(?:करेंगे|देंगे)"),
 ]
