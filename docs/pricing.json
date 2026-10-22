@@ -13,7 +13,7 @@
     "cloud_run_min_instance_1": 47.34,
     "vercel_pro": 20.0,
     "resend_free": 0.0,
-    "secret_manager": 0.48,
+    "secret_manager": 0.78,
     "openrouter_failover_standing": 0.07
   },
   "resend_pro_monthly_usd": 20.0,
