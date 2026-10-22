@@ -117,3 +117,31 @@ def test_ingest_path_timeout_covers_a_cold_start_and_the_default_stays_short(
 
     assert asyncio.run(ef.should_extract("t")) is False
     assert ef._remote is not None and ef._remote._timeout == ef.INGEST_TIMEOUT_S
+
+
+def test_the_http_client_is_built_with_the_configured_timeout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # S31 control audit: a client that hard-coded its own timeout survived the test above, which only reads the attribute
+    seen: dict = {}
+
+    class StopClient:
+        def __init__(self, **kw: object) -> None:
+            seen.update(kw)
+
+        async def __aenter__(self) -> StopClient:
+            raise RuntimeError("stop after capturing the client options")
+
+        async def __aexit__(self, *a: object) -> None:
+            return None
+
+    monkeypatch.setattr(ef.httpx, "AsyncClient", StopClient)
+    import asyncio
+
+    with pytest.raises(RuntimeError, match="stop after capturing"):
+        asyncio.run(
+            ef.RemoteClassifier("https://svc.example", timeout_s=ef.INGEST_TIMEOUT_S).classify(
+                ["t"]
+            )
+        )
+    assert seen["timeout"] == ef.INGEST_TIMEOUT_S
