@@ -33,11 +33,13 @@ def _sha(p: Path) -> str:
 
 
 def build(
-    pred_dir: Path, labels_path: Path, eval_path: Path, variant: str = "int8_ffn_full"
+    pred_dir: Path, labels_path: Path, eval_path: Path | None, variant: str = "int8_ffn_full"
 ) -> dict:
     """Thresholds document for the four core tasks (values are python floats, serialised with their shortest repr)."""
     labels = json.loads(labels_path.read_text(encoding="utf-8"))
-    ev = json.loads(eval_path.read_text(encoding="utf-8"))
+    ev = (
+        json.loads(eval_path.read_text(encoding="utf-8")) if eval_path else None
+    )  # None: Amendment 16 arm selection, no sealed evaluation yet
     # the checkpoint's head has one output per class of ALL 14 tasks; the four served tasks are its first columns
     if list(labels["classes"])[: len(TASKS)] != list(TASKS):
         raise SystemExit("served tasks are not the first head columns")
@@ -55,9 +57,10 @@ def build(
         # The run-2 pred files and eval JSON predate Amendment 8 (no "decision" block, argmax-era evaluation), so no
         # rare-class threshold is recorded offline; it is the evaluator's `fit_thresholds` on validation, as above.
         tau = val_threshold(pv.argmax(1) == yv, pv.max(1), TARGET)
-        recorded = ev["tasks"][t]["selective"][f"conservative_p{TARGET}"]["threshold"]
-        if (None if math.isinf(tau) else round(tau, 6)) != recorded:
-            raise SystemExit(f"{t}: abstention threshold {tau} != evaluation JSON {recorded}")
+        if ev is not None:
+            recorded = ev["tasks"][t]["selective"][f"conservative_p{TARGET}"]["threshold"]
+            if (None if math.isinf(tau) else round(tau, 6)) != recorded:
+                raise SystemExit(f"{t}: abstention threshold {tau} != evaluation JSON {recorded}")
         tasks[t] = {
             "classes": cl, "temperature": d["temperature"], "rare": rare,
             "abstain_below": None if math.isinf(tau) else float(tau),
@@ -73,7 +76,7 @@ def build(
         "fitted_on": "validation only",
         "source": {
             "pred_files_sha256": {t: _sha(pred_dir / f"pred_{t}.json") for t in TASKS},
-            "labels_sha256": _sha(labels_path), "eval_sha256": _sha(eval_path),
+            "labels_sha256": _sha(labels_path), "eval_sha256": _sha(eval_path) if eval_path else None,
         },
         "tasks": tasks,
     }  # fmt: skip
