@@ -131,3 +131,54 @@ async def test_plan_ingest_flag_off_is_the_plain_extract_path(
     monkeypatch.setattr(ef, "_remote", None)
     assert await ef.plan_ingest("t") == ef.IngestPlan(True)
     assert ef._remote is None
+
+
+def test_ingest_path_timeout_covers_a_cold_start_and_the_default_stays_short(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # measured Cloud Run cold start 15.2 s (S29): the background ingest path must outlast it with margin; the class default (the
+    # user-facing choice) must not silently grow
+    assert ef.INGEST_TIMEOUT_S >= 3 * 15.2
+    assert ef.RemoteClassifier("https://svc.example")._timeout == 10.0
+    s = SimpleNamespace(enable_encoder_first=True, classify_service_url="https://svc.example")
+    monkeypatch.setattr("app.core.config.get_settings", lambda: s)
+    monkeypatch.setattr(ef, "_remote", None)
+
+    async def fake(self: object, texts: list[str]) -> tuple[list, str]:
+        return [_t("no", "low")], "a" * 64
+
+    monkeypatch.setattr(
+        ef.RemoteClassifier, "classify_full", fake
+    )  # plan_ingest calls classify_full (#578)
+    import asyncio
+
+    assert asyncio.run(ef.should_extract("t")) is False
+    assert ef._remote is not None and ef._remote._timeout == ef.INGEST_TIMEOUT_S
+
+
+def test_the_http_client_is_built_with_the_configured_timeout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # S31 control audit: a client that hard-coded its own timeout survived the test above, which only reads the attribute
+    seen: dict = {}
+
+    class StopClient:
+        def __init__(self, **kw: object) -> None:
+            seen.update(kw)
+
+        async def __aenter__(self) -> StopClient:
+            raise RuntimeError("stop after capturing the client options")
+
+        async def __aexit__(self, *a: object) -> None:
+            return None
+
+    monkeypatch.setattr(ef.httpx, "AsyncClient", StopClient)
+    import asyncio
+
+    with pytest.raises(RuntimeError, match="stop after capturing"):
+        asyncio.run(
+            ef.RemoteClassifier("https://svc.example", timeout_s=ef.INGEST_TIMEOUT_S).classify(
+                ["t"]
+            )
+        )
+    assert seen["timeout"] == ef.INGEST_TIMEOUT_S
