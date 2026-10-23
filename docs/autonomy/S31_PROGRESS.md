@@ -18,7 +18,9 @@ P1 waits on panel session 2; P2 merging the stack one strict-mode CI round at a 
 | P4 | **done** | 128 pass (p95 355 ms), 256 FAIL (1,107 ms), 512 FAIL (2,137 ms); surviving arms **H128, HT128**; probe service deleted 22:53 and verified absent; report PR #603 | 2026-10-22 22:54 |
 | P5 | pending (needs P1 labels) | arms H128, HT128 only | |
 | P6–P8 | pending | | |
-| P7 (LLM part) | running | kernel `review-intent-fresh16-llm-run` v1: gpt-oss:20b zero-shot, effort low, max_tokens 1500, items mode, pinned 0.40.6; private dataset `review-intent-fresh16-llm-a` = Block A 1,800 (600/category) | 2026-10-22 23:10 |
+| P7 (LLM part) | outputs stored, unopened | `review-intent-fresh16-llm-run` v1 COMPLETE: 1,800/1,800 rows, Ollama 0.40.6 sha256 matched, gpt-oss:20b digest `f38aa0c53da5…6fdfe`, clone `01c16f6`. Private: `D:/ml-cache/s31/llm_a_out` | 2026-10-23 00:05 |
+| P7 (run-2 scores) | outputs stored, unopened | `review-intent-fresh16-run2-score` v1 (CPU kernel from #604's tooling) COMPLETE: 3,900 items, run-2 model sha `33158169…`, pinned + unpinned logits, Kaggle Xeon 2.2 GHz AVX2 only, 932 s. Private: `D:/ml-cache/s31/run2_f16_out` | 2026-10-23 00:05 |
+| B5 | in progress — real gap found | sealed fingerprints covered 3,483 of 7,383 sealed hashes (no fresh16): rebuilt + new ledger check (e) on #593 (`b2b696d`); full check running on a Kaggle CPU kernel `review-iq-ledger-check` | 2026-10-23 00:25 |
 | S1 | scheduled ≥ 2026-10-25 00:00 | | |
 | S2 | done for 10-22 | 22:10: `/health` 200 1.21 s; classify private; failover-probe daily 02:30 OK; 24 h `llm.rate_limited` 0, `llm.failover` 0, `db_timeout` 0, review-iq ERROR logs 0; open Monitoring incidents NOT readable (gcloud alpha component absent; installing it would modify the system SDK) | 2026-10-22 22:10 |
 | S3 | daily 03:30 | first 2026-10-23 03:30 | |
@@ -115,6 +117,8 @@ Remaining: ingest-vs-user timeout split (after #585), leakage near-dup + panel-p
 ## Incidents
 
 - 21:14 — **Session working directory moved to `web/`** after `cd web && npm …` in one Bash call. The repo's PreToolUse hook runs `python scripts/hook_guard_secrets.py` by relative path, so every tool call was refused. Not routed around: entered ONE linked worktree via the harness (`.claude/worktrees/review-iq-wt-s31`), where the hook path resolves. All further work happens there; the harness refuses `git -C` into the primary checkout. Lesson: never `cd` in a Bash call.
+- 23:13–00:24 — **Laptop CPU:** the local `leakage_ledger check` (repo-wide near-duplicate scan, now 7,383 fingerprints) ran 70 min at ~85% of one core. Stopped by its PID (37944, command line verified as mine) and moved to a Kaggle CPU kernel. The merge hook timed out twice during that window (blocked as designed; not touched).
+- 23:58 — **Another actor merged #518** (Dependabot setup-node) while #585 was gate-eligible; #585/#587/#591 went BEHIND again and were updated at 00:26. Concurrent merges to main cost one CI round (~45 min) each time.
 - 22:01 — **Another actor merged #589** (as gaurav-gandhi-2411) while this session ran; a concurrent session may be active in the primary checkout. Not touched; merges here re-check BEHIND state each time.
 
 ## Daily checkpoints
