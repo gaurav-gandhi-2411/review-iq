@@ -146,7 +146,7 @@ async def run_classify(body: ClassifyRequest, caller: str) -> ClassifyResponse |
     )  # fmt: skip
     return ClassifyResponse(
         model=ModelInfo(
-            name="multilingual-e5-base (review-intent multi-task)", run=th.run, variant=th.variant, max_tokens=th.max_len
+            name="multilingual-e5-base (review-intent multi-task)", run=th.run, variant=th.variant, max_tokens=getattr(backend, "max_len", th.max_len)
         ),
         decision=DecisionInfo(
             mode="threshold", abstention="conservative_p0.95 (validation-fitted, Wilson lower bound)",
