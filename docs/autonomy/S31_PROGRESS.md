@@ -13,14 +13,14 @@ P1 waits on panel session 2; P2 merging the stack one strict-mode CI round at a 
 |---|---|---|---|
 | P0 | done | snapshot below; spec + this file on `autonomy/s31-progress` | 2026-10-22 21:03 |
 | P1 | in progress — panel session 2 running | session 1: 4,600–4,800 / 6,300 per judge, `budget_hit` true, 36,599 s; `panel_pin` → "recorded and correct". Session 2 = kernel version 2 (~21:08) with `--prior …-panel-out`. When done: `panel_pin` on BOTH status files (session-digest equality, added in #592) | 2026-10-22 21:08 |
-| P2 | in progress | MERGED: #584 `b3cabc3`, #598 `01c16f6b5db0d075f75853d914a29314a1f495e5`. #585/#587/#591 updated onto `01c16f6` at 23:06, CI running. #592/#593/#594–#597 stacked behind #587 | 2026-10-22 23:06 |
+| P2 | in progress | MERGED: #584 `b3cabc3`, #598 `01c16f6`, #585 `d191b4d3b527a5022f7839da30d9ab39e704a33a` (01:20), #587 (02:13). #591 updated, CI running. #592 retargeted to main after #587's squash (merged main into it; empty commit at 02:58 to trigger the required `diff-scan`/`bypassrls-check`, which do not fire on a base change). #578 and #579 brought up to main (merge commits `cd7ec1d`, `2ed56fe`; conflict in `encoder_first.py` resolved: #578's `plan_ingest` keeps the 60 s ingest timeout), still PARKED. #604 opened: S30 equivalence tooling that never reached main | 2026-10-23 03:00 |
 | P3 | **done** (target 0 not met → PARKED 1) | P3 section; report PR #603 | 2026-10-22 23:00 |
 | P4 | **done** | 128 pass (p95 355 ms), 256 FAIL (1,107 ms), 512 FAIL (2,137 ms); surviving arms **H128, HT128**; probe service deleted 22:53 and verified absent; report PR #603 | 2026-10-22 22:54 |
 | P5 | pending (needs P1 labels) | arms H128, HT128 only | |
 | P6–P8 | pending | | |
 | P7 (LLM part) | outputs stored, unopened | `review-intent-fresh16-llm-run` v1 COMPLETE: 1,800/1,800 rows, Ollama 0.40.6 sha256 matched, gpt-oss:20b digest `f38aa0c53da5…6fdfe`, clone `01c16f6`. Private: `D:/ml-cache/s31/llm_a_out` | 2026-10-23 00:05 |
 | P7 (run-2 scores) | outputs stored, unopened | `review-intent-fresh16-run2-score` v1 (CPU kernel from #604's tooling) COMPLETE: 3,900 items, run-2 model sha `33158169…`, pinned + unpinned logits, Kaggle Xeon 2.2 GHz AVX2 only, 932 s. Private: `D:/ml-cache/s31/run2_f16_out` | 2026-10-23 00:05 |
-| B5 | in progress — real gap found | sealed fingerprints covered 3,483 of 7,383 sealed hashes (no fresh16): rebuilt + new ledger check (e) on #593 (`b2b696d`); full check running on a Kaggle CPU kernel `review-iq-ledger-check` | 2026-10-23 00:25 |
+| B5 | done (on #593) | sealed fingerprints covered 3,483 of 7,383 sealed hashes (no fresh16): rebuilt + new ledger check (e) (`b2b696d`). Kaggle CPU check at `b2b696d`: **ok** (no fresh16 near-duplicate or quote in tracked files), 5,585 s. That runtime would have doubled CI's lint-and-test → lossless candidate filters (`perf(labelling)` on #593): same result in 2 min 34 s, brute-force equality test added. The original B5 item (quote detection) already existed since S23 (12-gram containment ≥ 0.9; gaps: sealed items < 40 normalised chars (73 of 7,383 pre-fresh16 count: 6 < 20, 67 in 20–39), quotes split across non-adjacent lines) | 2026-10-23 02:12 |
 | S1 | scheduled ≥ 2026-10-25 00:00 | | |
 | S2 | done for 10-22 | 22:10: `/health` 200 1.21 s; classify private; failover-probe daily 02:30 OK; 24 h `llm.rate_limited` 0, `llm.failover` 0, `db_timeout` 0, review-iq ERROR logs 0; open Monitoring incidents NOT readable (gcloud alpha component absent; installing it would modify the system SDK) | 2026-10-22 22:10 |
 | S3 | daily 03:30 | first 2026-10-23 03:30 | |
@@ -106,7 +106,7 @@ Remaining: ingest-vs-user timeout split (after #585), leakage near-dup + panel-p
 | Item | Amount | Note |
 |---|---|---|
 | Kaggle GPU h (S30 carry-over) | 10.17 | panel session 1 (T4×2), 36,599 s |
-| Kaggle GPU h (S31) | 0.28 + running | reply judge 1,003 s (T4); panel session 2 (~21:08–, running); LLM comparator (~23:10–, running) |
+| Kaggle GPU h (S31) | 0.28 + 0.79 + running | reply judge 1,003 s (T4); LLM comparator 2,834 s (T4×2); panel session 2 (~21:08–, running) |
 | Cloud Run probe service | created 22:42, deleted 22:53 (verified) | 3 revisions (128/256/512), max 1 instance, ~11 min |
 | Groq eval tokens, failover org, trailing 24 h | 120b 59,294; 20b 61,091 | B1 drafts, ledger `D:/ml-cache/s31/reply/ledger.json` |
 | Groq primary org | 0 eval tokens | |
@@ -117,8 +117,18 @@ Remaining: ingest-vs-user timeout split (after #585), leakage near-dup + panel-p
 ## Incidents
 
 - 21:14 — **Session working directory moved to `web/`** after `cd web && npm …` in one Bash call. The repo's PreToolUse hook runs `python scripts/hook_guard_secrets.py` by relative path, so every tool call was refused. Not routed around: entered ONE linked worktree via the harness (`.claude/worktrees/review-iq-wt-s31`), where the hook path resolves. All further work happens there; the harness refuses `git -C` into the primary checkout. Lesson: never `cd` in a Bash call.
+- 01:15 — **Laptop CPU fully loaded by other sessions**: ten `claude` processes and two `python … scripts/g15_power_a7.py --stage rq4` shards (another project). Not touched. The merge hook's gate and even the secrets hook timed out (blocked as designed); #585 merged on a later retry. 03:00: load still about three quarters. Overheating risk is GG's to manage; nothing of this session runs locally beyond short scripts.
 - 23:13–00:24 — **Laptop CPU:** the local `leakage_ledger check` (repo-wide near-duplicate scan, now 7,383 fingerprints) ran 70 min at close to one full core. Stopped by its PID (37944, command line verified as mine) and moved to a Kaggle CPU kernel. The merge hook timed out twice during that window (blocked as designed; not touched).
 - 23:58 — **Another actor merged #518** (Dependabot setup-node) while #585 was gate-eligible; #585/#587/#591 went BEHIND again and were updated at 00:26. Concurrent merges to main cost one CI round (~45 min) each time.
 - 22:01 — **Another actor merged #589** (as gaurav-gandhi-2411) while this session ran; a concurrent session may be active in the primary checkout. Not touched; merges here re-check BEHIND state each time.
 
 ## Daily checkpoints
+
+### 2026-10-23 03:30 UTC (day 1)
+
+- **Done:** P0, P3 (redeploy; parity 5/3,028 → PARKED), P4 (H128, HT128 survive), B1 (#298 parked), B5 (fingerprint gap fixed on #593), S2 for 10-22. P7's LLM comparator and run-2 fresh16 scores stored, unopened.
+- **Merged:** #584, #598, #585, #587. **Open (mine):** #591, #592, #593, #594–#597, #599–#604.
+- **Waiting:** panel session 2 (since ~21:08, 10 h cap ~07:08) → P1 labels → P5 training.
+- **Disk:** C: 239 GB free (228 at P0; other sessions freed space), D: 1.4 TB free. One extra worktree `.claude/worktrees/review-iq-wt-s31` (see Incidents).
+- **Laptop:** load about three quarters at 03:00, from other sessions (see Incidents); none of this session's processes are heavy.
+- **Kaggle GPU (S31):** reply judge 0.28 h; LLM comparator (T4×2) — see ledger; panel session 2 running. CPU kernels (run-2 scoring 932 s, ledger check 5,585 s) use no GPU quota.
