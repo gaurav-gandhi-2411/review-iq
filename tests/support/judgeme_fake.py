@@ -1,8 +1,13 @@
 """Fake Judge.me server for contract tests (httpx.MockTransport; no network, no socket).
 
-SYNTHETIC / CONTRACT-FIXTURE BASED: the response shape is the BELIEVED one from
-docs/specs/judgeme-ingestion.md F7/F8 (API Evangelist profile + help article 8409180). Nothing
-here has been compared with a real Judge.me store. It exists so the connector can be tested for
+SYNTHETIC / CONTRACT-FIXTURE BASED: the response shape was first the BELIEVED one from
+docs/specs/judgeme-ingestion.md F7/F8 (API Evangelist profile + help article 8409180). S31 checked it
+against Judge.me's own OpenAPI 3.0 file (https://judge.me/api/docs.yaml, the source of judge.me/api/docs,
+fetched 2026-10-23, sha256 2b83ea54767150fb...): the `Review` / `ResponseReviewer` fields below match it, and
+the fields it lists that the fake lacked (`pinned`, `product_handle`, `ip_address`, `has_published_*`,
+reviewer `tags`/`accepts_marketing`/`unsubscribed_at`) were added. `published` is NOT in that schema
+(visibility there is `curated` + `hidden`); the fake keeps it for the BELIEVED-shape tests. Nothing here has
+been compared with a real Judge.me store. It exists so the connector can be tested for
 pagination, edits, deletions, 429, 5xx, timeouts, malformed payloads and a revoked token, and so
 recorded real responses (scripts/record_judgeme_fixture.py) can be replayed through the same
 client via ``FakeJudgeMe.from_recording``.
@@ -54,6 +59,9 @@ def make_review(
             "email": f"buyer{rid}@example.com",
             "name": f"Buyer Name{rid}",
             "phone": f"+91900000{rid:04d}",
+            "tags": [],
+            "accepts_marketing": False,
+            "unsubscribed_at": None,
         },
         "source": "web",
         "curated": "ok",
@@ -63,6 +71,11 @@ def make_review(
         "created_at": iso(created),
         "updated_at": iso(updated or created),
         "pictures": [],
+        "pinned": False,
+        "product_handle": f"product-{product}",
+        "ip_address": f"203.0.113.{rid % 250}",  # TEST-NET-3 documentation range: synthetic reviewer PII
+        "has_published_pictures": False,
+        "has_published_videos": False,
     }
 
 
