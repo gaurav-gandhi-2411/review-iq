@@ -154,23 +154,40 @@ class Reader:
     calibrator stacks the collected activations and needs one shape for every sample, and padding would put pad-position
     activations (never used downstream) into the histograms."""
 
-    def __init__(self, tok, texts: list[str], tile: bool = False) -> None:  # noqa: ANN001
+    def __init__(
+        self,
+        tok,
+        texts: list[str],
+        tile: bool = False,
+        max_len: int = MAX_LEN,
+        mode: str = "head",  # noqa: ANN001
+    ) -> None:
         self.it = iter(texts)
         self.tok = tok
         self.tile = tile
+        self.max_len = max_len  # Amendment 16: the arm's input length and truncation mode
+        self.mode = mode
 
     def get_next(self) -> dict | None:
         t = next(self.it, None)
         if t is None:
             return None
-        e = self.tok(t, truncation=True, max_length=MAX_LEN, return_tensors="np")
-        ids = e["input_ids"].astype(np.int64)
+        if self.mode == "head":  # unchanged path: the S25 calibration
+            e = self.tok(t, truncation=True, max_length=self.max_len, return_tensors="np")
+            ids = e["input_ids"].astype(np.int64)
+        else:
+            from engine.intent import inputs as IN
+
+            ids = IN.encode_batch(self.tok, [t], self.max_len, self.mode)["input_ids"]
         if self.tile:
-            ids = np.tile(ids, (1, -(-MAX_LEN // ids.shape[1])))[:, :MAX_LEN]
+            ids = np.tile(ids, (1, -(-self.max_len // ids.shape[1])))[:, : self.max_len]
         return {"input_ids": ids, "attention_mask": np.ones_like(ids)}
 
 
-def quantize(src: Path, dst: Path, nodes: list[str], method: str, tok, texts: list[str]) -> None:  # noqa: ANN001
+def quantize(
+    src: Path, dst: Path, nodes: list[str], method: str, tok, texts: list[str],  # noqa: ANN001
+    max_len: int = MAX_LEN, mode: str = "head",
+) -> None:  # fmt: skip
     from onnxruntime.quantization import CalibrationMethod, QuantFormat, QuantType, quantize_static
 
     cm = CalibrationMethod.Percentile if method == "percentile" else CalibrationMethod.MinMax
@@ -178,7 +195,7 @@ def quantize(src: Path, dst: Path, nodes: list[str], method: str, tok, texts: li
     if method == "percentile":
         extra["CalibPercentile"] = 99.999
     quantize_static(
-        str(src), str(dst), Reader(tok, texts, tile=method == "percentile"), quant_format=QuantFormat.QDQ, per_channel=True,
+        str(src), str(dst), Reader(tok, texts, method == "percentile", max_len, mode), quant_format=QuantFormat.QDQ, per_channel=True,
         weight_type=QuantType.QInt8, activation_type=QuantType.QUInt8, op_types_to_quantize=["MatMul"],
         nodes_to_quantize=nodes, calibrate_method=cm, extra_options=extra,
     )  # fmt: skip

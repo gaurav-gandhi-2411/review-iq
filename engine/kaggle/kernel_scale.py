@@ -185,6 +185,17 @@ for t in threads:
     t.start()
 for t in threads:
     t.join()
+# Amendment 16: the pin must be RECORDED, not assumed. A status file without these fields is rejected by engine/labelling/panel_pin.py.
+status["ollama_version"] = subprocess.run(
+    [str(OLLAMA_DIR / "bin" / "ollama"), "--version"], capture_output=True, text=True, check=False
+).stdout.strip()
+status["model_digests"] = {}
+for g in (0, 1):
+    try:
+        tags = json.load(urllib.request.urlopen(f"http://127.0.0.1:{PORT[g]}/api/tags", timeout=10))
+        status["model_digests"].update({m["name"]: m["digest"] for m in tags.get("models", [])})
+    except Exception as e:  # noqa: BLE001 (recorded as missing; the pin check then rejects the run)
+        status.setdefault("model_digest_errors", []).append(repr(e))
 for p in servers:
     p.terminate()
 shutil.rmtree(repo, ignore_errors=True)
