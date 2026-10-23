@@ -24,7 +24,11 @@ import urllib.request
 BRANCH = "__BRANCH__"
 STAGE = "__STAGE__"
 ITEMS_GLOB = "/kaggle/input/**/__ITEMS__"
-PRIOR_GLOB = "/kaggle/input/**/judges/*.jsonl"
+# S31: a prior dataset may be mounted with or without its `judges/` folder (an uploaded judges.zip is extracted FLAT), so
+# prior judge files are recognised by name, anywhere under /kaggle/input, and a run told to resume FAILS if it finds none:
+# the silent fall-through re-ran 10.25 GPU-hours of finished work (fresh16 panel, session 2).
+PRIOR_GLOB = "/kaggle/input/**/*.jsonl"
+EXPECT_PRIOR = "__EXPECT_PRIOR__" == "1"
 BUDGET_S = float("__BUDGET_H__") * 3600
 REPO = "https://github.com/gaurav-gandhi-2411/review-iq.git"
 # Amendments 13 and 15: one Ollama build, digest-checked (the digest GitHub publishes for the asset).
@@ -166,12 +170,25 @@ status["gpu"] = sh(
     "nvidia-smi --query-gpu=name,memory.total --format=csv,noheader", capture_output=True, text=True
 ).stdout.strip()
 OUT.mkdir(parents=True, exist_ok=True)
+from engine.labelling import scale_plan as _SP  # noqa: E402 (the repository is cloned above)
+
+status["prior_files"] = {}
 for prior in glob.glob(
     PRIOR_GLOB, recursive=True
 ):  # cumulative: earlier sessions' lines are kept and skipped
-    dst = OUT / pathlib.Path(prior).name
+    name = pathlib.Path(prior).name
+    if not _SP.is_judge_output(name):
+        continue  # the items file and anything else that is not a judge's output
+    dst = OUT / name
     if not dst.exists():
         shutil.copy(prior, dst)
+        status["prior_files"][name] = len(dst.read_text(encoding="utf-8").splitlines())
+print("prior judge files copied:", status["prior_files"], flush=True)
+if EXPECT_PRIOR and not status["prior_files"]:
+    write_status()
+    raise SystemExit(
+        "--prior was given but no judge file was found under /kaggle/input: refusing to redo finished work"
+    )
 items_file = glob.glob(ITEMS_GLOB, recursive=True)[0]
 all_items = [
     json.loads(x)
