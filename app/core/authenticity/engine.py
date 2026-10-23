@@ -21,6 +21,7 @@ from app.core.metrics import (
 from app.core.prompts.authenticity import build_authenticity_prompt
 from app.core.providers.base import assert_privacy_safe
 from app.core.providers.groq import GroqProvider
+from app.core.sanitize import pii_redacted_text
 
 log = structlog.get_logger(__name__)
 
@@ -68,7 +69,12 @@ async def _call_authenticity_llm(
     llm_ok: bool = True
     try:
         assert_privacy_safe(provider, context="authenticity scoring")
-        system_prompt, user_prompt = build_authenticity_prompt(review_text, language)
+        # Groq is a third-party processor: legal/sub-processors.md says it receives text only
+        # after the PII-redaction pass. Redact only -- sanitize()'s injection neutralisation
+        # would rewrite the promotional/templated phrasing this task scores.
+        system_prompt, user_prompt = build_authenticity_prompt(
+            pii_redacted_text(review_text), language
+        )
         raw, tokens_in, tokens_out = await provider.complete(
             user_prompt,
             system_prompt=system_prompt,
