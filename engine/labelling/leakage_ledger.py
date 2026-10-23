@@ -183,6 +183,16 @@ def check() -> list[str]:
         )
     if stale := set(ledger["sealed_excluded"]) - sealed:
         problems.append(f"(d) {len(stale)} excluded hashes are not in the sealed set")
+    # (e) S31: the near-duplicate scan only protects items that have a fingerprint. Amendment 16 added 3,900 sealed items without
+    # rebuilding the fingerprint file, and every check above still passed: a sealed set the scan cannot see must fail loudly.
+    from engine.labelling import leakage_neardup as nd
+
+    fingerprinted = set(json.loads(nd.FP.read_text(encoding="utf-8"))["items"])
+    if uncovered := sealed - fingerprinted:
+        problems.append(
+            f"(e) {len(uncovered)} sealed hashes have no near-duplicate fingerprint: rebuild "
+            "reports/labelling/sealed_fingerprints.json (leakage_neardup build)"
+        )
     return problems
 
 
