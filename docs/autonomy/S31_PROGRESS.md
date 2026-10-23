@@ -13,7 +13,8 @@ P1 waits on panel session 2; P2 merging the stack one strict-mode CI round at a 
 |---|---|---|---|
 | P0 | done | snapshot below; spec + this file on `autonomy/s31-progress` | 2026-10-22 21:03 |
 | P1 | in progress — panel session 2 running | session 1: 4,600–4,800 / 6,300 per judge, `budget_hit` true, 36,599 s; `panel_pin` → "recorded and correct". Session 2 = kernel version 2 (~21:08) with `--prior …-panel-out`. When done: `panel_pin` on BOTH status files (session-digest equality, added in #592) | 2026-10-22 21:08 |
-| P2 | in progress | MERGED: #584 `b3cabc3`, #598 `01c16f6`, #585 `d191b4d3b527a5022f7839da30d9ab39e704a33a` (01:20), #587 (02:13). #591 updated, CI running. #592 retargeted to main after #587's squash (merged main into it; empty commit at 02:58 to trigger the required `diff-scan`/`bypassrls-check`, which do not fire on a base change). #578 and #579 brought up to main (merge commits `cd7ec1d`, `2ed56fe`; conflict in `encoder_first.py` resolved: #578's `plan_ingest` keeps the 60 s ingest timeout), still PARKED. #604 opened: S30 equivalence tooling that never reached main | 2026-10-23 03:00 |
+| P2 | in progress | MERGED: #584 `b3cabc3`, #598 `01c16f6`, #585 `d191b4d3b527a5022f7839da30d9ab39e704a33a` (01:20), #587 (02:13), #591 (03:07), #592 (03:56), #593 (04:18, with the fingerprint + scan-speed fixes), #594 (04:37). #595 retargeted + main merged (04:41), CI running; #596, #597 next. Each retarget needs main's `panel_pin.py` taken (add/add conflict from #592's pre-hardening copy). Earlier: | 2026-10-23 04:41 |
+| P2 (earlier) | — | #585/#587 merged after updates. #591 updated, CI running. #592 retargeted to main after #587's squash (merged main into it; empty commit at 02:58 to trigger the required `diff-scan`/`bypassrls-check`, which do not fire on a base change). #578 and #579 brought up to main (merge commits `cd7ec1d`, `2ed56fe`; conflict in `encoder_first.py` resolved: #578's `plan_ingest` keeps the 60 s ingest timeout), still PARKED. #604 opened: S30 equivalence tooling that never reached main | 2026-10-23 03:00 |
 | P3 | **done** (target 0 not met → PARKED 1) | P3 section; report PR #603 | 2026-10-22 23:00 |
 | P4 | **done** | 128 pass (p95 355 ms), 256 FAIL (1,107 ms), 512 FAIL (2,137 ms); surviving arms **H128, HT128**; probe service deleted 22:53 and verified absent; report PR #603 | 2026-10-22 22:54 |
 | P5 | pending (needs P1 labels) | arms H128, HT128 only | |
@@ -27,6 +28,8 @@ P1 waits on panel session 2; P2 merging the stack one strict-mode CI round at a 
 | B1 | **done → #298 PARKED** | PRs #599 (prereg + results), #600 (harness), #601 (judge kernel). c1 met (3/20 → 0/20), c2 unestablished (judge panel saturated) | 2026-10-22 22:35 |
 | B2 | in progress | PR #602 (+ tests in #585, #592) | 2026-10-22 22:25 |
 | B3 | in progress | #598 merged | 2026-10-22 23:05 |
+| B6 | done → PR #607 | Judge.me's own OpenAPI (judge.me/api/docs.yaml, sha256 `2b83ea54767150fb…`, fetched 10-23): the fixture recorder would have committed real reviewer IPs (`ip_address` sits on the review, outside `reviewer`) — fixed + tested; fake extended to the official fields. Visibility semantics (`published` is not in the schema; `curated`+`hidden` are) → PARKED 4 | 2026-10-23 03:30 |
+| S3 day 1 | merge pending | #606 closed (gate 1 rejects the spec's `autonomy/` prefix); same commit re-opened from `docs/s31-progress-day1` as #608 | 2026-10-23 04:37 |
 
 ## P3 — classifier redeploy on pinned numerics (Tier B) — VERIFIED
 
@@ -76,6 +79,7 @@ Remaining: ingest-vs-user timeout split (after #585), leakage near-dup + panel-p
 - ~21:10 — Tier B: `keep-classify-prev` tag (spec P3).
 - 21:45 — Tier B: P3 deploy started although main's CI run had `npm-audit` red: that job fails on six vite dev-server advisories published 10-20/21 (web/ only, fixed by #598); `lint-and-test`, `web-build`, `pip-audit`, `manifest-provenance` were green. The classify image does not contain web/.
 - 21:58 — Live parity 5 ≠ 0 → per spec: recorded, no rollback (nothing calls the service), parked.
+- 04:37 — Daily progress merges go through a `docs/s31-progress-dayN` branch cut from the live `autonomy/s31-progress` commit: the gate's rule-70a gate 1 does not list `autonomy/`, and the content is docs-only (a `docs/` branch is its natural scope; the live branch keeps the spec's name).
 - 22:42–22:53 — Tier B: throwaway private probe service `review-iq-classify-probe` (same image digest `69618259…`, 1 vCPU, 2 GiB, min 0, max 1, no IAM bindings, unauthenticated 403), env `CLASSIFY_MAX_LEN` 128 → 256 → 512, then deleted and the service list re-checked.
 - 22:44 — The B1 result JSON was moved from `eval/results/` to `reports/research/` before opening PRs: `eval/results/*.json` is not a designated generated path, so a 2,759-line data file would have failed gate 3; `reports/` is designated. B1 split into three PRs (doc+results, harness, kernel), each ≤ 400 reviewable lines. Pre-registration provenance stays at `0cc5d9a` (branch `docs/s31-reply-v22-prereg`, pushed, not merged).
 - 23:10 — P7's LLM comparator started early (only needs Block A texts, not labels; a Kaggle slot was free). Its outputs stay unopened until the registered P7 evaluation.
@@ -96,6 +100,7 @@ Remaining: ingest-vs-user timeout split (after #585), leakage near-dup + panel-p
 2. **#298 reply prompt v2.2** (medium value; reply drafting is OFF). Evidence #599. Steps for GG:
    1. Read #599's results: invented contacts 3/20 → 0/20 is solid; "not worse" is not established (8B judges saturated).
    2. Either accept c1 alone and merge #298 (it rebases cleanly on main as of 22:00), or let a later session pre-register a judge calibration gate + a larger non-gpt-oss panel and re-judge the SAME 80 drafts (no new Groq spend; ~0.5 Kaggle GPU-h).
+4. **Judge.me visibility semantics** (low value now; connector flag OFF). Evidence #607. Judge.me's schema has no `published`; a review is on the storefront when `curated: "ok"` (`not-yet` depends on the store's auto-publish; `hidden` implies `spam`). The mapper counts anything not `hidden` as visible, so unpublished (`spam`) and pending (`not-yet`) reviews are ingested. Steps for GG: decide whether sellers should see unpublished/pending reviews (arguably yes: pending complaints are actionable); if not, a one-line mapper change (`visible = curated == "ok"` when present) plus a test.
 3. **Primary checkout cleanup** (low value, 1 min). Session confined to its worktree. In `C:\Users\gaura\ml-projects\review-iq`:
    1. `git restore web/package.json web/package-lock.json` (identical change is in #598).
    2. `git switch main && git pull --ff-only`.
