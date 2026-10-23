@@ -117,7 +117,7 @@ Remaining: ingest-vs-user timeout split (after #585), leakage near-dup + panel-p
 ## Incidents
 
 - 21:14 — **Session working directory moved to `web/`** after `cd web && npm …` in one Bash call. The repo's PreToolUse hook runs `python scripts/hook_guard_secrets.py` by relative path, so every tool call was refused. Not routed around: entered ONE linked worktree via the harness (`.claude/worktrees/review-iq-wt-s31`), where the hook path resolves. All further work happens there; the harness refuses `git -C` into the primary checkout. Lesson: never `cd` in a Bash call.
-- 23:13–00:24 — **Laptop CPU:** the local `leakage_ledger check` (repo-wide near-duplicate scan, now 7,383 fingerprints) ran 70 min at ~85% of one core. Stopped by its PID (37944, command line verified as mine) and moved to a Kaggle CPU kernel. The merge hook timed out twice during that window (blocked as designed; not touched).
+- 23:13–00:24 — **Laptop CPU:** the local `leakage_ledger check` (repo-wide near-duplicate scan, now 7,383 fingerprints) ran 70 min at close to one full core. Stopped by its PID (37944, command line verified as mine) and moved to a Kaggle CPU kernel. The merge hook timed out twice during that window (blocked as designed; not touched).
 - 23:58 — **Another actor merged #518** (Dependabot setup-node) while #585 was gate-eligible; #585/#587/#591 went BEHIND again and were updated at 00:26. Concurrent merges to main cost one CI round (~45 min) each time.
 - 22:01 — **Another actor merged #589** (as gaurav-gandhi-2411) while this session ran; a concurrent session may be active in the primary checkout. Not touched; merges here re-check BEHIND state each time.
 
