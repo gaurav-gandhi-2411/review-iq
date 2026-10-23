@@ -28,7 +28,11 @@ All timestamps UTC. VERIFIED = observed this session with the command or artifac
 | B3 | partly done | #598 merged (vite). Dependabot #523, #517 merged. **#568 deferred** to after P7 (bumps `tokenizers` 0.22.2 → 0.23.3 mid-evaluation and ruff to 0.17). #567 already closed. Majors (#516, #519, #520, #232, #233) and Tailwind 4 (#106): not started | 2026-10-23 07:00 |
 | B5 | done (#593) | fingerprint coverage 3,483 → 7,383 + check (e); scan 93 min → 2.6 min | 2026-10-23 04:18 |
 | B6 | done (#607 merged) | recorder IP redaction; fake on the official OpenAPI shape; visibility semantics → PARKED 4 | 2026-10-23 06:40 |
-| B4, B7, B-last | not started | | |
+| B3 (cont.) | Tailwind 4 → **#610 DRAFT** (Tier C, GG signs off) | 4.3.3 via `@tailwindcss/postcss` + `@config`; compatibility CSS for v3 defaults; renames per guide; lockfile npm-audit 0 findings (retires the braces allowlist). CI-rendered before/after (new `ui-screenshots.yml`): 360 px dashboard pixel-identical, dark = light, 1280 px dashboard +9 px height, login input row and a 4 px band on /try differ. Majors → plan #611 | 2026-10-23 07:45 |
+| #609 | merged | panel resume fail-closed fix on main (session 3 can clone main) | 2026-10-23 07:40 |
+| B7 | done (local) | 19 local branches deleted after a separate check that each PR was MERGED with no local-only commits; remote branches untouched | 2026-10-23 07:50 |
+| B4 | folded into the handoff STATUS update | README metric blocks are already render- and drift-checked in CI (`render_metrics.py --check` OK, `check_no_hardcoded_metrics.py` OK); STATUS's S29 classify row is stale and is rewritten at handoff | 2026-10-23 07:50 |
+| B-last | needs GPU | | |
 
 ## P3 — classifier redeploy on pinned numerics (Tier B) — VERIFIED
 
