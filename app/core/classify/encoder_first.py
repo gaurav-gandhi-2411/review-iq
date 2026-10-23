@@ -22,6 +22,10 @@ _METADATA_ID = (
     "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity"
 )
 _TOKEN_TTL_S = 3000.0  # identity tokens live 3600 s; refresh early
+# The router runs in the background ingest worker, where nobody waits, so its timeout must cover a cold start of the private
+# service (scale to zero; measured 15.2 s on Cloud Run, S29) with margin: about four times that. A future USER-FACING caller must
+# build its own RemoteClassifier with the short default (10 s) instead of reusing this one.
+INGEST_TIMEOUT_S = 60.0
 
 
 @dataclass(frozen=True)
@@ -136,7 +140,7 @@ async def plan_ingest(text: str) -> IngestPlan:
     if not s.enable_encoder_first or not s.classify_service_url:
         return IngestPlan(True)
     if _remote is None or _remote._url != s.classify_service_url.rstrip("/"):
-        _remote = RemoteClassifier(s.classify_service_url)
+        _remote = RemoteClassifier(s.classify_service_url, timeout_s=INGEST_TIMEOUT_S)
     try:
         per_item, sha = await _remote.classify_full([text])
         if len(per_item) != 1:

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Build and deploy the PRIVATE Cloud Run service that serves POST /v2/classify (S26 sizing decisions, S27 auth decision):
-# own service, 2 GiB, 1 vCPU, min-instances 0, model.onnx baked into the image, hash-pinned requirements, NO unauthenticated access,
-# NO secrets and NO database credential. Only the review-iq service account may invoke it (roles/run.invoker). NOT run by CI.
-# The existing `review-iq` service is never modified.
+# Build (in Cloud Build) and deploy the PRIVATE Cloud Run service that serves POST /v2/classify (S26 sizing decisions, S27 auth decision,
+# S29: Cloud Build instead of a local Docker build): own service, 2 GiB, 1 vCPU, min-instances 0, max-instances 2, model.onnx baked into
+# the image, hash-pinned requirements, NO unauthenticated access, NO secrets and NO database credential. Only the review-iq service
+# account may invoke it (roles/run.invoker). NOT run by CI. The existing `review-iq` service is never modified.
 #
 #   bash ops/deploy/deploy-classify.sh /path/to/classify_artifacts   # dir with model.onnx and hf/tokenizer.json
 #
@@ -10,10 +10,13 @@
 #   - the working tree is clean and HEAD is an ancestor of origin/main (CLAUDE.md 31a: production deploys come from merged code);
 #   - model.onnx and tokenizer.json match the sha256 pins below (weights are not in git; the pin is the delivery check);
 #   - CONFIRM_REGISTRY_COST=yes: the image adds its size to Artifact Registry, billed above the 0.5 GB free tier (about $0.10 per
-#     GB-month, BELIEVED). The script prints the figure; it does not decide for you.
+#     GB-month, BELIEVED). S29 measured 481.5 MB of unique layers, about 4 cents a month in total after the push.
+# The build runs in Cloud Build (default e2-standard-2 pool): about 2 minutes, inside the free allowance of 2,500 build-minutes a month
+# per billing account (Google's pricing page, S29). The source upload (git archive of HEAD + the two weight files, about 375 MB) goes
+# to the project's Cloud Build bucket and is DELETED by this script afterwards (a US multi-region bucket is not in the free storage tier).
 # After the deploy it ASSERTS the access model: the IAM policy holds exactly one invoker (the review-iq service account), none of
 # allUsers / allAuthenticatedUsers, and an unauthenticated request is refused with 401/403. It prints no secret value.
-# Rollback: `gcloud run services delete review-iq-classify` (nothing else depends on it).
+# Rollback: `gcloud run services delete review-iq-classify --region=asia-south1` (nothing else depends on it).
 set -euo pipefail
 
 ACCT="gaurav.gandhi1129@gmail.com"
@@ -24,6 +27,7 @@ SERVICE="review-iq-classify"
 SA_NAME="review-iq-classify"
 SA="${SA_NAME}@${PROJECT}.iam.gserviceaccount.com"
 CALLER_SA="review-iq-runner@${PROJECT}.iam.gserviceaccount.com" # the serving service account of `review-iq`
+STAGING_BUCKET="gs://${PROJECT}_cloudbuild"
 MODEL_SHA256="33158169d014fb424b1284dd32474863a62503530b618e4bf3db39210044b414"
 VOCAB_FILE_SHA256="62c24cdc13d4c9952d63718d6c9fa4c287974249e16b7ade6d5a85e7bbb75626"
 ARTIFACTS="${1:?usage: deploy-classify.sh <artifacts dir with model.onnx and hf/tokenizer.json>}"
@@ -40,23 +44,50 @@ git merge-base --is-ancestor HEAD origin/main || { echo "HEAD is not on origin/m
 TAG="$(git rev-parse --short=12 HEAD)"
 [ "$(sha256sum "${ARTIFACTS}/model.onnx" | cut -d' ' -f1)" = "${MODEL_SHA256}" ] || { echo "model.onnx sha256 does not match the pin"; exit 1; }
 [ "$(sha256sum "${ARTIFACTS}/hf/tokenizer.json" | cut -d' ' -f1)" = "${VOCAB_FILE_SHA256}" ] || { echo "tokenizer.json sha256 does not match the pin"; exit 1; }
+[ "${CONFIRM_REGISTRY_COST:-}" = "yes" ] || { echo "stop: set CONFIRM_REGISTRY_COST=yes to build and push (billed registry storage)"; exit 2; }
 
 IMAGE="${REGION}-docker.pkg.dev/${PROJECT}/${AR_REPO}/${SERVICE}:${TAG}"
-echo "== build ${IMAGE##*/}"
-docker build -f Dockerfile.classify -t "${IMAGE}" --build-context "artifacts=${ARTIFACTS}" .
-SIZE_MB=$(( $(docker image inspect "${IMAGE}" --format '{{.Size}}') / 1000000 ))
-echo "image size (uncompressed) ${SIZE_MB} MB; the registry stores it compressed, billed above the 0.5 GB free tier"
-[ "${CONFIRM_REGISTRY_COST:-}" = "yes" ] || { echo "stop: set CONFIRM_REGISTRY_COST=yes to push (billed storage)"; exit 2; }
+echo "== stage the build context (git archive of HEAD + the two pinned weight files)"
+STAGE="$(mktemp -d)"
+trap 'rm -rf "${STAGE}"' EXIT
+git archive HEAD Dockerfile.classify pyproject.toml uv.lock requirements-classify.txt app engine/__init__.py engine/intent/__init__.py engine/intent/decide.py | tar -x -C "${STAGE}"
+mkdir -p "${STAGE}/.artifacts/hf"
+cp "${ARTIFACTS}/model.onnx" "${STAGE}/.artifacts/model.onnx"
+cp "${ARTIFACTS}/hf/tokenizer.json" "${STAGE}/.artifacts/hf/tokenizer.json"
+# Cloud Build's docker client has no `--build-context`; Dockerfile.classify's `COPY --from=artifacts` resolves to a LOCAL IMAGE named
+# `artifacts` under the classic builder, so step 1 builds that image from the two weight files.
+cat > "${STAGE}/cloudbuild.classify.yaml" <<'EOF'
+steps:
+  - name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        echo "FROM scratch" > Dockerfile.artifacts
+        echo "COPY .artifacts/ /" >> Dockerfile.artifacts
+        docker build -f Dockerfile.artifacts -t artifacts .
+  - name: gcr.io/cloud-builders/docker
+    args: ["build", "-f", "Dockerfile.classify", "-t", "${_IMAGE}", "."]
+images: ["${_IMAGE}"]
+options:
+  logging: CLOUD_LOGGING_ONLY
+timeout: 1200s
+EOF
 
-echo "== push"
-g auth print-access-token | docker login -u oauth2accesstoken --password-stdin "${REGION}-docker.pkg.dev" >/dev/null
-docker push "${IMAGE}" >/dev/null
+echo "== build in Cloud Build and push ${IMAGE##*/}"
+SRC_DIR="${STAGING_BUCKET}/classify-src-${TAG}"
+g builds submit "${STAGE}" --config="${STAGE}/cloudbuild.classify.yaml" --substitutions="_IMAGE=${IMAGE}" \
+  --region="${REGION}" --gcs-source-staging-dir="${SRC_DIR}"
+echo "== delete the uploaded build source (weights) from ${SRC_DIR}"
+g storage rm --recursive "${SRC_DIR}" || echo "warning: could not delete ${SRC_DIR}; delete it by hand"
+DIGEST="$(g artifacts docker images describe "${IMAGE}" --format='value(image_summary.digest)')"
+[ -n "${DIGEST}" ] || { echo "FAIL: no digest for ${IMAGE}"; exit 1; }
 
 echo "== service account (no roles, no secrets)"
 g iam service-accounts describe "${SA}" >/dev/null 2>&1 || g iam service-accounts create "${SA_NAME}" --display-name="review-iq classify service (no roles, no secrets)"
 
-echo "== deploy (private, 2Gi, 1 vCPU, scale to zero)"
-g run deploy "${SERVICE}" --image="${IMAGE}" --region="${REGION}" --service-account="${SA}" \
+echo "== deploy (private, 2Gi, 1 vCPU, scale to zero, max 2 instances)"
+g run deploy "${SERVICE}" --image="${IMAGE%:*}@${DIGEST}" --region="${REGION}" --service-account="${SA}" \
   --cpu=1 --memory=2Gi --min-instances=0 --max-instances=2 --concurrency=4 --timeout=60 --cpu-boost \
   --no-allow-unauthenticated
 
@@ -73,6 +104,6 @@ CODE="$(curl -s -o /dev/null -w '%{http_code}' -X POST "${URL}/v2/classify" -H '
 case "${CODE}" in 401 | 403) echo "ok: unauthenticated request refused (${CODE})" ;; *) echo "FAIL: unauthenticated request got ${CODE}"; exit 3 ;; esac
 
 echo "deployed ${SERVICE}: ${URL}"
-echo "next: CLASSIFY_ID_TOKEN=\$(gcloud auth print-identity-token --account=${ACCT} --audiences=${URL}) \\"
-echo "      PYTHONPATH=. python scripts/classify_live_parity.py --url ${URL} --texts <scale.jsonl> --out reports/serving/classify_live_parity.json"
-echo "(the token needs run.invoker: add your own account to the service first, or impersonate ${CALLER_SA})"
+echo "next (the project Owner can invoke without a binding; no --audiences for a user account):"
+echo "      CLASSIFY_ID_TOKEN=\$(gcloud auth print-identity-token --account=${ACCT}) \\"
+echo "      PYTHONPATH=. python scripts/classify_live_parity.py --url ${URL} --texts <scale.jsonl> --out <result.json>"

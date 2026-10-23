@@ -30,7 +30,8 @@ from scripts.build_classify_thresholds import TASKS, build
 ROOT = Path(__file__).resolve().parents[1]
 CFGS = {
     "torch": {"pred": ROOT / "reports/intent/run2_cpu/int8_ffn_full", "eval": ROOT / "reports/intent/eval_run2_int8_ffn_full.json", "variant": "int8_ffn_full", "thresholds": runtime.THRESHOLDS_PATH},
-    "onnx": {"pred": ROOT / "reports/intent/run2_cpu/onnx_static_int8", "eval": ROOT / "reports/intent/eval_run2_onnx_static_int8.json", "variant": "onnx_static_int8", "thresholds": runtime.THRESHOLDS_ONNX_PATH},
+    "onnx": {"pred": ROOT / "reports/intent/run2_cpu/onnx_static_int8_x64", "eval": ROOT / "reports/intent/eval_run2_onnx_static_int8_x64.json", "variant": "onnx_static_int8_x64", "thresholds": runtime.THRESHOLDS_ONNX_PATH},
+    "onnx_s25": {"pred": ROOT / "reports/intent/run2_cpu/onnx_static_int8", "eval": ROOT / "reports/intent/eval_run2_onnx_static_int8.json", "variant": "onnx_static_int8", "thresholds": runtime.THRESHOLDS_ONNX_S25_PATH},
 }  # fmt: skip
 CFG = dict(CFGS["torch"])  # main() switches it with --backend
 
@@ -124,7 +125,7 @@ def run(artifacts: Path, texts_path: Path) -> dict:
     from engine.intent.llm_moat import sealed_ids
 
     th = runtime.load_thresholds(CFG["thresholds"])
-    onnx = CFG["variant"] == "onnx_static_int8"
+    onnx = CFG["variant"].startswith("onnx_static_int8")
     backend = (
         runtime.OnnxBackend(artifacts, th) if onnx else runtime.TorchInt8Backend(artifacts, th)
     )
