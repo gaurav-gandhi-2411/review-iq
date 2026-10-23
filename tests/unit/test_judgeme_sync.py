@@ -376,5 +376,6 @@ async def test_m6_no_reviewer_pii_in_staged_rows_or_state() -> None:
     pipe = MemPipeline()
     await tick(srv, pipe, SyncMeta(), SyncSettings())
     blob = repr(pipe.staged_log) + repr(pipe.state) + repr(pipe.extractions)
-    for needle in ("@example.com", "Buyer Name", "+91900000", "buyer1@"):
+    # S31: Judge.me's OpenAPI lists the reviewer's ip_address on the review itself, outside the reviewer object
+    for needle in ("@example.com", "Buyer Name", "+91900000", "buyer1@", "203.0.113."):
         assert needle not in blob

@@ -342,7 +342,7 @@ def test_record_quota_request_pg_sets_rls_context() -> None:
     conn, cur = _make_conn()
     # record_quota_request_pg uses psycopg2.connect() directly, not the module's
     # _db_connect() helper -- patch at the source.
-    with patch("psycopg2.connect", return_value=conn):
+    with patch("app.core.storage_pg.db_connect", return_value=conn):
         record_quota_request_pg(_ORG_ID, 50, 100, "interested in higher quota")
     _assert_sets_rls_context(cur)
 

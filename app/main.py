@@ -21,6 +21,7 @@ from app.api.dashboard import router as dashboard_router
 from app.api.demo import router as demo_router
 from app.api.extract import router as extract_router
 from app.api.google_auth import router as google_auth_router
+from app.api.internal.cost_alerts import router as internal_cost_alerts_router
 from app.api.internal.detectors import router as internal_detectors_router
 from app.api.internal.digest import router as internal_digest_router
 from app.api.internal.ingest_tick import router as internal_ingest_tick_router
@@ -31,6 +32,7 @@ from app.api.ops import router as ops_router
 from app.api.query import router as query_router
 from app.api.shopify_auth import router as shopify_auth_router
 from app.api.unsubscribe import router as unsubscribe_router
+from app.api.v2.classify import router as v2_classify_router
 from app.api.v2.corrections import router as v2_corrections_router
 from app.api.v2.dataset import router as v2_dataset_router
 from app.api.v2.extract import router as v2_extract_router
@@ -261,6 +263,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         _app.include_router(v2_reviews_router)
         _app.include_router(v2_insights_router)
         _app.include_router(v2_reply_router)
+        _app.include_router(v2_classify_router)
         _app.include_router(v2_corrections_router)
         _app.include_router(v2_dataset_router)
         _app.include_router(shopify_webhook_router)
@@ -274,6 +277,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         _app.include_router(demo_router)
         _app.include_router(leads_router)
         _app.include_router(internal_digest_router)
+        _app.include_router(internal_cost_alerts_router)
         _app.include_router(internal_ingest_tick_router)
         _app.include_router(internal_detectors_router)
         _app.include_router(internal_retention_router)

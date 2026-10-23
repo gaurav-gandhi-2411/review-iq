@@ -18,13 +18,13 @@ import asyncio
 import re
 from dataclasses import dataclass
 
-import psycopg2
 from argon2 import PasswordHasher
 from argon2.exceptions import VerificationError, VerifyMismatchError
 from fastapi import HTTPException, Security, status
 from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBearer
 
 from app.core.config import get_settings
+from app.core.db_pool import PooledConnection, db_connect
 from app.core.storage_pg import _set_tenant
 
 _BEARER = HTTPBearer(auto_error=False)
@@ -48,11 +48,11 @@ class ApiKeyContext:
     retention_days: int | None = None
 
 
-def _db_connect() -> psycopg2.extensions.connection:
+def _db_connect() -> PooledConnection:
     settings = get_settings()
     # Pooler (transaction mode) for app traffic. Direct URL only used by
     # migrations and RLS tests that need session-level GUCs.
-    return psycopg2.connect(settings.supabase_database_url)
+    return db_connect(settings.supabase_database_url)
 
 
 def _lookup_and_record(raw_key: str) -> ApiKeyContext:

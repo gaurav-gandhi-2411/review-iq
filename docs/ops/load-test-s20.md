@@ -42,7 +42,7 @@ Container CMD (Dockerfile): `uvicorn app.main:app --workers 1`.
 
 - `scripts/load/mock_server.py`: the real FastAPI app (`create_app()`, `DEPLOY_TARGET=cloud-run`
   router set, all middleware incl. SlowAPI, Prometheus, CORS) on `127.0.0.1`, single worker.
-  Dummy env set before import; nothing can reach Groq/OpenRouter/Supabase.
+  Dummy env set before import; nothing can reach Groq (primary or secondary)/Supabase.
 - Provider seam: `app.core.llm.GroqProvider` is replaced by a fake with the
   `app.core.providers.base.Provider` shape; it sleeps `--llm-ms` then returns a canned valid
   JSON. The real `extract_with_llm` parse/validate path, prompt build, sanitizer, language

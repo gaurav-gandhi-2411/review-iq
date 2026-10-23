@@ -13,7 +13,7 @@ review-iq's authenticity scoring feature:
 - **Scores** each review on a 0–1 scale (higher = more likely genuine) and assigns one of three labels: `genuine`, `suspicious`, or `likely_fake`.
 - **Explains** the decision with human-readable reasons and a structured flags list (e.g. `incentivized_phrase`, `rating_text_mismatch`).
 - **Records** an org-scoped audit trail (`authenticity_audits`) — review hash, score, label, flags, and timestamp — for every scored review. This audit trail supports the record-keeping requirements of a review-administrator moderation process.
-- **Covers** English, Hinglish (en+hi code-mix), and Hindi reviews — Indian-market text patterns and Hinglish incentivized-disclosure phrases are explicitly modeled.
+- **Covers** English and Hinglish (Roman-script Hindi/English code-mix) reviews — Indian-market text patterns and Hinglish incentivized-disclosure phrases are explicitly modeled. Devanagari-script Hindi is **not supported** (retired scope; see [ADR 0022](architecture/adr/0022-hindi-retirement.md) and the README's "Corpus and language scope" section).
 
 ---
 
@@ -77,7 +77,7 @@ IS 19000:2022 expects a **human review-administrator** to make the final moderat
 
 **Known limitations:**
 
-- Hindi (Devanagari-only) reviews: the scoring model handles Hindi via the same LLM prompt but the heuristic phrase list is primarily Latin-script (English + Hinglish). Hindi-only incentivized-disclosure detection is weaker.
+- Devanagari-script Hindi reviews are not supported (retired scope, not experimental; see [ADR 0022](architecture/adr/0022-hindi-retirement.md)). The heuristic phrase list is Latin-script (English + Hinglish), and no accuracy or detection claim is made for Devanagari-only input.
 - Novel fraud patterns not in the training distribution of the LLM may be missed.
 - Real-world recall and precision are unknown and will vary by product category and fraud sophistication.
 - Batch signals (near-duplicate, burst) require multiple reviews for the same product to fire.

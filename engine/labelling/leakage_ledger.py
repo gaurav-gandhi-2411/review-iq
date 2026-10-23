@@ -31,6 +31,9 @@ LEDGER = ROOT / "reports" / "labelling" / "ledger.json"
 PILOTS = [f"reports/labelling/pilot{i}/manifest.json" for i in (1, 2, 3)]
 SCALE = "reports/labelling/scale/manifest.json"
 SAFETY = "reports/labelling/safety/split.json"
+FRESH15 = "reports/labelling/fresh15/manifest.json"  # Amendment 15: every item is test-only
+FRESH16 = "reports/labelling/fresh16/manifest.json"  # Amendment 16: sealed blocks A, B, C (every item is test-only)
+TRAIN16 = "reports/labelling/train16/manifest.json"  # Amendment 16: training additions (splits train16 / val16), never sealed
 MAX_BYTES = 5_000_000
 MIN_CHARS = 20  # shorter strings are not distinctive enough to be a meaningful hit
 SKIP_PARTS = ("reports/labelling/", "reports/intent/")  # id/label tables hold hashes, never text
@@ -44,10 +47,23 @@ def safety_items() -> list[dict]:
     return _load(SAFETY)["items"] if (ROOT / SAFETY).exists() else []
 
 
+def fresh_items() -> list[dict]:
+    """Every fresh sealed item (Amendments 15 and 16), all test-only."""
+    return [i for rel in (FRESH15, FRESH16) if (ROOT / rel).exists() for i in _load(rel)["items"]]
+
+
+def train16_items() -> list[dict]:
+    return _load(TRAIN16)["items"] if (ROOT / TRAIN16).exists() else []
+
+
 def sealed_hashes() -> set[str]:
-    """Scale-sample test hashes plus the safety stratum's test hashes (Amendment 6): one sealed list, one set of checks."""
+    """Scale-sample test hashes, the safety stratum's test hashes (Amendment 6) and the fresh15 set (Amendment 15, all test)."""
     scale = {i["sha"] for i in _load(SCALE)["items"] if i["split"] == "test"}
-    return scale | {i["sha"] for i in safety_items() if i["split"] == "test"}
+    return (
+        scale
+        | {i["sha"] for i in safety_items() if i["split"] == "test"}
+        | {i["sha"] for i in fresh_items()}
+    )
 
 
 def exclusions() -> set[str]:
@@ -74,6 +90,10 @@ def build_ledger(excluded: set[str] | None = None) -> dict:
             i["split"] != "test"
         ):  # train, val, and items dropped for near-duplicating a safety test item
             entries[i["sha"]] = f"safety-{i['split']}"
+    for i in (
+        train16_items()
+    ):  # training additions are seen items (never sealed): later draws must avoid them
+        entries[i["sha"]] = f"train16-{i['split']}"
     sealed = sealed_hashes()
     return {
         "note": "content hashes of items used for anything but final evaluation (Amendment 2)",
@@ -149,6 +169,8 @@ def check() -> list[str]:
     manifest = _load(SCALE)
     if bad := [i["id"] for i in manifest["items"] if i["split"] != "test" and i["sha"] in sealed]:
         problems.append(f"(b) {len(bad)} train/val manifest items share a sealed hash")
+    if bad16 := [i["id"] for i in train16_items() if i["sha"] in sealed]:
+        problems.append(f"(b) {len(bad16)} train16 items share a sealed hash")
     if digest(sealed) != ledger["sealed_digest"]:
         problems.append("(c) sealed-set digest differs from the one recorded in the ledger")
     expected = build_ledger()["entries"]
@@ -161,6 +183,16 @@ def check() -> list[str]:
         )
     if stale := set(ledger["sealed_excluded"]) - sealed:
         problems.append(f"(d) {len(stale)} excluded hashes are not in the sealed set")
+    # (e) S31: the near-duplicate scan only protects items that have a fingerprint. Amendment 16 added 3,900 sealed items without
+    # rebuilding the fingerprint file, and every check above still passed: a sealed set the scan cannot see must fail loudly.
+    from engine.labelling import leakage_neardup as nd
+
+    fingerprinted = set(json.loads(nd.FP.read_text(encoding="utf-8"))["items"])
+    if uncovered := sealed - fingerprinted:
+        problems.append(
+            f"(e) {len(uncovered)} sealed hashes have no near-duplicate fingerprint: rebuild "
+            "reports/labelling/sealed_fingerprints.json (leakage_neardup build)"
+        )
     return problems
 
 

@@ -317,7 +317,7 @@ Interactive docs at `/docs` (Swagger) and `/redoc`.
 |---|---|
 | API | FastAPI + Pydantic v2 |
 | LLM (primary) | Groq — tiered routing, `openai/gpt-oss-20b` (small) / `openai/gpt-oss-120b` (large) |
-| LLM (failover) | OpenRouter, ZDR-only, optional (the Gemini fallback was retired, ADR 0035) |
+| LLM (failover) | A second Groq account (`SECONDARY_PROVIDER_KIND=groq`, ADR 0038), optional; an OpenRouter ZDR-only kind is still supported in code but not used in production (the Gemini fallback was retired, ADR 0035) |
 | Auth | argon2id-hashed API keys (per-org, per-tenant) |
 | Auth (self-serve) | Supabase Auth · magic-link email · JWT verification |
 | Storage (v2) | Supabase Postgres + psycopg2 · RLS tenant isolation |
@@ -396,7 +396,7 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 - Kill switch — Pub/Sub budget alert → Cloud Function → Cloud Run traffic = 0
 
 **Phase 2.0b** ✓ (shipped May 2026):
-- Language detection — Devanagari regex + Hinglish keyword heuristics + lingua-py confidence
+- Language detection — Devanagari regex + Hinglish keyword heuristics + lingua-py confidence. Devanagari input is still detected (as `hi`) and attempted via the `hi` prompt, but that is an unvalidated best-effort path with no eval gate and no support claim ([ADR 0022](docs/architecture/adr/0022-hindi-retirement.md))
 - Language-branched prompts (v2.0) — en / hi-en / hi, each with explicit English-output instruction
 - 46-fixture eval suite — 25 English + 16 Hinglish (Claude Sonnet auto-labeled) + 6 Hindi as shipped (synthetic; later retired from scoring — Devanagari Hindi is not supported, see [Corpus and language scope](#corpus-and-language-scope) and [ADR 0022](docs/architecture/adr/0022-hindi-retirement.md))
 - Per-language CI gate — <!-- METRICS:HISTORICAL -->overall ≥ 85%, each language ≥ 80%<!-- /METRICS:HISTORICAL --> as shipped (lowered to the current threshold on 2026-06-14 — see [ADR 0001](docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md) and [Eval results](#eval-results))
@@ -479,7 +479,9 @@ Ground truth for the original 16 Hinglish fixtures specifically: Anthropic Claud
 
 **New growth (Wave 1 Section B, this session): multi-LLM consensus, NOT human ground truth.** Ground truth for newly added fixtures is the agreement of an independent 3-judge LLM panel, not any single model's opinion — including not the production model, and not a single labeler model as before. Per-field voting only (unanimous/majority/split), never a blended confidence score; a field with no majority gets no label (`split`), not a forced tiebreak. The panel is calibrated against a 16-item unambiguous control set *before* any real labeling, and a judge that fails calibration is dropped, not silently kept.
 
-<!-- METRICS:START:consensus_labeling -->**Active judge panel:** `openai/gpt-oss-120b` (OpenAI GPT-OSS), `qwen/qwen3.6-27b` (Alibaba Qwen)
+<!-- METRICS:START:consensus_labeling -->*[Retired — superseded by 78.6% (95% CI 73–83%, n=43, 2026-09-19). Everything in this block is the Wave 1 Section B record as of its labeling run, kept for history; the figures below are not current. See "Headline accuracy" above.]*
+
+**Active judge panel:** `openai/gpt-oss-120b` (OpenAI GPT-OSS), `qwen/qwen3.6-27b` (Alibaba Qwen)
 
 - Dropped by calibration: `allam-2-7b` -- 9/33 control-set field checks failed (tolerance: <= 2) -- dropped from the active panel for this labeling run per the calibration policy.
 
@@ -503,11 +505,11 @@ Ground truth for the original 16 Hinglish fixtures specifically: Anthropic Claud
 | language | 43 | 40 | 93.0% | 6 |
 | stars | 49 | 48 | 98.0% | 0 |
 
-**Growth:** 233 new candidates considered, 83 became new fixtures (83 en, 0 hi-en). Of 150 excluded: 60 on genuine panel disagreement (no majority on sentiment/urgency/buy_again/language), 90 lost to Groq free-tier rate-limit exhaustion on the provider used for this labeling run (OpenRouter/Gemini fallback, not Groq -- see ADR 0003; both judges errored, not a quality signal, recoverable on a fresh quota window).
+**Growth:** 233 new candidates considered, 83 became new fixtures (83 en, 0 hi-en). Of 150 excluded: 60 on genuine panel disagreement (no majority on sentiment/urgency/buy_again/language), 90 lost to Groq free-tier rate-limit exhaustion on the provider used for this labeling run (OpenRouter/Gemini fallback, not Groq -- see ADR 0003; both judges errored, not a quality signal, recoverable on a fresh quota window). *[Historical: the OpenRouter/Gemini fallback above is what that past labeling/recording run used, per ADR 0003. Production failover today is a second Groq account (ADR 0038); the Gemini fallback was retired (ADR 0035).]*
 
-**Final eval set: 132 fixtures** (110 en, 7 hi, 15 hi-en).
+**Final eval set: 132 fixtures** (110 en, 7 hi, 15 hi-en). *[Retired — superseded by 78.6% (95% CI 73–83%, n=43, 2026-09-19). Historical: Devanagari Hindi was retired from scoring (ADR 0022), so the 7 hi fixtures are quarantined and no longer gate; the 83 new fixtures are also not gating, see "Known gap" below.]*
 
-**Minimum detectable effect** (2-proportion z-test, alpha=0.05, power=0.80) at n=132: **17.2 points** (worst-case, p=0.5) / **12.7 points** (at current score p=0.838).<!-- METRICS:END -->
+**Minimum detectable effect** (2-proportion z-test, alpha=0.05, power=0.80) at n=132: **17.2 points** (worst-case, p=0.5) / **12.7 points** (at current score p=0.838). *[Retired — superseded by 78.6% (95% CI 73–83%, n=43, 2026-09-19); n=132 and p=0.838 describe the retired eval set, not the current n=43 gate.]*<!-- METRICS:END -->
 
 **Known gap — the 83 new fixtures are quarantined, not gating.** They're staged in `eval/fixtures/_pending_groq_cassette/` (see that directory's own README), invisible to `eval.runner`'s CI-gating scan by directory-name convention -- their cassettes were recorded against an OpenRouter/Gemini fallback provider (ADR 0003), not the Groq models CI actually scores and production actually serves. Promoting them requires a real re-record against Groq -- per this session's own runbook (`ops/runbooks/eval-cassette-rerecord.md`), that currently means production Groq quota; no genuinely isolated benchmark key exists today (verified: no `GROQ_API_KEY_BENCHMARK` secret/config anywhere checkable, and even the code path that would use one isn't wired into `eval/runner.py`). Flagged here as a required, quota-gated follow-up, not left for CI to discover.
 

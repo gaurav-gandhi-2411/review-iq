@@ -1,0 +1,2125 @@
+{
+ "label": "local Docker, loaded machine, 1 vCPU container, not Cloud Run.",
+ "commit": "8953ecf4aa3e",
+ "served_model": "run 2, int8_ffn_full (torch dynamic int8), tasks needs_action / broad_intent / sentiment / urgency",
+ "machine": "AMD Ryzen 7 6800H (8 cores / 16 threads), Windows 11, Docker Desktop; shared with other running jobs (system CPU load 34 percent when sampled after the run)",
+ "image": {
+  "disk_usage": "2.21GB (docker images, uncompressed on disk)",
+  "content_bytes": 654417366,
+  "model_bytes": 369285238,
+  "torch_venv_mb": 686,
+  "build_s": 257
+ },
+ "container_runs": [
+  {
+   "image": "review-iq-classify:a6local",
+   "docker_cpus": "1",
+   "docker_memory": "2g",
+   "idle_rss_bytes": 91303936,
+   "cold_start_s": 21.34,
+   "first_request_ms": 17258.6,
+   "model_load_s": 16.33,
+   "peak_rss_after_first_request_bytes": 1559371776,
+   "oom_killed": "false",
+   "batch_1": {
+    "n": 757,
+    "p50_ms": 802.9,
+    "p95_ms": 1199.6,
+    "mean_ms": 827.2
+   },
+   "in_container_parity": {
+    "n_items": 757,
+    "n_mismatches_vs_offline": 164,
+    "mismatch_set_equals_host_served_per_item": false,
+    "only_in_container": 6,
+    "only_in_host": 8
+   },
+   "batch_8": {
+    "n": 200,
+    "p50_ms": 6192.5,
+    "p95_ms": 7395.8,
+    "mean_ms": 6144.9
+   },
+   "peak_rss_bytes": 1559371776,
+   "cgroup_peak_incl_page_cache_bytes": 1086578688,
+   "memory_limit_bytes": 2147483648,
+   "host": {
+    "platform": "Windows-11-10.0.26300-SP0",
+    "note": "shared dev machine under load; latency pessimistic"
+   },
+   "pred_dir": "reports\\intent\\run2_cpu\\int8_ffn_full"
+  }
+ ],
+ "memory_probes": [
+  {
+   "probe": "first loader (deep-copy quantise, no mmap), first request",
+   "limit": "1 GiB",
+   "result": "OOM-killed (exit 137) before the first response"
+  },
+  {
+   "probe": "first loader, full bench",
+   "limit": "2 GiB",
+   "result": "fits",
+   "peak_rss_mb": 1411,
+   "cgroup_peak_mb": 1308
+  },
+  {
+   "probe": "final loader (in-place quantise + mmap), first request",
+   "limit": "1 GiB",
+   "result": "OOM-killed (exit 137) before the first response",
+   "idle_rss_mb": 91
+  },
+  {
+   "probe": "final loader, first request",
+   "limit": "2 GiB",
+   "result": "fits",
+   "idle_rss_mb": 91,
+   "peak_rss_mb": 1559
+  },
+  {
+   "probe": "final loader, full bench (958 requests)",
+   "limit": "2 GiB",
+   "result": "fits, no OOM",
+   "idle_rss_mb": 91,
+   "peak_rss_mb": 1559,
+   "cgroup_peak_mb": 1087
+  }
+ ],
+ "existing_service": "1 vCPU, 1Gi, concurrency 80, min 0, max 3 (from the runbook; the live revision was not queried)",
+ "parity": {
+  "thresholds_bit_for_bit": {
+   "equal": true,
+   "committed_sha256": "25b28d2d8c590cb1873762d476db5ce8bb55549d131c3ea9bc2e047f996b245f"
+  },
+  "n_sealed_ids": 757,
+  "n_pred_test_items": 763,
+  "n_sealed_in_pred": 757,
+  "modes": {
+   "offline_batches": {
+    "n_items": 757,
+    "n_task_decisions": 3028,
+    "n_mismatches": 0,
+    "mismatches_by_task": {
+     "needs_action": 0,
+     "broad_intent": 0,
+     "sentiment": 0,
+     "urgency": 0
+    },
+    "mismatch_kinds": {
+     "abstain_vs_answer": 0,
+     "different_class": 0
+    },
+    "mismatches": [],
+    "max_abs_prob_diff": 0.0,
+    "vs_consensus_labels": {
+     "needs_action": {
+      "n_labelled": 717,
+      "coverage": 0.8006,
+      "precision_answered": 0.9878
+     },
+     "broad_intent": {
+      "n_labelled": 700,
+      "coverage": 0.7057,
+      "precision_answered": 0.9757
+     },
+     "sentiment": {
+      "n_labelled": 673,
+      "coverage": 0.8351,
+      "precision_answered": 0.9804
+     },
+     "urgency": {
+      "n_labelled": 703,
+      "coverage": 0.7568,
+      "precision_answered": 0.9962
+     }
+    }
+   },
+   "served_per_item": {
+    "n_items": 757,
+    "n_task_decisions": 3028,
+    "n_mismatches": 166,
+    "mismatches_by_task": {
+     "needs_action": 41,
+     "broad_intent": 66,
+     "sentiment": 30,
+     "urgency": 29
+    },
+    "mismatch_kinds": {
+     "abstain_vs_answer": 166,
+     "different_class": 0
+    },
+    "mismatches": [
+     {
+      "id": "scale-apparel-0126",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0176",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0177",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0194",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-apparel-0255",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "yes"
+     },
+     {
+      "id": "scale-apparel-0404",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0487",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-apparel-0557",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0567",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-apparel-0665",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-apparel-0691",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0746",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0903",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1082",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1113",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1273",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1296",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-apparel-1373",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-apparel-1428",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1559",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1600",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1607",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0163",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-beauty-0310",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0721",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0990",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-1278",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-1516",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0276",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-food-0497",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0816",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1022",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1029",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1105",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1107",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1174",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1208",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-food-1293",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1494",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-food-1572",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-vernacular-0101",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0009",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "other"
+     },
+     {
+      "id": "scale-apparel-0128",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0176",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0200",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0266",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "other"
+     },
+     {
+      "id": "scale-apparel-0406",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0487",
+      "task": "broad_intent",
+      "served": "other",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0490",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0716",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-apparel-0746",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0851",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-apparel-0903",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0912",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "other"
+     },
+     {
+      "id": "scale-apparel-0994",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-apparel-1013",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-apparel-1084",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1205",
+      "task": "broad_intent",
+      "served": "other",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1228",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "other"
+     },
+     {
+      "id": "scale-apparel-1231",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1273",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1292",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-apparel-1354",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1358",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1373",
+      "task": "broad_intent",
+      "served": "other",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1376",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "other"
+     },
+     {
+      "id": "scale-apparel-1383",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1428",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1559",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0091",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0112",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-beauty-0161",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0244",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0576",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0605",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-beauty-0678",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0893",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-1294",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-1479",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-1494",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-1504",
+      "task": "broad_intent",
+      "served": "other",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-1516",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-beauty-1601",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0031",
+      "task": "broad_intent",
+      "served": "other",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0066",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "other"
+     },
+     {
+      "id": "scale-food-0516",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-food-0560",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "other"
+     },
+     {
+      "id": "scale-food-0573",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0579",
+      "task": "broad_intent",
+      "served": "other",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0637",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0692",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-food-0816",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0854",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-food-1009",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-food-1100",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1205",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1365",
+      "task": "broad_intent",
+      "served": "other",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1393",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1403",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1486",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-food-1487",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1516",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1522",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1551",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1572",
+      "task": "broad_intent",
+      "served": "other",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-vernacular-0024",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-vernacular-0028",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-apparel-0126",
+      "task": "sentiment",
+      "served": "positive",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0395",
+      "task": "sentiment",
+      "served": "abstained",
+      "offline": "negative"
+     },
+     {
+      "id": "scale-apparel-0474",
+      "task": "sentiment",
+      "served": "negative",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0557",
+      "task": "sentiment",
+      "served": "positive",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0631",
+      "task": "sentiment",
+      "served": "positive",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0903",
+      "task": "sentiment",
+      "served": "negative",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0920",
+      "task": "sentiment",
+      "served": "positive",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1373",
+      "task": "sentiment",
+      "served": "abstained",
+      "offline": "positive"
+     },
+     {
+      "id": "scale-apparel-1428",
+      "task": "sentiment",
+      "served": "negative",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1556",
+      "task": "sentiment",
+      "served": "abstained",
+      "offline": "positive"
+     },
+     {
+      "id": "scale-apparel-1617",
+      "task": "sentiment",
+      "served": "negative",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0112",
+      "task": "sentiment",
+      "served": "abstained",
+      "offline": "positive"
+     },
+     {
+      "id": "scale-beauty-0192",
+      "task": "sentiment",
+      "served": "abstained",
+      "offline": "positive"
+     },
+     {
+      "id": "scale-beauty-0244",
+      "task": "sentiment",
+      "served": "negative",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-1294",
+      "task": "sentiment",
+      "served": "negative",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-1313",
+      "task": "sentiment",
+      "served": "abstained",
+      "offline": "positive"
+     },
+     {
+      "id": "scale-beauty-1479",
+      "task": "sentiment",
+      "served": "positive",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-1520",
+      "task": "sentiment",
+      "served": "abstained",
+      "offline": "positive"
+     },
+     {
+      "id": "scale-food-0325",
+      "task": "sentiment",
+      "served": "positive",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0462",
+      "task": "sentiment",
+      "served": "positive",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0497",
+      "task": "sentiment",
+      "served": "positive",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0609",
+      "task": "sentiment",
+      "served": "positive",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0816",
+      "task": "sentiment",
+      "served": "negative",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0897",
+      "task": "sentiment",
+      "served": "negative",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0956",
+      "task": "sentiment",
+      "served": "negative",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1321",
+      "task": "sentiment",
+      "served": "negative",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1515",
+      "task": "sentiment",
+      "served": "abstained",
+      "offline": "positive"
+     },
+     {
+      "id": "scale-food-1516",
+      "task": "sentiment",
+      "served": "negative",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-vernacular-0031",
+      "task": "sentiment",
+      "served": "abstained",
+      "offline": "negative"
+     },
+     {
+      "id": "scale-vernacular-0101",
+      "task": "sentiment",
+      "served": "abstained",
+      "offline": "positive"
+     },
+     {
+      "id": "scale-apparel-0005",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0126",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0395",
+      "task": "urgency",
+      "served": "medium",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0487",
+      "task": "urgency",
+      "served": "abstained",
+      "offline": "low"
+     },
+     {
+      "id": "scale-apparel-0665",
+      "task": "urgency",
+      "served": "abstained",
+      "offline": "low"
+     },
+     {
+      "id": "scale-apparel-1296",
+      "task": "urgency",
+      "served": "abstained",
+      "offline": "low"
+     },
+     {
+      "id": "scale-apparel-1308",
+      "task": "urgency",
+      "served": "abstained",
+      "offline": "low"
+     },
+     {
+      "id": "scale-apparel-1373",
+      "task": "urgency",
+      "served": "abstained",
+      "offline": "low"
+     },
+     {
+      "id": "scale-apparel-1407",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1617",
+      "task": "urgency",
+      "served": "medium",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0192",
+      "task": "urgency",
+      "served": "abstained",
+      "offline": "low"
+     },
+     {
+      "id": "scale-beauty-0359",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0372",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0549",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0571",
+      "task": "urgency",
+      "served": "abstained",
+      "offline": "low"
+     },
+     {
+      "id": "scale-beauty-0818",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0893",
+      "task": "urgency",
+      "served": "abstained",
+      "offline": "low"
+     },
+     {
+      "id": "scale-beauty-0985",
+      "task": "urgency",
+      "served": "abstained",
+      "offline": "low"
+     },
+     {
+      "id": "scale-beauty-1460",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0080",
+      "task": "urgency",
+      "served": "abstained",
+      "offline": "low"
+     },
+     {
+      "id": "scale-food-0276",
+      "task": "urgency",
+      "served": "abstained",
+      "offline": "low"
+     },
+     {
+      "id": "scale-food-0497",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0593",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0686",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1034",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1174",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1243",
+      "task": "urgency",
+      "served": "abstained",
+      "offline": "low"
+     },
+     {
+      "id": "scale-food-1403",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1564",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     }
+    ],
+    "max_abs_prob_diff": 0.6127130091190338,
+    "vs_consensus_labels": {
+     "needs_action": {
+      "n_labelled": 717,
+      "coverage": 0.8298,
+      "precision_answered": 0.9866
+     },
+     "broad_intent": {
+      "n_labelled": 700,
+      "coverage": 0.7371,
+      "precision_answered": 0.9767
+     },
+     "sentiment": {
+      "n_labelled": 673,
+      "coverage": 0.8499,
+      "precision_answered": 0.9843
+     },
+     "urgency": {
+      "n_labelled": 703,
+      "coverage": 0.7681,
+      "precision_answered": 0.9944
+     }
+    }
+   },
+   "batch_8": {
+    "n_items": 757,
+    "n_task_decisions": 3028,
+    "n_mismatches": 140,
+    "mismatches_by_task": {
+     "needs_action": 40,
+     "broad_intent": 49,
+     "sentiment": 26,
+     "urgency": 25
+    },
+    "mismatch_kinds": {
+     "abstain_vs_answer": 140,
+     "different_class": 0
+    },
+    "mismatches": [
+     {
+      "id": "scale-apparel-0005",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0126",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0177",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0194",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-apparel-0404",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0406",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0487",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-apparel-0557",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0567",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-apparel-0691",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0920",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1082",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1113",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1296",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-apparel-1428",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1457",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-apparel-1464",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "yes"
+     },
+     {
+      "id": "scale-apparel-1600",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1607",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0112",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-beauty-0163",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-beauty-0721",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0839",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-beauty-0893",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-beauty-1247",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-beauty-1294",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-1516",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0462",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-food-0806",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0816",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1029",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1105",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1107",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1208",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-food-1293",
+      "task": "needs_action",
+      "served": "yes",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1357",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1494",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-food-1554",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-food-1572",
+      "task": "needs_action",
+      "served": "abstained",
+      "offline": "no"
+     },
+     {
+      "id": "scale-vernacular-0101",
+      "task": "needs_action",
+      "served": "no",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0005",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "other"
+     },
+     {
+      "id": "scale-apparel-0009",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "other"
+     },
+     {
+      "id": "scale-apparel-0128",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0200",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0214",
+      "task": "broad_intent",
+      "served": "other",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0406",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0487",
+      "task": "broad_intent",
+      "served": "other",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0631",
+      "task": "broad_intent",
+      "served": "other",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0804",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0912",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "other"
+     },
+     {
+      "id": "scale-apparel-0994",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-apparel-1013",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-apparel-1084",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1135",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-apparel-1205",
+      "task": "broad_intent",
+      "served": "other",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1358",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1376",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "other"
+     },
+     {
+      "id": "scale-apparel-1383",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1428",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1464",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "product_issue"
+     },
+     {
+      "id": "scale-apparel-1526",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0091",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0161",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0192",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0661",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-beauty-0678",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-1063",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-1294",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-1313",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-beauty-1363",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-1504",
+      "task": "broad_intent",
+      "served": "other",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-1601",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0066",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "other"
+     },
+     {
+      "id": "scale-food-0221",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-food-0345",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-food-0579",
+      "task": "broad_intent",
+      "served": "other",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0652",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0677",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0816",
+      "task": "broad_intent",
+      "served": "product_issue",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0854",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-food-0939",
+      "task": "broad_intent",
+      "served": "other",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1240",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1365",
+      "task": "broad_intent",
+      "served": "other",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1486",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-food-1487",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1554",
+      "task": "broad_intent",
+      "served": "abstained",
+      "offline": "praise"
+     },
+     {
+      "id": "scale-food-1572",
+      "task": "broad_intent",
+      "served": "other",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1604",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-vernacular-0024",
+      "task": "broad_intent",
+      "served": "praise",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0126",
+      "task": "sentiment",
+      "served": "positive",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0395",
+      "task": "sentiment",
+      "served": "abstained",
+      "offline": "negative"
+     },
+     {
+      "id": "scale-apparel-0474",
+      "task": "sentiment",
+      "served": "negative",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0557",
+      "task": "sentiment",
+      "served": "positive",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0600",
+      "task": "sentiment",
+      "served": "abstained",
+      "offline": "positive"
+     },
+     {
+      "id": "scale-apparel-0920",
+      "task": "sentiment",
+      "served": "positive",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1428",
+      "task": "sentiment",
+      "served": "negative",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1556",
+      "task": "sentiment",
+      "served": "abstained",
+      "offline": "positive"
+     },
+     {
+      "id": "scale-beauty-0091",
+      "task": "sentiment",
+      "served": "negative",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0112",
+      "task": "sentiment",
+      "served": "abstained",
+      "offline": "positive"
+     },
+     {
+      "id": "scale-beauty-1294",
+      "task": "sentiment",
+      "served": "negative",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-1313",
+      "task": "sentiment",
+      "served": "abstained",
+      "offline": "positive"
+     },
+     {
+      "id": "scale-beauty-1479",
+      "task": "sentiment",
+      "served": "positive",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0019",
+      "task": "sentiment",
+      "served": "abstained",
+      "offline": "negative"
+     },
+     {
+      "id": "scale-food-0082",
+      "task": "sentiment",
+      "served": "positive",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0258",
+      "task": "sentiment",
+      "served": "positive",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0497",
+      "task": "sentiment",
+      "served": "positive",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0588",
+      "task": "sentiment",
+      "served": "abstained",
+      "offline": "negative"
+     },
+     {
+      "id": "scale-food-0593",
+      "task": "sentiment",
+      "served": "abstained",
+      "offline": "positive"
+     },
+     {
+      "id": "scale-food-0609",
+      "task": "sentiment",
+      "served": "positive",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0816",
+      "task": "sentiment",
+      "served": "negative",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0956",
+      "task": "sentiment",
+      "served": "negative",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1174",
+      "task": "sentiment",
+      "served": "abstained",
+      "offline": "positive"
+     },
+     {
+      "id": "scale-food-1385",
+      "task": "sentiment",
+      "served": "positive",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1515",
+      "task": "sentiment",
+      "served": "abstained",
+      "offline": "positive"
+     },
+     {
+      "id": "scale-vernacular-0031",
+      "task": "sentiment",
+      "served": "abstained",
+      "offline": "negative"
+     },
+     {
+      "id": "scale-apparel-0126",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0282",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-0567",
+      "task": "urgency",
+      "served": "abstained",
+      "offline": "low"
+     },
+     {
+      "id": "scale-apparel-0665",
+      "task": "urgency",
+      "served": "abstained",
+      "offline": "low"
+     },
+     {
+      "id": "scale-apparel-0920",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1233",
+      "task": "urgency",
+      "served": "abstained",
+      "offline": "low"
+     },
+     {
+      "id": "scale-apparel-1399",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1407",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-apparel-1617",
+      "task": "urgency",
+      "served": "medium",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0549",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-beauty-0893",
+      "task": "urgency",
+      "served": "abstained",
+      "offline": "low"
+     },
+     {
+      "id": "scale-beauty-0985",
+      "task": "urgency",
+      "served": "abstained",
+      "offline": "low"
+     },
+     {
+      "id": "scale-beauty-1252",
+      "task": "urgency",
+      "served": "abstained",
+      "offline": "low"
+     },
+     {
+      "id": "scale-beauty-1460",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0080",
+      "task": "urgency",
+      "served": "abstained",
+      "offline": "low"
+     },
+     {
+      "id": "scale-food-0227",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0276",
+      "task": "urgency",
+      "served": "abstained",
+      "offline": "low"
+     },
+     {
+      "id": "scale-food-0686",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0806",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-0920",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1153",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1486",
+      "task": "urgency",
+      "served": "abstained",
+      "offline": "low"
+     },
+     {
+      "id": "scale-food-1554",
+      "task": "urgency",
+      "served": "abstained",
+      "offline": "low"
+     },
+     {
+      "id": "scale-food-1564",
+      "task": "urgency",
+      "served": "low",
+      "offline": "abstained"
+     },
+     {
+      "id": "scale-food-1572",
+      "task": "urgency",
+      "served": "abstained",
+      "offline": "low"
+     }
+    ],
+    "max_abs_prob_diff": 0.4800269901752472,
+    "vs_consensus_labels": {
+     "needs_action": {
+      "n_labelled": 717,
+      "coverage": 0.8173,
+      "precision_answered": 0.9863
+     },
+     "broad_intent": {
+      "n_labelled": 700,
+      "coverage": 0.7257,
+      "precision_answered": 0.9823
+     },
+     "sentiment": {
+      "n_labelled": 673,
+      "coverage": 0.8425,
+      "precision_answered": 0.9859
+     },
+     "urgency": {
+      "n_labelled": 703,
+      "coverage": 0.7624,
+      "precision_answered": 0.9981
+     }
+    }
+   }
+  },
+  "offline_reference_vs_consensus_labels": {
+   "needs_action": {
+    "n_labelled": 717,
+    "coverage": 0.8006,
+    "precision_answered": 0.9878
+   },
+   "broad_intent": {
+    "n_labelled": 700,
+    "coverage": 0.7057,
+    "precision_answered": 0.9757
+   },
+   "sentiment": {
+    "n_labelled": 673,
+    "coverage": 0.8351,
+    "precision_answered": 0.9804
+   },
+   "urgency": {
+    "n_labelled": 703,
+    "coverage": 0.7568,
+    "precision_answered": 0.9962
+   }
+  }
+ },
+ "variant_selection": {
+  "int8_linear": {
+   "per_task": {
+    "needs_action": 0.8532,
+    "broad_intent": 0.768,
+    "sentiment": 0.8453,
+    "urgency": 0.9109
+   },
+   "mean": 0.8443
+  },
+  "int8_full": {
+   "per_task": {
+    "needs_action": 0.848,
+    "broad_intent": 0.7851,
+    "sentiment": 0.8427,
+    "urgency": 0.9004
+   },
+   "mean": 0.844
+  },
+  "int8_perchannel": {
+   "per_task": {
+    "needs_action": 0.848,
+    "broad_intent": 0.8244,
+    "sentiment": 0.8571,
+    "urgency": 0.9004
+   },
+   "mean": 0.8575
+  },
+  "int8_perchannel_full": {
+   "per_task": {
+    "needs_action": 0.8545,
+    "broad_intent": 0.8204,
+    "sentiment": 0.8729,
+    "urgency": 0.9109
+   },
+   "mean": 0.8647
+  },
+  "int8_ffn_full": {
+   "per_task": {
+    "needs_action": 0.865,
+    "broad_intent": 0.8336,
+    "sentiment": 0.8807,
+    "urgency": 0.9056
+   },
+   "mean": 0.8712
+  }
+ },
+ "notes": "## Reading these numbers\n\n- **Fit verdict (measured, local Docker, no swap):** with a 1 GiB limit the container was OOM-killed on the first request, with the\n  original loader and again after the load-peak reductions (in-place quantisation, mmap of the weights). With a 2 GiB limit it\n  runs. The existing public service is configured at 1 GiB, so this model **cannot share that service as configured**; it must be a\n  separate service with at least 2 GiB (BELIEVED, not verified here: Cloud Run offers 2 GiB and more with 1 vCPU; check the\n  current limits table before choosing). Steady-state anonymous memory after load is the binding number, not the request size.\n- **Latency is pessimistic.** One vCPU on a shared dev machine whose other jobs were running; the model report's CPU table\n  (8 threads, unloaded) is a different configuration and must not be compared with these rows. Per-review latency here is\n  dominated by the single vCPU, and batch 8 costs about 8 times batch 1 because each review is its own forward by design.\n- **Cold start** is container start to the first 200 from /v2/classify, including the lazy model load (separate column). It excludes\n  any image pull and every Cloud Run effect; it is NOT a Cloud Run cold start.\n- **Parity.** The thresholds file equals a fresh recomputation from the offline artifacts exactly. Run through the offline\n  batching (128 per forward, pred-file order) the served code reproduces every sealed decision and every probability exactly\n  (zero mismatches, zero probability difference): the code path is the evaluated function. Served per review it differs from\n  the batch-128 evaluation on a minority of decisions, **all between answering and abstaining, none between two classes**,\n  because dynamic int8 quantises activations per tensor and a logit depends on its batch-mates. Coverage and precision against the\n  silver consensus labels are in the table above for both. Every mismatch (id, task, both labels) is listed in the JSON; no review text is.\n- **In the container** (torch CPU wheel, over HTTP, batch 1) the decisions differ from the host run (torch 2.6.0+cu124 on the same\n  CPU) on 14 task decisions (6 only in the container, 8 only on the host): borderline\n  confidences moved across a threshold between two builds of the same torch version. So bit-identity holds only for the same build\n  and batching; across builds the contract is statistical (coverage and precision), not per item.\n- **Served variant selection** (agreement of each int8 variant with fp32_cpu under the served decision rule, sealed test split of\n  the pred files): see `variant_selection` in the JSON; `int8_ffn_full` has the highest mean of the five int8 variants.\n- The image was built from a working tree with no uncommitted code changes relative to the commit named above (it was rebuilt just before the final run). Cloud Run behaviour is NOT\n  verified.\n"
+}

@@ -48,6 +48,7 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, status
 
 from app.auth.api_key import ApiKeyContext
 from app.core.config import get_settings
+from app.core.db_pool import db_connect
 from app.core.ingestion.google_business_source import _refresh_access_token, _review_to_review_row
 from app.core.storage_pg import _set_tenant, get_org_retention_pg
 
@@ -121,7 +122,7 @@ def _get_google_installation_pg(google_location_name: str) -> dict[str, Any] | N
     settings = get_settings()
     if not settings.supabase_database_url:
         return None
-    conn = psycopg2.connect(settings.supabase_database_url)
+    conn = db_connect(settings.supabase_database_url)
     try:
         cur = conn.cursor()
         cur.execute("SELECT public.resolve_org_for_google_location(%s)", (google_location_name,))
