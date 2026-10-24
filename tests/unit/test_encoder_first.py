@@ -55,6 +55,9 @@ class _Fake:
             raise self.out
         return self.out
 
+    async def classify_full(self, texts: list[str]) -> tuple[list, str]:
+        return await self.classify(texts), "a" * 64
+
 
 @pytest.mark.asyncio
 async def test_plan_routes_and_fail_open() -> None:
@@ -98,6 +101,38 @@ async def test_should_extract_skips_classified_only_and_never_raises(
     assert await ef.should_extract("t") is True  # fail-open
 
 
+@pytest.mark.asyncio
+async def test_plan_ingest_returns_the_decisions_and_thresholds_hash_to_persist(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    s = SimpleNamespace(enable_encoder_first=True, classify_service_url="https://svc.example")
+    monkeypatch.setattr("app.core.config.get_settings", lambda: s)
+    fake = _Fake([_t("no", "low")])
+    fake._url = "https://svc.example"  # type: ignore[attr-defined]
+    monkeypatch.setattr(ef, "_remote", fake)
+    skipped = await ef.plan_ingest("t")
+    assert skipped.route is False and skipped.thresholds_sha256 == "a" * 64
+    assert skipped.tasks == _t("no", "low")
+    fake.out = [_t("yes", "low")]
+    assert (await ef.plan_ingest("t")).route is True
+    fake.out = RuntimeError("boom")
+    failed = await ef.plan_ingest("t")
+    assert failed == ef.IngestPlan(True)  # fail-open: nothing to persist, extract now
+    fake.out = [_t("no", "low"), _t("no", "low")]  # wrong number of answers
+    assert (await ef.plan_ingest("t")).route is True
+
+
+@pytest.mark.asyncio
+async def test_plan_ingest_flag_off_is_the_plain_extract_path(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    s = SimpleNamespace(enable_encoder_first=False, classify_service_url="https://svc.example")
+    monkeypatch.setattr("app.core.config.get_settings", lambda: s)
+    monkeypatch.setattr(ef, "_remote", None)
+    assert await ef.plan_ingest("t") == ef.IngestPlan(True)
+    assert ef._remote is None
+
+
 def test_ingest_path_timeout_covers_a_cold_start_and_the_default_stays_short(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -109,10 +144,12 @@ def test_ingest_path_timeout_covers_a_cold_start_and_the_default_stays_short(
     monkeypatch.setattr("app.core.config.get_settings", lambda: s)
     monkeypatch.setattr(ef, "_remote", None)
 
-    async def fake(self: object, texts: list[str]) -> list:
-        return [_t("no", "low")]
+    async def fake(self: object, texts: list[str]) -> tuple[list, str]:
+        return [_t("no", "low")], "a" * 64
 
-    monkeypatch.setattr(ef.RemoteClassifier, "classify", fake)
+    monkeypatch.setattr(
+        ef.RemoteClassifier, "classify_full", fake
+    )  # plan_ingest calls classify_full (#578)
     import asyncio
 
     assert asyncio.run(ef.should_extract("t")) is False
