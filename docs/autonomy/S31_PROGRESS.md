@@ -5,28 +5,34 @@ All timestamps UTC. VERIFIED = observed this session with the command or artifac
 
 ## Current task
 
-P1 waits on panel session 2; P2 merging the stack one strict-mode CI round at a time (#585 next); P7's LLM comparator on Block A running on Kaggle (outputs not opened until P7).
+P1: panel session 3 running since 2026-10-24 00:02 (kernel version 3, cloned from main with #609's fail-closed resume; still RUNNING after 8 min, so the prior files were found). Next: labels, size rule, then P5. **Kaggle quota reset VERIFIED at Saturday 00:00 UTC** (refused 23:00-ish retries, accepted 00:02).
 
 ## Queue
 
 | ID | Status | Evidence | Updated (UTC) |
 |---|---|---|---|
-| P0 | done | snapshot below; spec + this file on `autonomy/s31-progress` | 2026-10-22 21:03 |
-| P1 | in progress — panel session 2 running | session 1: 4,600–4,800 / 6,300 per judge, `budget_hit` true, 36,599 s; `panel_pin` → "recorded and correct". Session 2 = kernel version 2 (~21:08) with `--prior …-panel-out`. When done: `panel_pin` on BOTH status files (session-digest equality, added in #592) | 2026-10-22 21:08 |
-| P2 | in progress | MERGED: #584 `b3cabc3`, #598 `01c16f6`, #585 `d191b4d3b527a5022f7839da30d9ab39e704a33a` (01:20), #587 (02:13). #591 updated, CI running. #592 retargeted to main after #587's squash (merged main into it; empty commit at 02:58 to trigger the required `diff-scan`/`bypassrls-check`, which do not fire on a base change). #578 and #579 brought up to main (merge commits `cd7ec1d`, `2ed56fe`; conflict in `encoder_first.py` resolved: #578's `plan_ingest` keeps the 60 s ingest timeout), still PARKED. #604 opened: S30 equivalence tooling that never reached main | 2026-10-23 03:00 |
-| P3 | **done** (target 0 not met → PARKED 1) | P3 section; report PR #603 | 2026-10-22 23:00 |
-| P4 | **done** | 128 pass (p95 355 ms), 256 FAIL (1,107 ms), 512 FAIL (2,137 ms); surviving arms **H128, HT128**; probe service deleted 22:53 and verified absent; report PR #603 | 2026-10-22 22:54 |
-| P5 | pending (needs P1 labels) | arms H128, HT128 only | |
+| P0 | done | snapshot below | 2026-10-22 21:03 |
+| P1 | running — session 3 (pushed 10-24 00:02) | Session 1: 4,600 (llama, gemma) / 4,800 (qwen, mistral) of 6,300, 36,599 s. Session 2 (36,892 s) **re-did session 1's items** instead of resuming (prior dataset mounted flat; see Incidents) — 18,000 overlapping verdicts identical (determinism VERIFIED). `panel_pin` on both status files: "recorded and correct" (same build, same 4 digests). Remaining: 1,700 / 1,700 / 1,500 / 1,500 items. Session 3 needs the #609 kernel and ~4 GPU-h | 2026-10-23 07:30 |
+| P2 | **done** | MERGED (squash): #584, #598, #585, #587, #591, #592, #593, #594, #595, #596, #597 — the whole stack, plus #604 (S30 equivalence tooling found unmerged). #578/#579 kept CLEAN and PARKED | 2026-10-23 05:40 |
+| P3 | **done** (target 0 not met → PARKED 1) | P3 section; report #603 merged | 2026-10-22 23:00 |
+| P4 | **done** | 128 pass (p95 355 ms), 256 FAIL (1,107 ms), 512 FAIL (2,137 ms) → arms **H128, HT128**; probe service deleted and verified; #603 merged | 2026-10-22 22:54 |
+| P5 | blocked (P1, GPU) | full dataset staged at `D:/ml-cache/s31/ds_run4_full` (needs `labels_train16.json`); kernel code now on main (#597) | |
 | P6–P8 | pending | | |
-| P7 (LLM part) | outputs stored, unopened | `review-intent-fresh16-llm-run` v1 COMPLETE: 1,800/1,800 rows, Ollama 0.40.6 sha256 matched, gpt-oss:20b digest `f38aa0c53da5…6fdfe`, clone `01c16f6`. Private: `D:/ml-cache/s31/llm_a_out` | 2026-10-23 00:05 |
-| P7 (run-2 scores) | outputs stored, unopened | `review-intent-fresh16-run2-score` v1 (CPU kernel from #604's tooling) COMPLETE: 3,900 items, run-2 model sha `33158169…`, pinned + unpinned logits, Kaggle Xeon 2.2 GHz AVX2 only, 932 s. Private: `D:/ml-cache/s31/run2_f16_out` | 2026-10-23 00:05 |
-| B5 | done (on #593) | sealed fingerprints covered 3,483 of 7,383 sealed hashes (no fresh16): rebuilt + new ledger check (e) (`b2b696d`). Kaggle CPU check at `b2b696d`: **ok** (no fresh16 near-duplicate or quote in tracked files), 5,585 s. That runtime would have doubled CI's lint-and-test → lossless candidate filters (`perf(labelling)` on #593): same result in 2 min 34 s, brute-force equality test added. The original B5 item (quote detection) already existed since S23 (12-gram containment ≥ 0.9; gaps: sealed items < 40 normalised chars (73 of 7,383 pre-fresh16 count: 6 < 20, 67 in 20–39), quotes split across non-adjacent lines) | 2026-10-23 02:12 |
+| P7 (LLM part) | stored, unopened | `review-intent-fresh16-llm-run` v1: 1,800/1,800 rows, Ollama 0.40.6 sha256 matched, gpt-oss:20b digest `f38aa0c5…`; 2,834 s | 2026-10-23 00:05 |
+| P7 (run-2 scores) | stored, unopened | `review-intent-fresh16-run2-score` (CPU): 3,900 items, model sha `33158169…`, Xeon 2.2 GHz AVX2; npz key is `pinned` (evaluator expects `logits`: rename only) | 2026-10-23 00:05 |
 | S1 | scheduled ≥ 2026-10-25 00:00 | | |
-| S2 | done for 10-22 | 22:10: `/health` 200 1.21 s; classify private; failover-probe daily 02:30 OK; 24 h `llm.rate_limited` 0, `llm.failover` 0, `db_timeout` 0, review-iq ERROR logs 0; open Monitoring incidents NOT readable (gcloud alpha component absent; installing it would modify the system SDK) | 2026-10-22 22:10 |
-| S3 | daily 03:30 | first 2026-10-23 03:30 | |
-| B1 | **done → #298 PARKED** | PRs #599 (prereg + results), #600 (harness), #601 (judge kernel). c1 met (3/20 → 0/20), c2 unestablished (judge panel saturated) | 2026-10-22 22:35 |
-| B2 | in progress | PR #602 (+ tests in #585, #592) | 2026-10-22 22:25 |
-| B3 | in progress | #598 merged | 2026-10-22 23:05 |
+| S2 | done 10-22, 10-23, 10-24 | 10-23 03:31: `/health` 200 1.12 s; classify private; failover-probe 10-23 02:30 OK; 24 h rate_limited/failover/db_timeout/errors all 0 ; 10-24 00:11: `/health` 200 1.21 s, API `review-iq-00102-fdw`, classify private, 24 h counts all 0 | 2026-10-24 00:11 |
+| S3 | day 1 done | #608 merged (from `docs/s31-progress-day1`) | 2026-10-23 04:53 |
+| B1 | done → #298 PARKED | #599/#600/#601 merged | 2026-10-23 06:35 |
+| B2 | done | #602 merged; ingest-timeout test in #585, panel-pin hardening in #592 (both merged). Not audited: migration rehearsal (#396 parked) | 2026-10-23 06:10 |
+| B3 | partly done | #598 merged (vite). Dependabot #523, #517 merged. **#568 deferred** to after P7 (bumps `tokenizers` 0.22.2 → 0.23.3 mid-evaluation and ruff to 0.17). #567 already closed. Majors (#516, #519, #520, #232, #233) and Tailwind 4 (#106): not started | 2026-10-23 07:00 |
+| B5 | done (#593) | fingerprint coverage 3,483 → 7,383 + check (e); scan 93 min → 2.6 min | 2026-10-23 04:18 |
+| B6 | done (#607 merged) | recorder IP redaction; fake on the official OpenAPI shape; visibility semantics → PARKED 4 | 2026-10-23 06:40 |
+| B3 (cont.) | Tailwind 4 → **#610 DRAFT** (Tier C, GG signs off) | 4.3.3 via `@tailwindcss/postcss` + `@config`; compatibility CSS for v3 defaults; renames per guide; lockfile npm-audit 0 findings (retires the braces allowlist). CI-rendered before/after (new `ui-screenshots.yml`): 360 px dashboard pixel-identical, dark = light, 1280 px dashboard +9 px height, login input row and a 4 px band on /try differ. Majors → plan #611 | 2026-10-23 07:45 |
+| #609 | merged | panel resume fail-closed fix on main (session 3 can clone main) | 2026-10-23 07:40 |
+| B7 | done (local) | 19 local branches deleted after a separate check that each PR was MERGED with no local-only commits; remote branches untouched | 2026-10-23 07:50 |
+| B4 | folded into the handoff STATUS update | README metric blocks are already render- and drift-checked in CI (`render_metrics.py --check` OK, `check_no_hardcoded_metrics.py` OK); STATUS's S29 classify row is stale and is rewritten at handoff | 2026-10-23 07:50 |
+| B-last | needs GPU | | |
 
 ## P3 — classifier redeploy on pinned numerics (Tier B) — VERIFIED
 
@@ -76,6 +82,7 @@ Remaining: ingest-vs-user timeout split (after #585), leakage near-dup + panel-p
 - ~21:10 — Tier B: `keep-classify-prev` tag (spec P3).
 - 21:45 — Tier B: P3 deploy started although main's CI run had `npm-audit` red: that job fails on six vite dev-server advisories published 10-20/21 (web/ only, fixed by #598); `lint-and-test`, `web-build`, `pip-audit`, `manifest-provenance` were green. The classify image does not contain web/.
 - 21:58 — Live parity 5 ≠ 0 → per spec: recorded, no rollback (nothing calls the service), parked.
+- 04:37 — Daily progress merges go through a `docs/s31-progress-dayN` branch cut from the live `autonomy/s31-progress` commit: the gate's rule-70a gate 1 does not list `autonomy/`, and the content is docs-only (a `docs/` branch is its natural scope; the live branch keeps the spec's name).
 - 22:42–22:53 — Tier B: throwaway private probe service `review-iq-classify-probe` (same image digest `69618259…`, 1 vCPU, 2 GiB, min 0, max 1, no IAM bindings, unauthenticated 403), env `CLASSIFY_MAX_LEN` 128 → 256 → 512, then deleted and the service list re-checked.
 - 22:44 — The B1 result JSON was moved from `eval/results/` to `reports/research/` before opening PRs: `eval/results/*.json` is not a designated generated path, so a 2,759-line data file would have failed gate 3; `reports/` is designated. B1 split into three PRs (doc+results, harness, kernel), each ≤ 400 reviewable lines. Pre-registration provenance stays at `0cc5d9a` (branch `docs/s31-reply-v22-prereg`, pushed, not merged).
 - 23:10 — P7's LLM comparator started early (only needs Block A texts, not labels; a Kaggle slot was free). Its outputs stay unopened until the registered P7 evaluation.
@@ -90,12 +97,14 @@ Remaining: ingest-vs-user timeout split (after #585), leakage near-dup + panel-p
 
 ## PARKED
 
+0. **GPU work until the Kaggle quota resets** (self-unparking; highest value). Blocked: weekly 30 h reached at 07:28 10-23. Next steps (this session, after the reset): push panel session 3 with `--branch fix/s31-panel-resume-fail-closed` (or main once #609 merges) and `--prior gauravgandhi2411/review-intent-fresh16-panel-out`; check `status.json` `prior_files` within minutes is impossible (no live log), so the fail-closed exit is the guard. Nothing for GG unless the reset does not happen by 2026-10-24 06:00 UTC.
 1. **Cloud Run numerics parity** (P3; unblock value: high for Amendment 16 deployment, nil today because nothing calls the service). 5/3,028 decisions differ, all at the abstention boundary; 13% of reviews differ in probability (max 0.31). Steps for GG:
    1. Decide whether exact parity is required, or whether "≤ 5/3,028 boundary flips" is acceptable for the private service.
    2. If exactness is required: approve a debug endpoint (or a one-off Cloud Run job) that reports `/proc/cpuinfo` flags and per-op ORT EP info, so the differing kernel can be found; candidate fixes are `session.intra_op` single-thread determinism checks or a float32 (non-int8) model for the boundary band.
 2. **#298 reply prompt v2.2** (medium value; reply drafting is OFF). Evidence #599. Steps for GG:
    1. Read #599's results: invented contacts 3/20 → 0/20 is solid; "not worse" is not established (8B judges saturated).
    2. Either accept c1 alone and merge #298 (it rebases cleanly on main as of 22:00), or let a later session pre-register a judge calibration gate + a larger non-gpt-oss panel and re-judge the SAME 80 drafts (no new Groq spend; ~0.5 Kaggle GPU-h).
+4. **Judge.me visibility semantics** (low value now; connector flag OFF). Evidence #607. Judge.me's schema has no `published`; a review is on the storefront when `curated: "ok"` (`not-yet` depends on the store's auto-publish; `hidden` implies `spam`). The mapper counts anything not `hidden` as visible, so unpublished (`spam`) and pending (`not-yet`) reviews are ingested. Steps for GG: decide whether sellers should see unpublished/pending reviews (arguably yes: pending complaints are actionable); if not, a one-line mapper change (`visible = curated == "ok"` when present) plus a test.
 3. **Primary checkout cleanup** (low value, 1 min). Session confined to its worktree. In `C:\Users\gaura\ml-projects\review-iq`:
    1. `git restore web/package.json web/package-lock.json` (identical change is in #598).
    2. `git switch main && git pull --ff-only`.
@@ -106,7 +115,8 @@ Remaining: ingest-vs-user timeout split (after #585), leakage near-dup + panel-p
 | Item | Amount | Note |
 |---|---|---|
 | Kaggle GPU h (S30 carry-over) | 10.17 | panel session 1 (T4×2), 36,599 s |
-| Kaggle GPU h (S31) | 0.28 + 0.79 + running | reply judge 1,003 s (T4); LLM comparator 2,834 s (T4×2); panel session 2 (~21:08–, running) |
+| Kaggle GPU h (S31, final for this week) | 0.28 + 0.79 + 10.25 = 11.32 | judge, comparator, panel session 2 (wasted, see Incidents). Week total with S30's 10.17 = 21.49 of this project; Kaggle refused at 30.00 (other projects' kernels share the account) |
+| Kaggle GPU h (superseded row) | 0.28 + 0.79 + running | reply judge 1,003 s (T4); LLM comparator 2,834 s (T4×2); panel session 2 (~21:08–, running) |
 | Cloud Run probe service | created 22:42, deleted 22:53 (verified) | 3 revisions (128/256/512), max 1 instance, ~11 min |
 | Groq eval tokens, failover org, trailing 24 h | 120b 59,294; 20b 61,091 | B1 drafts, ledger `D:/ml-cache/s31/reply/ledger.json` |
 | Groq primary org | 0 eval tokens | |
@@ -116,6 +126,7 @@ Remaining: ingest-vs-user timeout split (after #585), leakage near-dup + panel-p
 
 ## Incidents
 
+- 07:25 — **Panel session 2 redid session 1 (10.25 GPU-hours lost), then the weekly GPU quota ran out.** Cause (VERIFIED): the prior dataset was created with `--dir-mode zip`, so Kaggle stored `judges.zip` extracted FLAT (`kaggle datasets files` lists `gemma2_9b.jsonl` etc. at the root); `kernel_scale.py` looked only under `**/judges/*.jsonl`, matched nothing, and carried on from item 0 without a word. Session 2's ids were a subset of session 1's and every one of the 18,000 overlapping verdicts was identical. Why monitoring did not catch it: nothing checked that a resumed run actually resumed, and Kaggle exposes no log until a kernel ends. Fix (#609): name-based discovery + fail closed when `--prior` finds nothing + copied counts in `status.json`. Lesson: verify a resume within the first minutes, not at the end — for a kernel that means a cheap pre-flight that exits early.
 - 21:14 — **Session working directory moved to `web/`** after `cd web && npm …` in one Bash call. The repo's PreToolUse hook runs `python scripts/hook_guard_secrets.py` by relative path, so every tool call was refused. Not routed around: entered ONE linked worktree via the harness (`.claude/worktrees/review-iq-wt-s31`), where the hook path resolves. All further work happens there; the harness refuses `git -C` into the primary checkout. Lesson: never `cd` in a Bash call.
 - 01:15 — **Laptop CPU fully loaded by other sessions**: ten `claude` processes and two `python … scripts/g15_power_a7.py --stage rq4` shards (another project). Not touched. The merge hook's gate and even the secrets hook timed out (blocked as designed); #585 merged on a later retry. 03:00: load still about three quarters. Overheating risk is GG's to manage; nothing of this session runs locally beyond short scripts.
 - 23:13–00:24 — **Laptop CPU:** the local `leakage_ledger check` (repo-wide near-duplicate scan, now 7,383 fingerprints) ran 70 min at close to one full core. Stopped by its PID (37944, command line verified as mine) and moved to a Kaggle CPU kernel. The merge hook timed out twice during that window (blocked as designed; not touched).
@@ -132,3 +143,11 @@ Remaining: ingest-vs-user timeout split (after #585), leakage near-dup + panel-p
 - **Disk:** C: 239 GB free (228 at P0; other sessions freed space), D: 1.4 TB free. One extra worktree `.claude/worktrees/review-iq-wt-s31` (see Incidents).
 - **Laptop:** load about three quarters at 03:00, from other sessions (see Incidents); none of this session's processes are heavy.
 - **Kaggle GPU (S31):** reply judge 0.28 h; LLM comparator (T4×2) — see ledger; panel session 2 running. CPU kernels (run-2 scoring 932 s, ledger check 5,585 s) use no GPU quota.
+
+### 2026-10-24 03:30 UTC (day 2)
+
+- **Since day 1:** P2 complete (stack #584–#597 merged). Also merged: #599–#604, #607, #609, #611, Dependabot #517 and #523. #610 (Tailwind 4) is a DRAFT for GG. Panel session 2 redid session 1's items (see Incidents; fixed by #609). The Kaggle quota ran out at 07:28 on 10-23 and reset at 00:00 on 10-24; the reset time was BELIEVED and is now VERIFIED. Panel session 3 has been running since 00:02.
+- **Next:** P1 labels and the size rule (session 3 should finish around 04:00) → P5 (H128, HT128) → P6 → P7.
+- **Disk:** C: 231 GB free. One extra worktree `.claude/worktrees/review-iq-wt-s31`.
+- **Laptop:** load about half (other sessions); none of my processes are heavy.
+- **Kaggle GPU this week (new quota):** panel session 3 is running.
