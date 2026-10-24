@@ -143,3 +143,11 @@ Remaining: ingest-vs-user timeout split (after #585), leakage near-dup + panel-p
 - **Disk:** C: 239 GB free (228 at P0; other sessions freed space), D: 1.4 TB free. One extra worktree `.claude/worktrees/review-iq-wt-s31` (see Incidents).
 - **Laptop:** load about three quarters at 03:00, from other sessions (see Incidents); none of this session's processes are heavy.
 - **Kaggle GPU (S31):** reply judge 0.28 h; LLM comparator (T4×2) — see ledger; panel session 2 running. CPU kernels (run-2 scoring 932 s, ledger check 5,585 s) use no GPU quota.
+
+### 2026-10-24 03:30 UTC (day 2)
+
+- **Since day 1:** P2 complete (stack #584–#597 merged). Also merged: #599–#604, #607, #609, #611, Dependabot #517 and #523. #610 (Tailwind 4) is a DRAFT for GG. Panel session 2 redid session 1's items (see Incidents; fixed by #609). The Kaggle quota ran out at 07:28 on 10-23 and reset at 00:00 on 10-24; the reset time was BELIEVED and is now VERIFIED. Panel session 3 has been running since 00:02.
+- **Next:** P1 labels and the size rule (session 3 should finish around 04:00) → P5 (H128, HT128) → P6 → P7.
+- **Disk:** C: 231 GB free. One extra worktree `.claude/worktrees/review-iq-wt-s31`.
+- **Laptop:** load about half (other sessions); none of my processes are heavy.
+- **Kaggle GPU this week (new quota):** panel session 3 is running.
