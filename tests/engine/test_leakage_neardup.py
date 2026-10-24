@@ -35,6 +35,29 @@ def test_quote_inside_longer_text(tmp_path) -> None:
     assert any(k == "quoted-substring" for _, _, k in hits)
 
 
+def test_a_quote_with_its_last_letter_changed_is_still_contained(tmp_path) -> None:
+    # S31 control audit: raising the containment threshold to 0.999 survived; one edited 12-gram of ~55 must still count
+    longer = (
+        "A customer wrote: " + ITEM[:-1] + "x. We reply to every review within two days and more."
+    )
+    assert any(k == "quoted-substring" for _, _, k in _scan(tmp_path, longer + "\n"))
+
+
+def test_a_review_wrapped_across_two_lines_of_a_paragraph(tmp_path) -> None:
+    # S31: neither half alone is a near-duplicate or a quote; only the joined paragraph candidate catches it
+    half = len(ITEM) // 2
+    assert _scan(tmp_path, "intro\n\n" + ITEM[:half] + "\n" + ITEM[half:] + "\n\noutro\n")
+
+
+def test_a_review_stored_as_an_escaped_json_string(tmp_path) -> None:
+    # S31: json.dumps escapes non-ASCII as \\uXXXX, so the raw line never matches; only the decoded JSON string does
+    import json
+
+    hindi = "कपड़े की सिलाई दो बार धोने के बाद ही खुल गई और बाईं आस्तीन भी फट गई"
+    (tmp_path / "f.json").write_text(json.dumps({"review": hindi}), encoding="utf-8")
+    assert nd.scan(_fp(hindi), files=["f.json"], root=tmp_path)
+
+
 def test_the_candidate_filters_lose_nothing_against_a_brute_force_scan(tmp_path) -> None:
     # S31: the prefix and 12-gram filters must find exactly what comparing every sealed item with every candidate finds
     import random
