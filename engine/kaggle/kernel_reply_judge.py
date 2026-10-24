@@ -112,6 +112,10 @@ items = [
     .splitlines()
     if x.strip()
 ]
+_panel = glob.glob("/kaggle/input/**/judges.json", recursive=True)
+if _panel:  # S31 re-judge: the dataset may name its own panel ({"name": "ollama tag"}); otherwise the B1 default above
+    JUDGES = json.loads(pathlib.Path(_panel[0]).read_text(encoding="utf-8"))
+status["panel"] = JUDGES
 OUT.mkdir(parents=True, exist_ok=True)
 install_ollama()
 server = start_server()
