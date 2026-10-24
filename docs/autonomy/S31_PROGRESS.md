@@ -5,7 +5,7 @@ All timestamps UTC. VERIFIED = observed this session with the command or artifac
 
 ## Current task
 
-P6: an independent verifier subagent is recomputing the arm selection from validation outputs only. Then P7 (E1-E6 on fresh16, verifier recomputation, results PR).
+P8 / Amendment 17 running: registered at `ff0119a` before any draw; fresh17 drawn (4,200); Kaggle panel `review-intent-fresh17-panel` and LLM comparator `review-intent-fresh17-llm-run` pushed 06:46 on 10-24; run-2 fresh17 CPU scoring pushed 06:55. Then labels, size rule, F1-F4 once, verifier, results PR.
 
 ## Queue
 
@@ -17,8 +17,9 @@ P6: an independent verifier subagent is recomputing the arm selection from valid
 | P3 | **done** (target 0 not met → PARKED 1) | P3 section; report #603 merged | 2026-10-22 23:00 |
 | P4 | **done** | 128 pass (p95 355 ms), 256 FAIL (1,107 ms), 512 FAIL (2,137 ms) → arms **H128, HT128**; probe service deleted and verified; #603 merged | 2026-10-22 22:54 |
 | P5 | **done** | `review-intent-run4` v1 COMPLETE 05:35 (2,549 s on one T4, clone `96e330b`). H128: best val macro-F1 0.745 at epoch 10 (497 s); HT128: 0.718 at epoch 6 (346 s). Private outputs `D:/ml-cache/s31/run4_out`. Earlier: the dry-run build caught a 2-arm crash in the kernel template (ruff SIM905 autofix), fixed in #614 before the push | 2026-10-24 05:36 |
-| P6 | selection done, verification running | Registered rule (code, validation only): chosen **H128** (eligible: H128 only; HT128 had the higher R1 score 0.959 vs 0.932 but mean F1 0.678 is not within 0.01 of the best 0.728). Quantised: accepted, validation agreement with fp32 **0.9859** (>= 0.90), safe ffn_out layers [0, 1, 9, 10, 11]. Hashes: model_m1_auto.onnx `ede02592…8176d`, thresholds_run4.json `d9215a2c…ffef6`, selection.json `1353699a…f8f2` | 2026-10-24 05:40 |
-| P6–P8 | pending | | |
+| P6 | **done** (verifier PASS: 0 differences) | Registered rule (code, validation only): chosen **H128** (eligible: H128 only; HT128 had the higher R1 score 0.959 vs 0.932 but mean F1 0.678 is not within 0.01 of the best 0.728). Quantised: accepted, validation agreement with fp32 **0.9859** (>= 0.90), safe ffn_out layers [0, 1, 9, 10, 11]. Hashes: model_m1_auto.onnx `ede02592…8176d`, thresholds_run4.json `d9215a2c…ffef6`, selection.json `1353699a…f8f2` | 2026-10-24 05:40 |
+| P7 | **done — NEGATIVE: E2 and E5 fail** | fresh16 once: E1 253/268 = 0.944 [0.910, 0.966] met; **E2 114/126 = 0.905 [0.841, 0.945] NOT met** (needs LB >= 0.85); E3 123/135 = 0.911 [0.851, 0.948] met; E4 share 0.223 met; **E5 sentiment -0.021 [-0.081, +0.040] NOT met** (other tasks +0.001, +0.067, +0.085); E6 vs LLM 0.907: +0.037 [-0.004, +0.078] met; 0 empty LLM rows of 1,800. Run 2 (report only): A 0.959, S4 0.921 [0.860, 0.956], SL 0.941, share 0.264. Verifier recomputed everything: PASS. Report `docs/reports/amendment16-results.md`, #616 merged | 2026-10-24 06:45 |
+| P8 | in progress — Amendment 17 | Diagnosis (validation only): misses are confident; run 4 abstains less (4+ star val routed 0.070 vs 0.100). A17 = run 2 + R1+ (R1 OR p(yes) >= tau), tau by a fixed validation rule = **0.07** (V+T recall 144/147 = 0.980 vs R1 0.946; V share 0.287 vs 0.252). Registered `ff0119a` (#618), draw `2a0a210`: fresh17 A 1,800 + B 2,400, ledger 11,583 sealed / 10 excluded, check ok. Evaluator #619 committed before any label. Expected: F3 (share <= 0.30) about even odds | 2026-10-24 06:55 |
 | P7 (LLM part) | stored, unopened | `review-intent-fresh16-llm-run` v1: 1,800/1,800 rows, Ollama 0.40.6 sha256 matched, gpt-oss:20b digest `f38aa0c5…`; 2,834 s | 2026-10-23 00:05 |
 | P7 (run-2 scores) | stored, unopened | `review-intent-fresh16-run2-score` (CPU): 3,900 items, model sha `33158169…`, Xeon 2.2 GHz AVX2; npz key is `pinned` (evaluator expects `logits`: rename only) | 2026-10-23 00:05 |
 | S1 | scheduled ≥ 2026-10-25 00:00 | | |
