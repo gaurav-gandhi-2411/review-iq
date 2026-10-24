@@ -168,7 +168,8 @@ Return ONE JSON object with exactly these keys:
 Output only the JSON object."""
 
 
-def judge_items(out: Path) -> None:
+def judge_items(out: Path, calibration: Path | None = None, tag: str = "") -> None:
+    """Blind, shuffled judge items for the 80 drafts; with `calibration`, the synthetic calibration cases are mixed in (section 3)."""
     rows = []
     for v in ("v21", "v22"):
         rows += [
@@ -178,16 +179,58 @@ def judge_items(out: Path) -> None:
             )
             if r.get("ok")
         ]
+    if calibration is not None:
+        for c in json.loads(calibration.read_text(encoding="utf-8"))["cases"]:
+            rows.append({"arm": "cal", "id": c["id"], "case": c})
     random.Random(42).shuffle(rows)  # blind and order-balanced: the judge never sees the arm
-    with (out / "judge_items.jsonl").open("w", encoding="utf-8") as f:
+    with (out / f"judge_items{tag}.jsonl").open("w", encoding="utf-8") as f:
         for k, r in enumerate(rows):
-            gt = load_fixture(r["id"])["ground_truth"]
-            prompt = RUBRIC.format(review=load_fixture(r["id"])["review_text"], product=gt.get("product"), cons=gt.get("cons"),
-                                   topics=gt.get("topics"), pros=gt.get("pros"), tone=r["tone"], draft=r["served"])  # fmt: skip
+            if r["arm"] == "cal":
+                c = r["case"]
+                fa = c["facts"]
+                prompt = RUBRIC.format(review=c["review"], product=fa["product"], cons=fa["cons"], topics=fa["topics"],
+                                       pros=fa["pros"], tone=c["tone"], draft=c["draft"])  # fmt: skip
+            else:
+                gt = load_fixture(r["id"])["ground_truth"]
+                prompt = RUBRIC.format(review=load_fixture(r["id"])["review_text"], product=gt.get("product"), cons=gt.get("cons"),
+                                       topics=gt.get("topics"), pros=gt.get("pros"), tone=r["tone"], draft=r["served"])  # fmt: skip
             f.write(json.dumps({"item": f"j{k:03d}", "prompt": prompt}, ensure_ascii=False) + "\n")
     key = {f"j{k:03d}": {"arm": r["arm"], "id": r["id"]} for k, r in enumerate(rows)}
-    (out / "judge_key.json").write_text(json.dumps(key, indent=1), encoding="utf-8")
+    (out / f"judge_key{tag}.json").write_text(json.dumps(key, indent=1), encoding="utf-8")
     print(f"{len(rows)} judge items")
+
+
+CAL_ADMIT = 18  # section 3: a judge is admitted with >= 18 of 20 calibration cases right
+
+
+def calibration_gate(
+    key: dict, verdicts: dict[str, dict[str, Any]], calibration: Path, judges: list[str]
+) -> dict:
+    expected = {
+        c["id"]: c["expected_invented"]
+        for c in json.loads(calibration.read_text(encoding="utf-8"))["cases"]
+    }
+    per = {}
+    for j in judges:
+        right = clean_flagged = planted_missed = missing = 0
+        for item, k in key.items():
+            if k["arm"] != "cal":
+                continue
+            v = verdicts.get(item, {}).get(j)
+            if v is None:
+                missing += 1
+                continue
+            flag = bool(v.get("invented_details"))
+            right += flag == expected[k["id"]]
+            clean_flagged += flag and not expected[k["id"]]
+            planted_missed += (not flag) and expected[k["id"]]
+        per[j] = {"right": right, "of": len(expected), "clean_flagged": clean_flagged, "planted_missed": planted_missed,
+                  "missing": missing, "admitted": right >= CAL_ADMIT}  # fmt: skip
+    return {
+        "per_judge": per,
+        "valid": all(p["admitted"] for p in per.values()),
+        "admit_at": CAL_ADMIT,
+    }
 
 
 def wilson(k: int, n: int, z: float = 1.959964) -> list[float]:
@@ -200,14 +243,23 @@ def wilson(k: int, n: int, z: float = 1.959964) -> list[float]:
     return [round(max(0.0, c - h), 4), round(min(1.0, c + h), 4)]
 
 
-def analyze(out: Path, verdict_dir: Path, result: Path) -> None:
-    key = json.loads((out / "judge_key.json").read_text(encoding="utf-8"))
+def analyze(
+    out: Path,
+    verdict_dir: Path,
+    result: Path,
+    judges: tuple[str, ...] = JUDGES,
+    tag: str = "",
+    calibration: Path | None = None,
+) -> None:
+    key = json.loads((out / f"judge_key{tag}.json").read_text(encoding="utf-8"))
+    by_item: dict[str, dict[str, Any]] = {}
     verdicts: dict[tuple[str, str], dict[str, Any]] = {}
-    for j in JUDGES:
+    for j in judges:
         for r in map(
             json.loads, (verdict_dir / f"{j}.jsonl").read_text(encoding="utf-8").splitlines()
         ):
             k = key[r["item"]]
+            by_item.setdefault(r["item"], {})[j] = r.get("verdict")
             verdicts.setdefault((k["arm"], k["id"]), {})[j] = r.get("verdict")
     drafts = {}
     for v in ("v21", "v22"):
@@ -228,7 +280,7 @@ def analyze(out: Path, verdict_dir: Path, result: Path) -> None:
                 rows_out.append({"arm": arm, "id": fid, "ok": False})
                 continue
             vs = verdicts.get((arm, fid), {})
-            got = [vs.get(j) for j in JUDGES]
+            got = [vs.get(j) for j in judges]
             flags = [bool(g and g.get("invented_details")) for g in got]
             coh = [bool(g and g.get("coherent")) for g in got if g]
             gr = sorted(int(g.get("grounded", 0)) for g in got if g)
@@ -254,7 +306,7 @@ def analyze(out: Path, verdict_dir: Path, result: Path) -> None:
                              "invented_contact_served": bool(d["invented_contacts_served"]),
                              "invented_contact_raw": bool(d.get("invented_contacts_raw")),
                              "judges": {j: (None if g is None else {"n_invented": len(g.get("invented_details") or []), "coherent": g.get("coherent"),
-                                            "grounded": g.get("grounded"), "tone_fit": g.get("tone_fit")}) for j, g in zip(JUDGES, got, strict=True)},
+                                            "grounded": g.get("grounded"), "tone_fit": g.get("tone_fit")}) for j, g in zip(judges, got, strict=True)},
                              "missing_verdicts": sum(g is None for g in got), "hard_failure": is_hard, "usable": bool(ok_use)})  # fmt: skip
         ok = n - missing
         per_arm[arm] = {"n": n, "missing_drafts": missing, "hard_failure": hard, "hard_failure_ci95": wilson(hard, ok),
@@ -269,11 +321,18 @@ def analyze(out: Path, verdict_dir: Path, result: Path) -> None:
         per_arm["v22-L"]["hard_failure"] <= per_arm["v21-L"]["hard_failure"]
         and per_arm["v22-S"]["hard_failure"] <= per_arm["v21-S"]["hard_failure"]
     )
-    res = {"preregistration": "docs/research/reply-v22-eval-preregistration.md", "judges": list(JUDGES), "arms": per_arm,
-           "success_rule": {"c1_zero_invented_contacts_v22": c1, "c2_hard_failures_not_worse": c2, "pass": c1 and c2},
+    gate = calibration_gate(key, by_item, calibration, list(judges)) if calibration else None
+    valid = gate["valid"] if gate else True
+    res = {"preregistration": "docs/research/reply-v22-eval-preregistration.md", "judges": list(judges), "calibration": gate, "arms": per_arm,
+           "success_rule": {"c1_zero_invented_contacts_v22": c1, "c2_hard_failures_not_worse": c2, "panel_valid": valid,
+                            "pass": bool(c1 and c2 and valid), "inconclusive": not valid},
            "drafts": rows_out, "no_review_or_draft_text_included": True}  # fmt: skip
     result.write_text(json.dumps(res, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(json.dumps({"arms": per_arm, "success_rule": res["success_rule"]}, indent=1))
+    print(
+        json.dumps(
+            {"calibration": gate, "arms": per_arm, "success_rule": res["success_rule"]}, indent=1
+        )
+    )
 
 
 def main() -> None:
@@ -286,6 +345,14 @@ def main() -> None:
     a = sub.add_parser("analyze")
     a.add_argument("--verdicts", type=Path, required=True)
     a.add_argument("--result", type=Path, required=True)
+    a.add_argument(
+        "--judges",
+        default=",".join(JUDGES),
+        help="comma-separated judge names (section 3: the re-judge panel)",
+    )
+    for p in (j, a):
+        p.add_argument("--calibration", type=Path)
+        p.add_argument("--tag", default="", help="suffix for judge_items/judge_key files")
     for p in (d, j, a):
         p.add_argument("--out", type=Path, required=True)
     x = ap.parse_args()
@@ -293,9 +360,9 @@ def main() -> None:
     if x.cmd == "draft":
         asyncio.run(draft(x.version, x.out, x.ledger))
     elif x.cmd == "judge-items":
-        judge_items(x.out)
+        judge_items(x.out, x.calibration, x.tag)
     else:
-        analyze(x.out, x.verdicts, x.result)
+        analyze(x.out, x.verdicts, x.result, tuple(x.judges.split(",")), x.tag, x.calibration)
 
 
 if __name__ == "__main__":
