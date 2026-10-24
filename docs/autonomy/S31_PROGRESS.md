@@ -5,7 +5,7 @@ All timestamps UTC. VERIFIED = observed this session with the command or artifac
 
 ## Current task
 
-P5 running: Kaggle kernel `review-intent-run4` v1 (one T4), pushed 2026-10-24 04:46 from main + the #614 arms fix, arms H128 and HT128, dataset `review-intent-run4-full` (private). It trains both arms, selects on validation by code, quantises the chosen arm and scores fresh16 once. Outputs stay unopened until P6/P7.
+P6: an independent verifier subagent is recomputing the arm selection from validation outputs only. Then P7 (E1-E6 on fresh16, verifier recomputation, results PR).
 
 ## Queue
 
@@ -16,7 +16,8 @@ P5 running: Kaggle kernel `review-intent-run4` v1 (one T4), pushed 2026-10-24 04
 | P2 | **done** | MERGED (squash): #584, #598, #585, #587, #591, #592, #593, #594, #595, #596, #597 — the whole stack, plus #604 (S30 equivalence tooling found unmerged). #578/#579 kept CLEAN and PARKED | 2026-10-23 05:40 |
 | P3 | **done** (target 0 not met → PARKED 1) | P3 section; report #603 merged | 2026-10-22 23:00 |
 | P4 | **done** | 128 pass (p95 355 ms), 256 FAIL (1,107 ms), 512 FAIL (2,137 ms) → arms **H128, HT128**; probe service deleted and verified; #603 merged | 2026-10-22 22:54 |
-| P5 | running | `review-intent-run4` v1 pushed 04:46. A dry-run build first showed the kernel template would crash with 2 arms (ruff SIM905 autofix had turned the arms split into a 1-element list; the smoke used 1 arm): fixed + test, #614 | 2026-10-24 04:46 |
+| P5 | **done** | `review-intent-run4` v1 COMPLETE 05:35 (2,549 s on one T4, clone `96e330b`). H128: best val macro-F1 0.745 at epoch 10 (497 s); HT128: 0.718 at epoch 6 (346 s). Private outputs `D:/ml-cache/s31/run4_out`. Earlier: the dry-run build caught a 2-arm crash in the kernel template (ruff SIM905 autofix), fixed in #614 before the push | 2026-10-24 05:36 |
+| P6 | selection done, verification running | Registered rule (code, validation only): chosen **H128** (eligible: H128 only; HT128 had the higher R1 score 0.959 vs 0.932 but mean F1 0.678 is not within 0.01 of the best 0.728). Quantised: accepted, validation agreement with fp32 **0.9859** (>= 0.90), safe ffn_out layers [0, 1, 9, 10, 11]. Hashes: model_m1_auto.onnx `ede02592…8176d`, thresholds_run4.json `d9215a2c…ffef6`, selection.json `1353699a…f8f2` | 2026-10-24 05:40 |
 | P6–P8 | pending | | |
 | P7 (LLM part) | stored, unopened | `review-intent-fresh16-llm-run` v1: 1,800/1,800 rows, Ollama 0.40.6 sha256 matched, gpt-oss:20b digest `f38aa0c5…`; 2,834 s | 2026-10-23 00:05 |
 | P7 (run-2 scores) | stored, unopened | `review-intent-fresh16-run2-score` (CPU): 3,900 items, model sha `33158169…`, Xeon 2.2 GHz AVX2; npz key is `pinned` (evaluator expects `logits`: rename only) | 2026-10-23 00:05 |
