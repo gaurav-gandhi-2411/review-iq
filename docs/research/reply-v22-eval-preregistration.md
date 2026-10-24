@@ -131,3 +131,25 @@ v2.1 for qwen3 and gemma2, a direction only.)
 - Next step, to be pre-registered BEFORE it runs: a calibration gate for judges (synthetic drafts with known invented /
   clean labels; a judge is admitted only above a fixed accuracy) and a larger non-gpt-oss panel, re-judging the SAME 80
   drafts (no new drafting, no new Groq spend).
+
+---
+
+## 3. Re-judge with a calibrated panel: PRE-REGISTRATION (added 2026-10-24, S31, before any re-judge call)
+
+Why: section 2.1 showed the 8B panel saturated, so c2 ("v2.2 hard failures not worse than v2.1") was not established. This section
+fixes, before it runs, a calibration gate and a larger panel. The 80 drafts, the rubric (1.3), the hard-failure definition (>= 2 of 3) and
+the success rule (1.5) are unchanged; c1 (deterministic, met) is not re-measured.
+
+- **Panel:** `qwen3:14b`, `phi4:14b`, `gemma3:12b` (no gpt-oss family), Ollama 0.40.6 pinned and sha256-checked, temperature 0, the
+  same JSON rubric and one retry; model digests recorded; a run without them is rejected.
+- **Calibration set:** `eval/fixtures/reply_judge_calibration.json`, 20 SYNTHETIC cases written for this (10 drafts with only what the rubric
+  allows, 10 with one planted invented detail: email, phone, URL, order number, discount code, a named person, a refund/replacement
+  promise, a timeline, a policy claim, an invented product cause). The calibration items are shuffled in with the 80 drafts (seed 42),
+  blind; the judge cannot tell them apart.
+- **Gate:** a judge is ADMITTED if its `invented_flag` matches `expected_invented` on at least 18 of 20 calibration cases. The re-judge is
+  VALID only if all three are admitted. If fewer than three are admitted the result is INCONCLUSIVE: no judge is swapped, #298 stays parked.
+- **If valid:** the success rule 1.5 is applied with this panel's hard failures (c2) together with the already-measured c1. Pass -> #298 may
+  merge through the gate (reply drafting stays OFF). Fail -> negative result, #298 stays parked.
+- **Report only:** each judge's calibration confusion (clean flagged / planted missed), flagged-by-any-judge and mean flags per draft
+  (the saturation check that failed in 2.1), pairwise agreement.
+- **Cost:** Kaggle GPU about 1 h; no Groq or paid spend.
