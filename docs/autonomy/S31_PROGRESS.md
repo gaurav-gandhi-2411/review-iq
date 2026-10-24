@@ -5,14 +5,14 @@ All timestamps UTC. VERIFIED = observed this session with the command or artifac
 
 ## Current task
 
-**GPU-blocked until the Kaggle weekly quota resets** (push refused 07:28: "Maximum weekly GPU quota of 30.00 hours reached"; reset BELIEVED Saturday 2026-10-24 00:00 UTC). Then: panel session 3 (~4 h, from the fixed #609 branch) → P1 labels → P5. Meanwhile CPU/backlog work.
+P1: panel session 3 running since 2026-10-24 00:02 (kernel version 3, cloned from main with #609's fail-closed resume; still RUNNING after 8 min, so the prior files were found). Next: labels, size rule, then P5. **Kaggle quota reset VERIFIED at Saturday 00:00 UTC** (refused 23:00-ish retries, accepted 00:02).
 
 ## Queue
 
 | ID | Status | Evidence | Updated (UTC) |
 |---|---|---|---|
 | P0 | done | snapshot below | 2026-10-22 21:03 |
-| P1 | **blocked on GPU quota** | Session 1: 4,600 (llama, gemma) / 4,800 (qwen, mistral) of 6,300, 36,599 s. Session 2 (36,892 s) **re-did session 1's items** instead of resuming (prior dataset mounted flat; see Incidents) — 18,000 overlapping verdicts identical (determinism VERIFIED). `panel_pin` on both status files: "recorded and correct" (same build, same 4 digests). Remaining: 1,700 / 1,700 / 1,500 / 1,500 items. Session 3 needs the #609 kernel and ~4 GPU-h | 2026-10-23 07:30 |
+| P1 | running — session 3 (pushed 10-24 00:02) | Session 1: 4,600 (llama, gemma) / 4,800 (qwen, mistral) of 6,300, 36,599 s. Session 2 (36,892 s) **re-did session 1's items** instead of resuming (prior dataset mounted flat; see Incidents) — 18,000 overlapping verdicts identical (determinism VERIFIED). `panel_pin` on both status files: "recorded and correct" (same build, same 4 digests). Remaining: 1,700 / 1,700 / 1,500 / 1,500 items. Session 3 needs the #609 kernel and ~4 GPU-h | 2026-10-23 07:30 |
 | P2 | **done** | MERGED (squash): #584, #598, #585, #587, #591, #592, #593, #594, #595, #596, #597 — the whole stack, plus #604 (S30 equivalence tooling found unmerged). #578/#579 kept CLEAN and PARKED | 2026-10-23 05:40 |
 | P3 | **done** (target 0 not met → PARKED 1) | P3 section; report #603 merged | 2026-10-22 23:00 |
 | P4 | **done** | 128 pass (p95 355 ms), 256 FAIL (1,107 ms), 512 FAIL (2,137 ms) → arms **H128, HT128**; probe service deleted and verified; #603 merged | 2026-10-22 22:54 |
@@ -21,7 +21,7 @@ All timestamps UTC. VERIFIED = observed this session with the command or artifac
 | P7 (LLM part) | stored, unopened | `review-intent-fresh16-llm-run` v1: 1,800/1,800 rows, Ollama 0.40.6 sha256 matched, gpt-oss:20b digest `f38aa0c5…`; 2,834 s | 2026-10-23 00:05 |
 | P7 (run-2 scores) | stored, unopened | `review-intent-fresh16-run2-score` (CPU): 3,900 items, model sha `33158169…`, Xeon 2.2 GHz AVX2; npz key is `pinned` (evaluator expects `logits`: rename only) | 2026-10-23 00:05 |
 | S1 | scheduled ≥ 2026-10-25 00:00 | | |
-| S2 | done 10-22 and 10-23 | 10-23 03:31: `/health` 200 1.12 s; classify private; failover-probe 10-23 02:30 OK; 24 h rate_limited/failover/db_timeout/errors all 0 | 2026-10-23 03:31 |
+| S2 | done 10-22, 10-23, 10-24 | 10-23 03:31: `/health` 200 1.12 s; classify private; failover-probe 10-23 02:30 OK; 24 h rate_limited/failover/db_timeout/errors all 0 ; 10-24 00:11: `/health` 200 1.21 s, API `review-iq-00102-fdw`, classify private, 24 h counts all 0 | 2026-10-24 00:11 |
 | S3 | day 1 done | #608 merged (from `docs/s31-progress-day1`) | 2026-10-23 04:53 |
 | B1 | done → #298 PARKED | #599/#600/#601 merged | 2026-10-23 06:35 |
 | B2 | done | #602 merged; ingest-timeout test in #585, panel-pin hardening in #592 (both merged). Not audited: migration rehearsal (#396 parked) | 2026-10-23 06:10 |
