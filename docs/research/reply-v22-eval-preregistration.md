@@ -167,3 +167,5 @@ valid, so the re-judge is **INCONCLUSIVE** as registered; no judge is swapped an
 For information only (an invalid panel decides nothing): hard failures v21-L 14, v21-S 14, v22-L 16, v22-S 10 of 20; flagged by any
 judge 19-20 of 20 in every arm. Even the calibrated judges flag most drafts, so the honest reading is that "not worse" cannot be measured
 with off-the-shelf local judges at n = 20; c1 (invented contacts 3/20 -> 0/20) remains the only established result.
+
+Note (after the run, file location only): the calibration set moved from `eval/fixtures/` to `eval/calibration/reply_judge_calibration.json` because the extraction eval runner treats every `eval/fixtures/*.json` as an extraction fixture. Content unchanged.
