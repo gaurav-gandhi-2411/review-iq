@@ -33,6 +33,7 @@ SCALE = "reports/labelling/scale/manifest.json"
 SAFETY = "reports/labelling/safety/split.json"
 FRESH15 = "reports/labelling/fresh15/manifest.json"  # Amendment 15: every item is test-only
 FRESH16 = "reports/labelling/fresh16/manifest.json"  # Amendment 16: sealed blocks A, B, C (every item is test-only)
+FRESH17 = "reports/labelling/fresh17/manifest.json"  # Amendment 17: sealed blocks A, B (every item is test-only)
 TRAIN16 = "reports/labelling/train16/manifest.json"  # Amendment 16: training additions (splits train16 / val16), never sealed
 MAX_BYTES = 5_000_000
 MIN_CHARS = 20  # shorter strings are not distinctive enough to be a meaningful hit
@@ -49,7 +50,12 @@ def safety_items() -> list[dict]:
 
 def fresh_items() -> list[dict]:
     """Every fresh sealed item (Amendments 15 and 16), all test-only."""
-    return [i for rel in (FRESH15, FRESH16) if (ROOT / rel).exists() for i in _load(rel)["items"]]
+    return [
+        i
+        for rel in (FRESH15, FRESH16, FRESH17)
+        if (ROOT / rel).exists()
+        for i in _load(rel)["items"]
+    ]
 
 
 def train16_items() -> list[dict]:
