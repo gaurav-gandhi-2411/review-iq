@@ -153,3 +153,17 @@ the success rule (1.5) are unchanged; c1 (deterministic, met) is not re-measured
 - **Report only:** each judge's calibration confusion (clean flagged / planted missed), flagged-by-any-judge and mean flags per draft
   (the saturation check that failed in 2.1), pairwise agreement.
 - **Cost:** Kaggle GPU about 1 h; no Groq or paid spend.
+
+## 4. Re-judge results (added after the run; section 3 unchanged)
+
+Artifact: `reports/research/reply_v22_rejudge.json` (ids, arms, verdict counts; no text). Kaggle kernel `review-iq-reply-rejudge-run` v2
+(1,723 s; v1 stopped on a registry 503 during a model pull, before any judging; the kernel now retries pulls). Ollama 0.40.6 sha256
+matched; digests recorded; 0 null verdicts of 300.
+
+**Calibration gate (>= 18 of 20):** qwen3:14b 20/20 (admitted), phi4:14b 18/20 (admitted; flagged 2 clean drafts), gemma3:12b 16/20
+(**not admitted**; flagged 4 clean drafts). No planted detail was missed by any judge. With one judge not admitted the panel is not
+valid, so the re-judge is **INCONCLUSIVE** as registered; no judge is swapped and #298 stays parked.
+
+For information only (an invalid panel decides nothing): hard failures v21-L 14, v21-S 14, v22-L 16, v22-S 10 of 20; flagged by any
+judge 19-20 of 20 in every arm. Even the calibrated judges flag most drafts, so the honest reading is that "not worse" cannot be measured
+with off-the-shelf local judges at n = 20; c1 (invented contacts 3/20 -> 0/20) remains the only established result.
