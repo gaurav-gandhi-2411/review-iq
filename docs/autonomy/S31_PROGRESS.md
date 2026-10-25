@@ -5,7 +5,7 @@ All timestamps UTC. VERIFIED = observed this session with the command or artifac
 
 ## Current task
 
-Primary queue and backlog done. Remaining: S1 registry enforcement (due >= 2026-10-25 00:00 UTC), then the day-3 checkpoint, STATUS + handoff PR (`docs/s31-status-handoff`), and stop.
+**STOPPED 2026-10-25 00:10 UTC** after S1 and the handoff (`docs/HANDOFF_2026-10-27_s31.md`): queue and backlog exhausted early, per the spec's playbook.
 
 ## Queue
 
@@ -22,8 +22,8 @@ Primary queue and backlog done. Remaining: S1 registry enforcement (due >= 2026-
 | P8 | **done — Amendment 17 NEGATIVE (F2 fails)** | fresh17 once (run 2 + R1+ tau 0.07): F1 250/260 = 0.962 [0.931, 0.979] met; **F2 119/133 = 0.895 [0.831, 0.936] NOT met**; F3 share 0.297 met; F4 vs LLM 0.904: +0.058 [+0.019, +0.100] met. R1 alone: A 0.950, S4 0.865, share 0.267. Labels: one session 35,749 s, pin + digests identical to A16, size rule A 260 / S4 133. Verifier PASS (0 differences). #618 registration, #619 evaluator, #620 labels + results, all merged. As registered: no further amendment | 2026-10-24 17:05 |
 | P7 (LLM part) | stored, unopened | `review-intent-fresh16-llm-run` v1: 1,800/1,800 rows, Ollama 0.40.6 sha256 matched, gpt-oss:20b digest `f38aa0c5…`; 2,834 s | 2026-10-23 00:05 |
 | P7 (run-2 scores) | stored, unopened | `review-intent-fresh16-run2-score` (CPU): 3,900 items, model sha `33158169…`, Xeon 2.2 GHz AVX2; npz key is `pinned` (evaluator expects `logits`: rename only) | 2026-10-23 00:05 |
-| S1 | scheduled ≥ 2026-10-25 00:00 | | |
-| S2 | done 10-22, 10-23, 10-24 | 10-23 03:31: `/health` 200 1.12 s; classify private; failover-probe 10-23 02:30 OK; 24 h rate_limited/failover/db_timeout/errors all 0 ; 10-24 00:11: `/health` 200 1.21 s, API `review-iq-00102-fdw`, classify private, 24 h counts all 0 | 2026-10-24 00:11 |
+| S1 | **done (Tier B)** | 10-25 00:01 simulation: 17 versions, policy would delete 0, none referenced; tagged keep-review-iq-current (d7ebb826), keep-review-iq-prev (065d5db1), keep-classify-current (69618259); policy switched to enforce 00:02 (dry-run false); health 200 after, services unchanged | 2026-10-25 00:03 |
+| S2 | done 10-22, 10-23, 10-24, 10-25 | 10-23 03:31: `/health` 200 1.12 s; classify private; failover-probe 10-23 02:30 OK; 24 h rate_limited/failover/db_timeout/errors all 0 ; 10-24 00:11: `/health` 200 1.21 s, API `review-iq-00102-fdw`, classify private, 24 h counts all 0 | 2026-10-24 00:11 |
 | S3 | day 1 done | #608 merged (from `docs/s31-progress-day1`) | 2026-10-23 04:53 |
 | B1 | done → #298 PARKED | #599/#600/#601 (first run) + #621 (pre-registered calibrated re-judge): gate qwen3:14b 20/20, phi4:14b 18/20, gemma3:12b 16/20 (not admitted) → INCONCLUSIVE; c1 (3/20 → 0/20) stands alone | 2026-10-24 18:20 |
 | B2 | done | #602 merged; ingest-timeout test in #585, panel-pin hardening in #592 (both merged). Not audited: migration rehearsal (#396 parked) | 2026-10-23 06:10 |
@@ -153,3 +153,11 @@ Remaining: ingest-vs-user timeout split (after #585), leakage near-dup + panel-p
 - **Disk:** C: 231 GB free. One extra worktree `.claude/worktrees/review-iq-wt-s31`.
 - **Laptop:** load about half (other sessions); none of my processes are heavy.
 - **Kaggle GPU this week (new quota):** panel session 3 is running.
+
+
+### 2026-10-25 00:10 UTC (day 3, final)
+
+- **Since day 2:** P1-P8 finished (A16 and A17 both negative, verified); B1 re-judge inconclusive (#621); S1 enforced; parked PRs updated onto main and MERGEABLE. All S31 PRs merged except #610 (DRAFT, UI, for GG).
+- **Disk:** C: 236 GB free; D: 1.4 TB free; `D:/ml-cache/s31` 1.8 GB. One extra worktree (see Incidents).
+- **Kaggle:** nothing running. GPU week from 10-24: about 17.2 h.
+- **Stopped** here; the handoff is `docs/HANDOFF_2026-10-27_s31.md`.
