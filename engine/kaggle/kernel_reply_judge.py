@@ -112,12 +112,22 @@ items = [
     .splitlines()
     if x.strip()
 ]
+_panel = glob.glob("/kaggle/input/**/judges.json", recursive=True)
+if _panel:  # S31 re-judge: the dataset may name its own panel ({"name": "ollama tag"}); otherwise the B1 default above
+    JUDGES = json.loads(pathlib.Path(_panel[0]).read_text(encoding="utf-8"))
+status["panel"] = JUDGES
 OUT.mkdir(parents=True, exist_ok=True)
 install_ollama()
 server = start_server()
 for name, tag in JUDGES.items():
-    pull = subprocess.run([str(OLLAMA_DIR / "bin" / "ollama"), "pull", tag], env=dict(os.environ, OLLAMA_HOST="127.0.0.1:11434"),
-                          capture_output=True, text=True)  # fmt: skip
+    for _attempt in range(
+        3
+    ):  # S31: the registry answered 503 once at the end of a 9.3 GB pull; a transient error must not end the run
+        pull = subprocess.run([str(OLLAMA_DIR / "bin" / "ollama"), "pull", tag], env=dict(os.environ, OLLAMA_HOST="127.0.0.1:11434"),
+                              capture_output=True, text=True)  # fmt: skip
+        if pull.returncode == 0:
+            break
+        time.sleep(30)
     if pull.returncode != 0:
         raise RuntimeError(f"pull {tag} failed: {(pull.stderr or pull.stdout)[-300:]}")
     n_null = 0

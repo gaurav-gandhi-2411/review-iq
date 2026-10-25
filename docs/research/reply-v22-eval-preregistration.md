@@ -131,3 +131,41 @@ v2.1 for qwen3 and gemma2, a direction only.)
 - Next step, to be pre-registered BEFORE it runs: a calibration gate for judges (synthetic drafts with known invented /
   clean labels; a judge is admitted only above a fixed accuracy) and a larger non-gpt-oss panel, re-judging the SAME 80
   drafts (no new drafting, no new Groq spend).
+
+---
+
+## 3. Re-judge with a calibrated panel: PRE-REGISTRATION (added 2026-10-24, S31, before any re-judge call)
+
+Why: section 2.1 showed the 8B panel saturated, so c2 ("v2.2 hard failures not worse than v2.1") was not established. This section
+fixes, before it runs, a calibration gate and a larger panel. The 80 drafts, the rubric (1.3), the hard-failure definition (>= 2 of 3) and
+the success rule (1.5) are unchanged; c1 (deterministic, met) is not re-measured.
+
+- **Panel:** `qwen3:14b`, `phi4:14b`, `gemma3:12b` (no gpt-oss family), Ollama 0.40.6 pinned and sha256-checked, temperature 0, the
+  same JSON rubric and one retry; model digests recorded; a run without them is rejected.
+- **Calibration set:** `eval/fixtures/reply_judge_calibration.json`, 20 SYNTHETIC cases written for this (10 drafts with only what the rubric
+  allows, 10 with one planted invented detail: email, phone, URL, order number, discount code, a named person, a refund/replacement
+  promise, a timeline, a policy claim, an invented product cause). The calibration items are shuffled in with the 80 drafts (seed 42),
+  blind; the judge cannot tell them apart.
+- **Gate:** a judge is ADMITTED if its `invented_flag` matches `expected_invented` on at least 18 of 20 calibration cases. The re-judge is
+  VALID only if all three are admitted. If fewer than three are admitted the result is INCONCLUSIVE: no judge is swapped, #298 stays parked.
+- **If valid:** the success rule 1.5 is applied with this panel's hard failures (c2) together with the already-measured c1. Pass -> #298 may
+  merge through the gate (reply drafting stays OFF). Fail -> negative result, #298 stays parked.
+- **Report only:** each judge's calibration confusion (clean flagged / planted missed), flagged-by-any-judge and mean flags per draft
+  (the saturation check that failed in 2.1), pairwise agreement.
+- **Cost:** Kaggle GPU about 1 h; no Groq or paid spend.
+
+## 4. Re-judge results (added after the run; section 3 unchanged)
+
+Artifact: `reports/research/reply_v22_rejudge.json` (ids, arms, verdict counts; no text). Kaggle kernel `review-iq-reply-rejudge-run` v2
+(1,723 s; v1 stopped on a registry 503 during a model pull, before any judging; the kernel now retries pulls). Ollama 0.40.6 sha256
+matched; digests recorded; 0 null verdicts of 300.
+
+**Calibration gate (>= 18 of 20):** qwen3:14b 20/20 (admitted), phi4:14b 18/20 (admitted; flagged 2 clean drafts), gemma3:12b 16/20
+(**not admitted**; flagged 4 clean drafts). No planted detail was missed by any judge. With one judge not admitted the panel is not
+valid, so the re-judge is **INCONCLUSIVE** as registered; no judge is swapped and #298 stays parked.
+
+For information only (an invalid panel decides nothing): hard failures v21-L 14, v21-S 14, v22-L 16, v22-S 10 of 20; flagged by any
+judge 19-20 of 20 in every arm. Even the calibrated judges flag most drafts, so the honest reading is that "not worse" cannot be measured
+with off-the-shelf local judges at n = 20; c1 (invented contacts 3/20 -> 0/20) remains the only established result.
+
+Note (after the run, file location only): the calibration set moved from `eval/fixtures/` to `eval/calibration/reply_judge_calibration.json` because the extraction eval runner treats every `eval/fixtures/*.json` as an extraction fixture. Content unchanged.
