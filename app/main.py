@@ -16,6 +16,7 @@ from slowapi.middleware import SlowAPIMiddleware
 
 from app.api.account import router as account_router
 from app.api.admin import router as admin_router
+from app.api.bff.classified import router as bff_classified_router
 from app.api.bff.router import router as bff_router
 from app.api.dashboard import router as dashboard_router
 from app.api.demo import router as demo_router
@@ -272,6 +273,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         _app.include_router(resend_webhook_router)
         _app.include_router(google_auth_router)
         _app.include_router(bff_router)
+        _app.include_router(bff_classified_router)
         _app.include_router(signup_router)
         _app.include_router(account_router)
         _app.include_router(demo_router)
