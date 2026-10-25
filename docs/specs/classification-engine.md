@@ -97,7 +97,7 @@ fine-tuned figure found yet; any comparison to CLINC will be flagged as unrefere
   Groq org, `qwen/qwen3.8-27b` (a pool separate from the production models), on a stratified test
   subsample, n stated, with a bootstrap CI. Cost per 1K messages is computed from the token usage and
   the published price table, and from the fine-tuned model's CPU time. Daily ceiling: 100K tokens per
-  model per UTC day.
+  model per trailing 24h (Groq's TPD is a rolling window, not a UTC-day reset).
 - **Model choice (E2h).** `xlm-roberta-base` and `intfloat/multilingual-e5-base` (added 2026-10-10,
   before any result) against `paraphrase-multilingual-MiniLM-L12-v2` (small).
   Choice criteria in order: macro-F1 within 1 point, then CPU p95 latency, then memory. A small model

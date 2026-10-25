@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 import time
 
-from prometheus_client import Counter, Histogram
+from prometheus_client import Counter, Gauge, Histogram
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import Response
@@ -60,6 +60,24 @@ FAILOVER_TOTAL = Counter(
     ["from_provider"],
 )
 
+RATE_LIMITED_TOTAL = Counter(
+    "review_iq_llm_rate_limited_total",
+    "Provider 429 responses (see llm.rate_limited log event)",
+    ["provider", "model", "tier", "limit_type"],
+)
+
+COST_ALERT_TOTAL = Counter(
+    "review_iq_cost_alert_total",
+    "Customers whose month-to-date inference cost exceeded the alert fraction of their plan price (flag-gated sweep)",
+    ["plan"],
+)
+
+ORG_COST_RATIO = Gauge(
+    "review_iq_org_inference_cost_ratio",
+    "Highest month-to-date inference cost / plan price among the paying orgs of a plan (set by the cost-alert sweep)",
+    ["plan"],
+)
+
 AUTHENTICITY_LABEL_TOTAL = Counter(
     "review_iq_authenticity_label_total",
     "Authenticity scoring results by label",
@@ -101,6 +119,24 @@ REPLY_DEGRADED_TOTAL = Counter(
 REPLY_CACHE_HIT_TOTAL = Counter(
     "review_iq_reply_cache_hits_total",
     "Reply draft cache hits (same review/tone/brand/signature re-requested)",
+)
+
+CLASSIFY_REQUESTS_TOTAL = Counter(
+    "review_iq_classify_requests_total",
+    "POST /v2/classify requests by outcome (ok / unavailable / error)",
+    ["outcome"],
+)
+
+CLASSIFY_LATENCY_MS = Histogram(
+    "review_iq_classify_latency_ms",
+    "POST /v2/classify model latency in milliseconds (batch of up to 32 reviews)",
+    buckets=[25, 50, 100, 250, 500, 1000, 2500, 5000, 10000],
+)
+
+ENCODER_FIRST_TOTAL = Counter(
+    "review_iq_encoder_first_total",
+    "Encoder-first routing outcomes (routed to LLM / skipped = classified-only / fail_open = classifier problem, routed to LLM)",
+    ["outcome"],
 )
 
 CORRECTIONS_SUBMITTED = Counter(

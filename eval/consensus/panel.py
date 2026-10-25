@@ -7,7 +7,16 @@ computable with one rater. Session 8 P3 added qwen/qwen3.8-27b (same vendor, a
 different checkpoint) as a partial fix. Session 9 P3a completes it with a genuinely
 cross-vendor third judge, restoring real multi-vendor agreement.
 
-Current panel (4 candidates, 3 calibration-passing -- see calibration_report.json):
+S17 UPDATE (ADR 0034/0035): the Gemini fallback was retired from production and
+`gemini-3.5-flash-lite` was dropped from JUDGE_MODELS (recorded in RETIRED_JUDGE_MODELS; its
+call code is gone). A fresh panel-1 run now uses qwen3.6-27b + qwen3.8-27b (+ allam, which fails
+calibration), and passes assert_no_self_judging. The existing panel-1 labels (the 106 held-out
+fixtures, consensus_labels.jsonl, calibration_report.json) were produced with the OLD
+three-judge roster below and are unchanged; everything from here to the CALIBRATION OUTCOME
+paragraph is the record of that old roster, not the current one.
+
+Roster at the time of the original labeling run (4 candidates, 3 calibration-passing -- see
+calibration_report.json):
 
   1. qwen/qwen3.6-27b       (Groq, owned_by: Alibaba Cloud)
   2. qwen/qwen3.8-27b       (Groq, owned_by: Alibaba Cloud) -- same vendor as #1
@@ -81,7 +90,6 @@ concurrent calls, no shared conversation context.
 
 from __future__ import annotations
 
-import asyncio
 import json
 import sys
 from pathlib import Path
@@ -149,42 +157,117 @@ JUDGE_MODELS: tuple[dict[str, str], ...] = (
         # calibration will show a real miss pattern if this assumption is wrong.
         "extra_params": {"reasoning_effort": "none"},
     },
-    # Session 9 P3a: a THIRD judge, genuinely cross-vendor (Google, not Alibaba) -- the
-    # qwen3.6/qwen3.8 pair above shares one vendor, so their agreement alone overstates
-    # independence (same caution class as the gpt-oss-120b contamination, smaller in
-    # degree). Uses the standalone Gemini call path this repo already built for exactly
-    # this "no live Groq call" constraint (scripts/record_cassettes_via_fallback.py's
-    # _call_gemini_raw, same client construction/JSON-mode config/temperature=0.0).
-    #
-    # Self-judging check, done manually since assert_no_self_judging() only compares
-    # against groq_model_small/large: this is review-iq's `gemini_model` config value,
-    # used ONLY as SecondaryProvider failover (app/core/llm.py::_call_gemini), gated by
-    # `ENABLE_GEMINI_FALLBACK`. Verified directly against live production config
-    # (2026-09-11, `gcloud run services describe`): ENABLE_GEMINI_FALLBACK is NOT set in
-    # production's environment, so it is at its code default of False -- the fallback
-    # path is genuinely dormant, not just theoretically low-traffic. This is a
-    # point-in-time fact, not a permanent guarantee: if GG ever enables the fallback,
-    # this judge becomes a real self-judging conflict the same way gpt-oss-120b was and
-    # must be re-excluded then, not left on the assumption this check made once.
+)
+
+
+# Retired from the panel-1 roster in S17 (ADR 0034/0035). Kept as DATA ONLY so the existing panel-1
+# labels (eval/consensus/results/*, the 106 held-out fixtures) stay interpretable: they were
+# produced by qwen3.6-27b + qwen3.8-27b + this judge. It has no call path any more (the Gemini
+# client code was removed with the production fallback) and must not be added back to JUDGE_MODELS
+# while any Google model is a production path -- the self-judging guard would reject it.
+RETIRED_JUDGE_MODELS: tuple[dict[str, str], ...] = (
     {
         "id": "gemini-3.5-flash-lite",
         "provider": "gemini",
         "family": "Google Gemini",
         "owner": "Google",
-        # NOT review-iq's configured gemini_model default ("gemini-2.0-flash") --
-        # verified live (2026-09-11, listing the real Gemini API catalog with this
-        # exact key): gemini-2.0-flash no longer exists in the current model list,
-        # confirming Session 7's independent finding that Google deprecated it
-        # 2026-06-01. gemini-3.5-flash-lite is the current stable (non-preview) flash-tier
-        # model. Since production's Gemini fallback is verified disabled (see above),
-        # this judge does not need to match whatever review-iq would call in
-        # production even if it did fire -- it only needs to be a real, working,
-        # cross-vendor model.
+        "retired_reason": (
+            "shared a vendor with review-iq's Gemini fallback (retired S17); panel-1 labels "
+            "produced with this judge are historical and unchanged"
+        ),
     },
 )
 
 
-def assert_no_self_judging(judge_models: tuple[dict[str, str], ...] = JUDGE_MODELS) -> None:
+# Models review-iq is documented to fail over to even when the env var is unset locally:
+# docs recommend SECONDARY_PROVIDER_MODEL=meta-llama/llama-3.3-70b-instruct (app/core/config.py).
+# Always checked so a local environment without that env var cannot silently weaken the guard.
+KNOWN_FAILOVER_MODELS: tuple[str, ...] = ("meta-llama/llama-3.3-70b-instruct",)
+
+# Vendor family by the organisation prefix of an OpenRouter/Groq style id ("org/model").
+_ORG_FAMILY: dict[str, str] = {
+    "openai": "openai",
+    "meta-llama": "meta",
+    "meta": "meta",
+    "google": "google",
+    "qwen": "alibaba",
+    "alibaba": "alibaba",
+    "deepseek": "deepseek",
+    "deepseek-ai": "deepseek",
+    "nvidia": "nvidia",
+    "mistralai": "mistral",
+    "z-ai": "zhipu",
+    "zhipu": "zhipu",
+    "thinkingmachines": "thinkingmachines",
+    "anthropic": "anthropic",
+    "x-ai": "xai",
+    "moonshotai": "moonshot",
+    "microsoft": "microsoft",
+    "cohere": "cohere",
+    "allenai": "allenai",
+    "minimax": "minimax",
+}
+# Vendor family for bare ids with no organisation prefix (Gemini API, Groq legacy ids).
+_ID_PREFIX_FAMILY: tuple[tuple[str, str], ...] = (
+    ("gemini", "google"),
+    ("gemma", "google"),
+    ("llama", "meta"),
+    ("gpt-", "openai"),
+    ("allam", "sdaia"),
+    ("qwen", "alibaba"),
+    ("mistral", "mistral"),
+    ("deepseek", "deepseek"),
+)
+
+
+def model_family(model_id: str) -> str:
+    """Vendor family of a model id; raises ValueError (fail closed) if not in the mapping."""
+    mid = model_id.strip().lower()
+    if "/" in mid:
+        org = mid.split("/", 1)[0]
+        if org in _ORG_FAMILY:
+            return _ORG_FAMILY[org]
+    else:
+        for prefix, family in _ID_PREFIX_FAMILY:
+            if mid.startswith(prefix):
+                return family
+    raise ValueError(
+        f"Unknown vendor family for model id {model_id!r}: add its organisation to _ORG_FAMILY "
+        "(or its bare-id prefix to _ID_PREFIX_FAMILY) in eval/consensus/panel.py. Failing "
+        "closed: an unmapped model could be a production vendor under a name this guard "
+        "does not know."
+    )
+
+
+def production_model_ids() -> dict[str, str]:
+    """{source: model_id} for every model review-iq can serve from, read at runtime.
+
+    Data-driven: every non-empty string Settings field whose name contains "model" is a
+    production model id (groq_model, groq_model_small/large, secondary_provider_model, and any
+    future provider added the same way), so re-adding a provider (say a Gemini fallback) puts its
+    vendor back in the forbidden set without anyone editing this guard. Plus KNOWN_FAILOVER_MODELS.
+    """
+    from app.core.config import get_settings
+
+    settings = get_settings()
+    names = list(getattr(type(settings), "model_fields", None) or dir(settings))
+    ids: dict[str, str] = {}
+    for name in names:
+        if name.startswith("_") or "model" not in name or name == "model_fields":
+            continue
+        value = getattr(settings, name, "")
+        if isinstance(value, str) and value:
+            ids[name] = value
+    for i, mid in enumerate(KNOWN_FAILOVER_MODELS):
+        ids[f"known_failover_model_{i}"] = mid
+    return ids
+
+
+def assert_no_self_judging(
+    judge_models: tuple[dict[str, str], ...] = JUDGE_MODELS,
+    *,
+    extra_forbidden_families: dict[str, str] | None = None,
+) -> None:
     """Raises if any candidate judge IS review-iq's own current production model.
 
     Session 8 P2 incident, found by direct verification (not assumed): this exact
@@ -210,24 +293,40 @@ def assert_no_self_judging(judge_models: tuple[dict[str, str], ...] = JUDGE_MODE
     judge's id matches the CURRENT production groq_model_small/groq_model_large. A
     future model migration will raise here immediately rather than silently
     reintroducing the same conflict under a new model name.
-    """
-    # Imported lazily (not at module top) so this module stays importable without a
-    # full app/ settings environment for callers that only need JUDGE_MODELS/prompts,
-    # matching this file's existing lazy-import-at-use-site style (see call_judge()).
-    from app.core.config import get_settings
 
-    settings = get_settings()
-    production_models = {settings.groq_model_small, settings.groq_model_large}
-    conflicts = [m for m in judge_models if m["id"] in production_models]
+    S17 G6a hardening: the original check compared judge ids to the two Groq production ids
+    EXACTLY, which missed (a) the OpenRouter failover model (Llama) and the dormant Gemini
+    fallback model, and (b) any sibling checkpoint of a production vendor (a judge
+    `llama-3.1-8b-instruct` is not the string `meta-llama/llama-3.3-70b-instruct` but is the
+    same vendor family as the failover). It now reads ALL production model ids at runtime
+    (groq small/large, secondary provider model, Gemini fallback model, plus
+    KNOWN_FAILOVER_MODELS) and compares VENDOR FAMILY via `model_family()`. A model whose
+    family is not in the explicit mapping fails closed (add it to _ORG_FAMILY/_ID_PREFIX_FAMILY).
+    History: when this hardening landed it flagged panel 1's `gemini-3.5-flash-lite` (Google =
+    the vendor of the Gemini fallback). S17 retired the fallback and dropped that judge from
+    JUDGE_MODELS, so the real roster passes again; the Google rule is now only as strong as the
+    Settings-derived list (see production_model_ids).
+    """
+    # `extra_forbidden_families` ({family: reason}) lets a runner add families beyond
+    # production (panel 2 forbids the panel-1 vendors for independence).
+    forbidden: dict[str, str] = {}
+    for source, mid in production_model_ids().items():
+        forbidden.setdefault(model_family(mid), f"production {source}={mid}")
+    for fam, reason in (extra_forbidden_families or {}).items():
+        forbidden.setdefault(fam, reason)
+
+    conflicts: list[str] = []
+    for m in judge_models:
+        fam = model_family(m["id"])  # raises (fail closed) on an unknown family
+        if fam in forbidden:
+            conflicts.append(f"{m['id']} (family {fam!r}; conflicts with {forbidden[fam]})")
     if conflicts:
-        conflict_ids = [m["id"] for m in conflicts]
         raise ValueError(
-            f"Self-judging conflict: judge candidate(s) {conflict_ids} are review-iq's own "
-            f"current production model(s) ({sorted(production_models)}). A judge must never "
-            "be the same model the extraction pipeline under test actually runs -- remove "
-            "the conflicting candidate(s) from JUDGE_MODELS, or replace them, before running "
-            "any consensus labeling. See this function's docstring and docs/architecture/"
-            "adr/0013-*.md for the incident this check exists to prevent from recurring."
+            f"Self-judging conflict: judge candidate(s) {conflicts}. A judge must never be the "
+            "same model, or the same vendor family, as a model the extraction pipeline under "
+            "test can run (Groq tiers, OpenRouter failover, any other configured provider) -- remove the "
+            "conflicting candidate(s) from the roster before running any consensus labeling. "
+            "See this function's docstring and docs/architecture/adr/0013-*.md."
         )
 
 
@@ -322,96 +421,6 @@ def _extra_params_for(model_id: str) -> dict[str, Any]:
     return {}
 
 
-def _provider_for(model_id: str) -> str:
-    for m in JUDGE_MODELS:
-        if m["id"] == model_id:
-            return m["provider"]
-    return "groq"
-
-
-# Session 9 P3a incident: the first calibration attempt against gemini-3.5-flash-lite
-# scored 16/33 misses -- a suspicious pattern (every item after the first ~6 missed
-# almost every field). Direct inspection of one failing item's actual exception (not
-# assumed) found the true cause: Gemini's free tier caps gemini-3.5-flash-lite at 5
-# requests/MINUTE per project (google.genai.errors.ClientError 429
-# RESOURCE_EXHAUSTED, "GenerateRequestsPerMinutePerProjectPerModel-FreeTier ... limit:
-# 5"), far tighter than Groq's TPD-shaped limits this codebase's existing retry/pacing
-# logic was built around. Every call past the first ~5 in a tight loop was silently
-# swallowed by call_judge's caller (a 429 registers as "parse failure" -> a miss on
-# every field, not a fixable judgment error) -- a call-configuration bug, not evidence
-# the model can't judge, the same class as qwen3.6-27b's hybrid-thinking-mode miss
-# before its reasoning_effort fix. Retrying with backoff on 429 specifically (not a
-# blanket retry-everything, which would mask a genuine content/parse problem as a
-# transient one) is the fix -- honoring the server's own `retryDelay` naturally paces
-# subsequent calls to Gemini's real throughput ceiling, without a separate proactive
-# delay mechanism duplicating what the 429 response already tells us to do.
-_GEMINI_MAX_RETRIES = 3
-
-
-async def _call_gemini_judge(model_id: str, text: str, timeout: int = 30) -> str:
-    """Call a Gemini judge; returns the raw response text.
-
-    Mirrors scripts/record_cassettes_via_fallback.py::_call_gemini_raw exactly (same
-    client construction, same JSON-mode config, same temperature=0.0) -- that function
-    was already built and verified for this repo's "no live Groq call" constraint;
-    this reuses the identical pattern for the analogous "no live prod-key call for
-    unrelated traffic" concern (see JUDGE_MODELS' gemini-3.5-flash-lite entry for the
-    verification that this key's production fallback path is currently dormant).
-
-    Reads GEMINI_API_KEY directly from the environment rather than via
-    app.core.config.get_settings() -- deliberately not coupled to the full Settings
-    object, which requires many unrelated production env vars to construct.
-
-    Retries on 429 (rate limit) specifically, honoring the server's own `retryDelay`
-    when present -- see the incident note above _GEMINI_MAX_RETRIES for why this
-    exists. Any other error propagates immediately, unretried.
-    """
-    import os
-    import re
-
-    from google import genai
-    from google.genai import errors as genai_errors
-    from google.genai import types
-
-    api_key = os.environ.get("GEMINI_API_KEY", "")
-    if not api_key:
-        raise RuntimeError(
-            "GEMINI_API_KEY is not set -- required for the gemini-3.5-flash-lite judge."
-        )
-    client = genai.Client(api_key=api_key)
-
-    last_exc: Exception | None = None
-    for attempt in range(_GEMINI_MAX_RETRIES):
-        try:
-            return await _generate_gemini_content(client, model_id, text, timeout, types)
-        except genai_errors.ClientError as exc:
-            if getattr(exc, "code", None) != 429 or attempt == _GEMINI_MAX_RETRIES - 1:
-                raise
-            last_exc = exc
-            match = re.search(r"'retryDelay': '(\d+)", str(exc))
-            delay = float(match.group(1)) + 1.0 if match else 20.0
-            await asyncio.sleep(delay)
-    raise last_exc or RuntimeError("unreachable")
-
-
-async def _generate_gemini_content(
-    client: Any, model_id: str, text: str, timeout: int, types: Any
-) -> str:
-    response = await asyncio.wait_for(
-        client.aio.models.generate_content(
-            model=model_id,
-            contents=build_user_prompt(text),
-            config=types.GenerateContentConfig(
-                system_instruction=JUDGE_SYSTEM_PROMPT,
-                response_mime_type="application/json",
-                temperature=0.0,
-            ),
-        ),
-        timeout=timeout,
-    )
-    return response.text or ""
-
-
 async def call_judge(client: Any, model_id: str, text: str, timeout: int = 30) -> str:
     """Call one judge model with the review text; returns the raw response content string.
 
@@ -437,11 +446,7 @@ async def call_judge(client: Any, model_id: str, text: str, timeout: int = 30) -
     truncate real responses. Per-model `extra_params` (e.g. `reasoning_effort`) are passed
     through when the model config declares them.
 
-    Gemini judges bypass `client` entirely (a Gemini client is not interchangeable
-    with a Groq client) -- see _call_gemini_judge().
     """
-    if _provider_for(model_id) == "gemini":
-        return await _call_gemini_judge(model_id, text, timeout=timeout)
     response = await client.chat.completions.create(
         model=model_id,
         messages=[

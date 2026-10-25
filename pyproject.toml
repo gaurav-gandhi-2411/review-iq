@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "review-iq"
 version = "0.3.0"
 description = "Production-grade review intelligence service. Unstructured customer reviews → queryable structured insights."
-authors = [{ name = "Gaurav Gandhi", email = "gaurav.gandhi2411@gmail.com" }]
+authors = [{ name = "Gaurav Gandhi", email = "gauravgandhi429@gmail.com" }]
 requires-python = ">=3.11"
 readme = "README.md"
 license = { text = "MIT" }
@@ -24,7 +24,6 @@ dependencies = [
     "python-multipart>=0.0.19",
     "aiosqlite>=0.20.0",
     "httpx>=0.28.0",
-    "google-genai>=1.0.0",
     "supabase>=2.10.0",
     "psycopg2-binary>=2.9.12",
     "python-dotenv>=1.2.2",
@@ -50,6 +49,7 @@ dev = [
     "datasets>=4.8.5",
     "kaggle>=1.6",
     "playwright>=1.48.0",
+    "google-auth>=2.30.0",  # scripts/slo_report.py (ADC); was only transitive via google-genai
 ]
 
 [tool.hatch.build.targets.wheel]

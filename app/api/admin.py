@@ -19,6 +19,7 @@ from pydantic import BaseModel
 from app.auth.admin import require_admin
 from app.auth.keygen import insert_api_key_with_retry
 from app.core.config import get_settings
+from app.core.db_pool import PooledConnection, db_connect
 from app.core.storage_pg import aggregate_extraction_costs_pg
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -95,14 +96,14 @@ class CostAggregateOut(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-def _db_connect() -> psycopg2.extensions.connection:
+def _db_connect() -> PooledConnection:
     settings = get_settings()
     # Wave 1 S0 remediation (ADR 0006): this module only ever runs inside the
     # SERVICE_ROLE=admin Cloud Run service (see app/main.py), so it authenticates as
     # review_iq_admin (BYPASSRLS) via its own DSN — never the public service's
     # review_iq_app connection, which no longer holds bypass after the accompanying
     # role-separation migration.
-    return psycopg2.connect(settings.admin_database_url)
+    return db_connect(settings.admin_database_url)
 
 
 def _create_org_db(name: str, slug: str, plan: str) -> OrgOut:

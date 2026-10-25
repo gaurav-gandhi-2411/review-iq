@@ -357,7 +357,7 @@ def test_get_shopify_installation_pg_calls_resolve_function_then_set_tenant() ->
     ]
 
     with patch("app.api.webhooks.shopify.get_settings", return_value=_make_db_settings()):
-        with patch("app.api.webhooks.shopify.psycopg2.connect", return_value=conn):
+        with patch("app.api.webhooks.shopify.db_connect", return_value=conn):
             with patch("app.api.webhooks.shopify._set_tenant") as mock_set_tenant:
                 result = _get_shopify_installation_pg("teststore.myshopify.com")
 
@@ -374,7 +374,7 @@ def test_get_shopify_installation_pg_unresolved_shop_returns_none_without_set_te
     cur.fetchone.return_value = (None,)
 
     with patch("app.api.webhooks.shopify.get_settings", return_value=_make_db_settings()):
-        with patch("app.api.webhooks.shopify.psycopg2.connect", return_value=conn):
+        with patch("app.api.webhooks.shopify.db_connect", return_value=conn):
             with patch("app.api.webhooks.shopify._set_tenant") as mock_set_tenant:
                 result = _get_shopify_installation_pg("unknown-store.myshopify.com")
 
@@ -390,7 +390,7 @@ def test_get_shopify_installation_pg_resolve_function_missing_fails_safe() -> No
     cur.execute.side_effect = psycopg2.errors.UndefinedFunction("function does not exist")
 
     with patch("app.api.webhooks.shopify.get_settings", return_value=_make_db_settings()):
-        with patch("app.api.webhooks.shopify.psycopg2.connect", return_value=conn):
+        with patch("app.api.webhooks.shopify.db_connect", return_value=conn):
             result = _get_shopify_installation_pg("teststore.myshopify.com")
 
     assert result is None

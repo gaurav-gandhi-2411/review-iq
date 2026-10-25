@@ -5,8 +5,10 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+SECONDARY_PROVIDER_KINDS = ("groq", "openrouter")
 
 
 class Settings(BaseSettings):
@@ -15,6 +17,8 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
+        # A startup validation error must never echo input values: they include API keys.
+        hide_input_in_errors=True,
     )
 
     # LLM providers
@@ -52,6 +56,15 @@ class Settings(BaseSettings):
     demo_daily_request_budget_override_expires_at: str = Field(
         default="", alias="DEMO_DAILY_REQUEST_BUDGET_OVERRIDE_EXPIRES_AT"
     )
+    # Rolling-24h token ceiling for the demo (app/core/token_ledger.py). Groq's per-model TPD
+    # is a rolling window, so the demo is held to a share of the pool; the share is clamped to
+    # 0.5 in code so at least half always stays with production. Each of up to
+    # DEMO_MAX_INSTANCES Cloud Run instances enforces share/instances (in-memory ledger).
+    # Per-call estimate = p95 small-tier tokens (eval/results/token_cost_measurement_n106.json).
+    groq_tpd_pool_tokens: int = Field(default=200_000, alias="GROQ_TPD_POOL_TOKENS")
+    demo_max_share: float = Field(default=0.25, alias="DEMO_MAX_SHARE")
+    demo_max_instances: int = Field(default=3, alias="DEMO_MAX_INSTANCES")
+    demo_call_token_estimate: int = Field(default=3300, alias="DEMO_CALL_TOKEN_ESTIMATE")
     environment: str = Field(default="development", alias="ENVIRONMENT")
 
     # LLM model names
@@ -116,10 +129,11 @@ class Settings(BaseSettings):
     # SYNTHETIC-VALIDATED, not yet proven on real seller data (see project memory). Gates both
     # the on-demand GET endpoint AND the scheduled detector sweep (app/core/alerts/detector_sweep.py).
     enable_batch_defect_detector: bool = Field(default=False, alias="ENABLE_BATCH_DEFECT_DETECTOR")
-    # Phase 2 fake-campaign detector (app/core/detectors/campaign.py) -- off by default.
-    # SYNTHETIC-VALIDATED, stress-tested, not yet proven on real seller data. Reviewer-identity
-    # signal is stubbed to 0 (no ingestion path captures it yet) -- see that module's docstring
-    # for the accepted recall-only limitation this implies. Gates the scheduled detector sweep.
+    # Review-pattern (campaign) detector (app/core/detectors/campaign.py) -- off by default; the
+    # flag keeps its historical name. Flags PATTERNS across reviews (counts, windows, shared text),
+    # never one review. Spec and pre-registered evaluation: docs/specs/campaign-detection.md.
+    # Production rows carry no rating yet, so only burst and template are active until ingestion
+    # plumbs ratings. Gates the scheduled detector sweep.
     enable_fake_campaign_detector: bool = Field(
         default=False, alias="ENABLE_FAKE_CAMPAIGN_DETECTOR"
     )
@@ -145,6 +159,30 @@ class Settings(BaseSettings):
     # provider call.
     enable_reply_drafting: bool = Field(default=False, alias="ENABLE_REPLY_DRAFTING")
 
+    # POST /v2/classify (review-intent int8 model, app/api/v2/classify.py) -- OFF by default: 404 when off.
+    # Needs the model artifacts under CLASSIFY_ARTIFACT_DIR (model.onnx + hf/tokenizer.json) and onnxruntime+tokenizers (Dockerfile.classify);
+    # without them the endpoint returns 503 `classify_artifacts_missing`. Runbook: ops/runbooks/v2-classify.md.
+    enable_v2_classify: bool = Field(default=False, alias="ENABLE_V2_CLASSIFY")
+    classify_artifact_dir: str = Field(
+        default="/app/artifacts/classify", alias="CLASSIFY_ARTIFACT_DIR"
+    )
+    classify_torch_threads: int = Field(
+        default=0, ge=0, alias="CLASSIFY_TORCH_THREADS"
+    )  # 0 = auto (ONNX backend: the cgroup CPU quota; torch backend: torch default). Name kept for env compatibility
+
+    # Encoder-first routing (spec Amendment 14): OFF by default. When on AND CLASSIFY_SERVICE_URL names the private classify
+    # service, the ingest worker asks it which reviews need full LLM extraction. Any classifier error routes to the LLM path.
+    enable_encoder_first: bool = Field(default=False, alias="ENABLE_ENCODER_FIRST")
+    classify_service_url: str = Field(default="", alias="CLASSIFY_SERVICE_URL")
+
+    # Per-customer inference cost alert (S29, ADR 0041): OFF by default. When on, POST /internal/cost-alerts/run meters each paying org
+    # listed in ORG_PLANS_JSON ({"<org uuid>": "starter"|"growth"|"scale"|"starter_in"|"growth_in"|"scale_in"}) and raises an alert when its month-to-date
+    # inference cost is above COST_ALERT_FRACTION of the plan price. There is no subscription data in the app yet, hence the setting.
+    enable_cost_alerts: bool = Field(default=False, alias="ENABLE_COST_ALERTS")
+    cost_alert_fraction: float = Field(default=0.20, gt=0, le=1, alias="COST_ALERT_FRACTION")
+    org_plans_json: str = Field(default="", alias="ORG_PLANS_JSON")
+    cost_alert_trigger_token: str | None = Field(default=None, alias="COST_ALERT_TRIGGER_TOKEN")
+
     # Tiered model names — both Groq (privacy-vetted)
     # Groq deprecated llama-3.1-8b-instant on 2026-08-16; openai/gpt-oss-20b is their
     # documented replacement, same fast/cheap tier (Item G1).
@@ -159,21 +197,27 @@ class Settings(BaseSettings):
         alias="GROQ_MODEL_LARGE",
     )
 
-    # Secondary failover provider — OpenRouter, restricted to Zero-Data-Retention
-    # endpoints on every call (app/core/providers/secondary.py enforces `zdr: true`
-    # unconditionally, regardless of which model is configured here). Recommended:
+    # Secondary failover provider. Production: kind=groq, a second Groq account (below).
+    # The OpenRouter kind is still supported but not used in production; it is restricted to
+    # Zero-Data-Retention endpoints on every call (app/core/providers/secondary.py enforces
+    # `zdr: true` unconditionally, regardless of which model is configured here). For it:
     # SECONDARY_PROVIDER_API_KEY = an OpenRouter API key
-    # SECONDARY_PROVIDER_MODEL   = "meta-llama/llama-3.3-70b-instruct" -- same nominal
-    #   family as groq_model_large, live-verified 2026-07-31 to have ZDR-flagged
-    #   endpoints from 11 upstream providers (see SecondaryProvider's docstring).
+    # SECONDARY_PROVIDER_MODEL   = for kind=openrouter, "meta-llama/llama-3.3-70b-instruct"
+    #   was live-verified 2026-07-31 to have ZDR-flagged endpoints from 11 upstream
+    #   providers (see SecondaryProvider's docstring). Production runs kind=groq with
+    #   "openai/gpt-oss-120b" instead (see secondary_provider_kind below, ADR 0038).
     secondary_provider_api_key: str = Field(default="", alias="SECONDARY_PROVIDER_API_KEY")
     secondary_provider_model: str = Field(default="", alias="SECONDARY_PROVIDER_MODEL")
-    # Which backend the secondary failover uses. "openrouter" (default) keeps the ZDR-only
+    # Which backend the secondary failover uses. "openrouter" selects the ZDR-only
     # OpenRouter path above. "groq" makes the secondary a SECOND Groq account (key =
     # SECONDARY_PROVIDER_API_KEY, model = a Groq model id, e.g. openai/gpt-oss-20b): Groq to
     # Groq failover, both ZDR-capable, zero cost. It is a failover only (used after the
     # primary fails), never a load-spreading rotation across accounts: see ADR 0038.
-    secondary_provider_kind: str = Field(default="openrouter", alias="SECONDARY_PROVIDER_KIND")
+    # No default: an unset kind used to select OpenRouter silently (S23: the same drift that
+    # left the nightly probe testing a backend production did not use). Unset is fine while no
+    # secondary is configured (tests, CI, local dev); configuring a key/model without a kind,
+    # or any value outside SECONDARY_PROVIDER_KINDS, fails at startup (_check_secondary_kind).
+    secondary_provider_kind: str = Field(default="", alias="SECONDARY_PROVIDER_KIND")
 
     # CORS allowlist — comma-separated origins (env: ALLOWED_ORIGINS).
     # Default covers local dev: both localhost and 127.0.0.1 aliases on :5173
@@ -341,6 +385,30 @@ class Settings(BaseSettings):
     # app/api/admin.py's _db_connect() when SERVICE_ROLE=admin. Distinct Secret Manager
     # secret from supabase_database_url — never present in the public service's env.
     admin_database_url: str = Field(default="", alias="ADMIN_DATABASE_URL")
+
+    @model_validator(mode="after")
+    def _check_secondary_kind(self) -> Settings:
+        """Fail loudly at startup instead of silently selecting the OpenRouter secondary.
+
+        Error text names the variable and the allowed values only; it never echoes the key.
+        """
+        kind = self.secondary_provider_kind.strip().lower()
+        if kind in SECONDARY_PROVIDER_KINDS:
+            self.secondary_provider_kind = kind
+            return self
+        configured = bool(self.secondary_provider_api_key or self.secondary_provider_model)
+        allowed = ", ".join(SECONDARY_PROVIDER_KINDS)
+        if kind:
+            raise ValueError(
+                f"SECONDARY_PROVIDER_KIND={self.secondary_provider_kind!r} is not valid; "
+                f"allowed values: {allowed}."
+            )
+        if configured:
+            raise ValueError(
+                "SECONDARY_PROVIDER_API_KEY/SECONDARY_PROVIDER_MODEL are set but "
+                f"SECONDARY_PROVIDER_KIND is unset; set it to one of: {allowed}."
+            )
+        return self
 
 
 @lru_cache

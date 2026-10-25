@@ -11,6 +11,9 @@ name: Model Availability Check
 # a second time -- a workflow with its own copy of the model name would itself drift from
 # the source it's supposed to be checking) and confirms each is still present in its
 # provider's live model list.
+#
+# S17 (ADR 0035): the Gemini fallback was retired, so only Groq models are checked; the
+# gemini-api-key secret is no longer read here.
 
 on:
   schedule:
@@ -48,7 +51,7 @@ jobs:
           import sys
 
           text = open("app/core/config.py", encoding="utf-8").read()
-          fields = ["groq_model", "gemini_model", "groq_model_small", "groq_model_large"]
+          fields = ["groq_model", "groq_model_small", "groq_model_large"]
           # (?:#.*\n\s*)* tolerates comment lines between `Field(` and `default=` --
           # session 12 regression: PR #31 added a multi-line explanatory comment above
           # gemini_model's default, which the previous regex (no comment tolerance)
@@ -80,8 +83,6 @@ jobs:
         run: |
           echo "::add-mask::$(gcloud secrets versions access latest --secret=groq-api-key)"
           echo "groq_key=$(gcloud secrets versions access latest --secret=groq-api-key)" >> "$GITHUB_OUTPUT"
-          echo "::add-mask::$(gcloud secrets versions access latest --secret=gemini-api-key)"
-          echo "gemini_key=$(gcloud secrets versions access latest --secret=gemini-api-key)" >> "$GITHUB_OUTPUT"
 
       - name: Confirm Groq models are still live
         env:
@@ -107,20 +108,6 @@ jobs:
             GROQ_KEY="$GROQ_KEY" python3 scripts/check_model_generation.py groq "$m" || FAIL=1
           done
           exit $FAIL
-
-      - name: Confirm Gemini model is still live
-        env:
-          GEMINI_KEY: ${{ steps.keys.outputs.gemini_key }}
-          GEMINI_MODEL: ${{ steps.models.outputs.gemini_model }}
-        run: |
-          LIVE=$(curl -s "https://generativelanguage.googleapis.com/v1beta/models?key=$GEMINI_KEY" | python3 -c "import json,sys; print('\n'.join(m['name'].removeprefix('models/') for m in json.load(sys.stdin).get('models', [])))")
-          if ! echo "$LIVE" | grep -qx "$GEMINI_MODEL"; then
-            echo "::error::Gemini model '$GEMINI_MODEL' is not in the live model list -- likely deprecated/removed"
-            exit 1
-          fi
-          echo "  [ok] $GEMINI_MODEL is listed"
-          # Session 15d: real generation, not list membership (see the Groq step above).
-          GEMINI_KEY="$GEMINI_KEY" python3 scripts/check_model_generation.py gemini "$GEMINI_MODEL"
 
       - name: Open/update alert issue on failure
         if: failure()

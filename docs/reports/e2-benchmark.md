@@ -4,7 +4,7 @@ Spec and pre-registered protocol: `docs/specs/classification-engine.md`. Every n
 result JSONs in `reports/engine/e2/` by `engine/experiments/report.py` (regenerate with
 `python -m engine.experiments.report reports/engine/e2`) or read from the same files by the prose generator. Models
 were trained on free Kaggle Tesla T4s; the LLM baseline ran on Groq (dedicated org, free tier, 100K tokens per model
-per UTC day); the serving bench ran on a Kaggle CPU kernel (Intel Xeon 2.2 GHz, 1 thread).
+per rolling 24h); the serving bench ran on a Kaggle CPU kernel (Intel Xeon 2.2 GHz, 1 thread).
 
 ## What changed since the first version of this report
 
@@ -52,7 +52,7 @@ few-shot arm is untested here. (5) The confidence signal is a verbalised number,
    reaches precision 0.95 at coverage 0.131 [0.000, 0.488] against
    0.964 for the fine-tuned model on the same items, and its precision at coverage 0.9 is
    0.837 against 0.974. 
-4. **CLINC150 LLM comparison.** On CLINC150 the paired run covers n = 109 items (the token ceiling and qwen's repeated 503 over-capacity responses stopped it there): fine-tuned accuracy 0.936 against 0.881 for the LLM, difference 0.055 [0.000, 0.119], exact McNemar p = 0.10938 (8 items only the fine-tuned model got right, 2 only the LLM). The interval includes zero: this comparison is UNDERPOWERED and is not evidence of equality. Separating a gap of this size needs a few hundred paired items, about three UTC days of the qwen budget for a 150-label prompt; the harness resumes where it stopped.
+4. **CLINC150 LLM comparison.** On CLINC150 the paired run covers n = 109 items (the token ceiling and qwen's repeated 503 over-capacity responses stopped it there): fine-tuned accuracy 0.936 against 0.881 for the LLM, difference 0.055 [0.000, 0.119], exact McNemar p = 0.10938 (8 items only the fine-tuned model got right, 2 only the LLM). The interval includes zero: this comparison is UNDERPOWERED and is not evidence of equality. Separating a gap of this size needs a few hundred paired items, about three trailing-24h windows of the qwen budget for a 150-label prompt; the harness resumes where it stopped.
 5. **Open-set rejection.** Mahalanobis on the fine-tuned features has the best AUROC on all four unknown sets; the dedicated
    unknown head is the worst scorer everywhere. Energy matches or beats Mahalanobis on rejection recall on two sets and needs no
    statistics or int8 recalibration (the safe fallback). Every scorer clears the 23 to 34 percent range reported by the earlier
@@ -65,7 +65,7 @@ few-shot arm is untested here. (5) The confidence signal is a verbalised number,
 - Hierarchy compares flat, joint parent loss, and domain-constrained prediction; a separate two-stage classifier was not built.
 - LLM baseline: BANKING77 used `openai/gpt-oss-120b` because `qwen/qwen3.8-27b` returned HTTP 503 (over capacity) on it; CLINC used qwen. Few-shot
   rows (5 retrieved examples, not 3 per class) are small, unpaired and labelled so. The first CLINC attempt died on a connection reset; the
-  harness now retries transport errors and 5xx responses and resumes across UTC days.
+  harness now retries transport errors and 5xx responses and resumes across invocations (trailing-24h token window, not a UTC-day reset).
 - Three training seeds (42, 43, 44) on ONE pre-registered draw of held-out classes, so Track B ranges show training noise, not class-selection noise.
 - The first sweep (commit a9f9e21) is superseded (zero-support classes were counted as F1 = 0 in the point estimate only); every reported number was re-run on the fixed code.
 - Rejection-recall intervals hold the validation threshold fixed, so they omit threshold-selection variance.
