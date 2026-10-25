@@ -17,7 +17,10 @@ import sys
 import time
 
 BRANCH = "__BRANCH__"
-ARMS = [a.split(":") for a in ["__ARMS__"]]  # [name, max_len, truncation]
+# S31: split through a variable. Written as `"__ARMS__".split(",")`, ruff's SIM905 autofix rewrites it to the one-element list
+# `["__ARMS__"]` (it sees a literal), which silently breaks every run with two or more arms (tests/engine/test_push_run4.py).
+ARMS_SPEC = "__ARMS__"
+ARMS = [a.split(":") for a in ARMS_SPEC.split(",")]  # [name, max_len, truncation]
 MODE = "__MODE__"
 EPOCHS = "__EPOCHS__"
 PATIENCE = "__PATIENCE__"

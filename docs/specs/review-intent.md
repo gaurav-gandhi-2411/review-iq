@@ -734,3 +734,27 @@ Why. Under Amendment 15 the router (R1) met its criteria overall (292 of 306 rou
 **Report only (no pass condition):** recall by category and by 4-0 versus 3-1 consensus, the Amendment 14 safety-stratum recall (C1) for run 4, the same fresh16 scores for run 2 on the laptop numerics (to show what the numerics change did), latency and memory per arm from the probe, run 4 on the fresh15 set (EXPOSED: the 14 missed ids were analysed, so it is shown labelled as such and never counted).
 
 **Not changed:** Amendments 5 to 15, the router rule R1, the Amendment 5 sealed set and the Amendment 15 fresh set, the licences, the public site and pricing, the production service (it keeps serving run 2), the encoder-first flag (OFF), and the parked encoder-first PR chain.
+
+### Amendment 17 (2026-10-24, S31): a recall floor on R1 for the served model, tested once on a fresh sealed set; registered before any item is drawn, labelled or scored
+
+Why: Amendment 16 failed (E2 S4 recall lower bound 0.841, E5 sentiment F1 -0.021; `docs/reports/amendment16-results.md`). Diagnosis on validation data only: the misses are confident ones; R1 already routes every validation gold-yes with p(needs_action = yes) >= 0.15 through abstention, and the run-4 training additions made the model abstain LESS. Retraining is not the lever; the routing rule is. This amendment keeps the served model (run 2, static int8, x64 thresholds, pinned ORT numerics) and changes only the router.
+
+**Rule R1+ (fixed now).** Route a review to LLM extraction if R1 routes it OR p(needs_action = yes) >= tau, where p is the calibrated probability the served decision already carries. tau is set by `engine/intent/a17_tau.py` from validation data only: the LARGEST tau on the grid 0.100, 0.095, ..., 0.010 with R1+ recall >= 0.97 on gold-yes over V (scale validation, 460, natural mix) and T (Amendment 16 targeted validation val16, 460) together, and R1+ routed share <= 0.30 on V. Result, committed with this text (`reports/intent/a17/tau.json`): **tau = 0.07**; R1+ recall on V+T 144/147 = 0.980 (R1: 139/147 = 0.946); routed share on V 0.287 (R1: 0.252). The rule was written after looking at validation numbers for R1 (allowed: no sealed item was used); its single output is fixed here and is not revisited.
+
+**Sealed set fresh17 (fixed now).** Drawn by `engine/labelling/fresh17_sample.py` from the cleared pools by the Amendment 16 method (ledger + every earlier manifest by content hash, near-duplicate exact Jaccard of 4-character shingles >= 0.9 against every earlier item, including fresh16 and train16), seed 49: Block A natural 1,800 (600 per category); Block B stars >= 4, 2,400 (800 per category). No training additions, no length block. S4 = items of A or B with stars >= 4. Labels: the Amendment 16 four-judge panel on the same pinned Ollama build (0.40.6, sha256 c164ab8b...c0e5e0), recorded per session and rejected if a pin or digest is missing or differs between sessions; gold-yes = consensus needs_action = yes (>= 3 of 4). Size rule: gold-yes >= 200 in Block A and >= 120 in S4; if either is short, one top-up of Block B (1,200 more, seed 50); if still short, report with the honest n and change nothing.
+
+**Criteria (R1+ with tau = 0.07 on run 2; all must hold; Wilson 95 for proportions, paired bootstrap 2,000 resamples seed 42 for F4):**
+- F1: R1+ recall on Block A gold-yes, lower bound >= 0.90.
+- F2: R1+ recall on S4 gold-yes, lower bound >= 0.85.
+- F3: R1+ routed share on Block A <= 0.30 (point estimate).
+- F4: non-inferior to the all-LLM path on Block A gold-yes: gpt-oss-20b zero-shot, Ollama 0.40.6 pinned, reasoning effort low, 1,500-token cap (the Amendment 15/16 settings); lower bound of recall(R1+) minus recall(LLM) > -0.05.
+
+**Scoring.** run 2 on fresh17 once, on a Kaggle CPU kernel with the pinned numerics (`engine/kaggle/kernel_onnx_equiv.py`); the LLM on Block A once; F1-F4 by `engine/intent/fresh17_eval.py`; an independent verifier recomputes F1-F4 from the prediction files before the results are merged.
+
+**Report only:** R1 as registered on the same items (recall, share); recall by category; the capacity multiplier at open rates 0, 0.1, 0.3; agreement of the panel on fresh17.
+
+**Expected values (BELIEVED, written before the draw).** gold-yes Block A 250 to 320, S4 120 to 160. R1+ recall: Block A 0.96 to 0.98, S4 0.92 to 0.97. **F3 is the criterion most likely to fail**: R1+ routed share on V is 0.287 against a 0.30 cap, so on a fresh natural sample it can land on either side (about even odds).
+
+**If all of F1-F4 hold:** an enable plan (deploy nothing; router flag stays OFF) is written and parked for the owner. **If any fails:** reported as a negative result; no further amendment in this session.
+
+**Not changed:** Amendments 5 to 16, the served model and its thresholds, R1 itself (R1+ is an addition evaluated here, not deployed), the earlier sealed sets, the production service.

@@ -1,0 +1,2791 @@
+{
+ "preregistration": "docs/research/reply-v22-eval-preregistration.md",
+ "judges": [
+  "qwen3_14b",
+  "phi4_14b",
+  "gemma3_12b"
+ ],
+ "calibration": {
+  "per_judge": {
+   "qwen3_14b": {
+    "right": 20,
+    "of": 20,
+    "clean_flagged": 0,
+    "planted_missed": 0,
+    "missing": 0,
+    "admitted": true
+   },
+   "phi4_14b": {
+    "right": 18,
+    "of": 20,
+    "clean_flagged": 2,
+    "planted_missed": 0,
+    "missing": 0,
+    "admitted": true
+   },
+   "gemma3_12b": {
+    "right": 16,
+    "of": 20,
+    "clean_flagged": 4,
+    "planted_missed": 0,
+    "missing": 0,
+    "admitted": false
+   }
+  },
+  "valid": false,
+  "admit_at": 18
+ },
+ "arms": {
+  "v21-L": {
+   "n": 20,
+   "missing_drafts": 0,
+   "hard_failure": 14,
+   "hard_failure_ci95": [
+    0.481,
+    0.8545
+   ],
+   "flagged_by_any_judge": 20,
+   "not_coherent": 0,
+   "usable": 6,
+   "usable_ci95": [
+    0.1455,
+    0.519
+   ],
+   "invented_contact_served": 3,
+   "invented_contact_served_ci95": [
+    0.0524,
+    0.3604
+   ],
+   "invented_contact_raw": 3
+  },
+  "v21-S": {
+   "n": 20,
+   "missing_drafts": 0,
+   "hard_failure": 14,
+   "hard_failure_ci95": [
+    0.481,
+    0.8545
+   ],
+   "flagged_by_any_judge": 19,
+   "not_coherent": 0,
+   "usable": 5,
+   "usable_ci95": [
+    0.1119,
+    0.4687
+   ],
+   "invented_contact_served": 0,
+   "invented_contact_served_ci95": [
+    0.0,
+    0.1611
+   ],
+   "invented_contact_raw": 0
+  },
+  "v22-L": {
+   "n": 20,
+   "missing_drafts": 0,
+   "hard_failure": 16,
+   "hard_failure_ci95": [
+    0.584,
+    0.9193
+   ],
+   "flagged_by_any_judge": 19,
+   "not_coherent": 0,
+   "usable": 4,
+   "usable_ci95": [
+    0.0807,
+    0.416
+   ],
+   "invented_contact_served": 0,
+   "invented_contact_served_ci95": [
+    0.0,
+    0.1611
+   ],
+   "invented_contact_raw": 0
+  },
+  "v22-S": {
+   "n": 20,
+   "missing_drafts": 0,
+   "hard_failure": 10,
+   "hard_failure_ci95": [
+    0.2993,
+    0.7007
+   ],
+   "flagged_by_any_judge": 19,
+   "not_coherent": 0,
+   "usable": 10,
+   "usable_ci95": [
+    0.2993,
+    0.7007
+   ],
+   "invented_contact_served": 0,
+   "invented_contact_served_ci95": [
+    0.0,
+    0.1611
+   ],
+   "invented_contact_raw": 0
+  }
+ },
+ "success_rule": {
+  "c1_zero_invented_contacts_v22": true,
+  "c2_hard_failures_not_worse": false,
+  "panel_valid": false,
+  "pass": false,
+  "inconclusive": true
+ },
+ "drafts": [
+  {
+   "arm": "v21-L",
+   "id": "hien-0007",
+   "language": "en",
+   "tokens_in": 885,
+   "tokens_out": 277,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-L",
+   "id": "hien-0010",
+   "language": "hi-en",
+   "tokens_in": 1381,
+   "tokens_out": 367,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 1,
+     "tone_fit": 4
+    },
+    "phi4_14b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-L",
+   "id": "hien-0011",
+   "language": "hi-en",
+   "tokens_in": 1379,
+   "tokens_out": 512,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    },
+    "phi4_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-L",
+   "id": "hien-0023",
+   "language": "en",
+   "tokens_in": 957,
+   "tokens_out": 255,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-L",
+   "id": "hien-0025",
+   "language": "en",
+   "tokens_in": 902,
+   "tokens_out": 348,
+   "caveat_kinds": [],
+   "invented_contact_served": true,
+   "invented_contact_raw": true,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    },
+    "phi4_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-L",
+   "id": "hien-0030",
+   "language": "en",
+   "tokens_in": 1006,
+   "tokens_out": 640,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v21-L",
+   "id": "hien-0032",
+   "language": "en",
+   "tokens_in": 897,
+   "tokens_out": 274,
+   "caveat_kinds": [
+    "guardrail"
+   ],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-L",
+   "id": "hien-0035",
+   "language": "en",
+   "tokens_in": 918,
+   "tokens_out": 389,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v21-L",
+   "id": "hien-0039",
+   "language": "en",
+   "tokens_in": 923,
+   "tokens_out": 319,
+   "caveat_kinds": [],
+   "invented_contact_served": true,
+   "invented_contact_raw": true,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 4
+    },
+    "phi4_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 3
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-L",
+   "id": "hien-0043",
+   "language": "hi-en",
+   "tokens_in": 1378,
+   "tokens_out": 402,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    },
+    "phi4_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-L",
+   "id": "hien-0049",
+   "language": "hi-en",
+   "tokens_in": 1416,
+   "tokens_out": 641,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 3
+    },
+    "phi4_14b": {
+     "n_invented": 3,
+     "coherent": false,
+     "grounded": 2,
+     "tone_fit": 1
+    },
+    "gemma3_12b": {
+     "n_invented": 4,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 1
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-L",
+   "id": "hien-0058",
+   "language": "en",
+   "tokens_in": 881,
+   "tokens_out": 308,
+   "caveat_kinds": [
+    "guardrail"
+   ],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v21-L",
+   "id": "hien-0060",
+   "language": "en",
+   "tokens_in": 892,
+   "tokens_out": 437,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v21-L",
+   "id": "hien-0065",
+   "language": "en",
+   "tokens_in": 868,
+   "tokens_out": 312,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 1,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-L",
+   "id": "hien-0067",
+   "language": "en",
+   "tokens_in": 890,
+   "tokens_out": 264,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v21-L",
+   "id": "hien-0072",
+   "language": "en",
+   "tokens_in": 888,
+   "tokens_out": 263,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 4,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v21-L",
+   "id": "hien-0079",
+   "language": "en",
+   "tokens_in": 977,
+   "tokens_out": 289,
+   "caveat_kinds": [],
+   "invented_contact_served": true,
+   "invented_contact_raw": true,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-L",
+   "id": "hien-0083",
+   "language": "hi-en",
+   "tokens_in": 1370,
+   "tokens_out": 273,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 5,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 3
+    },
+    "phi4_14b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 4,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-L",
+   "id": "hien-0098",
+   "language": "en",
+   "tokens_in": 892,
+   "tokens_out": 373,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 1,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 4,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 6,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-L",
+   "id": "hien-0102",
+   "language": "en",
+   "tokens_in": 884,
+   "tokens_out": 300,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 4,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 4,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-S",
+   "id": "hien-0007",
+   "language": "en",
+   "tokens_in": 885,
+   "tokens_out": 227,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-S",
+   "id": "hien-0010",
+   "language": "hi-en",
+   "tokens_in": 1381,
+   "tokens_out": 280,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    },
+    "gemma3_12b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-S",
+   "id": "hien-0011",
+   "language": "hi-en",
+   "tokens_in": 1379,
+   "tokens_out": 411,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    },
+    "phi4_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-S",
+   "id": "hien-0023",
+   "language": "en",
+   "tokens_in": 957,
+   "tokens_out": 460,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 10,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-S",
+   "id": "hien-0025",
+   "language": "en",
+   "tokens_in": 902,
+   "tokens_out": 294,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 4
+    },
+    "phi4_14b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 3
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-S",
+   "id": "hien-0030",
+   "language": "en",
+   "tokens_in": 1006,
+   "tokens_out": 1187,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v21-S",
+   "id": "hien-0032",
+   "language": "en",
+   "tokens_in": 897,
+   "tokens_out": 302,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 4,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 4,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-S",
+   "id": "hien-0035",
+   "language": "en",
+   "tokens_in": 918,
+   "tokens_out": 304,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v21-S",
+   "id": "hien-0039",
+   "language": "en",
+   "tokens_in": 923,
+   "tokens_out": 340,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 3
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-S",
+   "id": "hien-0043",
+   "language": "hi-en",
+   "tokens_in": 1378,
+   "tokens_out": 309,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v21-S",
+   "id": "hien-0049",
+   "language": "hi-en",
+   "tokens_in": 1416,
+   "tokens_out": 479,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 4
+    },
+    "phi4_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    },
+    "gemma3_12b": {
+     "n_invented": 4,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 2
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-S",
+   "id": "hien-0058",
+   "language": "en",
+   "tokens_in": 881,
+   "tokens_out": 192,
+   "caveat_kinds": [
+    "guardrail"
+   ],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 4,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v21-S",
+   "id": "hien-0060",
+   "language": "en",
+   "tokens_in": 892,
+   "tokens_out": 258,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-S",
+   "id": "hien-0065",
+   "language": "en",
+   "tokens_in": 868,
+   "tokens_out": 1236,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 1,
+     "tone_fit": 4
+    },
+    "phi4_14b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    },
+    "gemma3_12b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-S",
+   "id": "hien-0067",
+   "language": "en",
+   "tokens_in": 890,
+   "tokens_out": 603,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v21-S",
+   "id": "hien-0072",
+   "language": "en",
+   "tokens_in": 888,
+   "tokens_out": 385,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 3
+    },
+    "phi4_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 3
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-S",
+   "id": "hien-0079",
+   "language": "en",
+   "tokens_in": 977,
+   "tokens_out": 609,
+   "caveat_kinds": [
+    "guardrail"
+   ],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    },
+    "gemma3_12b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 1,
+     "tone_fit": 3
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": false
+  },
+  {
+   "arm": "v21-S",
+   "id": "hien-0083",
+   "language": "hi-en",
+   "tokens_in": 1370,
+   "tokens_out": 259,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 3
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 3
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-S",
+   "id": "hien-0098",
+   "language": "en",
+   "tokens_in": 892,
+   "tokens_out": 266,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 1,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 6,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v21-S",
+   "id": "hien-0102",
+   "language": "en",
+   "tokens_in": 884,
+   "tokens_out": 368,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-L",
+   "id": "hien-0007",
+   "language": "en",
+   "tokens_in": 1063,
+   "tokens_out": 282,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-L",
+   "id": "hien-0010",
+   "language": "hi-en",
+   "tokens_in": 1570,
+   "tokens_out": 364,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 4,
+     "coherent": true,
+     "grounded": 1,
+     "tone_fit": 3
+    },
+    "phi4_14b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-L",
+   "id": "hien-0011",
+   "language": "hi-en",
+   "tokens_in": 1598,
+   "tokens_out": 515,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 4
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-L",
+   "id": "hien-0023",
+   "language": "en",
+   "tokens_in": 1135,
+   "tokens_out": 395,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 4,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-L",
+   "id": "hien-0025",
+   "language": "en",
+   "tokens_in": 1080,
+   "tokens_out": 369,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    },
+    "gemma3_12b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-L",
+   "id": "hien-0030",
+   "language": "en",
+   "tokens_in": 1184,
+   "tokens_out": 522,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v22-L",
+   "id": "hien-0032",
+   "language": "en",
+   "tokens_in": 1075,
+   "tokens_out": 252,
+   "caveat_kinds": [
+    "guardrail"
+   ],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 5,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-L",
+   "id": "hien-0035",
+   "language": "en",
+   "tokens_in": 1096,
+   "tokens_out": 351,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-L",
+   "id": "hien-0039",
+   "language": "en",
+   "tokens_in": 1101,
+   "tokens_out": 360,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 4,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-L",
+   "id": "hien-0043",
+   "language": "hi-en",
+   "tokens_in": 1567,
+   "tokens_out": 300,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 4
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 4,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-L",
+   "id": "hien-0049",
+   "language": "hi-en",
+   "tokens_in": 1605,
+   "tokens_out": 497,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 8,
+     "coherent": true,
+     "grounded": 1,
+     "tone_fit": 1
+    },
+    "phi4_14b": {
+     "n_invented": 3,
+     "coherent": false,
+     "grounded": 1,
+     "tone_fit": 1
+    },
+    "gemma3_12b": {
+     "n_invented": 7,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 1
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-L",
+   "id": "hien-0058",
+   "language": "en",
+   "tokens_in": 1059,
+   "tokens_out": 326,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-L",
+   "id": "hien-0060",
+   "language": "en",
+   "tokens_in": 1070,
+   "tokens_out": 508,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-L",
+   "id": "hien-0065",
+   "language": "en",
+   "tokens_in": 1046,
+   "tokens_out": 408,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 1,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-L",
+   "id": "hien-0067",
+   "language": "en",
+   "tokens_in": 1068,
+   "tokens_out": 291,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v22-L",
+   "id": "hien-0072",
+   "language": "en",
+   "tokens_in": 1066,
+   "tokens_out": 353,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v22-L",
+   "id": "hien-0079",
+   "language": "en",
+   "tokens_in": 1155,
+   "tokens_out": 312,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v22-L",
+   "id": "hien-0083",
+   "language": "hi-en",
+   "tokens_in": 1559,
+   "tokens_out": 353,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 3
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-L",
+   "id": "hien-0098",
+   "language": "en",
+   "tokens_in": 1070,
+   "tokens_out": 261,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-L",
+   "id": "hien-0102",
+   "language": "en",
+   "tokens_in": 1062,
+   "tokens_out": 219,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 5,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 5,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-S",
+   "id": "hien-0007",
+   "language": "en",
+   "tokens_in": 1063,
+   "tokens_out": 168,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v22-S",
+   "id": "hien-0010",
+   "language": "hi-en",
+   "tokens_in": 1570,
+   "tokens_out": 261,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-S",
+   "id": "hien-0011",
+   "language": "hi-en",
+   "tokens_in": 1598,
+   "tokens_out": 340,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 4
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-S",
+   "id": "hien-0023",
+   "language": "en",
+   "tokens_in": 1135,
+   "tokens_out": 421,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-S",
+   "id": "hien-0025",
+   "language": "en",
+   "tokens_in": 1080,
+   "tokens_out": 423,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 3
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-S",
+   "id": "hien-0030",
+   "language": "en",
+   "tokens_in": 1184,
+   "tokens_out": 497,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v22-S",
+   "id": "hien-0032",
+   "language": "en",
+   "tokens_in": 1075,
+   "tokens_out": 528,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-S",
+   "id": "hien-0035",
+   "language": "en",
+   "tokens_in": 1096,
+   "tokens_out": 236,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v22-S",
+   "id": "hien-0039",
+   "language": "en",
+   "tokens_in": 1101,
+   "tokens_out": 472,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 3
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v22-S",
+   "id": "hien-0043",
+   "language": "hi-en",
+   "tokens_in": 1567,
+   "tokens_out": 190,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v22-S",
+   "id": "hien-0049",
+   "language": "hi-en",
+   "tokens_in": 1605,
+   "tokens_out": 703,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 3
+    },
+    "phi4_14b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 2
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-S",
+   "id": "hien-0058",
+   "language": "en",
+   "tokens_in": 1059,
+   "tokens_out": 588,
+   "caveat_kinds": [
+    "drafted on reduced-capacity model — review carefully before posting",
+    "guardrail"
+   ],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v22-S",
+   "id": "hien-0060",
+   "language": "en",
+   "tokens_in": 1070,
+   "tokens_out": 235,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-S",
+   "id": "hien-0065",
+   "language": "en",
+   "tokens_in": 1046,
+   "tokens_out": 461,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v22-S",
+   "id": "hien-0067",
+   "language": "en",
+   "tokens_in": 1068,
+   "tokens_out": 244,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v22-S",
+   "id": "hien-0072",
+   "language": "en",
+   "tokens_in": 1066,
+   "tokens_out": 429,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 2,
+     "tone_fit": 4
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 3
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-S",
+   "id": "hien-0079",
+   "language": "en",
+   "tokens_in": 1155,
+   "tokens_out": 499,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 3
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  },
+  {
+   "arm": "v22-S",
+   "id": "hien-0083",
+   "language": "hi-en",
+   "tokens_in": 1559,
+   "tokens_out": 377,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 4
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 2,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-S",
+   "id": "hien-0098",
+   "language": "en",
+   "tokens_in": 1070,
+   "tokens_out": 244,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 4,
+     "coherent": true,
+     "grounded": 1,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 3,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 4,
+     "coherent": true,
+     "grounded": 4,
+     "tone_fit": 5
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": true,
+   "usable": false
+  },
+  {
+   "arm": "v22-S",
+   "id": "hien-0102",
+   "language": "en",
+   "tokens_in": 1062,
+   "tokens_out": 193,
+   "caveat_kinds": [],
+   "invented_contact_served": false,
+   "invented_contact_raw": false,
+   "judges": {
+    "qwen3_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 3,
+     "tone_fit": 5
+    },
+    "phi4_14b": {
+     "n_invented": 0,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 5
+    },
+    "gemma3_12b": {
+     "n_invented": 1,
+     "coherent": true,
+     "grounded": 5,
+     "tone_fit": 4
+    }
+   },
+   "missing_verdicts": 0,
+   "hard_failure": false,
+   "usable": true
+  }
+ ],
+ "no_review_or_draft_text_included": true
+}
