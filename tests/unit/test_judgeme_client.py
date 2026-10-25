@@ -222,9 +222,18 @@ def test_log_filter_redacts_api_token_in_url_object_and_string() -> None:
 
 
 def test_recorder_redacts_reviewer_identity() -> None:
-    raw = make_review(5, body="call me on +91 98765 43210 or a@b.com")
+    raw = make_review(5, body="call me on +91 98765 43210 or a@b.com, I was on 198.51.100.7")
     out = json.dumps(redact({"reviews": [raw]}))
-    for needle in ("buyer5@example.com", "Buyer Name5", "9000005", "98765", "a@b.com"):
+    # S31: ip_address sits on the review (Judge.me OpenAPI), not inside `reviewer`
+    for needle in (
+        "buyer5@example.com",
+        "Buyer Name5",
+        "9000005",
+        "98765",
+        "a@b.com",
+        "203.0.113.5",
+        "198.51.100.7",
+    ):
         assert needle not in out
 
 
