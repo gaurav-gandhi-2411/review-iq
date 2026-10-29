@@ -16,6 +16,22 @@ Full record: `docs/autonomy/S32_PROGRESS.md`.
 - **Reply prompt v2.2 (#298) merges on c1 alone (GG, 2026-10-29); reply drafting stays OFF.** A full reply eval is REQUIRED before
   drafting is ever enabled: v2.2 removes invented contact details (3/20 -> 0/20, VERIFIED), but whether it is "not worse" on drafting
   quality is unmeasured (S31 judges saturated; the calibrated re-judge was inconclusive).
+- **Failover headroom on the shared Groq org (S32 addendum, measured 2026-10-29, no production change).** The failover key
+  (`groq-api-key`, gpt-oss-120b) sits in an org that other projects (triage-iq's recorder, benchmarks) also fill.
+  - Over the 168 hours 2026-10-22 10:00 to 2026-10-29 10:00 UTC: **0 hours** with too little headroom to serve one failover
+    extraction (2,169 tokens, the 10-28 probe's 1,678 in + 491 out). The lowest headroom was 39,599 tokens (about 18 extractions) at
+    10-29 08:00 UTC, while triage-iq's recorder (97,500) and this session's benchmark (60,732) were both in the rolling window; 3 hours
+    were below the 40,000-token production reserve (VERIFIED, `reports/ops/failover_headroom_s32.json`, `scripts/failover_headroom.py`).
+  - Production: 0 `llm.rate_limited` and 0 `llm.failover` events since 10-22 (field checked against live `ingest_tick.completed`
+    events, so the zero is real); the nightly `failover-probe` passed 7 of 7 nights (VERIFIED, Cloud Logging). Text searches for
+    "429" in both GCP projects matched only port numbers, a 429.69 ms latency and an image digest. triage-iq's API logs no Groq calls.
+  - Scope, BELIEVED gap: the count includes only spend that wrote a ledger (the shared `~/.groq_budget` ledger, which keeps 48 hours
+    and here held entries only from 10-28 21:02; the S31 reply-eval ledger, 59,294 tokens on 10-22; the probe). triage-iq recorder runs
+    before 10-28 21:02 or any spend that bypassed the ledger are invisible. The shared ledger caps all gated projects at 160,000,
+    so gated traffic alone cannot push headroom below 40,000; the pre-ledger precedent is a real probe FAIL on quota on 2026-10-11 (pool
+    near 199K of 200K).
+  - What 18 extractions means: at the worst hour, a primary outage could fail over about 18 reviews before Groq answers 429. Re-decide
+    at the first sale (`ops/runbooks/groq-paid-tier.md` section 6).
 
 ## Session 31 (autonomous, 2026-10-23 to 2026-10-25): what changed
 

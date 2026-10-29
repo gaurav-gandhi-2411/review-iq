@@ -69,6 +69,28 @@ encoder service are not in it.
 The existing production Groq key lives in the dedicated organisation; moving the organisation to the paid plan does not change the
 key. No key is created or rotated by these steps. CI never holds a write-capable production credential.
 
+## 6. Re-decide the failover (GG decides; CC measures)
+
+The failover key (`groq-api-key`, `openai/gpt-oss-120b`, ADR 0038) lives in the SHARED organisation, not the dedicated one this
+runbook upgrades. Other projects (triage-iq's cassette recorder, benchmarks) fill that pool, so the failover can serve only what they
+leave. Paying the dedicated organisation does not change this.
+
+Measured 2026-10-29 (S32; `reports/ops/failover_headroom_s32.json`, `scripts/failover_headroom.py`): over the previous 7 days, 0 hours
+without room for one failover extraction (2,169 tokens); worst hour 39,599 tokens free, about 18 extractions; 0 production 429s or
+failovers; the nightly probe passed 7 of 7. Only ledgered spend is counted (the shared ledger keeps 48 hours), so re-run the script
+over a fresh window before deciding:
+
+    python scripts/failover_headroom.py --end <now, ISO 8601 with offset> \
+        --ledger shared=~/.groq_budget/ledger.json --out reports/ops/failover_headroom_<date>.json
+
+Then pick one, with that number and the customer's expected daily reviews in hand:
+
+1. **Paid primary limits.** After step 1 the dedicated organisation's own higher limits (step 3) may make a quota-driven failover
+   rare; the failover then covers only provider outages, and the shared pool's headroom matters less.
+2. **A separate failover.** A failover key in an organisation no other project uses (or another provider), so its headroom is
+   the whole pool. Needs a new key in Secret Manager and a production config change (GG approves).
+3. **Accept the risk.** Keep the shared failover and record the headroom figure and its date as the accepted risk in ADR 0038.
+
 ## Rollback
 
 Console: downgrade to Free (step 1.3); remove the spend limit if it blocks access. App: set `ENABLE_COST_ALERTS=false`; the endpoint then
