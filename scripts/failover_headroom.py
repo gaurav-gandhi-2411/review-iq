@@ -1,5 +1,8 @@
-"""Hours in a trailing window when the shared Groq failover org had too little gpt-oss-120b headroom to serve one
-failover extraction.
+"""LEDGERED gpt-oss-120b spend on the shared Groq failover org, per hour over a trailing window, and the headroom it implies.
+
+This is a LOWER bound on usage and so an UPPER bound on headroom: spend that wrote no ledger (other projects' keys in the same
+org) is invisible, and Groq exposes no daily-remaining header (`x-ratelimit-remaining-tokens` is per minute). A zero count of
+hours below one extraction therefore does not show the failover had room (S32 correction, docs/STATUS.md).
 
 Groq's daily token pool is a rolling 24 h window per model and organisation. The failover key (`groq-api-key`)
 lives in an organisation that other projects (triage-iq's cassette recorder, benchmarks) also spend from, so the
@@ -75,14 +78,17 @@ def headroom_report(
     return {
         "window_utc": [start.isoformat(), end.isoformat()],
         "hours": len(hours),
+        "scope": "ledgered spend only: lower bound on usage, upper bound on headroom; not a headroom measurement",
         "daily_cap": DAILY_CAP,
         "extraction_tokens": EXTRACTION_TOKENS,
         "tokens_in_window_by_source": dict(sorted(by_source.items())),
-        "hours_headroom_below_one_extraction": sum(h < EXTRACTION_TOKENS for h in head),
-        "hours_headroom_below_production_reserve": sum(h < PRODUCTION_RESERVE for h in head),
-        "min_headroom_tokens": head[worst],
-        "min_headroom_at_utc": hours[worst].isoformat(),
-        "min_headroom_extractions": head[worst] // EXTRACTION_TOKENS,
+        "hours_ledgered_headroom_below_one_extraction": sum(h < EXTRACTION_TOKENS for h in head),
+        "hours_ledgered_headroom_below_production_reserve": sum(
+            h < PRODUCTION_RESERVE for h in head
+        ),
+        "max_possible_headroom_at_worst_hour_tokens": head[worst],
+        "worst_hour_utc": hours[worst].isoformat(),
+        "max_possible_extractions_at_worst_hour": head[worst] // EXTRACTION_TOKENS,
         "hourly": [
             {"hour_utc": h.isoformat(), "used_24h": u} for h, u in zip(hours, used, strict=True)
         ],
