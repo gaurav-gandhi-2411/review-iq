@@ -5,7 +5,7 @@ this session's queue is GG's S32 brief (below). Stop when it is done.
 
 ## Current task
 
-0b — snapshot (this file).
+2b running (20b kernel on Kaggle; 120b waiting on the shared Groq pool); 1c (#625 CI) and 4a in between.
 
 ## Queue
 
@@ -13,13 +13,13 @@ this session's queue is GG's S32 brief (below). Stop when it is done.
 |---|---|---|---|---|
 | 0a | Main-checkout cleanup | **done** | see Decisions log | 2026-10-29 06:40 |
 | 0b | Progress file + snapshot | **done** | Snapshot below | 2026-10-29 06:45 |
-| 1a | Merge #298 (reply v2.2), drafting stays OFF | pending | | |
-| 1b | Record classifier parity tolerance | pending | | |
-| 1c | Merge Dependabot #623, #624, #625 (tokenizer parity first for #625) | pending | | |
-| 2a | Pre-register `docs/specs/s32-s4-llm-check.md` (EXPLORATORY) | pending | | |
-| 2b | Run the S4 LLM check (20b Kaggle, 120b Groq failover) | pending | | |
+| 1a | Merge #298 (reply v2.2), drafting stays OFF | **done** | PR body rewritten (GG decision, c1 evidence, full eval required before enabling); updated onto main; merged `f0f0348`. Deploy `review-iq-00104-9hd`: `ENABLE_REPLY_DRAFTING` not set -> code default False; `/health` 200 | 2026-10-29 ~07:20 |
+| 1b | Record classifier parity tolerance | **done** | 0 class flips VERIFIED from `classify_redeploy_s31.json` (all 5 mismatches have "abstained" on one side; 5/3,028 = 0.17%). Recorded in STATUS + serving report, #626 merged `e0ef5e2` | 2026-10-29 07:30 |
+| 1c | Merge Dependabot #623, #624, #625 (tokenizer parity first for #625) | #623, #624 **merged**; #625 CI running | #623 `d630d86`, #624 `883b208`. Tokenizer parity for #625 (0.22.2 -> 0.23.3): served path (`Tokenizer.from_file` + truncation 128) on the 763 run-2 test texts, per item and padded batches of 128: **0 of 763 differ** in ids or attention masks (sha256[:16] 55c19f8dbf28a865 / ad6f0467dbd61d65 identical; tokenizer.json sha256[:16] 62c24cdc13d4c995) | |
+| 2a | Pre-register `docs/specs/s32-s4-llm-check.md` (EXPLORATORY) | **done** | registration commit `3959ac6` pushed (~07:05) before any computation (the first 120b call came after the 20b kernel push); merged #627 `c6b7be8` | 2026-10-29 07:25 |
+| 2b | Run the S4 LLM check (20b Kaggle, 120b Groq failover) | running | 20b: dataset `review-intent-s4b-llm` (4,100 Block B items), kernel `review-intent-s4b-llm-run` v1 pushed ~07:15 (main `f0f0348`, items mode, 1,500 tokens, effort low). 120b: 142/259 rows (2-item smoke, then 80, then 60); paused by the shared pool (156,317 / 160,000) | |
 | 3 | Decision tree branch D1 / D2 / D3 | pending | | |
-| 4a | Triage 12 older PRs | pending | | |
+| 4a | Triage 12 older PRs | in progress | gate run on each; see PARKED | |
 | 4b | Delete the scratch venv | pending | | |
 | 5 | STATUS, HANDOFF_S32, merge | pending | | |
 
