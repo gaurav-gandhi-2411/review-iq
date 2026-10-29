@@ -75,15 +75,19 @@ The failover key (`groq-api-key`, `openai/gpt-oss-120b`, ADR 0038) lives in the 
 runbook upgrades. Other projects (triage-iq's cassette recorder, benchmarks) fill that pool, so the failover can serve only what they
 leave. Paying the dedicated organisation does not change this.
 
-Measured 2026-10-29 (S32; `reports/ops/failover_headroom_s32.json`, `scripts/failover_headroom.py`): over the previous 7 days, 0 hours
-without room for one failover extraction (2,169 tokens); worst hour 39,599 tokens free, about 18 extractions; 0 production 429s or
-failovers; the nightly probe passed 7 of 7. Only ledgered spend is counted (the shared ledger keeps 48 hours), so re-run the script
-over a fresh window before deciding:
+What is known (S32, 2026-10-29, corrected; detail in `docs/STATUS.md` S32):
 
-    python scripts/failover_headroom.py --end <now, ISO 8601 with offset> \
-        --ledger shared=~/.groq_budget/ledger.json --out reports/ops/failover_headroom_<date>.json
+- Ledgered 120b spend (with the probe) peaked at 160,401 tokens in a rolling 24 h (10-29 07:40-08:00 UTC), so the failover had AT MOST 39,599 tokens
+  (18 extractions of 2,169) at that hour. The true headroom is unknown: projects without the ledger spend from the same pool, and the
+  40,000 production reserve binds only ledger-wired projects. Whether it fell below one extraction is not established.
+- Not wired to the ledger and calling gpt-oss-120b: the gg-portfolio chatbot (live), DealHunter's demo profile, swasarthi's evals
+  (arithmetic says a different org), agentgauge-r1, token-efficiency-scorer. Which org each key is in is visible only in the Groq console.
+- 0 production 429s or failovers 10-22 to 10-29; nightly probe 7 of 7.
+- `scripts/failover_headroom.py` gives only the ledgered lower bound on usage. Groq's `x-ratelimit-remaining-tokens` header is
+  per-minute, not daily, so it cannot fill the gap.
 
-Then pick one, with that number and the customer's expected daily reviews in hand:
+Before deciding, measure the real number (GG, console): the shared organisation's daily gpt-oss-120b usage for the last 7 days
+(console usage page), and list which keys/projects it holds. Then pick one, with that number and the customer's expected daily reviews:
 
 1. **Paid primary limits.** After step 1 the dedicated organisation's own higher limits (step 3) may make a quota-driven failover
    rare; the failover then covers only provider outages, and the shared pool's headroom matters less.

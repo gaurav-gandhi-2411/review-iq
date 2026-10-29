@@ -16,22 +16,32 @@ Full record: `docs/autonomy/S32_PROGRESS.md`.
 - **Reply prompt v2.2 (#298) merges on c1 alone (GG, 2026-10-29); reply drafting stays OFF.** A full reply eval is REQUIRED before
   drafting is ever enabled: v2.2 removes invented contact details (3/20 -> 0/20, VERIFIED), but whether it is "not worse" on drafting
   quality is unmeasured (S31 judges saturated; the calibrated re-judge was inconclusive).
-- **Failover headroom on the shared Groq org (S32 addendum, measured 2026-10-29, no production change).** The failover key
-  (`groq-api-key`, gpt-oss-120b) sits in an org that other projects (triage-iq's recorder, benchmarks) also fill.
-  - Over the 168 hours 2026-10-22 10:00 to 2026-10-29 10:00 UTC: **0 hours** with too little headroom to serve one failover
-    extraction (2,169 tokens, the 10-28 probe's 1,678 in + 491 out). The lowest headroom was 39,599 tokens (about 18 extractions) at
-    10-29 08:00 UTC, while triage-iq's recorder (97,500) and this session's benchmark (60,732) were both in the rolling window; 3 hours
-    were below the 40,000-token production reserve (VERIFIED, `reports/ops/failover_headroom_s32.json`, `scripts/failover_headroom.py`).
-  - Production: 0 `llm.rate_limited` and 0 `llm.failover` events since 10-22 (field checked against live `ingest_tick.completed`
-    events, so the zero is real); the nightly `failover-probe` passed 7 of 7 nights (VERIFIED, Cloud Logging). Text searches for
-    "429" in both GCP projects matched only port numbers, a 429.69 ms latency and an image digest. triage-iq's API logs no Groq calls.
-  - Scope, BELIEVED gap: the count includes only spend that wrote a ledger (the shared `~/.groq_budget` ledger, which keeps 48 hours
-    and here held entries only from 10-28 21:02; the S31 reply-eval ledger, 59,294 tokens on 10-22; the probe). triage-iq recorder runs
-    before 10-28 21:02 or any spend that bypassed the ledger are invisible. The shared ledger caps all gated projects at 160,000,
-    so gated traffic alone cannot push headroom below 40,000; the pre-ledger precedent is a real probe FAIL on quota on 2026-10-11 (pool
-    near 199K of 200K).
-  - What 18 extractions means: at the worst hour, a primary outage could fail over about 18 reviews before Groq answers 429. Re-decide
-    at the first sale (`ops/runbooks/groq-paid-tier.md` section 6).
+- **Failover headroom on the shared Groq org (S32 addendum, 2026-10-29, CORRECTED the same day; no production change).** The failover
+  key (`groq-api-key`, gpt-oss-120b) sits in an org that other projects also spend from.
+  - **WITHDRAWN: "0 of 168 hours too low" (#628).** It counted only spend that wrote a ledger, so it was a lower bound on usage
+    and an upper bound on headroom, not a measurement of headroom.
+  - **What is known for the worst hour (10-29 ~07:40 UTC):** ledgered spend in the rolling 24 h was 160,401 tokens (triage-iq recorder
+    97,500 + this session's benchmark 60,732 + the 02:30 probe 2,169), so Groq-side headroom was at most 39,599 (VERIFIED, `reports/ops/failover_headroom_s32.json`). The benchmark's last call at
+    07:40 succeeded, so Groq's own count was then below its 200,000 cap: unledgered spend was between 0 and ~39,600 tokens. **Whether
+    headroom fell below one failover extraction (2,169 tokens) on 10-29 is NOT established either way.**
+  - **Correction to a figure in the S32 session log:** "1,768 free" was the ledger's ALLOCATABLE remainder (160,000 - 158,232), printed by a
+    ledger-only check that makes no Groq request. It is not Groq-side headroom.
+  - **Groq does not expose daily headroom.** `x-ratelimit-remaining-tokens` is per-MINUTE (TPM) per Groq's rate-limit page; daily usage
+    appears only in a 429 body ("Limit 200000, Used U"). None of the 147 benchmark calls, 7 probes or production calls since 10-22
+    got a 429 (VERIFIED: 0 `llm.rate_limited`, 0 `llm.failover`, probe 7/7 PASS). Neither the probe nor the benchmark records headers.
+  - **The 40,000 production reserve binds only ledger-wired projects** (triage-iq's recorder and review-iq's benchmarks). Local repos that
+    call Groq with NO ledger (read-only sweep of `ml-projects`, rule-55e repos excluded); which org each key belongs to is NOT known
+    from code (GG: Groq console):
+    - gpt-oss-120b (same model pool as the failover): **gg-portfolio chatbot** (live on Vercel, `lib/chatbot/llm-provider.ts`; its
+      canary POSTs a chat 4 times a day, 27 runs since 10-22, plus real visitors; not observable from here); **DealHunter**
+      (agentic-travel-booking-system, demo profile `demo-gpt-oss-120b`; 0 log lines naming the model in `dealhunter-prod-260812` in 7 days);
+      **swasarthi** (doubt eval: 444,666 tokens in three runs, 10-23 08:19, 10-24 00:11, 10-29 04:13; its 10-23 + 10-24 runs alone are
+      336,050 tokens within about 16 hours with 1 error, and the 10-24 02:30 probe and the 10-29 06:52 benchmark call both succeeded, so it
+      cannot be on a 200,000-cap failover org: BELIEVED, from arithmetic); **agentgauge-r1** and **token-efficiency-scorer** (research
+      code; no run output in the window found).
+    - Other models only (no effect on the 120b pool): agentic-shopping-assistant, next-season-styles, expense-tracker,
+      multimodal-fashion-recommender, agentgauge, gold-rate-tracker.
+  - Re-decide at the first sale (`ops/runbooks/groq-paid-tier.md` section 6), with a Groq-console reading of the shared org's daily usage.
 
 ## Session 31 (autonomous, 2026-10-23 to 2026-10-25): what changed
 
