@@ -5,7 +5,7 @@ this session's queue is GG's S32 brief (below). Stop when it is done.
 
 ## Current task
 
-2b running (20b kernel on Kaggle; 120b waiting on the shared Groq pool); 1c (#625 CI) and 4a in between.
+2b: 120b arm waiting on the shared Groq pool (frees 21:02-21:50 UTC 10-29). Addendum (failover headroom) done, #628.
 
 ## Queue
 
@@ -22,6 +22,7 @@ this session's queue is GG's S32 brief (below). Stop when it is done.
 | 4a | Triage 12 older PRs | **done** | `merge_gate.py` run on every candidate. Merged: #605 (web minor/patch: react 19.3.1, react-router 8.5.0, ...; 22 reviewable + 328 generated stated in the body for gate 3b) `f4fbe77`; app 200 after. Closed: none (all 11 others still wanted). Parked: 11 (PARKED below). #610 had become CONFLICTING after #605 (web/package.json + lockfile): merged main in, kept main's bumps and the Tailwind removal of autoprefixer, lockfile regenerated with `npm install --package-lock-only` (0 vulnerabilities), `ea4bca2`; still a DRAFT | 2026-10-29 07:55 |
 | 4b | Delete the scratch venv | **done** | The S31 scratch venv was **686 MB, not about 14 GB** as the S31 handoff said (BELIEVED there, measured now; uv venvs hard-link from the shared uv cache). It no longer even imported numpy (DLL load failure). Deleted (check and delete as separate commands). This session's own small venvs (tokenizer 0.22.2 / 0.23.3, analysis) stay until close-out | 2026-10-29 08:05 |
 | 5 | STATUS, HANDOFF_S32, merge | pending | | |
+| add | ADDENDUM: shared-pool failover headroom, 7 days | **done** | **0 of 168 hours** (10-22 10:00 to 10-29 10:00 UTC) without room for one failover extraction (2,169 tokens, 10-28 probe 1,678 in + 491 out); worst hour 39,599 tokens free (~18 extractions) at 10-29 08:00; 3 hours below the 40K reserve. Sources: shared ledger (48 h kept; entries only from 10-28 21:02), S31 reply-eval ledger (59,294 on 10-22), nightly probe. Prod since 10-22: 0 `llm.rate_limited`, 0 `llm.failover`; probe 7/7 PASS; text '429' hits in both GCP projects were all false (ports, a 429.69 ms latency, a digest); triage-iq API logs no Groq calls. GCS recorder ledger snapshots: none exist. Recorded in STATUS + runbook section 6; #628 merged `28bb077`. No production change | 2026-10-29 10:50 |
 
 ## Snapshot (2026-10-29 06:45 UTC)
 
@@ -81,8 +82,8 @@ Unchanged from S31: gate-4 chain #396 (draft), #576, #578, #579 (stacked on #578
 | Resource | Used | Notes |
 |---|---|---|
 | Kaggle GPU h | ~1.65 | 20b Block B run (2 x T4, ~5,930 s); week from 10-24 about 18.9 of ~30 (quota BELIEVED) |
-| Groq failover tokens | 0 | |
-| GCP | 0 actions | |
+| Groq failover tokens | 120b 60,732 (benchmark, ledger) | 147/259 S4 positives so far |
+| GCP | 0 changes | read-only log queries in reviewiq-prod-260813 and triageiq-prod-260812; GCS list (read) |
 
 ## Incidents
 
