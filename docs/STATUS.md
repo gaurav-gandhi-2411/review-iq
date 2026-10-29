@@ -5,6 +5,18 @@ session or by a committed artifact (command and output exist); BELIEVED = inferr
 not observed. Synthetic = produced on generated data, never a statement about real customers.
 
 
+## Session 32 (autonomous, 2026-10-29): decisions recorded
+
+Full record: `docs/autonomy/S32_PROGRESS.md`.
+
+- **Classifier parity tolerance ACCEPTED (GG, 2026-10-29).** Tolerance for the served classifier against its offline reference:
+  **at most 0.5 percent of task decisions may differ, every difference must be at the abstention boundary (label vs abstained), and
+  0 class-to-class flips.** The S31 live measurement meets it: 5 of 3,028 decisions (0.17 percent), all 5 abstain-boundary, 0 class flips
+  (VERIFIED, `reports/serving/classify_redeploy_s31.json` `p3.live_parity`). "Cloud Run numerics parity" is no longer parked.
+- **Reply prompt v2.2 (#298) merges on c1 alone (GG, 2026-10-29); reply drafting stays OFF.** A full reply eval is REQUIRED before
+  drafting is ever enabled: v2.2 removes invented contact details (3/20 -> 0/20, VERIFIED), but whether it is "not worse" on drafting
+  quality is unmeasured (S31 judges saturated; the calibrated re-judge was inconclusive).
+
 ## Session 31 (autonomous, 2026-10-23 to 2026-10-25): what changed
 
 Full record: `docs/autonomy/S31_PROGRESS.md`; handoff: `docs/HANDOFF_2026-10-27_s31.md`.

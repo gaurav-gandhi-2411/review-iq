@@ -27,6 +27,10 @@ Per-task |served − offline| probability over the 757: **bit-identical on 658�
 Conclusion: the pin makes the laptop and Kaggle CPUs agree exactly (S30), but Cloud Run's CPU still takes a different path for about
 13% of inputs. The target (0 mismatches) is not met; nothing calls the service (router OFF), so no rollback. Parked for GG.
 
+**Tolerance accepted (GG, S32, 2026-10-29).** Served vs offline: at most 0.5 percent of task decisions differ, every difference at the
+abstention boundary, 0 class-to-class flips. This deployment meets it: 5/3,028 = 0.17 percent, all 5 abstain-boundary (listed above),
+0 class flips. A future redeploy is accepted on the same rule, re-measured with `scripts/classify_live_parity.py` on the same 757 reviews.
+
 ### Latency, memory, cold starts
 
 - Server side (Cloud Monitoring, parity window, per minute): p50 150–208 ms, p95 311–456 ms, p99 ≤ 627 ms; memory p99 0.62 of 2 GiB.
