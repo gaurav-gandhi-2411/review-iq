@@ -1,7 +1,8 @@
 # S32 S4 LLM check: results (EXPLORATORY, INCOMPLETE n = 147 for 120b)
 
 Spec: `docs/specs/s32-s4-llm-check.md` (pre-registered `3959ac6`; timing deviation logged in section 8 at `f5850f1` before the run).
-Code: `engine/intent/s4_llm_check.py` `analyze`, run once 2026-10-30 17:40 UTC. Result: `reports/intent/s4_llm_check/result.json`
+Code: `engine/intent/s4_llm_check.py` `analyze` at commit `b11eeb6` (branch `feat/s33-s4-llm-check-result`; the harness merges
+separately, it exceeds the 400-line review gate), run once 2026-10-30 17:40 UTC on a tree that was that commit plus the deviation log. Result: `reports/intent/s4_llm_check/result.json`
 (ids and numbers only). Labels are SILVER (four-judge panel consensus). An independent verifier recomputed every number with its own
 code (85 checks, 0 mismatches).
 
