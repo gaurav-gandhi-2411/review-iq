@@ -1,9 +1,15 @@
 # Cloud Run Deploy Runbook
 
 **Service:** `review-iq`
-**Project:** `review-iq-prod`
+**Project:** `reviewiq-prod-260813`
 **Region:** `asia-south1` (Mumbai)
-**Image registry:** `asia-south1-docker.pkg.dev/review-iq-prod/review-iq/api`
+**Image registry:** `asia-south1-docker.pkg.dev/reviewiq-prod-260813/cloud-run-source-deploy/review-iq`
+
+(Corrected 2026-10-31: this runbook still named `review-iq-prod`, the decommissioned
+pre-cutover project, and its registry. That project is not deleted, so a command aimed at it can
+succeed against the wrong project instead of failing; the workflow had the same defect until
+2026-08-15. The values above match `.github/workflows/deploy-cloud-run.yml` (`PROJECT`,
+`IMAGE_REPO`) and the live service.)
 
 ---
 
@@ -28,9 +34,10 @@ regardless, so it can't silently become the new untracked baseline again.
 
 `--set-env-vars` and `--set-secrets` **REPLACE the entire set** of env vars / secrets on the
 new revision — they do not merge with what the previous revision had. The service currently
-carries **17 env vars** (8 plain + 9 secret-backed — full inventory below). An earlier version
-of this runbook showed a `--set-secrets` example with only 4 entries; copying that command
-verbatim would silently **wipe the other 13** (including `ALLOWED_ORIGINS`, every `RESEND_*`
+carries **26 env vars** (13 plain + 13 secret-backed, read from the live service 2026-10-31 —
+full inventory below). An earlier version of this runbook showed a `--set-secrets` example with
+only 4 entries; copying that command verbatim would silently **wipe every other var** (13 of
+them at the time, including `ALLOWED_ORIGINS`, every `RESEND_*`
 var, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `UNSUBSCRIBE_SIGNING_KEY`,
 `INGEST_TICK_TOKEN`) — CORS breaks, email breaks, the ingest tick worker silently stops
 authenticating, and Supabase access breaks, all with no error until something downstream
@@ -63,9 +70,9 @@ uv run pytest tests/unit -q
 
 # 2. Build and push via Cloud Build (free: 120 min/day)
 gcloud builds submit \
-  --tag asia-south1-docker.pkg.dev/review-iq-prod/review-iq/api:TAG \
+  --tag asia-south1-docker.pkg.dev/reviewiq-prod-260813/cloud-run-source-deploy/review-iq:TAG \
   --region=asia-south1 \
-  --project=review-iq-prod
+  --project=reviewiq-prod-260813
 
 cd - && git worktree remove /tmp/build-<sha> --force
 
@@ -74,30 +81,30 @@ cd - && git worktree remove /tmp/build-<sha> --force
 #    template exactly. If you ARE adding/changing a var, use --update-env-vars /
 #    --update-secrets (merge), NEVER --set-env-vars / --set-secrets (replace):
 gcloud run deploy review-iq \
-  --image=asia-south1-docker.pkg.dev/review-iq-prod/review-iq/api:TAG \
+  --image=asia-south1-docker.pkg.dev/reviewiq-prod-260813/cloud-run-source-deploy/review-iq:TAG \
   --region=asia-south1 \
-  --project=review-iq-prod \
+  --project=reviewiq-prod-260813 \
   --no-traffic
   # --update-env-vars="NEW_VAR=value"          # only if adding/changing a plain var
   # --update-secrets="NEW_VAR=secret-name:latest"  # only if adding/changing a secret ref
 
 # 4. Get the new revision name, then tag it so it's reachable at a stable URL
 #    without touching the live traffic split:
-gcloud run revisions list --service=review-iq --region=asia-south1 --project=review-iq-prod \
+gcloud run revisions list --service=review-iq --region=asia-south1 --project=reviewiq-prod-260813 \
   --format="table(metadata.name,status.conditions[0].status)" --limit=3
 
-gcloud run services update-traffic review-iq --region=asia-south1 --project=review-iq-prod \
+gcloud run services update-traffic review-iq --region=asia-south1 --project=reviewiq-prod-260813 \
   --update-tags TAG=REVISION_NAME
-# reachable at: https://TAG---review-iq-ajjrytb3na-el.a.run.app
+# reachable at: https://TAG---review-iq-vd6nfefddq-el.a.run.app
 
 # 5. Smoke-test the TAGGED revision directly — before any real traffic sees it:
-curl -sf "https://TAG---review-iq-ajjrytb3na-el.a.run.app/health"
+curl -sf "https://TAG---review-iq-vd6nfefddq-el.a.run.app/health"
 # Exercise whatever the deploy actually changed, not just /health — e.g. a real
 # extraction call, an auth-protected endpoint with the correct token, etc.
 # (See "What to smoke-test" below.)
 
 # 6. Promote to 100% only once the tagged smoke passes clean:
-gcloud run services update-traffic review-iq --region=asia-south1 --project=review-iq-prod \
+gcloud run services update-traffic review-iq --region=asia-south1 --project=reviewiq-prod-260813 \
   --to-revisions=REVISION_NAME=100
 
 # 7. Re-verify on the PUBLIC domain after promotion (not just the tagged URL —
@@ -130,13 +137,13 @@ LLM calls, or any new code path a deploy actually changed. Match the smoke to th
 ```bash
 # Roll back to a specific previous revision immediately
 gcloud run services update-traffic review-iq \
-  --region=asia-south1 --project=review-iq-prod \
+  --region=asia-south1 --project=reviewiq-prod-260813 \
   --to-revisions=PREVIOUS_REVISION_NAME=100
 ```
 
 To find previous revision names:
 ```bash
-gcloud run revisions list --service=review-iq --region=asia-south1 --project=review-iq-prod \
+gcloud run revisions list --service=review-iq --region=asia-south1 --project=reviewiq-prod-260813 \
   --format="table(metadata.name,metadata.creationTimestamp,status.conditions[0].status)"
 ```
 
@@ -151,33 +158,42 @@ before trusting this, revisions churn):**
 
 ---
 
-## Current env var / secret inventory (reference — 17 total, verified live 2026-07-09)
+## Current env var / secret inventory (reference — 26 total, verified live 2026-10-31)
 
-Verified by reading the actual serving revision (`gcloud run revisions describe`), not assumed
-from a prior deploy command. **Re-verify this list the same way before trusting it** — it will
-drift as vars are added; this table is a snapshot, not a live source.
+Verified by reading the actual service template (`gcloud run services describe review-iq
+--format=json`, names only), not assumed from a prior deploy command. **Re-verify this list the
+same way before trusting it** — it will drift as vars are added; this table is a snapshot, not a
+live source.
 
-**Plain env vars (8):** `DEPLOY_TARGET`, `ENVIRONMENT`, `ALLOWED_ORIGINS`,
-`DIGEST_TRIGGER_TOKEN`, `RESEND_FROM_NAME`, `API_PUBLIC_BASE_URL`, `INGEST_TICK_TOKEN`,
-`INGEST_TICK_ROWS`.
+**Plain env vars (13):** `ALLOWED_ORIGINS`, `API_PUBLIC_BASE_URL`, `DEMO_MAX_SHARE`,
+`DEPLOY_TARGET`, `ENABLE_BATCH_DEFECT_DETECTOR`, `ENABLE_FAKE_CAMPAIGN_DETECTOR`, `ENVIRONMENT`,
+`INGEST_TICK_ROWS`, `RESEND_FROM_NAME`, `SECONDARY_PROVIDER_KIND`, `SECONDARY_PROVIDER_MODEL`,
+`SECRET_ROTATED_AT`, `SUPABASE_ANON_KEY`.
 
-**Secret-backed env vars (9, via Secret Manager, `latest` version):** `GROQ_API_KEY`,
-`GEMINI_API_KEY`, `SUPABASE_DATABASE_URL`, `ADMIN_PASSWORD_HASH`, `RESEND_API_KEY`,
-`RESEND_FROM_EMAIL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `UNSUBSCRIBE_SIGNING_KEY`.
+**Secret-backed env vars (13, via Secret Manager, `latest` version; env var ← secret):**
+`ADMIN_PASSWORD_HASH` ← `admin-password-hash`, `DETECTOR_SWEEP_TRIGGER_TOKEN` ←
+`detector-sweep-trigger-token`, `DIGEST_TRIGGER_TOKEN` ← `digest-trigger-token`,
+`GEMINI_API_KEY` ← `gemini-api-key`, `GROQ_API_KEY` ← `groq-api-key-samidha`,
+`INGEST_TICK_TOKEN` ← `ingest-tick-token`, `LEADS_IP_HASH_SALT` ← `leads-ip-hash-salt`,
+`RESEND_API_KEY` ← `resend-api-key`, `RESEND_FROM_EMAIL` ← `resend-from-email`,
+`SECONDARY_PROVIDER_API_KEY` ← `groq-api-key`, `SUPABASE_DATABASE_URL` ←
+`supabase-database-url`, `SUPABASE_URL` ← `supabase-url`, `UNSUBSCRIBE_SIGNING_KEY` ←
+`unsubscribe-signing-key`.
 
 Values are never printed here or in any command output committed to the repo. To adopt a new
 secret, grant `roles/secretmanager.secretAccessor` on that specific secret to
-`review-iq-runner@review-iq-prod.iam.gserviceaccount.com` (same per-secret least-privilege
-pattern as the existing 9), then deploy with `--update-secrets`.
+`review-iq-runner@reviewiq-prod-260813.iam.gserviceaccount.com` (same per-secret
+least-privilege pattern as the existing ones), then deploy with `--update-secrets`.
 
-**`DIGEST_TRIGGER_TOKEN` and `INGEST_TICK_TOKEN` are plain env vars, not secrets** — a
-deliberate choice: Secret Manager access on this project is at a 9-secret operational ceiling,
-and these are shared-secret bearer tokens for internal trigger endpoints (not credentials to
-an external system), so a plain env var was judged adequate. If that ceiling is ever revisited,
-promoting them to Secret Manager is a drop-in `--update-secrets` change, not a redesign.
+**`DIGEST_TRIGGER_TOKEN` and `INGEST_TICK_TOKEN` are secret-backed now.** An earlier version of
+this runbook kept them as plain env vars, citing "a 9-secret operational ceiling" on Secret
+Manager. That was a self-imposed cost guard, not a Secret Manager limit: the project holds 17
+secrets today (`gcloud secrets list`, 2026-10-31). The real constraint is cost — the free tier
+covers 6 active secret versions and each further active version is billed (see
+`ops/runbooks/secret-rotation.md`, "Key rules").
 
 **Source of truth:** the live revision, via `gcloud run revisions describe <name>
---region=asia-south1 --project=review-iq-prod --format=json` — inspect `spec.containers[0].env`.
+--region=asia-south1 --project=reviewiq-prod-260813 --format=json` — inspect `spec.containers[0].env`.
 This runbook's table above is a point-in-time copy for quick reference only; when they
 disagree, the live revision wins.
 
@@ -193,7 +209,7 @@ disagree, the live revision wins.
 | `--concurrency` | 80 | asyncio; auth queues at thread pool (5 concurrent argon2) |
 | `--min-instances` | 0 | scale to zero; cold start accepted at free tier |
 | `--max-instances` | 3 | prevents runaway billing |
-| service account | `review-iq-runner@review-iq-prod.iam.gserviceaccount.com` | least-privilege runtime identity |
+| service account | `review-iq-runner@reviewiq-prod-260813.iam.gserviceaccount.com` | least-privilege runtime identity |
 
 ---
 
