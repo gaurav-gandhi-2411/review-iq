@@ -170,15 +170,20 @@ live source.
 `INGEST_TICK_ROWS`, `RESEND_FROM_NAME`, `SECONDARY_PROVIDER_KIND`, `SECONDARY_PROVIDER_MODEL`,
 `SECRET_ROTATED_AT`, `SUPABASE_ANON_KEY`.
 
-**Secret-backed env vars (13, via Secret Manager, `latest` version; env var ← secret):**
-`ADMIN_PASSWORD_HASH` ← `admin-password-hash`, `DETECTOR_SWEEP_TRIGGER_TOKEN` ←
-`detector-sweep-trigger-token`, `DIGEST_TRIGGER_TOKEN` ← `digest-trigger-token`,
-`GEMINI_API_KEY` ← `gemini-api-key`, `GROQ_API_KEY` ← `groq-api-key-samidha`,
-`INGEST_TICK_TOKEN` ← `ingest-tick-token`, `LEADS_IP_HASH_SALT` ← `leads-ip-hash-salt`,
-`RESEND_API_KEY` ← `resend-api-key`, `RESEND_FROM_EMAIL` ← `resend-from-email`,
-`SECONDARY_PROVIDER_API_KEY` ← `groq-api-key`, `SUPABASE_DATABASE_URL` ←
-`supabase-database-url`, `SUPABASE_URL` ← `supabase-url`, `UNSUBSCRIBE_SIGNING_KEY` ←
-`unsubscribe-signing-key`.
+**Secret-backed env vars (13, via Secret Manager; env var ← secret:version):**
+`ADMIN_PASSWORD_HASH` ← `admin-password-hash:3`, `DETECTOR_SWEEP_TRIGGER_TOKEN` ←
+`detector-sweep-trigger-token:3`, `DIGEST_TRIGGER_TOKEN` ← `digest-trigger-token:3`,
+`GEMINI_API_KEY` ← `gemini-api-key:latest`, `GROQ_API_KEY` ← `groq-api-key-samidha:latest`,
+`INGEST_TICK_TOKEN` ← `ingest-tick-token:3`, `LEADS_IP_HASH_SALT` ← `leads-ip-hash-salt:latest`,
+`RESEND_API_KEY` ← `resend-api-key:latest`, `RESEND_FROM_EMAIL` ← `resend-from-email:latest`,
+`SECONDARY_PROVIDER_API_KEY` ← `groq-api-key:latest`, `SUPABASE_DATABASE_URL` ←
+`supabase-database-url:latest`, `SUPABASE_URL` ← `supabase-url:latest`,
+`UNSUBSCRIBE_SIGNING_KEY` ← `unsubscribe-signing-key:latest`.
+
+**Four bindings are pinned to version `3`, not `latest`** (`admin-password-hash`, and the three
+trigger tokens). Adding a new version of one of those secrets changes nothing on the service until
+the binding itself is updated (`--update-secrets=VAR=secret-name:N`), and disabling version 3
+before that would break the service on its next revision. Check the binding before rotating them.
 
 Values are never printed here or in any command output committed to the repo. To adopt a new
 secret, grant `roles/secretmanager.secretAccessor` on that specific secret to
