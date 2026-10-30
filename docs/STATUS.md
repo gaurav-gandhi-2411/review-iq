@@ -5,6 +5,44 @@ session or by a committed artifact (command and output exist); BELIEVED = inferr
 not observed. Synthetic = produced on generated data, never a statement about real customers.
 
 
+## Session 32 (autonomous, 2026-10-29): decisions recorded
+
+Full record: `docs/autonomy/S32_PROGRESS.md`.
+
+- **Classifier parity tolerance ACCEPTED (GG, 2026-10-29).** Tolerance for the served classifier against its offline reference:
+  **at most 0.5 percent of task decisions may differ, every difference must be at the abstention boundary (label vs abstained), and
+  0 class-to-class flips.** The S31 live measurement meets it: 5 of 3,028 decisions (0.17 percent), all 5 abstain-boundary, 0 class flips
+  (VERIFIED, `reports/serving/classify_redeploy_s31.json` `p3.live_parity`). "Cloud Run numerics parity" is no longer parked.
+- **Reply prompt v2.2 (#298) merges on c1 alone (GG, 2026-10-29); reply drafting stays OFF.** A full reply eval is REQUIRED before
+  drafting is ever enabled: v2.2 removes invented contact details (3/20 -> 0/20, VERIFIED), but whether it is "not worse" on drafting
+  quality is unmeasured (S31 judges saturated; the calibrated re-judge was inconclusive).
+- **Failover headroom on the shared Groq org (S32 addendum, 2026-10-29, CORRECTED the same day; no production change).** The failover
+  key (`groq-api-key`, gpt-oss-120b) sits in an org that other projects also spend from.
+  - **WITHDRAWN: "0 of 168 hours too low" (#628).** It counted only spend that wrote a ledger, so it was a lower bound on usage
+    and an upper bound on headroom, not a measurement of headroom.
+  - **What is known for the worst hour (10-29 ~07:40 UTC):** ledgered spend in the rolling 24 h was 160,401 tokens (triage-iq recorder
+    97,500 + this session's benchmark 60,732 + the 02:30 probe 2,169), so Groq-side headroom was at most 39,599 (VERIFIED, `reports/ops/failover_headroom_s32.json`). The benchmark's last call at
+    07:40 succeeded, so Groq's own count was then below its 200,000 cap: unledgered spend was between 0 and ~39,600 tokens. **Whether
+    headroom fell below one failover extraction (2,169 tokens) on 10-29 is NOT established either way.**
+  - **Correction to a figure in the S32 session log:** "1,768 free" was the ledger's ALLOCATABLE remainder (160,000 - 158,232), printed by a
+    ledger-only check that makes no Groq request. It is not Groq-side headroom.
+  - **Groq does not expose daily headroom.** `x-ratelimit-remaining-tokens` is per-MINUTE (TPM) per Groq's rate-limit page; daily usage
+    appears only in a 429 body ("Limit 200000, Used U"). None of the 147 benchmark calls, 7 probes or production calls since 10-22
+    got a 429 (VERIFIED: 0 `llm.rate_limited`, 0 `llm.failover`, probe 7/7 PASS). Neither the probe nor the benchmark records headers.
+  - **The 40,000 production reserve binds only ledger-wired projects** (triage-iq's recorder and review-iq's benchmarks). Local repos that
+    call Groq with NO ledger (read-only sweep of `ml-projects`, rule-55e repos excluded); which org each key belongs to is NOT known
+    from code (GG: Groq console):
+    - gpt-oss-120b (same model pool as the failover): **gg-portfolio chatbot** (live on Vercel, `lib/chatbot/llm-provider.ts`; its
+      canary POSTs a chat 4 times a day, 27 runs since 10-22, plus real visitors; not observable from here); **DealHunter**
+      (agentic-travel-booking-system, demo profile `demo-gpt-oss-120b`; 0 log lines naming the model in `dealhunter-prod-260812` in 7 days);
+      **swasarthi** (doubt eval: 444,666 tokens in three runs, 10-23 08:19, 10-24 00:11, 10-29 04:13; its 10-23 + 10-24 runs alone are
+      336,050 tokens within about 16 hours with 1 error, and the 10-24 02:30 probe and the 10-29 06:52 benchmark call both succeeded, so it
+      cannot be on a 200,000-cap failover org: BELIEVED, from arithmetic); **agentgauge-r1** and **token-efficiency-scorer** (research
+      code; no run output in the window found).
+    - Other models only (no effect on the 120b pool): agentic-shopping-assistant, next-season-styles, expense-tracker,
+      multimodal-fashion-recommender, agentgauge, gold-rate-tracker.
+  - Re-decide at the first sale (`ops/runbooks/groq-paid-tier.md` section 6), with a Groq-console reading of the shared org's daily usage.
+
 ## Session 31 (autonomous, 2026-10-23 to 2026-10-25): what changed
 
 Full record: `docs/autonomy/S31_PROGRESS.md`; handoff: `docs/HANDOFF_2026-10-27_s31.md`.
