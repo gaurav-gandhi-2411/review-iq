@@ -5,5 +5,5 @@
 #   uv pip compile requirements-classify.in --generate-hashes --python-version 3.11 \
 #       --python-platform x86_64-manylinux_2_28 -o requirements-classify.txt
 onnxruntime==1.31.0
-tokenizers==0.22.2
+tokenizers==0.23.3
 numpy==2.4.4
