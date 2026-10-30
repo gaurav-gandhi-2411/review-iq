@@ -5,8 +5,10 @@ session's queue is GG's S33 brief (continuing S32's). Stop when it is done.
 
 ## Current task
 
-1a: 120b arm blocked on the shared Groq pool (triage-iq recorder holds 156,811 of 160,000 allocatable). ONE wake armed for
-2026-10-31 10:46 UTC (ledger read only, no Groq request); meanwhile 4b and 4a.
+1a: 120b arm blocked. The triage-iq recorder (ADR-0075 plan A, ~919K tokens) holds an exclusive recording flag (pid 25380, renewed
+for the whole run) and 156,811 / 160,000 allocatable; `benchmark` is capped at 20K/day by GG decision D95 for the recording. At the
+recording's pace it ends ~11-04/05, after the 120b deadline (2026-11-03 06:00 UTC), so the registered INCOMPLETE fallback (n = 147)
+is the default. Waiting in foreground chunks (<= 9 min); no background wakes (GG S33 addendum item 3).
 
 ## Reconstruction (2026-10-30 12:30 UTC, VERIFIED unless marked)
 
@@ -31,18 +33,27 @@ session's queue is GG's S33 brief (continuing S32's). Stop when it is done.
 | ID | Task | Status | Evidence | UTC |
 |---|---|---|---|---|
 | 0 | Reconstruct | **done** | section above | 2026-10-30 12:30 |
-| 1a | Complete 120b arm (failover org, ledger) | waiting | wake 10-31 10:46 | |
+| 1a | Complete 120b arm (failover org, ledger) | blocked | recording flag + 20K cap (see Current task); fallback 11-03 06:00 | |
+| add1 | Secrets hook absolute path (GG) | **done** | #631 `d7fdebc`; proven through the real hook shell: from `web/`, `ls` ran and `cat .env.local` was denied; before, every call from `web/` failed (python exit 2) | 2026-10-30 13:58 |
+| add2 | No-cd rule in CLAUDE.md (GG) | **done** | project `CLAUDE.md` #632 `41ca64d`; global rule 56b claude-config #77 DRAFT (claude-config parks) | 2026-10-30 14:03 |
+| add4 | Per-project ledger caps (GG) | **parked** | ledger is triage-iq code + machine config: proposal #633 (reserve 40K, slack 40K, recorder 60K, benchmark 60K, non-exclusive flag) | 2026-10-30 14:05 |
 | 1b | Analysis once + verifier | pending | | |
 | 1c | Apply decision tree | pending | | |
 | 2 / 3 | D1 (A18) or D2 (options note) | pending | | |
-| 4a | Draft UI PR: list of router-skipped reviews | pending | | |
-| 4b | Rebase BEHIND parked PRs | pending | | |
+| 4a | Draft UI PR: list of router-skipped reviews | **done (draft)** | #634 stacked on #579; 85/85 web tests, lint, build, bundle grep clean, CI leak check extended; 8 screenshots (light = dark byte-identical: no dark theme) | 2026-10-30 14:02 |
+| 4b | Rebase BEHIND parked PRs | deferred to close-out | all 16 MERGEABLE (none conflicted) at 12:40; update-branch after the final merges | |
 | 4c | Disk hygiene | ongoing | C: 244.4 GB free at start | |
 | 5 | STATUS, HANDOFF_S33, report | pending | | |
 
 ## Decisions log
 
 - 2026-10-30 12:30 (B) One wake at 10-31 10:46 UTC instead of a polling waiter; the wake reads the local ledger only.
+  SUPERSEDED: the wake was reaped under memory pressure; GG forbids background wakes (foreground chunks <= 9 min).
+- 2026-10-30 ~12:50 INCIDENT: `cd .../web && npm ci && npm test` persisted the session cwd in `web/`; the secrets hook ran by a
+  relative path, python exited 2, every tool call was refused until GG ran `! cd`. Fixed by #631 + the no-cd rule (#632, cc#77).
+- 2026-10-30 14:00 (C) Did not touch `~/.groq_budget/config.json` or the recording flag (another project's state, GG decision D95);
+  the conflict between D95 and the S33 120b resume is surfaced to GG. Default = the registered INCOMPLETE fallback.
+- 2026-10-30 14:00 (B) 4a: Analyse shows the extraction inline (ReviewDetail needs router state the open response cannot supply).
 
 ## Resources
 
