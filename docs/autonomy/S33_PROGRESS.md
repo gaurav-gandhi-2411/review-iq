@@ -5,10 +5,10 @@ session's queue is GG's S33 brief (continuing S32's). Stop when it is done.
 
 ## Current task
 
-1a: 120b arm blocked. The triage-iq recorder (ADR-0075 plan A, ~919K tokens) holds an exclusive recording flag (pid 25380, renewed
-for the whole run) and 156,811 / 160,000 allocatable; `benchmark` is capped at 20K/day by GG decision D95 for the recording. At the
-recording's pace it ends ~11-04/05, after the 120b deadline (2026-11-03 06:00 UTC), so the registered INCOMPLETE fallback (n = 147)
-is the default. Waiting in foreground chunks (<= 9 min); no background wakes (GG S33 addendum item 3).
+2c: Amendment 18 running. fresh18 drawn (8,100). Run-2 scoring CPU kernel `review-intent-fresh18-run2-score` pushed 18:35 UTC 10-30.
+Panel (stage P, ~17.3 h over 3 sessions) and 20b (`review-intent-fresh18-llm`, ~6.5 h) wait for the Kaggle GPU quota reset
+(10-31, BELIEVED 00:00 UTC). Datasets ready: `review-intent-fresh18` (panel items), `review-intent-fresh18-run2` (model + items),
+`review-intent-fresh18-llm` (20b items).
 
 ## Reconstruction (2026-10-30 12:30 UTC, VERIFIED unless marked)
 
@@ -33,13 +33,15 @@ is the default. Waiting in foreground chunks (<= 9 min); no background wakes (GG
 | ID | Task | Status | Evidence | UTC |
 |---|---|---|---|---|
 | 0 | Reconstruct | **done** | section above | 2026-10-30 12:30 |
-| 1a | Complete 120b arm (failover org, ledger) | blocked | recording flag + 20K cap (see Current task); fallback 11-03 06:00 | |
+| 1a | Complete 120b arm (failover org, ledger) | **closed at 147/259** | GG's advisor: analyse now, INCOMPLETE (timing deviation logged `f5850f1` before the run) | 2026-10-30 17:39 |
 | add1 | Secrets hook absolute path (GG) | **done** | #631 `d7fdebc`; proven through the real hook shell: from `web/`, `ls` ran and `cat .env.local` was denied; before, every call from `web/` failed (python exit 2) | 2026-10-30 13:58 |
 | add2 | No-cd rule in CLAUDE.md (GG) | **done** | project `CLAUDE.md` #632 `41ca64d`; global rule 56b claude-config #77 DRAFT (claude-config parks) | 2026-10-30 14:03 |
 | add4 | Per-project ledger caps (GG) | **parked** | ledger is triage-iq code + machine config: proposal #633 (reserve 40K, slack 40K, recorder 60K, benchmark 60K, non-exclusive flag) | 2026-10-30 14:05 |
-| 1b | Analysis once + verifier | pending | | |
-| 1c | Apply decision tree | pending | | |
-| 2 / 3 | D1 (A18) or D2 (options note) | pending | | |
+| 1b | Analysis once + verifier | **done** | run once 17:40 UTC; verifier 85/85 MATCH; #635 `82aab63` (results doc + result.json); harness draft #637 (514 lines > gate) | 2026-10-30 18:15 |
+| 1c | Apply decision tree | **D1 (thin)** | pooled R1+ minus 120b 0.000, CI [-0.0476, +0.0476] (n=147), lower bound = -7/147, 0.0024 above -0.05; next grid point = D3 | 2026-10-30 17:40 |
+| 2b | Register Amendment 18 | **done** | #638 `86675ad` (S4 only; 20b primary, 120b subsample of 200 secondary; P1 lower bound > -0.05) | 2026-10-30 18:40 |
+| 2c | Draw / label / score | running | #630 merged `15f245f`; fresh18 drawn 8,100 (manifest #640); run-2 CPU scoring pushed; panel + 20b after the GPU reset | |
+| item3 | Ledger caps as first-sale step | **done** | runbook section 7, #639 `5b45809` | 2026-10-30 18:50 |
 | 4a | Draft UI PR: list of router-skipped reviews | **done (draft)** | #634 stacked on #579; 85/85 web tests, lint, build, bundle grep clean, CI leak check extended; 8 screenshots (light = dark byte-identical: no dark theme) | 2026-10-30 14:02 |
 | 4b | Rebase BEHIND parked PRs | deferred to close-out | all 16 MERGEABLE (none conflicted) at 12:40; update-branch after the final merges | |
 | 4c | Disk hygiene | ongoing | C: 244.4 GB free at start | |
