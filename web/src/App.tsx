@@ -10,6 +10,10 @@ const PUBLIC_PATHS = ['/', '/try']
 // DEV-only fixture preview of the dashboard (no login needed). import.meta.env.DEV is a
 // compile-time false in production builds, so this lazy import and its fixtures are dropped.
 const DashboardPreview = import.meta.env.DEV ? lazy(() => import('./dev/DashboardPreview')) : null
+const SkippedReviewsPreview = import.meta.env.DEV ? lazy(() => import('./dev/SkippedReviewsPreview')) : null
+// Build-time flag (default off). Statically replaced by Vite, so with the flag unset the page
+// and its import are dropped from the bundle and the route does not exist.
+const SkippedReviewsPage = import.meta.env.VITE_ENABLE_SKIPPED_REVIEWS === 'true' ? lazy(() => import('./pages/SkippedReviews')) : null
 const isDevPreviewPath = () => import.meta.env.DEV && window.location.pathname.startsWith('/__preview/')
 import LoginPage from './pages/Login'
 import TryPage from './pages/Try'
@@ -69,9 +73,21 @@ function AuthRouter() {
             element={<Suspense fallback={null}><DashboardPreview /></Suspense>}
           />
         )}
-        <Route path="/upload" element={session ? <UploadPage /> : <Navigate to="/" replace />} />
+        {SkippedReviewsPreview && (
+          <Route
+            path="/__preview/skipped"
+            element={<Suspense fallback={null}><SkippedReviewsPreview /></Suspense>}
+          />
+        )}
+        <Route path="/upload"element={session ? <UploadPage /> : <Navigate to="/" replace />} />
         <Route path="/dashboard" element={session ? <DashboardPage userId={session.user.id} /> : <Navigate to="/" replace />} />
         <Route path="/reviews" element={session ? <ReviewsPage /> : <Navigate to="/" replace />} />
+        {SkippedReviewsPage && (
+          <Route
+            path="/reviews/skipped"
+            element={session ? <Suspense fallback={null}><SkippedReviewsPage /></Suspense> : <Navigate to="/" replace />}
+          />
+        )}
         <Route path="/reviews/:reviewHash" element={session ? <ReviewDetailPage /> : <Navigate to="/" replace />} />
         <Route path="/keys" element={session ? <ApiKeysPage /> : <Navigate to="/" replace />} />
         <Route path="*" element={<Navigate to={session ? '/dashboard' : '/'} replace />} />
