@@ -1,6 +1,6 @@
 // Deterministic fixture reviews for the dashboard preview (dev only) and for tests.
 // Seeded LCG, fixed clock: the same arguments always produce the same reviews.
-import type { Review } from '../lib/api'
+import type { ClassifiedReview, Review } from '../lib/api'
 
 export const FIXTURE_NOW = Date.parse('2026-10-05T09:30:00+05:30') // a Monday morning
 const DAY = 24 * 60 * 60 * 1000
@@ -126,3 +126,31 @@ export type FixtureName = keyof typeof FIXTURES
 /** Friday 2 Oct 2026, 4:12 pm IST: "the last time they were here" before that Monday. */
 export const FIXTURE_PREVIOUS_VISIT = Date.parse('2026-10-02T16:12:00+05:30')
 export const FIXTURE_HOUR = HOUR
+
+// Skipped-reviews preview rows (invented products/previews). Mirrors the server's summarize():
+// previews are cut at 160 chars + "...". The last row is the long-preview case.
+const LONG_REVIEW =
+  "Ordered the bedsheet set for my daughter's room and the colours are lovely, the thread count feels right and the stitching is neat, but the fitted sheet is a bit short"
+export const SKIPPED_FIXTURE_ROWS: ClassifiedReview[] = [
+  {
+    review_id: 'a1'.repeat(32),
+    product: 'Linen Kurta',
+    encoder: { sentiment: 'positive', urgency: 'low' },
+    text_preview: 'Lovely fabric and the fit is true to size. Would buy again.',
+    created_at: '2026-10-04T08:15:00+00:00',
+  },
+  {
+    review_id: 'b2'.repeat(32),
+    product: 'Steel Water Bottle',
+    encoder: { sentiment: 'neutral', urgency: 'low', language: 'hi-en' },
+    text_preview: 'Bottle accha hai, quality bhi theek hai lekin cap thoda tight lagta hai. Paisa vasool overall.',
+    created_at: '2026-10-03T17:40:00+00:00',
+  },
+  {
+    review_id: 'c3'.repeat(32),
+    product: 'Cotton Bedsheet Set',
+    encoder: { sentiment: 'mixed', urgency: 'medium' },
+    text_preview: LONG_REVIEW.slice(0, 160) + '...',
+    created_at: '2026-10-02T11:05:00+00:00',
+  },
+]

@@ -309,3 +309,51 @@ export async function revokeApiKey(id: string): Promise<void> {
     throw new BffError(res.status, detail?.detail ?? `Error ${res.status}`)
   }
 }
+
+// ---- Reviews the encoder-first router skipped (server flag ENABLE_ENCODER_FIRST) ----
+
+export interface ClassifiedReview {
+  review_id: string                      // plain 64-hex sha256, the id the open route takes
+  product: string | null
+  encoder: Record<string, string | null> // task -> label
+  text_preview: string                   // <=160 chars, "..." appended when cut
+  created_at: string | null
+}
+
+export interface ClassifiedReviewsResponse {
+  org_id: string
+  count: number
+  offset: number
+  limit: number
+  results: ClassifiedReview[]
+}
+
+/** The subset of the server's ReviewExtractionV2 that the skipped-reviews page shows. */
+export interface OpenedExtraction {
+  product: string
+  sentiment: 'positive' | 'negative' | 'neutral' | 'mixed' | null
+  urgency: 'low' | 'medium' | 'high'
+  pros: string[]
+  cons: string[]
+  topics: string[]
+}
+
+// The server answers 404 on both routes while ENABLE_ENCODER_FIRST is off, so a 404 from the
+// list means "feature not enabled", not "broken".
+export class ClassifiedReviewsDisabledError extends Error {
+  constructor() { super('This view is not enabled.') }
+}
+
+export async function listClassifiedReviews(limit: number, offset: number): Promise<ClassifiedReviewsResponse> {
+  const q = new URLSearchParams({ limit: String(limit), offset: String(offset) })
+  try {
+    return await bff(`/classified-reviews?${q.toString()}`)
+  } catch (err) {
+    if (err instanceof BffError && err.status === 404) throw new ClassifiedReviewsDisabledError()
+    throw err
+  }
+}
+
+export async function openClassifiedReview(reviewId: string): Promise<OpenedExtraction> {
+  return bff(`/classified-reviews/${encodeURIComponent(reviewId)}/open`, { method: 'POST' })
+}
