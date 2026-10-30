@@ -4,6 +4,7 @@
   "2026-10-29T10:00:00+00:00"
  ],
  "hours": 168,
+ "scope": "ledgered spend only: lower bound on usage, upper bound on headroom; not a headroom measurement",
  "daily_cap": 200000,
  "extraction_tokens": 2169,
  "tokens_in_window_by_source": {
@@ -12,11 +13,11 @@
   "s31-reply-eval": 59294,
   "triageiq-recorder": 97500
  },
- "hours_headroom_below_one_extraction": 0,
- "hours_headroom_below_production_reserve": 3,
- "min_headroom_tokens": 39599,
- "min_headroom_at_utc": "2026-10-29T08:00:00+00:00",
- "min_headroom_extractions": 18,
+ "hours_ledgered_headroom_below_one_extraction": 0,
+ "hours_ledgered_headroom_below_production_reserve": 3,
+ "max_possible_headroom_at_worst_hour_tokens": 39599,
+ "worst_hour_utc": "2026-10-29T08:00:00+00:00",
+ "max_possible_extractions_at_worst_hour": 18,
  "hourly": [
   {
    "hour_utc": "2026-10-22T11:00:00+00:00",
