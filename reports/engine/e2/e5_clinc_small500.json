@@ -1,0 +1,73 @@
+{
+ "commit": "44fd57e",
+ "dataset": "clinc",
+ "model": "intfloat/multilingual-e5-base",
+ "n_train": 500,
+ "rows_per_class": 3.33,
+ "plain": {
+  "macro_f1": 0.846,
+  "macro_f1_ci95": [0.8325,0.854],
+  "accuracy": 0.8507
+ },
+ "char_noise": {
+  "macro_f1": 0.836,
+  "macro_f1_ci95": [0.8231,0.8437],
+  "accuracy": 0.8413
+ },
+ "emb_logreg": {
+  "macro_f1": 0.8369,
+  "macro_f1_ci95": [0.8246,0.8449],
+  "accuracy": 0.8393
+ },
+ "backtrans": {
+  "macro_f1": 0.8404,
+  "macro_f1_ci95": [0.8278,0.8476],
+  "accuracy": 0.8438
+ },
+ "backtrans_examples": [
+  {
+   "src": "do they take reservations at bar tartine",
+   "bt": "take reservations at the bar tartine"
+  },
+  {
+   "src": "how come i am being denied access to my bank account",
+   "bt": "How come I'm denied access to my bank account?"
+  },
+  {
+   "src": "i need you to set alarm for me",
+   "bt": "I need you to set an alarm for me"
+  }
+ ],
+ "active": [
+  {
+   "n": 100,
+   "macro_f1": 0.286,
+   "macro_f1_ci95": [0.2738,0.2937],
+   "accuracy": 0.3544
+  },
+  {
+   "n": 200,
+   "macro_f1": 0.5161,
+   "macro_f1_ci95": [0.5002,0.5258],
+   "accuracy": 0.5518
+  },
+  {
+   "n": 300,
+   "macro_f1": 0.6189,
+   "macro_f1_ci95": [0.6048,0.6279],
+   "accuracy": 0.6469
+  },
+  {
+   "n": 400,
+   "macro_f1": 0.7236,
+   "macro_f1_ci95": [0.7101,0.7315],
+   "accuracy": 0.7411
+  },
+  {
+   "n": 500,
+   "macro_f1": 0.7684,
+   "macro_f1_ci95": [0.7553,0.7768],
+   "accuracy": 0.7882
+  }
+ ]
+}

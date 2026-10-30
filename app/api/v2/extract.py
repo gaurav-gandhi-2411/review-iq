@@ -23,7 +23,7 @@ from app.core.llm import extract_with_llm
 from app.core.metrics import EXTRACTION_LATENCY, EXTRACTIONS_TOTAL
 from app.core.pricing import UnknownModelError, price_extraction
 from app.core.prompts import PROMPT_VERSION, build_prompt
-from app.core.sanitize import sanitize, wrap_for_llm
+from app.core.sanitize import pii_redacted_text, sanitize, wrap_for_llm
 from app.core.schemas import (
     BatchReviewRequest,
     ExtractionMetaV2,
@@ -97,11 +97,14 @@ async def _run_extraction_v2(
     clean_text, regex_suspicious = sanitize(ctl.text)
     # Session 13 P4a: a real, model-based pre-filter alongside the regex layer -- see
     # app/core/injection_guard.py's module docstring for what it catches that the regex
-    # misses (and, honestly, what it still misses too). Runs on the ORIGINAL text, not the
-    # regex-redacted `clean_text` -- the classifier needs to see what a caller actually sent
-    # to score it, not a version the regex layer already partially neutralized.
+    # misses (and, honestly, what it still misses too). The guard is a third-party Groq call and
+    # legal/sub-processors.md says Groq receives text only after the PII-redaction pass, so it
+    # gets the caller's original text, truncated and PII-redacted. Deliberately NOT `clean_text`
+    # (injection-removal would erase the attack phrasing it scores) and NOT `ctl.text` (with the
+    # field-injection input control on, that has the attack sentences stripped, so the guard
+    # would stop flagging exactly those). End-to-end is_suspicious = regex OR guard is unchanged.
     guard_suspicious = await classify_injection_risk(
-        request.text, api_key=get_settings().groq_api_key
+        pii_redacted_text(request.text), api_key=get_settings().groq_api_key
     )
     is_suspicious = regex_suspicious or guard_suspicious
     if is_suspicious:
@@ -117,7 +120,7 @@ async def _run_extraction_v2(
 
     t0 = datetime.utcnow()
     llm_output, model_name, latency_ms, tokens_in, tokens_out, degraded = await extract_with_llm(
-        user_prompt, allow_gemini_fallback=False
+        user_prompt
     )
     # Detected language takes precedence over LLM's self-reported language.
     llm_output.language = detected_lang
@@ -280,7 +283,7 @@ _EXAMPLE_EXTRACTION_RESPONSE = {
     "review_length_chars": 96,
     "confidence": 0.91,
     "extraction_meta": {
-        "model": "llama-3.1-8b-instant",
+        "model": "openai/gpt-oss-20b",
         "prompt_version": "2.3",
         "schema_version": "1.0.0",
         "extracted_at": "2026-07-07T12:00:00Z",

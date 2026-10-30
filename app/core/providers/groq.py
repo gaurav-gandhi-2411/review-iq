@@ -3,9 +3,10 @@ from __future__ import annotations
 import hashlib
 
 import structlog
-from groq import AsyncGroq
+from groq import APIStatusError, AsyncGroq
 
 from app.core.providers.cassette import cassette_mode, record, replay
+from app.core.rate_limit_events import log_rate_limited
 from app.core.ratelimit import llm_call_slot
 
 log = structlog.get_logger(__name__)
@@ -40,10 +41,21 @@ class GroqProvider:
 
     trains_on_input: bool = False
 
-    def __init__(self, model: str, api_key: str, timeout: int = 30) -> None:
+    def __init__(
+        self,
+        model: str,
+        api_key: str,
+        timeout: int = 30,
+        *,
+        tier: str | None = None,
+        role: str = "primary",
+    ) -> None:
         self._model = model
         self._api_key = api_key
         self._timeout = timeout
+        # Labels for the llm.rate_limited event only; they do not affect the request.
+        self._tier = tier
+        self._role = role
 
     @property
     def model(self) -> str:
@@ -96,16 +108,31 @@ class GroqProvider:
         # actual Groq HTTP rate from bulk contexts (see app/core/ratelimit.py).
         async with llm_call_slot():
             client = AsyncGroq(api_key=self._api_key)
-            response = await client.chat.completions.create(
-                model=self._model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": prompt},
-                ],
-                response_format={"type": "json_object"},
-                temperature=0.0,
-                timeout=effective_timeout,
-            )
+            try:
+                response = await client.chat.completions.create(
+                    model=self._model,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt},
+                    ],
+                    response_format={"type": "json_object"},
+                    temperature=0.0,
+                    timeout=effective_timeout,
+                )
+            except APIStatusError as exc:
+                if exc.status_code == 429:
+                    # Every Groq 429 (primary, tiered small/large, or Groq-as-secondary) passes
+                    # through here, so this is the single place it becomes visible.
+                    log_rate_limited(
+                        provider="groq",
+                        model=self._model,
+                        tier=self._tier,
+                        role=self._role,
+                        body=getattr(exc, "body", None),
+                        headers=getattr(getattr(exc, "response", None), "headers", None),
+                        fallback_message=str(exc),
+                    )
+                raise
         raw = response.choices[0].message.content or ""
         usage = getattr(response, "usage", None)
         if usage:

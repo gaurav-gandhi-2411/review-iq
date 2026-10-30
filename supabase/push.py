@@ -473,11 +473,14 @@ def main(argv: list[str] | None = None) -> None:
         "--fail-on-pending",
         action="store_true",
         help="With --dry-run: exit 1 if any pending file is genuinely unapplied (objects "
-        "missing or grant mismatch found) -- for a scheduled drift-detection gate. Does NOT "
-        "fail on the 'objects already exist, needs --mark-applied-all' or 'no recognizable "
-        "objects' cases -- those are ledger bookkeeping gaps, not a genuine drift between "
-        "what's merged and what's live. Item 248: a merged migration sitting unapplied "
-        "against production for 2 days, undetected, is exactly the gap this flag closes.",
+        "missing, grant mismatch, or a postcondition that is false) -- for a scheduled "
+        "drift-detection gate. Does NOT fail on 'objects already exist / postconditions "
+        "already hold, needs --mark-applied-all' -- that is a ledger bookkeeping gap, not a "
+        "genuine drift between what's merged and what's live. A pending file with no "
+        "recognizable objects AND no postcondition that holds FAILS (S19 Z8: it used to pass, "
+        "which hid 13 of 43 migrations, REVOKE-only ones included). Item 248: a merged "
+        "migration sitting unapplied against production for 2 days, undetected, is exactly "
+        "the gap this flag closes.",
     )
     parser.add_argument(
         "--verify",
@@ -546,12 +549,27 @@ def main(argv: list[str] | None = None) -> None:
                     missing = _missing_objects(cur, expected)
                     grant_states = _expected_grant_states(sql)
                     grant_mismatches = _grant_mismatches(cur, grant_states)
-                    if not expected and not grant_states:
-                        print(f"  WOULD APPLY (no recognizable objects to check): {path.name}")
-                    elif missing or grant_mismatches:
+                    # S19 Z8: the object/grant patterns above recognize CREATE/ALTER ... ADD
+                    # shapes only. 13 of the 43 migrations on main (e.g. the REVOKE-only
+                    # 20260912000003 -- the incident that motivated postconditions) match
+                    # none, so a merged-but-unapplied one printed "no recognizable objects"
+                    # and `--fail-on-pending` exited 0 (induced on a throwaway Postgres: ledger
+                    # row deleted -> exit 0). The file's own postconditions are the evidence
+                    # that exists for every migration (check_migrations_have_postconditions.py
+                    # enforces it), so use them, read-only, exactly as --verify does.
+                    plan = plan_file(path.name, sql)
+                    pc_results = (
+                        run_postconditions(cur, plan.postconditions, args.target)
+                        if plan.kind == "ok"
+                        else []
+                    )
+                    pc_failed = [r for r in pc_results if r.status == "FAIL"]
+                    pc_held = any(r.status == "PASS" for r in pc_results)
+                    if missing or grant_mismatches or pc_failed:
                         genuinely_unapplied += 1
                         print(
-                            f"  WOULD APPLY (objects missing -- genuinely unapplied): {path.name}"
+                            f"  WOULD APPLY (objects missing or postcondition false -- "
+                            f"genuinely unapplied): {path.name}"
                         )
                         for kind, name in missing:
                             print(f"      missing {kind}: {name}")
@@ -560,11 +578,23 @@ def main(argv: list[str] | None = None) -> None:
                                 f"      grant mismatch on {table} for {grantee}: "
                                 f"expected {sorted(exp_privs)}, actual {sorted(actual)}"
                             )
-                    else:
+                        for r in pc_failed:
+                            print(f"      postcondition {r.name}: {r.detail}")
+                    elif expected or grant_states or pc_held:
                         print(
-                            f"  WOULD APPLY, BUT OBJECTS ALREADY EXIST -- likely applied "
-                            f"out-of-band, consider --mark-applied-all instead: {path.name}"
+                            f"  WOULD APPLY, BUT OBJECTS ALREADY EXIST OR POSTCONDITIONS "
+                            f"ALREADY HOLD -- likely applied out-of-band, consider "
+                            f"--mark-applied-all instead: {path.name}"
                         )
+                    else:
+                        # Fail closed (rule 98a): nothing shows this file's effect exists.
+                        genuinely_unapplied += 1
+                        print(
+                            f"  WOULD APPLY (no recognizable objects and no postcondition "
+                            f"holds -- cannot show its effect exists; treated as unapplied): "
+                            f"{path.name}"
+                        )
+                conn.rollback()  # evaluate_postcondition's SELECTs only; leave nothing open
             for path in migration_files:
                 if path.name in already_applied:
                     print(f"  (already applied, skip): {path.name}")

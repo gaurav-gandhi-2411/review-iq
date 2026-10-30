@@ -39,10 +39,32 @@ def _demo_quota_allows_by_default():  # type: ignore[return]
     fail-closed exception handler, for reasons unrelated to what those tests actually
     check. Tests that specifically exercise quota-exhaustion behavior (tests/unit/
     test_demo_quota.py) override this default explicitly, per-test.
+
+    Also empties the process-wide trailing-24h token ledger so one test's admissions never
+    consume another test's demo headroom.
     """
+    from app.core.token_ledger import demo_ledger
+
+    demo_ledger.clear()
     with (
         patch("app.api.demo.check_and_increment_demo_request_pg", return_value=True),
         patch("app.api.demo.record_demo_extraction_cost_pg", return_value="mock-cost-id"),
+    ):
+        yield
+
+
+@pytest.fixture(autouse=True)
+def _urgent_coalescer_storage_is_inert_by_default():  # type: ignore[return]
+    """Default the urgent-alert coalescer's alert_log calls to "slot granted, nothing
+    deferred" so every pre-existing immediate-alert test stays hermetic (no Postgres
+    connection attempt, ~9s timeout each) and sees the pre-coalescing behaviour.
+    tests/unit/test_urgent_coalescing.py replaces these with a stateful fake per test.
+    """
+    with (
+        patch("app.core.alerts.coalescer.claim_urgent_window_pg", return_value=True),
+        patch("app.core.alerts.coalescer.release_urgent_window_pg"),
+        patch("app.core.alerts.coalescer.record_urgent_deferred_pg"),
+        patch("app.core.alerts.coalescer.list_pending_urgent_deferred_pg", return_value=[]),
     ):
         yield
 

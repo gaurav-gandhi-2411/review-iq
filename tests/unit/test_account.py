@@ -42,7 +42,7 @@ def test_get_account_returns_200_with_usage() -> None:
             return_value={
                 "org_id": _ORG_ID,
                 "key_prefix": "riq_live_abc1234",
-                "monthly_quota": 100,
+                "monthly_quota": 1000,
                 "monthly_usage": 7,
             },
         ),
@@ -52,7 +52,7 @@ def test_get_account_returns_200_with_usage() -> None:
     assert resp.status_code == 200
     data = resp.json()
     assert data["monthly_usage"] == 7
-    assert data["monthly_quota"] == 100
+    assert data["monthly_quota"] == 1000
     assert "key_prefix" in data
     assert "raw_key" not in data  # never returned by GET /account
 
@@ -88,7 +88,7 @@ def test_regenerate_key_returns_raw_key() -> None:
             return_value={
                 "key_prefix": "riq_live_new1234",
                 "raw_key": "riq_live_" + "b" * 32,
-                "monthly_quota": 100,
+                "monthly_quota": 1000,
             },
         ),
     ):
@@ -127,7 +127,7 @@ def test_fetch_account_returns_correct_fields() -> None:
     conn = _make_mock_conn(
         fetchone_side_effect=[
             (org_id,),
-            ("riq_live_abc1234", 100, key_id, org_id, "acme-inc-a1b2c3"),
+            ("riq_live_abc1234", 1000, key_id, org_id, "acme-inc-a1b2c3"),
             (7,),
         ]
     )
@@ -135,7 +135,7 @@ def test_fetch_account_returns_correct_fields() -> None:
         result = _fetch_account(_USER_ID)
 
     assert result["key_prefix"] == "riq_live_abc1234"
-    assert result["monthly_quota"] == 100
+    assert result["monthly_quota"] == 1000
     assert result["monthly_usage"] == 7
     assert result["org_id"] == str(org_id)
     assert result["slug"] == "acme-inc-a1b2c3"
@@ -176,7 +176,7 @@ def test_do_regenerate_revokes_old_and_inserts_new() -> None:
 
     assert str(result["key_prefix"]).startswith("riq_live_")
     assert str(result["raw_key"]).startswith("riq_live_")
-    assert result["monthly_quota"] == 100
+    assert result["monthly_quota"] == 1000
     conn.commit.assert_called_once()
     conn.close.assert_called_once()
 

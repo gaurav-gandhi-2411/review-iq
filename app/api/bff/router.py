@@ -21,7 +21,6 @@ import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Annotated, Any
 
-import psycopg2
 import structlog
 from fastapi import (
     APIRouter,
@@ -34,6 +33,7 @@ from fastapi import (
     UploadFile,
     status,
 )
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 # _drain_until_job_complete is defined in app.api.v2.ingest alongside the
@@ -52,6 +52,7 @@ from app.api.v2.insights import (
     compute_health_score,
     health_band,
 )
+from app.api.v2.reply import ensure_reply_drafting_enabled
 from app.auth.api_key import ApiKeyContext
 from app.auth.keygen import insert_api_key_with_retry
 from app.auth.session import require_session, require_session_read
@@ -65,10 +66,12 @@ from app.core.csv_ingest import (
     read_and_validate_csv,
 )
 from app.core.dataset.builder import get_dataset_page
+from app.core.db_pool import PooledConnection, db_connect
 from app.core.detectors.batch_defect import WINDOW_DAYS as BATCH_DEFECT_WINDOW_DAYS
 from app.core.detectors.batch_defect import annotated_reviews_from_rows, scan_batch_defects
 from app.core.metrics import CORRECTIONS_SUBMITTED, REPLY_CACHE_HIT_TOTAL
 from app.core.reply.engine import VernacularModelUnavailableError, draft_reply
+from app.core.reply.errors import error_response, unexpected_error_response
 from app.core.reply.schema import ReplyDraft, ReplyRequest
 from app.core.schemas import Sentiment, Urgency
 from app.core.storage_pg import (
@@ -152,16 +155,17 @@ class CorrectionRequest(BaseModel):
 # the real per-plan ceiling is enforced in bff_create_key() below, since it depends on the
 # caller's org (Pydantic field constraints can't see request context beyond the field itself).
 #
-# PLAN_QUOTA_LIMITS' numbers are NOT a sourced pricing decision. "free": 100 is the one figure
-# GG has actually committed to (docs/specs/wave1-commercialization.md S0#1: "Free tier is
-# asserted (100 extractions/mo)"). "pro"/"enterprise" reuse this field's pre-existing (buggy)
-# default of 1000 as a placeholder ceiling -- the real Stripe/billing work that was meant to
-# define differentiated tiers (PR #43, "minimum-viable Stripe billing") was merged into a
+# "free": 1000 is sourced from the public Free plan (docs/pricing.json tiers.free.quota, shown
+# on the site); scripts/check_pricing_consistency.py fails CI if it diverges, so change the
+# number in docs/pricing.json first. "pro"/"enterprise" are NOT a sourced pricing decision: they
+# reuse this field's pre-existing (buggy) default of 1000 as a placeholder ceiling, keyed by DB
+# plan names that do not map to the public tiers (Starter/Growth/Scale). The real Stripe/billing
+# work that was meant to define differentiated tiers (PR #43, "minimum-viable Stripe billing") was merged into a
 # stacked branch (fix/wave1-s0-bypassrls-remediation) that never actually reached main despite
 # GitHub showing it "merged" -- see PLAN.md's stacked-PR-merge-discipline entry. Revisit these
 # two numbers once real billing tiers are decided and actually land on main.
 PLAN_QUOTA_LIMITS: dict[str, int] = {
-    "free": 100,
+    "free": 1000,
     "pro": 1000,
     "enterprise": 1000,
 }
@@ -245,11 +249,10 @@ def _get_quota_and_usage(api_key_id: str, org_id: str) -> tuple[int, int]:
     connection runs outside the `authenticated` role RLS actually checks, leaving
     no second layer if a future edit to the WHERE clause introduces a bug.
     """
-    import psycopg2 as _psycopg2
 
     from app.core.config import get_settings as _gs
 
-    conn = _psycopg2.connect(_gs().supabase_database_url)
+    conn = db_connect(_gs().supabase_database_url)
     try:
         cur = conn.cursor()
         _set_tenant(cur, org_id)
@@ -289,8 +292,8 @@ def _get_quota_and_usage(api_key_id: str, org_id: str) -> tuple[int, int]:
 # ---------------------------------------------------------------------------
 
 
-def _keys_db_connect() -> psycopg2.extensions.connection:
-    return psycopg2.connect(get_settings().supabase_database_url)
+def _keys_db_connect() -> PooledConnection:
+    return db_connect(get_settings().supabase_database_url)
 
 
 def _get_org_plan_pg(org_id: str) -> str:
@@ -299,7 +302,7 @@ def _get_org_plan_pg(org_id: str) -> str:
     the caller's actual entitlement -- see PLAN_QUOTA_LIMITS above bff_create_key().
 
     Bug fix (same pass as the RLS fix below): this and the three functions below all connect
-    via bare psycopg2.connect() and never called _set_tenant() -- every other function in
+    via bare db_connect() and never called _set_tenant() -- every other function in
     app/core/storage_pg.py applies it as a defense-in-depth layer on top of the WHERE-clause
     scoping (both organizations and api_keys have RLS policies requiring
     app.current_org_id() -- see supabase/migrations/20260510000002_rls_policies.sql). The
@@ -505,12 +508,22 @@ async def bff_export_reviews(
     )
 
 
+_REPLY_BUSY_MESSAGE = "Reply service temporarily unavailable. Please try again shortly."
+
+
 @router.post("/reply", response_model=ReplyDraft)
 async def bff_draft_reply(
     body: ReplyRequest,
     ctx: Annotated[ApiKeyContext, Depends(require_session)],
-) -> ReplyDraft:
-    """Draft a vernacular-native reply for a single review (BFF path)."""
+) -> ReplyDraft | JSONResponse:
+    """Draft a vernacular-native reply for a single review (BFF path).
+
+    Failures use the typed contract in app/core/reply/errors.py (detail + code + correlation_id).
+
+    Returns 503 {"code": "reply_drafting_disabled"} (no Retry-After) without any provider call
+    while the ENABLE_REPLY_DRAFTING kill switch is off (the default).
+    """
+    ensure_reply_drafting_enabled()
     cache_key = f"{ctx.org_id}:{body.cache_key()}"
     cached = _DRAFT_CACHE.get(cache_key)
     if cached is not None:
@@ -521,17 +534,18 @@ async def bff_draft_reply(
     try:
         draft, tokens_in, tokens_out = await draft_reply(body)
     except VernacularModelUnavailableError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Reply service temporarily unavailable. Please try again shortly.",
-            headers={"Retry-After": "60"},
-        ) from exc
+        return error_response(
+            503, "reply_quota_capped", _REPLY_BUSY_MESSAGE, retry_after=exc.retry_after
+        )
     except RuntimeError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Reply service temporarily unavailable. Please try again shortly.",
-            headers={"Retry-After": "30"},
-        ) from exc
+        return error_response(
+            503,
+            "reply_upstream_unavailable",
+            _REPLY_BUSY_MESSAGE,
+            retry_after=getattr(exc, "retry_after", 30),
+        )
+    except Exception as exc:  # noqa: BLE001 -- boundary: typed 5xx instead of a bare 500
+        return unexpected_error_response(exc, org_id=ctx.org_id)
 
     await asyncio.to_thread(
         update_usage_tokens, ctx.org_id, ctx.usage_record_id, tokens_in, tokens_out

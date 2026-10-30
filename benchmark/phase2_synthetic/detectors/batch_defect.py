@@ -107,7 +107,9 @@ class BatchDefectFlag:
         return {
             "product_id": self.product_id,
             "topic": self.topic,
-            "confidence": self.confidence,
+            # Display rounding only: ordering/thresholds use the full-precision field (S19,
+            # mirrors app/core/detectors/batch_defect.py after #265).
+            "confidence": round(self.confidence, 3),
             "evidence": self.evidence,
         }
 
@@ -239,7 +241,7 @@ def scan_batch_defects(reviews: list[AnnotatedReview]) -> list[BatchDefectFlag]:
                 BatchDefectFlag(
                     product_id=product_id,
                     topic=topic,
-                    confidence=round(confidence, 3),
+                    confidence=confidence,
                     evidence=evidence,
                 )
             )
@@ -261,7 +263,9 @@ def write_report(flags: list[BatchDefectFlag], path: Path) -> None:
     ]
     for i, flag in enumerate(flags, start=1):
         ev = flag.evidence
-        lines.append(f"## {i}. confidence={flag.confidence} -- {flag.product_id} / {flag.topic}")
+        lines.append(
+            f"## {i}. confidence={round(flag.confidence, 3)} -- {flag.product_id} / {flag.topic}"
+        )
         lines.append("")
         lines.append(
             f"- {ev['window_count']} reviews in {ev['window_days']} days cite '{flag.topic}' "

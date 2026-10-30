@@ -16,6 +16,14 @@ import structlog
 from app.core.alerts.channels.base import AlertMessage, Channel, ChannelError
 from app.core.alerts.channels.fake import LogChannel
 from app.core.alerts.channels.resend_channel import ResendChannel
+from app.core.alerts.coalescer import (
+    acquire_urgent_slot,
+    defer_urgent_event,
+    mark_delivered,
+    pending_deferred,
+    release_urgent_slot,
+    rollup_lines,
+)
 from app.core.alerts.rules import (
     DEFAULT_THRESHOLDS,
     AlertEvent,
@@ -28,6 +36,7 @@ from app.core.alerts.storage import (
     get_org_notification_email_pg,
     get_preference_pg,
     is_already_alerted_pg,
+    recipient_is_suppressed,
     record_alert_sent_pg,
 )
 from app.core.alerts.unsubscribe import build_unsubscribe_url
@@ -47,7 +56,9 @@ _SUBJECT_TEMPLATES: dict[AlertEventType, str] = {
     AlertEventType.FAKE_CLUSTER: "🚨 {count} suspicious reviews in {window_hours}h — possible fake cluster",
     AlertEventType.TOPIC_SPIKE: "📈 Complaint spike: '{topic}' ({recent_count}x in recent window)",
     AlertEventType.BATCH_DEFECT: "📈 Possible batch defect: '{topic}' spiking for {product_id}",
-    AlertEventType.FAKE_CAMPAIGN: "🚨 Possible coordinated review campaign on {product_id}",
+    AlertEventType.FAKE_CAMPAIGN: (
+        "🚨 Unusual review pattern on {product_id}: {review_count} reviews in {window_label}"
+    ),
 }
 
 # Emoji-free counterparts — selected via ALERT_SUBJECT_EMOJI_ENABLED so inbox
@@ -58,7 +69,9 @@ _SUBJECT_TEMPLATES_NO_EMOJI: dict[AlertEventType, str] = {
     AlertEventType.FAKE_CLUSTER: "{count} suspicious reviews in {window_hours}h — possible fake cluster",
     AlertEventType.TOPIC_SPIKE: "Complaint spike: '{topic}' ({recent_count}x in recent window)",
     AlertEventType.BATCH_DEFECT: "Possible batch defect: '{topic}' spiking for {product_id}",
-    AlertEventType.FAKE_CAMPAIGN: "Possible coordinated review campaign on {product_id}",
+    AlertEventType.FAKE_CAMPAIGN: (
+        "Unusual review pattern on {product_id}: {review_count} reviews in {window_label}"
+    ),
 }
 
 
@@ -140,22 +153,14 @@ def _format_body(
         )
 
     elif event.event_type == AlertEventType.FAKE_CAMPAIGN:
-        # details is a CampaignFlag.to_dict() -- product_id/confidence top-level, the rest
-        # nested under evidence.
+        # details is a CampaignFlag.to_dict(): counts, window and shared text only. This alert
+        # describes a pattern across reviews; it never says anything about one review.
         product_id = event.details.get("product_id", "?")
-        confidence = event.details.get("confidence", "?")
-        evidence_raw = event.details.get("evidence")
-        evidence = evidence_raw if isinstance(evidence_raw, dict) else {}
-        window_count = evidence.get("window_review_count", "?")
-        distinct_reviewers = evidence.get("distinct_reviewers", "?")
-        distinct_texts = evidence.get("distinct_texts", "?")
-        burst_hours = evidence.get("burst_hours", "?")
+        lines.append(f"Unusual review pattern on '{product_id}'.")
+        lines.append(str(event.details.get("explanation", "")))
         lines.append(
-            f"Possible coordinated review campaign on '{product_id}': {window_count} reviews "
-            f"within {burst_hours}h ({distinct_reviewers} distinct reviewer IDs, "
-            f"{distinct_texts} distinct review texts), confidence {confidence}. "
-            "Synthetic-validated; not yet proven against real seller data -- treat as a "
-            "prioritization signal, not a verdict."
+            "This is a prioritisation signal about a group of reviews, not a verdict on any "
+            "single review."
         )
 
     # BATCH_DEFECT/FAKE_CAMPAIGN's review_id is a synthetic cluster-dedupe key (e.g.
@@ -266,13 +271,15 @@ async def evaluate_and_alert(
             log.debug("alert.suppressed_by_pref", org_id=org_id, event_type=event_type_str)
             continue
 
-        # 3. Frequency gate: daily_digest defers send (not yet implemented; skip for now).
-        if frequency == "daily_digest":
+        # 3. Frequency gate: daily_digest / weekly_digest defer the send to the digest batcher
+        # (digest.py), which re-discovers the event from stored data on its next run.
+        if frequency in ("daily_digest", "weekly_digest"):
             log.info(
                 "alert.pending_digest",
                 org_id=org_id,
                 event_type=event_type_str,
-                note="digest batching not yet implemented — alert deferred",
+                frequency=frequency,
+                note="deferred to the digest batcher",
             )
             continue
 
@@ -285,13 +292,41 @@ async def evaluate_and_alert(
             )
             continue
 
+        # 4b. Never mail an address that hard-bounced or complained (Resend webhook). Checked
+        # BEFORE coalescing so a suppressed recipient neither consumes a slot nor accrues
+        # deferred events.
+        if await recipient_is_suppressed(recipient_email, org_id=org_id):
+            log.info("alert.recipient_suppressed", org_id=org_id, event_type=event_type_str)
+            continue
+
+        # 4c. Coalescing: at most N immediate urgent emails per org per window (config). Past
+        # the cap the event is recorded and rolled into one summary email -- never dropped.
+        # Runs after the pref/recipient gates so a disabled or unsubscribed org neither
+        # consumes a slot nor accrues deferred events.
+        coalesce = event.event_type == AlertEventType.HIGH_URGENCY and review_id is not None
+        claim_token: str | None = None
+        rolled_up: list[dict[str, Any]] = []
+        if coalesce:
+            assert review_id is not None  # narrowed by `coalesce`; keeps mypy strict happy
+            send_now, claim_token = await acquire_urgent_slot(org_id)
+            if not send_now:
+                await defer_urgent_event(org_id, review_id, event)
+                continue
+            rolled_up = await pending_deferred(org_id, exclude_review_id=review_id)
+
         # 5. Format message and deliver via channel.
         unsubscribe_url = build_unsubscribe_url(org_id)
+        body_text = _format_body(org_id, review_id, extraction, event, unsubscribe_url)
+        subject = _format_subject(event)
+        if rolled_up:
+            # Fold earlier held-back urgent reviews into this email (one email, not two).
+            subject = f"{subject} (+{len(rolled_up)} more)"
+            body_text = "\n".join([body_text, "", *rollup_lines(rolled_up, org_id)])
         message = AlertMessage(
             org_id=org_id,
             event=event,
-            subject=_format_subject(event),
-            body_text=_format_body(org_id, review_id, extraction, event, unsubscribe_url),
+            subject=subject,
+            body_text=body_text,
             recipient_email=recipient_email,
             unsubscribe_url=unsubscribe_url,
         )
@@ -304,6 +339,15 @@ async def evaluate_and_alert(
                 event_type=event_type_str,
                 exc_info=True,
             )
+            if coalesce:
+                # Give the slot back and keep the event eligible for the next roll-up/digest
+                # sweep. Before coalescing a failed immediate send was simply lost.
+                assert review_id is not None
+                await release_urgent_slot(org_id, claim_token)
+                try:
+                    await defer_urgent_event(org_id, review_id, event)
+                except Exception:
+                    log.error("alert.defer_after_failure_failed", org_id=org_id, exc_info=True)
             continue
 
         # 6. Record in alert_log (dedupe source for future calls).
@@ -314,6 +358,9 @@ async def evaluate_and_alert(
             event_type_str,
             dict(event.details),
         )
+
+        if rolled_up:
+            await mark_delivered(org_id, rolled_up)
 
         sent.append(event)
         log.info(

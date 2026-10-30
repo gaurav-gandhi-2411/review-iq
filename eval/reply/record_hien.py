@@ -1,7 +1,8 @@
 """One-shot: re-record cassettes for hi-en fixtures only (new prompt, no probe).
 
-Handles Groq TPD 429 rate limits with automatic retry (sliding window — typically
-clears in a few minutes for the free tier).
+Stops on the first Groq quota 429 (exit 2) and persists the TPD observation so eval.quota_guard
+preflight refuses that model for 24h. It never sleeps and retries: the TPD window is rolling and
+can be drained by other consumers of the key.
 """
 
 from __future__ import annotations
@@ -15,16 +16,18 @@ from pathlib import Path
 os.environ["EVAL_CASSETTE_MODE"] = "record"
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))  # noqa: E402
 
+from app.core.config import get_settings  # noqa: E402
 from app.core.reply.engine import VernacularModelUnavailableError, draft_reply  # noqa: E402
 from app.core.reply.schema import ReplyRequest, ReplyTone  # noqa: E402
 from app.core.schemas import ReviewExtraction, Urgency  # noqa: E402
 from groq import APIStatusError, RateLimitError  # noqa: E402
 
+from eval.quota_guard import record_tpd_observation  # noqa: E402
+
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
-_RETRY_WAIT_SECONDS = 420  # 7 min — gives sliding window time to release tokens
 
 
-async def _record_one(f: dict, attempt: int = 1) -> None:
+async def _record_one(f: dict) -> None:
     ext = ReviewExtraction(
         product="unknown product",
         cons=f["pre_extracted_cons"],
@@ -44,20 +47,19 @@ async def _record_one(f: dict, attempt: int = 1) -> None:
     )
     try:
         draft, tin, tout = await draft_reply(req)
-    except VernacularModelUnavailableError:
-        # Policy: vernacular quota → large model unavailable → retry after window clears.
-        print(
-            f"  [QUOTA] {f['id']} — large model capped, sleeping {_RETRY_WAIT_SECONDS}s then retrying..."
-        )
-        await asyncio.sleep(_RETRY_WAIT_SECONDS)
-        await _record_one(f, attempt + 1)
-        return
-    except (RuntimeError, APIStatusError, RateLimitError) as exc:
-        if "rate_limit" in str(exc).lower() or "429" in str(exc):
-            print(f"  [QUOTA] {f['id']} — sleeping {_RETRY_WAIT_SECONDS}s then retrying...")
-            await asyncio.sleep(_RETRY_WAIT_SECONDS)
-            await _record_one(f, attempt + 1)
-            return
+    except (VernacularModelUnavailableError, RuntimeError, APIStatusError, RateLimitError) as exc:
+        # 2026-10-08: sleeping 7 min and retrying a TPD 429 just re-hits a rolling window that can
+        # be ~99.7% used by other consumers. Persist the observation (preflight then refuses the
+        # model for 24h) and STOP; the operator reruns when the window has genuinely freed up.
+        text = str(exc)
+        if (
+            "rate_limit" in text.lower()
+            or "429" in text
+            or isinstance(exc, VernacularModelUnavailableError)
+        ):
+            obs = record_tpd_observation(get_settings().groq_model_large, text)
+            print(f"  [QUOTA] {f['id']} -- quota 429; STOPPING (no retry). observation={obs}")
+            raise SystemExit(2) from exc
         raise
     enc = sys.stdout.encoding or "utf-8"
     preview = draft.reply_text[:120].encode(enc, errors="replace").decode(enc)
@@ -72,7 +74,7 @@ async def main() -> None:
         for p in sorted(FIXTURES_DIR.glob("*.json"))
         if json.loads(p.read_text(encoding="utf-8"))["language"] == "hi-en"
     ]
-    print(f"Recording {len(hi_en_fixtures)} hi-en cassettes (with quota-retry)...\n")
+    print(f"Recording {len(hi_en_fixtures)} hi-en cassettes (stops on first quota 429)...\n")
     for f in hi_en_fixtures:
         await _record_one(f)
     print("Done. Run eval/reply/runner.py to verify.")

@@ -239,7 +239,7 @@ async def test_drain_rows_classifies_bulk() -> None:
 
     with (
         patch(
-            "app.core.ingest_worker.psycopg2.connect",
+            "app.core.ingest_worker.db_connect",
             side_effect=lambda *_args, **_kwargs: _FakeConn(),
         ),
         patch("app.core.ingest_worker.get_batch_job_pg", return_value=None),

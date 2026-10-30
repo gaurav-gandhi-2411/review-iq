@@ -32,13 +32,13 @@ curl -s -X POST https://api.samidhareviews.xyz/demo/extract \
   -d '{"text": "Battery dies in 20 min. Suction is excellent but $200 feels overpriced. Would not buy again."}'
 ```
 
-Want your own key with a private extraction history? Sign up at the landing page — a `riq_live_*` key is provisioned in one click via Supabase magic-link, no credit card required (100 extractions/month free).
+Want your own key with a private extraction history? Sign up at the landing page — a `riq_live_*` key is provisioned in one click via Supabase magic-link, no credit card required (1,000 extractions/month free).
 
 ---
 
 ## Why this exists
 
-Most review analytics tools are black boxes: you get a score with no methodology. Review-IQ takes the opposite approach — every prompt is in the repo, every eval fixture is versioned, and CI breaks if the eval gate fails (see [Eval results](#eval-results) below for the live threshold). Built with Indian DTC brands in mind: Phase 2 adds native Hinglish support that incumbents (Yotpo, Birdeye, Trustpilot Insights) don't offer, measured against 14,552 real Flipkart marketplace reviews (see [Corpus and language scope](#corpus-and-language-scope)). Fully MIT — same code self-hosters run is what the hosted version runs; no feature gates.
+Most review analytics tools are black boxes: you get a score with no methodology. Review-IQ takes the opposite approach — every prompt is in the repo, every eval fixture is versioned, and CI breaks if the eval gate fails (see [Eval results](#eval-results) below for the live threshold). Built with online brands in mind: it handles English and Hinglish, measured against real Flipkart marketplace reviews (see [Corpus and language scope](#corpus-and-language-scope)). Hinglish is a capability, not the pitch: it is a small share of the review samples we drew, and whether it beats a plain LLM prompt is untested (see [the market thesis](docs/research/code-mixed-markets-thesis.md)). Fully MIT — same code self-hosters run is what the hosted version runs; no feature gates.
 
 ---
 
@@ -81,7 +81,7 @@ curl -X POST https://api.samidhareviews.xyz/v2/extract \
   "feature_requests": [],
   "language": "en",
   "extraction_meta": {
-    "model": "llama-3.3-70b-versatile",
+    "model": "openai/gpt-oss-20b",
     "prompt_version": "v2.3",
     "schema_version": "1.0.0",
     "latency_ms": 820
@@ -161,24 +161,29 @@ question — scored against real Indian marketplace reviews. The corpus was mean
 out from prompt development and was not, fully. Correction (Session 16): 36 of its 106
 reviews had been seen by the development process (all four few-shot examples in the `hi_en`
 prompt are rewrites of them, and prompt v2.2/v2.3 were accepted against benchmark labels from
-a benchmark that contains 21 of them), so the headline covers only the 70 that were not.
-Correction (Session 17): that headline is accuracy **where the three-judge panel agreed**, not
+a benchmark that contains 21 of them), so the held-out figure covers only the 70 that were not.
+Correction (Session 17): that figure is accuracy **where the three-judge panel agreed**, not
 overall accuracy; the
-share of field-pairs with no consensus is printed beside it and no point estimate of overall
-accuracy is identifiable (details below).
+share of field-pairs with no consensus is printed beside it, no assumption-free point estimate
+of overall accuracy is identifiable, and an exploratory second-panel read of the unscored pairs
+(LLM-judged, not human-verified) is printed with it (details below).
 
-<!-- METRICS:START:held_out_table -->Measured 2026-10-05T08:50:17Z &middot; `8186d0d` &middot; models: openai/gpt-oss-20b / openai/gpt-oss-120b
+<!-- METRICS:START:held_out_table -->Measured 2026-10-07T12:10:52Z &middot; `831a45b` &middot; models: openai/gpt-oss-20b / openai/gpt-oss-120b
 
-**79.6% [76.2%, 82.8%] on 70 unseen reviews, scored where the three-judge panel reached consensus; 10.7% of field-pairs (60 of 560) had no consensus and are unscored.**
+**Held-out figure (not the headline): 79.6% [76.2%, 82.8%] on 70 unseen reviews, scored only where the three-judge panel agreed. 10.7% of field-pairs (60 of 560) had no consensus and are unscored. Those are the hardest cases: on the 29 of them a second, independent LLM panel could settle, the model scores 47-71% depending on the field. So overall accuracy is probably lower than this figure — independent estimates range 73.7% to 78.0% (exploratory, LLM-judged, not human-verified).**
 
-| Condition | Score (headline fields) | 95% CI | n | Field-pairs unscored |
+Second-panel scores by field on those pairs (LLM-consensus silver, not ground truth; `product` 62.5% (n=8), `topics` 47.3% (n=10), `pros` 50.5% (n=8), `cons` 71.2% (n=3)): small samples, so each is a rough indication only.
+
+**`pros` reported separately: soft recall 69.4% [58.7%, 79.2%] on 46 resolved gold pairs (threshold 0.5, pre-registered; validation V-a: FAIL, V-b: FAIL; NOT validated).** The held-out figure above still scores `pros` with the existing token-level F1 scorer, not with this: the same pairs scored by an item-level phrase matcher swing 27.2 points across matcher thresholds (18.6 between 0.3 and 0.7), and the soft recall itself moves 6.2 points between thresholds 0.4 and 0.6 (pre-registered limit 5.0 points). 7 further resolved pairs have an empty gold list and are excluded. Soft recall on the 8 unresolved `pros` pairs a second panel could settle: 30.7% (n=7 scored, silver labels). Definition, criteria and outcome: [docs/specs/s18-pros-soft-recall.md](docs/specs/s18-pros-soft-recall.md).
+
+| Condition | Score (scored fields) | 95% CI | n | Field-pairs unscored |
 |---|---|---|---|---|
 | **As actually deployed** (real language routing) | **79.6%** | [76.2%, 82.8%] | 70 | 60 of 560 (10.7%) |
 | Language routing forced correct | 79.7% | [76.8%, 82.5%] | 70 | 60 of 560 (10.7%) |
 
-**This is accuracy where the panel agreed, not overall accuracy.** A *field-pair* is one (review, field) cell: 70 reviews x 8 fields = 560. A pair is unscored when the three judges split and the stored gold is a default, not a label. Those are the reviews the panel found hardest or most ambiguous, so scoring only the agreed pairs is a selection effect: it is why `pros` reads 73.8% with them excluded against 53.9% with the defaults scored (all reviews). 46 of 70 reviews have at least one unscored pair. **No point estimate of overall accuracy is identifiable from this data.** The assumption-free interval (every unscored pair all wrong / all right) is [70.9%, 81.6%]; that is a bound, not a result.
+**This is accuracy where the panel agreed, not overall accuracy.** A *field-pair* is one (review, field) cell: 70 reviews x 8 fields = 560. A pair is unscored when the three judges split and the stored gold is a default, not a label. Those are the reviews the panel found hardest or most ambiguous, so scoring only the agreed pairs is a selection effect: it is why `pros` reads 73.8% with them excluded against 53.9% with the defaults scored (all reviews). 46 of 70 reviews have at least one unscored pair. **No assumption-free point estimate of overall accuracy is identifiable from this data.** The assumption-free interval (every unscored pair all wrong / all right) is [70.9%, 81.6%]; that is a bound, not a result.
 
-**What this headline is.** The average of 8 fields (`product`, `buy_again`, `sentiment`, `topics`, `competitor_mentions`, `pros`, `cons`, `stars_inferred`) over the 70 of 106 corpus reviews that the prompt-development process had **not** seen, with 60 gold (review, field) pairs excluded because the judge panel split and the stored gold was a default, not a label. `stars` (null everywhere) and `language` (an echo of the detector, agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error)) are excluded as before.
+**What this held-out figure is.** The average of 8 fields (`product`, `buy_again`, `sentiment`, `topics`, `competitor_mentions`, `pros`, `cons`, `stars_inferred`) over the 70 of 106 corpus reviews that the prompt-development process had **not** seen, with 60 gold (review, field) pairs excluded because the judge panel split and the stored gold was a default, not a label. `stars` (null everywhere) and `language` (an echo of the detector, agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error)) are excluded as before.
 
 **Every cell, same recorded model outputs, as deployed** (the change moves the number up, so all four are shown):
 
@@ -187,7 +192,7 @@ accuracy is identifiable (details below).
 | all | all | 72.4% | [69.8%, 75.0%] | 106 |
 | all | split excluded | 80.0% | [77.4%, 82.5%] | 106 |
 | unseen only | all | 73.2% | [69.9%, 76.5%] | 70 |
-| **unseen only (headline)** | **split excluded** | 79.6% | [76.2%, 82.8%] | 70 |
+| **unseen only** | **split excluded** | 79.6% | [76.2%, 82.8%] | 70 |
 
 **Why 36 reviews are excluded.** 15 also appear in the prompt-visible development fixtures (`eval/fixtures/hi-en/`; four of the `hi_en` prompt's few-shot examples are rewrites of them) and 21 in the internal benchmark whose adjudicated labels accepted prompt v2.2/v2.3. The builder only excluded already-quarantined text, so nothing stopped this ([ADR 0032](docs/architecture/adr/0032-held-out-exposure-and-split-gold.md)). Exposed reviews score 80.6% vs 79.6% for unseen ones (difference +1.0 pp, 95% CI -4.4 to +6.2): no benefit is detectable at this sample size, but that is absence of evidence, not proof of none.
 
@@ -218,9 +223,9 @@ accuracy is identifiable (details below).
 | `stars_inferred` | 0 of 70 | 0.0% | 97.1% | 97.1% | 97.1% |
 | **all 8 (per-review mean)** | **60 of 560** | **10.7%** | **79.6%** | **70.9%** | **81.6%** |
 
-**Sensitivity, conditional on an assumption that is not verified** (the true label of an unscored pair is one of the three judges' own answers): scoring each unscored pair against each judge in turn gives 74.3% to 75.6% overall, and the per-pair worst/best over the judges gives [73.2%, 77.3%] -- all below the headline. A sensitivity analysis, not an estimate: all three judges can be wrong, and the unscored pairs have never been adjudicated.
+**Sensitivity, conditional on an assumption that is not verified** (the true label of an unscored pair is one of the three judges' own answers): scoring each unscored pair against each judge in turn gives 74.3% to 75.6% overall, and the per-pair worst/best over the judges gives [73.2%, 77.3%] -- all below the held-out figure. A sensitivity analysis, not an estimate: all three judges can be wrong, and the unscored pairs have never been adjudicated.
 
-Gold labels are LLM-consensus silver, not human ground truth. Production's own language detector, measured against this corpus's language label: agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error). That agreement figure is the number to trust for routing; the held-out headline above is real-world extraction accuracy only where the panel agreed, and the CI-gate table above is a regression detector, not a real-world accuracy claim -- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) (its misrouting-cost finding was corrected in Session 15d).<!-- METRICS:END -->
+Gold labels are LLM-consensus silver, not human ground truth. Production's own language detector, measured against this corpus's language label: agreement with the corpus label 48.1% (95% CI 38.8-57.5; label alpha 0.380, so this partly measures label noise, not detector error). That agreement figure is the number to trust for routing; the held-out figure above is real-world extraction accuracy only where the panel agreed, and the CI-gate table above is a regression detector, not a real-world accuracy claim -- see [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) (its misrouting-cost finding was corrected in Session 15d).<!-- METRICS:END -->
 
 Reproducible from committed cassettes: `EVAL_CASSETTE_MODE=replay uv run python eval/score_held_out_corpus_v2.py --mode replay` — $0, zero live calls, byte-identical output. See [ADR 0021](docs/architecture/adr/0021-reproducible-measurement-and-misrouting-cost.md) for the full methodology. Its original "misrouting cost" decomposition was corrected in Session 15d (over all fields, the difference between the two routing conditions was the `language` field echoing the forced label, not an extraction cost).
 
@@ -238,7 +243,7 @@ n=70 reviews the prompt-development process had not seen; the 36 of 106 it had s
 
 Reproducible from the same committed cassettes, zero additional quota: `uv run python eval/analyze_coverage_metrics.py`.
 
-**The single headline claim this data supports** (Session 13 P1b — see [ADR 0027](docs/architecture/adr/0027-n23-discrepancy-resolved-and-headline-claim.md) for why a blended "rarely wrong when it commits" claim is not published):
+**The committed-answer claim this data supports** (Session 13 P1b — see [ADR 0027](docs/architecture/adr/0027-n23-discrepancy-resolved-and-headline-claim.md) for why a blended "rarely wrong when it commits" claim is not published):
 
 <!-- METRICS:START:committed_accuracy_headline -->**When it commits to an answer, this model is correct 88.0% of the time for sentiment (95% CI 78.0%–96.0%, n=70 unseen reviews) and 70.6% of the time for buy-again (95% CI 47.1%–88.2%, n=70 unseen reviews) -- rates divergent enough that a single blended "rarely wrong when it commits" claim would misrepresent buy-again.** See [ADR 0027](docs/architecture/adr/0027-n23-discrepancy-resolved-and-headline-claim.md) for why this is reported per-field, never blended into one number, and for the separate (and separately true) abstention-rate figures.<!-- METRICS:END -->
 
@@ -312,7 +317,7 @@ Interactive docs at `/docs` (Swagger) and `/redoc`.
 |---|---|
 | API | FastAPI + Pydantic v2 |
 | LLM (primary) | Groq — tiered routing, `openai/gpt-oss-20b` (small) / `openai/gpt-oss-120b` (large) |
-| LLM (fallback) | Google Gemini 2.0 Flash |
+| LLM (failover) | A second Groq account (`SECONDARY_PROVIDER_KIND=groq`, ADR 0038), optional; an OpenRouter ZDR-only kind is still supported in code but not used in production (the Gemini fallback was retired, ADR 0035) |
 | Auth | argon2id-hashed API keys (per-org, per-tenant) |
 | Auth (self-serve) | Supabase Auth · magic-link email · JWT verification |
 | Storage (v2) | Supabase Postgres + psycopg2 · RLS tenant isolation |
@@ -330,7 +335,7 @@ The production deployment runs on Google Cloud Run (free tier, `asia-south1`). T
 
 1. **Provision Supabase** — create a project, run the migrations in `supabase/migrations/` (includes `batch_jobs` table), enable Email auth provider and add magic-link redirect URLs in the Supabase dashboard
 2. **Create GCP project** — enable `run`, `secretmanager`, `artifactregistry`, `cloudbuild` APIs
-3. **Store secrets** in Secret Manager: `groq-api-key`, `gemini-api-key`, `supabase-database-url`, `supabase-url`, `supabase-service-role-key`, `admin-password-hash`
+3. **Store secrets** in Secret Manager: `groq-api-key`, `supabase-database-url`, `supabase-url`, `supabase-service-role-key`, `admin-password-hash`
 4. **Build and deploy** — follow [`ops/runbooks/cloud-run-deploy.md`](ops/runbooks/cloud-run-deploy.md)
 
 Cost at free-tier traffic: **₹0.00/mo** (Cloud Run + Artifact Registry well within Always Free quotas). See [`ops/runbooks/cloud-run-cost-check.md`](ops/runbooks/cloud-run-cost-check.md) for the weekly cost-check procedure.
@@ -391,7 +396,7 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 - Kill switch — Pub/Sub budget alert → Cloud Function → Cloud Run traffic = 0
 
 **Phase 2.0b** ✓ (shipped May 2026):
-- Language detection — Devanagari regex + Hinglish keyword heuristics + lingua-py confidence
+- Language detection — Devanagari regex + Hinglish keyword heuristics + lingua-py confidence. Devanagari input is still detected (as `hi`) and attempted via the `hi` prompt, but that is an unvalidated best-effort path with no eval gate and no support claim ([ADR 0022](docs/architecture/adr/0022-hindi-retirement.md))
 - Language-branched prompts (v2.0) — en / hi-en / hi, each with explicit English-output instruction
 - 46-fixture eval suite — 25 English + 16 Hinglish (Claude Sonnet auto-labeled) + 6 Hindi as shipped (synthetic; later retired from scoring — Devanagari Hindi is not supported, see [Corpus and language scope](#corpus-and-language-scope) and [ADR 0022](docs/architecture/adr/0022-hindi-retirement.md))
 - Per-language CI gate — <!-- METRICS:HISTORICAL -->overall ≥ 85%, each language ≥ 80%<!-- /METRICS:HISTORICAL --> as shipped (lowered to the current threshold on 2026-06-14 — see [ADR 0001](docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md) and [Eval results](#eval-results))
@@ -409,7 +414,7 @@ Eval is scoped to prompt/LLM/schema/fixture changes so normal PRs (docs, refacto
 **Phase 2.1** ✓ (shipped June 2026 — v0.5.0):
 - Provider abstraction — Python `Protocol`-based adapter layer; `GroqProvider` and `SecondaryProvider` with `assert_privacy_safe()` enforcement
 - SecondaryProvider failover — configurable fallback when Groq exhausts; `trains_on_input=True` providers rejected in code on the org-key path
-- Tiered router — small model (llama-3.1-8b-instant) for en/hi, large model (llama-3.3-70b-versatile) for hi-en and escalations; escalation triggers: schema validation failure, low confidence (<0.6), star/sentiment signal mismatch
+- Tiered router — every language starts on the small model (`openai/gpt-oss-20b`) and escalates to the large model (`openai/gpt-oss-120b`) on a trigger (at v0.5.0 the models were llama-3.1-8b-instant / llama-3.3-70b-versatile, retired 2026-08-16); escalation triggers: schema validation failure, low confidence (<0.6), star/sentiment signal mismatch
 - Routed eval (v0.5.0, prompt v2.1): <!-- METRICS:HISTORICAL -->84.4% overall (86.3% en / 83.2% hi-en / 80.7% hi)<!-- /METRICS:HISTORICAL -->; tiered routing was OFF by default at this point, pending that release's overall-accuracy gate. **Correction (2026-07-30):** tiered routing is now ON by default in production (`ENABLE_TIERED_ROUTING` defaults `true`, no override in CI or Cloud Run) — this bullet describes v0.5.0's ship-time state only; see [Eval results](#eval-results) for current status.
 - Prometheus metrics: tier distribution, escalation rate, per-tier token counts, failover count
 
@@ -444,7 +449,7 @@ datasets, yields 106 genuine Hinglish candidates (0.74% of the corpus) feeding b
 eval set and a separate quarantined held-out corpus (`eval/fixtures/_held_out_hindi_hinglish/`,
 106 fixtures, intended for held-out measurement rather than prompt development, but 36 of
 them also appear in the prompt-visible eval fixtures or the internal benchmark, so the prompt
-development process had seen them; the headline excludes them and covers only the 70 unseen
+development process had seen them; the held-out figure excludes them and covers only the 70 unseen
 reviews, and only where the judge panel agreed, see
 [ADR 0032](docs/architecture/adr/0032-held-out-exposure-and-split-gold.md) and
 [ADR 0033](docs/architecture/adr/0033-unscored-fraction-beside-the-headline.md)).
@@ -474,7 +479,9 @@ Ground truth for the original 16 Hinglish fixtures specifically: Anthropic Claud
 
 **New growth (Wave 1 Section B, this session): multi-LLM consensus, NOT human ground truth.** Ground truth for newly added fixtures is the agreement of an independent 3-judge LLM panel, not any single model's opinion — including not the production model, and not a single labeler model as before. Per-field voting only (unanimous/majority/split), never a blended confidence score; a field with no majority gets no label (`split`), not a forced tiebreak. The panel is calibrated against a 16-item unambiguous control set *before* any real labeling, and a judge that fails calibration is dropped, not silently kept.
 
-<!-- METRICS:START:consensus_labeling -->**Active judge panel:** `openai/gpt-oss-120b` (OpenAI GPT-OSS), `qwen/qwen3.6-27b` (Alibaba Qwen)
+<!-- METRICS:START:consensus_labeling -->*[Retired — superseded by 78.6% (95% CI 73–83%, n=43, 2026-09-19). Everything in this block is the Wave 1 Section B record as of its labeling run, kept for history; the figures below are not current. See "Headline accuracy" above.]*
+
+**Active judge panel:** `openai/gpt-oss-120b` (OpenAI GPT-OSS), `qwen/qwen3.6-27b` (Alibaba Qwen)
 
 - Dropped by calibration: `allam-2-7b` -- 9/33 control-set field checks failed (tolerance: <= 2) -- dropped from the active panel for this labeling run per the calibration policy.
 
@@ -498,11 +505,11 @@ Ground truth for the original 16 Hinglish fixtures specifically: Anthropic Claud
 | language | 43 | 40 | 93.0% | 6 |
 | stars | 49 | 48 | 98.0% | 0 |
 
-**Growth:** 233 new candidates considered, 83 became new fixtures (83 en, 0 hi-en). Of 150 excluded: 60 on genuine panel disagreement (no majority on sentiment/urgency/buy_again/language), 90 lost to Groq free-tier rate-limit exhaustion on the provider used for this labeling run (OpenRouter/Gemini fallback, not Groq -- see ADR 0003; both judges errored, not a quality signal, recoverable on a fresh quota window).
+**Growth:** 233 new candidates considered, 83 became new fixtures (83 en, 0 hi-en). Of 150 excluded: 60 on genuine panel disagreement (no majority on sentiment/urgency/buy_again/language), 90 lost to Groq free-tier rate-limit exhaustion on the provider used for this labeling run (OpenRouter/Gemini fallback, not Groq -- see ADR 0003; both judges errored, not a quality signal, recoverable on a fresh quota window). *[Historical: the OpenRouter/Gemini fallback above is what that past labeling/recording run used, per ADR 0003. Production failover today is a second Groq account (ADR 0038); the Gemini fallback was retired (ADR 0035).]*
 
-**Final eval set: 132 fixtures** (110 en, 7 hi, 15 hi-en).
+**Final eval set: 132 fixtures** (110 en, 7 hi, 15 hi-en). *[Retired — superseded by 78.6% (95% CI 73–83%, n=43, 2026-09-19). Historical: Devanagari Hindi was retired from scoring (ADR 0022), so the 7 hi fixtures are quarantined and no longer gate; the 83 new fixtures are also not gating, see "Known gap" below.]*
 
-**Minimum detectable effect** (2-proportion z-test, alpha=0.05, power=0.80) at n=132: **17.2 points** (worst-case, p=0.5) / **12.7 points** (at current score p=0.838).<!-- METRICS:END -->
+**Minimum detectable effect** (2-proportion z-test, alpha=0.05, power=0.80) at n=132: **17.2 points** (worst-case, p=0.5) / **12.7 points** (at current score p=0.838). *[Retired — superseded by 78.6% (95% CI 73–83%, n=43, 2026-09-19); n=132 and p=0.838 describe the retired eval set, not the current n=43 gate.]*<!-- METRICS:END -->
 
 **Known gap — the 83 new fixtures are quarantined, not gating.** They're staged in `eval/fixtures/_pending_groq_cassette/` (see that directory's own README), invisible to `eval.runner`'s CI-gating scan by directory-name convention -- their cassettes were recorded against an OpenRouter/Gemini fallback provider (ADR 0003), not the Groq models CI actually scores and production actually serves. Promoting them requires a real re-record against Groq -- per this session's own runbook (`ops/runbooks/eval-cassette-rerecord.md`), that currently means production Groq quota; no genuinely isolated benchmark key exists today (verified: no `GROQ_API_KEY_BENCHMARK` secret/config anywhere checkable, and even the code path that would use one isn't wired into `eval/runner.py`). Flagged here as a required, quota-gated follow-up, not left for CI to discover.
 

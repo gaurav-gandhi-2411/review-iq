@@ -11,6 +11,9 @@ name: Model Availability Check
 # a second time -- a workflow with its own copy of the model name would itself drift from
 # the source it's supposed to be checking) and confirms each is still present in its
 # provider's live model list.
+#
+# S17 (ADR 0035): the Gemini fallback was retired, so only Groq models are checked; the
+# gemini-api-key secret is no longer read here.
 
 on:
   schedule:
@@ -38,7 +41,7 @@ jobs:
   model-availability-check:
     runs-on: ubuntu-24.04 # pinned: unverified on 26.04 (S17 H3); move to ubuntu-latest after a main-branch dry run
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
 
       - name: Extract configured model names from source
         id: models
@@ -48,7 +51,7 @@ jobs:
           import sys
 
           text = open("app/core/config.py", encoding="utf-8").read()
-          fields = ["groq_model", "gemini_model", "groq_model_small", "groq_model_large"]
+          fields = ["groq_model", "groq_model_small", "groq_model_large"]
           # (?:#.*\n\s*)* tolerates comment lines between `Field(` and `default=` --
           # session 12 regression: PR #31 added a multi-line explanatory comment above
           # gemini_model's default, which the previous regex (no comment tolerance)
@@ -67,21 +70,19 @@ jobs:
           PYEOF
 
       - name: Authenticate to GCP
-        uses: google-github-actions/auth@v3
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
         with:
           workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
           service_account: ${{ vars.GCP_DEPLOYER_SA }}
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v3
+        uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
 
       - name: Fetch provider API keys from Secret Manager
         id: keys
         run: |
           echo "::add-mask::$(gcloud secrets versions access latest --secret=groq-api-key)"
           echo "groq_key=$(gcloud secrets versions access latest --secret=groq-api-key)" >> "$GITHUB_OUTPUT"
-          echo "::add-mask::$(gcloud secrets versions access latest --secret=gemini-api-key)"
-          echo "gemini_key=$(gcloud secrets versions access latest --secret=gemini-api-key)" >> "$GITHUB_OUTPUT"
 
       - name: Confirm Groq models are still live
         env:
@@ -108,23 +109,9 @@ jobs:
           done
           exit $FAIL
 
-      - name: Confirm Gemini model is still live
-        env:
-          GEMINI_KEY: ${{ steps.keys.outputs.gemini_key }}
-          GEMINI_MODEL: ${{ steps.models.outputs.gemini_model }}
-        run: |
-          LIVE=$(curl -s "https://generativelanguage.googleapis.com/v1beta/models?key=$GEMINI_KEY" | python3 -c "import json,sys; print('\n'.join(m['name'].removeprefix('models/') for m in json.load(sys.stdin).get('models', [])))")
-          if ! echo "$LIVE" | grep -qx "$GEMINI_MODEL"; then
-            echo "::error::Gemini model '$GEMINI_MODEL' is not in the live model list -- likely deprecated/removed"
-            exit 1
-          fi
-          echo "  [ok] $GEMINI_MODEL is listed"
-          # Session 15d: real generation, not list membership (see the Groq step above).
-          GEMINI_KEY="$GEMINI_KEY" python3 scripts/check_model_generation.py gemini "$GEMINI_MODEL"
-
       - name: Open/update alert issue on failure
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const label = process.env.ALERT_LABEL;
@@ -141,7 +128,7 @@ jobs:
 
       - name: Close alert issue on recovery
         if: success()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const label = process.env.ALERT_LABEL;

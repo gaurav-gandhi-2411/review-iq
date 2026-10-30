@@ -6,6 +6,7 @@ Its failure mode must feel intentional, not broken.
 
 from __future__ import annotations
 
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 import httpx
@@ -20,6 +21,14 @@ _CTX = ApiKeyContext(
     key_name="test-key",
     usage_record_id="test-usage-id",
 )
+
+
+@pytest.fixture(autouse=True)
+def _reply_drafting_on(monkeypatch: pytest.MonkeyPatch) -> None:
+    """These tests exercise drafting, so the ENABLE_REPLY_DRAFTING kill switch is set on."""
+    monkeypatch.setattr(
+        "app.api.v2.reply.get_settings", lambda: SimpleNamespace(enable_reply_drafting=True)
+    )
 
 
 @pytest.fixture()

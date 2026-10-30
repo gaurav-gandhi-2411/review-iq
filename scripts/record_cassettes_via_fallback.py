@@ -1,4 +1,4 @@
-"""Standalone cassette recorder — OpenRouter (primary) -> Gemini (secondary) fallback.
+"""Standalone cassette recorder — OpenRouter only (the Gemini leg was retired in S17, ADR 0035).
 
 Context (2026-07-30, Wave 1 Section B): the 83 new consensus-grown fixtures had no
 recorded cassettes. Recording them the standard way (`EVAL_CASSETTE_MODE=record
@@ -79,7 +79,6 @@ class RecordingStats:
     """Tally of what happened during a recording run, for the final report."""
 
     openrouter_count: int = 0
-    gemini_count: int = 0
     validation_retries: int = 0
     hard_failures: list[tuple[str, str, str]] = field(
         default_factory=list
@@ -118,7 +117,7 @@ async def _call_openrouter(
     """Call OpenRouter chat completions in JSON mode, mirroring GroqProvider.complete's contract.
 
     Returns (raw_text, tokens_in, tokens_out). Raises httpx.HTTPError on any network/HTTP failure
-    -- callers treat that as "OpenRouter unavailable" and fall back to Gemini.
+    -- callers record a hard failure for that fixture (no further fallback).
     """
     from app.core.providers.groq import _RETRY_SUFFIX
 
@@ -146,43 +145,6 @@ async def _call_openrouter(
     return raw, tokens_in, tokens_out
 
 
-async def _call_gemini_raw(
-    system_prompt: str,
-    user_prompt: str,
-    *,
-    gemini_api_key: str,
-    gemini_model: str,
-    retry: bool = False,
-) -> tuple[str, int, int]:
-    """Call Gemini and return the RAW response text (not the parsed model).
-
-    Deliberately does NOT reuse app.core.llm._call_gemini: that function returns a
-    *parsed* ReviewExtractionLLMOutput and discards the raw text, but a cassette entry
-    must store the raw text (replay() returns it verbatim to the router, which parses it
-    itself). It also has no retry-suffix parameter. Otherwise mirrors it exactly --
-    same client construction, same JSON-mode config, same temperature=0.0.
-    """
-    from app.core.providers.groq import _RETRY_SUFFIX
-    from google import genai
-    from google.genai import types
-
-    prompt = user_prompt + (_RETRY_SUFFIX if retry else "")
-    client = genai.Client(api_key=gemini_api_key)
-    response = await client.aio.models.generate_content(
-        model=gemini_model,
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            system_instruction=system_prompt,
-            response_mime_type="application/json",
-            temperature=0.0,
-        ),
-    )
-    meta = getattr(response, "usage_metadata", None)
-    tokens_in = int(getattr(meta, "prompt_token_count", 0) or 0) if meta else 0
-    tokens_out = int(getattr(meta, "candidates_token_count", 0) or 0) if meta else 0
-    return response.text or "", tokens_in, tokens_out
-
-
 def _validate(raw: str) -> bool:
     """Return True if *raw* parses into a valid ReviewExtractionLLMOutput.
 
@@ -206,20 +168,17 @@ async def _record_one(
     key: str,
     *,
     openrouter_api_key: str,
-    gemini_api_key: str,
-    gemini_model: str,
     stats: RecordingStats,
     provenance: dict[str, dict[str, Any]],
 ) -> bool:
-    """Record one missing cassette key via OpenRouter, falling back to Gemini.
+    """Record one missing cassette key via OpenRouter.
 
     OpenRouter gets up to 2 attempts (initial + 1 retry) for schema-validation failures;
-    an HTTP-level failure skips straight to Gemini (no point retrying a dead endpoint).
-    Gemini gets the same 2-attempt allowance. Writes the cassette entry via
+    an HTTP-level failure is a hard failure (no point retrying a dead endpoint). Writes the cassette entry via
     app.core.providers.cassette.record() only on a validated response; otherwise reports
     the failure and writes nothing (never a broken cassette entry).
 
-    Returns True on success, False on total failure (both providers exhausted).
+    Returns True on success, False on failure.
     """
     from app.core.providers.cassette import record
     from eval.provenance import now_iso
@@ -247,30 +206,7 @@ async def _record_one(
         raw = None
 
     if raw is None:
-        for attempt in range(2):
-            try:
-                raw, tokens_in, tokens_out = await _call_gemini_raw(
-                    system_prompt,
-                    user_prompt,
-                    gemini_api_key=gemini_api_key,
-                    gemini_model=gemini_model,
-                    retry=(attempt > 0),
-                )
-            except Exception as exc:  # noqa: BLE001 -- any Gemini SDK failure is a fallback dead-end
-                log.warning("gemini.error", fixture=fixture_id, tier=tier, error=str(exc))
-                raw = None
-                break
-            if _validate(raw):
-                source, model_requested = "gemini", gemini_model
-                break
-            log.warning("gemini.schema_invalid", fixture=fixture_id, tier=tier, attempt=attempt)
-            stats.validation_retries += 1
-            raw = None
-
-    if raw is None:
-        stats.hard_failures.append(
-            (fixture_id, tier, f"both providers failed/invalid for key {key}")
-        )
+        stats.hard_failures.append((fixture_id, tier, f"OpenRouter failed/invalid for key {key}"))
         return False
 
     record(key, raw, tokens_in, tokens_out)
@@ -280,10 +216,7 @@ async def _record_one(
         "recorded_at": now_iso(),
         "reason": RECORDING_REASON,
     }
-    if source == "openrouter":
-        stats.openrouter_count += 1
-    else:
-        stats.gemini_count += 1
+    stats.openrouter_count += 1
     print(f"  [{fixture_id}] {tier} tier <- {source} ({model_requested})")
     return True
 
@@ -292,8 +225,6 @@ async def _process_fixture(
     fixture: dict[str, Any],
     *,
     openrouter_api_key: str,
-    gemini_api_key: str,
-    gemini_model: str,
     groq_model_small: str,
     groq_model_large: str,
     stats: RecordingStats,
@@ -336,8 +267,6 @@ async def _process_fixture(
             user_prompt,
             small_key,
             openrouter_api_key=openrouter_api_key,
-            gemini_api_key=gemini_api_key,
-            gemini_model=gemini_model,
             stats=stats,
             provenance=provenance,
         )
@@ -374,8 +303,6 @@ async def _process_fixture(
         user_prompt,
         large_key,
         openrouter_api_key=openrouter_api_key,
-        gemini_api_key=gemini_api_key,
-        gemini_model=gemini_model,
         stats=stats,
         provenance=provenance,
     )
@@ -394,7 +321,7 @@ def _save_provenance(provenance: dict[str, dict[str, Any]]) -> None:
 
 
 async def main() -> int:
-    """Record every currently-missing cassette entry via OpenRouter -> Gemini fallback."""
+    """Record every currently-missing cassette entry via OpenRouter."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--dry-run", action="store_true", help="Report missing cassette gaps; call no provider."
@@ -406,15 +333,10 @@ async def main() -> int:
 
     settings = get_settings()
     openrouter_api_key = os.environ.get("OPENROUTER_API_KEY", "")
-    gemini_api_key = settings.gemini_api_key
-    gemini_model = settings.gemini_model
 
     if not args.dry_run:
         if not openrouter_api_key:
             print("ERROR: OPENROUTER_API_KEY is not set.")
-            return 1
-        if not gemini_api_key:
-            print("ERROR: GEMINI_API_KEY is not set (required as the fallback-of-fallback).")
             return 1
         await _verify_openrouter_models_available(openrouter_api_key)
 
@@ -422,7 +344,7 @@ async def main() -> int:
     provenance = _load_provenance()
 
     paths = _collect_fixture_paths(FIXTURES_DIR)
-    print("=== Cassette recorder (OpenRouter -> Gemini fallback) ===")
+    print("=== Cassette recorder (OpenRouter only) ===")
     print(f"Fixtures: {len(paths)}  dry_run={args.dry_run}\n")
 
     for path in paths:
@@ -430,8 +352,6 @@ async def main() -> int:
         await _process_fixture(
             fixture,
             openrouter_api_key=openrouter_api_key,
-            gemini_api_key=gemini_api_key,
-            gemini_model=gemini_model,
             groq_model_small=settings.groq_model_small,
             groq_model_large=settings.groq_model_large,
             stats=stats,
@@ -445,7 +365,6 @@ async def main() -> int:
     print("\n=== Summary ===")
     print(f"Already had a cassette: {stats.already_present}")
     print(f"Recorded via OpenRouter: {stats.openrouter_count}")
-    print(f"Recorded via Gemini fallback: {stats.gemini_count}")
     print(f"Validation retries consumed: {stats.validation_retries}")
     print(f"Hard failures: {len(stats.hard_failures)}")
     for fixture_id, tier, err in stats.hard_failures:

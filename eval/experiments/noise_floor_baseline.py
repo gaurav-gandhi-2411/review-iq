@@ -127,6 +127,18 @@ async def run(mode: str) -> None:
     ids = select_ids(variant_rows)
     assert set(ids) <= set(english_routed_ids(baseline["records"]))
 
+    if mode == "record":
+        # S19 Q3a: in-run `used` is blind to other consumers of the key; read Groq's live counters.
+        from eval.quota_guard import preflight
+
+        preflight(
+            {
+                settings.groq_model_small: len(ids) * EST_TOKENS_PER_CALL,
+                settings.groq_model_large: 0,
+            },
+            api_key=settings.groq_api_key,
+        )
+
     rows: list[dict[str, Any]] = []
     used: dict[str, int] = {}
     for n, fid in enumerate(ids, 1):
@@ -139,7 +151,7 @@ async def run(mode: str) -> None:
                 break
         prompt = en_prompt.build_prompt(wrap_for_llm(clean))  # the production prompt, unmodified
         out, model, t_in, t_out, escalated, degraded = await route_extraction(
-            prompt, _SYSTEM_PROMPT, allow_gemini_fallback=False, settings=settings
+            prompt, _SYSTEM_PROMPT, settings=settings
         )
         final = out.model_dump()
         used[model] = used.get(model, 0) + t_in + t_out

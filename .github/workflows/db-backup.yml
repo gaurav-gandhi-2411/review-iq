@@ -139,9 +139,22 @@ jobs:
           check_token "authenticity_audits"
           # The three tokens above all appear in a schema-only dump, so a dump with zero rows
           # (wrong --schema, a role that sees no data, a pg_dump --schema-only regression)
-          # verified green. pg_dump writes a `COPY public.<table> ... FROM stdin` section for
-          # every table that holds rows; production always has some.
+          # verified green. `COPY public` rules out --schema-only ...
           check_token "COPY public"
+          # ... but NOT an empty data dump: pg_dump writes a `COPY public.<table> (...) FROM
+          # stdin;` block for EVERY table, including tables with zero rows (S19 Z8: measured
+          # with pg_dump 17 -- a database whose tables are all empty still contains
+          # `COPY public.organizations (id) FROM stdin;`), so the token above passed it.
+          # Count the data lines inside the organizations block instead (text-format COPY: one
+          # line per row, block ends at a line holding only `\.`); production always has at
+          # least one organization. scripts/verify_restore.py makes the same assertion on the
+          # restored copy (--require-nonempty organizations); this stops the upload earlier.
+          ORG_ROWS=$(echo "${CONTENT}" | awk '/^COPY public\.organizations /{f=1; next} f && /^\\\.$/{f=0} f{n++} END{print n+0}')
+          if [ "${ORG_ROWS}" -lt 1 ]; then
+            echo "::error::public.organizations has 0 rows in the dump -- an empty-looking backup. Aborting."
+            exit 1
+          fi
+          echo "  [ok] public.organizations has ${ORG_ROWS} row(s)"
 
           LINES=$(echo "${CONTENT}" | wc -l)
           echo "Dump passed all checks. Uncompressed lines: ${LINES}"
@@ -162,20 +175,53 @@ jobs:
             echo "See ops/runbooks/db-restore.md for how to generate and set it."
             exit 1
           fi
+          mkdir -p upload
           # --passphrase-fd 0: passphrase is piped via stdin, never argv (avoids
           # exposure in the runner's process list), same care as the DSN handling above.
           gpg --batch --yes --symmetric --cipher-algo AES256 \
             --passphrase-fd 0 \
-            --output "${FILENAME}.gpg" \
+            --output "upload/${FILENAME}.gpg" \
             "${FILENAME}" <<< "$DB_BACKUP_ENCRYPTION_KEY"
           rm -f "${FILENAME}"
           echo "encrypted_filename=${FILENAME}.gpg" >> "$GITHUB_OUTPUT"
 
+      - name: Assert the upload set is encrypted-only (structural guard)
+        # S17: until 2026-07-10 plaintext dumps were uploaded to this PUBLIC repo (4 files, deleted
+        # 2026-10-05). Encryption was bolted on afterwards, which made a plaintext upload unlikely,
+        # not impossible. Now: the plaintext dump never lives under upload/, the upload step below
+        # takes the LITERAL glob upload/*.gpg (not a step output that could point anywhere), and this
+        # step fails the job unless every file there is a gpg symmetric-encrypted packet that is NOT
+        # a readable gzip. A plaintext file renamed .gpg still fails here.
+        run: |
+          set -e
+          shopt -s nullglob
+          FILES=(upload/*)
+          [ "${#FILES[@]}" -ge 1 ] || { echo "::error::upload/ is empty"; exit 1; }
+          for F in "${FILES[@]}"; do
+            case "$F" in *.gpg) ;; *) echo "::error::non-.gpg file in upload/: $F"; exit 1 ;; esac
+            if gunzip -t "$F" 2>/dev/null; then
+              echo "::error::$F is a readable gzip, not an encrypted file"; exit 1
+            fi
+            # gpg --list-packets exits 2 on a valid symmetric file (it is listing, not decrypting, and
+            # holds no key), so the exit status is handled explicitly: 0 and 2 are expected, anything
+            # else (or a missing binary) fails the job. The packet greps below are the real check.
+            if PACKETS=$(gpg --list-packets "$F" 2>&1); then GPG_RC=0; else GPG_RC=$?; fi
+            if [ "$GPG_RC" -gt 2 ]; then
+              echo "::error::gpg failed (exit $GPG_RC) reading $F"; exit 1
+            fi
+            echo "$PACKETS" | grep -q 'symkey enc packet' \
+              || { echo "::error::$F is not a gpg symmetric-encrypted file"; exit 1; }
+            echo "$PACKETS" | grep -q 'encrypted data packet' \
+              || { echo "::error::$F has no encrypted data packet"; exit 1; }
+          done
+          echo "upload set verified encrypted: ${FILES[*]}"
+
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.encrypt.outputs.encrypted_filename }}
-          path: ${{ steps.encrypt.outputs.encrypted_filename }}
+          path: upload/*.gpg
+          if-no-files-found: error
           # 90 days is the GitHub free-tier maximum. Safe to keep even on a public
           # repo now that the artifact is encrypted (see the "Encrypt dump" step
           # above) — see ops/runbooks/db-restore.md for the upgrade path.

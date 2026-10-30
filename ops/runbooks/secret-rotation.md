@@ -56,12 +56,13 @@ corrected (see that row).
 | `supabase-service-role-key` | `SUPABASE_SERVICE_ROLE_KEY` | Bypasses RLS — highest-sensitivity secret in this table. Rotate first if any compromise is suspected. Consumers, order and rollback: `ops/runbooks/service-role-key-rotation.md`. |
 | `unsubscribe-signing-key` | `UNSUBSCRIBE_SIGNING_KEY` | HMAC key signing one-click unsubscribe tokens |
 | `leads-ip-hash-salt` | `LEADS_IP_HASH_SALT` | Added 2026-09-21 (Session 16). HMAC-SHA256 key for `leads.source_ip_hash` on the marketing-site lead form (`app/api/leads.py`). Attached with `gcloud run services update --update-secrets` (never `--set-secrets`, which would drop every other secret). Unset means the hash column is stored NULL (fail-safe). Rotating it makes older hashes unlinkable to new ones, which is acceptable: the hash exists only for abuse correlation. Runtime service account `review-iq-runner` holds `secretAccessor` on it. |
+| `resend-webhook-secret` | `RESEND_WEBHOOK_SECRET` | NOT YET CREATED (S20 M3b). Svix signing secret (`whsec_...`) for `POST /webhooks/resend` bounce/complaint events, shown once when the webhook endpoint is added in the Resend dashboard. Unset means the endpoint returns 503 and processes nothing (fail closed). Create with `gcloud secrets create` and attach with `gcloud run services update --update-secrets` (never `--set-secrets`). Rotation: Resend dashboard > Webhooks > roll the secret, add the new version here, disable the old one; deliveries signed with the old secret are rejected (401) until the new version is live, and Resend retries them. |
 | `supabase-direct-url` | *(none — never referenced by any deployed service)* | Added 2026-08-01, for running migrations that need `CREATEROLE` (`review_iq_app`/`review_iq_migrator` don't have it). Connects as `postgres`. Highest-sensitivity secret in this table alongside `supabase-service-role-key` — never grant any Cloud Run service account access to it. |
 
 Not tracked here (plain env vars, not Secret Manager — see `cloud-run-deploy.md` for why):
 `DIGEST_TRIGGER_TOKEN`, `INGEST_TICK_TOKEN`, `DETECTOR_SWEEP_TRIGGER_TOKEN` (the latter was missing
-from this list until 2026-08-13 — found while rotating all three during the gandhi1129 account
-migration; the two documented here were already correctly excluded). All three are consumed by
+from this list until 2026-08-13 — found while rotating all three during the migration to the new GCP owner
+identity; the two documented here were already correctly excluded). All three are consumed by
 their matching Cloud Scheduler job (`review-iq-ingest-tick`, `review-iq-digest-daily`,
 `review-iq-detector-sweep`) — rotate by generating a new value, updating the Cloud Run env var via
 `gcloud run services update review-iq --update-env-vars=...`, then updating the corresponding

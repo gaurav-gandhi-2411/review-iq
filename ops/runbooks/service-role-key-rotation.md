@@ -43,8 +43,8 @@ the anon key until the web app and the API are moved to the `sb_publishable_` ke
    service-role key while it is unset. Baseline: 23 `/bff/*` requests, all 200, on that revision.
 2. Dashboard: copy the `sb_publishable_...` key (Project Settings -> API Keys). It is public by design.
 3. Cloud Run, API verification path:
-   `gcloud run services update review-iq --region=asia-south1 --project=reviewiq-prod-260813 --account=gaurav.gandhi1129@gmail.com --update-env-vars=SUPABASE_ANON_KEY=<sb_publishable key>`
-   (`--update-env-vars` merges; never `--set-env-vars`). Log in at https://app.samidhareviews.xyz, load
+   `gcloud run services update review-iq --region=asia-south1 --project=reviewiq-prod-260813 --account=<owner-account> --update-env-vars=SUPABASE_ANON_KEY=<sb_publishable key>`
+   (`--update-env-vars` merges; never `--set-env-vars`; in every command in this runbook, where `<owner-account>` is the project's sole GCP owner identity (substitute at run time).) Log in at https://app.samidhareviews.xyz, load
    the dashboard, then check Cloud Run logs: `/bff/*` all 200, no 401, for 10 minutes. If 401
    appears, unset the variable (`--remove-env-vars=SUPABASE_ANON_KEY`): the service-role fallback
    resumes. Not yet verified: that GoTrue accepts a `sb_publishable_` key on `/auth/v1/user` through
@@ -57,7 +57,7 @@ the anon key until the web app and the API are moved to the `sb_publishable_` ke
 6. Dashboard: disable the legacy API keys (the control that actually kills the leaked JWT).
    See section 4 for the exact path. Then PROVE it: a request with the old service-role key must
    return 401 (CC can run this check without printing the key).
-7. Disable the Secret Manager version: `gcloud secrets versions disable 1 --secret=supabase-service-role-key --project=reviewiq-prod-260813 --account=gaurav.gandhi1129@gmail.com`; replace the three
+7. Disable the Secret Manager version: `gcloud secrets versions disable 1 --secret=supabase-service-role-key --project=reviewiq-prod-260813 --account=<owner-account>`; replace the three
    legacy values in the local `.env` / `web/.env.local` with the new-style ones.
 8. Follow-up PR: delete the fallback and the `SUPABASE_SERVICE_ROLE_KEY` setting from the code so the
    key cannot be reintroduced silently.
@@ -72,8 +72,8 @@ fix forward with the publishable key instead.
 Order, so production never loses access: **issue new -> update every consumer -> verify -> revoke old.**
 
 1. Issue the new key (section 4). Do not revoke the old one yet.
-2. `printf '%s' '<new key>' | gcloud secrets versions add supabase-service-role-key --data-file=- --project=reviewiq-prod-260813 --account=gaurav.gandhi1129@gmail.com` (value piped, never echoed).
-3. Redeploy so `:latest` is re-read: `gcloud run services update review-iq --region=asia-south1 --project=reviewiq-prod-260813 --account=gaurav.gandhi1129@gmail.com --update-labels=rotated=$(date +%s)`.
+2. `printf '%s' '<new key>' | gcloud secrets versions add supabase-service-role-key --data-file=- --project=reviewiq-prod-260813 --account=<owner-account>` (value piped, never echoed).
+3. Redeploy so `:latest` is re-read: `gcloud run services update review-iq --region=asia-south1 --project=reviewiq-prod-260813 --account=<owner-account> --update-labels=rotated=$(date +%s)`.
 4. Verify as in Plan A step 3.
 5. Revoke the old key. Disable the old Secret Manager version (`versions disable <old>`).
 6. Replace the local `.env` line.

@@ -68,21 +68,21 @@ jobs:
     env:
       # Eval CI replays recorded cassettes — ZERO live LLM calls, deterministic, $0, and
       # immune to free-tier daily-quota exhaustion (which takes down a live eval). No
-      # GROQ/GEMINI key is provided on purpose: a missing cassette then fails LOUDLY
+      # GROQ key is provided on purpose: a missing cassette then fails LOUDLY
       # instead of silently making a live call. Re-record when prompts change — see
       # eval/README.md (standing rule).
       EVAL_CASSETTE_MODE: replay
       API_KEY: ci-key
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
 
       - name: Set up Python
-        uses: actions/setup-python@v7.0.0
+        uses: actions/setup-python@v7.1.0
         with:
           python-version: "3.11"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v10.3.2
         with:
           enable-cache: true
 
@@ -148,7 +148,7 @@ jobs:
 
       - name: Upload eval artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: eval-results
           path: |

@@ -1,0 +1,51 @@
+{
+ "per_setting": {
+  "none": {
+   "n": 20,
+   "mean": 557.8,
+   "median": 556.0,
+   "max": 785,
+   "empty": 0,
+   "finish_length": 0
+  },
+  "low": {
+   "n": 20,
+   "mean": 379.1,
+   "median": 377.5,
+   "max": 444,
+   "empty": 0,
+   "finish_length": 0
+  },
+  "medium": {
+   "n": 20,
+   "mean": 548.8,
+   "median": 540.5,
+   "max": 832,
+   "empty": 0,
+   "finish_length": 0
+  },
+  "high": {
+   "n": 20,
+   "mean": 821.9,
+   "median": 739.5,
+   "max": 1842,
+   "empty": 0,
+   "finish_length": 0
+  }
+ },
+ "criterion": {
+  "p_max": 0.05,
+  "median_ratio_min": 1.25
+ },
+ "high_vs_low": {
+  "paired_items": 20,
+  "high_greater": 20,
+  "low_greater": 0,
+  "ties": 0,
+  "sign_test_p": 2e-06,
+  "median_low": 377.5,
+  "median_high": 739.5,
+  "median_ratio": 1.959
+ },
+ "honoured": true
+}

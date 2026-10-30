@@ -97,3 +97,6 @@ ops/budget-killswitch/.build/
 # Local scratch/raw datasets for prompt-tuning work (large Kaggle downloads + derived
 # intermediates) — mirrors eval/data/.gitignore's raw/generated-candidate exclusion pattern.
 /data/
+
+# Local Groq TPD 429 observations (eval/quota_guard.py); machine state, never committed.
+eval/results/.groq_tpd_observations.json
