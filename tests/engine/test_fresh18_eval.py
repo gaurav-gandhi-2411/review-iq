@@ -1,8 +1,14 @@
+"""Amendment 18 scoring: exact McNemar, row parsing, the registered 120b subsample, P1 pass/fail and the empty-row sensitivity."""
+
 from __future__ import annotations
 
 import numpy as np
 import pytest
-from engine.intent import fresh18_eval as E
+
+# the module imports the serving runtime and the labelling stack (sklearn); the CI venv skips those extras together
+pytest.importorskip("onnxruntime")
+pytest.importorskip("sklearn")
+from engine.intent import fresh18_eval as E  # noqa: E402
 
 
 def _labels(yes: list[str], no: list[str]) -> dict:
