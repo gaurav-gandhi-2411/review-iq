@@ -268,11 +268,11 @@ jobs:
         working-directory: web
         run: npx vite build
 
-      # The dashboard dev preview (src/dev, fixture reviews) is guarded by import.meta.env.DEV.
-      # If that guard ever stops working, fixture text would ship to customers; fail loudly.
+      # The dev previews (src/dev, fixture reviews: dashboard and skipped reviews) are guarded by
+      # import.meta.env.DEV. If that guard ever stops working, fixture text would ship to customers; fail loudly.
       - name: Dev preview must not be in the production bundle
         run: |
-          if grep -rqE "Ordered this as a gift three weeks ago|__preview/dashboard" web/dist; then
+          if grep -rqE "Ordered this as a gift three weeks ago|__preview/dashboard|__preview/skipped|Paisa vasool overall" web/dist; then
             echo "dev preview fixtures leaked into web/dist"; exit 1
           fi
 
