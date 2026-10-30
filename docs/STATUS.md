@@ -1,8 +1,65 @@
 # Samidha Reviews: status
 
-Updated at the end of every session. Last update: 2026-10-20 (S29, autonomous; S28 on 2026-10-19; S27 on 2026-10-18; S26 and S25 the same day, S24 on 2026-10-17; S23 text below is kept where still true and corrected where S24 changed it). Labels: VERIFIED = observed this
+Updated at the end of every session. Last update: 2026-10-25 (S31, autonomous, 2026-10-23 to 25; S29 on 2026-10-20; S28 on 2026-10-19; S27 on 2026-10-18; S26 and S25 the same day, S24 on 2026-10-17; S23 text below is kept where still true and corrected where S24 changed it). Labels: VERIFIED = observed this
 session or by a committed artifact (command and output exist); BELIEVED = inferred or stated by someone else,
 not observed. Synthetic = produced on generated data, never a statement about real customers.
+
+
+## Session 32 (autonomous, 2026-10-29): decisions recorded
+
+Full record: `docs/autonomy/S32_PROGRESS.md`.
+
+- **Classifier parity tolerance ACCEPTED (GG, 2026-10-29).** Tolerance for the served classifier against its offline reference:
+  **at most 0.5 percent of task decisions may differ, every difference must be at the abstention boundary (label vs abstained), and
+  0 class-to-class flips.** The S31 live measurement meets it: 5 of 3,028 decisions (0.17 percent), all 5 abstain-boundary, 0 class flips
+  (VERIFIED, `reports/serving/classify_redeploy_s31.json` `p3.live_parity`). "Cloud Run numerics parity" is no longer parked.
+- **Reply prompt v2.2 (#298) merges on c1 alone (GG, 2026-10-29); reply drafting stays OFF.** A full reply eval is REQUIRED before
+  drafting is ever enabled: v2.2 removes invented contact details (3/20 -> 0/20, VERIFIED), but whether it is "not worse" on drafting
+  quality is unmeasured (S31 judges saturated; the calibrated re-judge was inconclusive).
+- **Failover headroom on the shared Groq org (S32 addendum, 2026-10-29, CORRECTED the same day; no production change).** The failover
+  key (`groq-api-key`, gpt-oss-120b) sits in an org that other projects also spend from.
+  - **WITHDRAWN: "0 of 168 hours too low" (#628).** It counted only spend that wrote a ledger, so it was a lower bound on usage
+    and an upper bound on headroom, not a measurement of headroom.
+  - **What is known for the worst hour (10-29 ~07:40 UTC):** ledgered spend in the rolling 24 h was 160,401 tokens (triage-iq recorder
+    97,500 + this session's benchmark 60,732 + the 02:30 probe 2,169), so Groq-side headroom was at most 39,599 (VERIFIED, `reports/ops/failover_headroom_s32.json`). The benchmark's last call at
+    07:40 succeeded, so Groq's own count was then below its 200,000 cap: unledgered spend was between 0 and ~39,600 tokens. **Whether
+    headroom fell below one failover extraction (2,169 tokens) on 10-29 is NOT established either way.**
+  - **Correction to a figure in the S32 session log:** "1,768 free" was the ledger's ALLOCATABLE remainder (160,000 - 158,232), printed by a
+    ledger-only check that makes no Groq request. It is not Groq-side headroom.
+  - **Groq does not expose daily headroom.** `x-ratelimit-remaining-tokens` is per-MINUTE (TPM) per Groq's rate-limit page; daily usage
+    appears only in a 429 body ("Limit 200000, Used U"). None of the 147 benchmark calls, 7 probes or production calls since 10-22
+    got a 429 (VERIFIED: 0 `llm.rate_limited`, 0 `llm.failover`, probe 7/7 PASS). Neither the probe nor the benchmark records headers.
+  - **The 40,000 production reserve binds only ledger-wired projects** (triage-iq's recorder and review-iq's benchmarks). Local repos that
+    call Groq with NO ledger (read-only sweep of `ml-projects`, rule-55e repos excluded); which org each key belongs to is NOT known
+    from code (GG: Groq console):
+    - gpt-oss-120b (same model pool as the failover): **gg-portfolio chatbot** (live on Vercel, `lib/chatbot/llm-provider.ts`; its
+      canary POSTs a chat 4 times a day, 27 runs since 10-22, plus real visitors; not observable from here); **DealHunter**
+      (agentic-travel-booking-system, demo profile `demo-gpt-oss-120b`; 0 log lines naming the model in `dealhunter-prod-260812` in 7 days);
+      **swasarthi** (doubt eval: 444,666 tokens in three runs, 10-23 08:19, 10-24 00:11, 10-29 04:13; its 10-23 + 10-24 runs alone are
+      336,050 tokens within about 16 hours with 1 error, and the 10-24 02:30 probe and the 10-29 06:52 benchmark call both succeeded, so it
+      cannot be on a 200,000-cap failover org: BELIEVED, from arithmetic); **agentgauge-r1** and **token-efficiency-scorer** (research
+      code; no run output in the window found).
+    - Other models only (no effect on the 120b pool): agentic-shopping-assistant, next-season-styles, expense-tracker,
+      multimodal-fashion-recommender, agentgauge, gold-rate-tracker.
+  - Re-decide at the first sale (`ops/runbooks/groq-paid-tier.md` section 6), with a Groq-console reading of the shared org's daily usage.
+
+## Session 31 (autonomous, 2026-10-23 to 2026-10-25): what changed
+
+Full record: `docs/autonomy/S31_PROGRESS.md`; handoff: `docs/HANDOFF_2026-10-27_s31.md`.
+
+- **Amendment 16 (run 4: targeted training additions + input-length arms) FAILED** on its one sealed evaluation: E2 recall on 4+ star reviews 0.905
+  (lower bound 0.841 < 0.85) and E5 sentiment F1 -0.021; E1, E3, E4, E6 met (`docs/reports/amendment16-results.md`, verifier recomputed: 0
+  differences). The 256/512-token arms were dropped before training by the Cloud Run capacity probe (p95 1,107 / 2,137 ms > 1 s).
+- **Amendment 17 (served run 2 + a recall floor on the router, tau 0.07 chosen on validation) FAILED F2** on a fresh sealed set: recall on 4+
+  star reviews 119/133 = 0.895 (lower bound 0.831); F1 0.962, F3 share 0.297, F4 +0.058 over gpt-oss-20b met (`docs/reports/amendment17-results.md`).
+  The router stays OFF; the open problem is complaints inside positive-star reviews.
+- **Classifier redeployed on the pinned numerics** (revision 00002): live parity 5/3,028 (was 81). Exact parity not reached on Cloud Run: parked for GG.
+- **Reply prompt v2.2 (#298)**: invented contact details 3/20 -> 0/20 (VERIFIED, deterministic). "Not worse" could not be established: the 8B
+  judges saturated and the calibrated re-judge was inconclusive (gemma3 12b failed its gate). #298 parked; reply drafting OFF.
+- Controls fixed (mutation-tested): numerics-pin helper, cost-alert boundary/default/fraction, ingest-timeout client, panel-pin across sessions,
+  leakage scan (fingerprints covered only 3,483 of the sealed hashes until S31; now all 11,583, and the scan runs in 2.6 min instead of 93),
+  Judge.me fixture recorder (would have committed real reviewer IPs).
+- Incidents: a Kaggle resume silently redid 10.25 GPU-hours (fixed: fail-closed resume, #609); the weekly GPU quota ran out once.
 
 ## Live in production (Cloud Run `review-iq`, asia-south1)
 
@@ -25,7 +82,7 @@ not observed. Synthetic = produced on generated data, never a statement about re
 | `/health` 503s | 23 in 2026-10-10..12 (about 10 bursts of a few to about 20 s), all `reason=db_timeout` with an empty error. ROOT CAUSE NOT PROVEN. Healthy ping 1.77 s fixed cost. Measured from a Cloud Run job in Mumbai (`reports/ops/db_latency_s23.json`, PR #499, open, not on main): DB is the Sydney pooler (transaction mode, port 6543); one TCP round trip p50 218.8 ms; new connection p50 1773.8 ms (connect 1333.3 + `SELECT 1` 440.5); n 60. #494 merged (8 s guard, stage/connect_ms/elapsed_ms diagnostics, `health.db_slow`). S24: #513 (pool module) and #514 (`/health` pooled) are MERGED; #515 (all call sites, gate 4) stays parked for GG. The real-Postgres tenant-isolation suite (`tests/integration/test_pooled_connection_isolation.py` on #515's branch) was RUN in S24 against ephemeral postgres:17 in CI: 6 of 6 cases pass (scope leak to the next borrower, rolled-back uncommitted write, interleaved open transactions across orgs on two physical connections, randomized borrow sequence, failed statement then reuse, cross-org INSERT rejected on a reused connection). Measured live after the merges (S24, from GG's workstation, client wall clock, n 30 each, 1 s apart): `/health` p50 558 ms, p95 2712 ms, max 15599 ms; the no-DB `/openapi.json` p50 699 ms, p95 1087 ms. So the DB ping now adds no visible time over the network floor, against 1.77 s per probe before pooling (Mumbai job measurement). The 15.6 s max is one outlier (BELIEVED cold start, not diagnosed). NOT proven: that the running image contains #514 (the image push time, 07:41Z, is 1 min 41 s after the #514 merge, which fits but does not prove it), and no in-Mumbai after-measurement exists; the workstation numbers include the internet path. A Mumbai region move is a PLAN only (`docs/ops/db-region-migration-plan.md` in #499) | VERIFIED measurement artifact (on the #499 branch); cause BELIEVED (connection setup cost), unproven |
 | Demo allowance | Trailing-24 h token ledger (in-memory, per instance) with `DEMO_MAX_SHARE`; sees only the demo's own tokens, not eval or production extraction (a persisted shared ledger needs an RLS policy change, gate 4). The "resets at midnight UTC" text is gone (#493 merged) | VERIFIED merged |
 | Classification engine | `engine/` on main; not deployed anywhere (deployment waits for the review-intent model) | VERIFIED |
-| Private classify service (S29) | `review-iq-classify`, asia-south1, revision `review-iq-classify-00001-4rt` (image digest `sha256:b6d3ef10...`), 1 vCPU / 2 GiB, min 0, max 2, concurrency 4. PRIVATE: the IAM policy has exactly one binding, `roles/run.invoker` for `review-iq-runner@`; no allUsers or allAuthenticatedUsers; an unauthenticated POST returns 403. **Nothing calls it**: `ENABLE_ENCODER_FIRST` is off and `CLASSIFY_SERVICE_URL` is unset on `review-iq`. Live parity found a numerics difference (81 of 3028 decisions differ; see Served model). Registry now 914.9 MB of unique layer bytes, 481.5 MB of it this image: about 4 cents a month (BELIEVED price) | VERIFIED (gcloud, Cloud Monitoring, live runs; `D:/ml-cache/s29/`, not committed) |
+| Private classify service (S31) | `review-iq-classify`, asia-south1, revision `review-iq-classify-00002-zh5` (image `review-iq-classify:b3cabc36d2b8`, digest `sha256:69618259...`, built by Cloud Build from main `b3cabc3` with the ORT numerics pin), 1 vCPU / 2 GiB, min 0, max 2. Rollback image tagged `keep-classify-prev` (the S29 digest `sha256:b6d3ef10...`). PRIVATE: exactly one binding (`roles/run.invoker` -> `review-iq-runner@`), no public principal, unauthenticated POST 403 (re-checked 2026-10-22). **Nothing calls it** (router OFF). Live parity on the 757 sealed reviews: **5 of 3,028 decisions differ** (S29: 81), all abstention-boundary flips; 87 percent of reviews bit-identical in probability. Cold starts 12.0 / 17.3 / 13.8 s. Server p95 311-456 ms per minute at 128 tokens. Registry about 1.98 GB in total after the push (both classify images kept): about $0.15 a month at the BELIEVED $0.10/GB-month | VERIFIED (`reports/serving/classify_redeploy_s31.md`) |
 | Judge.me connector | Code merged behind `ENABLE_JUDGEME_CONNECTOR` (default off): spec, client, mapper and scans, sync engine (#351-#354). Migration and the rest of the stack are open PRs | VERIFIED merged; flag off; nothing applied |
 
 ## Model: what is proven, what is in progress, what each feature needs, the honest gaps

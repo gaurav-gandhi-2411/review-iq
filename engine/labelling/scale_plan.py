@@ -62,6 +62,15 @@ def pending_chunks(items: list[dict], done: set[str], size: int = CHUNK) -> list
     return [todo[i : i + size] for i in range(0, len(todo), size)]
 
 
+def is_judge_output(name: str) -> bool:
+    """A kernel's per-judge output file (`<judge>.jsonl` or `<judge>__shard<N>.jsonl`), never an items file."""
+    if not name.endswith(".jsonl"):
+        return False
+    stem = name.removesuffix(".jsonl")
+    judge, _, shard = stem.partition("__shard")
+    return judge in JUDGES and (shard == "" if "__shard" not in stem else shard.isdigit())
+
+
 def done_ids(path: Path) -> set[str]:
     return {r["id"] for r in read_jsonl(path)} if path.exists() else set()
 

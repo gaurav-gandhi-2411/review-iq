@@ -20,6 +20,36 @@ def test_alert_only_strictly_above_the_fraction_of_the_plan_price():
     assert out[0].ratio == pytest.approx(5.81 / 29, abs=1e-4)
 
 
+def test_a_ratio_exactly_at_the_fraction_is_not_an_alert():
+    # S31 control audit: 5.80 / 29 is a hair BELOW 0.2 in floating point, so the test above never exercises equality and a
+    # `>=` mutation survived. 19.75 / 79 is exactly 0.25 in binary floating point.
+    plans = {ORG_A: "growth", ORG_B: "growth"}
+    assert [a.org_id for a in CA.evaluate({ORG_A: 19.75, ORG_B: 19.76}, plans, fraction=0.25)] == [
+        ORG_B
+    ]
+
+
+def test_the_sweep_uses_the_configured_fraction_not_the_default():
+    # 19 / 79 = 24%: above the 20% default, below a configured 25%
+    res = CA.run_sweep({ORG_A: "growth"}, lambda org_id, since: 19.0, fraction=0.25)
+    assert res["threshold"] == 0.25 and res["alerts"] == []
+
+
+def test_the_default_line_is_20_percent_in_code_and_settings():
+    from app.core.config import Settings
+
+    assert CA.DEFAULT_FRACTION == 0.20
+    assert Settings.model_fields["cost_alert_fraction"].default == 0.20  # GG decision, S29
+
+
+def test_an_unknown_plan_is_logged_as_an_error():
+    from structlog.testing import capture_logs
+
+    with capture_logs() as logs:
+        CA.evaluate({ORG_A: 1.0}, {ORG_A: "agency"})
+    assert [e["event"] for e in logs if e["log_level"] == "error"] == ["cost_alert.unknown_plan"]
+
+
 def test_a_full_quota_starter_or_growth_customer_is_below_the_line_but_india_growth_and_scale_are_above_it():
     # measured: Starter 5,000 reviews = $2.67 of $29 (9.2%); Growth 25,000 = $13.35 of $79 (16.9%); Scale 100,000 = $53.40 of $199
     # (26.8%); India Growth = $13.35 of $52.24 (25.6%). docs/pricing.json prices; the line is 20% by GG decision, so full quota on the
