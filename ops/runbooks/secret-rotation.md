@@ -210,18 +210,25 @@ Then rotate (Steps 1–4 above) with a freshly generated value.
 
 ## Quota accounting after rotation
 
-The free tier is 6 versions; steady state here is 12 (see "Key rules" above — a small
-paid overage, ~$0.36/month). After any rotation, verify each secret is back to exactly 1
+The free tier is 6 versions; the live count is 19 enabled versions across 17 secrets (see "Key
+rules" above, ~$0.78/month). After any rotation, verify each secret is back to exactly 1
 enabled version:
 
 ```bash
-# Count enabled versions across all 12 secrets
-for s in groq-api-key gemini-api-key supabase-database-url admin-password-hash \
-         resend-api-key resend-from-email supabase-url supabase-service-role-key \
-         unsubscribe-signing-key review-iq-admin-database-url \
-         review-iq-migrator-database-url supabase-direct-url; do
-  n=$(gcloud secrets versions list $s --project=review-iq-prod \
-    --filter="state=enabled" --format="value(name)" | wc -l)
+# Count enabled versions for every secret that exists in the live project. The list comes from
+# `gcloud secrets list`, not a hand-kept list: the old hand-kept list named a secret that does
+# not exist (supabase-service-role-key), missed six that do, and targeted the decommissioned
+# review-iq-prod project, so it checked the wrong place and still printed a plausible table.
+# `tr -d '\r'`: gcloud on Windows (Git Bash) ends lines with CRLF; without it every name but the
+# last carries a trailing \r and its lookup fails. A failed lookup prints ERROR, never a count:
+# piping a failed call into `wc -l` used to print a plausible "0".
+P=reviewiq-prod-260813
+for s in $(gcloud secrets list --project="$P" --format="value(name)" | tr -d '\r'); do
+  if ! v=$(gcloud secrets versions list "$s" --project="$P" \
+      --filter="state=enabled" --format="value(name)"); then
+    echo "$s: ERROR (gcloud call failed; count unknown)"; continue
+  fi
+  n=$(printf '%s\n' "$v" | tr -d '\r' | grep -c .)
   echo "$s: $n"
   if [ "$n" -ne 1 ]; then echo "  ^ WARNING: expected exactly 1 enabled version"; fi
 done
@@ -229,4 +236,5 @@ done
 
 Every line should read `secret-name: 1` during normal operation — any secret showing a
 different count means an old version wasn't disabled after a rotation (see the 2026-07-11
-`resend-from-email` cleanup above for the fix).
+`resend-from-email` cleanup above for the fix), and any `ERROR` line means that secret was not
+checked at all. As of 2026-10-20, `supabase-direct-url` shows 3 (see "Key rules").
