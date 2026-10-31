@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 from engine.intent import fresh18_groq120 as G
 from engine.intent import llm_moat as M
+from engine.intent import llm_moat_local as L
 
 from engine import groq_budget_hook
 
@@ -25,6 +26,8 @@ def offline(monkeypatch: pytest.MonkeyPatch) -> list[str]:
     calls: list[str] = []
     monkeypatch.setenv("GROQ_EVAL_KEY", "test-not-a-key")
     monkeypatch.setattr(groq_budget_hook, "install", lambda: None)
+    # run() sets the 120b generation settings on the shared module dict; a copy keeps them out of other tests
+    monkeypatch.setattr(L, "GEN", dict(L.GEN))
 
     def fake(key: str, text: str) -> tuple[dict, int, str]:
         calls.append(text)
