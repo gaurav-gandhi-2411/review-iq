@@ -167,6 +167,22 @@ curl -sf https://SERVICE_URL/health | jq .
 
 ## Admin password rotation (extra steps)
 
+**Preferred:** use `scripts/rotate_admin_password.py` (PR #508, branch
+`fix/s23-rotate-admin-password`; see its docstring and `--help`, not duplicated here). The
+manual procedure below is the fallback.
+
+**Pin the version, never `latest`, for `ADMIN_PASSWORD_HASH`.** Secret Manager answers a
+`latest` reference with `FAILED_PRECONDITION` when the newest version is disabled. As of
+2026-10-12 `ADMIN_PASSWORD_HASH` is pinned to an explicit version (3) on both `review-iq` and
+`review-iq-admin`; **other secrets still use `latest`** (checked with
+`gcloud run services describe` that day). After a manual rotation: add version N+1, set
+`--update-secrets=ADMIN_PASSWORD_HASH=admin-password-hash:N+1` on both services, verify, then
+disable and destroy the old version.
+
+`review-iq-admin` must also stay IAM-gated (empty invoker policy; see ADR 0006's addendum).
+If a rotation is done because the password leaked, also check
+`gcloud run services get-iam-policy review-iq-admin` shows no `allUsers`.
+
 Rotating `admin-password-hash` requires generating a new argon2id hash first:
 
 ```bash
