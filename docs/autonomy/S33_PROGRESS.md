@@ -5,10 +5,9 @@ session's queue is GG's S33 brief (continuing S32's). Stop when it is done.
 
 ## Current task
 
-2c: Amendment 18 running. fresh18 drawn (8,100). Run-2 scoring CPU kernel `review-intent-fresh18-run2-score` pushed 18:35 UTC 10-30.
-Panel (stage P, ~17.3 h over 3 sessions) and 20b (`review-intent-fresh18-llm`, ~6.5 h) wait for the Kaggle GPU quota reset
-(10-31, BELIEVED 00:00 UTC). Datasets ready: `review-intent-fresh18` (panel items), `review-intent-fresh18-run2` (model + items),
-`review-intent-fresh18-llm` (20b items).
+2c: Amendment 18 running. Run-2 CPU scoring COMPLETE (pinned logits `D:/ml-cache/s33/fresh18_run2_pinned.npz`, ids = manifest
+order). GPU quota reset observed: panel `review-intent-fresh18-panel` v2 pushed 00:16 UTC 10-31 (session 1 of ~3, `--budget-hours 8`);
+20b `review-intent-fresh18-llm-run` pushed 00:06 UTC 10-31 (~6.5 h). Both RUNNING at 00:27 UTC.
 
 ## Reconstruction (2026-10-30 12:30 UTC, VERIFIED unless marked)
 
@@ -57,12 +56,18 @@ Panel (stage P, ~17.3 h over 3 sessions) and 20b (`review-intent-fresh18-llm`, ~
   the conflict between D95 and the S33 120b resume is surfaced to GG. Default = the registered INCOMPLETE fallback.
 - 2026-10-30 14:00 (B) 4a: Analyse shows the extraction inline (ReviewDetail needs router state the open response cannot supply).
 
+- 2026-10-31 00:12 INCIDENT (operational, no label seen): panel v1 failed after 395 s with `KeyError: 'stratum'` in
+  `judge.py` (v2/v3 records carry `it["stratum"]`). The panel dataset had been built from the private file (fields block/ntok, no
+  stratum); S31's `fresh17_all.jsonl` used `stratum = category` and dropped block/ntok. Rebuilt `fresh18_all.jsonl` the same way
+  (8,100 rows, ids in manifest order, texts unchanged, 2,700 per category), new dataset version, re-pushed v2. 0 judge records were
+  written by v1, so nothing about the labels was observed. Cost: ~7 GPU-min x 2 T4.
+
 ## Resources
 
 | Resource | Used this session | Notes |
 |---|---|---|
 | Groq failover 120b | 0 | benchmark cap 100K / 24 h |
 | Groq primary | 0 | never |
-| Kaggle GPU h | 0 | |
+| Kaggle GPU h | ~0.1 (failed panel v1) + running | quota reset 10-31 00:00 UTC |
 | GCP | 0 changes | |
 | C: free | 244.4 GB at start | |
