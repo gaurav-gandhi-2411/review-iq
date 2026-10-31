@@ -24,9 +24,15 @@ S34 brief. Waiting only in foreground chunks of 9 minutes or less, and only on s
   a registry 503 and the worker raised. Fixed: pull retry with backoff, #645 `4578b8d`. Remaining: llama31/gemma2 3,100 each,
   qwen3/mistral 8,100 each (~13 h on GPU1 at the observed ~625 items/h per judge, so 2 more sessions).
 - **S33 session ended** mid-wait (~06:00 UTC 10-31); the panel finished unobserved, ~9 h before S34 started.
-- **Local main** held `9d1aa5f`, a duplicate of #643 left by a concurrent session (tree identical to `origin/main` `43fcb6e`, empty
-  diff); realigned with `git reset --keep origin/main` (nothing lost; the commit stays in the reflog).
-- **Concurrent session (BELIEVED, not this one):** merged #642, #233, #232, #643 on 10-30/31 and holds `review-iq-wt-work`
+- **Local main** held `9d1aa5f`, a duplicate of #643 (tree identical to `origin/main` `43fcb6e`, empty diff); realigned with
+  `git reset --keep origin/main` (nothing lost; the commit stays in the reflog). **Cause found (VERIFIED, reflog):** not the
+  concurrent session. One of this session's own Bash calls committed on a progress branch and then ran `git switch main` + `git pull`;
+  the claude-config PostToolUse hook `hook_strip_trailer.py` (rule 36) runs after the whole call, sees a commit statement, and amends
+  whatever HEAD is THEN, i.e. main's GitHub squash commit, whose legitimate `Co-authored-by: Gaurav Gandhi <noreply>` trailer it
+  stripped (reflog: `commit (amend)` 1 s after the pull). It recurred at 17:31 UTC 10-31 on #645's squash (`e1b816a`), realigned
+  the same way. Mitigation here: never commit and switch branch in the same call. Hook fix belongs in claude-config (parked).
+- **Concurrent session (BELIEVED, not this one):** merged #642, #233, #232, #643 on 10-30/31 (#643's local duplicate above is this
+  session's hook artefact, not theirs) and holds `review-iq-wt-work`
   (`docs/deploy-runbook-secret-counts`). Not touched.
 - **Groq ledger:** 120b trailing 24 h: 0 / 160,000 allocatable; recording flag cleared (`recording-active: no`); `benchmark` cap
   20,000 / day (triage-iq D95 config, read-only). Primary org: 0.
@@ -41,7 +47,8 @@ S34 brief. Waiting only in foreground chunks of 9 minutes or less, and only on s
 | 0 | Reconstruct | **done** | section above | 10-31 17:20 |
 | 1 | S4 analysis | **already run (S33)**, not re-run | #635 `82aab63` | |
 | 2b | Amendment 18 pre-registration | **done (S33)** | #638 `86675ad` | |
-| 2c | Draw / label / score | running: panel session 2 | #645 `4578b8d`; panel v3 pushed 17:28 | |
+| 2c | Draw / label / score | running: panel session 2 | #645 `4578b8d`; panel v3 pushed 17:28, QUEUED 30 min, RUNNING by 17:58 | |
+| 2c' | 120b secondary runner | **done** (runs after labels) | #646 `1950d81` (first push failed CI: test leaked `llm_moat_local.GEN`; fixed `17c0df9`) | 10-31 18:00 |
 | 2d | Enable plan or D2 | pending A18 result | | |
 | 4a | Ledger caps runbook step | **done (S33)** | #639 `5b45809` | |
 | 4b | Leftover subagent worktrees | | | |
