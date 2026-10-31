@@ -84,7 +84,8 @@ class RemoteClassifier:
             self._token, self._token_at = r.text.strip(), time.monotonic()
         return self._token
 
-    async def classify(self, texts: list[str]) -> list[dict[str, dict[str, Any]]]:
+    async def classify_full(self, texts: list[str]) -> tuple[list[dict[str, dict[str, Any]]], str]:
+        """Per-review task decisions and the sha256 of the thresholds file the service decided with."""
         async with httpx.AsyncClient(timeout=self._timeout) as client:
             token = await self._id_token(client)
             r = await client.post(
@@ -93,7 +94,13 @@ class RemoteClassifier:
                 headers={"Authorization": f"Bearer {token}"},
             )
             r.raise_for_status()
-            return [item["tasks"] for item in r.json()["results"]]
+            body = r.json()
+            return [item["tasks"] for item in body["results"]], str(
+                body["decision"]["thresholds_sha256"]
+            )
+
+    async def classify(self, texts: list[str]) -> list[dict[str, dict[str, Any]]]:
+        return (await self.classify_full(texts))[0]
 
 
 async def plan_routes(
@@ -113,22 +120,40 @@ async def plan_routes(
 _remote: RemoteClassifier | None = None
 
 
-async def should_extract(text: str) -> bool:
-    """The worker's one question: run full LLM extraction for this review? True unless the flag is on, the service is configured,
-    and the encoder says the review is classified-only. Never raises."""
+@dataclass(frozen=True)
+class IngestPlan:
+    route: bool  # True = run full LLM extraction now
+    tasks: dict[str, dict[str, Any]] | None = (
+        None  # the encoder's decisions; None when the classifier was not consulted or failed
+    )
+    thresholds_sha256: str | None = None
+
+
+async def plan_ingest(text: str) -> IngestPlan:
+    """The worker's question for one review: extract now, or keep it classified-only (with the decisions to persist).
+    Routes to the LLM (today's behaviour) unless the flag is on, the service is configured and the encoder answered. Never raises."""
     from app.core.config import get_settings
     from app.core.metrics import ENCODER_FIRST_TOTAL
 
     global _remote
     s = get_settings()
     if not s.enable_encoder_first or not s.classify_service_url:
-        return True
+        return IngestPlan(True)
     if _remote is None or _remote._url != s.classify_service_url.rstrip("/"):
         _remote = RemoteClassifier(s.classify_service_url, timeout_s=INGEST_TIMEOUT_S)
-    d = (await plan_routes(_remote, [text]))[0]
-    if d.reasons == ("classifier_unavailable",):
-        outcome = "fail_open"
-    else:
-        outcome = "routed" if d.route else "skipped"
-    ENCODER_FIRST_TOTAL.labels(outcome=outcome).inc()
-    return d.route
+    try:
+        per_item, sha = await _remote.classify_full([text])
+        if len(per_item) != 1:
+            raise ValueError("classifier returned a different number of results")
+        d = route_r1(per_item[0])
+    except Exception as e:  # noqa: BLE001 (fail-open by design: an encoder problem must never drop a review)
+        log.warning("encoder_first.fail_open", error=type(e).__name__, n=1)
+        ENCODER_FIRST_TOTAL.labels(outcome="fail_open").inc()
+        return IngestPlan(True)
+    ENCODER_FIRST_TOTAL.labels(outcome="routed" if d.route else "skipped").inc()
+    return IngestPlan(d.route, per_item[0], sha)
+
+
+async def should_extract(text: str) -> bool:
+    """plan_ingest's route decision alone (kept for callers that do not persist skipped reviews). Never raises."""
+    return (await plan_ingest(text)).route
