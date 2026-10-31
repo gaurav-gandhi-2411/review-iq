@@ -1,0 +1,61 @@
+name: UI screenshots
+
+# S31: before/after screenshots for a UI change (CLAUDE.md rule 15c) taken in CI, not on the laptop. Runs `vite dev` with dummy
+# public config (the pages captured need no backend: login, try, and the fixture-backed dashboard preview) and uploads PNGs as
+# an artifact. Triggered by a push to a screenshot branch, or by hand once this file is on main.
+
+on:
+  push:
+    branches: ["chore/s31-ui-shots-baseline", "feat/s31-tailwind4"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ui-screenshots-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+
+      - name: Install web dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Playwright
+        run: |
+          python -m pip install playwright==1.63.0
+          python -m playwright install --with-deps chromium
+
+      - name: Start vite dev server
+        working-directory: web
+        env:
+          VITE_SUPABASE_URL: https://example.supabase.co
+          VITE_SUPABASE_ANON_KEY: screenshot-placeholder
+          VITE_API_URL: https://example.invalid
+        run: |
+          nohup npx vite --host 127.0.0.1 --port 5173 > /tmp/vite.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:5173/ > /dev/null && break; sleep 1; done
+          curl -sf http://127.0.0.1:5173/ > /dev/null || (cat /tmp/vite.log; exit 1)
+
+      - name: Screenshots
+        run: python scripts/ui_screenshots.py --base http://127.0.0.1:5173 --out shots
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ui-shots-${{ github.sha }}
+          path: shots/
+          retention-days: 14

@@ -50,7 +50,7 @@ export default function Concerns({ concerns, total, hasBaseline, previousLabel, 
                       </span>
                     </span>
                     {t && (
-                      <span className={`inline-flex shrink-0 items-center gap-1 rounded px-2 py-1 text-xs font-medium text-ink ${t.chip}`}>
+                      <span className={`inline-flex shrink-0 items-center gap-1 rounded-sm px-2 py-1 text-xs font-medium text-ink ${t.chip}`}>
                         <t.Icon size={13} aria-hidden="true" />
                         {t.label}
                       </span>

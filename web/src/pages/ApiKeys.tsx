@@ -140,7 +140,7 @@ export default function ApiKeysPage() {
                   placeholder="e.g. production"
                   required
                   autoFocus
-                  className="w-full px-3 py-2 text-sm font-sans border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green/30 focus:border-green transition-shadow"
+                  className="w-full px-3 py-2 text-sm font-sans border border-gray-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-green/30 focus:border-green transition-shadow"
                 />
               </div>
               <div>
@@ -153,7 +153,7 @@ export default function ApiKeysPage() {
                   min={1}
                   value={quota}
                   onChange={e => setQuota(Number(e.target.value))}
-                  className="w-full px-3 py-2 text-sm font-sans border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green/30 focus:border-green transition-shadow"
+                  className="w-full px-3 py-2 text-sm font-sans border border-gray-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-green/30 focus:border-green transition-shadow"
                 />
               </div>
             </div>
