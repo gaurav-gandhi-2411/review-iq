@@ -1,0 +1,9 @@
+# Inference stack for Dockerfile.classify (NOT in pyproject/uv.lock: the default app image and CI do not need it).
+# ONNX Runtime + the `tokenizers` library only: no torch, no transformers (docs/specs/review-intent-serving.md).
+# Versions are the ones the offline evaluation and the sealed-set parity check ran with (2026-10-18).
+# Regenerate the hash-pinned lock (Linux wheels for the python:3.11-slim image; run in any uv environment, installs nothing):
+#   uv pip compile requirements-classify.in --generate-hashes --python-version 3.11 \
+#       --python-platform x86_64-manylinux_2_28 -o requirements-classify.txt
+onnxruntime==1.31.0
+tokenizers==0.23.3
+numpy==2.4.4

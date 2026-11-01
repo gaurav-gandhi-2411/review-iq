@@ -3,10 +3,12 @@
 This guard does NOT read daily token headroom. Nothing on a successful Groq response exposes it.
 What it does, honestly:
   * `x-ratelimit-*-tokens` are PER-MINUTE (TPM) and say nothing about the daily token budget.
-  * `x-ratelimit-*-requests` are the daily REQUEST budget (RPD, resets at UTC midnight). They are
-    a best-effort proxy: they see other consumers' request counts, but only for the current UTC
-    day, and not their token size. Groq's TPD window appears to be ROLLING, so the proxy is blind
-    to token draw from the previous day. Incident 2026-10-08: the proxy said OK (1 request used)
+  * `x-ratelimit-*-requests` are the daily REQUEST budget (RPD). They are a best-effort proxy:
+    they see other consumers' request counts, but not their token size, and their window is not
+    verified to match the token window. Groq's TPD window is ROLLING (VERIFIED 429 body
+    2026-10-12 00:07 UTC: "Limit 200000, Used 199445, Requested 972 ... try again in 3m0s", i.e.
+    capacity returns minutes later, not at 00:00 UTC), so the proxy is blind to token draw from
+    earlier in the trailing 24h. Incident 2026-10-08: the proxy said OK (1 request used)
     and the first real call got 429 "TPD: Limit 200000, Used 199409, Requested 1678".
   * The only authoritative signal is that 429 body ("Limit N, Used M, Requested R"). It is parsed
     by `parse_tpd_429` and persisted per model (`record_tpd_observation`); `preflight` then
@@ -33,7 +35,8 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 
-DAILY_TOKEN_CEILING = 95_000  # 5% inside the 100K/model/UTC-day self-imposed budget (ADR 0031)
+# 5% inside the 100K/model/rolling-24h eval cap (eval/rolling_window.py; ADR 0031 margin)
+DAILY_TOKEN_CEILING = 95_000
 # Mean tokens per call for this repo's extraction/reply calls is ~2.1K-2.9K (ADR 0031 measured
 # 2123 in + 790 out); 1_000 is a deliberately LOW-side-of-typical figure so that the request-count
 # proxy does not refuse on a day of many tiny calls, while 500 requests already implies 500K if
@@ -41,7 +44,7 @@ DAILY_TOKEN_CEILING = 95_000  # 5% inside the 100K/model/UTC-day self-imposed bu
 # the rest.
 PESSIMISTIC_TOKENS_PER_REQUEST = 1_000
 LEDGER_WINDOW_SECONDS = 24 * 3600
-# The ceiling is a fraction of the nominal 100K/day budget; a 429 reports the model's REAL limit
+# The ceiling is a fraction of the nominal 100K/rolling-24h eval cap; a 429 reports the model's REAL limit
 # (200000 for gpt-oss-120b on 2026-10-08), so the observation check compares used/limit to this.
 CEILING_FRACTION = DAILY_TOKEN_CEILING / 100_000
 OBSERVATION_TTL_SECONDS = 24 * 3600

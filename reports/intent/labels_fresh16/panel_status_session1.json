@@ -1,0 +1,33 @@
+{
+ "stage": "P",
+ "judges": {
+  "qwen3_8b__gpu1": {
+   "done": 4800,
+   "of": 6300
+  },
+  "llama31_8b__gpu0": {
+   "done": 4600,
+   "of": 6300
+  },
+  "mistral_7b__gpu1": {
+   "done": 4800,
+   "of": 6300
+  },
+  "gemma2_9b__gpu0": {
+   "done": 4600,
+   "of": 6300
+  }
+ },
+ "budget_hit": true,
+ "commit": "56e523a3da69003488989aad69a41a3d23fd0a3f",
+ "gpu": "Tesla T4, 15360 MiB\nTesla T4, 15360 MiB",
+ "ollama_sha256": "c164ab8b1b28e2a247c29719b8e404c423c5b83ae64c3ab4e59d50c7ff7fc5e0",
+ "elapsed_s": 36599,
+ "ollama_version": "ollama version is 0.40.6",
+ "model_digests": {
+  "gemma2:9b": "ff02c3702f322b9e075e9568332d96c0a7028002f1a5a056e0a6784320a4db0b",
+  "llama3.1:8b": "46e0c10c039e019119339687c3c1757cc81b9da49709a3b3924863ba87ca666e",
+  "mistral:7b": "6577803aa9a036369e481d648a2baebb381ebc6e897f2bb9a766a2aa7bfbc1cf",
+  "qwen3:8b": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41"
+ }
+}

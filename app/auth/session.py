@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import asyncio
 
-import psycopg2
 import structlog
 from fastapi import HTTPException, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -22,6 +21,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from app.auth.api_key import ApiKeyContext
 from app.auth.signup import verify_supabase_jwt
 from app.core.config import get_settings
+from app.core.db_pool import PooledConnection, db_connect
 from app.core.storage_pg import _set_tenant, get_org_retention_pg
 
 _BEARER = HTTPBearer(auto_error=False)
@@ -29,10 +29,10 @@ _BEARER = HTTPBearer(auto_error=False)
 log = structlog.get_logger(__name__)
 
 
-def _db_connect() -> psycopg2.extensions.connection:
+def _db_connect() -> PooledConnection:
     settings = get_settings()
     # Pooler (transaction mode) — same URL used by api_key.py.
-    return psycopg2.connect(settings.supabase_database_url)
+    return db_connect(settings.supabase_database_url)
 
 
 def _lookup_and_record_for_session(user_id: str) -> ApiKeyContext:

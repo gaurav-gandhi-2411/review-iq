@@ -2,7 +2,7 @@
 
 Every model that can actually serve org-path extraction traffic (per
 app/core/config.py's groq_model / groq_model_small / groq_model_large /
-gemini_model) needs an entry here. An unrecognized model is a deploy-time bug
+secondary_provider_model) needs an entry here. An unrecognized model is a deploy-time bug
 (a new model was wired into config/providers without a matching price added
 here) — ``price_extraction`` raises ``UnknownModelError`` rather than silently
 recording a $0 cost, so the gap surfaces immediately instead of corrupting the
@@ -46,7 +46,7 @@ class ModelPricing:
 
     ``tier`` mirrors the routing tiers in app/core/routing_policy.py
     ("small"/"large") for models on the tiered router; "fallback" for models
-    only reachable via non-tiered failover paths (secondary/Gemini).
+    only reachable via non-tiered failover paths (secondary).
     """
 
     provider: str
@@ -114,27 +114,6 @@ PRICING_TABLE: dict[str, ModelPricing] = {
         source="https://console.groq.com/docs/models",
         as_of="2026-09-10",
         verified=True,
-    ),
-    # Gemini — v1/demo-path fallback only; NEVER reachable on the org-key path
-    # (app/core/providers/base.py assert_privacy_safe bans train-on-input
-    # providers there). Verified live 2026-07-31 against
-    # https://ai.google.dev/gemini-api/docs/pricing, which also surfaced an
-    # operationally relevant fact: Gemini 2.0 Flash is marked deprecated and
-    # was shut down 2026-06-01 by Google. app/core/config.py's gemini_model
-    # default still points at it — this is a live fallback-path outage, not a
-    # pricing gap, and is out of scope for this cost-telemetry task (belongs
-    # to Section F/reliability). Price kept here for cost-math completeness
-    # and so a stray call doesn't hit UnknownModelError on top of whatever
-    # error Google's API itself now returns for a shut-down model.
-    "gemini-2.0-flash": ModelPricing(
-        provider="gemini",
-        tier="fallback",
-        usd_per_million_input=0.10,
-        usd_per_million_output=0.40,
-        source="https://ai.google.dev/gemini-api/docs/pricing",
-        as_of="2026-07-31",
-        verified=True,
-        note="Model deprecated + shut down by Google 2026-06-01; flagged, not fixed here.",
     ),
 }
 

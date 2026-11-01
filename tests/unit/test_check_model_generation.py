@@ -42,7 +42,7 @@ def _opener_raising(exc: BaseException):
     return _o
 
 
-@pytest.mark.parametrize("provider", ["groq", "gemini"])
+@pytest.mark.parametrize("provider", ["groq"])
 def test_request_carries_an_explicit_non_urllib_user_agent(provider: str) -> None:
     # Regression (2026-09-21): urllib's default UA gets HTTP 403 from Groq's edge, so the first
     # real run of this check failed on all three models while the key was fine. The mocked opener
@@ -58,7 +58,7 @@ def test_request_carries_an_explicit_non_urllib_user_agent(provider: str) -> Non
     assert not seen["ua"].startswith("Python-urllib")
 
 
-@pytest.mark.parametrize("provider", ["groq", "gemini"])
+@pytest.mark.parametrize("provider", ["groq"])
 def test_200_is_ok(provider: str) -> None:
     v = cmg.check(provider, "m", "k", opener=_opener_returning(200))
     assert v.status == "ok"
@@ -66,8 +66,8 @@ def test_200_is_ok(provider: str) -> None:
 
 def test_404_no_longer_available_fails_even_though_a_list_would_advertise_it() -> None:
     v = cmg.check(
-        "gemini",
-        "gemini-2.5-flash-lite",
+        "groq",
+        "some-model",
         "k",
         opener=_opener_raising(_http_error(404, "This model is no longer available to new users")),
     )
@@ -87,9 +87,9 @@ def test_429_is_a_warning_not_a_deprecation_failure() -> None:
 
 
 def test_network_error_fails_closed() -> None:
-    v = cmg.check("gemini", "m", "k", opener=_opener_raising(urllib.error.URLError("dns")))
+    v = cmg.check("groq", "m", "k", opener=_opener_raising(urllib.error.URLError("dns")))
     assert v.status == "fail" and v.http_status is None
-    assert cmg.check("gemini", "m", "k", opener=_opener_raising(TimeoutError())).status == "fail"
+    assert cmg.check("groq", "m", "k", opener=_opener_raising(TimeoutError())).status == "fail"
 
 
 def test_missing_key_fails_closed_never_passes_silently() -> None:
@@ -104,8 +104,8 @@ def test_unknown_provider_is_a_usage_error() -> None:
 def test_key_is_never_in_the_error_output(
     capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setenv("GEMINI_KEY", "SECRET-VALUE-123")
+    monkeypatch.setenv("GROQ_KEY", "SECRET-VALUE-123")
     monkeypatch.setattr(cmg, "check", lambda *a, **k: cmg.Verdict("fail", 404, "gone"))
-    assert cmg.main(["prog", "gemini", "m"]) == 1
+    assert cmg.main(["prog", "groq", "m"]) == 1
     out = capsys.readouterr().out
     assert "SECRET-VALUE-123" not in out and "::error::" in out

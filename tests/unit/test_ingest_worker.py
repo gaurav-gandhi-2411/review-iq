@@ -194,7 +194,7 @@ async def test_drain_rows_attributes_each_row_to_its_own_org() -> None:
 
     with (
         patch(
-            "app.core.ingest_worker.psycopg2.connect",
+            "app.core.ingest_worker.db_connect",
             side_effect=_make_fake_connect(queue, created_conns),
         ),
         patch("app.core.ingest_worker.get_batch_job_pg", return_value=None),
@@ -244,7 +244,7 @@ async def test_row_failure_marks_failed_with_truncated_error_and_continues() -> 
 
     with (
         patch(
-            "app.core.ingest_worker.psycopg2.connect",
+            "app.core.ingest_worker.db_connect",
             side_effect=_make_fake_connect(queue, created_conns),
         ),
         patch("app.core.ingest_worker.get_batch_job_pg", return_value=None),
@@ -490,11 +490,12 @@ async def test_claim_one_row_ignores_stale_include_authenticity_flag() -> None:
         "source_columns": json.dumps({"include_authenticity": True}),
     }
 
+    fake_connect = _make_fake_connect(queue, created_conns)
     with (
-        patch(
-            "app.core.ingest_worker.psycopg2.connect",
-            side_effect=_make_fake_connect(queue, created_conns),
-        ),
+        patch("app.core.ingest_worker.db_connect", side_effect=fake_connect),
+        # get_org_retention_pg opens its own connection; the old global psycopg2.connect patch
+        # used to cover it too, but each module now borrows via its own db_connect reference.
+        patch("app.core.storage_pg.db_connect", side_effect=fake_connect),
         patch("app.core.ingest_worker.get_batch_job_pg", return_value=job_record),
         patch("app.api.v2.extract._run_extraction_v2", new=AsyncMock(return_value=MagicMock())),
         patch("app.core.authenticity.engine.score_single", new=AsyncMock()) as mock_score,
