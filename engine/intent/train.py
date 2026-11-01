@@ -37,6 +37,7 @@ from engine import metrics as M
 from engine import scoring as SC
 from engine.experiments.run import _git_sha
 from engine.intent import decide as D
+from engine.intent import inputs as IN
 from engine.intent import safety_data as SD
 from engine.intent.labels import load_texts
 from engine.intent.model import E5, MultiHeadClassifier, load_pretrained
@@ -56,6 +57,7 @@ class IntentConfig:
     max_len: int = 128
     patience: int = 2
     freeze_embeddings: bool = True
+    truncation: str = "head"  # Amendment 16: "head" (the contract so far) or "head_tail"; see engine/intent/inputs.py
 
 
 def build_arrays(
@@ -80,9 +82,14 @@ def masked_loss(logits: dict[str, torch.Tensor], y: dict[str, torch.Tensor]) -> 
     return total
 
 
-def _encode(tok, texts: list[str], max_len: int, device: str):  # noqa: ANN001, ANN202
-    b = tok(texts, padding=True, truncation=True, max_length=max_len, return_tensors="pt")
-    return b["input_ids"].to(device), b["attention_mask"].to(device)
+def _encode(tok, texts: list[str], max_len: int, device: str, mode: str = IN.HEAD):  # noqa: ANN001, ANN202
+    if mode == IN.HEAD:  # unchanged path: runs 1 to 3 and every existing test
+        b = tok(texts, padding=True, truncation=True, max_length=max_len, return_tensors="pt")
+        return b["input_ids"].to(device), b["attention_mask"].to(device)
+    b = IN.encode_batch(tok, texts, max_len, mode)
+    return torch.from_numpy(b["input_ids"]).to(device), torch.from_numpy(b["attention_mask"]).to(
+        device
+    )
 
 
 @torch.no_grad()
@@ -97,7 +104,7 @@ def infer(
     model.eval()
     parts: dict[str, list[np.ndarray]] = {t: [] for t in model.sizes}
     for i in range(0, len(texts), 128):
-        ids, mask = _encode(tok, texts[i : i + 128], cfg.max_len, device)
+        ids, mask = _encode(tok, texts[i : i + 128], cfg.max_len, device, cfg.truncation)
         with torch.autocast(device_type="cuda", dtype=torch.float16, enabled=device == "cuda"):
             lg, _ = model(ids, mask)
         for t, v in model.split(lg.float()).items():
@@ -150,7 +157,7 @@ def fit(
         model.train()
         loss = torch.zeros(())
         for batch in _batches(len(tx), cfg.batch_size, rng):
-            ids, mask = _encode(tok, [tx[i] for i in batch], cfg.max_len, device)
+            ids, mask = _encode(tok, [tx[i] for i in batch], cfg.max_len, device, cfg.truncation)
             y = {t: torch.tensor(v[batch], device=device) for t, v in ty.items()}
             with torch.autocast(device_type="cuda", dtype=torch.float16, enabled=device == "cuda"):
                 lg, _ = model(ids, mask)
@@ -234,7 +241,7 @@ def write_predictions(
 def run(
     cfg: IntentConfig, data: dict, texts: dict[str, str], out_dir: Path, device: str,
     loader: Loader = load_pretrained, save_weights: bool = False, inputs: dict | None = None,
-    extra: dict | None = None,
+    extra: dict | None = None, extra_eval: dict[str, tuple[list[str], list[str]]] | None = None,
 ) -> dict:  # fmt: skip
     """data = {"classes", "labels", "ids": {split: [id]}} -> writes predictions + metadata, returns metadata.
 
@@ -259,6 +266,13 @@ def run(
             {k: v.float().cpu() for k, v in model.state_dict().items()}, out_dir / "model.pt"
         )
     logits = {s: infer(model, tok, txt[s], cfg, device) for s in ("val", "test")}
+    # raw fp32 logits: Amendment 16 re-derives decisions from them with each arm's own thresholds
+    for s, lg in logits.items():
+        np.savez(out_dir / f"logits_{s}.npz", **lg)
+    # Amendment 16: fp32 logits on the T-val items, for the length choice only
+    for name, (eids, etexts) in (extra_eval or {}).items():
+        np.savez(out_dir / f"extra_{name}_logits.npz", **infer(model, tok, etexts, cfg, device))
+        (out_dir / f"extra_{name}_ids.json").write_text(json.dumps(eids) + "\n", encoding="utf-8")
     decisions: dict[str, dict] = {}
     temps = write_predictions(out_dir, classes, arr, logits, decisions)
     meta = {
@@ -285,6 +299,18 @@ def main() -> None:
     ap.add_argument("--batch-size", type=int, default=32)
     ap.add_argument("--max-len", type=int, default=128)
     ap.add_argument("--patience", type=int, default=2)
+    ap.add_argument(
+        "--truncation",
+        default=IN.HEAD,
+        choices=list(IN.MODES),
+        help="Amendment 16 input handling beyond max-len",
+    )
+    ap.add_argument(
+        "--run4-labels",
+        help="labels JSON of the training additions (engine.intent.fresh16_data labels)",
+    )
+    ap.add_argument("--run4-manifest", help="reports/labelling/train16/manifest.json")
+    ap.add_argument("--run4-texts", help="private train16.jsonl (required with --run4-labels)")
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument(
         "--save-weights", action="store_true", help="write the best checkpoint to out-dir/model.pt"
@@ -298,7 +324,16 @@ def main() -> None:
     ap.add_argument("--safety-labels", default="reports/labelling/safety/labels.jsonl")
     ap.add_argument("--safety-texts", help="private safety_items.jsonl (required with include)")
     a = ap.parse_args()
-    cfg = IntentConfig(a.model, a.epochs, a.lr, a.batch_size, a.seed, a.max_len, a.patience)
+    cfg = IntentConfig(
+        a.model,
+        a.epochs,
+        a.lr,
+        a.batch_size,
+        a.seed,
+        a.max_len,
+        a.patience,
+        truncation=a.truncation,
+    )
     lab = json.loads(Path(a.labels).read_text(encoding="utf-8"))
     man = json.loads(Path(a.manifest).read_text(encoding="utf-8"))
     data = {
@@ -322,10 +357,25 @@ def main() -> None:
         )  # fmt: skip
         extra = {"safety_stratum": "include", "safety_train": info}
         paths += [a.safety_split, a.safety_labels, a.safety_texts]
+    extra_eval = None
+    if a.run4_labels:
+        if not (a.run4_manifest and a.run4_texts):
+            ap.error("--run4-labels needs --run4-manifest and --run4-texts")
+        from engine.intent import fresh16_data as F16
+        from engine.labelling import leakage_ledger as LL
+
+        data, texts, add = F16.add_train16(
+            data, texts, json.loads(Path(a.run4_manifest).read_text(encoding="utf-8")),
+            json.loads(Path(a.run4_labels).read_text(encoding="utf-8")), SD.load_jsonl(Path(a.run4_texts)), LL.sealed_hashes(),
+        )  # fmt: skip
+        vt = add["val_targeted"]
+        extra_eval = {"val_targeted": (vt["ids"], [vt["texts"][i] for i in vt["ids"]])}
+        extra = {**extra, "run4_additions": add["info"], "truncation": a.truncation}
+        paths += [a.run4_labels, a.run4_manifest, a.run4_texts]
     inputs = {Path(p).name: hashlib.sha256(Path(p).read_bytes()).hexdigest()[:16] for p in paths}
     run(
         cfg, data, texts, Path(a.out_dir), device,
-        save_weights=a.save_weights, inputs=inputs, extra=extra,
+        save_weights=a.save_weights, inputs=inputs, extra=extra, extra_eval=extra_eval,
     )  # fmt: skip
 
 
