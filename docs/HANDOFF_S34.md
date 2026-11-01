@@ -12,7 +12,7 @@ sections 1-5 and 9. Records: `docs/autonomy/S32_PROGRESS.md` (branch `autonomy/s
   - **Amendment 18** was registered before any draw (#638).
   - fresh18 was drawn: 8,100 S4 items.
   - It was labelled by the four-judge panel over three Kaggle sessions: **301 gold-yes**, size rule met by one item.
-  - It was scored once. **P1 PASSES:** R1+ minus gpt-oss-20b recall on S4 = **+0.083, 95% CI [0.040, 0.126]**; McNemar 35 vs 10, p = 0.000247.
+  - It was scored once. **P1 PASSES:** R1+ minus gpt-oss-20b recall on S4 = <!-- METRICS:HISTORICAL -->**+0.083, 95% CI [0.040, 0.126]**<!-- /METRICS:HISTORICAL --> (frozen, `reports/intent/fresh18/result.json`); McNemar 35 vs 10, p = 0.000247.
   - Independent verifier: 31 of 31 match (#648).
 - **The enable plan is written and PARKED** (#649, draft). It records one finding that blocks enabling: **the served code implements R1
   only, while R1+ is the router that was evaluated.**
