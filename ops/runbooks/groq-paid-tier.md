@@ -95,6 +95,24 @@ Before deciding, measure the real number (GG, console): the shared organisation'
    the whole pool. Needs a new key in Secret Manager and a production config change (GG approves).
 3. **Accept the risk.** Keep the shared failover and record the headroom figure and its date as the accepted risk in ADR 0038.
 
+## 7. Per-project caps on the shared ledger (first sale; GG approves, a triage-iq session implements)
+
+Not adopted before the first sale (GG, S33). The proposal is `docs/plans/groq-ledger-per-project-caps.md` (#633). Why it matters at the first
+sale: if option 2 above is not taken, production's failover keeps sharing the pool with the ledger-wired projects. Today the recorder has no
+cap, and its recording-active flag makes every other project wait. On 2026-10-30 the recorder held 156,811 of the 160,000 allocatable
+gpt-oss-120b tokens, leaving the failover at most the 40,000 reserve minus every non-ledger caller's spend.
+
+1. Re-read `triage-iq/tools/groq_budget/groq_budget.py` (`BUILTIN_CONFIG`, `check`) and `~/.groq_budget/config.json`, then update the
+   proposal's "what is true now" section.
+2. Adopt the caps per model per trailing 24 h: production reserve 40,000; unallocated slack 40,000 for non-ledger callers;
+   `triageiq-recorder` 60,000; `benchmark` 60,000; a 20,000 default for any other project. If the recorder needs more, the proposal's
+   variant is 100,000 recorder, 20,000 benchmark and 40,000 slack. Either way the recording flag stops being exclusive beyond the
+   recorder's own cap. The change goes in triage-iq, with the backward-compatibility tests listed in the proposal.
+3. Record the adopted caps and the date in ADR 0038 next to the failover decision from section 6.
+
+These caps bind only ledger-wired projects. Only option 2 in section 6 (a failover pool no other project uses) protects the failover from
+callers that ignore the ledger.
+
 ## Rollback
 
 Console: downgrade to Free (step 1.3); remove the spend limit if it blocks access. App: set `ENABLE_COST_ALERTS=false`; the endpoint then
