@@ -52,6 +52,76 @@ def track_a(r: dict[str, dict]) -> str:
     return "\n".join(out)
 
 
+PUBLISHED = {  # dataset -> (arm, accuracy, source). Secondary sources: BELIEVED, not re-read in the papers.
+    "banking77": ("RoBERTa-base, full data", 0.941, "arXiv 2012.03929"),
+    "massive_en": ("XLM-R base, en-US", 0.883, "arXiv 2204.08582 / ACL 2023 long.235, per-locale table"),
+    "clinc": ("best aggregator entries, model and split unstated", None, "hyper.ai / wizwand list about 0.97 to 0.98"),
+}  # fmt: skip
+
+
+def like_for_like(r: dict[str, dict]) -> str:
+    """Every arm and every published reference in BOTH metrics; a metric a source did not report is 'not reported'."""
+    out = ["| Dataset | Arm | Accuracy | Macro-F1 | Basis |", "|---|---|---|---|---|"]
+    for ds in ("banking77", "clinc", "massive_en"):
+        for tag in ("e5", "minilm", "xlmr"):
+            runs = [d["track_a"] for n, d in r.items() if re.fullmatch(rf"{tag}_{ds}_A_s\d+", n)]
+            if runs:
+                out.append(
+                    f"| {ds} | {tag} (ours) | {f(st.mean(x['accuracy'] for x in runs))} | "
+                    f"{f(st.mean(x['macro_f1'] for x in runs))} | mean of {len(runs)} seed(s), sealed test |"
+                )
+        arm, acc, src = PUBLISHED[ds]
+        out.append(
+            f"| {ds} | published: {arm} | {f(acc) if acc is not None else 'about 0.97 to 0.98'} | not reported | {src} |"
+        )
+    return "\n".join(out)
+
+
+def selective(r: dict[str, dict]) -> str:
+    """Precision at coverage (GG's headline). Oracle = best threshold on the test curve; transfer = threshold chosen
+    on a random half and read on the other (200 splits); conservative = Wilson-lower-bound rule."""
+    sc = r.get("selective_curves")
+    if not sc:
+        return "(selective_curves.json not present)"
+    out = [
+        "| Dataset | Model | Seeds | Oracle coverage at precision 0.95 (seed 42 [95% CI]) | Precision at coverage 0.9 / 0.8 / 0.7 (seed-42, CI at 0.9) | "
+        "Chosen on half, point rule: precision / coverage / hit rate | Chosen on half, conservative rule: precision / coverage / hit rate |",
+        "|---|---|---|---|---|---|---|",
+    ]  # fmt: skip
+    for ds in ("banking77", "clinc", "massive_en"):
+        for tag in ("e5", "minilm", "xlmr"):
+            key = f"{tag}_{ds}_A_s42"
+            if key not in sc:
+                continue
+            m = sc[key]["msp"]
+            seeds = sum(1 for k in sc if re.fullmatch(rf"{tag}_{ds}_A_s\d+", k))
+            p9, p8, p7 = (m[f"precision_at_coverage_{c}"] for c in (0.9, 0.8, 0.7))
+            t, c = m["split_half_transfer_p95"], m["split_half_transfer_p95_conservative"]
+            out.append(
+                f"| {ds} | {tag} | {seeds} | {f(m['coverage_at_precision_0.95'])} "
+                f"[{f(m['coverage_at_precision_0.95_ci95'][0])}, {f(m['coverage_at_precision_0.95_ci95'][1])}] | "
+                f"{f(p9['precision'])} [{f(p9['ci95'][0])}, {f(p9['ci95'][1])}] / {f(p8['precision'])} / {f(p7['precision'])} | "
+                f"{f(t['precision_mean'])} / {f(t['coverage_mean'])} / {f(t['hit_rate'], 2)} | "
+                f"{f(c['precision_mean'])} / {f(c['coverage_mean'])} / {f(c['hit_rate'], 2)} |"
+            )
+    return "\n".join(out)
+
+
+def paired(r: dict[str, dict]) -> str:
+    out = ["| Dataset | LLM | n paired | Fine-tuned accuracy | LLM accuracy | Difference [95% CI] | McNemar exact p | LLM coverage at precision 0.95 (verbalised confidence) | Fine-tuned coverage at precision 0.95 on the same items |", "|---|---|---|---|---|---|---|---|---|"]  # fmt: skip
+    for name, d in r.items():
+        if name.startswith("paired_"):
+            ci = d["accuracy_difference_ci95"]
+            ls, fs = d["llm_selective_verbalised_confidence"], d["finetuned_selective"]
+            out.append(
+                f"| {name[7:]} | {d.get('llm', '')} | {d['n_paired']} | {f(d['finetuned_accuracy'])} | {f(d['llm_accuracy'])} | "
+                f"{f(d['accuracy_difference'])} [{f(ci[0])}, {f(ci[1])}] | {d['mcnemar_exact_p']} | "
+                f"{f(ls['coverage_at_precision_0.95'])} [{f(ls['coverage_at_precision_0.95_ci95'][0])}, {f(ls['coverage_at_precision_0.95_ci95'][1])}] | "
+                f"{f(fs['coverage_at_precision_0.95'])} [{f(fs['coverage_at_precision_0.95_ci95'][0])}, {f(fs['coverage_at_precision_0.95_ci95'][1])}] |"
+            )
+    return "\n".join(out) if len(out) > 2 else "(no paired LLM run present yet)"
+
+
 def track_b(r: dict[str, dict]) -> str:
     acc: dict[tuple[str, str, str], dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
     ci: dict[tuple[str, str, str], dict] = {}
@@ -175,7 +245,10 @@ def serving(r: dict[str, dict]) -> str:
 def main() -> None:
     r = load(Path(sys.argv[1]))
     sections = [
+        ("Like-for-like: accuracy and macro-F1 for every arm and reference", like_for_like(r)),
         ("Track A (known intents)", track_a(r)),
+        ("Precision at coverage (the product claim)", selective(r)),
+        ("Fine-tuned vs LLM on the SAME items (paired)", paired(r)),
         ("Track B (open set)", track_b(r)),
         ("Hierarchy", hierarchy(r)),
         ("Small data (~500 rows)", small_data(r)),
