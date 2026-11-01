@@ -1,0 +1,302 @@
+{
+ "p3": {
+  "revision": "review-iq-classify-00002-zh5",
+  "image": "review-iq-classify:b3cabc36d2b8 sha256:69618259c61d31353c20697ec0dcce371ca700187ba5000c4be0a64b5b737eb6",
+  "commit": "b3cabc36d2b83d3c4a65fc8470e6dc8c764b7a37",
+  "cloud_build": "c00a15cd-71b4-400a-8840-cd645da9ba73 SUCCESS 2m06s",
+  "rollback_tag": "keep-classify-prev -> sha256:b6d3ef109d845d2dca1fc259c169db90b3efc78edcef79682c25d84b8d82885e",
+  "live_parity": {
+   "n_items": 757,
+   "n_task_decisions": 3028,
+   "n_requests_ok": 757,
+   "n_errors": 0,
+   "n_mismatches": 5,
+   "mismatches": [
+    {
+     "id": "scale-apparel-0537",
+     "task": "broad_intent",
+     "served": "abstained",
+     "offline": "praise"
+    },
+    {
+     "id": "scale-apparel-0988",
+     "task": "sentiment",
+     "served": "abstained",
+     "offline": "positive"
+    },
+    {
+     "id": "scale-food-0660",
+     "task": "broad_intent",
+     "served": "product_issue",
+     "offline": "abstained"
+    },
+    {
+     "id": "scale-food-1357",
+     "task": "needs_action",
+     "served": "no",
+     "offline": "abstained"
+    },
+    {
+     "id": "scale-food-1357",
+     "task": "sentiment",
+     "served": "positive",
+     "offline": "abstained"
+    }
+   ],
+   "thresholds_match": true,
+   "client_latency_ms": {
+    "n": 757,
+    "p50": 277.7,
+    "p95": 545.7,
+    "max": 921.6
+   }
+  },
+  "prob_diff": {
+   "n_reviews": 757,
+   "per_task_abs_prob_diff": {
+    "needs_action": {
+     "n": 757,
+     "max": 0.312366,
+     "p95": 0.001223,
+     "median": 0.0,
+     "n_exact_zero": 662
+    },
+    "broad_intent": {
+     "n": 757,
+     "max": 0.220261,
+     "p95": 0.001593,
+     "median": 0.0,
+     "n_exact_zero": 658
+    },
+    "sentiment": {
+     "n": 757,
+     "max": 0.194476,
+     "p95": 0.000866,
+     "median": 0.0,
+     "n_exact_zero": 661
+    },
+    "urgency": {
+     "n": 757,
+     "max": 0.24165,
+     "p95": 0.000786,
+     "median": 0.0,
+     "n_exact_zero": 662
+    }
+   },
+   "flips": [
+    {
+     "id": "scale-apparel-0537",
+     "task": "broad_intent",
+     "served": "abstained",
+     "offline": "praise",
+     "abstain_below": 0.8471860289573669,
+     "served_max_p": 0.847145,
+     "offline_max_p": 0.848596,
+     "max_abs_diff": 0.001451
+    },
+    {
+     "id": "scale-apparel-0988",
+     "task": "sentiment",
+     "served": "abstained",
+     "offline": "positive",
+     "abstain_below": 0.8003119826316833,
+     "served_max_p": 0.772143,
+     "offline_max_p": 0.836429,
+     "max_abs_diff": 0.064286
+    },
+    {
+     "id": "scale-food-0660",
+     "task": "broad_intent",
+     "served": "product_issue",
+     "offline": "abstained",
+     "abstain_below": 0.8471860289573669,
+     "served_max_p": 0.868742,
+     "offline_max_p": 0.829802,
+     "max_abs_diff": 0.03894
+    },
+    {
+     "id": "scale-food-1357",
+     "task": "needs_action",
+     "served": "no",
+     "offline": "abstained",
+     "abstain_below": 0.8843989968299866,
+     "served_max_p": 0.934247,
+     "offline_max_p": 0.866681,
+     "max_abs_diff": 0.067566
+    },
+    {
+     "id": "scale-food-1357",
+     "task": "sentiment",
+     "served": "positive",
+     "offline": "abstained",
+     "abstain_below": 0.8003119826316833,
+     "served_max_p": 0.874554,
+     "offline_max_p": 0.766942,
+     "max_abs_diff": 0.107612
+    }
+   ]
+  },
+  "monitoring_parity_window": {
+   "latency_p50_ms_by_minute": [
+    28.5,
+    156.8,
+    198.1,
+    170.0,
+    207.9,
+    191.9,
+    166.6,
+    166.6,
+    153.8,
+    150.1,
+    5.0
+   ],
+   "latency_p95_ms_by_minute": [
+    73.3,
+    397.1,
+    427.6,
+    426.5,
+    454.3,
+    411.4,
+    455.8,
+    400.9,
+    310.7,
+    312.6,
+    9.5
+   ],
+   "latency_p99_ms_by_minute": [
+    73.9,
+    546.1,
+    546.4,
+    627.3,
+    528.1,
+    488.8,
+    546.0,
+    516.8,
+    454.4,
+    346.2,
+    9.9
+   ],
+   "memory_utilization_p99_by_minute": [
+    0.6198,
+    0.6198,
+    0.6198,
+    0.6198,
+    0.6198,
+    0.6198,
+    0.6198,
+    0.6198,
+    0.6198,
+    0.6198,
+    0.6198,
+    0.6198,
+    0.6199,
+    0.6099
+   ],
+   "memory_utilization_p50_by_minute": [
+    0.61,
+    0.61,
+    0.61,
+    0.61,
+    0.61,
+    0.61,
+    0.61,
+    0.61,
+    0.61,
+    0.61,
+    0.61,
+    0.61,
+    0.615,
+    0.605
+   ],
+   "instances_max": 2.0
+  },
+  "cold_starts": [
+   {
+    "cold_first_request_ms": 12038,
+    "status": 200,
+    "warm_p50_ms": 210.6,
+    "waited_s": 327
+   },
+   {
+    "cold_first_request_ms": 17258,
+    "status": 200,
+    "warm_p50_ms": 124.0,
+    "waited_s": 225
+   },
+   {
+    "cold_first_request_ms": 13780,
+    "status": 200,
+    "warm_p50_ms": 116.7,
+    "waited_s": 154
+   }
+  ]
+ },
+ "p4": {
+  "128": {
+   "length": 128,
+   "n_requests": 50,
+   "service_reported_max_tokens": [
+    128
+   ],
+   "client_ms": {
+    "p50": 399.2,
+    "p95": 1489.0,
+    "max": 2937.7
+   },
+   "server_ms": {
+    "p50_max_of_minutes": 322.7,
+    "p95_max_of_minutes": 355.3
+   },
+   "memory_p99_utilization_max": 0.61,
+   "budget": {
+    "p95_ms_lt": 1000.0,
+    "memory_lt": 0.85
+   },
+   "within_budget": true
+  },
+  "256": {
+   "length": 256,
+   "n_requests": 50,
+   "service_reported_max_tokens": [
+    256
+   ],
+   "client_ms": {
+    "p50": 861.6,
+    "p95": 1181.2,
+    "max": 1296.7
+   },
+   "server_ms": {
+    "p50_max_of_minutes": 801.8,
+    "p95_max_of_minutes": 1107.2
+   },
+   "memory_p99_utilization_max": 0.62,
+   "budget": {
+    "p95_ms_lt": 1000.0,
+    "memory_lt": 0.85
+   },
+   "within_budget": false
+  },
+  "512": {
+   "length": 512,
+   "n_requests": 50,
+   "service_reported_max_tokens": [
+    512
+   ],
+   "client_ms": {
+    "p50": 1917.4,
+    "p95": 2296.5,
+    "max": 3872.6
+   },
+   "server_ms": {
+    "p50_max_of_minutes": 1835.9,
+    "p95_max_of_minutes": 2136.8
+   },
+   "memory_p99_utilization_max": 0.65,
+   "budget": {
+    "p95_ms_lt": 1000.0,
+    "memory_lt": 0.85
+   },
+   "within_budget": false
+  }
+ }
+}

@@ -16,13 +16,14 @@ import tempfile
 from pathlib import Path
 
 
-def build(stage: str, items: str, branch: str, budget_h: float) -> str:
+def build(stage: str, items: str, branch: str, budget_h: float, expect_prior: bool = False) -> str:
     src = (Path(__file__).parent / "kernel_scale.py").read_text(encoding="utf-8")
     return (
         src.replace("__BRANCH__", branch)
         .replace("__STAGE__", stage)
         .replace("__ITEMS__", items)
         .replace("__BUDGET_H__", str(budget_h))
+        .replace("__EXPECT_PRIOR__", "1" if expect_prior else "0")
     )
 
 
@@ -52,7 +53,7 @@ def main() -> None:
     ap.add_argument("--dry-run-dir", default="")
     a = ap.parse_args()
     datasets = [a.dataset] + ([a.prior] if a.prior else [])
-    src = build(a.stage, a.items, a.branch, a.budget_hours)
+    src = build(a.stage, a.items, a.branch, a.budget_hours, expect_prior=bool(a.prior))
     meta = metadata(a.slug, datasets)
     if a.dry_run_dir:
         d = Path(a.dry_run_dir)
