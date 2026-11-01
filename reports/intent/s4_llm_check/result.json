@@ -1,0 +1,565 @@
+{
+ "spec": "docs/specs/s32-s4-llm-check.md (pre-registered at 3959ac6)",
+ "status": "EXPLORATORY",
+ "counts": {
+  "fresh16": {
+   "s4_items": 3128,
+   "gold_yes": 126,
+   "gold_no": 2959,
+   "no_consensus": 43
+  },
+  "fresh17": {
+   "s4_items": 3819,
+   "gold_yes": 133,
+   "gold_no": 3622,
+   "no_consensus": 64
+  }
+ },
+ "llm20": {
+  "rows": 7700,
+  "missing_s4_rows": 0,
+  "empty_s4_rows": 0
+ },
+ "llm120": {
+  "rows": 147,
+  "of_positives": 259,
+  "empty_rows": 0,
+  "tokens": 60732
+ },
+ "consistency_with_registered": {
+  "fresh16_run4_r1": {
+   "registered": [
+    114,
+    126
+   ],
+   "recomputed": [
+    114,
+    126
+   ],
+   "equal": true
+  },
+  "fresh16_run2_r1": {
+   "registered": [
+    116,
+    126
+   ],
+   "recomputed": [
+    116,
+    126
+   ],
+   "equal": true
+  },
+  "fresh17_r1_plus": {
+   "registered": [
+    119,
+    133
+   ],
+   "recomputed": [
+    119,
+    133
+   ],
+   "equal": true
+  }
+ },
+ "by_set": {
+  "fresh16": {
+   "recall": {
+    "r1_plus": {
+     "k": 121,
+     "n": 126,
+     "rate": 0.9603,
+     "wilson95": [
+      0.9105,
+      0.9829
+     ]
+    },
+    "r1": {
+     "k": 116,
+     "n": 126,
+     "rate": 0.9206,
+     "wilson95": [
+      0.8601,
+      0.9563
+     ]
+    },
+    "llm20b": {
+     "k": 107,
+     "n": 126,
+     "rate": 0.8492,
+     "wilson95": [
+      0.7765,
+      0.9013
+     ]
+    },
+    "llm120b": {
+     "k": 65,
+     "n": 68,
+     "rate": 0.9559,
+     "wilson95": [
+      0.8781,
+      0.9849
+     ]
+    },
+    "run4_r1": {
+     "k": 114,
+     "n": 126,
+     "rate": 0.9048,
+     "wilson95": [
+      0.8409,
+      0.9447
+     ]
+    }
+   },
+   "r1_plus_vs_20b": {
+    "comparison": "R1+ minus gpt-oss-20b",
+    "router_recall": {
+     "k": 121,
+     "n": 126,
+     "rate": 0.9603,
+     "wilson95": [
+      0.9105,
+      0.9829
+     ]
+    },
+    "llm_recall": {
+     "k": 107,
+     "n": 126,
+     "rate": 0.8492,
+     "wilson95": [
+      0.7765,
+      0.9013
+     ]
+    },
+    "paired": {
+     "delta": 0.1111,
+     "boot95": [
+      0.0476,
+      0.1825
+     ],
+     "n": 126,
+     "resamples": 10000,
+     "cluster": "item"
+    },
+    "mcnemar": {
+     "router_only": 17,
+     "llm_only": 3,
+     "p": 0.002577
+    },
+    "missed_by_both": 2
+   },
+   "r1_plus_vs_120b": {
+    "comparison": "R1+ minus gpt-oss-120b",
+    "router_recall": {
+     "k": 64,
+     "n": 68,
+     "rate": 0.9412,
+     "wilson95": [
+      0.8583,
+      0.9769
+     ]
+    },
+    "llm_recall": {
+     "k": 65,
+     "n": 68,
+     "rate": 0.9559,
+     "wilson95": [
+      0.8781,
+      0.9849
+     ]
+    },
+    "paired": {
+     "delta": -0.0147,
+     "boot95": [
+      -0.0735,
+      0.0441
+     ],
+     "n": 68,
+     "resamples": 10000,
+     "cluster": "item"
+    },
+    "mcnemar": {
+     "router_only": 2,
+     "llm_only": 3,
+     "p": 1.0
+    },
+    "missed_by_both": 1,
+    "complete": false
+   },
+   "run4_vs_20b": {
+    "comparison": "run 4 R1 minus gpt-oss-20b",
+    "router_recall": {
+     "k": 114,
+     "n": 126,
+     "rate": 0.9048,
+     "wilson95": [
+      0.8409,
+      0.9447
+     ]
+    },
+    "llm_recall": {
+     "k": 107,
+     "n": 126,
+     "rate": 0.8492,
+     "wilson95": [
+      0.7765,
+      0.9013
+     ]
+    },
+    "paired": {
+     "delta": 0.0556,
+     "boot95": [
+      -0.0238,
+      0.1349
+     ],
+     "n": 126,
+     "resamples": 10000,
+     "cluster": "item"
+    },
+    "mcnemar": {
+     "router_only": 17,
+     "llm_only": 10,
+     "p": 0.247789
+    },
+    "missed_by_both": 2
+   },
+   "run4_vs_120b": {
+    "comparison": "run 4 R1 minus gpt-oss-120b",
+    "router_recall": {
+     "k": 62,
+     "n": 68,
+     "rate": 0.9118,
+     "wilson95": [
+      0.8206,
+      0.9589
+     ]
+    },
+    "llm_recall": {
+     "k": 65,
+     "n": 68,
+     "rate": 0.9559,
+     "wilson95": [
+      0.8781,
+      0.9849
+     ]
+    },
+    "paired": {
+     "delta": -0.0441,
+     "boot95": [
+      -0.1176,
+      0.0294
+     ],
+     "n": 68,
+     "resamples": 10000,
+     "cluster": "item"
+    },
+    "mcnemar": {
+     "router_only": 2,
+     "llm_only": 5,
+     "p": 0.453125
+    },
+    "missed_by_both": 1
+   },
+   "routing_cost_on_gold_no": {
+    "llm20b_yes_rate": {
+     "k": 63,
+     "n": 2959,
+     "rate": 0.0213,
+     "wilson95": [
+      0.0167,
+      0.0271
+     ]
+    },
+    "r1_plus_routed_share": {
+     "k": 321,
+     "n": 2959,
+     "rate": 0.1085,
+     "wilson95": [
+      0.0978,
+      0.1202
+     ]
+    }
+   }
+  },
+  "fresh17": {
+   "recall": {
+    "r1_plus": {
+     "k": 119,
+     "n": 133,
+     "rate": 0.8947,
+     "wilson95": [
+      0.8311,
+      0.9363
+     ]
+    },
+    "r1": {
+     "k": 115,
+     "n": 133,
+     "rate": 0.8647,
+     "wilson95": [
+      0.7962,
+      0.9126
+     ]
+    },
+    "llm20b": {
+     "k": 104,
+     "n": 133,
+     "rate": 0.782,
+     "wilson95": [
+      0.7044,
+      0.8437
+     ]
+    },
+    "llm120b": {
+     "k": 73,
+     "n": 79,
+     "rate": 0.9241,
+     "wilson95": [
+      0.844,
+      0.9647
+     ]
+    }
+   },
+   "r1_plus_vs_20b": {
+    "comparison": "R1+ minus gpt-oss-20b",
+    "router_recall": {
+     "k": 119,
+     "n": 133,
+     "rate": 0.8947,
+     "wilson95": [
+      0.8311,
+      0.9363
+     ]
+    },
+    "llm_recall": {
+     "k": 104,
+     "n": 133,
+     "rate": 0.782,
+     "wilson95": [
+      0.7044,
+      0.8437
+     ]
+    },
+    "paired": {
+     "delta": 0.1128,
+     "boot95": [
+      0.0301,
+      0.1955
+     ],
+     "n": 133,
+     "resamples": 10000,
+     "cluster": "item"
+    },
+    "mcnemar": {
+     "router_only": 25,
+     "llm_only": 10,
+     "p": 0.016674
+    },
+    "missed_by_both": 4
+   },
+   "r1_plus_vs_120b": {
+    "comparison": "R1+ minus gpt-oss-120b",
+    "router_recall": {
+     "k": 74,
+     "n": 79,
+     "rate": 0.9367,
+     "wilson95": [
+      0.8602,
+      0.9727
+     ]
+    },
+    "llm_recall": {
+     "k": 73,
+     "n": 79,
+     "rate": 0.9241,
+     "wilson95": [
+      0.844,
+      0.9647
+     ]
+    },
+    "paired": {
+     "delta": 0.0127,
+     "boot95": [
+      -0.0633,
+      0.0886
+     ],
+     "n": 79,
+     "resamples": 10000,
+     "cluster": "item"
+    },
+    "mcnemar": {
+     "router_only": 5,
+     "llm_only": 4,
+     "p": 1.0
+    },
+    "missed_by_both": 1,
+    "complete": false
+   },
+   "routing_cost_on_gold_no": {
+    "llm20b_yes_rate": {
+     "k": 62,
+     "n": 3622,
+     "rate": 0.0171,
+     "wilson95": [
+      0.0134,
+      0.0219
+     ]
+    },
+    "r1_plus_routed_share": {
+     "k": 380,
+     "n": 3622,
+     "rate": 0.1049,
+     "wilson95": [
+      0.0953,
+      0.1153
+     ]
+    }
+   }
+  }
+ },
+ "pooled": {
+  "recall": {
+   "r1_plus": {
+    "k": 240,
+    "n": 259,
+    "rate": 0.9266,
+    "wilson95": [
+     0.8883,
+     0.9525
+    ]
+   },
+   "r1": {
+    "k": 231,
+    "n": 259,
+    "rate": 0.8919,
+    "wilson95": [
+     0.8482,
+     0.9241
+    ]
+   },
+   "llm20b": {
+    "k": 211,
+    "n": 259,
+    "rate": 0.8147,
+    "wilson95": [
+     0.7629,
+     0.8573
+    ]
+   },
+   "llm120b": {
+    "k": 138,
+    "n": 147,
+    "rate": 0.9388,
+    "wilson95": [
+     0.8877,
+     0.9675
+    ]
+   }
+  },
+  "r1_plus_vs_20b": {
+   "comparison": "R1+ minus gpt-oss-20b",
+   "router_recall": {
+    "k": 240,
+    "n": 259,
+    "rate": 0.9266,
+    "wilson95": [
+     0.8883,
+     0.9525
+    ]
+   },
+   "llm_recall": {
+    "k": 211,
+    "n": 259,
+    "rate": 0.8147,
+    "wilson95": [
+     0.7629,
+     0.8573
+    ]
+   },
+   "paired": {
+    "delta": 0.112,
+    "boot95": [
+     0.0579,
+     0.166
+    ],
+    "n": 259,
+    "resamples": 10000,
+    "cluster": "item"
+   },
+   "mcnemar": {
+    "router_only": 42,
+    "llm_only": 13,
+    "p": 0.000114
+   },
+   "missed_by_both": 6
+  },
+  "r1_plus_vs_120b": {
+   "comparison": "R1+ minus gpt-oss-120b",
+   "router_recall": {
+    "k": 138,
+    "n": 147,
+    "rate": 0.9388,
+    "wilson95": [
+     0.8877,
+     0.9675
+    ]
+   },
+   "llm_recall": {
+    "k": 138,
+    "n": 147,
+    "rate": 0.9388,
+    "wilson95": [
+     0.8877,
+     0.9675
+    ]
+   },
+   "paired": {
+    "delta": 0.0,
+    "boot95": [
+     -0.0476,
+     0.0476
+    ],
+    "n": 147,
+    "resamples": 10000,
+    "cluster": "item"
+   },
+   "mcnemar": {
+    "router_only": 7,
+    "llm_only": 7,
+    "p": 1.0
+   },
+   "missed_by_both": 2,
+   "complete": false
+  },
+  "routing_cost_on_gold_no": {
+   "llm20b_yes_rate": {
+    "k": 125,
+    "n": 6581,
+    "rate": 0.019,
+    "wilson95": [
+     0.016,
+     0.0226
+    ]
+   },
+   "r1_plus_routed_share": {
+    "k": 701,
+    "n": 6581,
+    "rate": 0.1065,
+    "wilson95": [
+     0.0993,
+     0.1142
+    ]
+   }
+  }
+ },
+ "decision": {
+  "branch": "D1",
+  "comparison": "r1_plus_vs_120b",
+  "boot95": [
+   -0.0476,
+   0.0476
+  ],
+  "margin": -0.05,
+  "deviation": null,
+  "complete_120b": false
+ }
+}
