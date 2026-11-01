@@ -49,14 +49,14 @@ def test_headline_copy_is_exactly_the_approved_wording_from_artifacts() -> None:
         if v["mean_score_on_resolved_vs_silver"] is not None
     ]
     expected = (
-        f"**{pub['score'] * 100:.1f}% [{pub['ci_95']['lower'] * 100:.1f}%, "
+        f"**Held-out figure (not the headline): {pub['score'] * 100:.1f}% [{pub['ci_95']['lower'] * 100:.1f}%, "
         f"{pub['ci_95']['upper'] * 100:.1f}%] on {cell['n']} unseen reviews, scored only where the "
         f"three-judge panel agreed. {un['unscored_fraction'] * 100:.1f}% of field-pairs "
         f"({un['n_pairs_unscored']} of {un['n_pairs']}) had no consensus and are unscored. "
         "Those are the hardest cases: on the "
         f"{nb['n_resolved_by_panel2']} of them a second, independent LLM panel could settle, the "
         f"model scores {min(vals)}-{max(vals)}% depending on the field. So overall accuracy is "
-        "probably lower than the headline \u2014 independent estimates range "
+        "probably lower than this figure \u2014 independent estimates range "
         f"{nb['narrowed_manski_lower_unresolved_all_wrong']['score'] * 100:.1f}% to "
         f"{nb['silver_adjudicated_estimate_conditional_on_panel2_agreement']['score'] * 100:.1f}% "
         "(exploratory, LLM-judged, not human-verified).**"

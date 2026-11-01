@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import sys
 import unicodedata
@@ -115,10 +116,17 @@ def scan(fp: dict, files: list[str] | None = None, root: Path = ROOT) -> list[tu
             ):
                 continue
             gj = shingles(n, 4)
-            near = {h for g in gj if g in indexj for h in indexj[g]}
+            g12 = shingles(n, 12)
+            # Lossless candidate filters (S31: the old union over every 4-gram's posting list made the scan quadratic once
+            # the sealed set doubled). Jaccard >= JACCARD means at most |gj| - ceil(JACCARD * |gj|) of the candidate's 4-grams
+            # can be missing from the item, so ANY |gj| - ceil(JACCARD * |gj|) + 1 of them include a shared one: look up only
+            # the rarest that many. Containment >= CONTAIN of a non-empty 12-gram set implies a shared 12-gram.
+            k = len(gj) - math.ceil(JACCARD * len(gj)) + 1
+            prefix = sorted(gj, key=lambda g: len(indexj.get(g, ())))[:k]
+            near = {h for g in prefix for h in indexj.get(g, ())}
+            near |= {h for g in g12 for h in index12.get(g, ())}
             if not near:
                 continue
-            g12 = shingles(n, 12)
             for h in near:
                 sj, s12, ln = items[h]
                 if len(sj & gj) / max(1, len(sj | gj)) >= JACCARD:
