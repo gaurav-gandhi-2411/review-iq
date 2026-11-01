@@ -1,0 +1,134 @@
+{
+ "arm": "gpt-oss-20b-local-fewshot",
+ "registration_commit": "17a4023ee44baeec74ed2d6fa2140131028fec11",
+ "kernel": "gauravgandhi2411/review-intent-moat-fs-run (private); dataset gauravgandhi2411/review-intent-moat-fs-items (private)",
+ "date": "2026-10-17",
+ "full_run": {
+  "kernel_version": 3,
+  "commit": "5eeb0861c853922c7061a7ab317e7e01925be6be",
+  "no_json_mode": true,
+  "ollama_version": "ollama version is 0.40.5",
+  "model_tag": "gpt-oss:20b",
+  "digest": "f38aa0c53da5f8c49d08c43a99df24ff53167fe68e24664a7777288e7656fdfe",
+  "registered_digest": "f38aa0c53da5f8c49d08c43a99df24ff53167fe68e24664a7777288e7656fdfe",
+  "gpu": "Tesla T4, 15360 MiB\nTesla T4, 15360 MiB",
+  "elapsed_s": 1679,
+  "shot_ids": [
+   "scale-food-0367",
+   "scale-food-1219",
+   "scale-food-1341",
+   "scale-food-0839",
+   "scale-vernacular-0030",
+   "scale-apparel-0890",
+   "scale-vernacular-0083"
+  ],
+  "stopping_rule": "decide() at n=300 decided all four tasks; the run stopped at 300 of 757 sealed ids",
+  "per_server": {
+   "0": {
+    "n": 150,
+    "tokens": 202093,
+    "elapsed_s": 1524.4355008602142,
+    "unparseable": 17,
+    "max_prompt_tokens": 1092
+   },
+   "1": {
+    "n": 150,
+    "tokens": 199597,
+    "elapsed_s": 1384.6136763095856,
+    "unparseable": 10,
+    "max_prompt_tokens": 1073
+   }
+  },
+  "items_per_min_per_server": {
+   "0": 5.9,
+   "1": 6.5
+  },
+  "items_per_min_wall": 11.81,
+  "offload_log": [
+   "load_tensors: offloading output layer to GPU",
+   "load_tensors: offloading 23 repeating layers to GPU",
+   "load_tensors: offloaded 25/25 layers to GPU",
+   "llama_kv_cache: size =   96.00 MiB (  4096 cells,  12 layers,  1/1 seqs), K (f16):   48.00 MiB, V (f16):   48.00 MiB",
+   "llama_kv_cache: size =   18.00 MiB (   768 cells,  12 layers,  1/1 seqs), K (f16):    9.00 MiB, V (f16):    9.00 MiB",
+   "load_tensors: offloading output layer to GPU",
+   "load_tensors: offloading 23 repeating layers to GPU",
+   "load_tensors: offloaded 25/25 layers to GPU",
+   "llama_kv_cache: size =   96.00 MiB (  4096 cells,  12 layers,  1/1 seqs), K (f16):   48.00 MiB, V (f16):   48.00 MiB",
+   "llama_kv_cache: size =   18.00 MiB (   768 cells,  12 layers,  1/1 seqs), K (f16):    9.00 MiB, V (f16):    9.00 MiB"
+  ]
+ },
+ "smoke_with_response_format": {
+  "kernel_version": 1,
+  "commit": "b9a23835fb6c889eb9ff40a3946f11b07b69b4c7",
+  "ollama_version": "ollama version is 0.40.5",
+  "elapsed_s": 353,
+  "unparseable_of_20": 3,
+  "unparseable_cause": "all 3 stopped at exactly 600 completion tokens (empty content)",
+  "probe_max_prompt_tokens": 1143,
+  "probe": [
+   {
+    "id": "scale-beauty-1416",
+    "chars": 997,
+    "prompt_tokens": 1143
+   },
+   {
+    "id": "scale-food-0593",
+    "chars": 983,
+    "prompt_tokens": 1139
+   },
+   {
+    "id": "scale-beauty-1271",
+    "chars": 959,
+    "prompt_tokens": 1139
+   },
+   {
+    "id": "scale-beauty-0378",
+    "chars": 938,
+    "prompt_tokens": 1118
+   },
+   {
+    "id": "scale-food-0080",
+    "chars": 918,
+    "prompt_tokens": 1113
+   },
+   {
+    "id": "scale-beauty-0378",
+    "chars": 938,
+    "prompt_tokens": 1118
+   },
+   {
+    "id": "scale-beauty-0215",
+    "chars": 788,
+    "prompt_tokens": 1094
+   },
+   {
+    "id": "scale-beauty-1479",
+    "chars": 576,
+    "prompt_tokens": 1059
+   },
+   {
+    "id": "scale-beauty-0800",
+    "chars": 782,
+    "prompt_tokens": 1102
+   },
+   {
+    "id": "scale-beauty-1034",
+    "chars": 656,
+    "prompt_tokens": 1057
+   }
+  ]
+ },
+ "smoke_without_response_format": {
+  "kernel_version": 2,
+  "commit": "674f317fa44b8dad7ecc324d995e498022186f07",
+  "elapsed_s": 361,
+  "unparseable_of_20": 3,
+  "note": "same 3 ids and identical per-item token counts as the first smoke"
+ },
+ "confidence_share_eq_90": {
+  "n_confidences": 1092,
+  "share": 0.351
+ },
+ "kaggle_wall_hours_all_sessions": 0.665,
+ "kaggle_gpu_hours_2xT4": 1.329
+}

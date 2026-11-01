@@ -6,9 +6,14 @@ PRE-REGISTERED (committed before any LLM call is made on the sealed set):
   * Tasks: needs_action, broad_intent, sentiment, urgency (aspect sentiment is not compared: stated limit).
   * LLM arm: one zero-shot call per item returning all four tasks as JSON, each with an integer confidence 0-100.
     Same class definitions as the labelling spec in one short paragraph, NO few-shots, temperature 0, fixed seed.
-    Models: openai/gpt-oss-20b and openai/gpt-oss-120b on the dedicated Groq org via the benchmark key
+    Models: openai/gpt-oss-20b and openai/gpt-oss-120b via the benchmark key
     (`benchmark_groq_key.load_benchmark_groq_key`), paced under the TPM limit and a per-model rolling-24h token cap
     (100,000 of the 200,000 TPD). The run is resumable across days.
+    CORRECTION 2026-10-12 (comment only, no change to design, prompts or parameters): the benchmark key is NOT on a
+    separate Groq org. It sits on the same Personal account as the production key, so its tokens draw on the SAME
+    per-model pools (VERIFIED in the Groq console 2026-10-12: about 340 requests / 300K tokens on gpt-oss-120b and
+    about 400 requests / 230K on gpt-oss-20b on Oct 11). Calls therefore also go through the machine-wide budget
+    ledger (`engine.groq_budget_hook`).
   * Metric: for each task, coverage at which precision (vs consensus) reaches 0.95, using the SAME function as the
     BANKING77 comparison (`engine.experiments.selective.summarize`), item bootstrap 1,000 resamples, 95 percent CI.
     This is the ORACLE curve (best threshold on the sealed set), which FAVOURS both arms equally; the deployable
@@ -211,6 +216,10 @@ def run(model: str, texts: Path, out: Path, arm: str = "zeroshot") -> int:
     from benchmark.vernacular_v2.benchmark_groq_key import load_benchmark_groq_key
 
     key = load_benchmark_groq_key()
+    # Shared Groq budget ledger (budget gating only); a no-op if the key loader already installed it.
+    from engine.groq_budget_hook import install
+
+    install()
     out.mkdir(parents=True, exist_ok=True)
     stem = model.replace("/", "_") + ("" if arm == "zeroshot" else f"__{arm}")
     f = out / f"{stem}.jsonl"

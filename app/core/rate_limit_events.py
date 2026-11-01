@@ -1,4 +1,4 @@
-"""Structured visibility for provider 429s (Groq and the OpenRouter secondary).
+"""Structured visibility for provider 429s (Groq and the secondary failover).
 
 Before this module a Groq 429 inside ``groq_tiered`` surfaced only as a body-less
 ``router.api_error`` warning, and a silent failover to the secondary was invisible. Every 429 now

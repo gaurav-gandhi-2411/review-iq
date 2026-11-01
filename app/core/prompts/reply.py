@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from app.core.reply.schema import ReplyTone
 
+# v2.2: critical rules 6-7 forbid invented contact details/identifiers and (any-language)
+# fault admission/commitments -- see PROMPTS.md. Eval run required before merge.
 # v2.1: added _SECURITY_NOTE (untrusted-data framing) + <review> delimiting -- see
 # app/core/reply/engine.py's sanitize()/wrap_for_llm() wiring for the matching fix.
-REPLY_PROMPT_VERSION = "v2.1"
+REPLY_PROMPT_VERSION = "v2.2"
 
 # Each tone specifies register + structure + explicit do-nots.
 # The model previously collapsed all complaint tones to the same arc
@@ -17,14 +19,15 @@ _TONE_INSTRUCTIONS: dict[ReplyTone, str] = {
         "For genuine failures: defective product, wrong item, undelivered order, "
         "ignored support requests — situations where blame is clear.\n"
         "Structure:\n"
-        "  Opening: Lead with direct ownership, not a sympathy preamble. Own the failure "
-        "before anything else. (hi-en examples: 'Yeh bilkul nahi hona chahiye tha.' / "
-        "'Sunke dil ko dukh hua — yeh hamare end pe galti thi.')\n"
+        "  Opening: Lead with direct acknowledgement, not a sympathy preamble. Acknowledge "
+        "the failure before anything else, without admitting fault (rule 7). (hi-en examples: "
+        "'Yeh bilkul nahi hona chahiye tha.' / 'Sunke dil ko dukh hua — aapke saath aisa "
+        "nahi hona chahiye tha.')\n"
         "  Body: Name each failure specifically. Don't hedge, don't make excuses, "
         "don't list the complaint back at the customer.\n"
-        "  Close: Commit to resolution without promising a specific remedy. "
-        "(hi-en examples: 'Isko hum suljhaenge — humse baat karo.' / "
-        "'Hum directly aapke saath is matter ko fix karenge.')\n"
+        "  Close: Invite follow-up without promising a remedy or an outcome (rule 7). "
+        "(hi-en examples: 'Humse baat karo, hum is matter ko dhyan se dekhenge.' / "
+        "'Aap humse directly connect karein taaki hum poori baat samajh sakein.')\n"
         "Do NOT: open with generic sympathy before taking ownership. Do NOT use both "
         "'afsos' AND 'khed' in the same reply — pick one word and be direct."
     ),
@@ -112,13 +115,13 @@ _LANGUAGE_EXTRA_GUIDANCE: dict[str, str] = {
         "'unfortunate'.\n"
         "- Vary opening and closing to match the tone as follows:\n"
         "    Apologetic open: 'Yeh hona hi nahi chahiye tha.' / "
-        "'Bilkul galat hua — hum zimmedaar hain.'\n"
+        "'Bilkul galat hua — aapke saath aisa nahi hona chahiye tha.'\n"
         "    Professional open: 'Aapka feedback note kar liya hai.' / "
         "'Hum is matter ko seriously le rahe hain.'\n"
         "    Warm open: 'Yaar, sunke bura laga.' / 'Aapki baat samajh aaye.'\n"
         "    Appreciative open: Mirror their energy — 'Bhai, aapka review padhke "
         "bahut achha laga!' not 'Hume khushi hui ki aapko product pasand aaya.'\n"
-        "    Apologetic close: 'Hum isko theek karenge — humse baat karo.'\n"
+        "    Apologetic close: 'Humse baat karo — hum is matter ko dhyan se dekhenge.'\n"
         "    Professional close: 'Is matter ke liye humse connect karein.'\n"
         "    Warm close: 'Batao kya ho sakta hai, hum milke dekhenge.'\n"
         "    Appreciative close: 'Aage bhi aise hi experience milega!' / 'Dhanyavad!'\n"
@@ -148,7 +151,16 @@ Use open-ended language such as "we will follow up with you soon."
 4. NEVER make medical or safety claims.
 5. The reply will be reviewed by a human before posting. Do not write "this is a draft" or \
 any similar note — output only the reply text.
-6. Write the reply IN {language_name}. The customer wrote in {language_name}; \
+6. NEVER invent details you were not given: no email addresses, phone numbers, websites or \
+links, order/ticket/tracking numbers, names, or amounts. You are NOT told the seller's contact \
+details, so do not write any. To invite contact, say it in words ("please reach out to us") or \
+write the placeholder [your support contact] -- never a made-up address or number. Only repeat \
+a specific detail (e.g. an order number) if it appears in the customer's review.
+7. NEVER admit fault or commit to an outcome on the seller's behalf ("we will fix it", "it was \
+our mistake", "you will get your refund") -- acknowledge and invite follow-up instead. This \
+applies equally in Hindi and Hinglish ("hum theek kar denge", "galti hamari thi", "refund mil \
+jayega" are all forbidden).
+8. Write the reply IN {language_name}. The customer wrote in {language_name}; \
 replying in the same language shows respect and makes the reply useful to them."""
 
 _SYSTEM_TEMPLATE = """\
