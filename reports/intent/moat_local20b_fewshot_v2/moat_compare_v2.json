@@ -1,0 +1,1919 @@
+{
+ "amendment": "docs/specs/review-intent.md, Amendment 11",
+ "code_commit": "46a06506f278f1a553349a3b2c39b8fc6a5c3d3e",
+ "labels": "SILVER (four-judge panel consensus), not human gold",
+ "settings": {
+  "target_wilson_lower": 0.95,
+  "n_boot": 2000,
+  "seed": 42,
+  "n_matched_max": 300,
+  "encoder": "run2"
+ },
+ "n_sealed_after_ledger_exclusions": 757,
+ "tasks": {
+  "needs_action": {
+   "n": 281,
+   "arms": {
+    "encoder-run2": {
+     "accuracy": {
+      "value": 0.9572953736654805,
+      "correct": 269,
+      "n": 281,
+      "wilson95": [
+       0.9268505641410901,
+       0.9754052861279717
+      ]
+     },
+     "op_point": {
+      "n": 281,
+      "answered": 261,
+      "threshold": 0.8125209808349609,
+      "coverage": 0.9288256227758007,
+      "precision": 0.9770114942528736,
+      "precision_wilson95": [
+       0.9507619201529212,
+       0.9894227034107487
+      ],
+      "qualifies": true
+     }
+    },
+    "gpt-oss-20b-local": {
+     "accuracy": {
+      "value": 0.9572953736654805,
+      "correct": 269,
+      "n": 281,
+      "wilson95": [
+       0.9268505641410901,
+       0.9754052861279717
+      ]
+     },
+     "op_point": {
+      "n": 281,
+      "answered": 205,
+      "threshold": 0.95,
+      "coverage": 0.7295373665480427,
+      "precision": 1.0,
+      "precision_wilson95": [
+       0.9816051974319293,
+       1.0
+      ],
+      "qualifies": true
+     }
+    },
+    "gpt-oss-20b-local-fewshot": {
+     "accuracy": {
+      "value": 0.8825622775800712,
+      "correct": 248,
+      "n": 281,
+      "wilson95": [
+       0.839660527858824,
+       0.915144949992726
+      ]
+     },
+     "op_point": {
+      "n": 281,
+      "answered": 185,
+      "threshold": 0.95,
+      "coverage": 0.6583629893238434,
+      "precision": 0.9891891891891892,
+      "precision_wilson95": [
+       0.961444927178973,
+       0.9970303240368608
+      ],
+      "qualifies": true
+     }
+    }
+   },
+   "matched_coverage": {
+    "computed": true,
+    "target_coverage": 0.6583629893238434,
+    "k_max": 185,
+    "arms": {
+     "encoder-run2": {
+      "n": 281,
+      "answered": 185,
+      "threshold": 0.9749429821968079,
+      "coverage": 0.6583629893238434,
+      "precision": 1.0,
+      "precision_wilson95": [
+       0.979657024723366,
+       1.0000000000000002
+      ],
+      "qualifies": true,
+      "overshoot": false
+     },
+     "gpt-oss-20b-local": {
+      "n": 281,
+      "answered": 205,
+      "threshold": 0.95,
+      "coverage": 0.7295373665480427,
+      "precision": 1.0,
+      "precision_wilson95": [
+       0.9816051974319293,
+       1.0
+      ],
+      "qualifies": true,
+      "overshoot": true
+     },
+     "gpt-oss-20b-local-fewshot": {
+      "n": 281,
+      "answered": 185,
+      "threshold": 0.95,
+      "coverage": 0.6583629893238434,
+      "precision": 0.9891891891891892,
+      "precision_wilson95": [
+       0.961444927178973,
+       0.9970303240368608
+      ],
+      "qualifies": true,
+      "overshoot": false
+     }
+    }
+   },
+   "pairs": {
+    "encoder-run2 minus gpt-oss-20b-local": {
+     "coverage_at_op_point": {
+      "diff": 0.19928825622775803,
+      "ci95": [
+       -0.07829181494661919,
+       0.2775800711743772
+      ],
+      "verdict": "not separated",
+      "ci_excludes_zero": false,
+      "op_points_agree": false
+     },
+     "accuracy": {
+      "diff": 0.0,
+      "ci95": [
+       -0.028469750889679735,
+       0.028469750889679735
+      ],
+      "verdict": "not separated",
+      "ci_excludes_zero": false,
+      "op_points_agree": false
+     }
+    },
+    "encoder-run2 minus gpt-oss-20b-local-fewshot": {
+     "coverage_at_op_point": {
+      "diff": 0.2704626334519573,
+      "ci95": [
+       0.18505338078291822,
+       0.9501779359430605
+      ],
+      "verdict": "encoder-run2 beats gpt-oss-20b-local-fewshot",
+      "ci_excludes_zero": true,
+      "op_points_agree": true
+     },
+     "accuracy": {
+      "diff": 0.07473309608540923,
+      "ci95": [
+       0.03558718861209964,
+       0.11387900355871883
+      ],
+      "verdict": "encoder-run2 beats gpt-oss-20b-local-fewshot",
+      "ci_excludes_zero": true,
+      "op_points_agree": true
+     }
+    },
+    "gpt-oss-20b-local-fewshot minus gpt-oss-20b-local": {
+     "coverage_at_op_point": {
+      "diff": -0.07117437722419928,
+      "ci95": [
+       -0.7758007117437722,
+       -0.028469750889679735
+      ],
+      "verdict": "gpt-oss-20b-local beats gpt-oss-20b-local-fewshot",
+      "ci_excludes_zero": true,
+      "op_points_agree": true
+     },
+     "accuracy": {
+      "diff": -0.07473309608540923,
+      "ci95": [
+       -0.11387900355871894,
+       -0.03558718861209964
+      ],
+      "verdict": "gpt-oss-20b-local beats gpt-oss-20b-local-fewshot",
+      "ci_excludes_zero": true,
+      "op_points_agree": true
+     }
+    }
+   },
+   "encoder_validation_threshold": {
+    "threshold": 0.860046,
+    "source": "reports/intent/eval_run2.json selective.conservative_p0.95.threshold (chosen on validation)",
+    "n": 281,
+    "answered": 250,
+    "coverage": 0.8896797153024911,
+    "precision": 0.988,
+    "precision_wilson95": [
+     0.9653186109241421,
+     0.9959107541602253
+    ],
+    "qualifies": true
+   }
+  },
+  "broad_intent": {
+   "n": 273,
+   "arms": {
+    "encoder-run2": {
+     "accuracy": {
+      "value": 0.9157509157509157,
+      "correct": 250,
+      "n": 273,
+      "wilson95": [
+       0.8767571402327582,
+       0.9432063334648364
+      ]
+     },
+     "op_point": {
+      "n": 273,
+      "answered": 205,
+      "threshold": 0.8984739780426025,
+      "coverage": 0.7509157509157509,
+      "precision": 0.9804878048780488,
+      "precision_wilson95": [
+       0.950911961729602,
+       0.9923866914123007
+      ],
+      "qualifies": true
+     }
+    },
+    "gpt-oss-20b-local": {
+     "accuracy": {
+      "value": 0.7472527472527473,
+      "correct": 204,
+      "n": 273,
+      "wilson95": [
+       0.6925130921741961,
+       0.7951303833728316
+      ]
+     },
+     "op_point": {
+      "n": 273,
+      "answered": 0,
+      "coverage": 0.0,
+      "qualifies": false
+     }
+    },
+    "gpt-oss-20b-local-fewshot": {
+     "accuracy": {
+      "value": 0.7692307692307693,
+      "correct": 210,
+      "n": 273,
+      "wilson95": [
+       0.7157228365843974,
+       0.8152667256779218
+      ]
+     },
+     "op_point": {
+      "n": 273,
+      "answered": 0,
+      "coverage": 0.0,
+      "qualifies": false
+     }
+    }
+   },
+   "matched_coverage": {
+    "computed": true,
+    "target_coverage": 0.7509157509157509,
+    "k_max": 205,
+    "arms": {
+     "encoder-run2": {
+      "n": 273,
+      "answered": 205,
+      "threshold": 0.8984739780426025,
+      "coverage": 0.7509157509157509,
+      "precision": 0.9804878048780488,
+      "precision_wilson95": [
+       0.950911961729602,
+       0.9923866914123007
+      ],
+      "qualifies": true,
+      "overshoot": false
+     },
+     "gpt-oss-20b-local": {
+      "n": 273,
+      "answered": 186,
+      "threshold": 0.92,
+      "coverage": 0.6813186813186813,
+      "precision": 0.8817204301075269,
+      "precision_wilson95": [
+       0.8274122062485433,
+       0.9205798039325761
+      ],
+      "qualifies": true,
+      "overshoot": false
+     },
+     "gpt-oss-20b-local-fewshot": {
+      "n": 273,
+      "answered": 163,
+      "threshold": 0.95,
+      "coverage": 0.5970695970695971,
+      "precision": 0.9815950920245399,
+      "precision_wilson95": [
+       0.9472909504611251,
+       0.9937213630146509
+      ],
+      "qualifies": true,
+      "overshoot": false
+     }
+    }
+   },
+   "pairs": {
+    "encoder-run2 minus gpt-oss-20b-local": {
+     "coverage_at_op_point": {
+      "diff": 0.7509157509157509,
+      "ci95": [
+       0.24542124542124538,
+       0.8461538461538461
+      ],
+      "verdict": "encoder-run2 beats gpt-oss-20b-local",
+      "ci_excludes_zero": true,
+      "op_points_agree": true
+     },
+     "accuracy": {
+      "diff": 0.16849816849816845,
+      "ci95": [
+       0.11721611721611724,
+       0.21978021978021978
+      ],
+      "verdict": "encoder-run2 beats gpt-oss-20b-local",
+      "ci_excludes_zero": true,
+      "op_points_agree": true
+     }
+    },
+    "encoder-run2 minus gpt-oss-20b-local-fewshot": {
+     "coverage_at_op_point": {
+      "diff": 0.7509157509157509,
+      "ci95": [
+       0.09523809523809523,
+       0.8424908424908425
+      ],
+      "verdict": "encoder-run2 beats gpt-oss-20b-local-fewshot",
+      "ci_excludes_zero": true,
+      "op_points_agree": true
+     },
+     "accuracy": {
+      "diff": 0.14652014652014644,
+      "ci95": [
+       0.09523809523809523,
+       0.19780219780219788
+      ],
+      "verdict": "encoder-run2 beats gpt-oss-20b-local-fewshot",
+      "ci_excludes_zero": true,
+      "op_points_agree": true
+     }
+    },
+    "gpt-oss-20b-local-fewshot minus gpt-oss-20b-local": {
+     "coverage_at_op_point": {
+      "diff": 0.0,
+      "ci95": [
+       -0.47985347985347987,
+       0.6373626373626373
+      ],
+      "verdict": "not separated",
+      "ci_excludes_zero": false,
+      "op_points_agree": false
+     },
+     "accuracy": {
+      "diff": 0.02197802197802201,
+      "ci95": [
+       -0.0146520146520146,
+       0.05860805860805862
+      ],
+      "verdict": "not separated",
+      "ci_excludes_zero": false,
+      "op_points_agree": false
+     }
+    }
+   },
+   "encoder_validation_threshold": {
+    "threshold": 0.856016,
+    "source": "reports/intent/eval_run2.json selective.conservative_p0.95.threshold (chosen on validation)",
+    "n": 273,
+    "answered": 214,
+    "coverage": 0.7838827838827839,
+    "precision": 0.9719626168224299,
+    "precision_wilson95": [
+     0.9401908847196625,
+     0.9870883860899532
+    ],
+    "qualifies": true
+   }
+  },
+  "sentiment": {
+   "n": 253,
+   "arms": {
+    "encoder-run2": {
+     "accuracy": {
+      "value": 0.9604743083003953,
+      "correct": 243,
+      "n": 253,
+      "wilson95": [
+       0.9287825767269373,
+       0.9783913390250281
+      ]
+     },
+     "op_point": {
+      "n": 253,
+      "answered": 247,
+      "threshold": 0.4503229856491089,
+      "coverage": 0.9762845849802372,
+      "precision": 0.979757085020243,
+      "precision_wilson95": [
+       0.9534960395405916,
+       0.9913233205655472
+      ],
+      "qualifies": true
+     }
+    },
+    "gpt-oss-20b-local": {
+     "accuracy": {
+      "value": 0.9407114624505929,
+      "correct": 238,
+      "n": 253,
+      "wilson95": [
+       0.9044944051590821,
+       0.9637450077709105
+      ]
+     },
+     "op_point": {
+      "n": 253,
+      "answered": 236,
+      "threshold": 0.88,
+      "coverage": 0.932806324110672,
+      "precision": 0.9830508474576272,
+      "precision_wilson95": [
+       0.957237739015525,
+       0.9933896750777766
+      ],
+      "qualifies": true
+     }
+    },
+    "gpt-oss-20b-local-fewshot": {
+     "accuracy": {
+      "value": 0.9407114624505929,
+      "correct": 238,
+      "n": 253,
+      "wilson95": [
+       0.9044944051590821,
+       0.9637450077709105
+      ]
+     },
+     "op_point": {
+      "n": 253,
+      "answered": 232,
+      "threshold": 0.9,
+      "coverage": 0.9169960474308301,
+      "precision": 0.978448275862069,
+      "precision_wilson95": [
+       0.9505495312547084,
+       0.9907602291946781
+      ],
+      "qualifies": true
+     }
+    }
+   },
+   "matched_coverage": {
+    "computed": true,
+    "target_coverage": 0.9169960474308301,
+    "k_max": 232,
+    "arms": {
+     "encoder-run2": {
+      "n": 253,
+      "answered": 232,
+      "threshold": 0.6454929709434509,
+      "coverage": 0.9169960474308301,
+      "precision": 0.9956896551724138,
+      "precision_wilson95": [
+       0.9759921006641434,
+       0.9992387322338697
+      ],
+      "qualifies": true,
+      "overshoot": false
+     },
+     "gpt-oss-20b-local": {
+      "n": 253,
+      "answered": 225,
+      "threshold": 0.92,
+      "coverage": 0.8893280632411067,
+      "precision": 0.9822222222222222,
+      "precision_wilson95": [
+       0.9551886530052135,
+       0.9930655105734364
+      ],
+      "qualifies": true,
+      "overshoot": false
+     },
+     "gpt-oss-20b-local-fewshot": {
+      "n": 253,
+      "answered": 232,
+      "threshold": 0.9,
+      "coverage": 0.9169960474308301,
+      "precision": 0.978448275862069,
+      "precision_wilson95": [
+       0.9505495312547084,
+       0.9907602291946781
+      ],
+      "qualifies": true,
+      "overshoot": false
+     }
+    }
+   },
+   "pairs": {
+    "encoder-run2 minus gpt-oss-20b-local": {
+     "coverage_at_op_point": {
+      "diff": 0.04347826086956519,
+      "ci95": [
+       -0.007905138339920903,
+       0.44664031620553357
+      ],
+      "verdict": "not separated",
+      "ci_excludes_zero": false,
+      "op_points_agree": false
+     },
+     "accuracy": {
+      "diff": 0.01976284584980237,
+      "ci95": [
+       -0.0039525691699604515,
+       0.04743083003952564
+      ],
+      "verdict": "not separated",
+      "ci_excludes_zero": false,
+      "op_points_agree": false
+     }
+    },
+    "encoder-run2 minus gpt-oss-20b-local-fewshot": {
+     "coverage_at_op_point": {
+      "diff": 0.059288537549407105,
+      "ci95": [
+       -0.003952569169960454,
+       0.3241106719367589
+      ],
+      "verdict": "not separated",
+      "ci_excludes_zero": false,
+      "op_points_agree": false
+     },
+     "accuracy": {
+      "diff": 0.01976284584980237,
+      "ci95": [
+       -0.011857707509881465,
+       0.055335968379446654
+      ],
+      "verdict": "not separated",
+      "ci_excludes_zero": false,
+      "op_points_agree": false
+     }
+    },
+    "gpt-oss-20b-local-fewshot minus gpt-oss-20b-local": {
+     "coverage_at_op_point": {
+      "diff": -0.015810276679841917,
+      "ci95": [
+       -0.2727272727272727,
+       0.24110671936758887
+      ],
+      "verdict": "not separated",
+      "ci_excludes_zero": false,
+      "op_points_agree": false
+     },
+     "accuracy": {
+      "diff": 0.0,
+      "ci95": [
+       -0.02766798418972327,
+       0.02766798418972327
+      ],
+      "verdict": "not separated",
+      "ci_excludes_zero": false,
+      "op_points_agree": false
+     }
+    }
+   },
+   "encoder_validation_threshold": {
+    "threshold": 0.84166,
+    "source": "reports/intent/eval_run2.json selective.conservative_p0.95.threshold (chosen on validation)",
+    "n": 253,
+    "answered": 210,
+    "coverage": 0.8300395256916996,
+    "precision": 0.9952380952380953,
+    "precision_wilson95": [
+     0.9735236503748349,
+     0.9991589333693947
+    ],
+    "qualifies": true
+   }
+  },
+  "urgency": {
+   "n": 275,
+   "arms": {
+    "encoder-run2": {
+     "accuracy": {
+      "value": 0.9418181818181818,
+      "correct": 259,
+      "n": 275,
+      "wilson95": [
+       0.9075890328185635,
+       0.9638734749277699
+      ]
+     },
+     "op_point": {
+      "n": 275,
+      "answered": 235,
+      "threshold": 0.8557919859886169,
+      "coverage": 0.8545454545454545,
+      "precision": 0.9787234042553191,
+      "precision_wilson95": [
+       0.9511683270673893,
+       0.9908786195281786
+      ],
+      "qualifies": true
+     }
+    },
+    "gpt-oss-20b-local": {
+     "accuracy": {
+      "value": 0.850909090909091,
+      "correct": 234,
+      "n": 275,
+      "wilson95": [
+       0.8039894567235931,
+       0.8881597778239063
+      ]
+     },
+     "op_point": {
+      "n": 275,
+      "answered": 0,
+      "coverage": 0.0,
+      "qualifies": false
+     }
+    },
+    "gpt-oss-20b-local-fewshot": {
+     "accuracy": {
+      "value": 0.9163636363636364,
+      "correct": 252,
+      "n": 275,
+      "wilson95": [
+       0.8776305509799321,
+       0.9436242402707278
+      ]
+     },
+     "op_point": {
+      "n": 275,
+      "answered": 192,
+      "threshold": 0.95,
+      "coverage": 0.6981818181818182,
+      "precision": 0.9947916666666666,
+      "precision_wilson95": [
+       0.971091779786119,
+       0.9990800325356756
+      ],
+      "qualifies": true
+     }
+    }
+   },
+   "matched_coverage": {
+    "computed": true,
+    "target_coverage": 0.6981818181818182,
+    "k_max": 192,
+    "arms": {
+     "encoder-run2": {
+      "n": 275,
+      "answered": 192,
+      "threshold": 0.956305980682373,
+      "coverage": 0.6981818181818182,
+      "precision": 1.0,
+      "precision_wilson95": [
+       0.9803841471883398,
+       0.9999999999999998
+      ],
+      "qualifies": true,
+      "overshoot": false
+     },
+     "gpt-oss-20b-local": {
+      "n": 275,
+      "answered": 177,
+      "threshold": 0.99,
+      "coverage": 0.6436363636363637,
+      "precision": 0.943502824858757,
+      "precision_wilson95": [
+       0.8991370313311824,
+       0.9690260461908036
+      ],
+      "qualifies": true,
+      "overshoot": false
+     },
+     "gpt-oss-20b-local-fewshot": {
+      "n": 275,
+      "answered": 192,
+      "threshold": 0.95,
+      "coverage": 0.6981818181818182,
+      "precision": 0.9947916666666666,
+      "precision_wilson95": [
+       0.971091779786119,
+       0.9990800325356756
+      ],
+      "qualifies": true,
+      "overshoot": false
+     }
+    }
+   },
+   "pairs": {
+    "encoder-run2 minus gpt-oss-20b-local": {
+     "coverage_at_op_point": {
+      "diff": 0.8545454545454545,
+      "ci95": [
+       0.5890909090909091,
+       0.9673636363636359
+      ],
+      "verdict": "encoder-run2 beats gpt-oss-20b-local",
+      "ci_excludes_zero": true,
+      "op_points_agree": true
+     },
+     "accuracy": {
+      "diff": 0.09090909090909083,
+      "ci95": [
+       0.043636363636363584,
+       0.14181818181818184
+      ],
+      "verdict": "encoder-run2 beats gpt-oss-20b-local",
+      "ci_excludes_zero": true,
+      "op_points_agree": true
+     }
+    },
+    "encoder-run2 minus gpt-oss-20b-local-fewshot": {
+     "coverage_at_op_point": {
+      "diff": 0.15636363636363626,
+      "ci95": [
+       0.09090909090909083,
+       0.2837272727272723
+      ],
+      "verdict": "encoder-run2 beats gpt-oss-20b-local-fewshot",
+      "ci_excludes_zero": true,
+      "op_points_agree": true
+     },
+     "accuracy": {
+      "diff": 0.025454545454545396,
+      "ci95": [
+       -0.0036363636363636598,
+       0.05818181818181822
+      ],
+      "verdict": "not separated",
+      "ci_excludes_zero": false,
+      "op_points_agree": false
+     }
+    },
+    "gpt-oss-20b-local-fewshot minus gpt-oss-20b-local": {
+     "coverage_at_op_point": {
+      "diff": 0.6981818181818182,
+      "ci95": [
+       0.09818181818181815,
+       0.7490909090909091
+      ],
+      "verdict": "gpt-oss-20b-local-fewshot beats gpt-oss-20b-local",
+      "ci_excludes_zero": true,
+      "op_points_agree": true
+     },
+     "accuracy": {
+      "diff": 0.06545454545454543,
+      "ci95": [
+       0.014545454545454528,
+       0.11636363636363645
+      ],
+      "verdict": "gpt-oss-20b-local-fewshot beats gpt-oss-20b-local",
+      "ci_excludes_zero": true,
+      "op_points_agree": true
+     }
+    }
+   },
+   "encoder_validation_threshold": {
+    "threshold": 0.881834,
+    "source": "reports/intent/eval_run2.json selective.conservative_p0.95.threshold (chosen on validation)",
+    "n": 275,
+    "answered": 229,
+    "coverage": 0.8327272727272728,
+    "precision": 0.982532751091703,
+    "precision_wilson95": [
+     0.9559561056981797,
+     0.993187002749795
+    ],
+    "qualifies": true
+   }
+  }
+ },
+ "unmatched_zeroshot_vs_encoder": {
+  "needs_action": {
+   "n": 281,
+   "arms": {
+    "encoder-run2": {
+     "accuracy": {
+      "value": 0.9572953736654805,
+      "correct": 269,
+      "n": 281,
+      "wilson95": [
+       0.9268505641410901,
+       0.9754052861279717
+      ]
+     },
+     "op_point": {
+      "n": 281,
+      "answered": 261,
+      "threshold": 0.8125209808349609,
+      "coverage": 0.9288256227758007,
+      "precision": 0.9770114942528736,
+      "precision_wilson95": [
+       0.9507619201529212,
+       0.9894227034107487
+      ],
+      "qualifies": true
+     }
+    },
+    "gpt-oss-20b-local": {
+     "accuracy": {
+      "value": 0.9572953736654805,
+      "correct": 269,
+      "n": 281,
+      "wilson95": [
+       0.9268505641410901,
+       0.9754052861279717
+      ]
+     },
+     "op_point": {
+      "n": 281,
+      "answered": 205,
+      "threshold": 0.95,
+      "coverage": 0.7295373665480427,
+      "precision": 1.0,
+      "precision_wilson95": [
+       0.9816051974319293,
+       1.0
+      ],
+      "qualifies": true
+     }
+    }
+   },
+   "matched_coverage": {
+    "computed": true,
+    "target_coverage": 0.7295373665480427,
+    "k_max": 205,
+    "arms": {
+     "encoder-run2": {
+      "n": 281,
+      "answered": 205,
+      "threshold": 0.9691669940948486,
+      "coverage": 0.7295373665480427,
+      "precision": 1.0,
+      "precision_wilson95": [
+       0.9816051974319293,
+       1.0
+      ],
+      "qualifies": true,
+      "overshoot": false
+     },
+     "gpt-oss-20b-local": {
+      "n": 281,
+      "answered": 205,
+      "threshold": 0.95,
+      "coverage": 0.7295373665480427,
+      "precision": 1.0,
+      "precision_wilson95": [
+       0.9816051974319293,
+       1.0
+      ],
+      "qualifies": true,
+      "overshoot": false
+     }
+    }
+   },
+   "pairs": {
+    "encoder-run2 minus gpt-oss-20b-local": {
+     "coverage_at_op_point": {
+      "diff": 0.19928825622775803,
+      "ci95": [
+       -0.07829181494661919,
+       0.2775800711743772
+      ],
+      "verdict": "not separated",
+      "ci_excludes_zero": false,
+      "op_points_agree": false
+     },
+     "accuracy": {
+      "diff": 0.0,
+      "ci95": [
+       -0.028469750889679735,
+       0.028469750889679735
+      ],
+      "verdict": "not separated",
+      "ci_excludes_zero": false,
+      "op_points_agree": false
+     }
+    }
+   }
+  },
+  "broad_intent": {
+   "n": 273,
+   "arms": {
+    "encoder-run2": {
+     "accuracy": {
+      "value": 0.9157509157509157,
+      "correct": 250,
+      "n": 273,
+      "wilson95": [
+       0.8767571402327582,
+       0.9432063334648364
+      ]
+     },
+     "op_point": {
+      "n": 273,
+      "answered": 205,
+      "threshold": 0.8984739780426025,
+      "coverage": 0.7509157509157509,
+      "precision": 0.9804878048780488,
+      "precision_wilson95": [
+       0.950911961729602,
+       0.9923866914123007
+      ],
+      "qualifies": true
+     }
+    },
+    "gpt-oss-20b-local": {
+     "accuracy": {
+      "value": 0.7472527472527473,
+      "correct": 204,
+      "n": 273,
+      "wilson95": [
+       0.6925130921741961,
+       0.7951303833728316
+      ]
+     },
+     "op_point": {
+      "n": 273,
+      "answered": 0,
+      "coverage": 0.0,
+      "qualifies": false
+     }
+    }
+   },
+   "matched_coverage": {
+    "computed": true,
+    "target_coverage": 0.7509157509157509,
+    "k_max": 205,
+    "arms": {
+     "encoder-run2": {
+      "n": 273,
+      "answered": 205,
+      "threshold": 0.8984739780426025,
+      "coverage": 0.7509157509157509,
+      "precision": 0.9804878048780488,
+      "precision_wilson95": [
+       0.950911961729602,
+       0.9923866914123007
+      ],
+      "qualifies": true,
+      "overshoot": false
+     },
+     "gpt-oss-20b-local": {
+      "n": 273,
+      "answered": 186,
+      "threshold": 0.92,
+      "coverage": 0.6813186813186813,
+      "precision": 0.8817204301075269,
+      "precision_wilson95": [
+       0.8274122062485433,
+       0.9205798039325761
+      ],
+      "qualifies": true,
+      "overshoot": false
+     }
+    }
+   },
+   "pairs": {
+    "encoder-run2 minus gpt-oss-20b-local": {
+     "coverage_at_op_point": {
+      "diff": 0.7509157509157509,
+      "ci95": [
+       0.24542124542124538,
+       0.8461538461538461
+      ],
+      "verdict": "encoder-run2 beats gpt-oss-20b-local",
+      "ci_excludes_zero": true,
+      "op_points_agree": true
+     },
+     "accuracy": {
+      "diff": 0.16849816849816845,
+      "ci95": [
+       0.11721611721611724,
+       0.21978021978021978
+      ],
+      "verdict": "encoder-run2 beats gpt-oss-20b-local",
+      "ci_excludes_zero": true,
+      "op_points_agree": true
+     }
+    }
+   }
+  },
+  "sentiment": {
+   "n": 253,
+   "arms": {
+    "encoder-run2": {
+     "accuracy": {
+      "value": 0.9604743083003953,
+      "correct": 243,
+      "n": 253,
+      "wilson95": [
+       0.9287825767269373,
+       0.9783913390250281
+      ]
+     },
+     "op_point": {
+      "n": 253,
+      "answered": 247,
+      "threshold": 0.4503229856491089,
+      "coverage": 0.9762845849802372,
+      "precision": 0.979757085020243,
+      "precision_wilson95": [
+       0.9534960395405916,
+       0.9913233205655472
+      ],
+      "qualifies": true
+     }
+    },
+    "gpt-oss-20b-local": {
+     "accuracy": {
+      "value": 0.9407114624505929,
+      "correct": 238,
+      "n": 253,
+      "wilson95": [
+       0.9044944051590821,
+       0.9637450077709105
+      ]
+     },
+     "op_point": {
+      "n": 253,
+      "answered": 236,
+      "threshold": 0.88,
+      "coverage": 0.932806324110672,
+      "precision": 0.9830508474576272,
+      "precision_wilson95": [
+       0.957237739015525,
+       0.9933896750777766
+      ],
+      "qualifies": true
+     }
+    }
+   },
+   "matched_coverage": {
+    "computed": true,
+    "target_coverage": 0.932806324110672,
+    "k_max": 236,
+    "arms": {
+     "encoder-run2": {
+      "n": 253,
+      "answered": 236,
+      "threshold": 0.59027498960495,
+      "coverage": 0.932806324110672,
+      "precision": 0.9915254237288136,
+      "precision_wilson95": [
+       0.9696321585901454,
+       0.9976729294346175
+      ],
+      "qualifies": true,
+      "overshoot": false
+     },
+     "gpt-oss-20b-local": {
+      "n": 253,
+      "answered": 236,
+      "threshold": 0.88,
+      "coverage": 0.932806324110672,
+      "precision": 0.9830508474576272,
+      "precision_wilson95": [
+       0.957237739015525,
+       0.9933896750777766
+      ],
+      "qualifies": true,
+      "overshoot": false
+     }
+    }
+   },
+   "pairs": {
+    "encoder-run2 minus gpt-oss-20b-local": {
+     "coverage_at_op_point": {
+      "diff": 0.04347826086956519,
+      "ci95": [
+       -0.007905138339920903,
+       0.44664031620553357
+      ],
+      "verdict": "not separated",
+      "ci_excludes_zero": false,
+      "op_points_agree": false
+     },
+     "accuracy": {
+      "diff": 0.01976284584980237,
+      "ci95": [
+       -0.0039525691699604515,
+       0.04743083003952564
+      ],
+      "verdict": "not separated",
+      "ci_excludes_zero": false,
+      "op_points_agree": false
+     }
+    }
+   }
+  },
+  "urgency": {
+   "n": 275,
+   "arms": {
+    "encoder-run2": {
+     "accuracy": {
+      "value": 0.9418181818181818,
+      "correct": 259,
+      "n": 275,
+      "wilson95": [
+       0.9075890328185635,
+       0.9638734749277699
+      ]
+     },
+     "op_point": {
+      "n": 275,
+      "answered": 235,
+      "threshold": 0.8557919859886169,
+      "coverage": 0.8545454545454545,
+      "precision": 0.9787234042553191,
+      "precision_wilson95": [
+       0.9511683270673893,
+       0.9908786195281786
+      ],
+      "qualifies": true
+     }
+    },
+    "gpt-oss-20b-local": {
+     "accuracy": {
+      "value": 0.850909090909091,
+      "correct": 234,
+      "n": 275,
+      "wilson95": [
+       0.8039894567235931,
+       0.8881597778239063
+      ]
+     },
+     "op_point": {
+      "n": 275,
+      "answered": 0,
+      "coverage": 0.0,
+      "qualifies": false
+     }
+    }
+   },
+   "matched_coverage": {
+    "computed": true,
+    "target_coverage": 0.8545454545454545,
+    "k_max": 235,
+    "arms": {
+     "encoder-run2": {
+      "n": 275,
+      "answered": 235,
+      "threshold": 0.8557919859886169,
+      "coverage": 0.8545454545454545,
+      "precision": 0.9787234042553191,
+      "precision_wilson95": [
+       0.9511683270673893,
+       0.9908786195281786
+      ],
+      "qualifies": true,
+      "overshoot": false
+     },
+     "gpt-oss-20b-local": {
+      "n": 275,
+      "answered": 225,
+      "threshold": 0.97,
+      "coverage": 0.8181818181818182,
+      "precision": 0.8888888888888888,
+      "precision_wilson95": [
+       0.8411220958952155,
+       0.923599003764986
+      ],
+      "qualifies": true,
+      "overshoot": false
+     }
+    }
+   },
+   "pairs": {
+    "encoder-run2 minus gpt-oss-20b-local": {
+     "coverage_at_op_point": {
+      "diff": 0.8545454545454545,
+      "ci95": [
+       0.5890909090909091,
+       0.9673636363636359
+      ],
+      "verdict": "encoder-run2 beats gpt-oss-20b-local",
+      "ci_excludes_zero": true,
+      "op_points_agree": true
+     },
+     "accuracy": {
+      "diff": 0.09090909090909083,
+      "ci95": [
+       0.043636363636363584,
+       0.14181818181818184
+      ],
+      "verdict": "encoder-run2 beats gpt-oss-20b-local",
+      "ci_excludes_zero": true,
+      "op_points_agree": true
+     }
+    }
+   }
+  }
+ },
+ "groq_crosscheck": {
+  "needs_action": {
+   "n": 281,
+   "arms": {
+    "encoder-run2": {
+     "accuracy": {
+      "value": 0.9572953736654805,
+      "correct": 269,
+      "n": 281,
+      "wilson95": [
+       0.9268505641410901,
+       0.9754052861279717
+      ]
+     },
+     "op_point": {
+      "n": 281,
+      "answered": 261,
+      "threshold": 0.8125209808349609,
+      "coverage": 0.9288256227758007,
+      "precision": 0.9770114942528736,
+      "precision_wilson95": [
+       0.9507619201529212,
+       0.9894227034107487
+      ],
+      "qualifies": true
+     }
+    },
+    "gpt-oss-20b-local": {
+     "accuracy": {
+      "value": 0.9572953736654805,
+      "correct": 269,
+      "n": 281,
+      "wilson95": [
+       0.9268505641410901,
+       0.9754052861279717
+      ]
+     },
+     "op_point": {
+      "n": 281,
+      "answered": 205,
+      "threshold": 0.95,
+      "coverage": 0.7295373665480427,
+      "precision": 1.0,
+      "precision_wilson95": [
+       0.9816051974319293,
+       1.0
+      ],
+      "qualifies": true
+     }
+    },
+    "groq-gpt-oss-20b": {
+     "accuracy": {
+      "value": 0.9145907473309609,
+      "correct": 257,
+      "n": 281,
+      "wilson95": [
+       0.8760632607149759,
+       0.9419352338869363
+      ]
+     },
+     "op_point": {
+      "n": 281,
+      "answered": 206,
+      "threshold": 0.95,
+      "coverage": 0.7330960854092526,
+      "precision": 1.0,
+      "precision_wilson95": [
+       0.9816928578508741,
+       1.0
+      ],
+      "qualifies": true
+     }
+    }
+   },
+   "matched_coverage": {
+    "computed": true,
+    "target_coverage": 0.7295373665480427,
+    "k_max": 205,
+    "arms": {
+     "encoder-run2": {
+      "n": 281,
+      "answered": 205,
+      "threshold": 0.9691669940948486,
+      "coverage": 0.7295373665480427,
+      "precision": 1.0,
+      "precision_wilson95": [
+       0.9816051974319293,
+       1.0
+      ],
+      "qualifies": true,
+      "overshoot": false
+     },
+     "gpt-oss-20b-local": {
+      "n": 281,
+      "answered": 205,
+      "threshold": 0.95,
+      "coverage": 0.7295373665480427,
+      "precision": 1.0,
+      "precision_wilson95": [
+       0.9816051974319293,
+       1.0
+      ],
+      "qualifies": true,
+      "overshoot": false
+     },
+     "groq-gpt-oss-20b": {
+      "n": 281,
+      "answered": 8,
+      "threshold": 0.98,
+      "coverage": 0.028469750889679714,
+      "precision": 1.0,
+      "precision_wilson95": [
+       0.6755843804891231,
+       1.0
+      ],
+      "qualifies": true,
+      "overshoot": false
+     }
+    }
+   },
+   "pairs": {
+    "groq-gpt-oss-20b minus gpt-oss-20b-local": {
+     "coverage_at_op_point": {
+      "diff": 0.003558718861209953,
+      "ci95": [
+       -0.2633451957295374,
+       0.039145907473309594
+      ]
+     },
+     "accuracy": {
+      "diff": -0.042704626334519546,
+      "ci95": [
+       -0.07473309608540935,
+       -0.010676156583629859
+      ]
+     }
+    },
+    "encoder-run2 minus groq-gpt-oss-20b": {
+     "coverage_at_op_point": {
+      "diff": 0.19572953736654808,
+      "ci95": [
+       0.11387900355871883,
+       0.2704626334519573
+      ]
+     },
+     "accuracy": {
+      "diff": 0.042704626334519546,
+      "ci95": [
+       0.010676156583629966,
+       0.07473309608540923
+      ]
+     }
+    }
+   }
+  },
+  "broad_intent": {
+   "n": 273,
+   "arms": {
+    "encoder-run2": {
+     "accuracy": {
+      "value": 0.9157509157509157,
+      "correct": 250,
+      "n": 273,
+      "wilson95": [
+       0.8767571402327582,
+       0.9432063334648364
+      ]
+     },
+     "op_point": {
+      "n": 273,
+      "answered": 205,
+      "threshold": 0.8984739780426025,
+      "coverage": 0.7509157509157509,
+      "precision": 0.9804878048780488,
+      "precision_wilson95": [
+       0.950911961729602,
+       0.9923866914123007
+      ],
+      "qualifies": true
+     }
+    },
+    "gpt-oss-20b-local": {
+     "accuracy": {
+      "value": 0.7472527472527473,
+      "correct": 204,
+      "n": 273,
+      "wilson95": [
+       0.6925130921741961,
+       0.7951303833728316
+      ]
+     },
+     "op_point": {
+      "n": 273,
+      "answered": 0,
+      "coverage": 0.0,
+      "qualifies": false
+     }
+    },
+    "groq-gpt-oss-20b": {
+     "accuracy": {
+      "value": 0.8351648351648352,
+      "correct": 228,
+      "n": 273,
+      "wilson95": [
+       0.7865601088907143,
+       0.8744677135174789
+      ]
+     },
+     "op_point": {
+      "n": 273,
+      "answered": 127,
+      "threshold": 0.97,
+      "coverage": 0.4652014652014652,
+      "precision": 1.0,
+      "precision_wilson95": [
+       0.9706393073762474,
+       1.0000000000000002
+      ],
+      "qualifies": true
+     }
+    }
+   },
+   "matched_coverage": {
+    "computed": true,
+    "target_coverage": 0.4652014652014652,
+    "k_max": 127,
+    "arms": {
+     "encoder-run2": {
+      "n": 273,
+      "answered": 127,
+      "threshold": 0.9778239727020264,
+      "coverage": 0.4652014652014652,
+      "precision": 1.0,
+      "precision_wilson95": [
+       0.9706393073762474,
+       1.0000000000000002
+      ],
+      "qualifies": true,
+      "overshoot": false
+     },
+     "gpt-oss-20b-local": {
+      "n": 273,
+      "answered": 123,
+      "threshold": 0.98,
+      "coverage": 0.45054945054945056,
+      "precision": 0.983739837398374,
+      "precision_wilson95": [
+       0.9426484258328016,
+       0.9955295851667443
+      ],
+      "qualifies": true,
+      "overshoot": false
+     },
+     "groq-gpt-oss-20b": {
+      "n": 273,
+      "answered": 127,
+      "threshold": 0.97,
+      "coverage": 0.4652014652014652,
+      "precision": 1.0,
+      "precision_wilson95": [
+       0.9706393073762474,
+       1.0000000000000002
+      ],
+      "qualifies": true,
+      "overshoot": false
+     }
+    }
+   },
+   "pairs": {
+    "groq-gpt-oss-20b minus gpt-oss-20b-local": {
+     "coverage_at_op_point": {
+      "diff": 0.4652014652014652,
+      "ci95": [
+       -0.02564102564102566,
+       0.5164835164835165
+      ]
+     },
+     "accuracy": {
+      "diff": 0.08791208791208793,
+      "ci95": [
+       0.05494505494505486,
+       0.12454212454212454
+      ]
+     }
+    },
+    "encoder-run2 minus groq-gpt-oss-20b": {
+     "coverage_at_op_point": {
+      "diff": 0.2857142857142857,
+      "ci95": [
+       0.19780219780219782,
+       0.3920329670329666
+      ]
+     },
+     "accuracy": {
+      "diff": 0.08058608058608052,
+      "ci95": [
+       0.03296703296703296,
+       0.13186813186813184
+      ]
+     }
+    }
+   }
+  },
+  "sentiment": {
+   "n": 253,
+   "arms": {
+    "encoder-run2": {
+     "accuracy": {
+      "value": 0.9604743083003953,
+      "correct": 243,
+      "n": 253,
+      "wilson95": [
+       0.9287825767269373,
+       0.9783913390250281
+      ]
+     },
+     "op_point": {
+      "n": 253,
+      "answered": 247,
+      "threshold": 0.4503229856491089,
+      "coverage": 0.9762845849802372,
+      "precision": 0.979757085020243,
+      "precision_wilson95": [
+       0.9534960395405916,
+       0.9913233205655472
+      ],
+      "qualifies": true
+     }
+    },
+    "gpt-oss-20b-local": {
+     "accuracy": {
+      "value": 0.9407114624505929,
+      "correct": 238,
+      "n": 253,
+      "wilson95": [
+       0.9044944051590821,
+       0.9637450077709105
+      ]
+     },
+     "op_point": {
+      "n": 253,
+      "answered": 236,
+      "threshold": 0.88,
+      "coverage": 0.932806324110672,
+      "precision": 0.9830508474576272,
+      "precision_wilson95": [
+       0.957237739015525,
+       0.9933896750777766
+      ],
+      "qualifies": true
+     }
+    },
+    "groq-gpt-oss-20b": {
+     "accuracy": {
+      "value": 0.9525691699604744,
+      "correct": 241,
+      "n": 253,
+      "wilson95": [
+       0.9189374654001545,
+       0.9726626492230218
+      ]
+     },
+     "op_point": {
+      "n": 253,
+      "answered": 238,
+      "threshold": 0.9,
+      "coverage": 0.9407114624505929,
+      "precision": 0.9789915966386554,
+      "precision_wilson95": [
+       0.9517718291332841,
+       0.9909940142948108
+      ],
+      "qualifies": true
+     }
+    }
+   },
+   "matched_coverage": {
+    "computed": true,
+    "target_coverage": 0.932806324110672,
+    "k_max": 236,
+    "arms": {
+     "encoder-run2": {
+      "n": 253,
+      "answered": 236,
+      "threshold": 0.59027498960495,
+      "coverage": 0.932806324110672,
+      "precision": 0.9915254237288136,
+      "precision_wilson95": [
+       0.9696321585901454,
+       0.9976729294346175
+      ],
+      "qualifies": true,
+      "overshoot": false
+     },
+     "gpt-oss-20b-local": {
+      "n": 253,
+      "answered": 236,
+      "threshold": 0.88,
+      "coverage": 0.932806324110672,
+      "precision": 0.9830508474576272,
+      "precision_wilson95": [
+       0.957237739015525,
+       0.9933896750777766
+      ],
+      "qualifies": true,
+      "overshoot": false
+     },
+     "groq-gpt-oss-20b": {
+      "n": 253,
+      "answered": 218,
+      "threshold": 0.92,
+      "coverage": 0.8616600790513834,
+      "precision": 0.9908256880733946,
+      "precision_wilson95": [
+       0.9671717469501803,
+       0.9974805094345557
+      ],
+      "qualifies": true,
+      "overshoot": false
+     }
+    }
+   },
+   "pairs": {
+    "groq-gpt-oss-20b minus gpt-oss-20b-local": {
+     "coverage_at_op_point": {
+      "diff": 0.007905138339920903,
+      "ci95": [
+       -0.09486166007905139,
+       0.3439723320158098
+      ]
+     },
+     "accuracy": {
+      "diff": 0.011857707509881465,
+      "ci95": [
+       -0.011857707509881354,
+       0.035573122529644285
+      ]
+     }
+    },
+    "encoder-run2 minus groq-gpt-oss-20b": {
+     "coverage_at_op_point": {
+      "diff": 0.035573122529644285,
+      "ci95": [
+       -0.031620553359683834,
+       0.15019762845849804
+      ]
+     },
+     "accuracy": {
+      "diff": 0.007905138339920903,
+      "ci95": [
+       -0.02371541501976282,
+       0.03952569169960474
+      ]
+     }
+    }
+   }
+  },
+  "urgency": {
+   "n": 275,
+   "arms": {
+    "encoder-run2": {
+     "accuracy": {
+      "value": 0.9418181818181818,
+      "correct": 259,
+      "n": 275,
+      "wilson95": [
+       0.9075890328185635,
+       0.9638734749277699
+      ]
+     },
+     "op_point": {
+      "n": 275,
+      "answered": 235,
+      "threshold": 0.8557919859886169,
+      "coverage": 0.8545454545454545,
+      "precision": 0.9787234042553191,
+      "precision_wilson95": [
+       0.9511683270673893,
+       0.9908786195281786
+      ],
+      "qualifies": true
+     }
+    },
+    "gpt-oss-20b-local": {
+     "accuracy": {
+      "value": 0.850909090909091,
+      "correct": 234,
+      "n": 275,
+      "wilson95": [
+       0.8039894567235931,
+       0.8881597778239063
+      ]
+     },
+     "op_point": {
+      "n": 275,
+      "answered": 0,
+      "coverage": 0.0,
+      "qualifies": false
+     }
+    },
+    "groq-gpt-oss-20b": {
+     "accuracy": {
+      "value": 0.84,
+      "correct": 231,
+      "n": 275,
+      "wilson95": [
+       0.7920310662280956,
+       0.8786005755355436
+      ]
+     },
+     "op_point": {
+      "n": 275,
+      "answered": 145,
+      "threshold": 0.97,
+      "coverage": 0.5272727272727272,
+      "precision": 0.993103448275862,
+      "precision_wilson95": [
+       0.9619713263011486,
+       0.9987815814880714
+      ],
+      "qualifies": true
+     }
+    }
+   },
+   "matched_coverage": {
+    "computed": true,
+    "target_coverage": 0.5272727272727272,
+    "k_max": 145,
+    "arms": {
+     "encoder-run2": {
+      "n": 275,
+      "answered": 145,
+      "threshold": 0.9833580255508423,
+      "coverage": 0.5272727272727272,
+      "precision": 1.0,
+      "precision_wilson95": [
+       0.9741900113946637,
+       0.9999999999999998
+      ],
+      "qualifies": true,
+      "overshoot": false
+     },
+     "gpt-oss-20b-local": {
+      "n": 275,
+      "answered": 64,
+      "threshold": 1.0,
+      "coverage": 0.23272727272727273,
+      "precision": 0.984375,
+      "precision_wilson95": [
+       0.9166570109970937,
+       0.9972365292495987
+      ],
+      "qualifies": true,
+      "overshoot": false
+     },
+     "groq-gpt-oss-20b": {
+      "n": 275,
+      "answered": 145,
+      "threshold": 0.97,
+      "coverage": 0.5272727272727272,
+      "precision": 0.993103448275862,
+      "precision_wilson95": [
+       0.9619713263011486,
+       0.9987815814880714
+      ],
+      "qualifies": true,
+      "overshoot": false
+     }
+    }
+   },
+   "pairs": {
+    "groq-gpt-oss-20b minus gpt-oss-20b-local": {
+     "coverage_at_op_point": {
+      "diff": 0.5272727272727272,
+      "ci95": [
+       0.0,
+       0.5854545454545454
+      ]
+     },
+     "accuracy": {
+      "diff": -0.01090909090909098,
+      "ci95": [
+       -0.025454545454545396,
+       0.0
+      ]
+     }
+    },
+    "encoder-run2 minus groq-gpt-oss-20b": {
+     "coverage_at_op_point": {
+      "diff": 0.32727272727272727,
+      "ci95": [
+       0.25090909090909086,
+       0.8981818181818182
+      ]
+     },
+     "accuracy": {
+      "diff": 0.10181818181818181,
+      "ci95": [
+       0.050909090909090904,
+       0.1527272727272727
+      ]
+     }
+    }
+   }
+  }
+ },
+ "row_stats_first300": {
+  "gpt-oss-20b-local": {
+   "n_rows": 300,
+   "n_empty_or_unparseable_rows": 0,
+   "invalid_label_by_task": {
+    "needs_action": 0,
+    "broad_intent": 0,
+    "sentiment": 0,
+    "urgency": 0
+   },
+   "n_valid_confidences": 1200,
+   "share_confidence_eq_90": 0.15583333333333332
+  },
+  "gpt-oss-20b-local-fewshot": {
+   "n_rows": 300,
+   "n_empty_or_unparseable_rows": 0,
+   "invalid_label_by_task": {
+    "needs_action": 0,
+    "broad_intent": 0,
+    "sentiment": 0,
+    "urgency": 0
+   },
+   "n_valid_confidences": 1200,
+   "share_confidence_eq_90": 0.30583333333333335
+  },
+  "groq-gpt-oss-20b": {
+   "n_rows": 300,
+   "n_empty_or_unparseable_rows": 1,
+   "invalid_label_by_task": {
+    "needs_action": 1,
+    "broad_intent": 2,
+    "sentiment": 2,
+    "urgency": 3
+   },
+   "n_valid_confidences": 1192,
+   "share_confidence_eq_90": 0.19463087248322147
+  }
+ },
+ "provenance": {
+  "rows_zeroshot_local": {
+   "path": "D:\\ml-cache\\s25\\llm_local_v2\\openai_gpt-oss-20b__local_v2.jsonl",
+   "sha256": "48e875176f5cc21d7b039abff38e7e6af9ab76c8bcbdf9c90ab0c9e5a4d33766",
+   "git_blob_sha": null
+  },
+  "rows_fewshot_local": {
+   "path": "D:\\ml-cache\\s25\\llm_local_v2\\openai_gpt-oss-20b__local_fewshot_v2.jsonl",
+   "sha256": "b2fd562a5f8ecfa5b71ff9962589b8dc26459c02cd96703a604b3e3c0cab6a1f",
+   "git_blob_sha": null
+  },
+  "rows_groq_20b_crosscheck": {
+   "path": "D:\\ml-cache\\s23\\llm\\openai_gpt-oss-20b.jsonl",
+   "sha256": "f878ec49a2a77b20398560092ff6fccd39d1c1c6a02775d807728aefe122f2d9",
+   "git_blob_sha": null
+  },
+  "labels": {
+   "path": "reports/intent/labels/labels.json",
+   "sha256": "8f3b582082e4cf179f55bb4dbc4d94467ad9748bf636684c5a32e28be5536e8d",
+   "git_blob_sha": "46cdb529506f78837cba165fce3d6f015d09a696"
+  },
+  "scale_manifest": {
+   "path": "reports/labelling/scale/manifest.json",
+   "sha256": "a29c235e88162304621ec23ff6d82d8c63c93da2e18855f1aae8987c063414fe",
+   "git_blob_sha": "fa93fa77dc64af5973dadb245012131fc387fc01"
+  },
+  "eval_run2": {
+   "path": "reports/intent/eval_run2.json",
+   "sha256": "48c0944bb5b7eced4cfaef0c065f95ebb25e96f914ad6abd2c62092c98d31c1b",
+   "git_blob_sha": "a1539b72d2798322f38b6d8cfaac2b09d4b197d7"
+  },
+  "pred_needs_action_run2": {
+   "path": "reports/intent/run2/pred_needs_action.json",
+   "sha256": "572998106b76b54924eeea4000dc226fd23462ee9bd77dd75eb96915e2ed8886",
+   "git_blob_sha": "8c1a2e5501cc793f00b757c7aa90e7b20a87c608"
+  },
+  "pred_broad_intent_run2": {
+   "path": "reports/intent/run2/pred_broad_intent.json",
+   "sha256": "85f6ec3f55f562e077d3dace81081cc59e74227c17c8fc7f211e97882baef9a5",
+   "git_blob_sha": "8863c7902dc7b4d2112cf690267ad583c8404851"
+  },
+  "pred_sentiment_run2": {
+   "path": "reports/intent/run2/pred_sentiment.json",
+   "sha256": "54c339a8d2da2ed1289c9b2781fd5c53b8a9ddb73588feee20233592e678dcec",
+   "git_blob_sha": "0ae9a836392107dc47ba57895648436bedcc5908"
+  },
+  "pred_urgency_run2": {
+   "path": "reports/intent/run2/pred_urgency.json",
+   "sha256": "84c4c1a266c31950c5ee81f9702e2b82b970dbf22927dece858340b0a8c2cadf",
+   "git_blob_sha": "48aa3b5254c680c0ef3f1e845ff77f7989bcc4cd"
+  }
+ }
+}

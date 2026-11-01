@@ -1,5 +1,5 @@
 {
- "commit": "44fd57e",
+ "commit": "7faba68",
  "dataset": "clinc",
  "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
  "seed": 42,
@@ -515,5 +515,5 @@
   "threshold": -3004.980075985543,
   "temperature": 0.8239555161147339
  },
- "wall_seconds": 164.6
+ "wall_seconds": 195.7
 }

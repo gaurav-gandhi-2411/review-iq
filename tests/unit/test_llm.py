@@ -84,12 +84,10 @@ class TestExtractWithLLM:
         with patch("app.core.llm.get_settings") as mock:
             settings = MagicMock()
             settings.groq_api_key = "gsk_test"
-            settings.gemini_api_key = "AI_test"
             settings.groq_model = "llama-3.3-70b-versatile"
-            settings.gemini_model = "gemini-1.5-flash"
             settings.llm_max_retries = 1
             settings.llm_timeout_seconds = 30
-            # Disable secondary so these tests exercise the Groq→Gemini path only.
+            # Disable secondary so these tests exercise the Groq-only path.
             settings.secondary_provider_api_key = ""
             settings.secondary_provider_model = ""
             # Routing OFF — keeps these tests exercising the v0.4.0 code path.
@@ -147,33 +145,7 @@ class TestExtractWithLLM:
         assert result.product == "Turbo-Vac 5000"
 
     @pytest.mark.asyncio
-    async def test_falls_back_to_gemini_on_groq_api_error(self) -> None:
-        from groq import APIStatusError
-
-        groq_err = APIStatusError(
-            "rate limit",
-            response=MagicMock(status_code=429, headers={}),
-            body={},
-        )
-        gemini_result = ReviewExtractionLLMOutput(**_VALID_EXTRACTION)
-
-        with patch("app.core.providers.groq.AsyncGroq") as MockGroq:
-            MockGroq.return_value.chat.completions.create = AsyncMock(side_effect=groq_err)
-            with patch(
-                "app.core.llm._call_gemini", new=AsyncMock(return_value=(gemini_result, 60, 30))
-            ):
-                result, model, _, tokens_in, tokens_out, degraded = await extract_with_llm(
-                    "some prompt"
-                )
-
-        assert result.product == "Turbo-Vac 5000"
-        assert "gemini" in model
-        assert tokens_in == 60
-        assert tokens_out == 30
-        assert not degraded
-
-    @pytest.mark.asyncio
-    async def test_raises_when_both_fail(self) -> None:
+    async def test_raises_when_groq_fails_and_no_secondary_configured(self) -> None:
         from groq import APIStatusError
 
         groq_err = APIStatusError(
@@ -183,97 +155,38 @@ class TestExtractWithLLM:
         )
         with (
             patch("app.core.providers.groq.AsyncGroq") as MockGroq,
-            patch(
-                "app.core.llm._call_gemini", new=AsyncMock(side_effect=RuntimeError("gemini down"))
-            ),
             pytest.raises(RuntimeError, match="All LLM providers failed"),
         ):
             MockGroq.return_value.chat.completions.create = AsyncMock(side_effect=groq_err)
             await extract_with_llm("some prompt")
 
     @pytest.mark.asyncio
-    async def test_model_hint_gemini_skips_groq(self) -> None:
-        gemini_result = ReviewExtractionLLMOutput(**_VALID_EXTRACTION)
-        with (
-            patch("app.core.llm._call_gemini", new=AsyncMock(return_value=(gemini_result, 70, 40))),
-            patch("app.core.providers.groq.AsyncGroq") as MockGroq,
-        ):
-            result, model, _, _, _, _ = await extract_with_llm("some prompt", model_hint="gemini")
-            MockGroq.assert_not_called()
-
-        assert "gemini" in model
-
-    @pytest.mark.asyncio
-    async def test_model_hint_groq_skips_gemini(self) -> None:
+    async def test_model_hint_groq_uses_groq(self) -> None:
         mock_resp = _make_groq_response(_VALID_JSON)
         with patch("app.core.providers.groq.AsyncGroq") as MockGroq:
             MockGroq.return_value.chat.completions.create = AsyncMock(return_value=mock_resp)
-            with patch("app.core.llm._call_gemini", new=AsyncMock()) as mock_gemini:
-                result, model, _, _, _, _ = await extract_with_llm("some prompt", model_hint="groq")
-                mock_gemini.assert_not_called()
+            result, model, _, _, _, _ = await extract_with_llm("some prompt", model_hint="groq")
 
         assert result.product == "Turbo-Vac 5000"
 
     @pytest.mark.asyncio
-    async def test_groq_all_parse_retries_exhausted_falls_back(self) -> None:
-        """All retries fail with JSONDecodeError → log exhausted message, then fall back."""
+    async def test_groq_all_parse_retries_exhausted_raises(self) -> None:
+        """All retries fail with JSONDecodeError → log exhausted message, then raise (no fallback)."""
         bad_resp = _make_groq_response("not valid json at all")
-        gemini_result = ReviewExtractionLLMOutput(**_VALID_EXTRACTION)
 
         with patch("app.core.providers.groq.AsyncGroq") as MockGroq:
             MockGroq.return_value.chat.completions.create = AsyncMock(
                 side_effect=[bad_resp, bad_resp]  # 2 attempts (max_retries=1)
             )
-            with patch(
-                "app.core.llm._call_gemini", new=AsyncMock(return_value=(gemini_result, 50, 25))
-            ):
-                result, model, _, _, _, _ = await extract_with_llm("prompt")
-
-        assert result.product == "Turbo-Vac 5000"
-        assert "gemini" in model
-
-    @pytest.mark.asyncio
-    async def test_groq_unexpected_exception_falls_back_to_gemini(self) -> None:
-        """Unexpected (non-API, non-parse) exception → break and try Gemini."""
-        gemini_result = ReviewExtractionLLMOutput(**_VALID_EXTRACTION)
-
-        with patch("app.core.providers.groq.AsyncGroq") as MockGroq:
-            MockGroq.return_value.chat.completions.create = AsyncMock(
-                side_effect=Exception("network timeout")
-            )
-            with patch(
-                "app.core.llm._call_gemini", new=AsyncMock(return_value=(gemini_result, 40, 20))
-            ):
-                result, model, _, _, _, _ = await extract_with_llm("prompt")
-
-        assert result.product == "Turbo-Vac 5000"
-        assert "gemini" in model
-
-    @pytest.mark.asyncio
-    async def test_v2_path_does_not_fall_back_to_gemini_on_groq_error(self) -> None:
-        """allow_gemini_fallback=False: Groq error → RuntimeError, _call_gemini never invoked."""
-        from groq import APIStatusError
-
-        groq_err = APIStatusError(
-            "rate limit",
-            response=MagicMock(status_code=429, headers={}),
-            body={},
-        )
-        with (
-            patch("app.core.providers.groq.AsyncGroq") as MockGroq,
-            patch("app.core.llm._call_gemini", new=AsyncMock()) as mock_gemini,
-        ):
-            MockGroq.return_value.chat.completions.create = AsyncMock(side_effect=groq_err)
             with pytest.raises(RuntimeError, match="All LLM providers failed"):
-                await extract_with_llm("some prompt", allow_gemini_fallback=False)
-        mock_gemini.assert_not_called()
+                await extract_with_llm("prompt")
 
     @pytest.mark.asyncio
     async def test_tiered_path_returns_degraded_false_on_success(self) -> None:
         """Successful tiered route returns degraded=False."""
         import app.core.llm as llm_module
         from app.core.config import Settings
-        from app.core.schemas import ReviewExtractionLLMOutput, Sentiment
+        from app.core.schemas import Sentiment
 
         good_extraction = ReviewExtractionLLMOutput(
             product="Widget",
@@ -292,7 +205,6 @@ class TestExtractWithLLM:
             user_prompt: str,
             system_prompt: str,
             *,
-            allow_gemini_fallback: bool,
             settings: Settings,
         ) -> tuple[object, str, int, int, bool, bool]:
             return good_extraction, "llama-3.1-8b-instant", 10, 5, False, False
@@ -300,7 +212,7 @@ class TestExtractWithLLM:
         with patch.object(llm_module, "get_settings", return_value=settings):
             with patch.object(llm_module, "route_extraction", fake_route):
                 result, model, latency_ms, tin, tout, degraded = await llm_module.extract_with_llm(
-                    "test prompt", allow_gemini_fallback=False
+                    "test prompt"
                 )
 
         assert not degraded
@@ -311,7 +223,7 @@ class TestExtractWithLLM:
         """Tiered route with degraded=True is forwarded through extract_with_llm."""
         import app.core.llm as llm_module
         from app.core.config import Settings
-        from app.core.schemas import ReviewExtractionLLMOutput, Sentiment
+        from app.core.schemas import Sentiment
 
         small_extraction = ReviewExtractionLLMOutput(
             product="Widget",
@@ -330,7 +242,6 @@ class TestExtractWithLLM:
             user_prompt: str,
             system_prompt: str,
             *,
-            allow_gemini_fallback: bool,
             settings: Settings,
         ) -> tuple[object, str, int, int, bool, bool]:
             # Simulate: escalated but large was quota-capped → degraded
@@ -339,7 +250,7 @@ class TestExtractWithLLM:
         with patch.object(llm_module, "get_settings", return_value=settings):
             with patch.object(llm_module, "route_extraction", fake_route):
                 result, model, latency_ms, tin, tout, degraded = await llm_module.extract_with_llm(
-                    "test prompt", allow_gemini_fallback=False
+                    "test prompt"
                 )
 
         assert degraded

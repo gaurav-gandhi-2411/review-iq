@@ -1,0 +1,164 @@
+{
+ "bootstrap": "1000 paired resamples of ITEMS, seed 42, no product ids; seed-to-seed variance not measured",
+ "baseline": "run2",
+ "base_sealed_set": {
+  "needs_action": {
+   "n": 717,
+   "scored_classes": [
+    "yes",
+    "no"
+   ],
+   "runs": {
+    "run2": {
+     "macro_f1": 0.9288,
+     "accuracy": 0.9623
+    },
+    "run2_local": {
+     "macro_f1": 0.9291,
+     "accuracy": 0.9637,
+     "diff_vs_baseline": 0.0003,
+     "diff_paired_item_boot95": [
+      -0.0199,
+      0.021
+     ],
+     "outside_noise": false
+    },
+    "run3": {
+     "macro_f1": 0.9107,
+     "accuracy": 0.9526,
+     "diff_vs_baseline": -0.0181,
+     "diff_paired_item_boot95": [
+      -0.0387,
+      0.0016
+     ],
+     "outside_noise": false
+    }
+   }
+  },
+  "broad_intent": {
+   "n": 700,
+   "scored_classes": [
+    "product_issue",
+    "praise",
+    "other"
+   ],
+   "runs": {
+    "run2": {
+     "macro_f1": 0.8439,
+     "accuracy": 0.9186
+    },
+    "run2_local": {
+     "macro_f1": 0.8182,
+     "accuracy": 0.9029,
+     "diff_vs_baseline": -0.0257,
+     "diff_paired_item_boot95": [
+      -0.0554,
+      0.0008
+     ],
+     "outside_noise": false
+    },
+    "run3": {
+     "macro_f1": 0.8373,
+     "accuracy": 0.9257,
+     "diff_vs_baseline": -0.0066,
+     "diff_paired_item_boot95": [
+      -0.0465,
+      0.0298
+     ],
+     "outside_noise": false
+    }
+   }
+  },
+  "sentiment": {
+   "n": 673,
+   "scored_classes": [
+    "positive",
+    "negative"
+   ],
+   "runs": {
+    "run2": {
+     "macro_f1": 0.9392,
+     "accuracy": 0.948
+    },
+    "run2_local": {
+     "macro_f1": 0.9213,
+     "accuracy": 0.9331,
+     "diff_vs_baseline": -0.0179,
+     "diff_paired_item_boot95": [
+      -0.0399,
+      0.0027
+     ],
+     "outside_noise": false
+    },
+    "run3": {
+     "macro_f1": 0.9333,
+     "accuracy": 0.945,
+     "diff_vs_baseline": -0.0059,
+     "diff_paired_item_boot95": [
+      -0.0264,
+      0.0162
+     ],
+     "outside_noise": false
+    }
+   }
+  },
+  "urgency": {
+   "n": 703,
+   "scored_classes": [
+    "low",
+    "medium"
+   ],
+   "runs": {
+    "run2": {
+     "macro_f1": 0.8937,
+     "accuracy": 0.9545
+    },
+    "run2_local": {
+     "macro_f1": 0.9005,
+     "accuracy": 0.9573,
+     "diff_vs_baseline": 0.0068,
+     "diff_paired_item_boot95": [
+      -0.0198,
+      0.0374
+     ],
+     "outside_noise": false
+    },
+    "run3": {
+     "macro_f1": 0.8853,
+     "accuracy": 0.9502,
+     "diff_vs_baseline": -0.0084,
+     "diff_paired_item_boot95": [
+      -0.0401,
+      0.0207
+     ],
+     "outside_noise": false
+    }
+   }
+  }
+ },
+ "verdict": {
+  "A_nondegradation": {
+   "pass": true,
+   "tolerance": -0.02,
+   "core_macro_f1_diff_vs_run2": {
+    "needs_action": -0.0181,
+    "broad_intent": -0.0066,
+    "sentiment": -0.0059,
+    "urgency": -0.0084
+   }
+  },
+  "B_safety_gain": {
+   "pass": false,
+   "recall_diff_ci_excludes_0_above": true,
+   "precision_diff_ok": false,
+   "recall_diff": 0.7577,
+   "recall_diff_group_boot95": [
+    0.6875,
+    0.832
+   ],
+   "precision_diff": -0.1692
+  },
+  "environment_confounded": true,
+  "outcome": "NEGATIVE RESULT (not promoted)"
+ }
+}

@@ -1,0 +1,266 @@
+{
+ "spec": "docs/specs/review-intent.md Amendment 16",
+ "run4_thresholds_sha256": "d9215a2caf9e9dab9274dbff450dcafd4500f872b0f43f9a5b97d2a5abbffef6",
+ "n_items": 3900,
+ "sets": {
+  "A": {
+   "n_items": 1800,
+   "n_gold_yes": 268,
+   "min_gold_yes_required": 200
+  },
+  "S4": {
+   "n_items": 3128,
+   "n_gold_yes": 126,
+   "min_gold_yes_required": 120
+  },
+  "SL": {
+   "n_items": 683,
+   "n_gold_yes": 135,
+   "min_gold_yes_required": 120
+  }
+ },
+ "E1_overall_recall_block_A": {
+  "recall_run4": {
+   "k": 253,
+   "n": 268,
+   "rate": 0.944,
+   "wilson95": [
+    0.9097,
+    0.9658
+   ]
+  },
+  "recall_run2": {
+   "k": 257,
+   "n": 268,
+   "rate": 0.959,
+   "wilson95": [
+    0.928,
+    0.9769
+   ]
+  },
+  "n_gold_yes": 268,
+  "lower_bound_required": 0.9,
+  "insufficient_data": false,
+  "met": true
+ },
+ "E2_recall_stars_ge_4": {
+  "recall_run4": {
+   "k": 114,
+   "n": 126,
+   "rate": 0.9048,
+   "wilson95": [
+    0.8409,
+    0.9447
+   ]
+  },
+  "recall_run2": {
+   "k": 116,
+   "n": 126,
+   "rate": 0.9206,
+   "wilson95": [
+    0.8601,
+    0.9563
+   ]
+  },
+  "n_gold_yes": 126,
+  "lower_bound_required": 0.85,
+  "insufficient_data": false,
+  "met": false
+ },
+ "E3_recall_tokens_gt_128": {
+  "recall_run4": {
+   "k": 123,
+   "n": 135,
+   "rate": 0.9111,
+   "wilson95": [
+    0.8511,
+    0.9484
+   ]
+  },
+  "recall_run2": {
+   "k": 127,
+   "n": 135,
+   "rate": 0.9407,
+   "wilson95": [
+    0.8874,
+    0.9697
+   ]
+  },
+  "n_gold_yes": 135,
+  "lower_bound_required": 0.85,
+  "insufficient_data": false,
+  "met": true
+ },
+ "E4_routed_share_block_A": {
+  "run4": {
+   "k": 401,
+   "n": 1800,
+   "rate": 0.2228,
+   "wilson95": [
+    0.2042,
+    0.2426
+   ]
+  },
+  "run2": {
+   "k": 476,
+   "n": 1800,
+   "rate": 0.2644,
+   "wilson95": [
+    0.2446,
+    0.2853
+   ]
+  },
+  "max": 0.3,
+  "met": true
+ },
+ "E5_macro_f1_run4_minus_run2_block_A": {
+  "max_drop": 0.02,
+  "tasks": {
+   "needs_action": {
+    "run4": 0.9137,
+    "run2": 0.9126,
+    "diff": 0.0011,
+    "boot95": [
+     -0.0149,
+     0.0191
+    ],
+    "met": true
+   },
+   "broad_intent": {
+    "run4": 0.5595,
+    "run2": 0.4929,
+    "diff": 0.0666,
+    "boot95": [
+     -0.0136,
+     0.1705
+    ],
+    "met": true
+   },
+   "sentiment": {
+    "run4": 0.6833,
+    "run2": 0.7045,
+    "diff": -0.0212,
+    "boot95": [
+     -0.0806,
+     0.0403
+    ],
+    "met": false
+   },
+   "urgency": {
+    "run4": 0.807,
+    "run2": 0.7217,
+    "diff": 0.0854,
+    "boot95": [
+     -0.0037,
+     0.166
+    ],
+    "met": true
+   }
+  }
+ },
+ "E6_non_inferior_to_llm_block_A": {
+  "llm_recall": {
+   "k": 243,
+   "n": 268,
+   "rate": 0.9067,
+   "wilson95": [
+    0.8659,
+    0.936
+   ]
+  },
+  "delta_run4_minus_llm": {
+   "delta": 0.0373,
+   "boot95": [
+    -0.0037,
+    0.0784
+   ],
+   "n": 268
+  },
+  "margin": 0.05,
+  "llm_missing_rows": 0,
+  "met": true
+ },
+ "verdict": {
+  "E1": true,
+  "E2": false,
+  "E3": true,
+  "E4": true,
+  "E5": false,
+  "E6": true,
+  "criteria_met": false,
+  "failing": [
+   "E2",
+   "E5"
+  ],
+  "insufficient": []
+ },
+ "report_only": {
+  "recall_by_category_block_A": {
+   "apparel": {
+    "run4": {
+     "k": 100,
+     "n": 110,
+     "rate": 0.9091,
+     "wilson95": [
+      0.8407,
+      0.9499
+     ]
+    },
+    "run2": {
+     "k": 104,
+     "n": 110,
+     "rate": 0.9455,
+     "wilson95": [
+      0.8861,
+      0.9748
+     ]
+    }
+   },
+   "beauty": {
+    "run4": {
+     "k": 64,
+     "n": 67,
+     "rate": 0.9552,
+     "wilson95": [
+      0.8764,
+      0.9847
+     ]
+    },
+    "run2": {
+     "k": 64,
+     "n": 67,
+     "rate": 0.9552,
+     "wilson95": [
+      0.8764,
+      0.9847
+     ]
+    }
+   },
+   "food": {
+    "run4": {
+     "k": 89,
+     "n": 91,
+     "rate": 0.978,
+     "wilson95": [
+      0.9234,
+      0.994
+     ]
+    },
+    "run2": {
+     "k": 89,
+     "n": 91,
+     "rate": 0.978,
+     "wilson95": [
+      0.9234,
+      0.994
+     ]
+    }
+   }
+  },
+  "capacity_multiplier_run4_by_open_rate": {
+   "0.0": 4.489,
+   "0.1": 3.328,
+   "0.3": 2.193
+  }
+ }
+}
