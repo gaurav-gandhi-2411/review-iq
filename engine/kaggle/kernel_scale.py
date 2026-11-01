@@ -9,6 +9,7 @@ copied in first) and out/status.json. No secret enters the kernel.
 """
 
 import glob
+import hashlib
 import json
 import os
 import pathlib
@@ -23,9 +24,16 @@ import urllib.request
 BRANCH = "__BRANCH__"
 STAGE = "__STAGE__"
 ITEMS_GLOB = "/kaggle/input/**/__ITEMS__"
-PRIOR_GLOB = "/kaggle/input/**/judges/*.jsonl"
+# S31: a prior dataset may be mounted with or without its `judges/` folder (an uploaded judges.zip is extracted FLAT), so
+# prior judge files are recognised by name, anywhere under /kaggle/input, and a run told to resume FAILS if it finds none:
+# the silent fall-through re-ran 10.25 GPU-hours of finished work (fresh16 panel, session 2).
+PRIOR_GLOB = "/kaggle/input/**/*.jsonl"
+EXPECT_PRIOR = "__EXPECT_PRIOR__" == "1"
 BUDGET_S = float("__BUDGET_H__") * 3600
 REPO = "https://github.com/gaurav-gandhi-2411/review-iq.git"
+# Amendments 13 and 15: one Ollama build, digest-checked (the digest GitHub publishes for the asset).
+OLLAMA_URL = "https://github.com/ollama/ollama/releases/download/v0.40.6/ollama-linux-amd64.tar.zst"
+OLLAMA_SHA256 = "c164ab8b1b28e2a247c29719b8e404c423c5b83ae64c3ab4e59d50c7ff7fc5e0"
 W = pathlib.Path("/kaggle/working")
 OUT = W / "out" / "judges"
 OLLAMA_DIR = pathlib.Path("/opt/ollama")
@@ -44,29 +52,25 @@ def install_ollama() -> None:
     import zstandard
 
     OLLAMA_DIR.mkdir(parents=True, exist_ok=True)
-    last = None
-    for url, kind in (
-        ("https://ollama.com/download/ollama-linux-amd64.tar.zst", "zst"),
-        ("https://ollama.com/download/ollama-linux-amd64.tgz", "tgz"),
+    tmp = "/tmp/ollama.tar.zst"
+    urllib.request.urlretrieve(OLLAMA_URL, tmp)
+    h = hashlib.sha256()
+    with open(tmp, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    status["ollama_sha256"] = h.hexdigest()
+    if (
+        status["ollama_sha256"] != OLLAMA_SHA256
+    ):  # one pinned build (spec Amendments 13 and 15), never "latest"
+        raise RuntimeError("ollama archive sha256 does not match the pinned digest")
+    with (
+        open(tmp, "rb") as fh,
+        zstandard.ZstdDecompressor().stream_reader(fh) as rd,
+        tarfile.open(fileobj=rd, mode="r|") as tf,
     ):
-        try:
-            tmp = f"/tmp/ollama.{kind}"
-            urllib.request.urlretrieve(url, tmp)
-            if kind == "zst":
-                with (
-                    open(tmp, "rb") as fh,
-                    zstandard.ZstdDecompressor().stream_reader(fh) as rd,
-                    tarfile.open(fileobj=rd, mode="r|") as tf,
-                ):
-                    tf.extractall(OLLAMA_DIR)
-            else:
-                with tarfile.open(tmp) as tf:
-                    tf.extractall(OLLAMA_DIR)
-            if (OLLAMA_DIR / "bin" / "ollama").exists():
-                return
-        except Exception as e:  # noqa: BLE001
-            last = e
-    raise RuntimeError(f"could not install ollama: {last}")
+        tf.extractall(OLLAMA_DIR)  # noqa: S202 (a digest-verified release archive)
+    if not (OLLAMA_DIR / "bin" / "ollama").exists():
+        raise RuntimeError("ollama binary missing after extraction")
 
 
 def start_server(gpu: int) -> subprocess.Popen:
@@ -112,9 +116,16 @@ def worker(gpu: int, all_items: list) -> None:
     names = judges[gpu]
     try:
         for name in names:
-            pull = subprocess.run([str(OLLAMA_DIR / "bin" / "ollama"), "pull", SP.JUDGES[name]], env=env,
-                                  capture_output=True, text=True)  # fmt: skip
-            if pull.returncode != 0:
+            # S34: one transient registry 503 on the pull idled this GPU for a whole 8h session (fresh18 panel, session 1),
+            # so a failed pull is retried with backoff before the worker gives up.
+            for attempt in range(5):
+                pull = subprocess.run([str(OLLAMA_DIR / "bin" / "ollama"), "pull", SP.JUDGES[name]], env=env,
+                                      capture_output=True, text=True)  # fmt: skip
+                if pull.returncode == 0:
+                    break
+                status["judges"][f"gpu{gpu}_pull_retry_{name}"] = attempt + 1
+                time.sleep(30 * 2**attempt)
+            else:
                 raise RuntimeError("pull failed: " + (pull.stderr or pull.stdout)[-300:])
         progress = True
         while progress:
@@ -166,12 +177,25 @@ status["gpu"] = sh(
     "nvidia-smi --query-gpu=name,memory.total --format=csv,noheader", capture_output=True, text=True
 ).stdout.strip()
 OUT.mkdir(parents=True, exist_ok=True)
+from engine.labelling import scale_plan as _SP  # noqa: E402 (the repository is cloned above)
+
+status["prior_files"] = {}
 for prior in glob.glob(
     PRIOR_GLOB, recursive=True
 ):  # cumulative: earlier sessions' lines are kept and skipped
-    dst = OUT / pathlib.Path(prior).name
+    name = pathlib.Path(prior).name
+    if not _SP.is_judge_output(name):
+        continue  # the items file and anything else that is not a judge's output
+    dst = OUT / name
     if not dst.exists():
         shutil.copy(prior, dst)
+        status["prior_files"][name] = len(dst.read_text(encoding="utf-8").splitlines())
+print("prior judge files copied:", status["prior_files"], flush=True)
+if EXPECT_PRIOR and not status["prior_files"]:
+    write_status()
+    raise SystemExit(
+        "--prior was given but no judge file was found under /kaggle/input: refusing to redo finished work"
+    )
 items_file = glob.glob(ITEMS_GLOB, recursive=True)[0]
 all_items = [
     json.loads(x)
@@ -185,6 +209,17 @@ for t in threads:
     t.start()
 for t in threads:
     t.join()
+# Amendment 16: the pin must be RECORDED, not assumed. A status file without these fields is rejected by engine/labelling/panel_pin.py.
+status["ollama_version"] = subprocess.run(
+    [str(OLLAMA_DIR / "bin" / "ollama"), "--version"], capture_output=True, text=True, check=False
+).stdout.strip()
+status["model_digests"] = {}
+for g in (0, 1):
+    try:
+        tags = json.load(urllib.request.urlopen(f"http://127.0.0.1:{PORT[g]}/api/tags", timeout=10))
+        status["model_digests"].update({m["name"]: m["digest"] for m in tags.get("models", [])})
+    except Exception as e:  # noqa: BLE001 (recorded as missing; the pin check then rejects the run)
+        status.setdefault("model_digest_errors", []).append(repr(e))
 for p in servers:
     p.terminate()
 shutil.rmtree(repo, ignore_errors=True)

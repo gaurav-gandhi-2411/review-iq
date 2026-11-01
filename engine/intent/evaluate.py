@@ -31,6 +31,7 @@ import numpy as np
 
 from engine import metrics as M
 from engine.experiments import selective as SEL
+from engine.intent.decide import DEFAULT_MODE, decide, fit_thresholds, rare_for
 from engine.labelling.repilot2_report import wilson
 from engine.labelling.scale_report import _nan_to_none
 
@@ -186,17 +187,22 @@ def class_stats(y: np.ndarray, pred: np.ndarray, classes: list[str], n_boot: int
 
 def evaluate_task(
     classes: list[str], val: tuple[np.ndarray, np.ndarray], test: tuple[np.ndarray, np.ndarray],
-    n_boot: int = 1000, clusters: np.ndarray | None = None,
+    n_boot: int = 1000, clusters: np.ndarray | None = None, rare: tuple[str, ...] = (),
+    mode: str = DEFAULT_MODE,
 ) -> dict:  # fmt: skip
     """val/test = (gold class indices, calibrated probabilities (n, K)) over the LABELLED items of each split.
 
-    `clusters` = one label per sealed labelled item (product id; unique per item when unknown) -> cluster CIs."""
+    `clusters` = one label per sealed labelled item (product id; unique per item when unknown) -> cluster CIs.
+    Predictions come from `engine.intent.decide`: thresholds for the `rare` classes fitted on `val` only (the serving default);
+    `mode="argmax"` is the explicit ablation."""
     (yv, pv), (yt, pt) = val, test
     if len(yt) < MIN_POSITIVES:
         return {"n_sealed_labelled": len(yt), "insufficient_data": True}
-    pred, conf = pt.argmax(1), pt.max(1)
+    thr = fit_thresholds(yv, pv, classes, rare) if len(yv) and mode == "threshold" else {}
+    pred, conf = decide(pt, classes, thr, mode), pt.max(1)
     correct = pred == yt
     out = {"insufficient_data": False, **class_stats(yt, pred, classes, n_boot), "selective": {}}
+    out["decision"] = {"mode": mode, "thresholds_fitted_on_validation": thr}
     for target in TARGETS:
         thr = val_threshold(pv.argmax(1) == yv, pv.max(1), target) if len(yv) else math.inf
         out["selective"][f"conservative_p{target}"] = {
@@ -268,8 +274,12 @@ def evaluate_all(
     strata: dict[str, str],
     n_boot: int = 1000,
     clusters: dict[str, str] | None = None,
+    mode: str = DEFAULT_MODE,
 ) -> dict:
-    """Per-task results for every task in labels['classes']; a task with no prediction file is flagged."""
+    """Per-task results for every task in labels['classes']; a task with no prediction file is flagged.
+
+    `mode` is the decision mode of `engine.intent.decide`: "threshold" (default: rare classes by a validation-fitted threshold)
+    or "argmax" (explicit opt-in, ablations only)."""
     tasks: dict = {}
     for task in labels["classes"]:
         if task not in preds:
@@ -278,7 +288,9 @@ def evaluate_all(
         arr = task_arrays(labels, preds[task], task)
         (_, yv, pv), (ids_t, yt, pt) = arr["val"], arr["test"]
         cl = None if clusters is None else np.array([clusters.get(i, f"solo:{i}") for i in ids_t])
-        res = evaluate_task(list(preds[task]["classes"]), (yv, pv), (yt, pt), n_boot, cl)
+        res = evaluate_task(
+            list(preds[task]["classes"]), (yv, pv), (yt, pt), n_boot, cl, rare_for(task), mode
+        )
         n_sealed = len(preds[task]["splits"]["test"]["ids"])
         res["consensus_ceiling"] = {
             "n_labelled": len(yt), "n_sealed": n_sealed, "fraction": _r(len(yt) / n_sealed),
@@ -287,7 +299,9 @@ def evaluate_all(
             if task.startswith("aspect:") else "share of sealed items with a four-judge consensus label",
         }  # fmt: skip
         if not res["insufficient_data"]:
-            res["slices_accuracy"] = slices(ids_t, yt, pt.argmax(1), strata)
+            res["slices_accuracy"] = slices(
+                ids_t, yt, decide(pt, preds[task]["classes"], res["decision"]["thresholds_fitted_on_validation"], mode), strata
+            )  # fmt: skip
         tasks[task] = res
     return tasks
 
@@ -303,6 +317,10 @@ def main() -> None:
     ap.add_argument("--pred-dir", required=True, help="train output: pred_*.json and metadata.json")
     ap.add_argument("--out", required=True)
     ap.add_argument("--n-boot", type=int, default=1000)
+    ap.add_argument(
+        "--decision", default=DEFAULT_MODE, choices=["threshold", "argmax"],
+        help="threshold (default): rare classes by a validation-fitted threshold; argmax: explicit ablation only",
+    )  # fmt: skip
     ap.add_argument(
         "--ledger",
         default="reports/labelling/ledger.json",
@@ -338,7 +356,8 @@ def main() -> None:
             "label_basis": "silver: sealed labels are four-judge consensus (Amendment 5), not human truth",
         },
         "n_boot": a.n_boot, "seed": SEED, "bootstrap_unit": "items; plus products (cluster bootstrap) where --clusters maps an item to a product id",
-        "tasks": evaluate_all(labels, preds, strata, a.n_boot, cmap["clusters"] if cmap else None),
+        "decision_mode": a.decision,
+        "tasks": evaluate_all(labels, preds, strata, a.n_boot, cmap["clusters"] if cmap else None, a.decision),
     }  # fmt: skip
     if a.texts or a.judges:
         from engine.intent.baselines import attach_baselines  # lazy: baselines imports this module
