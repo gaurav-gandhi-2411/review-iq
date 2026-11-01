@@ -62,6 +62,7 @@ from eval.heldout_unscored import (  # noqa: E402
     unscored_block,
     validate_votes_match_gold,
 )
+from eval.pros_soft_recall import pros_soft_recall_block  # noqa: E402
 from eval.provenance import get_git_sha, now_iso  # noqa: E402
 from eval.runner import score_fixture  # noqa: E402
 from eval.wilson import wilson_ci  # noqa: E402
@@ -69,6 +70,9 @@ from eval.wilson import wilson_ci  # noqa: E402
 QUARANTINE_DIR = ROOT / "eval" / "fixtures" / "_held_out_hindi_hinglish"
 HELD_OUT_CASSETTES_PATH = ROOT / "eval" / "cassettes" / "held_out_cassettes.json"
 OUT_PATH = ROOT / "eval" / "results" / "held_out_scoring_v2.json"
+
+PANEL2_SILVER_PATH = ROOT / "reports" / "eval" / "consensus" / "panel2_silver.json"
+PANEL2_VOTES_PATH = ROOT / "eval" / "consensus" / "results" / "panel2_votes.jsonl"
 
 DELAY_SECONDS = 2.0  # courtesy pacing on production's own shared org quota
 
@@ -103,9 +107,7 @@ async def _extract(text: str, lang: str) -> dict[str, Any] | None:
     sanitized, _ = sanitize(text)
     wrapped = wrap_for_llm(sanitized)
     user_prompt = build_prompt(wrapped, lang)
-    llm_output, _model, _latency_ms, _tin, _tout, _degraded = await extract_with_llm(
-        user_prompt, allow_gemini_fallback=False
-    )
+    llm_output, _model, _latency_ms, _tin, _tout, _degraded = await extract_with_llm(user_prompt)
     return llm_output.model_dump()
 
 
@@ -441,6 +443,16 @@ async def main() -> None:
             raise SystemExit("judge votes do not match the committed gold:\n" + "\n".join(problems))
         summary["unscored"]["judge_sensitivity"] = judge_sensitivity(
             records, fx_by_id, votes, summary["headline_fields"]
+        )
+    # S18 D2: additive, pre-registered `pros` soft recall (docs/specs/s18-pros-soft-recall.md).
+    # Reported beside the headline, never inside it; no existing figure above is touched.
+    if summary.get("unscored"):
+        summary["pros_soft_recall"] = pros_soft_recall_block(
+            records,
+            {fx["id"]: fx for fx in fixtures},
+            load_judge_votes(),
+            json.loads(PANEL2_SILVER_PATH.read_text(encoding="utf-8")),
+            PANEL2_VOTES_PATH,
         )
     summary["records"] = records
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)

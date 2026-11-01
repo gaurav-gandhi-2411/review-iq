@@ -1,0 +1,25 @@
+{
+ "stage": "P",
+ "judges": {
+  "qwen3_8b__gpu1": {
+   "done": 1800,
+   "of": 1800
+  },
+  "llama31_8b__gpu0": {
+   "done": 1800,
+   "of": 1800
+  },
+  "mistral_7b__gpu1": {
+   "done": 1800,
+   "of": 1800
+  },
+  "gemma2_9b__gpu0": {
+   "done": 1800,
+   "of": 1800
+  }
+ },
+ "budget_hit": false,
+ "commit": "39f488596b11d8cd19961d28ce303f3e7c261a82",
+ "gpu": "Tesla T4, 15360 MiB\nTesla T4, 15360 MiB",
+ "elapsed_s": 8603
+}

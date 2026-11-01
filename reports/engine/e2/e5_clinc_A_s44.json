@@ -1,5 +1,5 @@
 {
- "commit": "9793471",
+ "commit": "7faba68",
  "dataset": "clinc",
  "model": "intfloat/multilingual-e5-base",
  "seed": 44,
@@ -509,5 +509,5 @@
    }
   }
  ],
- "wall_seconds": 244.5
+ "wall_seconds": 247.3
 }

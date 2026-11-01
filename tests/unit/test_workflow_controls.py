@@ -216,7 +216,15 @@ def test_every_check_script_is_wired_into_a_workflow_or_declared_manual() -> Non
     it is a manual tool."""
     manual = {
         "check_site_responsive.py": "developer browser check, documented as not a CI gate",
+        # Runs nightly as the Cloud Run job `failover-probe` (Cloud Scheduler 02:30 UTC; a failure
+        # alerts through a log-based metric). It moved off GitHub so no production key sits in CI.
+        "probe_failover.py": "scheduled GCP job, see ops/probes/apply-failover-probe.sh",
     }
+    # A declaration is a claim: the thing that schedules it must still ship it.
+    apply_script = (REPO_ROOT / "ops" / "probes" / "apply-failover-probe.sh").read_text(
+        encoding="utf-8"
+    )
+    assert "probe_failover.py" in apply_script, "the GCP job no longer ships the failover probe"
     workflow_text = _executed_workflow_text(WORKFLOWS_DIR)
     scripts = sorted(
         [*(REPO_ROOT / "scripts").glob("check_*.py"), *(REPO_ROOT / "scripts").glob("probe_*.py")]

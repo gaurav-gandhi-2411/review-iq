@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 import structlog
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse, Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -21,6 +21,7 @@ from app.api.dashboard import router as dashboard_router
 from app.api.demo import router as demo_router
 from app.api.extract import router as extract_router
 from app.api.google_auth import router as google_auth_router
+from app.api.internal.cost_alerts import router as internal_cost_alerts_router
 from app.api.internal.detectors import router as internal_detectors_router
 from app.api.internal.digest import router as internal_digest_router
 from app.api.internal.ingest_tick import router as internal_ingest_tick_router
@@ -31,6 +32,7 @@ from app.api.ops import router as ops_router
 from app.api.query import router as query_router
 from app.api.shopify_auth import router as shopify_auth_router
 from app.api.unsubscribe import router as unsubscribe_router
+from app.api.v2.classify import router as v2_classify_router
 from app.api.v2.corrections import router as v2_corrections_router
 from app.api.v2.dataset import router as v2_dataset_router
 from app.api.v2.extract import router as v2_extract_router
@@ -44,6 +46,7 @@ from app.api.webhooks.shopify import router as shopify_webhook_router
 from app.auth.signup import router as signup_router
 from app.core.config import Settings, get_settings
 from app.core.cors import PathScopedCORSMiddleware
+from app.core.db_pool import PoolExhaustedError
 from app.core.logging import setup_logging
 from app.core.metrics import PrometheusMiddleware
 from app.core.rate_limit import limiter
@@ -58,6 +61,16 @@ def _rate_limit_handler(request: Request, exc: RateLimitExceeded) -> Response:
     if request.url.path.rstrip("/") == LEADS_PATH:
         return leads_rate_limit_response()
     return _rate_limit_exceeded_handler(request, exc)
+
+
+def _pool_exhausted_handler(request: Request, exc: PoolExhaustedError) -> Response:
+    """Bounded-wait DB pool exhaustion is overload, not a bug: 503 + Retry-After (the web app
+    already reads Retry-After, see expose_headers below) instead of an opaque 500."""
+    return JSONResponse(
+        status_code=503,
+        content={"detail": "Service temporarily busy. Please retry shortly."},
+        headers={"Retry-After": "2"},
+    )
 
 
 # The base URL below is a placeholder — swap in whatever host this deployment
@@ -201,6 +214,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     _app.state.limiter = limiter
     _app.add_exception_handler(RateLimitExceeded, _rate_limit_handler)  # type: ignore[arg-type]
+    _app.add_exception_handler(PoolExhaustedError, _pool_exhausted_handler)  # type: ignore[arg-type]
 
     # Middleware order (last add_middleware = outermost = first to process requests):
     #   SlowAPIMiddleware → PrometheusMiddleware → CORSMiddleware → route handler
@@ -249,6 +263,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         _app.include_router(v2_reviews_router)
         _app.include_router(v2_insights_router)
         _app.include_router(v2_reply_router)
+        _app.include_router(v2_classify_router)
         _app.include_router(v2_corrections_router)
         _app.include_router(v2_dataset_router)
         _app.include_router(shopify_webhook_router)
@@ -262,6 +277,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         _app.include_router(demo_router)
         _app.include_router(leads_router)
         _app.include_router(internal_digest_router)
+        _app.include_router(internal_cost_alerts_router)
         _app.include_router(internal_ingest_tick_router)
         _app.include_router(internal_detectors_router)
         _app.include_router(internal_retention_router)

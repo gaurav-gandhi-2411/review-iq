@@ -61,8 +61,8 @@ corrected (see that row).
 
 Not tracked here (plain env vars, not Secret Manager — see `cloud-run-deploy.md` for why):
 `DIGEST_TRIGGER_TOKEN`, `INGEST_TICK_TOKEN`, `DETECTOR_SWEEP_TRIGGER_TOKEN` (the latter was missing
-from this list until 2026-08-13 — found while rotating all three during the gandhi1129 account
-migration; the two documented here were already correctly excluded). All three are consumed by
+from this list until 2026-08-13 — found while rotating all three during the migration to the new GCP owner
+identity; the two documented here were already correctly excluded). All three are consumed by
 their matching Cloud Scheduler job (`review-iq-ingest-tick`, `review-iq-digest-daily`,
 `review-iq-detector-sweep`) — rotate by generating a new value, updating the Cloud Run env var via
 `gcloud run services update review-iq --update-env-vars=...`, then updating the corresponding

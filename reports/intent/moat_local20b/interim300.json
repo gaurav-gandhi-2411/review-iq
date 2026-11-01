@@ -1,0 +1,50 @@
+{
+ "needs_action": {
+  "llm_ci": [
+   0.7882,
+   0.9805
+  ],
+  "encoder_ci": [
+   0.9288,
+   1.0
+  ],
+  "decided": false,
+  "n": 300
+ },
+ "broad_intent": {
+  "llm_ci": [
+   0.0,
+   0.4418
+  ],
+  "encoder_ci": [
+   0.791,
+   0.9878
+  ],
+  "decided": true,
+  "n": 300
+ },
+ "sentiment": {
+  "llm_ci": [
+   0.8933,
+   1.0
+  ],
+  "encoder_ci": [
+   0.9544,
+   1.0
+  ],
+  "decided": false,
+  "n": 300
+ },
+ "urgency": {
+  "llm_ci": [
+   0.0,
+   0.52
+  ],
+  "encoder_ci": [
+   0.8926,
+   1.0
+  ],
+  "decided": true,
+  "n": 300
+ }
+}

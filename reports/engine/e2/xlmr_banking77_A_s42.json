@@ -1,5 +1,5 @@
 {
- "commit": "9793471",
+ "commit": "7faba68",
  "dataset": "banking77",
  "model": "xlm-roberta-base",
  "seed": 42,
@@ -303,5 +303,5 @@
   ],
   "temperature": 1.2226
  },
- "wall_seconds": 245.6
+ "wall_seconds": 244.4
 }

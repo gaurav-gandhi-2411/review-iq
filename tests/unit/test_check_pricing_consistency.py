@@ -17,6 +17,7 @@ FILES = (
     "site/index.html",
     "app/api/bff/router.py",
     "app/core/pricing.py",
+    "app/core/cost_alerts.py",
     "eval/results/token_cost_measurement_n106.json",
 )
 
@@ -104,6 +105,21 @@ def test_pricing_json_change_without_rerender_fails(root: Path) -> None:
 def test_missing_surface_fails_closed(root: Path) -> None:
     (root / "site" / "index.html").unlink()
     assert any("could not verify" in e for e in chk.run(root))
+
+
+def test_cost_alert_plan_price_drift_is_detected(root: Path) -> None:
+    _edit(root, "app/core/cost_alerts.py", '"growth": 79.0,', '"growth": 99.0,')
+    assert any("PLAN_PRICE_USD" in e for e in chk.run(root))
+
+
+def test_cost_alert_india_price_is_the_inr_price_over_fx(root: Path) -> None:
+    _edit(root, "app/core/cost_alerts.py", '"growth_in": 52.24,', '"growth_in": 52.0,')
+    assert any("PLAN_PRICE_USD" in e for e in chk.run(root))
+
+
+def test_missing_cost_alert_table_fails_closed(root: Path) -> None:
+    _edit(root, "app/core/cost_alerts.py", "PLAN_PRICE_USD: Final", "OTHER_PRICES: Final")
+    assert any("PLAN_PRICE_USD not found" in e for e in chk.run(root))
 
 
 def test_margin_hand_computed() -> None:

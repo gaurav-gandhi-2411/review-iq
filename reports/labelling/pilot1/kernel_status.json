@@ -1,0 +1,34 @@
+{
+ "models": {
+  "llama31_8b": {
+   "family": "Meta",
+   "model": "llama3.1:8b",
+   "rc": 0,
+   "seconds": 1432,
+   "tail": "{\"model\": \"llama3.1:8b\", \"items\": 300, \"text_parse_failures\": 2, \"seconds\": 1372}\n"
+  },
+  "gemma2_9b": {
+   "family": "Google",
+   "model": "gemma2:9b",
+   "rc": 0,
+   "seconds": 1519,
+   "tail": "{\"model\": \"gemma2:9b\", \"items\": 300, \"text_parse_failures\": 0, \"seconds\": 1458}\n"
+  },
+  "qwen3_8b": {
+   "family": "Alibaba",
+   "model": "qwen3:8b",
+   "rc": 0,
+   "seconds": 1180,
+   "tail": "{\"model\": \"qwen3:8b\", \"items\": 300, \"text_parse_failures\": 1, \"seconds\": 1138}\n"
+  },
+  "mistral_7b": {
+   "family": "Mistral",
+   "model": "mistral:7b",
+   "rc": 0,
+   "seconds": 1132,
+   "tail": "{\"model\": \"mistral:7b\", \"items\": 300, \"text_parse_failures\": 20, \"seconds\": 1092}\n"
+  }
+ },
+ "commit": "54efceea9c03a20c3ea2a951234c992c2328eeb2",
+ "gpu": "Tesla T4, 15360 MiB\nTesla T4, 15360 MiB"
+}
