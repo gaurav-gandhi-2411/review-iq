@@ -1,4 +1,7 @@
-"""LLM client — Groq (primary) + OpenRouter ZDR-only (secondary) with Pydantic validation.
+"""LLM client — Groq (primary) + a configurable secondary (production: a second Groq account).
+
+The secondary kind is groq or openrouter (ZDR-only, supported but not used in production).
+Output is validated with Pydantic.
 
 Internal plumbing uses GroqProvider from the provider abstraction layer.
 The external extract_with_llm signature is unchanged from v0.4.0.
@@ -54,20 +57,26 @@ def _parse_response(raw: str) -> ReviewExtractionLLMOutput:
 
 
 def _build_secondary(settings: Any) -> SecondaryProvider | GroqProvider:
-    """Secondary failover backend: OpenRouter (default) or a second Groq account.
+    """Secondary failover backend: a second Groq account or OpenRouter (ZDR-only).
 
-    Compared with == so an unset or mocked setting falls to the OpenRouter default.
+    An unset or unrecognised kind raises rather than defaulting to OpenRouter (S23);
+    `Settings` already rejects it at startup, this guards callers that bypass validation.
     """
-    if settings.secondary_provider_kind == "groq":
+    kind = settings.secondary_provider_kind
+    if kind == "groq":
         return GroqProvider(
             model=settings.secondary_provider_model,
             api_key=settings.secondary_provider_api_key,
             timeout=settings.llm_timeout_seconds,
             role="secondary",
         )
-    return SecondaryProvider(
-        api_key=settings.secondary_provider_api_key,
-        model=settings.secondary_provider_model,
+    if kind == "openrouter":
+        return SecondaryProvider(
+            api_key=settings.secondary_provider_api_key,
+            model=settings.secondary_provider_model,
+        )
+    raise ValueError(
+        f"SECONDARY_PROVIDER_KIND={kind!r} is not valid; allowed values: groq, openrouter."
     )
 
 
