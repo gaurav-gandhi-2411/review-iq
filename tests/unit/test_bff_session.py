@@ -13,6 +13,7 @@ import dataclasses
 import inspect
 import pathlib
 import uuid
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
@@ -295,6 +296,10 @@ async def test_bff_quota_enforcement_blocks_over_limit(
         "app.api.bff.router.draft_reply", AsyncMock(return_value=(fake_draft, 1, 1))
     )
     monkeypatch.setattr("app.api.bff.router.update_usage_tokens", AsyncMock())
+    # Reply drafting is off by default (ENABLE_REPLY_DRAFTING); this test needs the handler to run.
+    monkeypatch.setattr(
+        "app.api.v2.reply.get_settings", lambda: SimpleNamespace(enable_reply_drafting=True)
+    )
 
     async with httpx.AsyncClient(
         transport=httpx.ASGITransport(app=app), base_url="http://test"

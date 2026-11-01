@@ -1,0 +1,164 @@
+{
+ "tau": 0.07,
+ "r1_registered": {
+  "recall_VT": 0.9456,
+  "routed_share_V": 0.2522
+ },
+ "grid": [
+  {
+   "tau": 0.1,
+   "recall_VT": 0.9524,
+   "k": 140,
+   "n": 147,
+   "routed_share_V": 0.2543,
+   "eligible": false
+  },
+  {
+   "tau": 0.095,
+   "recall_VT": 0.9524,
+   "k": 140,
+   "n": 147,
+   "routed_share_V": 0.2543,
+   "eligible": false
+  },
+  {
+   "tau": 0.09,
+   "recall_VT": 0.9524,
+   "k": 140,
+   "n": 147,
+   "routed_share_V": 0.263,
+   "eligible": false
+  },
+  {
+   "tau": 0.085,
+   "recall_VT": 0.9592,
+   "k": 141,
+   "n": 147,
+   "routed_share_V": 0.2696,
+   "eligible": false
+  },
+  {
+   "tau": 0.08,
+   "recall_VT": 0.9592,
+   "k": 141,
+   "n": 147,
+   "routed_share_V": 0.2717,
+   "eligible": false
+  },
+  {
+   "tau": 0.075,
+   "recall_VT": 0.966,
+   "k": 142,
+   "n": 147,
+   "routed_share_V": 0.2739,
+   "eligible": false
+  },
+  {
+   "tau": 0.07,
+   "recall_VT": 0.9796,
+   "k": 144,
+   "n": 147,
+   "routed_share_V": 0.287,
+   "eligible": true
+  },
+  {
+   "tau": 0.065,
+   "recall_VT": 0.9796,
+   "k": 144,
+   "n": 147,
+   "routed_share_V": 0.2935,
+   "eligible": true
+  },
+  {
+   "tau": 0.06,
+   "recall_VT": 0.9796,
+   "k": 144,
+   "n": 147,
+   "routed_share_V": 0.2978,
+   "eligible": true
+  },
+  {
+   "tau": 0.055,
+   "recall_VT": 0.9932,
+   "k": 146,
+   "n": 147,
+   "routed_share_V": 0.3109,
+   "eligible": false
+  },
+  {
+   "tau": 0.05,
+   "recall_VT": 0.9932,
+   "k": 146,
+   "n": 147,
+   "routed_share_V": 0.3109,
+   "eligible": false
+  },
+  {
+   "tau": 0.045,
+   "recall_VT": 0.9932,
+   "k": 146,
+   "n": 147,
+   "routed_share_V": 0.3196,
+   "eligible": false
+  },
+  {
+   "tau": 0.04,
+   "recall_VT": 1.0,
+   "k": 147,
+   "n": 147,
+   "routed_share_V": 0.3326,
+   "eligible": false
+  },
+  {
+   "tau": 0.035,
+   "recall_VT": 1.0,
+   "k": 147,
+   "n": 147,
+   "routed_share_V": 0.363,
+   "eligible": false
+  },
+  {
+   "tau": 0.03,
+   "recall_VT": 1.0,
+   "k": 147,
+   "n": 147,
+   "routed_share_V": 0.3935,
+   "eligible": false
+  },
+  {
+   "tau": 0.025,
+   "recall_VT": 1.0,
+   "k": 147,
+   "n": 147,
+   "routed_share_V": 0.4587,
+   "eligible": false
+  },
+  {
+   "tau": 0.02,
+   "recall_VT": 1.0,
+   "k": 147,
+   "n": 147,
+   "routed_share_V": 0.5565,
+   "eligible": false
+  },
+  {
+   "tau": 0.015,
+   "recall_VT": 1.0,
+   "k": 147,
+   "n": 147,
+   "routed_share_V": 0.8022,
+   "eligible": false
+  },
+  {
+   "tau": 0.01,
+   "recall_VT": 1.0,
+   "k": 147,
+   "n": 147,
+   "routed_share_V": 0.9739,
+   "eligible": false
+  }
+ ],
+ "rule": "largest tau on the grid with recall(V+T) >= 0.97 and routed share(V) <= 0.3",
+ "n_V": 460,
+ "n_T": 460
+}

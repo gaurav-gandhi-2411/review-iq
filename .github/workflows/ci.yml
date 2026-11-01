@@ -13,12 +13,12 @@ jobs:
       - uses: actions/checkout@v7.0.1
 
       - name: Set up Python
-        uses: actions/setup-python@v7.0.0
+        uses: actions/setup-python@v7.1.0
         with:
           python-version: "3.11"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v10.2.0
+        uses: astral-sh/setup-uv@v10.3.2
         with:
           enable-cache: true
 
@@ -79,11 +79,19 @@ jobs:
 
       # Truth-reconciliation gates (Wave 1 Section A) -- see
       # docs/architecture/adr/0001-eval-gate-and-prompt-version-reconciliation.md.
+      - name: Leakage ledger (sealed review-intent set, Amendment 2)
+        run: uv run python -m engine.labelling.leakage_ledger check
+
       - name: No hand-typed accuracy numbers in docs
         run: uv run python scripts/check_no_hardcoded_metrics.py
 
       - name: Metrics render drift check (README/site vs eval JSON)
         run: uv run python scripts/render_metrics.py --check
+
+      # Q6: docs/pricing.json is the single source for plan prices/quotas; fails if the site,
+      # cost-model doc, payments doc, billing placeholder or pricing.py FX drift from it.
+      - name: Pricing single-source consistency
+        run: uv run python scripts/check_pricing_consistency.py
 
       # Session 8 P3: eval/fixtures/_held_out_hindi_hinglish/'s entire value depends on
       # nobody having seen its content while developing app/core/prompts/**. See that
@@ -141,12 +149,12 @@ jobs:
       - uses: actions/checkout@v7.0.1
 
       - name: Set up Python
-        uses: actions/setup-python@v7.0.0
+        uses: actions/setup-python@v7.1.0
         with:
           python-version: "3.11"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v10.2.0
+        uses: astral-sh/setup-uv@v10.3.2
         with:
           enable-cache: true
 
@@ -167,7 +175,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
 
-      - uses: actions/setup-python@v7.0.0
+      - uses: actions/setup-python@v7.1.0
         with:
           python-version: "3.11"
 
@@ -186,7 +194,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "22"
           cache: "npm"
@@ -228,7 +236,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "22"
           cache: "npm"
@@ -246,7 +254,9 @@ jobs:
         working-directory: web
         run: npm run lint
 
-      - name: Unit tests (node --test)
+      # S17 G3f: `npm test` = node --test (retry-after, tests/*.test.ts) then Vitest (dashboard logic,
+      # component states, tokens.test.ts drift check against design/tokens.json).
+      - name: Unit tests (node --test + vitest)
         working-directory: web
         run: npm test
 
@@ -257,6 +267,14 @@ jobs:
       - name: Build (vite build)
         working-directory: web
         run: npx vite build
+
+      # The dashboard dev preview (src/dev, fixture reviews) is guarded by import.meta.env.DEV.
+      # If that guard ever stops working, fixture text would ship to customers; fail loudly.
+      - name: Dev preview must not be in the production bundle
+        run: |
+          if grep -rqE "Ordered this as a gift three weeks ago|__preview/dashboard" web/dist; then
+            echo "dev preview fixtures leaked into web/dist"; exit 1
+          fi
 
       # An empty or partial build must not pass: index.html has to exist and reference at
       # least one hashed JS asset that is actually on disk.

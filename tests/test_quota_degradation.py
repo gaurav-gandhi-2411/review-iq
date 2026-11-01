@@ -156,7 +156,7 @@ async def test_large_quota_during_escalation_returns_degraded_small() -> None:
         instance.complete = fake_complete
 
         extraction, model, tin, tout, escalated, degraded = await router_module.route_extraction(
-            prompt, "system", allow_gemini_fallback=False, settings=settings
+            prompt, "system", settings=settings
         )
 
     # Must have tried both small and large (call_count == 2).
@@ -207,9 +207,7 @@ async def test_non_quota_large_failure_during_escalation_raises() -> None:
         instance.complete = fake_complete
 
         with pytest.raises(RuntimeError):
-            await router_module.route_extraction(
-                prompt, "system", allow_gemini_fallback=False, settings=settings
-            )
+            await router_module.route_extraction(prompt, "system", settings=settings)
 
     assert call_count == 2
 
@@ -251,9 +249,7 @@ async def test_large_quota_with_no_small_result_raises() -> None:
         instance.complete = fake_complete
 
         with pytest.raises(RuntimeError):
-            await router_module.route_extraction(
-                prompt, "system", allow_gemini_fallback=False, settings=settings
-            )
+            await router_module.route_extraction(prompt, "system", settings=settings)
 
     assert call_count == 2
 

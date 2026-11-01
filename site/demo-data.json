@@ -24,7 +24,7 @@
         "review_length_chars": 402,
         "confidence": 0.94,
         "extraction_meta": {
-          "model": "llama-3.3-70b-versatile",
+          "model": "openai/gpt-oss-120b",
           "prompt_version": "2.1",
           "schema_version": "1.0.0",
           "extracted_at": "2026-06-10T09:14:32Z",
@@ -34,45 +34,11 @@
       }
     },
     {
-      "id": "ext-hi",
-      "category": "extraction",
-      "lang_badge": "HI",
-      "title": "Hindi (Devanagari) review",
-      "description": "Pure Devanagari script — fields extracted accurately including detected language.",
-      "input_label": "Customer review",
-      "input": "Syska चार्जर 2 दिन में ही टूट गया। बहुत खराब क्वालिटी है। दोबारा नहीं खरीदूंगा। पैसे बर्बाद हो गए। बिल्कुल निराश हूं।",
-      "input_translation": "(Translation: Syska charger broke in just 2 days. Very bad quality. Won't buy again. Money wasted. Completely disappointed.)",
-      "output": {
-        "product": "Syska charger",
-        "stars": null,
-        "stars_inferred": 1,
-        "pros": [],
-        "cons": ["stopped working in two days", "extremely poor quality"],
-        "buy_again": false,
-        "sentiment": "negative",
-        "topics": ["quality", "durability"],
-        "competitor_mentions": [],
-        "urgency": "medium",
-        "feature_requests": [],
-        "language": "hi",
-        "review_length_chars": 95,
-        "confidence": 0.91,
-        "extraction_meta": {
-          "model": "llama-3.3-70b-versatile",
-          "prompt_version": "2.1",
-          "schema_version": "1.0.0",
-          "extracted_at": "2026-06-10T09:14:41Z",
-          "latency_ms": 721,
-          "input_hash": "sha256:f8c2a1d4e7b309a5"
-        }
-      }
-    },
-    {
       "id": "ext-hi-en",
       "category": "extraction",
       "lang_badge": "HI-EN",
       "title": "Hinglish / code-mixed review",
-      "description": "Code-mixed Hindi-English — the differentiator. Western tools mislabel this; Samidha Reviews parses 'apple k earphone ko competition de dega' correctly.",
+      "description": "Code-mixed Hindi-English — Samidha Reviews parses 'apple k earphone ko competition de dega' correctly.",
       "input_label": "Customer review",
       "input": "Superb earphone i like it.... and the sound is just awsome.... ye earphone apple k earphone ko competition de dega..... Not better than apple earphone... but km v nai hai apple k earphone se....",
       "input_annotation": "\"apple k earphone ko competition de dega\" = will compete with Apple earphones | \"km v nai hai\" = not less than",
@@ -92,7 +58,7 @@
         "review_length_chars": 167,
         "confidence": 0.88,
         "extraction_meta": {
-          "model": "llama-3.3-70b-versatile",
+          "model": "openai/gpt-oss-120b",
           "prompt_version": "2.1",
           "schema_version": "1.0.0",
           "extracted_at": "2026-06-10T09:14:58Z",
@@ -106,7 +72,7 @@
       "category": "insights",
       "lang_badge": "TRENDS",
       "title": "Theme trends — by_language breakdown",
-      "description": "delivery_speed complaints appear only in Hinglish reviews — zero in English. This vernacular-only signal is invisible to English-only tools. Real API response from demo org (10 ingested reviews).",
+      "description": "delivery_speed complaints appear only in Hinglish reviews — zero in English. Real API response from demo org (10 ingested reviews).",
       "input_label": "API call",
       "input": "GET /v2/insights/trends?trend_of=topics&bucket=week&limit=5",
       "output": {

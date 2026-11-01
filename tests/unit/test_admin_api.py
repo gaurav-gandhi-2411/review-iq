@@ -275,14 +275,14 @@ def test_admin_db_connect_uses_admin_database_url() -> None:
     DSN, never the public service's supabase_database_url (ADR 0006)."""
     with (
         patch("app.api.admin.get_settings") as mock_settings,
-        patch("app.api.admin.psycopg2") as mock_psycopg2,
+        patch("app.api.admin.db_connect") as mock_connect,
     ):
         mock_settings.return_value.admin_database_url = "postgresql://user:pw@host/db"
-        mock_psycopg2.connect.return_value = MagicMock()
+        mock_connect.return_value = MagicMock()
         from app.api.admin import _db_connect
 
         _db_connect()
-    mock_psycopg2.connect.assert_called_once_with("postgresql://user:pw@host/db")
+    mock_connect.assert_called_once_with("postgresql://user:pw@host/db")
 
 
 # ---------------------------------------------------------------------------

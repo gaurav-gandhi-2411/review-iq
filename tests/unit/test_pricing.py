@@ -100,17 +100,6 @@ def test_price_extraction_large_model_tier_is_large() -> None:
     assert result.provider == "groq"
 
 
-def test_price_extraction_gemini_fallback_tier() -> None:
-    result = price_extraction("gemini-2.0-flash", tokens_in=1000, tokens_out=1000)
-    assert result.provider == "gemini"
-    assert result.tier == "fallback"
-
-
-# ---------------------------------------------------------------------------
-# Pricing table sanity — every entry has plausible, non-negative numbers.
-# ---------------------------------------------------------------------------
-
-
 def test_pricing_table_all_entries_have_nonnegative_prices() -> None:
     for model, pricing in PRICING_TABLE.items():
         assert pricing.usd_per_million_input >= 0, model

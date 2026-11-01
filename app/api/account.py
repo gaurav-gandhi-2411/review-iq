@@ -146,13 +146,13 @@ def _do_regenerate(user_id: str) -> dict[str, object]:
         cur.execute(
             """
             INSERT INTO public.api_keys (org_id, key_hash, key_prefix, name, quota)
-            VALUES (%s, %s, %s, 'default', 100)
+            VALUES (%s, %s, %s, 'default', 1000)
             """,
             (str(org_id), key_hash, key_prefix),
         )
         conn.commit()
         log.info("account.key_regenerated", org_id=str(org_id), user_id=user_id)
-        return {"key_prefix": key_prefix, "raw_key": raw_key, "monthly_quota": 100}
+        return {"key_prefix": key_prefix, "raw_key": raw_key, "monthly_quota": 1000}
     except HTTPException:
         conn.rollback()
         raise

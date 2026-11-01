@@ -55,7 +55,6 @@ from typing import Any
 from urllib.parse import urlencode
 
 import httpx
-import psycopg2
 import structlog
 from fastapi import APIRouter, Header, HTTPException, status
 from pydantic import BaseModel, ConfigDict
@@ -63,6 +62,7 @@ from pydantic import BaseModel, ConfigDict
 from app.api.webhooks.shopify import encrypt_token
 from app.auth.signup import _get_org_for_user, verify_supabase_jwt
 from app.core.config import get_settings
+from app.core.db_pool import db_connect
 from app.core.storage_pg import _set_tenant
 
 log = structlog.get_logger(__name__)
@@ -243,7 +243,7 @@ def _upsert_installation_pg(org_id: str, shop_domain: str, access_token_enc: str
     review_iq_app only needs EXECUTE on it, not a table grant. org_id is ALWAYS
     caller-resolved from the verified JWT — never accepted as a user param.
     """
-    conn = psycopg2.connect(get_settings().supabase_database_url)
+    conn = db_connect(get_settings().supabase_database_url)
     try:
         cur = conn.cursor()
         cur.execute(
@@ -261,7 +261,7 @@ def _upsert_installation_pg(org_id: str, shop_domain: str, access_token_enc: str
 
 def _list_installations_pg(org_id: str) -> list[dict[str, str | None]]:
     """The caller's own installs, via the RLS select policy (never token material)."""
-    conn = psycopg2.connect(get_settings().supabase_database_url)
+    conn = db_connect(get_settings().supabase_database_url)
     try:
         cur = conn.cursor()
         _set_tenant(cur, org_id)
