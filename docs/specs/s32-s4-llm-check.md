@@ -106,3 +106,14 @@ D3 — INCONCLUSIVE (CI spans -0.05):
 an Amendment 18 draw is sized for >= 300 S4 positives at the observed rate (about 8,000 S4 items). A CI that is both above -0.05 at its
 lower bound and below -0.05 at its upper bound is impossible, so exactly one branch applies. If the 120b arm yields no rows at all, the
 20b comparison is used in its place and that substitution is reported as a deviation.
+
+## 8. Deviation log (appended after registration; no result existed when each entry was written)
+
+- **2026-10-30 17:40 UTC, TIMING DEVIATION (GG's advisor, S33).** The analysis runs now on the 147 completed 120b rows, labelled
+  INCOMPLETE with n stated, exactly as the section 5 fallback specifies; only the timing changes (registered: at 2026-11-03 06:00 UTC).
+  Reason: triage-iq's ADR-0075 recording holds the shared ledger's exclusive recording flag (renewed for the whole run) and, at no
+  more than 160K tokens a day for about 919K tokens, holds it past the deadline, while `benchmark` is capped at 20K a day for the
+  recording (triage-iq decision D95). No further 120b row can complete before the deadline, so the data are identical either way. The
+  decision to run early was taken before any analysis output existed and does not depend on any result. The 147 rows are the first 147
+  of the registered Random(42) order, i.e. a random subsample of the 259 pooled S4 positives by construction. Nothing else changes:
+  metrics, the decision function and the tree are as committed.
