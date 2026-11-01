@@ -491,3 +491,60 @@ def test_verify_cannot_be_combined_with_write_actions(env: Env, extra: list[str]
     with pytest.raises(SystemExit) as exc:
         env.run("--verify", *extra)
     assert exc.value.code == 2
+
+
+# ---------------------------------------------------------------- --dry-run --fail-on-pending
+# S19 Z8: a pending migration whose SQL matches none of push.py's object/grant patterns (13 of 43
+# on main, REVOKE-only ones included) used to print "no recognizable objects" and exit 0, so the
+# scheduled migration-drift check could not see it. Its postconditions are the evidence.
+
+
+def test_dry_run_fail_on_pending_fails_when_a_pending_files_postcondition_is_false(
+    env: Env, capsys: pytest.CaptureFixture[str]
+) -> None:
+    env.conn.ledger = set()
+    env.write("001_revoke_only.sql", _migration("SELECT 1;", ("effect_present", PC_FALSE)))
+    with pytest.raises(SystemExit) as exc:
+        env.run("--dry-run", "--fail-on-pending")
+    assert exc.value.code == 1
+    out = capsys.readouterr().out
+    assert "genuinely unapplied" in out
+    assert "effect_present" in out
+
+
+def test_dry_run_fail_on_pending_fails_closed_when_nothing_shows_the_effect_exists(
+    env: Env,
+) -> None:
+    env.write("001_no_postcondition.sql", "SELECT 1;\n")  # missing + not allowlisted
+    with pytest.raises(SystemExit) as exc:
+        env.run("--dry-run", "--fail-on-pending")
+    assert exc.value.code == 1
+
+
+def test_dry_run_fail_on_pending_passes_when_the_postconditions_already_hold(
+    env: Env, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Applied out-of-band, ledger row missing: a bookkeeping gap, not drift -- unchanged."""
+    env.write("001_applied_out_of_band.sql", _migration("SELECT 1;", ("holds", PC_TRUE)))
+    env.run("--dry-run", "--fail-on-pending")  # returns normally, i.e. exit code 0
+    assert "POSTCONDITIONS ALREADY HOLD" in capsys.readouterr().out
+
+
+def test_dry_run_without_the_flag_never_fails_on_a_false_postcondition(env: Env) -> None:
+    env.write("001_x.sql", _migration("SELECT 1;", ("effect_present", PC_FALSE)))
+    env.run("--dry-run")
+
+
+def test_dry_run_with_everything_ledgered_passes_and_stays_read_only(env: Env) -> None:
+    env.conn.ledger = {"001_a.sql"}
+    env.write("001_a.sql", _migration("SELECT 1;", ("holds", PC_FALSE)))  # ledgered: not pending
+    env.run("--dry-run", "--fail-on-pending")
+    assert env.conn.commits == 0
+    assert not any(e.startswith(("INSERT", "CREATE")) for e in env.conn.log)
+
+
+def test_dry_run_postcondition_evaluation_never_commits_or_inserts(env: Env) -> None:
+    env.write("001_x.sql", _migration("SELECT 1;", ("holds", PC_TRUE)))
+    env.run("--dry-run", "--fail-on-pending")
+    assert env.conn.commits == 0
+    assert not any(e.startswith("INSERT") for e in env.conn.log)

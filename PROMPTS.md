@@ -4,6 +4,17 @@ This file documents every version of the extraction prompt, including eval score
 
 ---
 
+## Reply drafter v2.2 (2026-10-08) — forbid invented details and commitments (EVAL NOT YET RUN)
+
+**Prompt: `app/core/prompts/reply.py` `REPLY_PROMPT_VERSION` v2.1 → v2.2.** Eval run required before merge; not run in this change.
+
+- **What changed**: `_CRITICAL_RULES` gains rule 6 (never invent email/phone/URL/order-ticket-tracking numbers/names/amounts; the drafter is not given the shop's contact details, so use words or the `[your support contact]` placeholder) and rule 7 (no fault admission or outcome commitments, explicitly including Hindi/Hinglish phrases).
+- **Why**: N4c quality run (PR #297, `docs/research/reply-drafting-measurement.md`): 5/20 hard failures on the large model, clearest = invented `support@example.com`-style contact addresses (2/20 per arm, all 3 judges) and unsupported commitments. Prompt is the first layer; code is the backstop (`redact_invented_details` replaces ungrounded contact/id/amount spans with a bracketed placeholder + caveat; Hindi/Hinglish commitment patterns added to `check_no_fabrication`, caveat-level).
+- **Known tension**: the tone examples in `_TONE_INSTRUCTIONS` / hi-en guidance still model phrases like "hum zimmedaar hain" and "yeh hamare end pe galti thi"; those can now trip the (caveat-level) fault-admission patterns. Measure before deciding whether to edit them.
+- **Eval scores**: pending. Cassettes keyed on the prompt will need re-recording (`eval/reply/record_hien.py`, `runner.py`), which spends Groq quota and is deliberately not done here.
+
+---
+
 ## Target A (hi-en prompt tuning): NOT PURSUED (2026-07-06)
 
 **No prompt change. `hi_en.py` unchanged. No cassette re-record (nothing to invalidate).**
@@ -70,6 +81,7 @@ the full changed-cases list (below) and confirmed KEEP.
 
 **Eval gate:** 83.8% overall, en 86.2%, hi 80.7% (identical to v2.2), hi-en 80.9% (identical to
 v2.2) — all PASS.
+*[Retired — superseded by 78.6% (95% CI 73–83%, n=43, 2026-09-19)]*
 
 **Files:** `app/core/prompts/en.py` only (hi_en.py untouched — out of scope for this iteration;
 the failing case is in the `en` slice; hi/hi-en confirmed byte-for-byte unaffected, see below).
@@ -150,6 +162,7 @@ reused untouched (never re-recorded — `hi_en.py` unchanged, so their cache key
 
 906 tests pass, `ruff check` clean, eval-replay 83.8% overall / en 86.2% / hi 80.7% / hi-en
 80.9% — all PASS (>=80% per-language gate, >=83% overall gate).
+*[Retired — superseded by 78.6% (95% CI 73–83%, n=43, 2026-09-19)]*
 
 ---
 
@@ -415,3 +428,27 @@ Before merging a prompt change:
 - [ ] Overall accuracy must be ≥ 85%; per-language ≥ 80%
 - [ ] English: Check fixture #001 (Turbo-Vac) passes with `stars: null`, `stars_inferred: 3`, `competitor_mentions: ["Dyson"]`
 - [ ] English: Check fixture #003 (prompt injection) still fails cleanly
+
+---
+
+## Reply drafting kill switch (ENABLE_REPLY_DRAFTING)
+
+Reply drafting (`POST /bff/reply`, `POST /v2/reply`, `POST /v2/reply/batch`) is **off by
+default** (`ENABLE_REPLY_DRAFTING=false`, `app/core/config.py`). The drafter has been observed
+inventing support contact details (emails, phone numbers) in customer-facing text.
+
+While off: the endpoints return HTTP 503 with
+`{"detail": {"code": "reply_drafting_disabled", "message": "Reply drafting is temporarily unavailable."}}`
+before any cache lookup and before any LLM provider call. The web UI reads that code and shows
+"Reply drafting is temporarily unavailable" in place of the draft button. The offline eval
+runner (`eval/reply/`) calls the engine directly and is not affected by the flag.
+
+**Re-enable gate** (all required before setting `ENABLE_REPLY_DRAFTING=true` in any deploy
+config):
+
+1. PR #298 (invented-details guardrail, reply prompt v2.2) is merged.
+2. A clean judge-scored reply eval on that merged code: hard failures of type "invented contact
+   details" are 0/20 on both arms, and total hard failures are not worse than the 5/20 and 8/20
+   baselines for the respective arms.
+
+Rollback of the kill switch itself is the same env var; no migration or data is involved.

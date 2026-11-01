@@ -550,6 +550,44 @@ UNDO_CASES: list[tuple[str, str, str]] = [
         "extraction_costs_grants_narrowed",
         "GRANT DELETE ON public.extraction_costs TO authenticated",
     ),
+    (
+        "20261009000001_email_suppressions.sql",
+        "email_suppressions_columns_and_unique_event_id",
+        "ALTER TABLE public.email_suppressions DROP CONSTRAINT email_suppressions_event_id_key",
+    ),
+    (
+        "20261009000001_email_suppressions.sql",
+        "email_suppressions_rls_enabled_no_policies",
+        "ALTER TABLE public.email_suppressions DISABLE ROW LEVEL SECURITY",
+    ),
+    (
+        "20261009000001_email_suppressions.sql",
+        "email_suppressions_no_role_can_touch_the_table",
+        "GRANT SELECT ON public.email_suppressions TO authenticated",
+    ),
+    (
+        "20261009000001_email_suppressions.sql",
+        "email_suppressions_functions_definer_owned_and_app_only",
+        "GRANT EXECUTE ON FUNCTION public.is_email_suppressed(text) TO anon",
+    ),
+    # S20 M3b-2: urgent-alert coalescing sweep resolver.
+    (
+        "20261009000002_urgent_deferred_sweep.sql",
+        "deferred_urgent_sweep_function_hardened",
+        "GRANT EXECUTE ON FUNCTION public.list_orgs_with_deferred_urgent_alerts() TO authenticated",
+    ),
+    # S20 M3b: weekly digest. Dropping the widened CHECK removes the 'weekly_digest' literal;
+    # dropping the new resolver makes to_regprocedure NULL so count(*) = 1 is false.
+    (
+        "20261009000003_alert_preferences_weekly_digest.sql",
+        "alert_preferences_frequency_allows_weekly_digest",
+        "ALTER TABLE public.alert_preferences DROP CONSTRAINT alert_preferences_frequency_check",
+    ),
+    (
+        "20261009000003_alert_preferences_weekly_digest.sql",
+        "weekly_digest_resolver_hardened",
+        "DROP FUNCTION public.list_orgs_with_weekly_digest()",
+    ),
 ]
 
 

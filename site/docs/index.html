@@ -144,7 +144,7 @@
       <nav class="top-links" aria-label="Primary">
         <a href="/">Home</a>
         <a href="/docs" aria-current="page">API Docs</a>
-        <a href="/account">Account</a>
+        <a href="https://app.samidhareviews.xyz">Account</a>
       </nav>
     </div>
   </header>
@@ -213,7 +213,7 @@
 
         <div class="code-block">
           <button type="button" class="copy-btn" onclick="copyCode(this)">Copy</button>
-          <pre tabindex="0"><code>curl -X POST https://your-instance.run.app/auth/provision \
+          <pre tabindex="0"><code>curl -X POST https://api.samidhareviews.xyz/auth/provision \
   -H "Authorization: Bearer &lt;supabase-jwt&gt;"
 
 # Response (key shown once — copy it now):
@@ -504,7 +504,7 @@
         <div class="code-block">
           <button type="button" class="copy-btn" onclick="copyCode(this)">Copy</button>
           <pre tabindex="0"><code># Upload
-curl -X POST https://your-instance.run.app/v2/ingest/csv \
+curl -X POST https://api.samidhareviews.xyz/v2/ingest/csv \
   -H "X-API-Key: riq_live_your_key" \
   -F "file=@reviews.csv"
 
@@ -512,11 +512,11 @@ curl -X POST https://your-instance.run.app/v2/ingest/csv \
 {"job_id": "b3f1a2d4-...", "total": 2, "status": "pending"}
 
 # Poll status
-curl https://your-instance.run.app/v2/ingest/b3f1a2d4-.../  \
+curl https://api.samidhareviews.xyz/v2/ingest/b3f1a2d4-.../  \
   -H "X-API-Key: riq_live_your_key"
 
 # Download results when status == "done"
-curl https://your-instance.run.app/v2/ingest/b3f1a2d4-.../result \
+curl https://api.samidhareviews.xyz/v2/ingest/b3f1a2d4-.../result \
   -H "X-API-Key: riq_live_your_key"</code></pre>
         </div>
       </section>

@@ -180,3 +180,71 @@ def test_no_orgs_returns_zero_counts(client: TestClient) -> None:
     body = resp.json()
     assert body["orgs_processed"] == 0
     assert body["total_events_sent"] == 0
+
+
+# ---------------------------------------------------------------------------
+# Urgent roll-up flush (S20 M3b-2)
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture(autouse=True)
+def _no_deferred_urgent_orgs_by_default():
+    """Existing sweep tests predate the roll-up step; keep them off the real database."""
+    with patch("app.api.internal.digest.list_orgs_with_deferred_urgent_pg", return_value=[]):
+        yield
+
+
+def test_sweep_flushes_urgent_rollups_and_isolates_failures(client: TestClient) -> None:
+    """Orgs with deferred urgent events get one roll-up each; one org failing does not stop
+    the next, and a failed enumeration (resolver migration not applied) never breaks the sweep."""
+
+    async def _fake_flush(org_id: str, channel: object) -> list[str]:
+        if org_id == "org-bad":
+            raise RuntimeError("boom")
+        return ["r1", "r2", "r3"]
+
+    with (
+        patch(
+            "app.api.internal.digest.get_settings",
+            return_value=_make_mock_settings(trigger_token="real_secret"),
+        ),
+        patch("app.api.internal.digest.list_orgs_with_daily_digest_pg", return_value=[]),
+        patch(
+            "app.api.internal.digest.list_orgs_with_deferred_urgent_pg",
+            return_value=["org-bad", "org-good"],
+        ),
+        patch(
+            "app.api.internal.digest.flush_deferred_urgent_for_org",
+            new=AsyncMock(side_effect=_fake_flush),
+        ),
+        patch("app.api.internal.digest._get_default_channel", return_value=MagicMock()),
+    ):
+        resp = client.post(
+            "/internal/digest/run", headers={"X-Digest-Trigger-Token": "real_secret"}
+        )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["urgent_rollups_per_org"] == {"org-good": 3}
+    assert body["failed_orgs"] == ["org-bad"]
+
+
+def test_sweep_survives_rollup_enumeration_failure(client: TestClient) -> None:
+    with (
+        patch(
+            "app.api.internal.digest.get_settings",
+            return_value=_make_mock_settings(trigger_token="real_secret"),
+        ),
+        patch("app.api.internal.digest.list_orgs_with_daily_digest_pg", return_value=[]),
+        patch(
+            "app.api.internal.digest.list_orgs_with_deferred_urgent_pg",
+            side_effect=RuntimeError("function does not exist"),
+        ),
+        patch("app.api.internal.digest._get_default_channel", return_value=MagicMock()),
+    ):
+        resp = client.post(
+            "/internal/digest/run", headers={"X-Digest-Trigger-Token": "real_secret"}
+        )
+
+    assert resp.status_code == 200
+    assert resp.json()["urgent_rollups_per_org"] == {}

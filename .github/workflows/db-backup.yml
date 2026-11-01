@@ -139,9 +139,22 @@ jobs:
           check_token "authenticity_audits"
           # The three tokens above all appear in a schema-only dump, so a dump with zero rows
           # (wrong --schema, a role that sees no data, a pg_dump --schema-only regression)
-          # verified green. pg_dump writes a `COPY public.<table> ... FROM stdin` section for
-          # every table that holds rows; production always has some.
+          # verified green. `COPY public` rules out --schema-only ...
           check_token "COPY public"
+          # ... but NOT an empty data dump: pg_dump writes a `COPY public.<table> (...) FROM
+          # stdin;` block for EVERY table, including tables with zero rows (S19 Z8: measured
+          # with pg_dump 17 -- a database whose tables are all empty still contains
+          # `COPY public.organizations (id) FROM stdin;`), so the token above passed it.
+          # Count the data lines inside the organizations block instead (text-format COPY: one
+          # line per row, block ends at a line holding only `\.`); production always has at
+          # least one organization. scripts/verify_restore.py makes the same assertion on the
+          # restored copy (--require-nonempty organizations); this stops the upload earlier.
+          ORG_ROWS=$(echo "${CONTENT}" | awk '/^COPY public\.organizations /{f=1; next} f && /^\\\.$/{f=0} f{n++} END{print n+0}')
+          if [ "${ORG_ROWS}" -lt 1 ]; then
+            echo "::error::public.organizations has 0 rows in the dump -- an empty-looking backup. Aborting."
+            exit 1
+          fi
+          echo "  [ok] public.organizations has ${ORG_ROWS} row(s)"
 
           LINES=$(echo "${CONTENT}" | wc -l)
           echo "Dump passed all checks. Uncompressed lines: ${LINES}"

@@ -1,0 +1,101 @@
+{
+ "spec": "docs/specs/review-intent.md Amendment 18",
+ "thresholds_sha256": "4cf745db3af848464cbd7961c536919dee3be7a78691a5c4aca8a356ab724ec2",
+ "tau": 0.07,
+ "n_items": 8100,
+ "n_gold_yes": 301,
+ "n_gold_no": 7673,
+ "no_consensus": 126,
+ "size_rule_met": true,
+ "llm20": {
+  "missing": 0,
+  "empty": 0
+ },
+ "P1_r1_plus_vs_20b": {
+  "router_recall": {
+   "k": 284,
+   "n": 301,
+   "rate": 0.9435,
+   "wilson95": [
+    0.9114,
+    0.9644
+   ]
+  },
+  "llm_recall": {
+   "k": 259,
+   "n": 301,
+   "rate": 0.8605,
+   "wilson95": [
+    0.8168,
+    0.8951
+   ]
+  },
+  "paired": {
+   "delta": 0.0831,
+   "boot95": [
+    0.0399,
+    0.1262
+   ],
+   "n": 301
+  },
+  "mcnemar": {
+   "router_only": 35,
+   "llm_only": 10,
+   "p": 0.000247
+  },
+  "missed_by_both": 7,
+  "met": true,
+  "margin": 0.05
+ },
+ "verdict": {
+  "P1": true
+ },
+ "report_only": {
+  "r1_plus_recall": {
+   "k": 284,
+   "n": 301,
+   "rate": 0.9435,
+   "wilson95": [
+    0.9114,
+    0.9644
+   ],
+   "lower_vs_a17_0_85": true
+  },
+  "r1_recall": {
+   "k": 276,
+   "n": 301,
+   "rate": 0.9169,
+   "wilson95": [
+    0.8803,
+    0.9431
+   ]
+  },
+  "r1_plus_routed_share_all": {
+   "k": 1206,
+   "n": 8100,
+   "rate": 0.1489,
+   "wilson95": [
+    0.1413,
+    0.1568
+   ]
+  },
+  "r1_plus_routed_share_gold_no": {
+   "k": 818,
+   "n": 7673,
+   "rate": 0.1066,
+   "wilson95": [
+    0.0999,
+    0.1137
+   ]
+  },
+  "llm20_yes_rate_gold_no": {
+   "k": 166,
+   "n": 7673,
+   "rate": 0.0216,
+   "wilson95": [
+    0.0186,
+    0.0251
+   ]
+  }
+ }
+}

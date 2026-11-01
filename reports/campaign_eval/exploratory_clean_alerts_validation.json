@@ -1,0 +1,11 @@
+{
+  "false_alerts_per_product_month": 0.0545416890032157,
+  "fired_signal_combinations": {
+    "burst": 136,
+    "burst+rating_shift": 6,
+    "rating_shift": 6
+  },
+  "months_unit_seconds": 2629800.0,
+  "product_months": 2713.520661072196,
+  "production_scan_stream_clean_alert_episodes": 148
+}

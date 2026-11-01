@@ -66,6 +66,28 @@ from playwright.async_api import async_playwright
 _TIMEOUT_SECONDS = 15.0
 _BRAND_MARKER = "Samidha Reviews"
 _API_BASE_URL = "https://api.samidhareviews.xyz"
+# web/src/main.tsx renders an <h1> "Samidha Reviews is misconfigured" INSTEAD of the app when a
+# required VITE_* variable is missing. It contains _BRAND_MARKER, so the dashboard surface's
+# substring match counted it as mounted (S19 Z8 induction). Pinned to main.tsx by a unit test.
+_MISCONFIGURED_MARKER = "is misconfigured"
+
+
+def spa_mount_problem(
+    root_html: str | None, heading_count: int, misconfigured_count: int, mount_marker: str
+) -> str | None:
+    """Why the SPA does not count as mounted, or None if it does. Pure, unit-tested."""
+    if not root_html or not root_html.strip():
+        return "HTTP 200 but #root is empty after networkidle -- React never mounted"
+    if misconfigured_count > 0:
+        return (
+            "the app rendered its own configuration-error screen "
+            f"({_MISCONFIGURED_MARKER!r}, web/src/main.tsx): a required VITE_* variable is "
+            "missing in this deployment and the app did not start"
+        )
+    if heading_count == 0:
+        return f"React mounted but expected heading {mount_marker!r} not found"
+    return None
+
 
 # Provisioning PROBE_API_KEY (manual, one-time -- not performed by this script or by
 # CI): create a dedicated org via the normal signup path (or app/api/admin.py's
@@ -183,15 +205,12 @@ async def _check_spa_mounted(url: str, mount_marker: str) -> str | None:
             await page.goto(url, wait_until="networkidle", timeout=_TIMEOUT_SECONDS * 1000)
             root_html = await page.eval_on_selector("#root", "el => el.innerHTML")
             heading_count = await page.locator("h1", has_text=mount_marker).count()
+            misconfigured_count = await page.locator("h1", has_text=_MISCONFIGURED_MARKER).count()
             await browser.close()
     except (PlaywrightError, PlaywrightTimeoutError) as exc:
         return f"could not verify React mounted: {exc}"
 
-    if not root_html or not root_html.strip():
-        return "HTTP 200 but #root is empty after networkidle -- React never mounted"
-    if heading_count == 0:
-        return f"React mounted but expected heading {mount_marker!r} not found"
-    return None
+    return spa_mount_problem(root_html, heading_count, misconfigured_count, mount_marker)
 
 
 async def probe_authenticated_path(client: httpx.AsyncClient, api_key: str) -> ProbeResult:

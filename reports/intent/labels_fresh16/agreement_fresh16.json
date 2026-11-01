@@ -1,0 +1,313 @@
+{
+ "n_sealed": 3900,
+ "judges": [
+  "llama31_8b",
+  "qwen3_8b",
+  "gemma2_9b",
+  "mistral_7b"
+ ],
+ "tasks": {
+  "C1_needs_action": {
+   "n_units": 3900,
+   "alpha": 0.7716,
+   "fleiss_kappa": 0.7715,
+   "fleiss_n_complete": 3887,
+   "pairwise_agreement": 0.9496,
+   "clear_consensus": 0.9721,
+   "unanimous": 0.9087,
+   "gate": "USABLE-WITH-CAVEAT",
+   "supplementary": {
+    "gwet_ac1": 0.9355,
+    "raw_percent_agreement": 94.96,
+    "note": "supplementary only; the gate uses alpha and the clear-consensus fraction"
+   },
+   "consensus": {
+    "n_items": 3900,
+    "no_consensus": 109,
+    "consensus_fraction": 0.9721,
+    "consensus_fraction_wilson95": [
+     0.9664,
+     0.9768
+    ],
+    "classes": {
+     "no": {
+      "n": 3373,
+      "share_of_consensus": 0.8897,
+      "wilson95": [
+       0.8794,
+       0.8993
+      ],
+      "insufficient_data": false
+     },
+     "yes": {
+      "n": 418,
+      "share_of_consensus": 0.1103,
+      "wilson95": [
+       0.1007,
+       0.1206
+      ],
+      "insufficient_data": false
+     }
+    }
+   }
+  },
+  "C2_broad_intent": {
+   "n_units": 3900,
+   "alpha": 0.7055,
+   "fleiss_kappa": 0.7052,
+   "fleiss_n_complete": 3887,
+   "pairwise_agreement": 0.8844,
+   "clear_consensus": 0.9336,
+   "unanimous": 0.7969,
+   "gate": "USABLE-WITH-CAVEAT",
+   "supplementary": {
+    "gwet_ac1": 0.8721,
+    "raw_percent_agreement": 88.44,
+    "note": "supplementary only; the gate uses alpha and the clear-consensus fraction"
+   },
+   "consensus": {
+    "n_items": 3900,
+    "no_consensus": 259,
+    "consensus_fraction": 0.9336,
+    "consensus_fraction_wilson95": [
+     0.9253,
+     0.941
+    ],
+    "classes": {
+     "delivery": {
+      "n": 7,
+      "share_of_consensus": 0.0019,
+      "wilson95": [
+       0.0009,
+       0.004
+      ],
+      "insufficient_data": true
+     },
+     "other": {
+      "n": 324,
+      "share_of_consensus": 0.089,
+      "wilson95": [
+       0.0802,
+       0.0987
+      ],
+      "insufficient_data": false
+     },
+     "praise": {
+      "n": 2914,
+      "share_of_consensus": 0.8003,
+      "wilson95": [
+       0.787,
+       0.813
+      ],
+      "insufficient_data": false
+     },
+     "product_issue": {
+      "n": 394,
+      "share_of_consensus": 0.1082,
+      "wilson95": [
+       0.0985,
+       0.1187
+      ],
+      "insufficient_data": false
+     },
+     "service": {
+      "n": 2,
+      "share_of_consensus": 0.0005,
+      "wilson95": [
+       0.0002,
+       0.002
+      ],
+      "insufficient_data": true
+     }
+    }
+   }
+  },
+  "T2_sentiment": {
+   "n_units": 3900,
+   "alpha": 0.6601,
+   "fleiss_kappa": 0.6602,
+   "fleiss_n_complete": 3887,
+   "pairwise_agreement": 0.8834,
+   "clear_consensus": 0.9123,
+   "unanimous": 0.8197,
+   "gate": "FAIL",
+   "supplementary": {
+    "gwet_ac1": 0.8684,
+    "raw_percent_agreement": 88.34,
+    "note": "supplementary only; the gate uses alpha and the clear-consensus fraction"
+   },
+   "consensus": {
+    "n_items": 3900,
+    "no_consensus": 342,
+    "consensus_fraction": 0.9123,
+    "consensus_fraction_wilson95": [
+     0.903,
+     0.9208
+    ],
+    "classes": {
+     "mixed": {
+      "n": 90,
+      "share_of_consensus": 0.0253,
+      "wilson95": [
+       0.0206,
+       0.031
+      ],
+      "insufficient_data": false
+     },
+     "negative": {
+      "n": 335,
+      "share_of_consensus": 0.0942,
+      "wilson95": [
+       0.085,
+       0.1042
+      ],
+      "insufficient_data": false
+     },
+     "neutral": {
+      "n": 54,
+      "share_of_consensus": 0.0152,
+      "wilson95": [
+       0.0117,
+       0.0197
+      ],
+      "insufficient_data": false
+     },
+     "positive": {
+      "n": 3079,
+      "share_of_consensus": 0.8654,
+      "wilson95": [
+       0.8538,
+       0.8762
+      ],
+      "insufficient_data": false
+     }
+    }
+   }
+  },
+  "T3_urgency": {
+   "n_units": 3900,
+   "alpha": 0.7265,
+   "fleiss_kappa": 0.6723,
+   "fleiss_n_complete": 3887,
+   "pairwise_agreement": 0.9357,
+   "clear_consensus": 0.9644,
+   "unanimous": 0.8844,
+   "gate": "USABLE-WITH-CAVEAT",
+   "supplementary": {
+    "gwet_ac1": 0.9288,
+    "raw_percent_agreement": 93.57,
+    "note": "supplementary only; the gate uses alpha and the clear-consensus fraction"
+   },
+   "consensus": {
+    "n_items": 3900,
+    "no_consensus": 139,
+    "consensus_fraction": 0.9644,
+    "consensus_fraction_wilson95": [
+     0.9581,
+     0.9697
+    ],
+    "classes": {
+     "high": {
+      "n": 31,
+      "share_of_consensus": 0.0082,
+      "wilson95": [
+       0.0058,
+       0.0117
+      ],
+      "insufficient_data": false
+     },
+     "low": {
+      "n": 3435,
+      "share_of_consensus": 0.9133,
+      "wilson95": [
+       0.9039,
+       0.9219
+      ],
+      "insufficient_data": false
+     },
+     "medium": {
+      "n": 295,
+      "share_of_consensus": 0.0784,
+      "wilson95": [
+       0.0703,
+       0.0875
+      ],
+      "insufficient_data": false
+     }
+    }
+   }
+  },
+  "T6_aspect_sentiment_beauty": {
+   "n_units": 2196,
+   "alpha": 0.6868,
+   "fleiss_kappa": 0.7761,
+   "fleiss_n_complete": 1080,
+   "pairwise_agreement": 0.8941,
+   "clear_consensus": 0.8807,
+   "unanimous": 0.8338,
+   "gate": "USABLE-WITH-CAVEAT"
+  },
+  "T6_aspect_sentiment_food": {
+   "n_units": 1281,
+   "alpha": 0.6885,
+   "fleiss_kappa": 0.7785,
+   "fleiss_n_complete": 260,
+   "pairwise_agreement": 0.8685,
+   "clear_consensus": 0.8564,
+   "unanimous": 0.8267,
+   "gate": "USABLE-WITH-CAVEAT"
+  }
+ },
+ "consistency_two_judge_vs_four_judge": {
+  "caveat": "not independent: the two-judge labels are built from a subset of the four-judge votes",
+  "n_items": 3900,
+  "needs_action": {
+   "both_labelled": 3791,
+   "agree": 3791,
+   "agreement": 1.0,
+   "agreement_wilson95": [
+    0.999,
+    1.0
+   ],
+   "two_judge_only": 109,
+   "four_judge_only": 0,
+   "neither": 0
+  },
+  "broad_intent": {
+   "both_labelled": 3641,
+   "agree": 3641,
+   "agreement": 1.0,
+   "agreement_wilson95": [
+    0.9989,
+    1.0
+   ],
+   "two_judge_only": 222,
+   "four_judge_only": 0,
+   "neither": 37
+  },
+  "sentiment": {
+   "both_labelled": 3558,
+   "agree": 3558,
+   "agreement": 1.0,
+   "agreement_wilson95": [
+    0.9989,
+    1.0
+   ],
+   "two_judge_only": 131,
+   "four_judge_only": 0,
+   "neither": 211
+  },
+  "urgency": {
+   "both_labelled": 3761,
+   "agree": 3761,
+   "agreement": 1.0,
+   "agreement_wilson95": [
+    0.999,
+    1.0
+   ],
+   "two_judge_only": 137,
+   "four_judge_only": 0,
+   "neither": 2
+  }
+ }
+}

@@ -352,7 +352,7 @@ def test_get_google_installation_pg_calls_resolve_function_then_set_tenant() -> 
         "app.api.webhooks.google.get_settings",
         return_value=_make_db_settings(),
     ):
-        with patch("app.api.webhooks.google.psycopg2.connect", return_value=conn):
+        with patch("app.api.webhooks.google.db_connect", return_value=conn):
             with patch("app.api.webhooks.google._set_tenant") as mock_set_tenant:
                 result = _get_google_installation_pg("accounts/1/locations/2")
 
@@ -377,7 +377,7 @@ def test_get_google_installation_pg_unresolved_location_returns_none_without_set
         "app.api.webhooks.google.get_settings",
         return_value=_make_db_settings(),
     ):
-        with patch("app.api.webhooks.google.psycopg2.connect", return_value=conn):
+        with patch("app.api.webhooks.google.db_connect", return_value=conn):
             with patch("app.api.webhooks.google._set_tenant") as mock_set_tenant:
                 result = _get_google_installation_pg("accounts/1/locations/nonexistent")
 
@@ -396,7 +396,7 @@ def test_get_google_installation_pg_resolve_function_missing_fails_safe() -> Non
         "app.api.webhooks.google.get_settings",
         return_value=_make_db_settings(),
     ):
-        with patch("app.api.webhooks.google.psycopg2.connect", return_value=conn):
+        with patch("app.api.webhooks.google.db_connect", return_value=conn):
             result = _get_google_installation_pg("accounts/1/locations/2")
 
     assert result is None
