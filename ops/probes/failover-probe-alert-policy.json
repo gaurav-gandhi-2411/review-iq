@@ -1,0 +1,30 @@
+{
+  "displayName": "__NAME__",
+  "documentation": {
+    "mimeType": "text/markdown",
+    "content": "The nightly failover probe (Cloud Run Job `failover-probe`) failed, or its Cloud Scheduler trigger errored. The production secondary (Groq shared-account key) may not be able to take over if the primary fails. See ops/runbooks/failover-probe.md: inspect with `gcloud run jobs executions list --job=failover-probe`."
+  },
+  "combiner": "OR",
+  "conditions": [
+    {
+      "displayName": "Failover probe error logs > 0",
+      "conditionThreshold": {
+        "filter": "metric.type=\"logging.googleapis.com/user/__METRIC__\" AND resource.type=one_of(\"cloud_run_job\",\"cloud_scheduler_job\")",
+        "comparison": "COMPARISON_GT",
+        "thresholdValue": 0,
+        "duration": "0s",
+        "aggregations": [
+          {
+            "alignmentPeriod": "300s",
+            "perSeriesAligner": "ALIGN_SUM",
+            "crossSeriesReducer": "REDUCE_SUM"
+          }
+        ],
+        "trigger": { "count": 1 }
+      }
+    }
+  ],
+  "alertStrategy": { "autoClose": "86400s" },
+  "notificationChannels": ["__CHANNEL__"],
+  "enabled": true
+}

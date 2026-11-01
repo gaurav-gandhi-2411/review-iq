@@ -1,0 +1,189 @@
+{
+ "spec": "docs/specs/review-intent.md Amendment 17",
+ "thresholds_sha256": "4cf745db3af848464cbd7961c536919dee3be7a78691a5c4aca8a356ab724ec2",
+ "tau": 0.07,
+ "n_items": 4200,
+ "sets": {
+  "A": {
+   "n_items": 1800,
+   "n_gold_yes": 260,
+   "min_gold_yes_required": 200
+  },
+  "S4": {
+   "n_items": 3819,
+   "n_gold_yes": 133,
+   "min_gold_yes_required": 120
+  }
+ },
+ "F1_recall_block_A": {
+  "recall_r1_plus": {
+   "k": 250,
+   "n": 260,
+   "rate": 0.9615,
+   "wilson95": [
+    0.9307,
+    0.979
+   ]
+  },
+  "recall_r1": {
+   "k": 247,
+   "n": 260,
+   "rate": 0.95,
+   "wilson95": [
+    0.9163,
+    0.9706
+   ]
+  },
+  "n_gold_yes": 260,
+  "lower_bound_required": 0.9,
+  "below_size_rule": false,
+  "met": true
+ },
+ "F2_recall_s4": {
+  "recall_r1_plus": {
+   "k": 119,
+   "n": 133,
+   "rate": 0.8947,
+   "wilson95": [
+    0.8311,
+    0.9363
+   ]
+  },
+  "recall_r1": {
+   "k": 115,
+   "n": 133,
+   "rate": 0.8647,
+   "wilson95": [
+    0.7962,
+    0.9126
+   ]
+  },
+  "n_gold_yes": 133,
+  "lower_bound_required": 0.85,
+  "below_size_rule": false,
+  "met": false
+ },
+ "F3_routed_share_block_A": {
+  "r1_plus": {
+   "k": 534,
+   "n": 1800,
+   "rate": 0.2967,
+   "wilson95": [
+    0.276,
+    0.3182
+   ]
+  },
+  "r1": {
+   "k": 481,
+   "n": 1800,
+   "rate": 0.2672,
+   "wilson95": [
+    0.2473,
+    0.2881
+   ]
+  },
+  "max": 0.3,
+  "met": true
+ },
+ "F4_non_inferior_to_llm_block_A": {
+  "llm_recall": {
+   "k": 235,
+   "n": 260,
+   "rate": 0.9038,
+   "wilson95": [
+    0.8619,
+    0.934
+   ]
+  },
+  "delta_r1_plus_minus_llm": {
+   "delta": 0.0577,
+   "boot95": [
+    0.0192,
+    0.1
+   ],
+   "n": 260
+  },
+  "margin": 0.05,
+  "llm_missing_rows": 0,
+  "met": true
+ },
+ "verdict": {
+  "F1": true,
+  "F2": false,
+  "F3": true,
+  "F4": true,
+  "criteria_met": false,
+  "failing": [
+   "F2"
+  ]
+ },
+ "report_only": {
+  "recall_by_category_block_A": {
+   "apparel": {
+    "r1_plus": {
+     "k": 106,
+     "n": 109,
+     "rate": 0.9725,
+     "wilson95": [
+      0.9222,
+      0.9906
+     ]
+    },
+    "r1": {
+     "k": 106,
+     "n": 109,
+     "rate": 0.9725,
+     "wilson95": [
+      0.9222,
+      0.9906
+     ]
+    }
+   },
+   "beauty": {
+    "r1_plus": {
+     "k": 64,
+     "n": 68,
+     "rate": 0.9412,
+     "wilson95": [
+      0.8583,
+      0.9769
+     ]
+    },
+    "r1": {
+     "k": 63,
+     "n": 68,
+     "rate": 0.9265,
+     "wilson95": [
+      0.8391,
+      0.9682
+     ]
+    }
+   },
+   "food": {
+    "r1_plus": {
+     "k": 80,
+     "n": 83,
+     "rate": 0.9639,
+     "wilson95": [
+      0.899,
+      0.9876
+     ]
+    },
+    "r1": {
+     "k": 78,
+     "n": 83,
+     "rate": 0.9398,
+     "wilson95": [
+      0.8666,
+      0.974
+     ]
+    }
+   }
+  },
+  "capacity_multiplier_r1_plus_by_open_rate": {
+   "0.0": 3.371,
+   "0.1": 2.725,
+   "0.3": 1.97
+  }
+ }
+}
