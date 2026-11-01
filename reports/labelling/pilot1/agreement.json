@@ -1,0 +1,272 @@
+{
+ "judges": [
+  "gemma2_9b",
+  "llama31_8b",
+  "mistral_7b",
+  "qwen3_8b"
+ ],
+ "n_items": 300,
+ "tasks": {
+  "T1_primary_intent": {
+   "n_units": 298,
+   "alpha": 0.6928,
+   "fleiss_kappa": 0.7066,
+   "fleiss_n_complete": 279,
+   "pairwise_agreement": 0.8494,
+   "clear_consensus": 0.8926,
+   "unanimous": 0.755,
+   "gate": "USABLE-WITH-CAVEAT"
+  },
+  "T2_sentiment": {
+   "n_units": 298,
+   "alpha": 0.7717,
+   "fleiss_kappa": 0.7797,
+   "fleiss_n_complete": 279,
+   "pairwise_agreement": 0.8967,
+   "clear_consensus": 0.9228,
+   "unanimous": 0.8289,
+   "gate": "USABLE-WITH-CAVEAT"
+  },
+  "T3_urgency": {
+   "n_units": 298,
+   "alpha": 0.7156,
+   "fleiss_kappa": 0.6412,
+   "fleiss_n_complete": 279,
+   "pairwise_agreement": 0.8707,
+   "clear_consensus": 0.9161,
+   "unanimous": 0.7718,
+   "gate": "USABLE-WITH-CAVEAT"
+  },
+  "T4_buy_again": {
+   "n_units": 298,
+   "alpha": 0.4165,
+   "fleiss_kappa": 0.428,
+   "fleiss_n_complete": 279,
+   "pairwise_agreement": 0.6278,
+   "clear_consensus": 0.8087,
+   "unanimous": 0.3087,
+   "gate": "FAIL"
+  },
+  "T5_rating_text_mismatch": {
+   "n_units": 300,
+   "alpha": 0.392,
+   "fleiss_kappa": 0.3915,
+   "fleiss_n_complete": 300,
+   "pairwise_agreement": 0.7878,
+   "clear_consensus": 0.8567,
+   "unanimous": 0.6233,
+   "gate": "FAIL"
+  },
+  "T1b_intent_presence_per_class": {
+   "product_defect": {
+    "n_units": 298,
+    "alpha": 0.65,
+    "fleiss_kappa": 0.6508,
+    "fleiss_n_complete": 279,
+    "pairwise_agreement": 0.8546,
+    "clear_consensus": 0.9195,
+    "unanimous": 0.7315
+   },
+   "delivery": {
+    "n_units": 298,
+    "alpha": 0.2382,
+    "fleiss_kappa": 0.2502,
+    "fleiss_n_complete": 279,
+    "pairwise_agreement": 0.944,
+    "clear_consensus": 0.953,
+    "unanimous": 0.9027
+   },
+   "customer_service": {
+    "n_units": 298,
+    "alpha": 0.2658,
+    "fleiss_kappa": 0.2922,
+    "fleiss_n_complete": 279,
+    "pairwise_agreement": 0.9561,
+    "clear_consensus": 0.9765,
+    "unanimous": 0.9161
+   },
+   "pricing": {
+    "n_units": 298,
+    "alpha": 0.2363,
+    "fleiss_kappa": 0.2569,
+    "fleiss_n_complete": 279,
+    "pairwise_agreement": 0.8557,
+    "clear_consensus": 0.9195,
+    "unanimous": 0.7349
+   },
+   "praise": {
+    "n_units": 298,
+    "alpha": 0.6901,
+    "fleiss_kappa": 0.7007,
+    "fleiss_n_complete": 279,
+    "pairwise_agreement": 0.8881,
+    "clear_consensus": 0.9362,
+    "unanimous": 0.7886
+   },
+   "question": {
+    "n_units": 298,
+    "alpha": 0.1617,
+    "fleiss_kappa": 0.1606,
+    "fleiss_n_complete": 279,
+    "pairwise_agreement": 0.9885,
+    "clear_consensus": 0.9933,
+    "unanimous": 0.9799
+   },
+   "return_refund_request": {
+    "n_units": 298,
+    "alpha": 0.5079,
+    "fleiss_kappa": 0.5433,
+    "fleiss_n_complete": 279,
+    "pairwise_agreement": 0.9746,
+    "clear_consensus": 0.9899,
+    "unanimous": 0.9497
+   },
+   "suggestion": {
+    "n_units": 298,
+    "alpha": 0.1873,
+    "fleiss_kappa": 0.1822,
+    "fleiss_n_complete": 279,
+    "pairwise_agreement": 0.8234,
+    "clear_consensus": 0.8691,
+    "unanimous": 0.6745
+   },
+   "competitor_comparison": {
+    "n_units": 298,
+    "alpha": 0.2172,
+    "fleiss_kappa": 0.2157,
+    "fleiss_n_complete": 279,
+    "pairwise_agreement": 0.9694,
+    "clear_consensus": 0.9933,
+    "unanimous": 0.943
+   },
+   "spam_irrelevant": {
+    "n_units": 298,
+    "alpha": 0.3006,
+    "fleiss_kappa": 0.2995,
+    "fleiss_n_complete": 279,
+    "pairwise_agreement": 0.9844,
+    "clear_consensus": 0.9899,
+    "unanimous": 0.9732
+   }
+  },
+  "T1b_intent_presence_macro_alpha": 0.3455,
+  "T6_aspect_presence_beauty": {
+   "n_units": 600,
+   "alpha": 0.3313,
+   "fleiss_kappa": 0.3228,
+   "fleiss_n_complete": 560,
+   "pairwise_agreement": 0.6647,
+   "clear_consensus": 0.785,
+   "unanimous": 0.4067,
+   "gate": "FAIL"
+  },
+  "T6_aspect_sentiment_beauty": {
+   "n_units": 200,
+   "alpha": 0.6579,
+   "fleiss_kappa": 0.5795,
+   "fleiss_n_complete": 125,
+   "pairwise_agreement": 0.826,
+   "clear_consensus": 0.81,
+   "unanimous": 0.685,
+   "gate": "FAIL"
+  },
+  "T6_aspect_presence_apparel": {
+   "n_units": 584,
+   "alpha": 0.3328,
+   "fleiss_kappa": 0.3561,
+   "fleiss_n_complete": 480,
+   "pairwise_agreement": 0.6727,
+   "clear_consensus": 0.726,
+   "unanimous": 0.4281,
+   "gate": "FAIL"
+  },
+  "T6_aspect_sentiment_apparel": {
+   "n_units": 231,
+   "alpha": 0.704,
+   "fleiss_kappa": 0.7759,
+   "fleiss_n_complete": 128,
+   "pairwise_agreement": 0.8566,
+   "clear_consensus": 0.8485,
+   "unanimous": 0.7792,
+   "gate": "USABLE-WITH-CAVEAT"
+  },
+  "T6_aspect_presence_food": {
+   "n_units": 600,
+   "alpha": 0.2289,
+   "fleiss_kappa": 0.2352,
+   "fleiss_n_complete": 592,
+   "pairwise_agreement": 0.6421,
+   "clear_consensus": 0.785,
+   "unanimous": 0.3517,
+   "gate": "FAIL"
+  },
+  "T6_aspect_sentiment_food": {
+   "n_units": 130,
+   "alpha": 0.7108,
+   "fleiss_kappa": 0.8059,
+   "fleiss_n_complete": 55,
+   "pairwise_agreement": 0.8301,
+   "clear_consensus": 0.7462,
+   "unanimous": 0.7077,
+   "gate": "USABLE-WITH-CAVEAT"
+  }
+ },
+ "by_stratum": {
+  "apparel": {
+   "T1_primary_intent": {
+    "alpha": 0.6448,
+    "clear_consensus": 0.863
+   },
+   "T2_sentiment": {
+    "alpha": 0.7726,
+    "clear_consensus": 0.9452
+   },
+   "T3_urgency": {
+    "alpha": 0.7403,
+    "clear_consensus": 0.8904
+   }
+  },
+  "beauty": {
+   "T1_primary_intent": {
+    "alpha": 0.6683,
+    "clear_consensus": 0.9067
+   },
+   "T2_sentiment": {
+    "alpha": 0.7875,
+    "clear_consensus": 0.9333
+   },
+   "T3_urgency": {
+    "alpha": 0.8015,
+    "clear_consensus": 0.9467
+   }
+  },
+  "food": {
+   "T1_primary_intent": {
+    "alpha": 0.7733,
+    "clear_consensus": 0.9067
+   },
+   "T2_sentiment": {
+    "alpha": 0.692,
+    "clear_consensus": 0.88
+   },
+   "T3_urgency": {
+    "alpha": 0.6352,
+    "clear_consensus": 0.92
+   }
+  },
+  "vernacular": {
+   "T1_primary_intent": {
+    "alpha": 0.653,
+    "clear_consensus": 0.8933
+   },
+   "T2_sentiment": {
+    "alpha": 0.8324,
+    "clear_consensus": 0.9333
+   },
+   "T3_urgency": {
+    "alpha": 0.6957,
+    "clear_consensus": 0.9067
+   }
+  }
+ }
+}
