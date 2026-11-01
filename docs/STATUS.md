@@ -1,9 +1,36 @@
 # Samidha Reviews: status
 
-Updated at the end of every session. Last update: 2026-10-25 (S31, autonomous, 2026-10-23 to 25; S29 on 2026-10-20; S28 on 2026-10-19; S27 on 2026-10-18; S26 and S25 the same day, S24 on 2026-10-17; S23 text below is kept where still true and corrected where S24 changed it). Labels: VERIFIED = observed this
+Updated at the end of every session. Last update: 2026-11-01 (S34; S33 on 2026-10-30/31; S32 on 2026-10-29; earlier: S31, autonomous, 2026-10-23 to 25; S29 on 2026-10-20; S28 on 2026-10-19; S27 on 2026-10-18; S26 and S25 the same day, S24 on 2026-10-17; S23 text below is kept where still true and corrected where S24 changed it). Labels: VERIFIED = observed this
 session or by a committed artifact (command and output exist); BELIEVED = inferred or stated by someone else,
 not observed. Synthetic = produced on generated data, never a statement about real customers.
 
+
+## Sessions 33 and 34 (autonomous, 2026-10-30 to 2026-11-01): the S4 question, answered
+
+Handoff: `docs/HANDOFF_S34.md`. Records: `docs/autonomy/S33_PROGRESS.md`, `S34_PROGRESS.md`.
+
+- **The S32 S4 check ran once in S33 and took branch D1, on a thin margin** (#635; VERIFIED, verifier 85/85).
+  - It was INCOMPLETE: 147 of 259 120b rows, under a timing deviation logged before the run.
+  - Pooled R1+ minus 120b: 0.000 [-0.048, +0.048].
+  - R1+ minus 20b: +0.112 [0.058, 0.166].
+- **Amendment 18 PASSED (P1)** (#648; VERIFIED, verifier 31/31). Amendment 18 is in `docs/specs/review-intent.md` (#638).
+  - fresh18: 8,100 S4 items, 301 gold-yes.
+  - R1+ 0.944 vs gpt-oss-20b 0.861; paired delta **+0.083 [0.040, 0.126]** > -0.05; McNemar 35 vs 10.
+  - Results: `docs/reports/a18-fresh18-results.md`.
+  - It shows non-inferiority to the LLM path the product can run itself. It does **not** show parity with 120b: the registered 120b secondary is
+    blocked by triage-iq's recording on the shared pool (deadline 2026-11-15).
+  - **A17's F2 failure stands.**
+- **Router enable plan: PARKED for GG** (`docs/plans/router-enable-plan.md`, #649 draft). **The served path implements R1 only**; R1+ (the
+  evaluated router: R1 OR p(needs_action = yes) >= 0.07) needs a step-2 PR with a parity test before the flag can be turned on. Router stays OFF.
+- **Tooling:**
+  - Secrets hook uses an absolute path (#631).
+  - No-cd rule (#632).
+  - Per-project ledger caps are a first-sale runbook step (#639), not adopted.
+  - Kaggle panel pull retry (#645) and stage P2 (#647).
+  - Groq 120b runner for the secondary (#646).
+- **Finding for claude-config:** `hook_strip_trailer.py` amends whatever HEAD is after a Bash call that contains a commit statement. Twice it
+  rewrote main's GitHub squash commit locally (identical tree; realigned). See the handoff, section 4.
+- Production: 0 changes. Daily checks on 10-31 and 11-01 were clean.
 
 ## Session 32 (autonomous, 2026-10-29): decisions recorded
 
@@ -539,7 +566,16 @@ branch for a few minutes (fixed in `c969e11`, nothing merged).
 
 ## GG must do
 
-S29, in unblock order:
+S34, in unblock order (details: `docs/HANDOFF_S34.md`, section 8):
+
+1. Router: read the enable plan (#649, draft). Enabling is your decision. My recommendation is to wait for a paying customer. If you go
+   ahead, step 2 (served R1+) gets written first, then the gate-4 chain #396 → #576 (apply the migration) → #578 → #579 → #634.
+2. The A18 120b secondary needs nothing from you. It runs once triage-iq's recorder releases the shared 120b pool; the commands are in the
+   handoff. Deadline 2026-11-15.
+3. claude-config #77, plus a fix to `hook_strip_trailer.py` so it only amends a commit made in the same call.
+4. Older items, unchanged: #502, #586, #588, #610, and the gate-4 PRs #485, #508, #512, #499 and #472.
+
+S29 (kept for reference), in unblock order:
 
 1. **Dropped food-delivery data is still reachable on GitHub.** Its ids and labels were in the closed PRs #486 and #487 since 2026-10-12 (GitHub keeps
    `refs/pull/N/head` for a closed PR even after the branch is deleted, so deleting the S29 archive branches did not remove them). Only GitHub Support can
