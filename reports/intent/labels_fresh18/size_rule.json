@@ -1,0 +1,16 @@
+{
+ "rule": {
+  "S4_gold_yes_min": 300,
+  "top_up": "block S2, 400 per category, seed 52, only if short"
+ },
+ "subset_size": 8100,
+ "gold_yes": 301,
+ "gold_no": 7673,
+ "no_consensus": 126,
+ "gold_yes_by_category": {
+  "apparel": 170,
+  "beauty": 49,
+  "food": 82
+ },
+ "met": true
+}

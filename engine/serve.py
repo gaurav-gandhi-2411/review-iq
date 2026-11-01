@@ -33,7 +33,9 @@ class Predictor:
         from transformers import AutoTokenizer
 
         d = Path(artifact_dir)
-        so = ort.SessionOptions()
+        from app.core.classify.ort_numerics import apply_numerics_pin
+
+        so = apply_numerics_pin(ort.SessionOptions())
         so.intra_op_num_threads = threads
         self.sess = ort.InferenceSession(
             str(d / "model.int8.onnx"), so, providers=["CPUExecutionProvider"]

@@ -9,6 +9,7 @@ cap).  A REAL provider reachability probe is available behind ?deep=1.
 from __future__ import annotations
 
 import asyncio
+import time
 from typing import Any
 
 import structlog
@@ -17,6 +18,7 @@ from fastapi.responses import JSONResponse
 from starlette import status
 
 from app.core.config import get_settings
+from app.core.db_pool import pooled_connection
 
 log = structlog.get_logger(__name__)
 
@@ -26,7 +28,16 @@ router = APIRouter(tags=["ops"])
 # Internal DB ping helpers
 # ---------------------------------------------------------------------------
 
-_DB_PING_TIMEOUT_SECONDS = 2  # short-circuit so /health never hangs
+_DB_PING_TIMEOUT_SECONDS = 2  # SQLite (local) path: short-circuit so /health never hangs
+
+# Postgres budget history: the original 2s connect / 3s outer guard sat only ~1.2s above the
+# measured healthy ping (median 1.77s, min 1.74s over 19,745 Cloud Monitoring probes,
+# 2026-10-10..12). One lost SYN (+1.0s) was survivable (14 pings landed at 2.0-2.8s), but a
+# second stall was reported as a DB outage (23 x 503 at exactly 3.00s). The outer guard stays
+# below the uptime check's 10s timeout so a real outage still answers 503, not a probe timeout.
+_PG_PING_CONNECT_TIMEOUT_SECONDS = 6
+_PG_PING_TIMEOUT_SECONDS = 8  # outer guard; must stay < the 10s uptime-check timeout
+_PG_PING_SLOW_SECONDS = 2.5  # healthy median is ~1.8s; above this log health.db_slow
 
 
 async def _ping_postgres(dsn: str) -> None:
@@ -35,28 +46,44 @@ async def _ping_postgres(dsn: str) -> None:
     Raises on any connection or query error.  Uses psycopg2 via
     asyncio.to_thread so it does not block the event loop.
 
+    On failure the exception gains a ``ping_diag`` dict (stage reached, connect_ms,
+    elapsed_ms): an asyncio timeout stringifies to "", which left every db_timeout event
+    undiagnosable. health() logs it.
+
     _set_tenant() EXEMPT (BYPASSRLS remediation, 2c): `SELECT 1` touches no table and
     reads no tenant data -- there is no RLS-governed row for a tenant context to scope.
     Every other public.* call site in this codebase must call _set_tenant() or carry an
     equivalent documented exemption; this is the health-check exemption.
     """
-    import psycopg2
+    t0 = time.perf_counter()
+    diag: dict[str, Any] = {"stage": "connect"}
 
     def _sync_ping() -> None:
         # No _set_tenant() needed: SELECT 1 touches no table, so RLS/tenant-scoping is
         # not applicable -- this connection never reads org-scoped data (BYPASSRLS
         # remediation audit, 2026-08-01: intentional, not an oversight).
-        conn = psycopg2.connect(dsn, connect_timeout=_DB_PING_TIMEOUT_SECONDS)
-        try:
-            cur = conn.cursor()
-            cur.execute("SELECT 1")
-        finally:
-            conn.close()
+        # S23: borrow from the shared pool; validate=True makes the borrow itself the ping
+        # (one autocommit SELECT 1 round trip on a reused connection, ~0.22 s, versus a new
+        # connection at p50 1.77 s). The "connect" stage therefore covers borrow + validation.
+        with pooled_connection(
+            dsn, validate=True, connect_timeout=_PG_PING_CONNECT_TIMEOUT_SECONDS
+        ):
+            diag["connect_ms"] = round((time.perf_counter() - t0) * 1000)
+            diag["stage"] = "done"
 
-    await asyncio.wait_for(
-        asyncio.to_thread(_sync_ping),
-        timeout=_DB_PING_TIMEOUT_SECONDS + 1,  # outer guard: thread connect_timeout + 1s
-    )
+    try:
+        await asyncio.wait_for(asyncio.to_thread(_sync_ping), timeout=_PG_PING_TIMEOUT_SECONDS)
+    except Exception as exc:
+        diag["elapsed_ms"] = round((time.perf_counter() - t0) * 1000)
+        exc.ping_diag = dict(diag)  # type: ignore[attr-defined]  # read back in health()
+        raise
+    elapsed = time.perf_counter() - t0
+    if elapsed > _PG_PING_SLOW_SECONDS:
+        log.warning(
+            "health.db_slow",
+            elapsed_ms=round(elapsed * 1000),
+            connect_ms=diag.get("connect_ms"),
+        )
 
 
 async def _ping_sqlite(db_url: str) -> None:
@@ -198,6 +225,8 @@ async def health(
             db_backend=db_backend,
             reason=db_safe_reason,
             error=str(db_exc),
+            exc_type=type(db_exc).__name__,
+            **getattr(db_exc, "ping_diag", {}),
             exc_info=True,
         )
 

@@ -1,0 +1,186 @@
+{
+ "spec": "docs/specs/review-intent.md Amendment 15 (error analysis, S29); descriptive, nothing tuned",
+ "n_gold_yes": 306,
+ "n_missed": 14,
+ "tally_of_misses": {
+  "4-0 yes": 8,
+  "3-1 yes": 6
+ },
+ "recall_by_stars": {
+  ">=4 stars": {
+   "k": 58,
+   "n": 67,
+   "rate": 0.8657,
+   "wilson95": [
+    0.764,
+    0.9277
+   ]
+  },
+  "<=3 stars": {
+   "k": 234,
+   "n": 239,
+   "rate": 0.9791,
+   "wilson95": [
+    0.952,
+    0.991
+   ]
+  }
+ },
+ "recall_by_length": {
+  "<= 128 tokens": {
+   "k": 232,
+   "n": 239,
+   "rate": 0.9707,
+   "wilson95": [
+    0.9408,
+    0.9857
+   ]
+  },
+  "> 128 tokens (head-truncated)": {
+   "k": 60,
+   "n": 67,
+   "rate": 0.8955,
+   "wilson95": [
+    0.7997,
+    0.9485
+   ]
+  }
+ },
+ "median_tokens": {
+  "missed": 130.5,
+  "routed gold-yes": 80.0
+ },
+ "frame_counts": {
+  "negative": 1,
+  "negative, no concrete request": 4,
+  "positive, embedded problem": 9
+ },
+ "misses": [
+  {
+   "id": "fresh15-apparel-0074",
+   "stars": 1.0,
+   "n_tokens": 148,
+   "panel_yes_of_4": 4,
+   "encoder_p_yes": 0.101,
+   "signal": "fit complaint (garment too small and short)",
+   "frame": "negative"
+  },
+  {
+   "id": "fresh15-apparel-0083",
+   "stars": 5.0,
+   "n_tokens": 25,
+   "panel_yes_of_4": 4,
+   "encoder_p_yes": 0.077,
+   "signal": "explicit return for size (runs big)",
+   "frame": "positive, embedded problem"
+  },
+  {
+   "id": "fresh15-apparel-0133",
+   "stars": 4.0,
+   "n_tokens": 134,
+   "panel_yes_of_4": 4,
+   "encoder_p_yes": 0.051,
+   "signal": "exchange for a defect (missing buttons)",
+   "frame": "positive, embedded problem"
+  },
+  {
+   "id": "fresh15-apparel-0145",
+   "stars": 4.0,
+   "n_tokens": 134,
+   "panel_yes_of_4": 3,
+   "encoder_p_yes": 0.05,
+   "signal": "defect (button comes undone), 'my only complaint'",
+   "frame": "positive, embedded problem"
+  },
+  {
+   "id": "fresh15-apparel-0220",
+   "stars": 4.0,
+   "n_tokens": 122,
+   "panel_yes_of_4": 4,
+   "encoder_p_yes": 0.045,
+   "signal": "defect (embroidery unravelling), asks what to do",
+   "frame": "positive, embedded problem"
+  },
+  {
+   "id": "fresh15-apparel-0230",
+   "stars": 4.0,
+   "n_tokens": 37,
+   "panel_yes_of_4": 4,
+   "encoder_p_yes": 0.111,
+   "signal": "durability worry (snags easily)",
+   "frame": "positive, embedded problem"
+  },
+  {
+   "id": "fresh15-apparel-0282",
+   "stars": 4.0,
+   "n_tokens": 127,
+   "panel_yes_of_4": 3,
+   "encoder_p_yes": 0.074,
+   "signal": "returned for itchy fabric",
+   "frame": "positive, embedded problem"
+  },
+  {
+   "id": "fresh15-apparel-0536",
+   "stars": 5.0,
+   "n_tokens": 135,
+   "panel_yes_of_4": 3,
+   "encoder_p_yes": 0.013,
+   "signal": "exchanging for size",
+   "frame": "positive, embedded problem"
+  },
+  {
+   "id": "fresh15-beauty-0059",
+   "stars": 3.0,
+   "n_tokens": 78,
+   "panel_yes_of_4": 4,
+   "encoder_p_yes": 0.123,
+   "signal": "underperforms (residue), does not recommend",
+   "frame": "negative, no concrete request"
+  },
+  {
+   "id": "fresh15-beauty-0304",
+   "stars": 4.0,
+   "n_tokens": 87,
+   "panel_yes_of_4": 4,
+   "encoder_p_yes": 0.06,
+   "signal": "design flaw (no applicator)",
+   "frame": "positive, embedded problem"
+  },
+  {
+   "id": "fresh15-food-0059",
+   "stars": 4.0,
+   "n_tokens": 236,
+   "panel_yes_of_4": 4,
+   "encoder_p_yes": 0.028,
+   "signal": "packaging damage risk (cue is past the 128-token cut)",
+   "frame": "positive, embedded problem"
+  },
+  {
+   "id": "fresh15-food-0066",
+   "stars": 1.0,
+   "n_tokens": 47,
+   "panel_yes_of_4": 3,
+   "encoder_p_yes": 0.016,
+   "signal": "taste dislike only",
+   "frame": "negative, no concrete request"
+  },
+  {
+   "id": "fresh15-food-0523",
+   "stars": 1.0,
+   "n_tokens": 137,
+   "panel_yes_of_4": 3,
+   "encoder_p_yes": 0.078,
+   "signal": "taste dislike only",
+   "frame": "negative, no concrete request"
+  },
+  {
+   "id": "fresh15-food-0616",
+   "stars": 1.0,
+   "n_tokens": 215,
+   "panel_yes_of_4": 3,
+   "encoder_p_yes": 0.047,
+   "signal": "taste dislike only",
+   "frame": "negative, no concrete request"
+  }
+ ]
+}

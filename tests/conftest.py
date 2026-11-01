@@ -39,7 +39,13 @@ def _demo_quota_allows_by_default():  # type: ignore[return]
     fail-closed exception handler, for reasons unrelated to what those tests actually
     check. Tests that specifically exercise quota-exhaustion behavior (tests/unit/
     test_demo_quota.py) override this default explicitly, per-test.
+
+    Also empties the process-wide trailing-24h token ledger so one test's admissions never
+    consume another test's demo headroom.
     """
+    from app.core.token_ledger import demo_ledger
+
+    demo_ledger.clear()
     with (
         patch("app.api.demo.check_and_increment_demo_request_pg", return_value=True),
         patch("app.api.demo.record_demo_extraction_cost_pg", return_value="mock-cost-id"),

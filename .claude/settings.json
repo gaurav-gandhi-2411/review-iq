@@ -11,7 +11,7 @@
       {
         "matcher": "Bash|PowerShell|Read|Grep|Glob",
         "hooks": [
-          { "type": "command", "command": "python scripts/hook_guard_secrets.py", "timeout": 10 }
+          { "type": "command", "command": "python \"C:/Users/gaura/ml-projects/review-iq/scripts/hook_guard_secrets.py\"", "timeout": 10 }
         ]
       }
     ],
@@ -19,7 +19,7 @@
       {
         "matcher": "Bash|PowerShell|Read|Grep",
         "hooks": [
-          { "type": "command", "command": "python scripts/hook_guard_secrets.py", "timeout": 10 }
+          { "type": "command", "command": "python \"C:/Users/gaura/ml-projects/review-iq/scripts/hook_guard_secrets.py\"", "timeout": 10 }
         ]
       }
     ]

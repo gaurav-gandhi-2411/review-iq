@@ -1,0 +1,17 @@
+{
+ "comparison": "reports/intent/run3/comparison.json",
+ "safety": "reports/intent/run3/safety_eval.json",
+ "meta": "reports/intent/run3/metadata.json",
+ "meta_run2_local": "reports/intent/run2_local/metadata.json",
+ "eval": "reports/intent/eval_run3.json",
+ "cpu": {
+  "fp32_cpu": "reports/intent/eval_run3_fp32_cpu.json",
+  "int8_linear": "reports/intent/eval_run3_int8_linear.json",
+  "int8_full": "reports/intent/eval_run3_int8_full.json",
+  "int8_perchannel": "reports/intent/eval_run3_int8_perchannel.json",
+  "int8_perchannel_full": "reports/intent/eval_run3_int8_perchannel_full.json",
+  "int8_ffn_full": "reports/intent/eval_run3_int8_ffn_full.json"
+ },
+ "quant": "reports/intent/run3_cpu/metadata.json",
+ "latency": "reports/intent/latency_run3.json"
+}
