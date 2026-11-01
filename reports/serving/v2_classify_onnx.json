@@ -1,0 +1,424 @@
+{
+ "code_commit": "668ad9d",
+ "labels": "silver (four-judge panel consensus), not human gold",
+ "candidates": [
+  {
+   "candidate": "fp32 ONNX export (control)",
+   "kind": "control",
+   "validation_argmax_agreement_with_fp32": {
+    "needs_action": 1.0,
+    "broad_intent": 1.0,
+    "sentiment": 1.0,
+    "urgency": 1.0,
+    "mean": 1.0
+   }
+  },
+  {
+   "candidate": "int8 per-row embedding table only (control)",
+   "kind": "control",
+   "validation_argmax_agreement_with_fp32": {
+    "needs_action": 1.0,
+    "broad_intent": 0.9957,
+    "sentiment": 1.0,
+    "urgency": 1.0,
+    "mean": 0.9989
+   }
+  },
+  {
+   "candidate": "s1_ffn_minmax",
+   "kind": "registered",
+   "validation_argmax_agreement_with_fp32": {
+    "needs_action": 0.8674,
+    "broad_intent": 0.8348,
+    "sentiment": 0.9065,
+    "urgency": 0.8457,
+    "mean": 0.8636
+   }
+  },
+  {
+   "candidate": "s2_ffn_percentile",
+   "kind": "registered",
+   "validation_argmax_agreement_with_fp32": {
+    "needs_action": 0.8522,
+    "broad_intent": 0.8326,
+    "sentiment": 0.8804,
+    "urgency": 0.8391,
+    "mean": 0.8511
+   }
+  },
+  {
+   "candidate": "s3_all_minmax",
+   "kind": "registered",
+   "validation_argmax_agreement_with_fp32": {
+    "needs_action": 0.8326,
+    "broad_intent": 0.7739,
+    "sentiment": 0.8696,
+    "urgency": 0.8283,
+    "mean": 0.8261
+   }
+  },
+  {
+   "candidate": "d1_ffn_out_minmax",
+   "kind": "post-hoc diagnostic",
+   "validation_argmax_agreement_with_fp32": {
+    "needs_action": 0.8652,
+    "broad_intent": 0.8261,
+    "sentiment": 0.8957,
+    "urgency": 0.8413,
+    "mean": 0.8571
+   }
+  },
+  {
+   "candidate": "d2_ffn_in_minmax",
+   "kind": "post-hoc",
+   "validation_argmax_agreement_with_fp32": {
+    "needs_action": 0.9957,
+    "broad_intent": 0.987,
+    "sentiment": 0.9848,
+    "urgency": 0.9848,
+    "mean": 0.988
+   }
+  },
+  {
+   "candidate": "m1_ffn_in_plus_safe_out (served)",
+   "kind": "post-hoc, chosen",
+   "validation_argmax_agreement_with_fp32": {
+    "needs_action": 0.9957,
+    "broad_intent": 0.9739,
+    "sentiment": 0.9783,
+    "urgency": 0.9891,
+    "mean": 0.9842
+   }
+  }
+ ],
+ "parity": {
+  "modes": {
+   "served_per_item": {
+    "n_items": 757,
+    "n_task_decisions": 3028,
+    "n_mismatches": 0,
+    "mismatches_by_task": {
+     "needs_action": 0,
+     "broad_intent": 0,
+     "sentiment": 0,
+     "urgency": 0
+    },
+    "mismatch_kinds": {
+     "abstain_vs_answer": 0,
+     "different_class": 0
+    },
+    "mismatches": [],
+    "max_abs_prob_diff": 0.0,
+    "vs_consensus_labels": {
+     "needs_action": {
+      "n_labelled": 717,
+      "coverage": 0.8815,
+      "precision_answered": 0.9889
+     },
+     "broad_intent": {
+      "n_labelled": 700,
+      "coverage": 0.75,
+      "precision_answered": 0.9829
+     },
+     "sentiment": {
+      "n_labelled": 673,
+      "coverage": 0.8529,
+      "precision_answered": 0.9913
+     },
+     "urgency": {
+      "n_labelled": 703,
+      "coverage": 0.8307,
+      "precision_answered": 0.988
+     }
+    }
+   },
+   "padded_batches_128": {
+    "n_items": 757,
+    "n_task_decisions": 3028,
+    "n_mismatches": 0,
+    "mismatches_by_task": {
+     "needs_action": 0,
+     "broad_intent": 0,
+     "sentiment": 0,
+     "urgency": 0
+    },
+    "mismatch_kinds": {
+     "abstain_vs_answer": 0,
+     "different_class": 0
+    },
+    "mismatches": [],
+    "max_abs_prob_diff": 1.0132789611816406e-06,
+    "vs_consensus_labels": {
+     "needs_action": {
+      "n_labelled": 717,
+      "coverage": 0.8815,
+      "precision_answered": 0.9889
+     },
+     "broad_intent": {
+      "n_labelled": 700,
+      "coverage": 0.75,
+      "precision_answered": 0.9829
+     },
+     "sentiment": {
+      "n_labelled": 673,
+      "coverage": 0.8529,
+      "precision_answered": 0.9913
+     },
+     "urgency": {
+      "n_labelled": 703,
+      "coverage": 0.8307,
+      "precision_answered": 0.988
+     }
+    }
+   },
+   "batch_8": {
+    "n_items": 757,
+    "n_task_decisions": 3028,
+    "n_mismatches": 0,
+    "mismatches_by_task": {
+     "needs_action": 0,
+     "broad_intent": 0,
+     "sentiment": 0,
+     "urgency": 0
+    },
+    "mismatch_kinds": {
+     "abstain_vs_answer": 0,
+     "different_class": 0
+    },
+    "mismatches": [],
+    "max_abs_prob_diff": 1.0132789611816406e-06,
+    "vs_consensus_labels": {
+     "needs_action": {
+      "n_labelled": 717,
+      "coverage": 0.8815,
+      "precision_answered": 0.9889
+     },
+     "broad_intent": {
+      "n_labelled": 700,
+      "coverage": 0.75,
+      "precision_answered": 0.9829
+     },
+     "sentiment": {
+      "n_labelled": 673,
+      "coverage": 0.8529,
+      "precision_answered": 0.9913
+     },
+     "urgency": {
+      "n_labelled": 703,
+      "coverage": 0.8307,
+      "precision_answered": 0.988
+     }
+    }
+   }
+  },
+  "tokenization": {
+   "checked": true,
+   "n_texts": 763,
+   "n_different": 0
+  },
+  "thresholds_bit_for_bit": {
+   "equal": true,
+   "committed_sha256": "0148398dc7789ec7bb70088bb29f4655cff9f4bdb406260057fa78e893050106"
+  }
+ },
+ "headline_sealed_p0.95": {
+  "needs_action": {
+   "onnx_static_int8_batch1": {
+    "threshold": 0.875378,
+    "coverage": 0.8815,
+    "coverage_ci95": [
+     0.8563,
+     0.9052
+    ],
+    "precision": 0.9889,
+    "precision_ci95": [
+     0.9795,
+     0.9953
+    ]
+   },
+   "torch_dynamic_int8_batch128": {
+    "threshold": 0.880623,
+    "coverage": 0.8006,
+    "coverage_ci95": [
+     0.7699,
+     0.8285
+    ],
+    "precision": 0.9878,
+    "precision_ci95": [
+     0.9779,
+     0.9948
+    ]
+   }
+  },
+  "broad_intent": {
+   "onnx_static_int8_batch1": {
+    "threshold": 0.888035,
+    "coverage": 0.75,
+    "coverage_ci95": [
+     0.7186,
+     0.7815
+    ],
+    "precision": 0.9829,
+    "precision_ci95": [
+     0.971,
+     0.9941
+    ]
+   },
+   "torch_dynamic_int8_batch128": {
+    "threshold": 0.826611,
+    "coverage": 0.7057,
+    "coverage_ci95": [
+     0.6729,
+     0.7386
+    ],
+    "precision": 0.9757,
+    "precision_ci95": [
+     0.9612,
+     0.9884
+    ]
+   }
+  },
+  "sentiment": {
+   "onnx_static_int8_batch1": {
+    "threshold": 0.795224,
+    "coverage": 0.8529,
+    "coverage_ci95": [
+     0.8261,
+     0.8796
+    ],
+    "precision": 0.9913,
+    "precision_ci95": [
+     0.9829,
+     0.9982
+    ]
+   },
+   "torch_dynamic_int8_batch128": {
+    "threshold": 0.835708,
+    "coverage": 0.8351,
+    "coverage_ci95": [
+     0.8068,
+     0.8633
+    ],
+    "precision": 0.9804,
+    "precision_ci95": [
+     0.9679,
+     0.9911
+    ]
+   }
+  },
+  "urgency": {
+   "onnx_static_int8_batch1": {
+    "threshold": 0.885763,
+    "coverage": 0.8307,
+    "coverage_ci95": [
+     0.7994,
+     0.8578
+    ],
+    "precision": 0.988,
+    "precision_ci95": [
+     0.9778,
+     0.995
+    ]
+   },
+   "torch_dynamic_int8_batch128": {
+    "threshold": 0.912542,
+    "coverage": 0.7568,
+    "coverage_ci95": [
+     0.7212,
+     0.7881
+    ],
+    "precision": 0.9962,
+    "precision_ci95": [
+     0.9906,
+     1.0
+    ]
+   }
+  }
+ },
+ "container_onnx": {
+  "image": "review-iq-classify:s25onnx",
+  "docker_cpus": "1",
+  "docker_memory": "1g",
+  "idle_rss_bytes": 91533312,
+  "cold_start_s": 7.54,
+  "first_request_ms": 3475.4,
+  "model_load_s": 2.94,
+  "peak_rss_after_first_request_bytes": 877375488,
+  "oom_killed": "false",
+  "batch_1": {
+   "n": 757,
+   "p50_ms": 137.2,
+   "p95_ms": 245.8,
+   "mean_ms": 148.2
+  },
+  "in_container_parity": {
+   "n_items": 757,
+   "n_mismatches_vs_offline": 0,
+   "mismatch_set_equals_host_served_per_item": true,
+   "only_in_container": 0,
+   "only_in_host": 0
+  },
+  "batch_8": {
+   "n": 200,
+   "p50_ms": 1286.4,
+   "p95_ms": 1775.1,
+   "mean_ms": 1308.1
+  },
+  "peak_rss_bytes": 902082560,
+  "cgroup_peak_incl_page_cache_bytes": 850141184,
+  "memory_limit_bytes": 1073741824,
+  "host": {
+   "platform": "Windows-10-10.0.26300-SP0",
+   "note": "shared dev machine under load; latency pessimistic"
+  },
+  "pred_dir": "reports\\intent\\run2_cpu\\onnx_static_int8",
+  "image_disk": "1.38GB (docker images, uncompressed on disk); layer content 527.7 MB"
+ },
+ "container_torch_reference": {
+  "image": {
+   "disk_usage": "2.21GB (docker images, uncompressed on disk)",
+   "content_bytes": 654417366,
+   "model_bytes": 369285238,
+   "torch_venv_mb": 686,
+   "build_s": 257
+  },
+  "run": {
+   "image": "review-iq-classify:a6local",
+   "docker_cpus": "1",
+   "docker_memory": "2g",
+   "idle_rss_bytes": 91303936,
+   "cold_start_s": 21.34,
+   "first_request_ms": 17258.6,
+   "model_load_s": 16.33,
+   "peak_rss_after_first_request_bytes": 1559371776,
+   "oom_killed": "false",
+   "batch_1": {
+    "n": 757,
+    "p50_ms": 802.9,
+    "p95_ms": 1199.6,
+    "mean_ms": 827.2
+   },
+   "in_container_parity": {
+    "n_items": 757,
+    "n_mismatches_vs_offline": 164,
+    "mismatch_set_equals_host_served_per_item": false,
+    "only_in_container": 6,
+    "only_in_host": 8
+   },
+   "batch_8": {
+    "n": 200,
+    "p50_ms": 6192.5,
+    "p95_ms": 7395.8,
+    "mean_ms": 6144.9
+   },
+   "peak_rss_bytes": 1559371776,
+   "cgroup_peak_incl_page_cache_bytes": 1086578688,
+   "memory_limit_bytes": 2147483648,
+   "host": {
+    "platform": "Windows-11-10.0.26300-SP0",
+    "note": "shared dev machine under load; latency pessimistic"
+   },
+   "pred_dir": "reports\\intent\\run2_cpu\\int8_ffn_full"
+  }
+ }
+}

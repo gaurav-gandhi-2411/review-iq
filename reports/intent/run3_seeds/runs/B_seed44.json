@@ -1,0 +1,453 @@
+{
+ "arm": "B",
+ "seed": 44,
+ "summary_commit": "2e9a267",
+ "train_commit": "2e9a267",
+ "device": "cuda",
+ "torch": "2.6.0+cu124",
+ "config": {
+  "model": "intfloat/multilingual-e5-base",
+  "epochs": 30,
+  "lr": 5e-05,
+  "batch_size": 32,
+  "seed": 44,
+  "max_len": 128,
+  "patience": 3,
+  "freeze_embeddings": true
+ },
+ "safety_stratum": "include",
+ "n_train_items": 4549,
+ "best_epoch": 9,
+ "stopped_early": true,
+ "best_val_mean_macro_f1": 0.7469382691568334,
+ "train_seconds": 836.5,
+ "variants": {
+  "fp32_gpu": {
+   "A": {
+    "threshold": {
+     "needs_action": 0.9081,
+     "broad_intent": 0.8121,
+     "sentiment": 0.9423,
+     "urgency": 0.8763
+    },
+    "argmax": {
+     "needs_action": 0.9081,
+     "broad_intent": 0.8121,
+     "sentiment": 0.9423,
+     "urgency": 0.8788
+    }
+   },
+   "B": {
+    "D_serving_default": {
+     "recall": 0.9192,
+     "precision": 0.6848,
+     "independent_positive_groups": 130
+    },
+    "S_val_f1_threshold": {
+     "recall": 0.8538,
+     "precision": 0.7577,
+     "independent_positive_groups": 130
+    },
+    "P_argmax": {
+     "recall": 0.8346,
+     "precision": 0.7695,
+     "independent_positive_groups": 130
+    }
+   },
+   "thresholds": {
+    "D_base_val": 0.224162,
+    "S_safety_val": 0.433644
+   },
+   "decision": {
+    "high": {
+     "threshold": 0.224162,
+     "n_val_positives": 8,
+     "fallback_argmax": false
+    }
+   },
+   "pred_sha256_16": {
+    "pred_aspect__beauty__fragrance.json": "cc32f691130d65b5",
+    "pred_aspect__beauty__results_efficacy.json": "5b745d93b3ded11f",
+    "pred_aspect__beauty__skin_reaction.json": "fca6f04d39363ed9",
+    "pred_aspect__beauty__texture.json": "b960662058c5dd68",
+    "pred_aspect__beauty__value.json": "e6fd9bcf4ea239cb",
+    "pred_aspect__food__efficacy_claims.json": "ca7a825ebe2fc17b",
+    "pred_aspect__food__ingredient_quality.json": "cf930e90b0d431d9",
+    "pred_aspect__food__quantity.json": "046af62e46aa1aa9",
+    "pred_aspect__food__taste.json": "306c1954bada122d",
+    "pred_aspect__food__value.json": "21f9fff8a213015d",
+    "pred_broad_intent.json": "ee567bc58cc63611",
+    "pred_needs_action.json": "49f1b5f372eead3b",
+    "pred_sentiment.json": "43752826bbd22ceb",
+    "pred_urgency.json": "18d0f112fcec0a70",
+    "safety_pred.json": "3ad5fb9fe8f4c8c0"
+   }
+  },
+  "fp32_cpu": {
+   "A": {
+    "threshold": {
+     "needs_action": 0.9081,
+     "broad_intent": 0.8121,
+     "sentiment": 0.9423,
+     "urgency": 0.8763
+    },
+    "argmax": {
+     "needs_action": 0.9081,
+     "broad_intent": 0.8121,
+     "sentiment": 0.9423,
+     "urgency": 0.8788
+    }
+   },
+   "B": {
+    "D_serving_default": {
+     "recall": 0.9192,
+     "precision": 0.6848,
+     "independent_positive_groups": 130
+    },
+    "S_val_f1_threshold": {
+     "recall": 0.8538,
+     "precision": 0.7525,
+     "independent_positive_groups": 130
+    },
+    "P_argmax": {
+     "recall": 0.8385,
+     "precision": 0.7703,
+     "independent_positive_groups": 130
+    }
+   },
+   "thresholds": {
+    "D_base_val": 0.224224,
+    "S_safety_val": 0.43325
+   },
+   "decision": {
+    "high": {
+     "threshold": 0.224224,
+     "n_val_positives": 8,
+     "fallback_argmax": false
+    }
+   },
+   "pred_sha256_16": {
+    "pred_aspect__beauty__fragrance.json": "0500b1b32d94fbb1",
+    "pred_aspect__beauty__results_efficacy.json": "7260ea4d12308570",
+    "pred_aspect__beauty__skin_reaction.json": "95e6d8fce821ec96",
+    "pred_aspect__beauty__texture.json": "c4bc06d077f6e1e3",
+    "pred_aspect__beauty__value.json": "80bd22d7b669133a",
+    "pred_aspect__food__efficacy_claims.json": "de5a95fb20594158",
+    "pred_aspect__food__ingredient_quality.json": "ae0d31e85c7ac4ab",
+    "pred_aspect__food__quantity.json": "9caee12fd75182eb",
+    "pred_aspect__food__taste.json": "93a7c23517d0576b",
+    "pred_aspect__food__value.json": "82ab717a60a27b67",
+    "pred_broad_intent.json": "f198d35ced9abba5",
+    "pred_needs_action.json": "c4ff03313f387569",
+    "pred_sentiment.json": "6f2d0610b4feb677",
+    "pred_urgency.json": "2e07f7edddd15809",
+    "safety_pred.json": "7b16bc2e5d1e4282"
+   }
+  },
+  "int8_linear": {
+   "A": {
+    "threshold": {
+     "needs_action": 0.8769,
+     "broad_intent": 0.8209,
+     "sentiment": 0.9153,
+     "urgency": 0.8714
+    },
+    "argmax": {
+     "needs_action": 0.8769,
+     "broad_intent": 0.8209,
+     "sentiment": 0.9153,
+     "urgency": 0.8716
+    }
+   },
+   "B": {
+    "D_serving_default": {
+     "recall": 0.6231,
+     "precision": 0.6835,
+     "independent_positive_groups": 130
+    },
+    "S_val_f1_threshold": {
+     "recall": 0.7923,
+     "precision": 0.5583,
+     "independent_positive_groups": 130
+    },
+    "P_argmax": {
+     "recall": 0.05,
+     "precision": 1.0,
+     "independent_positive_groups": 130
+    }
+   },
+   "thresholds": {
+    "D_base_val": 0.105342,
+    "S_safety_val": 0.078805
+   },
+   "decision": {
+    "high": {
+     "threshold": 0.105342,
+     "n_val_positives": 8,
+     "fallback_argmax": false
+    }
+   },
+   "pred_sha256_16": {
+    "pred_aspect__beauty__fragrance.json": "cbef7015587a9ec0",
+    "pred_aspect__beauty__results_efficacy.json": "e9f46e94e47a1fd0",
+    "pred_aspect__beauty__skin_reaction.json": "0a068b8a85b7c83a",
+    "pred_aspect__beauty__texture.json": "999108571d830976",
+    "pred_aspect__beauty__value.json": "45a34aaace4c03a7",
+    "pred_aspect__food__efficacy_claims.json": "a7d9e6c1bd0eedbe",
+    "pred_aspect__food__ingredient_quality.json": "389e6526b6d1b1fe",
+    "pred_aspect__food__quantity.json": "5db6856183c06c1c",
+    "pred_aspect__food__taste.json": "d39294ab3ae918b9",
+    "pred_aspect__food__value.json": "89328e5a3d2b17e7",
+    "pred_broad_intent.json": "7ad4bc1f23655913",
+    "pred_needs_action.json": "83ffc2e337700a55",
+    "pred_sentiment.json": "4c84f0d58a3ca121",
+    "pred_urgency.json": "86fad8ad113ccd1b",
+    "safety_pred.json": "cf4ac7e9a1031d37"
+   }
+  },
+  "int8_full": {
+   "A": {
+    "threshold": {
+     "needs_action": 0.897,
+     "broad_intent": 0.7979,
+     "sentiment": 0.9135,
+     "urgency": 0.8611
+    },
+    "argmax": {
+     "needs_action": 0.897,
+     "broad_intent": 0.7979,
+     "sentiment": 0.9135,
+     "urgency": 0.8692
+    }
+   },
+   "B": {
+    "D_serving_default": {
+     "recall": 0.7423,
+     "precision": 0.6287,
+     "independent_positive_groups": 130
+    },
+    "S_val_f1_threshold": {
+     "recall": 0.5462,
+     "precision": 0.7172,
+     "independent_positive_groups": 130
+    },
+    "P_argmax": {
+     "recall": 0.0615,
+     "precision": 1.0,
+     "independent_positive_groups": 130
+    }
+   },
+   "thresholds": {
+    "D_base_val": 0.086076,
+    "S_safety_val": 0.113083
+   },
+   "decision": {
+    "high": {
+     "threshold": 0.086076,
+     "n_val_positives": 8,
+     "fallback_argmax": false
+    }
+   },
+   "pred_sha256_16": {
+    "pred_aspect__beauty__fragrance.json": "623cb7e04f6aa56b",
+    "pred_aspect__beauty__results_efficacy.json": "9e7e536c1e62c241",
+    "pred_aspect__beauty__skin_reaction.json": "898e84033379e285",
+    "pred_aspect__beauty__texture.json": "d7f06aeac3611e4c",
+    "pred_aspect__beauty__value.json": "f9bb1224cf31972b",
+    "pred_aspect__food__efficacy_claims.json": "ed7472fd360a6832",
+    "pred_aspect__food__ingredient_quality.json": "ee6997747d554e5a",
+    "pred_aspect__food__quantity.json": "072f8968ecc75dbe",
+    "pred_aspect__food__taste.json": "4effdc5dbd6805be",
+    "pred_aspect__food__value.json": "6bfa74cf1318f6b6",
+    "pred_broad_intent.json": "db02554366427508",
+    "pred_needs_action.json": "ab2b1ecdba20c6ba",
+    "pred_sentiment.json": "863472f57bbda114",
+    "pred_urgency.json": "a2e06f492af242dd",
+    "safety_pred.json": "da8424cc622d62c3"
+   }
+  },
+  "int8_perchannel": {
+   "A": {
+    "threshold": {
+     "needs_action": 0.9044,
+     "broad_intent": 0.7988,
+     "sentiment": 0.9292,
+     "urgency": 0.8677
+    },
+    "argmax": {
+     "needs_action": 0.9044,
+     "broad_intent": 0.7988,
+     "sentiment": 0.9292,
+     "urgency": 0.8754
+    }
+   },
+   "B": {
+    "D_serving_default": {
+     "recall": 0.6731,
+     "precision": 0.6604,
+     "independent_positive_groups": 130
+    },
+    "S_val_f1_threshold": {
+     "recall": 0.75,
+     "precision": 0.5571,
+     "independent_positive_groups": 130
+    },
+    "P_argmax": {
+     "recall": 0.0462,
+     "precision": 1.0,
+     "independent_positive_groups": 130
+    }
+   },
+   "thresholds": {
+    "D_base_val": 0.084466,
+    "S_safety_val": 0.069584
+   },
+   "decision": {
+    "high": {
+     "threshold": 0.084466,
+     "n_val_positives": 8,
+     "fallback_argmax": false
+    }
+   },
+   "pred_sha256_16": {
+    "pred_aspect__beauty__fragrance.json": "35797ed773352623",
+    "pred_aspect__beauty__results_efficacy.json": "a30a9df7c8ba5719",
+    "pred_aspect__beauty__skin_reaction.json": "7ea79f6dc9f5bff7",
+    "pred_aspect__beauty__texture.json": "ef01e97ee5f2b9a3",
+    "pred_aspect__beauty__value.json": "30c1b545310cfb29",
+    "pred_aspect__food__efficacy_claims.json": "df36ec75e6a33624",
+    "pred_aspect__food__ingredient_quality.json": "f798e39749bb3313",
+    "pred_aspect__food__quantity.json": "afe675edcdd93536",
+    "pred_aspect__food__taste.json": "92300a138860056b",
+    "pred_aspect__food__value.json": "3e2253485e83e038",
+    "pred_broad_intent.json": "0a3d51231412763e",
+    "pred_needs_action.json": "96d5af546b960853",
+    "pred_sentiment.json": "5bd1dd77b78ec023",
+    "pred_urgency.json": "c7f64b4d8a3c445b",
+    "safety_pred.json": "cd6c7527f8183bd1"
+   }
+  },
+  "int8_perchannel_full": {
+   "A": {
+    "threshold": {
+     "needs_action": 0.8838,
+     "broad_intent": 0.7939,
+     "sentiment": 0.9274,
+     "urgency": 0.8803
+    },
+    "argmax": {
+     "needs_action": 0.8838,
+     "broad_intent": 0.7939,
+     "sentiment": 0.9274,
+     "urgency": 0.8799
+    }
+   },
+   "B": {
+    "D_serving_default": {
+     "recall": 0.4731,
+     "precision": 0.764,
+     "independent_positive_groups": 130
+    },
+    "S_val_f1_threshold": {
+     "recall": 0.6962,
+     "precision": 0.6464,
+     "independent_positive_groups": 130
+    },
+    "P_argmax": {
+     "recall": 0.0231,
+     "precision": 1.0,
+     "independent_positive_groups": 130
+    }
+   },
+   "thresholds": {
+    "D_base_val": 0.13122,
+    "S_safety_val": 0.086635
+   },
+   "decision": {
+    "high": {
+     "threshold": 0.13122,
+     "n_val_positives": 8,
+     "fallback_argmax": false
+    }
+   },
+   "pred_sha256_16": {
+    "pred_aspect__beauty__fragrance.json": "705fd1bb2f01dde4",
+    "pred_aspect__beauty__results_efficacy.json": "a5c23eeec98fd08f",
+    "pred_aspect__beauty__skin_reaction.json": "5425c7022cb27fd3",
+    "pred_aspect__beauty__texture.json": "5957d45f09bbdc18",
+    "pred_aspect__beauty__value.json": "724378d1fc46aef4",
+    "pred_aspect__food__efficacy_claims.json": "587523de22eb9985",
+    "pred_aspect__food__ingredient_quality.json": "bb7fde457d6daab3",
+    "pred_aspect__food__quantity.json": "0e6cac8653066218",
+    "pred_aspect__food__taste.json": "958051b4009704da",
+    "pred_aspect__food__value.json": "8b2796b6b11d75cb",
+    "pred_broad_intent.json": "4b0d87ba8743d15d",
+    "pred_needs_action.json": "8e7a44b806c183ce",
+    "pred_sentiment.json": "9be3777cf04c9bee",
+    "pred_urgency.json": "74d4968bd9b86e05",
+    "safety_pred.json": "8e8bb8554f58a138"
+   }
+  },
+  "int8_ffn_full": {
+   "A": {
+    "threshold": {
+     "needs_action": 0.9181,
+     "broad_intent": 0.8024,
+     "sentiment": 0.9335,
+     "urgency": 0.8746
+    },
+    "argmax": {
+     "needs_action": 0.9181,
+     "broad_intent": 0.8024,
+     "sentiment": 0.9335,
+     "urgency": 0.8822
+    }
+   },
+   "B": {
+    "D_serving_default": {
+     "recall": 0.5538,
+     "precision": 0.7385,
+     "independent_positive_groups": 130
+    },
+    "S_val_f1_threshold": {
+     "recall": 0.5385,
+     "precision": 0.7692,
+     "independent_positive_groups": 130
+    },
+    "P_argmax": {
+     "recall": 0.0577,
+     "precision": 1.0,
+     "independent_positive_groups": 130
+    }
+   },
+   "thresholds": {
+    "D_base_val": 0.115433,
+    "S_safety_val": 0.12135
+   },
+   "decision": {
+    "high": {
+     "threshold": 0.115433,
+     "n_val_positives": 8,
+     "fallback_argmax": false
+    }
+   },
+   "pred_sha256_16": {
+    "pred_aspect__beauty__fragrance.json": "b576fa13f498eb9b",
+    "pred_aspect__beauty__results_efficacy.json": "21944607ee282f10",
+    "pred_aspect__beauty__skin_reaction.json": "5cd0f19906b54810",
+    "pred_aspect__beauty__texture.json": "65ae19b3626f755d",
+    "pred_aspect__beauty__value.json": "266f7e92134d172e",
+    "pred_aspect__food__efficacy_claims.json": "9795c54615e38e6c",
+    "pred_aspect__food__ingredient_quality.json": "0c7210b84a876e96",
+    "pred_aspect__food__quantity.json": "29bf8029f347cd79",
+    "pred_aspect__food__taste.json": "4e29800a8013292d",
+    "pred_aspect__food__value.json": "55094e7834b31a4e",
+    "pred_broad_intent.json": "fa694843f700469c",
+    "pred_needs_action.json": "96f29c0b9cfdd6ae",
+    "pred_sentiment.json": "6b4cf3d5cd29ea3b",
+    "pred_urgency.json": "3f543ce22149bfa8",
+    "safety_pred.json": "542c33e007ec7fdd"
+   }
+  }
+ }
+}

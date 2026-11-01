@@ -13,6 +13,7 @@ import subprocess
 import sys
 
 BRANCH = "__BRANCH__"
+TRAIN_ARGS = "__TRAIN_ARGS__"  # extra engine.intent.train flags (run 2: --epochs 30 --patience 3 --save-weights)
 REPO = "https://github.com/gaurav-gandhi-2411/review-iq.git"
 W = pathlib.Path("/kaggle/working")
 OUT = W / "out"
@@ -46,7 +47,7 @@ OUT.mkdir(exist_ok=True)
 r = sh(
     f"{sys.executable} -u -m engine.intent.train --labels {find('labels.json')} "
     f"--texts {find('scale.jsonl')} --manifest reports/labelling/scale/manifest.json "
-    f"--out-dir {OUT} --device cuda",
+    f"--out-dir {OUT} --device cuda {TRAIN_ARGS}",
     capture_output=True,
     text=True,
 )
