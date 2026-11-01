@@ -30,7 +30,7 @@ router = APIRouter()
 log = structlog.get_logger(__name__)
 
 _VALID_EVENT_TYPES: frozenset[str] = frozenset(e.value for e in AlertEventType)
-_VALID_FREQUENCIES: frozenset[str] = frozenset({"immediate", "daily_digest"})
+_VALID_FREQUENCIES: frozenset[str] = frozenset({"immediate", "daily_digest", "weekly_digest"})
 # Single source of truth is digest.py's own _DIGESTIBLE_EVENT_TYPES -- reused here (not
 # duplicated) so this guard can never drift out of sync with what the batcher actually supports.
 _DIGESTIBLE_EVENT_TYPE_VALUES: frozenset[str] = frozenset(e.value for e in _DIGESTIBLE_EVENT_TYPES)
@@ -83,7 +83,10 @@ async def bff_put_alert_preference(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Unknown event_type '{event_type}'. Valid: {sorted(_VALID_EVENT_TYPES)}",
         )
-    if body.frequency == "daily_digest" and event_type not in _DIGESTIBLE_EVENT_TYPE_VALUES:
+    if (
+        body.frequency in ("daily_digest", "weekly_digest")
+        and event_type not in _DIGESTIBLE_EVENT_TYPE_VALUES
+    ):
         # digest.py's batcher only re-evaluates HIGH_URGENCY/LIKELY_FAKE from stored data --
         # any other event_type set to daily_digest would have its events silently dropped
         # forever by evaluate_and_alert's frequency gate (deferred, never batched, never sent).
@@ -93,7 +96,7 @@ async def bff_put_alert_preference(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=(
                 f"event_type '{event_type}' only supports frequency='immediate' -- "
-                "daily_digest batching is not implemented for this event type."
+                f"{body.frequency} batching is not implemented for this event type."
             ),
         )
     await asyncio.to_thread(

@@ -1,0 +1,16 @@
+{
+ "commit": "f30f052",
+ "dataset": "banking77",
+ "model": "openai/gpt-oss-120b",
+ "shots": 0,
+ "n_completed": 77,
+ "unparsed": 2,
+ "tokens_in": 38051,
+ "tokens_out": 3268,
+ "macro_f1_on_sample": 0.7521,
+ "accuracy": 0.8052,
+ "accuracy_ci95": [0.7143,0.8831],
+ "latency_p50_s": 1.02,
+ "latency_p95_s": 4.99,
+ "usd_per_1k_messages_at_published_rate": 0.0996
+}

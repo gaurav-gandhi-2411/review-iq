@@ -83,6 +83,23 @@ async def _call_gemini(user_prompt: str) -> tuple[ReviewExtractionLLMOutput, int
     return _parse_response(response.text or ""), tokens_in, tokens_out
 
 
+def _build_secondary(settings: Any) -> SecondaryProvider | GroqProvider:
+    """Secondary failover backend: OpenRouter (default) or a second Groq account.
+
+    Compared with == so an unset or mocked setting falls to the OpenRouter default.
+    """
+    if settings.secondary_provider_kind == "groq":
+        return GroqProvider(
+            model=settings.secondary_provider_model,
+            api_key=settings.secondary_provider_api_key,
+            timeout=settings.llm_timeout_seconds,
+        )
+    return SecondaryProvider(
+        api_key=settings.secondary_provider_api_key,
+        model=settings.secondary_provider_model,
+    )
+
+
 async def extract_with_llm(
     user_prompt: str,
     *,
@@ -195,10 +212,7 @@ async def extract_with_llm(
         and settings.secondary_provider_api_key
         and settings.secondary_provider_model
     ):
-        secondary = SecondaryProvider(
-            api_key=settings.secondary_provider_api_key,
-            model=settings.secondary_provider_model,
-        )
+        secondary = _build_secondary(settings)
         if not _tiered_failed:
             FAILOVER_TOTAL.labels(from_provider="groq").inc()
         try:

@@ -415,3 +415,27 @@ Before merging a prompt change:
 - [ ] Overall accuracy must be ≥ 85%; per-language ≥ 80%
 - [ ] English: Check fixture #001 (Turbo-Vac) passes with `stars: null`, `stars_inferred: 3`, `competitor_mentions: ["Dyson"]`
 - [ ] English: Check fixture #003 (prompt injection) still fails cleanly
+
+---
+
+## Reply drafting kill switch (ENABLE_REPLY_DRAFTING)
+
+Reply drafting (`POST /bff/reply`, `POST /v2/reply`, `POST /v2/reply/batch`) is **off by
+default** (`ENABLE_REPLY_DRAFTING=false`, `app/core/config.py`). The drafter has been observed
+inventing support contact details (emails, phone numbers) in customer-facing text.
+
+While off: the endpoints return HTTP 503 with
+`{"detail": {"code": "reply_drafting_disabled", "message": "Reply drafting is temporarily unavailable."}}`
+before any cache lookup and before any LLM provider call. The web UI reads that code and shows
+"Reply drafting is temporarily unavailable" in place of the draft button. The offline eval
+runner (`eval/reply/`) calls the engine directly and is not affected by the flag.
+
+**Re-enable gate** (all required before setting `ENABLE_REPLY_DRAFTING=true` in any deploy
+config):
+
+1. PR #298 (invented-details guardrail, reply prompt v2.2) is merged.
+2. A clean judge-scored reply eval on that merged code: hard failures of type "invented contact
+   details" are 0/20 on both arms, and total hard failures are not worse than the 5/20 and 8/20
+   baselines for the respective arms.
+
+Rollback of the kill switch itself is the same env var; no migration or data is involved.

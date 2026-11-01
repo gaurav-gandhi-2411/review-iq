@@ -1,0 +1,16 @@
+{
+ "commit": "11b1f7c",
+ "dataset": "clinc",
+ "model": "qwen/qwen3.8-27b",
+ "shots": 0,
+ "n_completed": 47,
+ "unparsed": 2,
+ "tokens_in": 25929,
+ "tokens_out": 3071,
+ "macro_f1_on_sample": 0.9291,
+ "accuracy": 0.9362,
+ "accuracy_ci95": [0.8511,1.0],
+ "latency_p50_s": 2.37,
+ "latency_p95_s": 15.15,
+ "usd_per_1k_messages_at_published_rate": null
+}

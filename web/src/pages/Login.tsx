@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import { supabase } from '../lib/supabase'
 import { Mail, ArrowRight, Loader2, Sparkles } from 'lucide-react'
 import LogoMark from '../components/LogoMark'
+import SiteLinks from '../components/SiteLinks'
 
 type Phase = 'idle' | 'loading' | 'sent' | 'error'
 
@@ -127,6 +128,9 @@ export default function LoginPage() {
         <p className="text-center mt-6 text-xs text-charcoal-light/60 font-sans">
           Free tier · No credit card · Your data stays yours
         </p>
+        <div className="mt-6">
+          <SiteLinks />
+        </div>
       </div>
     </div>
   )

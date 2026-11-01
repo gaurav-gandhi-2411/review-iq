@@ -3,13 +3,17 @@
 from __future__ import annotations
 
 import asyncio
+import json
 
 import structlog
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi.responses import JSONResponse
 
 from app.auth.api_key import ApiKeyContext, require_api_key
+from app.core.config import get_settings
 from app.core.metrics import REPLY_CACHE_HIT_TOTAL
 from app.core.reply.engine import VernacularModelUnavailableError, draft_reply
+from app.core.reply.errors import error_response, item_error_code, unexpected_error_response
 from app.core.reply.schema import ReplyBatchRequest, ReplyDraft, ReplyRequest
 from app.core.storage_pg import update_usage_tokens
 
@@ -19,6 +23,26 @@ log = structlog.get_logger(__name__)
 # In-memory reply cache keyed by "{org_id}:{review_hash+tone+brand+sig}".
 # Ephemeral (per-process), suitable for the stateless MVP.
 _DRAFT_CACHE: dict[str, ReplyDraft] = {}
+
+
+REPLY_DRAFTING_DISABLED_CODE = "reply_drafting_disabled"
+
+
+def ensure_reply_drafting_enabled() -> None:
+    """Raise a typed 503 when the ENABLE_REPLY_DRAFTING kill switch is off.
+
+    Must be called before any cache lookup or provider call. The detail is an object
+    ({"code", "message"}) so clients can branch on the machine code instead of parsing prose.
+    """
+    if get_settings().enable_reply_drafting:
+        return
+    raise HTTPException(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail={
+            "code": REPLY_DRAFTING_DISABLED_CODE,
+            "message": "Reply drafting is temporarily unavailable.",
+        },
+    )
 
 
 async def _run_draft(request: ReplyRequest, ctx: ApiKeyContext) -> ReplyDraft:
@@ -90,27 +114,27 @@ _EXAMPLE_REPLY_RESPONSE = {
 async def draft_single(
     body: ReplyRequest,
     ctx: ApiKeyContext = Depends(require_api_key),
-) -> ReplyDraft:
+) -> ReplyDraft | JSONResponse:
     """Draft a vernacular-native reply for a single review.
 
     The reply is written in the same language as the review (en/hi/hi-en) and
     grounded in the structured extraction of that review's cons and topics.
     Drafts are suggestions for human review — never auto-posted.
     """
+    ensure_reply_drafting_enabled()
     try:
         return await _run_draft(body, ctx)
     except VernacularModelUnavailableError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=str(exc),
-            headers={"Retry-After": "60"},
-        ) from exc
+        return error_response(503, "reply_quota_capped", str(exc), retry_after=exc.retry_after)
     except RuntimeError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="upstream LLM unavailable",
-            headers={"Retry-After": "30"},
-        ) from exc
+        return error_response(
+            503,
+            "reply_upstream_unavailable",
+            "upstream LLM unavailable",
+            retry_after=getattr(exc, "retry_after", 30),
+        )
+    except Exception as exc:  # noqa: BLE001 -- boundary: typed 5xx instead of a bare 500
+        return unexpected_error_response(exc, org_id=ctx.org_id)
 
 
 @router.post(
@@ -132,33 +156,55 @@ async def draft_single(
 )
 async def draft_batch(
     body: ReplyBatchRequest,
+    response: Response,
     ctx: ApiKeyContext = Depends(require_api_key),
-) -> list[ReplyDraft]:
+) -> list[ReplyDraft] | JSONResponse:
     """Draft replies for up to 20 reviews (synchronous; same degradation as single).
 
-    Items that fail individually are skipped. A 503 is returned only when every
-    item fails (LLM fully unavailable).
+    Items that fail individually are left out of the response list, so list positions no longer
+    line up with the request. Every failed item is therefore reported in the `X-Failed-Items`
+    header as JSON `[{"index": <position in request.reviews>, "code": <machine code>}]`.
+    The body stays a plain list (backward compatible). A 503 (with the same list in `failed_items`)
+    is returned only when every item fails.
     """
+    ensure_reply_drafting_enabled()
     results: list[ReplyDraft] = []
-    failed = 0
-    for req in body.reviews:
+    failed_items: list[dict[str, int | str]] = []
+    retry_after = 30
+    for index, req in enumerate(body.reviews):
         try:
             results.append(await _run_draft(req, ctx))
-        except (RuntimeError, VernacularModelUnavailableError) as exc:
-            log.error("reply.batch_item_failed", org_id=ctx.org_id, error=str(exc))
-            failed += 1
+        except Exception as exc:  # noqa: BLE001 -- one bad item must not sink the batch
+            code = item_error_code(exc)
+            log.error(
+                "reply.batch_item_failed",
+                org_id=ctx.org_id,
+                index=index,
+                code=code,
+                error_type=type(exc).__name__,
+                error=str(exc),
+            )
+            failed_items.append({"index": index, "code": code})
+            retry_after = max(retry_after, getattr(exc, "retry_after", 0))
 
-    if failed == len(body.reviews):
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="upstream LLM unavailable for all reviews in batch",
-            headers={"Retry-After": "30"},
+    if len(failed_items) == len(body.reviews):
+        failed = error_response(
+            503,
+            "reply_batch_all_failed",
+            "upstream LLM unavailable for all reviews in batch",
+            retry_after=retry_after,
         )
+        payload = json.loads(bytes(failed.body))
+        payload["failed_items"] = failed_items
+        return JSONResponse(status_code=503, content=payload, headers=dict(failed.headers))
+
+    if failed_items:
+        response.headers["X-Failed-Items"] = json.dumps(failed_items, separators=(",", ":"))
 
     log.info(
         "reply.batch_completed",
         org_id=ctx.org_id,
         processed=len(results),
-        failed=failed,
+        failed=len(failed_items),
     )
     return results

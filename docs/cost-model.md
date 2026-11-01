@@ -63,23 +63,25 @@ Total cost per tier = (quota × $0.000534/extraction) + $18.47 (fixed, 5-custome
 
 | Tier | Quota | Price | Variable cost | Fixed alloc | Payment | Total cost | Margin |
 |---|---|---|---|---|---|---|---|
-| Starter | 10,000 | $59 | $5.34 | $18.47 | $2.09 | $25.90 | **56.1%** |
-| Growth | 50,000 | $99 | $26.70 | $18.47 | $3.51 | $48.68 | **50.8%** |
-| Agency | 200,000 | $249 | $106.80 | $18.47 | $8.82 | $134.09 | **46.1%** |
+| Starter | 5,000 | $59 | $2.67 | $18.47 | $2.09 | $23.23 | **60.6%** |
+| Growth | 25,000 | $99 | $13.35 | $18.47 | $3.50 | $35.32 | **64.3%** |
+| Agency | 200,000 | $249 | $106.80 | $18.47 | $8.81 | $134.08 | **46.2%** |
 
-**All three international tiers land inside or very close to the 45-55% band as-is.** No
-correction needed.
+Quotas follow the live pricing page (`site/index.html` lines 763, 771, 785: Starter 5,000,
+Growth 25,000, Agency 200,000+ reviews/mo). Starter and Growth now sit above the 45-55% band
+(more margin than targeted); Agency sits just above its floor. No correction needed for the
+international tiers.
 
 ### India (INR)
 
 | Tier | Quota | Price | Variable cost | Fixed alloc | Payment | Total cost | Margin |
 |---|---|---|---|---|---|---|---|
-| Starter | 10,000 | ₹2,999 ($31.34) | $5.34 | $18.47 | $1.11 | $24.92 | **20.5%** |
-| Growth | 50,000 | ₹6,999 ($73.14) | $26.70 | $18.47 | $2.59 | $47.76 | **34.7%** |
-| Agency | 200,000 | ₹19,999 ($208.98) | $106.80 | $18.47 | $7.40 | $132.67 | **36.5%** |
+| Starter | 5,000 | ₹2,999 ($31.34) | $2.67 | $18.47 | $1.11 | $22.25 | **29.0%** |
+| Growth | 25,000 | ₹6,999 ($73.14) | $13.35 | $18.47 | $2.59 | $34.41 | **53.0%** |
+| Agency | 200,000 | ₹19,999 ($208.99) | $106.80 | $18.47 | $7.40 | $132.67 | **36.5%** |
 
-**None of the three India tiers clear the 45-55% band at the 5-customer allocation — all three
-are materially below it, by 8.5–24.5 points.** This is not a small rounding gap. The India
+**At the 5-customer allocation India Growth clears the 45-55% band; India Starter and Agency do
+not, by 16.0 and 8.5 points respectively.** This is not a small rounding gap. The India
 tiers are priced at roughly half the USD-equivalent of the international tiers for the *same
 quota* (e.g. Starter: $59 international vs. $31.34-equivalent India), while the underlying
 Groq/infra costs are identical regardless of the customer's currency — so the India tiers
@@ -90,16 +92,16 @@ absorb the full cost base against a smaller revenue number.
 
 | Tier | Current | Price needed for 45% margin | Increase |
 |---|---|---|---|
-| Starter | ₹2,999 | **₹4,414** | +47% |
-| Growth | ₹6,999 | **₹8,387** | +20% |
-| Agency | ₹19,999 | **₹23,283** | +16% |
+| Starter | ₹2,999 | **₹3,931** | +31% |
+| Growth | ₹6,999 | **₹5,917** | none (current price already clears; -15%) |
+| Agency | ₹19,999 | **₹23,295** | +16% |
 
 **This is reported, not decided.** D2 explicitly labels this "early access pricing," and
 deliberately pricing below the margin target to acquire initial customers is a legitimate,
 common go-to-market choice — the gap may be intentional. What this section adds is the exact
 size of that gap in real numbers, so it's a stated tradeoff rather than an unmeasured one:
-**at 5 India customers on current prices, the blended India-tier margin runs roughly 20-37%,
-not 45-55%** — GG's call on whether "early access" already prices that in, or whether the
+**at 5 India customers on current prices, the India-tier margin runs roughly 29-53% (Growth
+inside the band, Starter and Agency below it)** — GG's call on whether "early access" already prices that in, or whether the
 correction above should apply now.
 
 ## 5. Frontier-model "Precision tier" option (P4e)
@@ -112,7 +114,7 @@ pass returned fabricated model names, discarded before use):
 **$0.02622/extraction** — roughly **49x** the current Groq blended cost ($0.000534).
 
 At this rate, a Precision tier cannot use the same quota tiers as the Groq-backed product
-(50,000 extractions/month would cost **$1,310.75** in LLM spend alone, before any margin) — it
+(25,000 extractions/month would cost **$655.50** in LLM spend alone, before any margin) — it
 needs its own, much smaller quota, positioned for customers who want the highest accuracy on a
 curated subset of reviews (e.g. only escalated/high-urgency ones), not bulk volume.
 
@@ -125,6 +127,17 @@ quota — these are illustrative anchors, not a recommendation of a specific num
 | 5,000/month | $131.08 | $18.47 | **~$290/month** |
 
 ## 6. Groq Developer-plan upgrade readiness (Session 13 P3c) — planning only, NOT upgraded
+
+> **CORRECTED 2026-10-08 (S19 R1, [ADR 0037](architecture/adr/0037-shared-groq-org-capacity.md)):**
+> the capacity figures below assume Samidha owns the whole free-tier pool. GG's other products
+> (StyleMaitri, TriageIQ, DealHunter, the portfolio chatbot) also call Groq and are believed to
+> share the same org, and limits are per org. The figures are therefore a **ceiling if Samidha were
+> alone**, not Samidha's capacity. One measured day showed about 197K of a 200K pool consumed by
+> something other than Samidha production. See section 9.
+
+> **UPDATED 2026-10-10 (S21 G3):** Samidha production now runs on a dedicated Groq org, so the figures
+> below are Samidha's own free-tier ceiling (the 200K/day pool itself is BELIEVED, not measurable from
+> headers; RPD 1000 and TPM 8000 per model are VERIFIED on the new key). See ADR 0037's amendment.
 
 The real free-tier capacity ceiling (~140.6 extractions/day, ~4,217/month combined across every
 customer, demo, and eval traffic — see [ADR 0015](architecture/adr/0015-panel-restoration-and-quota-safety-gap.md)'s
@@ -164,6 +177,241 @@ required (this project's `GROQ_API_KEY` config doesn't change on a plan upgrade,
 attached to it do). The only thing gated on GG's direct verification is *how much better* the new
 ceiling is, not *whether* the upgrade path exists or requires engineering work.
 
+## 7. Update (S19 M4a): failover, Secret Manager, and margin at 1/5/10/20 customers
+
+Everything above is unchanged. This section adds the cost lines that did not exist when it was
+written and re-runs section 4's margin math at four customer counts. Date: 2026-10-07.
+
+### 7.1 New cost lines
+
+| Item | Figure | Derivation | Confidence |
+|---|---|---|---|
+| OpenRouter failover call (`meta-llama/llama-3.3-70b-instruct`, DeepInfra, ZDR) | **$0.000196/call** (INR 0.0187) at the probe's 1,612 in / 108 out | 1,612 x $0.10/M + 108 x $0.32/M = $0.0001612 + $0.0000346 | Tokens VERIFIED (failover-probe run in PR #279 commit message, `0a74db8`: "PASS 6767ms ... tokens 1612/108"). Rates BELIEVED: $0.10/M in, $0.32/M out from third-party aggregator summaries (OpenRouter's own page did not return prices through the fetch tool); re-check at openrouter.ai/meta-llama/llama-3.3-70b-instruct |
+| Same call on the primary (gpt-oss-120b) | $0.000307 | 1,612 x $0.15/M + 108 x $0.60/M (`app/core/pricing.py`) | VERIFIED (pricing table, as_of 2026-09-10) |
+| OpenRouter credit-purchase fee | 5.5%, $0.80 minimum per top-up -> effective ~$0.000207/call with fee; a $5 top-up costs $0.80 (16%) | aggregator summaries | BELIEVED |
+| Failover standing cost | ~$0.07/month (one $0.80 top-up per year) while failover is rare | 0.80/12 | BELIEVED |
+| Secret Manager | $0.06 per active version per month ($0.000082192/hr x 730), first 6 versions free; $0.03 per 10,000 access ops, first 10,000 free; $0.05 per rotation notification after 3 free | 14 secrets (13 in `ops/runbooks/secret-rotation.md` + `secondary-provider-api-key`, 1 version each) -> (14 - 6) x $0.06 = **$0.48/month**. Access ops: each cold start reads ~12 secrets, so ~800 cold starts/month fit the free 10,000 | Rates BELIEVED (cloud.google.com/secret-manager/pricing returned truncated content; figures from costbench.com quoting the SKU). Secret count VERIFIED from the repo runbook, not from `gcloud` (no live call made) |
+
+Observations that matter more than the cents:
+
+- **The failover path is cheaper per call than the primary** ($0.000196 vs $0.000307 on the same
+  tokens), so a long Groq outage does not raise COGS. Its risk is capacity and quality, not cost.
+- **The failover model has no entry in `PRICING_TABLE`.** `extract.py` catches `UnknownModelError`,
+  logs `extraction.cost_pricing_missing` and skips the cost row, so failover traffic is currently
+  invisible in `extraction_costs` COGS. Fix is one table entry; not done here (docs-only PR).
+- Per-extraction llama output tokens are unmeasured (the probe prompt is not an extraction). If it
+  emits the gpt-oss-120b mean of 647 tokens, an extraction costs ~$0.00038 on failover vs $0.00065
+  on the primary tier (BELIEVED).
+
+### 7.2 Shared fixed cost, updated
+
+F = Supabase $25 + Cloud Run $47.34 + Vercel $20 + Resend $0 + Secret Manager $0.48 + failover
+$0.07 = **$92.89/month** (was $92.34). Cloud Run is still the min-instances=1 projection, not
+today's scale-to-zero. Resend stays $0 only while sends stay under 3,000/month and 100/day.
+
+### 7.3 Margin per tier at 1, 5, 10, 20, 40 customers
+
+Quotas as on the live pricing page (`site/index.html` lines 763, 771, 785): Starter 5,000,
+Growth 25,000, Agency 200,000. An earlier revision of this table used 10,000 / 50,000; that was
+wrong and is corrected here (S19 N6).
+
+Formulas (all customers assumed on the same tier, 100% quota use, which is the worst case):
+
+- fixed per customer = F / N, F = $92.89 (7.2)
+- variable = quota x $0.000534 (blended cost per extraction, section 1)
+- payment = 3.54% x price (3% + 18% GST on the fee)
+- margin = (price - variable - F/N - payment) / price
+
+| Tier | Price (USD) | Variable | 1 cust | 5 cust | 10 cust | 20 cust | 40 cust |
+|---|---|---|---|---|---|---|---|
+| Starter intl (5K) | $59 | $2.67 | -65.5% | 60.4% | 76.2% | 84.1% | 88.0% |
+| Growth intl (25K) | $99 | $13.35 | -10.9% | 64.2% | 73.6% | 78.3% | 80.6% |
+| Agency intl (200K) | $249 | $106.80 | 16.3% | 46.1% | 49.8% | 51.7% | 52.6% |
+| Starter IN (5K) | Rs 2,999 = $31.34 | $2.67 | -208.5% | 28.7% | 58.3% | 73.1% | 80.5% |
+| Growth IN (25K) | Rs 6,999 = $73.14 | $13.35 | -48.8% | 52.8% | 65.5% | 71.9% | 75.0% |
+| Agency IN (200K) | Rs 19,999 = $208.99 | $106.80 | 0.9% | 36.5% | 40.9% | 43.1% | 44.2% |
+
+Worked check (Starter intl, 5): 2.67 + 92.89/5 + 0.0354 x 59 = 2.67 + 18.58 + 2.09 = 23.34;
+(59 - 23.34)/59 = 60.4%. Worked check (Growth intl, 40): 13.35 + 92.89/40 + 0.0354 x 99 =
+13.35 + 2.32 + 3.50 = 19.17; (99 - 19.17)/99 = 80.6%.
+FX: Rs 95.6943/USD (`pricing.py`, 2026-07-31). Prices are treated as GST-exclusive, as before.
+Fixed per customer: $92.89 / $18.58 / $9.29 / $4.64 / $2.32.
+
+Resend: the 40-customer column keeps Resend at $0 (3,000 emails/month, 100/day). Whether 40
+customers' alert and digest email fits under that cap is unmeasured; if Resend Pro ($20/month)
+is needed, F = $112.89 and the 40-customer column becomes: Starter intl 87.2%, Growth intl 80.1%,
+Agency intl 52.4%, Starter IN 78.9%, Growth IN 74.3%, Agency IN 44.0%.
+
+Reading: Starter and Growth intl and Growth IN clear 45% at 5 customers; Agency intl clears it
+(46.1%) barely. Starter IN clears it at 10 customers (58.3%) but not at 5 (28.7%). Agency IN does
+not clear it at any count up to 40 (44.2%). At 1 customer every tier except Agency intl is at or
+below break-even, so a single early customer is carried by running paid-tier infrastructure ahead
+of revenue.
+
+Note (superseded by section 8, which models the live prices): the live pricing page lists different prices from the ones modelled above ($29 / Rs 1,499
+Starter, $79 / Rs 4,999 Growth, a $199 / Rs 12,999 100,000-review Scale tier, Agency "Talk to us";
+`site/index.html` lines 764-785), and `docs/payments-readiness.md` records the same figures. This
+section's prices ($59 / $99 / $249 and the Rs equivalents) are the D2 planning prices, not the
+site's, and are left as they were; only quotas were reconciled in S19 N6. Re-run this table at the
+site's prices before quoting a margin externally.
+
+### 7.4 Starter at $15 / Rs 999 at 45% margin (S19 M4b)
+
+Solve 45% for N: price x (1 - 0.0354 - 0.45) - variable = F/N, so N = F / (price x 0.5146 - variable).
+Quota is 5,000 (live pricing page). Rs 999 = $10.44 at Rs 95.6943/USD.
+
+| Case | Price | Quota | Room for fixed cost per customer | Customers needed (F = $92.89) | If Resend Pro is needed (F = $112.89) |
+|---|---|---|---|---|---|
+| Starter at $15 | $15.00 | 5,000 | 15 x 0.5146 - 2.67 = $5.049 | **19** (18.4) | 23 (22.4) |
+| Starter at Rs 999 | $10.44 | 5,000 | 10.44 x 0.5146 - 2.67 = $2.702 | **35** (34.4) | 42 (41.8) |
+| $15, 10,000 quota (superseded) | $15.00 | 10,000 | $2.379 | 40 (39.05) | 48 (47.45) |
+| Rs 999, 10,000 quota (superseded) | $10.44 | 10,000 | $0.032 | ~2,900 (not feasible) | ~3,500 |
+
+Assumptions: every customer is on this tier at full quota use; F as in 7.2; blended
+$0.000534/extraction; no discounts, taxes beyond the 3.54%, or support cost; cost per extraction
+does not fall with volume; the Groq paid plan is live (see below).
+
+Conclusion: on the 5,000 quota both prices reach 45% margin: **$15 at 19 customers, Rs 999 at 35
+customers** (23 and 42 if Resend Pro is needed). The earlier 40-customer / not-feasible result came
+from modelling a 10,000 quota that the site does not offer. A cheaper per-extraction cost lowers
+the Rs 999 figure further: at 100% small-tier routing (c = $0.000363, variable $1.82) Rs 999 needs
+N = 92.89 / (5.372 - 1.82) = 26.
+Hard prerequisite: at 35 customers on Starter that is 175,000 extractions/month (19 customers:
+95,000) against the ~4,217/month free-tier ceiling (section 6), so the Groq Developer plan must be
+live, and its limits are still unverified.
+
+## 8. Margins at the LIVE site prices (Q6, 2026-10-08) -- generated from `docs/pricing.json`
+
+Sections 4 and 7.3 above model the D2 *planning* prices ($59 / $99 / $249) and are kept as history.
+The prices actually shown on `site/index.html` are Free 1,000, Starter 5,000 for $29 / Rs 1,499,
+Growth 25,000 for $79 / Rs 4,999, Scale 100,000 for $199 / Rs 12,999, and Agency 200,000+ "Talk to
+us". The earlier "Agency 200,000" quota was the *Agency* tier, not the top priced tier: the top
+priced tier is Scale at 100,000. Everything in this section is generated from `docs/pricing.json`
+by `scripts/cost_model.py --write`; `scripts/check_pricing_consistency.py` (CI) fails if the site,
+the billing code, `app/core/pricing.py` or these blocks disagree with that file. Do not hand-edit
+the blocks below.
+
+Method: formulas are in the docstring of `scripts/cost_model.py`. Payment processing (3.54%) is
+modelled because section 2 already models it. Groq is priced at paid-plan per-token rates (the
+blended $0.000534/extraction already is those rates). Free-tier users cost about $0.53 each at full
+quota and bring no revenue; they are excluded. Agency has no list price and is excluded. Resend
+free tier (3,000 emails/mo, 100/day) suffices while total email stays under 3,000/mo; at an assumed
+50 emails per customer per month (30 digests plus 20 alerts, UNMEASURED) that is up to 60
+customers, so the margin tables use Resend free and the break-even table also shows Resend Pro.
+
+<!-- PRICING:START:inputs -->
+| Tier | Quota (reviews/mo) | USD/mo | INR/mo |
+|---|---|---|---|
+| Free | 1,000 | $0 | Rs 0 |
+| Starter | 5,000 | $29 | Rs 1,499 |
+| Growth | 25,000 | $79 | Rs 4,999 |
+| Scale | 100,000 | $199 | Rs 12,999 |
+| Agency | 200,000+ | Talk to us | custom |
+
+Blended cost $0.000534/extraction; FX Rs 95.6943/USD; payment fee 3.54%; fixed cost F = $92.89/mo (Resend free) or $112.89/mo (Resend Pro); typical utilisation 40% (assumption).
+<!-- PRICING:END -->
+
+### 8.1 Margin at 1/5/10/20/40 customers, one tier
+
+<!-- PRICING:START:margins -->
+**Gross margin, Worst case (100% of quota used)**, all customers on one tier, F = $92.89
+
+| Tier | 1 cust | 5 cust | 10 cust | 20 cust | 40 cust |
+|---|---|---|---|---|---|
+| Starter USD ($29) | -233.1% | 23.2% | 55.2% | 71.2% | 79.2% |
+| Growth USD ($79) | -38.0% | 56.0% | 67.8% | 73.7% | 76.6% |
+| Scale USD ($199) | 22.9% | 60.3% | 65.0% | 67.3% | 68.5% |
+| Starter INR (Rs 1,499) | -513.6% | -39.2% | 20.1% | 49.8% | 64.6% |
+| Growth INR (Rs 4,999) | -106.9% | 35.3% | 53.1% | 62.0% | 66.5% |
+| Scale INR (Rs 12,999) | -11.2% | 43.5% | 50.3% | 53.7% | 55.4% |
+
+**Gross margin, Typical case (40% of quota used, ASSUMPTION)**, all customers on one tier, F = $92.89
+
+| Tier | 1 cust | 5 cust | 10 cust | 20 cust | 40 cust |
+|---|---|---|---|---|---|
+| Starter USD ($29) | -227.5% | 28.7% | 60.7% | 76.8% | 84.8% |
+| Growth USD ($79) | -27.9% | 66.2% | 77.9% | 83.8% | 86.8% |
+| Scale USD ($199) | 39.0% | 76.4% | 81.1% | 83.4% | 84.6% |
+| Starter INR (Rs 1,499) | -503.4% | -29.0% | 30.3% | 60.0% | 74.8% |
+| Growth INR (Rs 4,999) | -91.6% | 50.7% | 68.5% | 77.3% | 81.8% |
+| Scale INR (Rs 12,999) | 12.4% | 67.1% | 73.9% | 77.3% | 79.0% |
+<!-- PRICING:END -->
+
+### 8.2 Tier mixes (assumed splits, weights per average customer)
+
+<!-- PRICING:START:mixes -->
+**Gross margin for tier mixes (Starter/Growth/Scale), worst case**
+
+| Mix | 1 cust | 5 cust | 10 cust | 20 cust | 40 cust |
+|---|---|---|---|---|---|
+| starter-heavy 60/30/10 USD | -73.8% | 48.1% | 63.3% | 70.9% | 74.7% |
+| starter-heavy 60/30/10 INR | -172.2% | 20.1% | 44.1% | 56.1% | 62.1% |
+| even 34/33/33 USD | -17.5% | 55.6% | 64.7% | 69.3% | 71.6% |
+| even 34/33/33 INR | -75.4% | 34.9% | 48.6% | 55.5% | 59.0% |
+| growth-heavy 20/50/30 USD | -14.1% | 56.6% | 65.5% | 69.9% | 72.1% |
+| growth-heavy 20/50/30 INR | -69.4% | 36.7% | 50.0% | 56.6% | 60.0% |
+
+**Gross margin for tier mixes (Starter/Growth/Scale), typical case (assumption)**
+
+| Mix | 1 cust | 5 cust | 10 cust | 20 cust | 40 cust |
+|---|---|---|---|---|---|
+| starter-heavy 60/30/10 USD | -63.0% | 58.8% | 74.1% | 81.7% | 85.5% |
+| starter-heavy 60/30/10 INR | -155.2% | 37.1% | 61.1% | 73.1% | 79.1% |
+| even 34/33/33 USD | -4.0% | 69.1% | 78.3% | 82.9% | 85.1% |
+| even 34/33/33 INR | -55.0% | 55.3% | 69.1% | 76.0% | 79.4% |
+| growth-heavy 20/50/30 USD | -0.9% | 69.9% | 78.8% | 83.2% | 85.4% |
+| growth-heavy 20/50/30 INR | -49.5% | 56.6% | 69.9% | 76.6% | 79.9% |
+<!-- PRICING:END -->
+
+### 8.3 Customers needed to reach the 45% margin target
+
+<!-- PRICING:START:breakeven -->
+Customers needed (all on one tier, fixed cost split by customer count) to reach 45% gross margin
+
+| Tier | worst, Resend free | worst, Resend Pro | typical, Resend free | typical, Resend Pro |
+|---|---|---|---|---|
+| Starter USD | 8 | 10 | 7 | 9 |
+| Growth USD | 4 | 5 | 3 | 4 |
+| Scale USD | 2 | 3 | 2 | 2 |
+| Starter INR | 18 | 21 | 14 | 17 |
+| Growth INR | 7 | 9 | 5 | 6 |
+| Scale INR | 6 | 7 | 2 | 3 |
+
+Starter price alternatives (5,000 quota)
+
+| Tier | worst, Resend free | worst, Resend Pro | typical, Resend free | typical, Resend Pro |
+|---|---|---|---|---|
+| Starter at $15 ($15.00) | 19 | 23 | 14 | 17 |
+| Starter at Rs 999 ($10.44) | 35 | 42 | 22 | 27 |
+<!-- PRICING:END -->
+
+## 9. Correction (S19 R1): free-tier capacity is shared, so Samidha's own figure is unknown
+
+**What changed.** Sections 6 and 7 treated the Groq free-tier pool (200K tokens per day per model,
+8K per minute) as Samidha's. All of GG's products use one Groq account (BELIEVED, stated by GG;
+code survey of the other repos VERIFIED in ADR 0037), and Groq rate-limits per organisation.
+
+**Capacity statement now supported by evidence.**
+
+| Claim | Status |
+|---|---|
+| Ceiling if Samidha were alone: about 140.6 extractions/day, about 4,217/month (section 6) | Derived earlier from the measured per-extraction tokens; valid only for an unshared org |
+| Samidha's real free-tier capacity | **Unknown**: "pool minus everything else", and the everything-else draw is not observable to us |
+| Observed other draw | One day: a 429 on the 120b pool read 199,409 of 200,000 used while production accounted for about 2K tokens (VERIFIED as a 429 body; attribution to other products is BELIEVED) |
+| Free-tier reviews/month we can promise | **None.** The public Free plan quota (1,000/month per user) is an entitlement, not a capacity guarantee |
+
+**Production risk.** A busy day in any other product silently starves Samidha's live traffic: the
+limiter and durable queue turn it into delay, and failover to the OpenRouter ZDR provider bounds
+it, but nothing removes the coupling. With no paying customers yet this is a launch blocker for
+the first real signup, not a present outage.
+
+**Headroom guard limit.** `eval/quota_guard.py` cannot see cross-product draw. Success responses
+expose per-minute tokens and a daily request counter only; the daily token total appears solely in
+a 429 body. A green guard means "no known reason to stop", not "headroom exists".
+
+**Fix.** A dedicated Groq org (free tier, $0) for Samidha production, and a second one for evals.
+Steps for GG are in ADR 0037. Until done, treat every capacity number above as an upper bound.
+
 ## Provenance
 
 - `eval/measure_token_costs.py` / `eval/results/token_cost_measurement_n106.json` — this
@@ -173,4 +421,6 @@ ceiling is, not *whether* the upgrade path exists or requires engineering work.
   `minScale` annotation present, confirming scale-to-zero today), 2026-09-12.
 - Cloud Run always-on pricing rates, OpenRouter frontier-model rates — BELIEVED, third-party
   sourced, flagged individually above with re-verification recommendations.
+- Section 7: failover tokens from PR #279 (`0a74db8`); OpenRouter, Secret Manager and Resend rates
+  are BELIEVED (third-party summaries, 2026-10-07). Margins computed in-session from the formulas shown.
 - Supabase Pro, Vercel Pro, payment-processing %, GST % — given directly by GG this session.

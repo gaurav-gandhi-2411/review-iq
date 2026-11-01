@@ -144,7 +144,7 @@ def _provision_org_and_key(user_id: str, email: str) -> dict[str, str | int]:
         def _do_insert(raw_key: str, key_prefix: str, key_hash: str) -> None:
             cur.execute(
                 "SELECT id, created_at FROM public.create_api_key_for_org(%s, %s, %s, %s, %s)",
-                (str(org_id), key_hash, key_prefix, "default", 100),
+                (str(org_id), key_hash, key_prefix, "default", 1000),
             )
             cur.fetchone()
 
@@ -156,7 +156,7 @@ def _provision_org_and_key(user_id: str, email: str) -> dict[str, str | int]:
             "org_id": str(org_id),
             "key_prefix": key_prefix,
             "raw_key": raw_key,
-            "monthly_quota": 100,
+            "monthly_quota": 1000,
         }
     except Exception:
         conn.rollback()
@@ -181,7 +181,7 @@ def _provision_org_and_key(user_id: str, email: str) -> dict[str, str | int]:
                                     "org_id": "5b6c1e2a-....",
                                     "key_prefix": "riq_live_9f2c1a8b",
                                     "raw_key": "riq_live_9f2c1a8b7d6e5f4a3b2c1d0e9f8a7b6c",
-                                    "monthly_quota": 100,
+                                    "monthly_quota": 1000,
                                 },
                             },
                             "existing": {
@@ -190,7 +190,7 @@ def _provision_org_and_key(user_id: str, email: str) -> dict[str, str | int]:
                                     "status": "existing",
                                     "org_id": "5b6c1e2a-....",
                                     "key_prefix": "riq_live_9f2c1a8b",
-                                    "monthly_quota": 100,
+                                    "monthly_quota": 1000,
                                 },
                             },
                         },
@@ -210,7 +210,7 @@ async def provision(
     Pass the Supabase access token as `Authorization: Bearer <token>`.
 
     Response on first call (status="created"):
-      raw_key, key_prefix, org_id, monthly_quota=100
+      raw_key, key_prefix, org_id, monthly_quota=1000
 
     Response on subsequent calls (status="existing"):
       key_prefix, org_id, monthly_quota (no raw_key — not stored)

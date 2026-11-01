@@ -148,6 +148,14 @@ class Settings(BaseSettings):
         default=False, alias="ENABLE_FIELD_INJECTION_OUTPUT_CHECK"
     )
 
+    # Reply drafting kill switch (/bff/reply, /v2/reply, /v2/reply/batch) -- OFF by default.
+    # The drafter has been observed inventing support contact details (emails/phones) in
+    # customer-facing text. Re-enable only after the invented-details guardrail (PR #298,
+    # prompt v2.2) is merged AND a clean judge-scored eval; see PROMPTS.md "Reply drafting
+    # kill switch". When off the endpoints return 503 `reply_drafting_disabled` and make no
+    # provider call.
+    enable_reply_drafting: bool = Field(default=False, alias="ENABLE_REPLY_DRAFTING")
+
     # Tiered model names — both Groq (privacy-vetted)
     # Groq deprecated llama-3.1-8b-instant on 2026-08-16; openai/gpt-oss-20b is their
     # documented replacement, same fast/cheap tier (Item G1).
@@ -171,6 +179,12 @@ class Settings(BaseSettings):
     #   endpoints from 11 upstream providers (see SecondaryProvider's docstring).
     secondary_provider_api_key: str = Field(default="", alias="SECONDARY_PROVIDER_API_KEY")
     secondary_provider_model: str = Field(default="", alias="SECONDARY_PROVIDER_MODEL")
+    # Which backend the secondary failover uses. "openrouter" (default) keeps the ZDR-only
+    # OpenRouter path above. "groq" makes the secondary a SECOND Groq account (key =
+    # SECONDARY_PROVIDER_API_KEY, model = a Groq model id, e.g. openai/gpt-oss-20b): Groq to
+    # Groq failover, both ZDR-capable, zero cost. It is a failover only (used after the
+    # primary fails), never a load-spreading rotation across accounts: see ADR 0038.
+    secondary_provider_kind: str = Field(default="openrouter", alias="SECONDARY_PROVIDER_KIND")
 
     # CORS allowlist — comma-separated origins (env: ALLOWED_ORIGINS).
     # Default covers local dev: both localhost and 127.0.0.1 aliases on :5173
@@ -294,6 +308,18 @@ class Settings(BaseSettings):
     # inbox placement for a given sending domain.
     alert_subject_emoji_enabled: bool = Field(default=True, alias="ALERT_SUBJECT_EMOJI_ENABLED")
 
+    # Urgent-alert coalescing (app/core/alerts/coalescer.py): at most
+    # URGENT_ALERT_MAX_PER_WINDOW immediate high_urgency emails per org per
+    # URGENT_ALERT_WINDOW_MINUTES; events past the cap are recorded and rolled into one
+    # summary email. Defaults (1 per 15 min) keep a batch-ingested CSV from burning Resend's
+    # 100/day free-tier cap (shared with leads + digests).
+    urgent_alert_max_per_window: int = Field(default=1, ge=1, alias="URGENT_ALERT_MAX_PER_WINDOW")
+    urgent_alert_window_minutes: int = Field(default=15, ge=1, alias="URGENT_ALERT_WINDOW_MINUTES")
+    # Absolute URL of the web dashboard, linked from the urgent roll-up email.
+    web_app_base_url: str = Field(
+        default="https://app.samidhareviews.xyz", alias="WEB_APP_BASE_URL"
+    )
+
     # POST /leads (marketing-site lead capture): where the new-lead notification goes, and
     # the server-side secret keying the HMAC of the submitter's IP (source_ip_hash column).
     # Unset salt -> source_ip_hash is stored NULL rather than hashing unkeyed (an unkeyed
@@ -302,11 +328,21 @@ class Settings(BaseSettings):
     leads_notify_email: str = Field(default="hello@samidhareviews.xyz", alias="LEADS_NOTIFY_EMAIL")
     leads_ip_hash_salt: str = Field(default="", alias="LEADS_IP_HASH_SALT")
 
+    # Public URL of the web dashboard (e.g. the Vercel app origin), used only for the "open your
+    # dashboard" link in the weekly digest. Empty -> the link is omitted (never a guessed
+    # domain). Plain env var, not a secret. Env: DASHBOARD_URL.
+    dashboard_url: str = Field(default="", alias="DASHBOARD_URL")
+
     # HMAC signing key for one-click unsubscribe links embedded in alert emails
     # (GET/POST /unsubscribe). Unset disables the unsubscribe link and the
     # List-Unsubscribe header entirely — emails still send, just without them.
     # Generate with: python -c "import secrets; print(secrets.token_hex(32))"
     unsubscribe_signing_key: str = Field(default="", alias="UNSUBSCRIBE_SIGNING_KEY")
+    # Svix signing secret ("whsec_<base64>") for POST /webhooks/resend (bounce/complaint
+    # events), shown once in the Resend dashboard when the webhook endpoint is created.
+    # Unset -> the endpoint returns 503 and processes nothing (fail closed). Secret Manager
+    # name: resend-webhook-secret. Env / Secret Manager only, never committed.
+    resend_webhook_secret: str = Field(default="", alias="RESEND_WEBHOOK_SECRET")
     # Public base URL of the deployed API, used to build the absolute unsubscribe
     # link in alert emails (e.g. https://<cloud-run-service>.run.app). Dev: ngrok
     # tunnel URL, same as shopify_webhook_base_url / google_webhook_base_url.

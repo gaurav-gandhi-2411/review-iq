@@ -1,0 +1,83 @@
+from __future__ import annotations
+
+import numpy as np
+import pytest
+
+pytest.importorskip("sklearn")
+pytest.importorskip("scipy")
+
+from engine import data as D  # noqa: E402
+from engine import metrics as M  # noqa: E402
+from engine import scoring as S  # noqa: E402
+
+
+def test_holdout_classes_is_pre_registered_and_stable() -> None:
+    labels = [f"c{i}" for i in range(150)]
+    a = D.holdout_classes(labels, 30)
+    assert a == D.holdout_classes(list(reversed(labels)), 30)  # order-independent
+    assert len(a) == len(set(a)) == 30
+
+
+def test_stratified_subsample_covers_every_label_first() -> None:
+    rows = [D.Example(f"t{i}", f"l{i % 10}") for i in range(500)]
+    sub = D.stratified_subsample(rows, 25)
+    assert len(sub) == 25
+    assert len({e.label for e in sub}) == 10
+    assert sub == D.stratified_subsample(rows, 25)  # deterministic
+
+
+def test_temperature_recovers_overconfident_logits() -> None:
+    rng = np.random.default_rng(0)
+    y = rng.integers(0, 5, 2000)
+    logits = rng.normal(0, 1, (2000, 5))
+    logits[np.arange(2000), y] += 1.0  # weak signal ...
+    logits *= 6.0  # ... made overconfident
+    assert S.fit_temperature(logits, y) > 2.0
+
+
+def test_retention_threshold_keeps_95_percent() -> None:
+    s = np.linspace(0, 1, 1000)
+    thr = S.threshold_for_retention(s, 0.95)
+    assert abs((s >= thr).mean() - 0.95) < 0.01
+
+
+def test_mahalanobis_scores_far_points_lower() -> None:
+    rng = np.random.default_rng(1)
+    emb = np.r_[rng.normal(0, 1, (300, 8)), rng.normal(5, 1, (300, 8))]
+    y = np.r_[np.zeros(300, int), np.ones(300, int)]
+    m = S.Mahalanobis(emb, y, 2)
+    near = m.score(rng.normal(0, 1, (50, 8)))
+    far = m.score(rng.normal(30, 1, (50, 8)))
+    assert near.mean() > far.mean()
+
+
+def test_known_vs_unknown_perfect_separation() -> None:
+    r = M.known_vs_unknown(np.linspace(0.9, 1.0, 100), np.linspace(0.0, 0.5, 100))
+    assert r["auroc"] == 1.0 and r["fpr_at_95_tpr"] == 0.0
+
+
+def test_macro_f1_penalises_a_dead_rare_class_that_accuracy_hides() -> None:
+    y = np.array([0] * 98 + [1] * 2)
+    p = np.zeros(100, dtype=int)  # never predicts the rare class
+    assert M.accuracy(y, p) == 0.98
+    assert M.macro_f1(y, p) < 0.5
+
+
+def test_macro_f1_ignores_classes_with_no_support_and_matches_bootstrap_basis() -> None:
+    y = np.array([0, 0, 1, 1])
+    p = np.array([0, 0, 1, 1])
+    # class 2 exists in the label space but not in this evaluation set: it must not count as F1 = 0
+    assert M.macro_f1(y, p, [0, 1, 2]) == 1.0
+    lo, hi = M.bootstrap_ci(y, p, M.macro_f1, n_boot=50)
+    assert lo <= M.macro_f1(y, p, [0, 1, 2]) <= hi
+
+
+def test_bootstrap_open_set_brackets_the_point_estimate() -> None:
+    rng = np.random.default_rng(0)
+    known, unknown = rng.normal(2, 1, 400), rng.normal(0, 1, 300)
+    thr = float(np.percentile(known, 5))
+    ci = M.bootstrap_open_set(known, unknown, thr, n_boot=200)
+    point = float((unknown < thr).mean())
+    lo, hi = ci["rejection_recall_ci95"]
+    assert lo <= point <= hi
+    assert 0.5 < ci["auroc_ci95"][0] <= ci["auroc_ci95"][1] <= 1.0
