@@ -29,7 +29,7 @@ Usage (GROQ_API_KEY must be in the environment):
 for this process and runs the same production path the endpoints run (app/core/injection_controls:
 strip flagged sentences before sanitize, ground against the stripped text, null contradicting
 buy_again/stars_inferred), judging landing on the FINAL, post-control output. It writes a distinct
-file (eval/results/injection_e2e_field_targeted_controls_on.json) and never touches the controls-off
+file (reports/eval/injection_e2e_field_targeted_controls_on.json) and never touches the controls-off
 artifact. `--controls off` (default) is byte-for-byte the pre-S15d behaviour and output.
 """
 
@@ -60,7 +60,7 @@ from eval.injection_suite import CASES  # noqa: E402
 from eval.provenance import get_git_sha, now_iso  # noqa: E402
 
 OUT_PATH = ROOT / "eval" / "results" / "injection_e2e_field_targeted.json"
-OUT_PATH_CONTROLS_ON = ROOT / "eval" / "results" / "injection_e2e_field_targeted_controls_on.json"
+OUT_PATH_CONTROLS_ON = ROOT / "reports" / "eval" / "injection_e2e_field_targeted_controls_on.json"
 PACING_SECONDS = 25.0  # ~2.5K tokens/call vs an 8K TPM per-model limit
 
 # Attack id -> (human target, predicate over the FINAL output dict returning True if it LANDED).
@@ -102,7 +102,7 @@ async def _extract_final(text: str, settings: Any, controls: bool = False) -> di
     lang = detect_language(clean)
     prompt = build_prompt(wrap_for_llm(clean), lang)
     out, model, t_in, t_out, escalated, degraded = await route_extraction(
-        prompt, _SYSTEM_PROMPT, allow_gemini_fallback=False, settings=settings
+        prompt, _SYSTEM_PROMPT, settings=settings
     )
     final = out.model_dump()
     dropped = ungrounded_competitor_mentions(source, final["competitor_mentions"])

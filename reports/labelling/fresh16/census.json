@@ -1,0 +1,57 @@
+{
+ "spec": "docs/specs/review-intent.md Amendment 16, step 3a",
+ "exclusions": {
+  "manifests": {
+   "reports/labelling/pilot1/manifest.json": 300,
+   "reports/labelling/pilot2/manifest.json": 480,
+   "reports/labelling/pilot3/manifest.json": 360,
+   "reports/labelling/scale/manifest.json": 5000,
+   "reports/labelling/safety/split.json": 1800,
+   "reports/labelling/fresh15/manifest.json": 2000
+  },
+  "ledger": {
+   "path": "reports/labelling/ledger.json",
+   "hashes": 0
+  }
+ },
+ "pools_after_exclusions": {
+  "apparel": {
+   "pool_after_exclusions": 19818,
+   "excluded_as_seen_before": 2727
+  },
+  "food": {
+   "pool_after_exclusions": 362769,
+   "excluded_as_seen_before": 2778
+  },
+  "beauty": {
+   "pool_after_exclusions": 236460,
+   "excluded_as_seen_before": 2736
+  }
+ },
+ "census": {
+  "apparel": {
+   "pool": 19818,
+   "stars_ge_4": 15281,
+   "tokens_gt_128": 3073,
+   "stars_ge_4_and_long": 2415
+  },
+  "beauty": {
+   "pool": 236460,
+   "stars_ge_4": 196615,
+   "tokens_gt_128": 30381,
+   "stars_ge_4_and_long": 25177
+  },
+  "food": {
+   "pool": 362769,
+   "stars_ge_4": 284378,
+   "tokens_gt_128": 76247,
+   "stars_ge_4_and_long": 56337
+  },
+  "ALL": {
+   "pool": 619047,
+   "stars_ge_4": 496274,
+   "tokens_gt_128": 109701,
+   "stars_ge_4_and_long": 83929
+  }
+ }
+}
