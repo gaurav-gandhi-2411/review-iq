@@ -289,6 +289,7 @@ class TestRendererShowsEveryCellAndTheDownField:
         md = render_held_out_table_md(data)
         for cell_label in ("| all | all |", "| all | split excluded |", "| unseen only | all |"):
             assert cell_label in md
-        assert "unseen only (headline)" in md
+        assert "unseen only" in md
+        assert "(headline)" not in md
         assert "| `product` | 1 |" in md  # the field whose score goes down is listed
         assert "never seen" not in md.lower()

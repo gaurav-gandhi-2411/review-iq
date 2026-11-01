@@ -755,7 +755,7 @@ async def main() -> int:
         print(
             f"\n!!  {degraded_count} fixture(s) DEGRADED (large-model quota hit -> served by the "
             f"small model). This run is NOT a clean validation of the tiered routing policy; "
-            f"re-run once the large-model daily quota resets."
+            f"re-run once the large-model TPD window (rolling 24h) has freed capacity."
         )
 
     lang_fail = any(

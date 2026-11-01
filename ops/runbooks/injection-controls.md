@@ -93,7 +93,8 @@ service handled it. Use `--update-env-vars` (merges into the existing variables)
 carry forward onto each new revision.
 
 ```bash
-ACCT=gaurav.gandhi1129@gmail.com
+# where `<owner-account>` is the project's sole GCP owner identity (substitute at run time)
+ACCT=<owner-account>
 PROJ=reviewiq-prod-260813
 REGION=asia-south1
 
@@ -164,7 +165,7 @@ they are.
 ## Before enabling in production
 
 The end-to-end run with the controls on was measured on 2026-10-07 (S18 U4c); the twin-control
-experiment (`eval/run_injection_twin_control.py`, quota-gated, about 5 UTC days) has NOT been run.
+experiment (`eval/run_injection_twin_control.py`, quota-gated, about 5 trailing-24h windows) has NOT been run.
 
 **U4c result** (`reports/eval/injection_e2e_field_targeted_controls_on.json`, git `afed528`; 8
 attacks x 3 runs, both controls on, `gpt-oss-20b` with escalation to `gpt-oss-120b`):

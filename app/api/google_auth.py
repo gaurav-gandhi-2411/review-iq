@@ -47,7 +47,6 @@ import time
 from typing import Any
 
 import httpx
-import psycopg2
 import structlog
 from fastapi import APIRouter, Header, HTTPException, status
 from pydantic import BaseModel
@@ -55,6 +54,7 @@ from pydantic import BaseModel
 from app.api.webhooks.google import encrypt_token
 from app.auth.signup import _get_org_for_user, verify_supabase_jwt
 from app.core.config import get_settings
+from app.core.db_pool import db_connect
 
 log = structlog.get_logger(__name__)
 router = APIRouter(prefix="/auth/google", tags=["google-oauth"])
@@ -222,7 +222,7 @@ def _upsert_installation_pg(
     review_iq_app only needs EXECUTE on it, not a table grant. org_id is ALWAYS
     caller-resolved from the verified JWT — never accepted as a user param.
     """
-    conn = psycopg2.connect(get_settings().supabase_database_url)
+    conn = db_connect(get_settings().supabase_database_url)
     try:
         cur = conn.cursor()
         cur.execute(

@@ -12,6 +12,8 @@ Surfaces covered (and nothing else -- a price typed anywhere not listed here is 
      the public Free quota (tiers.free.quota).
   5. app/core/pricing.py USD_TO_INR_RATE == JSON fx_inr_per_usd.
   6. eval/results/token_cost_measurement_n106.json blended cost, rounded to 6 dp, == JSON.
+  7. app/core/cost_alerts.py PLAN_PRICE_USD (the cost-alert denominators) == the JSON's priced tiers in USD, and the `_in` ids ==
+     the INR price / fx rounded to cents.
 
 Any surface that cannot be read or parsed is a FAILURE, never a silent pass.
 Usage: python scripts/check_pricing_consistency.py
@@ -100,6 +102,25 @@ def parse_plan_quota_limits(src: str) -> dict[str, int]:
     raise ValueError("PLAN_QUOTA_LIMITS not found")
 
 
+def parse_plan_price_usd(src: str) -> dict[str, float]:
+    for node in ast.walk(ast.parse(src)):
+        if isinstance(node, ast.AnnAssign) and getattr(node.target, "id", "") == "PLAN_PRICE_USD":
+            return ast.literal_eval(node.value)
+    raise ValueError("PLAN_PRICE_USD not found")
+
+
+def check_plan_prices(p: dict, table: dict[str, float]) -> list[str]:
+    """The cost-alert plan prices must be exactly the JSON's priced tiers (USD, and INR / fx for the `_in` ids)."""
+    want: dict[str, float] = {}
+    for name, t in p["tiers"].items():
+        if t.get("usd"):
+            want[name] = float(t["usd"])
+            want[f"{name}_in"] = round(t["inr"] / p["fx_inr_per_usd"], 2)
+    if table != want:
+        return [f"cost_alerts.PLAN_PRICE_USD {table} != pricing.json-derived {want}"]
+    return []
+
+
 def check_free_quota(p: dict, limits: dict[str, int]) -> list[str]:
     """The enforced free ceiling must equal the public Free plan's quota."""
     if "free" not in limits:
@@ -142,6 +163,12 @@ def run(root: Path = REPO_ROOT) -> list[str]:
             errs.append(
                 f"app/core/pricing.py USD_TO_INR_RATE {fx} != pricing.json {p['fx_inr_per_usd']}"
             )
+        errs += check_plan_prices(
+            p,
+            parse_plan_price_usd(
+                (root / "app" / "core" / "cost_alerts.py").read_text(encoding="utf-8")
+            ),
+        )
         meas = json.loads(
             (root / "eval" / "results" / "token_cost_measurement_n106.json").read_text(
                 encoding="utf-8"
