@@ -1,0 +1,200 @@
+{
+ "spec": "docs/specs/review-intent.md Amendment 15",
+ "thresholds_sha256": "0148398dc7789ec7bb70088bb29f4655cff9f4bdb406260057fa78e893050106",
+ "n_items": 2000,
+ "n_consensus": 1924,
+ "n_no_consensus": 76,
+ "n_gold_yes": 306,
+ "size_rule": {
+  "min_positives": 250,
+  "met": true
+ },
+ "A_router_routing_recall": {
+  "k": 292,
+  "n": 306,
+  "rate": 0.9542,
+  "wilson95": [
+   0.9247,
+   0.9726
+  ],
+  "criterion": "Wilson lower >= 0.9",
+  "met": true
+ },
+ "llm": {
+  "rows": 2000,
+  "empty_or_unparseable_or_missing": 0,
+  "ended_at_token_cap": 0,
+  "recall": {
+   "k": 275,
+   "n": 306,
+   "rate": 0.8987,
+   "wilson95": [
+    0.8598,
+    0.9277
+   ]
+  }
+ },
+ "B_non_inferiority": {
+  "delta": 0.0556,
+  "boot95": [
+   0.0131,
+   0.098
+  ],
+  "n": 306,
+  "margin": 0.05,
+  "criterion": "lower bound of the 95% paired-bootstrap interval of recall_R - recall_L > -0.05",
+  "met": true
+ },
+ "criteria_met": true,
+ "report_only": {
+  "router_recall_unanimous_4_0": {
+   "k": 225,
+   "n": 233,
+   "rate": 0.9657,
+   "wilson95": [
+    0.9337,
+    0.9825
+   ]
+  },
+  "router_recall_3_1": {
+   "k": 67,
+   "n": 73,
+   "rate": 0.9178,
+   "wilson95": [
+    0.8321,
+    0.9618
+   ]
+  },
+  "router_recall_by_stratum": {
+   "apparel": {
+    "k": 117,
+    "n": 125,
+    "rate": 0.936,
+    "wilson95": [
+     0.8788,
+     0.9672
+    ]
+   },
+   "beauty": {
+    "k": 73,
+    "n": 75,
+    "rate": 0.9733,
+    "wilson95": [
+     0.9079,
+     0.9927
+    ]
+   },
+   "food": {
+    "k": 102,
+    "n": 106,
+    "rate": 0.9623,
+    "wilson95": [
+     0.907,
+     0.9852
+    ]
+   }
+  },
+  "gold_yes_share_by_stratum": {
+   "apparel": {
+    "k": 125,
+    "n": 639,
+    "rate": 0.1956,
+    "wilson95": [
+     0.1667,
+     0.2282
+    ]
+   },
+   "beauty": {
+    "k": 75,
+    "n": 647,
+    "rate": 0.1159,
+    "wilson95": [
+     0.0935,
+     0.1429
+    ]
+   },
+   "food": {
+    "k": 106,
+    "n": 638,
+    "rate": 0.1661,
+    "wilson95": [
+     0.1393,
+     0.197
+    ]
+   }
+  },
+  "routed_share_all_items": {
+   "k": 539,
+   "n": 2000,
+   "rate": 0.2695,
+   "wilson95": [
+    0.2505,
+    0.2894
+   ]
+  },
+  "capacity_multiplier_by_open_rate": {
+   "0.0": 3.711,
+   "0.1": 2.919,
+   "0.3": 2.046
+  },
+  "panel_needs_action_agreement": {
+   "n_units": 1999,
+   "alpha": 0.7649,
+   "fleiss_kappa": 0.7653,
+   "fleiss_n_complete": 1995,
+   "pairwise_agreement": 0.9321,
+   "clear_consensus": 0.9625,
+   "unanimous": 0.8764
+  },
+  "missed_positives_vote_tallies": {
+   "fresh15-apparel-0074": {
+    "yes": 4
+   },
+   "fresh15-apparel-0083": {
+    "yes": 4
+   },
+   "fresh15-apparel-0133": {
+    "yes": 4
+   },
+   "fresh15-apparel-0145": {
+    "yes": 3,
+    "no": 1
+   },
+   "fresh15-apparel-0220": {
+    "yes": 4
+   },
+   "fresh15-apparel-0230": {
+    "yes": 4
+   },
+   "fresh15-apparel-0282": {
+    "no": 1,
+    "yes": 3
+   },
+   "fresh15-apparel-0536": {
+    "yes": 3,
+    "no": 1
+   },
+   "fresh15-beauty-0059": {
+    "yes": 4
+   },
+   "fresh15-beauty-0304": {
+    "yes": 4
+   },
+   "fresh15-food-0059": {
+    "yes": 4
+   },
+   "fresh15-food-0066": {
+    "no": 1,
+    "yes": 3
+   },
+   "fresh15-food-0523": {
+    "no": 1,
+    "yes": 3
+   },
+   "fresh15-food-0616": {
+    "no": 1,
+    "yes": 3
+   }
+  }
+ }
+}

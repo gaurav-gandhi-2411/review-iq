@@ -1,0 +1,76 @@
+{
+ "schema": 1,
+ "run": "run2",
+ "variant": "onnx_static_int8",
+ "max_len": 128,
+ "head_outputs": 44,
+ "decision": {
+  "mode": "threshold",
+  "abstention": "max calibrated softmax < abstain_below -> 'abstained' (conservative rule, target 0.95); null = never reaches the target on validation -> always abstains"
+ },
+ "fitted_on": "validation only",
+ "source": {
+  "pred_files_sha256": {
+   "needs_action": "37ebef4af8a2698a6acfe2f24dcda32354f058443b95ffd9e2a465dcd3c657b0",
+   "broad_intent": "f1399c8b66da4190ba01fd22d1caf121eaa63db4a265b9b941f67f4e79f544cf",
+   "sentiment": "cc59c10750f1c613de295bb72151bfe7c92369a8e0bb2112d532ed0c18792666",
+   "urgency": "d5a6528e37a864a355c257b273852899e7ca7ed3020c6453f386a42715c9d8c1"
+  },
+  "labels_sha256": "8f3b582082e4cf179f55bb4dbc4d94467ad9748bf636684c5a32e28be5536e8d",
+  "eval_sha256": "165ae4d8d77ddf79088b36f1d11786ede266dcf362abdd2ad727ba453b418935"
+ },
+ "tasks": {
+  "needs_action": {
+   "classes": [
+    "yes",
+    "no"
+   ],
+   "temperature": 1.380454655216619,
+   "rare": {},
+   "abstain_below": 0.8753780126571655,
+   "n_validation_labelled": 460
+  },
+  "broad_intent": {
+   "classes": [
+    "product_issue",
+    "delivery",
+    "service",
+    "praise",
+    "other"
+   ],
+   "temperature": 1.184126523990797,
+   "rare": {},
+   "abstain_below": 0.888034999370575,
+   "n_validation_labelled": 454
+  },
+  "sentiment": {
+   "classes": [
+    "positive",
+    "negative",
+    "neutral",
+    "mixed"
+   ],
+   "temperature": 1.1985654965517638,
+   "rare": {},
+   "abstain_below": 0.7952240109443665,
+   "n_validation_labelled": 435
+  },
+  "urgency": {
+   "classes": [
+    "low",
+    "medium",
+    "high"
+   ],
+   "temperature": 1.2739039187166394,
+   "rare": {
+    "high": {
+     "threshold": 0.384699,
+     "n_val_positives": 8,
+     "fallback_argmax": false
+    }
+   },
+   "abstain_below": 0.8857629895210266,
+   "n_validation_labelled": 460
+  }
+ }
+}

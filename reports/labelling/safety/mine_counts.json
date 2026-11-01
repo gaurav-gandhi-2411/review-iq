@@ -1,0 +1,20 @@
+{
+ "corpus_rows": 245757,
+ "hits_kept": 1350,
+ "hits_excluded_ledger_or_dup": 2,
+ "per_keyword": {
+  "burn": 422,
+  "rash": 263,
+  "shock": 214,
+  "smoke": 126,
+  "melt": 76,
+  "explode": 68,
+  "hospital": 55,
+  "injury": 49,
+  "allergy": 49,
+  "spark": 42,
+  "fire": 38,
+  "sharp": 22,
+  "choking": 1
+ }
+}

@@ -3,6 +3,8 @@ from __future__ import annotations
 import httpx
 import structlog
 
+from app.core.rate_limit_events import log_rate_limited
+
 log = structlog.get_logger(__name__)
 
 _OPENROUTER_CHAT_URL = "https://openrouter.ai/api/v1/chat/completions"
@@ -34,14 +36,16 @@ class SecondaryProvider:
       i.e. the enforcement fails closed, not open.
 
     This was live-verified (not just read from docs) on 2026-07-31: 3 real chat-
-    completion calls against `meta-llama/llama-3.3-70b-instruct` with
+    completion calls against `meta-llama/llama-3.3-70b-instruct` (the model verified then) with
     `provider.zdr=true` each returned a `"provider"` field (DeepInfra, AkashML,
     DeepInfra) that was cross-checked against that same model's live entries in
-    GET /api/v1/endpoints/zdr -- all 3 matched. `SECONDARY_PROVIDER_MODEL` is
-    recommended to be pinned to `meta-llama/llama-3.3-70b-instruct` (same nominal
-    family as this repo's Groq large tier, and it has ZDR-flagged endpoints from
-    11 different upstream providers including Groq itself, so failing over from
-    Groq-direct to Groq-via-OpenRouter's ZDR endpoint is possible). The zdr=true
+    GET /api/v1/endpoints/zdr -- all 3 matched. For kind=openrouter,
+    `SECONDARY_PROVIDER_MODEL` was then recommended to be pinned to
+    `meta-llama/llama-3.3-70b-instruct` (it had ZDR-flagged endpoints from 11 different
+    upstream providers including Groq itself). Production does not use this class now: it
+    runs SECONDARY_PROVIDER_KIND=groq (a second Groq account via GroqProvider, model
+    `openai/gpt-oss-120b`; see app/core/llm.py _build_secondary, ADR 0038). If this class is
+    used again, re-verify ZDR for whichever model is configured. The zdr=true
     request flag is sent unconditionally regardless of which model an operator
     configures -- this is enforced in code, not left to config discipline alone.
     """
@@ -106,6 +110,15 @@ class SecondaryProvider:
             try:
                 response.raise_for_status()
             except httpx.HTTPError:
+                if response.status_code == 429:
+                    log_rate_limited(
+                        provider="openrouter",
+                        model=self._model,
+                        tier=None,
+                        role="secondary",
+                        body=response.text,
+                        headers=response.headers,
+                    )
                 log.warning(
                     "secondary.openrouter_http_error",
                     status_code=response.status_code,

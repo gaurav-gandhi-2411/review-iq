@@ -14,6 +14,7 @@ from fastapi import APIRouter, Header, HTTPException, Request, status
 
 from app.auth.keygen import insert_api_key_with_retry
 from app.core.config import get_settings
+from app.core.db_pool import PooledConnection, db_connect
 from app.core.rate_limit import limiter
 from app.core.storage_pg import _set_tenant
 
@@ -28,8 +29,8 @@ class _ProvisionRaceLost(Exception):
     of surfacing a 500 (see _provision_org_and_key's docstring)."""
 
 
-def _db_connect() -> psycopg2.extensions.connection:
-    return psycopg2.connect(get_settings().supabase_database_url)
+def _db_connect() -> PooledConnection:
+    return db_connect(get_settings().supabase_database_url)
 
 
 def _get_supabase_admin() -> Any:  # supabase Client type is untyped
