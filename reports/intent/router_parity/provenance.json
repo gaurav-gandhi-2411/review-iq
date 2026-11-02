@@ -1,0 +1,53 @@
+{
+ "thresholds": "app/core/classify/thresholds_run2_onnx_static_int8_x64.json",
+ "thresholds_sha256_lf": "56c99aa42b37220e6902e90dc5325956eaa46dbce7b30ea6942655d1cde016c5",
+ "thresholds_sha256_crlf_as_recorded": "4cf745db3af848464cbd7961c536919dee3be7a78691a5c4aca8a356ab724ec2",
+ "tau": 0.07,
+ "tau_file_sha256_lf": "88c6ec05cb14b324fc10d489ec1998fba0ccc7558572a901fe3c37e6d795ec1d",
+ "served_tasks": [
+  "needs_action",
+  "broad_intent",
+  "sentiment",
+  "urgency"
+ ],
+ "served_columns": 14,
+ "evaluated_function": "engine.intent.fresh17_eval.routes",
+ "sets": {
+  "f17": {
+   "source_file": "logits.npz",
+   "source_key": "pinned",
+   "source_sha256": "a144aa9b257f5182c7c0b6a62f7a79d7a430845b8c54478ee76067e9d4a63023",
+   "manifest": "reports/labelling/fresh17/manifest.json",
+   "manifest_sha256_lf": "5cadcc6eb7218c7f1623a5f70724cc0673d3c2563cec308ff3b648b053e7838b",
+   "n_items": 4200,
+   "r1_routed": 767,
+   "r1_plus_routed": 892,
+   "anchor": {
+    "result": "reports/intent/fresh17/result.json",
+    "reproduced": [
+     534,
+     481,
+     1800
+    ]
+   }
+  },
+  "f18": {
+   "source_file": "fresh18_run2_pinned.npz",
+   "source_key": "logits",
+   "source_sha256": "926ba7f54676b681cd2ef6cc54ded3982fd4760aea369dd607207e951c554a7c",
+   "manifest": "reports/labelling/fresh18/manifest.json",
+   "manifest_sha256_lf": "ae0f394a3b990eaf07fa3b9851c3a389c0a66b118082436c186bd9f5f51b9a49",
+   "n_items": 8100,
+   "r1_routed": 947,
+   "r1_plus_routed": 1206,
+   "anchor": {
+    "result": "reports/intent/fresh18/result.json",
+    "reproduced": [
+     1206,
+     8100
+    ]
+   }
+  }
+ },
+ "fixture_sha256": "79923360b32414412dac5cd649da85b91d78295d9ae18d3295a439f058893d5f"
+}
