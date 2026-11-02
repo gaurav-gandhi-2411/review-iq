@@ -9,7 +9,7 @@
 ## What causes cold start
 
 1. Cloud Run allocates a new VM and pulls the container image (~98 MB compressed — fast)
-2. Python interpreter starts and imports the full app: FastAPI, Pydantic, asyncpg, psycopg2, argon2-cffi, Groq/Gemini clients, structlog, Prometheus
+2. Python interpreter starts and imports the full app: FastAPI, Pydantic, asyncpg, psycopg2, argon2-cffi, the Groq client, structlog, Prometheus
 3. `lifespan` runs: `setup_logging()` only (SQLite migrate is skipped in cloud-run mode)
 4. Container signals ready → Cloud Run routes traffic
 

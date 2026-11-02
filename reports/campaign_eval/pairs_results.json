@@ -1,0 +1,283 @@
+{
+  "by_similarity_threshold": {
+    "0.4": {
+      "false_positive_hard_negatives": {
+        "ci95_wilson": [
+          0.9732928443510084,
+          1.0
+        ],
+        "count": 140,
+        "n": 140,
+        "value": 1.0
+      },
+      "false_positive_random_pairs": {
+        "ci95_wilson": [
+          0.00031758850112462394,
+          0.0027418098851683167
+        ],
+        "count": 3,
+        "n": 3213,
+        "value": 0.0009337068160597573
+      },
+      "false_positive_short_generic_UNGATED": {
+        "ci95_wilson": [
+          0.0,
+          0.04637283683559951
+        ],
+        "count": 0,
+        "n": 79,
+        "value": 0.0
+      },
+      "false_positive_short_generic_gated": {
+        "ci95_wilson": [
+          0.0,
+          0.04637283683559951
+        ],
+        "count": 0,
+        "n": 79,
+        "value": 0.0
+      },
+      "precision_at_1_to_10": 0.9890451466165822,
+      "recall_near_identical": {
+        "ci95_wilson": [
+          0.9988365280757261,
+          1.0
+        ],
+        "n": 3298,
+        "value": 1.0
+      },
+      "recall_paraphrased": {
+        "ci95_wilson": [
+          0.6626284362689996,
+          0.695164444385961
+        ],
+        "n": 3160,
+        "value": 0.6791139240506329
+      },
+      "recall_pooled": {
+        "ci95_wilson": [
+          0.8339084940325955,
+          0.8516545813606485
+        ],
+        "n": 6458,
+        "value": 0.8429854444100341
+      }
+    },
+    "0.5": {
+      "false_positive_hard_negatives": {
+        "ci95_wilson": [
+          0.8391397767648922,
+          0.9394944987159147
+        ],
+        "count": 126,
+        "n": 140,
+        "value": 0.9
+      },
+      "false_positive_random_pairs": {
+        "ci95_wilson": [
+          0.00031758850112462394,
+          0.0027418098851683167
+        ],
+        "count": 3,
+        "n": 3213,
+        "value": 0.0009337068160597573
+      },
+      "false_positive_short_generic_UNGATED": {
+        "ci95_wilson": [
+          0.0,
+          0.04637283683559951
+        ],
+        "count": 0,
+        "n": 79,
+        "value": 0.0
+      },
+      "false_positive_short_generic_gated": {
+        "ci95_wilson": [
+          0.0,
+          0.04637283683559951
+        ],
+        "count": 0,
+        "n": 79,
+        "value": 0.0
+      },
+      "precision_at_1_to_10": 0.9879602258660136,
+      "recall_near_identical": {
+        "ci95_wilson": [
+          0.9988365280757261,
+          1.0
+        ],
+        "n": 3298,
+        "value": 1.0
+      },
+      "recall_paraphrased": {
+        "ci95_wilson": [
+          0.5047192576438154,
+          0.539530745264042
+        ],
+        "n": 3160,
+        "value": 0.5221518987341772
+      },
+      "recall_pooled": {
+        "ci95_wilson": [
+          0.7557019376706997,
+          0.7763445303207164
+        ],
+        "n": 6458,
+        "value": 0.7661814803344689
+      }
+    },
+    "0.6": {
+      "false_positive_hard_negatives": {
+        "ci95_wilson": [
+          0.7735241511184688,
+          0.8938766564365083
+        ],
+        "count": 118,
+        "n": 140,
+        "value": 0.8428571428571429
+      },
+      "false_positive_random_pairs": {
+        "ci95_wilson": [
+          0.00031758850112462394,
+          0.0027418098851683167
+        ],
+        "count": 3,
+        "n": 3213,
+        "value": 0.0009337068160597573
+      },
+      "false_positive_short_generic_UNGATED": {
+        "ci95_wilson": [
+          0.0,
+          0.04637283683559951
+        ],
+        "count": 0,
+        "n": 79,
+        "value": 0.0
+      },
+      "false_positive_short_generic_gated": {
+        "ci95_wilson": [
+          0.0,
+          0.04637283683559951
+        ],
+        "count": 0,
+        "n": 79,
+        "value": 0.0
+      },
+      "precision_at_1_to_10": 0.9861008221994276,
+      "recall_near_identical": {
+        "ci95_wilson": [
+          0.9960362340185646,
+          0.9991659586002456
+        ],
+        "n": 3298,
+        "value": 0.9981807155852032
+      },
+      "recall_paraphrased": {
+        "ci95_wilson": [
+          0.29610725061143367,
+          0.32839986757046263
+        ],
+        "n": 3160,
+        "value": 0.3120253164556962
+      },
+      "recall_pooled": {
+        "ci95_wilson": [
+          0.6508072388219445,
+          0.6738680054613572
+        ],
+        "n": 6458,
+        "value": 0.6624341901517498
+      }
+    },
+    "0.7": {
+      "false_positive_hard_negatives": {
+        "ci95_wilson": [
+          0.6875051189138534,
+          0.8269496702431082
+        ],
+        "count": 107,
+        "n": 140,
+        "value": 0.7642857142857142
+      },
+      "false_positive_random_pairs": {
+        "ci95_wilson": [
+          0.00017071708480187442,
+          0.0022669534551463784
+        ],
+        "count": 2,
+        "n": 3213,
+        "value": 0.0006224712107065049
+      },
+      "false_positive_short_generic_UNGATED": {
+        "ci95_wilson": [
+          0.0,
+          0.04637283683559951
+        ],
+        "count": 0,
+        "n": 79,
+        "value": 0.0
+      },
+      "false_positive_short_generic_gated": {
+        "ci95_wilson": [
+          0.0,
+          0.04637283683559951
+        ],
+        "count": 0,
+        "n": 79,
+        "value": 0.0
+      },
+      "precision_at_1_to_10": 0.9887686634231211,
+      "recall_near_identical": {
+        "ci95_wilson": [
+          0.9364916928409102,
+          0.9521033263750329
+        ],
+        "n": 3298,
+        "value": 0.944815039417829
+      },
+      "recall_paraphrased": {
+        "ci95_wilson": [
+          0.12243196716619757,
+          0.14617869905678904
+        ],
+        "n": 3160,
+        "value": 0.13386075949367088
+      },
+      "recall_pooled": {
+        "ci95_wilson": [
+          0.5358389782106212,
+          0.5601089014155212
+        ],
+        "n": 6458,
+        "value": 0.5480024775472282
+      }
+    }
+  },
+  "frozen_similarity": {
+    "v1": {
+      "0.1": 0.4,
+      "1.0": 0.4
+    },
+    "v2": {
+      "0.1": 0.4,
+      "1.0": 0.4
+    }
+  },
+  "label": "positives SYNTHETIC; negatives real corpus pairs (assumed organic, may include real duplicates)",
+  "median_similarity": {
+    "hard": 1.0,
+    "pos_nid": 0.8706896551724138,
+    "pos_par": 0.5125,
+    "rand": 0.04601868727058038,
+    "short_gated": null,
+    "short_ungated": 0.0
+  },
+  "n": {
+    "negative_hard_top_similarity": 140,
+    "negative_random": 3213,
+    "negative_short_generic": 79,
+    "positive_near_identical": 3298,
+    "positive_paraphrased": 3160
+  },
+  "precision_weighting": "1 positive : 10 negatives over the random-negative false-positive rate"
+}

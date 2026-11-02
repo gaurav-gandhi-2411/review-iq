@@ -1,0 +1,330 @@
+{
+ "n_random": 300,
+ "four_judge_sec_per_item": 14.406,
+ "schemes": [
+  {
+   "pair": [
+    "llama31_8b",
+    "qwen3_8b"
+   ],
+   "tiebreak": "mistral_7b",
+   "third_call_rate": 0.26,
+   "sec_per_item": 7.099,
+   "tasks": {
+    "needs_action": {
+     "coverage": 1.0,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "broad_intent": {
+     "coverage": 0.983,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "sentiment": {
+     "coverage": 0.94,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "urgency": {
+     "coverage": 0.99,
+     "agree_with_4panel_consensus": 1.0
+    }
+   }
+  },
+  {
+   "pair": [
+    "llama31_8b",
+    "qwen3_8b"
+   ],
+   "tiebreak": "gemma2_9b",
+   "third_call_rate": 0.26,
+   "sec_per_item": 7.217,
+   "tasks": {
+    "needs_action": {
+     "coverage": 1.0,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "broad_intent": {
+     "coverage": 0.99,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "sentiment": {
+     "coverage": 0.98,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "urgency": {
+     "coverage": 0.993,
+     "agree_with_4panel_consensus": 1.0
+    }
+   }
+  },
+  {
+   "pair": [
+    "mistral_7b",
+    "qwen3_8b"
+   ],
+   "tiebreak": "llama31_8b",
+   "third_call_rate": 0.293,
+   "sec_per_item": 7.688,
+   "tasks": {
+    "needs_action": {
+     "coverage": 1.0,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "broad_intent": {
+     "coverage": 0.983,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "sentiment": {
+     "coverage": 0.94,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "urgency": {
+     "coverage": 0.99,
+     "agree_with_4panel_consensus": 1.0
+    }
+   }
+  },
+  {
+   "pair": [
+    "llama31_8b",
+    "mistral_7b"
+   ],
+   "tiebreak": "qwen3_8b",
+   "third_call_rate": 0.257,
+   "sec_per_item": 7.945,
+   "tasks": {
+    "needs_action": {
+     "coverage": 1.0,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "broad_intent": {
+     "coverage": 0.983,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "sentiment": {
+     "coverage": 0.94,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "urgency": {
+     "coverage": 0.99,
+     "agree_with_4panel_consensus": 1.0
+    }
+   }
+  },
+  {
+   "pair": [
+    "mistral_7b",
+    "qwen3_8b"
+   ],
+   "tiebreak": "gemma2_9b",
+   "third_call_rate": 0.293,
+   "sec_per_item": 8.01,
+   "tasks": {
+    "needs_action": {
+     "coverage": 0.997,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "broad_intent": {
+     "coverage": 0.997,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "sentiment": {
+     "coverage": 0.977,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "urgency": {
+     "coverage": 1.0,
+     "agree_with_4panel_consensus": 1.0
+    }
+   }
+  },
+  {
+   "pair": [
+    "gemma2_9b",
+    "qwen3_8b"
+   ],
+   "tiebreak": "llama31_8b",
+   "third_call_rate": 0.267,
+   "sec_per_item": 8.053,
+   "tasks": {
+    "needs_action": {
+     "coverage": 1.0,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "broad_intent": {
+     "coverage": 0.99,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "sentiment": {
+     "coverage": 0.98,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "urgency": {
+     "coverage": 0.993,
+     "agree_with_4panel_consensus": 1.0
+    }
+   }
+  },
+  {
+   "pair": [
+    "gemma2_9b",
+    "qwen3_8b"
+   ],
+   "tiebreak": "mistral_7b",
+   "third_call_rate": 0.267,
+   "sec_per_item": 8.225,
+   "tasks": {
+    "needs_action": {
+     "coverage": 0.997,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "broad_intent": {
+     "coverage": 0.997,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "sentiment": {
+     "coverage": 0.977,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "urgency": {
+     "coverage": 1.0,
+     "agree_with_4panel_consensus": 1.0
+    }
+   }
+  },
+  {
+   "pair": [
+    "llama31_8b",
+    "mistral_7b"
+   ],
+   "tiebreak": "gemma2_9b",
+   "third_call_rate": 0.257,
+   "sec_per_item": 8.358,
+   "tasks": {
+    "needs_action": {
+     "coverage": 0.997,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "broad_intent": {
+     "coverage": 0.99,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "sentiment": {
+     "coverage": 0.963,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "urgency": {
+     "coverage": 0.997,
+     "agree_with_4panel_consensus": 1.0
+    }
+   }
+  },
+  {
+   "pair": [
+    "gemma2_9b",
+    "llama31_8b"
+   ],
+   "tiebreak": "qwen3_8b",
+   "third_call_rate": 0.243,
+   "sec_per_item": 8.361,
+   "tasks": {
+    "needs_action": {
+     "coverage": 1.0,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "broad_intent": {
+     "coverage": 0.99,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "sentiment": {
+     "coverage": 0.98,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "urgency": {
+     "coverage": 0.993,
+     "agree_with_4panel_consensus": 1.0
+    }
+   }
+  },
+  {
+   "pair": [
+    "gemma2_9b",
+    "llama31_8b"
+   ],
+   "tiebreak": "mistral_7b",
+   "third_call_rate": 0.243,
+   "sec_per_item": 8.642,
+   "tasks": {
+    "needs_action": {
+     "coverage": 0.997,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "broad_intent": {
+     "coverage": 0.99,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "sentiment": {
+     "coverage": 0.963,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "urgency": {
+     "coverage": 0.997,
+     "agree_with_4panel_consensus": 1.0
+    }
+   }
+  },
+  {
+   "pair": [
+    "gemma2_9b",
+    "mistral_7b"
+   ],
+   "tiebreak": "qwen3_8b",
+   "third_call_rate": 0.22,
+   "sec_per_item": 8.943,
+   "tasks": {
+    "needs_action": {
+     "coverage": 0.997,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "broad_intent": {
+     "coverage": 0.997,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "sentiment": {
+     "coverage": 0.977,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "urgency": {
+     "coverage": 1.0,
+     "agree_with_4panel_consensus": 1.0
+    }
+   }
+  },
+  {
+   "pair": [
+    "gemma2_9b",
+    "mistral_7b"
+   ],
+   "tiebreak": "llama31_8b",
+   "third_call_rate": 0.22,
+   "sec_per_item": 9.055,
+   "tasks": {
+    "needs_action": {
+     "coverage": 0.997,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "broad_intent": {
+     "coverage": 0.99,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "sentiment": {
+     "coverage": 0.963,
+     "agree_with_4panel_consensus": 1.0
+    },
+    "urgency": {
+     "coverage": 0.997,
+     "agree_with_4panel_consensus": 1.0
+    }
+   }
+  }
+ ]
+}

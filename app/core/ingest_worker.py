@@ -33,11 +33,12 @@ import asyncio
 import contextlib
 import json
 
-import psycopg2
 import structlog
 
 from app.auth.api_key import ApiKeyContext
+from app.core.classify.encoder_first import should_extract
 from app.core.config import get_settings
+from app.core.db_pool import db_connect
 from app.core.ratelimit import set_bulk_call_class
 from app.core.schemas import ReviewRequest
 from app.core.storage_pg import (
@@ -81,7 +82,7 @@ async def _claim_one_row() -> tuple[str, str, bool] | None:
     row was pending.
     """
     settings = get_settings()
-    conn = await asyncio.to_thread(psycopg2.connect, settings.supabase_database_url)
+    conn = await asyncio.to_thread(db_connect, settings.supabase_database_url)
     try:
         cur = conn.cursor()
         await asyncio.to_thread(cur.execute, "SELECT * FROM public.claim_pending_batch_job_row()")
@@ -119,7 +120,10 @@ async def _claim_one_row() -> tuple[str, str, bool] | None:
         try:
             req = ReviewRequest(text=text, review_date=review_date)
             input_hash = req.input_hash()
-            await _run_extraction_v2(req, ctx, product_override=product)
+            # Encoder-first (Amendment 14, flag OFF): a classified-only review gets no LLM call here; it is extracted when the user
+            # opens it. The classification itself is not persisted yet (needs a migration: gate 4), so this is a DRAFT hook.
+            if await should_extract(text):
+                await _run_extraction_v2(req, ctx, product_override=product)
         except Exception as exc:  # noqa: BLE001 — one row's failure must not kill the drain loop
             ok = False
             error = str(exc)[:_ERROR_TRUNCATE_LEN]

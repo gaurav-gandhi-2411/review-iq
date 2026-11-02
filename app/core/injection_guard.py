@@ -47,6 +47,11 @@ INJECTION_GUARD_THRESHOLD = 0.5
 async def classify_injection_risk(text: str, *, api_key: str, timeout: float = 10.0) -> bool:
     """Return True if `text` should be treated as a likely prompt-injection attempt.
 
+    `text` is sent to Groq, a third-party processor, so callers MUST pass PII-redacted text:
+    `app.core.sanitize.pii_redacted_text()` (truncate + redact PII). Do not pass raw review
+    text, and do not pass `sanitize()` output either -- its [INJECTION_REMOVED] substitution
+    erases the attack phrasing this classifier scores.
+
     Fails CLOSED (returns True -- suspicious) on any classifier error, per P4a: a
     pre-filter that silently lets traffic through when it can't be evaluated is not a
     pre-filter, it's a false sense of one.

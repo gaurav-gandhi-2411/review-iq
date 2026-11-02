@@ -27,6 +27,7 @@ _fake_campaign_dedupe_key for the exact keying and why each is bucketed the way 
 from __future__ import annotations
 
 import asyncio
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import structlog
@@ -46,11 +47,10 @@ log = structlog.get_logger(__name__)
 # spike gate (ratio>=3x, count>=4) that merely makes a flag worth reporting at all.
 BATCH_DEFECT_ALERT_THRESHOLD = 0.7
 
-# Synthetic-validated true positives observed this session scored confidence 0.456-0.636. This
-# threshold EXCLUDES the weakest observed true positive (0.456, the deliberately-hardest
-# stress-test case) -- a deliberate, conservative choice, not an oversight. That case remains
-# visible via the lower CONFIDENCE_REPORT_THRESHOLD=0.2 reporting bar, just not auto-alerted.
-FAKE_CAMPAIGN_ALERT_THRESHOLD = 0.5
+# The review-pattern detector (app/core/detectors/campaign.py) has no confidence score: it returns
+# only alerts that already meet its pre-registered rule, so there is no second threshold here.
+# Older alerts are not replayed when the detector is enabled or the sweep restarts.
+FAKE_CAMPAIGN_RECENT_DAYS = 14
 
 
 def _batch_defect_dedupe_key(product_id: str, topic: str, window_start_iso: str) -> str:
@@ -61,11 +61,11 @@ def _batch_defect_dedupe_key(product_id: str, topic: str, window_start_iso: str)
     return f"batch_defect:{product_id}:{topic}:{month}"
 
 
-def _fake_campaign_dedupe_key(product_id: str, burst_start_iso: str) -> str:
-    """Day-bucketed: campaign bursts are short (48h) discrete events, not slow-developing like
-    defects; the burst window's start is anchored to specific review timestamps so it's very
-    stable across sweeps for the same underlying burst."""
-    day = burst_start_iso[:10]  # "YYYY-MM-DD" prefix of an ISO8601 timestamp
+def _fake_campaign_dedupe_key(product_id: str, window_start_iso: str) -> str:
+    """Day-bucketed: review patterns are short discrete events. The detector evaluates each
+    arrival using only earlier reviews and applies a 7-day cooldown, so an alert's window start
+    is identical on every re-scan and the key is stable across sweeps."""
+    day = window_start_iso[:10]  # "YYYY-MM-DD" prefix of an ISO8601 timestamp
     return f"fake_campaign:{product_id}:{day}"
 
 
@@ -102,14 +102,11 @@ async def _sweep_fake_campaign_for_org(
     """Run fake-campaign for one org's already-fetched dated rows; alert on above-threshold
     flags. Returns the number of alerts actually sent."""
     reviews = campaign_reviews_from_rows(rows)
-    flags = scan_corpus(reviews)
+    since = datetime.now(UTC) - timedelta(days=FAKE_CAMPAIGN_RECENT_DAYS)
+    flags = scan_corpus(reviews, since=since)
     sent = 0
     for flag in flags:
-        if flag.confidence < FAKE_CAMPAIGN_ALERT_THRESHOLD:
-            continue
-        dedupe_key = _fake_campaign_dedupe_key(
-            flag.product_id, flag.evidence["burst_window"]["start"]
-        )
+        dedupe_key = _fake_campaign_dedupe_key(flag.product_id, flag.evidence["window"]["start"])
         result = await evaluate_and_alert(
             org_id=org_id,
             review_id=dedupe_key,
