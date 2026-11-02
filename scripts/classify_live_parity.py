@@ -24,7 +24,9 @@ import time
 from pathlib import Path
 
 import httpx
+from app.core.classify import encoder_first as EF
 from app.core.classify import runtime
+from engine.intent.decide import decide
 
 from scripts import classify_parity as cp
 
@@ -34,6 +36,53 @@ ONNX = cp.CFGS["onnx"]
 def _pct(v: list[float], q: float) -> float:
     s = sorted(v)
     return round(s[min(len(s) - 1, int(q * len(s)))], 1)
+
+
+ROUTE_TASKS = ("needs_action", "urgency")
+
+
+def offline_route_tasks(th: runtime.Thresholds, off: dict[str, dict], i: int) -> dict[str, dict]:
+    """The offline reference for item i in the served API shape the routers read (label, candidate_label, probabilities)."""
+    out = {}
+    for t in ROUTE_TASKS:
+        spec = th.tasks[t]
+        p = off[t]["probs"][i]
+        cand = spec.classes[int(decide(p[None, :], spec.classes, spec.rare)[0])]
+        out[t] = {
+            "label": off[t]["labels"][i],
+            "candidate_label": cand,
+            "probabilities": {c: float(p[j]) for j, c in enumerate(spec.classes)},
+        }
+    return out
+
+
+def route_flips(
+    ids: list[str], offline: list[dict[str, dict]], served: list[dict[str, dict]]
+) -> dict:
+    """S35: items where the served answer changes the ROUTING decision (R1, and R1+ = the router that would be enabled)."""
+    out: dict = {"n_items": len(ids)}
+    for name, router in (("r1", EF.route_r1), ("r1_plus", EF.route_r1_plus)):
+        flips = []
+        for k, (o, s) in enumerate(zip(offline, served, strict=True)):
+            ro, rs = router(o).route, router(s).route
+            if ro != rs:
+                flips.append(
+                    {
+                        "id": ids[k],
+                        "offline_route": ro,
+                        "served_route": rs,
+                        "offline_p_yes": o["needs_action"]["probabilities"]["yes"],
+                        "served_p_yes": s["needs_action"]["probabilities"]["yes"],
+                    }
+                )
+        out[name] = {
+            "n_flips": len(flips),
+            "flip_rate": round(len(flips) / len(ids), 4) if ids else None,
+            "n_offline_routed": sum(router(o).route for o in offline),
+            "n_served_routed": sum(router(s).route for s in served),
+            "flips": flips,
+        }
+    return out
 
 
 def run(url: str, texts_path: Path, limit: int | None, timeout: float) -> dict:
@@ -53,6 +102,9 @@ def run(url: str, texts_path: Path, limit: int | None, timeout: float) -> dict:
     lat: list[float] = []
     errors: list[dict] = []
     sha_seen: set[str] = set()
+    route_ids: list[str] = []
+    route_off: list[dict[str, dict]] = []
+    route_srv: list[dict[str, dict]] = []
     with httpx.Client(timeout=timeout, headers=headers) as c:
         for i in keep:
             t0 = time.perf_counter()
@@ -76,7 +128,11 @@ def run(url: str, texts_path: Path, limit: int | None, timeout: float) -> dict:
                     mism.append(
                         {"id": ids[i], "task": t, "served": served, "offline": off[t]["labels"][i]}
                     )
+            route_ids.append(ids[i])
+            route_off.append(offline_route_tasks(th, off, i))
+            route_srv.append(d["results"][0]["tasks"])
     return {
+        "routes": route_flips(route_ids, route_off, route_srv),
         "url_host": url.split("//")[-1].split("/")[0],
         "n_items": len(keep),
         "n_task_decisions": len(keep) * len(cp.TASKS),
@@ -117,6 +173,7 @@ def main() -> None:
     print(
         {k: res[k] for k in ("n_items", "n_errors", "n_mismatches", "thresholds_match")},
         res["client_latency_ms"],
+        {k: res["routes"][k]["n_flips"] for k in ("r1", "r1_plus")},
     )
     sys.exit(
         0 if res["n_mismatches"] == 0 and res["n_errors"] == 0 and res["thresholds_match"] else 1
