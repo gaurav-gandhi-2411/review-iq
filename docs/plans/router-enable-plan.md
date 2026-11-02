@@ -39,14 +39,15 @@ Complaints the router misses wait in the skipped list until opened, as the price
 |---|---|---|---|---|
 | 0 | Migration rehearsal CI on a restored backup | #396 (draft) | gate 4 (CI + migration path) | Rehearses #576 without a prod credential |
 | 1 | `classified_reviews` table migration FILE | #576 | gate 4 (schema) | Expand-only; RLS by org; text kept only while classified-only. GG applies it to prod |
-| 2 | **R1+ in the served path** (NEW, not yet written) | to write | normal | `route_r1_plus(tasks, tau)` = R1 OR `tasks["needs_action"]["probabilities"]["yes"] >= tau`, tau read from the committed file; `plan_routes`/`plan_ingest` default to it; parity test: served R1+ == `engine/intent/fresh17_eval.routes` R1+ on the fresh18 run-2 logits, item for item. **The served code today is R1 only; enabling without this step would deploy a router that was not the one evaluated.** |
-| 3 | Ingest keeps skipped reviews instead of dropping them | #578 | gate 4 (writes reviews) | Flag OFF = byte-for-byte today's behaviour |
+| 2 | **R1+ in the served path** | **#655, MERGED** (S35) | normal | `route_r1_plus` = R1 OR served p(needs_action = yes) >= tau, tau from `app/core/classify/router_r1_plus.json` (test-pinned to `reports/intent/a17/tau.json`); the `plan_routes` default. CI parity test: served R1+ == evaluated R1+ bit for bit on the stored A17 (4,200) and A18 (8,100) run-2 logits; the fixture builder refuses to write unless it reproduces the committed results. Deployed inert (`review-iq-00109-rhj`, flag unset) |
+| 2b | R1+ on the LIVE classifier | #656 (S35) | normal | Live-parity check now counts routing flips. One run on `review-iq-classify-00002-zh5`: 757 sealed reviews, **0 R1+ flips** (238 routed either way). Re-run after any classifier redeploy |
+| 3 | Ingest keeps skipped reviews instead of dropping them | #578 | gate 4 (writes reviews) | Flag OFF = byte-for-byte today's behaviour. **S35: `plan_ingest` called `route_r1` directly; fixed to `route_r1_plus`, with a test that separates the two.** Without this fix, merging #578 would have served R1 |
 | 4 | Open a classified-only review to extract it once | #579 (stacked on #578) | gate 4 | Both routes 404 while the flag is off |
 | 5 | Web: list of skipped reviews, open to analyse | #634 (draft, stacked on #579) | UI review | Behind `VITE_ENABLE_SKIPPED_REVIEWS` (default off) |
 | 6 | Turn it on | env only | GG | `CLASSIFY_SERVICE_URL` = the private `review-iq-classify` URL; `ENABLE_ENCODER_FIRST=true`; `VITE_ENABLE_SKIPPED_REVIEWS=true` on the web build |
 
-Merge order: #396, then #576 (and apply the migration), then step 2, then #578, then retarget #579 to main and merge, then #634.
-Rebase each after the previous one merges.
+Merge order: #396, then #576 (and apply the migration), then #578, then retarget #579 to main and merge, then #634 (step 2 is
+merged). Update each branch after the previous one merges (all were updated in S35).
 
 The classifier service is already deployed and private: `review-iq-classify` (revision `review-iq-classify-00002-zh5`, asia-south1),
 invoker = `review-iq-runner@` only (checked 2026-10-31 and 2026-11-01). Nothing calls it today.
@@ -80,6 +81,7 @@ invoker = `review-iq-runner@` only (checked 2026-10-31 and 2026-11-01). Nothing 
    `PYTHONPATH=. python <with_failover_key.py> <venv python> -m engine.intent.fresh18_groq120 --subsample reports/intent/fresh18/subsample_120b.json --texts D:/ml-cache/s33/fresh18/fresh18.jsonl --out D:/ml-cache/s34/groq120_f18`
    (bounded: about 48 items per 24 h), then
    `fresh18_eval score ... --llm120 D:/ml-cache/s34/groq120_f18/gpt-oss-120b.jsonl`. Deadline 2026-11-15; partial = INCOMPLETE with n.
-2. Step 2 (served R1+) is unwritten.
+2. Step 2 (served R1+) is done (#655 merged, #656). Before turning the flag on, re-run the live routing check
+   (`docs/reports/router-r1-plus-live-parity.md`) against whatever classifier revision is live then.
 3. Value (BELIEVED): about $1.74 per Starter customer per month of LLM cost on paid Groq. Recommendation: enable when there is a paying
    customer whose volume makes that saving matter. The evidence above holds until then.
