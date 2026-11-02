@@ -1,0 +1,81 @@
+{
+ "missed": [
+  {
+   "id": "scale-apparel-0600",
+   "votes": {
+    "gemma2_9b": "yes",
+    "llama31_8b": "no",
+    "mistral_7b": "yes",
+    "qwen3_8b": "yes"
+   },
+   "tally": {
+    "no": 1,
+    "yes": 3
+   },
+   "encoder_p_yes": 0.061,
+   "llm_v2_zero_shot": "yes"
+  },
+  {
+   "id": "scale-apparel-1407",
+   "votes": {
+    "gemma2_9b": "yes",
+    "llama31_8b": "yes",
+    "mistral_7b": "yes",
+    "qwen3_8b": "yes"
+   },
+   "tally": {
+    "yes": 4
+   },
+   "encoder_p_yes": 0.035,
+   "llm_v2_zero_shot": "yes"
+  },
+  {
+   "id": "scale-beauty-1252",
+   "votes": {
+    "gemma2_9b": "yes",
+    "llama31_8b": "yes",
+    "mistral_7b": "yes",
+    "qwen3_8b": "no"
+   },
+   "tally": {
+    "yes": 3,
+    "no": 1
+   },
+   "encoder_p_yes": 0.076,
+   "llm_v2_zero_shot": "not in first 300"
+  },
+  {
+   "id": "scale-food-0778",
+   "votes": {
+    "gemma2_9b": "yes",
+    "llama31_8b": "yes",
+    "mistral_7b": "yes",
+    "qwen3_8b": "no"
+   },
+   "tally": {
+    "yes": 3,
+    "no": 1
+   },
+   "encoder_p_yes": 0.035,
+   "llm_v2_zero_shot": "not in first 300"
+  },
+  {
+   "id": "scale-vernacular-0101",
+   "votes": {
+    "gemma2_9b": "yes",
+    "llama31_8b": "yes",
+    "mistral_7b": "yes",
+    "qwen3_8b": "yes"
+   },
+   "tally": {
+    "yes": 4
+   },
+   "encoder_p_yes": 0.099,
+   "llm_v2_zero_shot": "not in first 300"
+  }
+ ],
+ "pattern_all_gold_yes": {
+  "(('no', 1), ('yes', 3))": 21,
+  "(('yes', 4),)": 90
+ }
+}

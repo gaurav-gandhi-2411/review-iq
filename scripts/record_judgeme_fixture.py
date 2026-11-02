@@ -25,19 +25,20 @@ from app.core.ingestion.judgeme_client import JUDGEME_BASE_URL, validate_shop_do
 
 _EMAIL = re.compile(r"[^@\s]+@[^@\s]+\.[^@\s]+")
 _PHONE = re.compile(r"\+?\d[\d\s().-]{7,}\d")
+# S31: Judge.me's OpenAPI (judge.me/api/docs.yaml) puts the reviewer's IP on the REVIEW as `ip_address` (and `ip_addr`
+# on create), outside the `reviewer` object, so dropping `reviewer` alone would commit a real IP to the public repo.
+_PII_KEYS = {"reviewer", "email", "phone", "ip_address", "ip_addr"}
+_IPV4 = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
 
 
 def redact(value: Any) -> Any:
     """Recursively drop reviewer identity; mask email/phone-shaped strings anywhere."""
     if isinstance(value, dict):
-        return {
-            k: ("[REDACTED]" if k in {"reviewer", "email", "phone"} else redact(v))
-            for k, v in value.items()
-        }
+        return {k: ("[REDACTED]" if k in _PII_KEYS else redact(v)) for k, v in value.items()}
     if isinstance(value, list):
         return [redact(v) for v in value]
     if isinstance(value, str):
-        return _PHONE.sub("[PHONE]", _EMAIL.sub("[EMAIL]", value))
+        return _IPV4.sub("[IP]", _PHONE.sub("[PHONE]", _EMAIL.sub("[EMAIL]", value)))
     return value
 
 
