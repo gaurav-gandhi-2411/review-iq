@@ -1,0 +1,346 @@
+{
+ "train": {
+  "n_items": 3777,
+  "tasks": {
+   "needs_action": {
+    "n_labelled": 3775,
+    "classes": {
+     "no": 3131,
+     "yes": 644
+    }
+   },
+   "broad_intent": {
+    "n_labelled": 3718,
+    "classes": {
+     "delivery": 12,
+     "other": 442,
+     "praise": 2660,
+     "product_issue": 602,
+     "service": 2
+    }
+   },
+   "sentiment": {
+    "n_labelled": 3502,
+    "classes": {
+     "mixed": 125,
+     "negative": 580,
+     "neutral": 74,
+     "positive": 2723
+    }
+   },
+   "urgency": {
+    "n_labelled": 3773,
+    "classes": {
+     "high": 70,
+     "low": 3201,
+     "medium": 502
+    }
+   },
+   "aspect:beauty:results_efficacy": {
+    "n_labelled": 712,
+    "classes": {
+     "negative": 111,
+     "neutral": 17,
+     "positive": 584
+    }
+   },
+   "aspect:beauty:texture": {
+    "n_labelled": 358,
+    "classes": {
+     "negative": 37,
+     "neutral": 53,
+     "positive": 268
+    }
+   },
+   "aspect:beauty:skin_reaction": {
+    "n_labelled": 166,
+    "classes": {
+     "negative": 83,
+     "neutral": 17,
+     "positive": 66
+    }
+   },
+   "aspect:beauty:fragrance": {
+    "n_labelled": 182,
+    "classes": {
+     "negative": 40,
+     "neutral": 18,
+     "positive": 124
+    }
+   },
+   "aspect:beauty:value": {
+    "n_labelled": 87,
+    "classes": {
+     "negative": 38,
+     "neutral": 14,
+     "positive": 35
+    }
+   },
+   "aspect:food:taste": {
+    "n_labelled": 193,
+    "classes": {
+     "negative": 75,
+     "neutral": 6,
+     "positive": 112
+    }
+   },
+   "aspect:food:value": {
+    "n_labelled": 120,
+    "classes": {
+     "negative": 57,
+     "neutral": 18,
+     "positive": 45
+    }
+   },
+   "aspect:food:ingredient_quality": {
+    "n_labelled": 163,
+    "classes": {
+     "negative": 96,
+     "neutral": 24,
+     "positive": 43
+    }
+   },
+   "aspect:food:efficacy_claims": {
+    "n_labelled": 51,
+    "classes": {
+     "negative": 32,
+     "neutral": 1,
+     "positive": 18
+    }
+   },
+   "aspect:food:quantity": {
+    "n_labelled": 36,
+    "classes": {
+     "negative": 17,
+     "neutral": 12,
+     "positive": 7
+    }
+   }
+  }
+ },
+ "val": {
+  "n_items": 460,
+  "tasks": {
+   "needs_action": {
+    "n_labelled": 460,
+    "classes": {
+     "no": 376,
+     "yes": 84
+    }
+   },
+   "broad_intent": {
+    "n_labelled": 454,
+    "classes": {
+     "delivery": 4,
+     "other": 53,
+     "praise": 323,
+     "product_issue": 74
+    }
+   },
+   "sentiment": {
+    "n_labelled": 435,
+    "classes": {
+     "mixed": 15,
+     "negative": 71,
+     "neutral": 10,
+     "positive": 339
+    }
+   },
+   "urgency": {
+    "n_labelled": 460,
+    "classes": {
+     "high": 8,
+     "low": 385,
+     "medium": 67
+    }
+   },
+   "aspect:beauty:results_efficacy": {
+    "n_labelled": 104,
+    "classes": {
+     "negative": 13,
+     "positive": 91
+    }
+   },
+   "aspect:beauty:texture": {
+    "n_labelled": 53,
+    "classes": {
+     "negative": 7,
+     "neutral": 5,
+     "positive": 41
+    }
+   },
+   "aspect:beauty:skin_reaction": {
+    "n_labelled": 29,
+    "classes": {
+     "negative": 18,
+     "neutral": 5,
+     "positive": 6
+    }
+   },
+   "aspect:beauty:fragrance": {
+    "n_labelled": 25,
+    "classes": {
+     "negative": 2,
+     "neutral": 2,
+     "positive": 21
+    }
+   },
+   "aspect:beauty:value": {
+    "n_labelled": 14,
+    "classes": {
+     "negative": 3,
+     "neutral": 2,
+     "positive": 9
+    }
+   },
+   "aspect:food:taste": {
+    "n_labelled": 23,
+    "classes": {
+     "negative": 11,
+     "positive": 12
+    }
+   },
+   "aspect:food:value": {
+    "n_labelled": 12,
+    "classes": {
+     "negative": 7,
+     "neutral": 3,
+     "positive": 2
+    }
+   },
+   "aspect:food:ingredient_quality": {
+    "n_labelled": 19,
+    "classes": {
+     "negative": 11,
+     "neutral": 4,
+     "positive": 4
+    }
+   },
+   "aspect:food:efficacy_claims": {
+    "n_labelled": 2,
+    "classes": {
+     "negative": 1,
+     "positive": 1
+    }
+   },
+   "aspect:food:quantity": {
+    "n_labelled": 0,
+    "classes": {}
+   }
+  }
+ },
+ "test": {
+  "n_items": 763,
+  "tasks": {
+   "needs_action": {
+    "n_labelled": 723,
+    "classes": {
+     "no": 611,
+     "yes": 112
+    }
+   },
+   "broad_intent": {
+    "n_labelled": 706,
+    "classes": {
+     "delivery": 1,
+     "other": 69,
+     "praise": 520,
+     "product_issue": 116
+    }
+   },
+   "sentiment": {
+    "n_labelled": 679,
+    "classes": {
+     "mixed": 19,
+     "negative": 103,
+     "neutral": 11,
+     "positive": 546
+    }
+   },
+   "urgency": {
+    "n_labelled": 708,
+    "classes": {
+     "high": 4,
+     "low": 627,
+     "medium": 77
+    }
+   },
+   "aspect:beauty:results_efficacy": {
+    "n_labelled": 192,
+    "classes": {
+     "negative": 27,
+     "neutral": 4,
+     "positive": 161
+    }
+   },
+   "aspect:beauty:texture": {
+    "n_labelled": 69,
+    "classes": {
+     "negative": 6,
+     "neutral": 4,
+     "positive": 59
+    }
+   },
+   "aspect:beauty:skin_reaction": {
+    "n_labelled": 33,
+    "classes": {
+     "negative": 20,
+     "neutral": 1,
+     "positive": 12
+    }
+   },
+   "aspect:beauty:fragrance": {
+    "n_labelled": 51,
+    "classes": {
+     "negative": 8,
+     "neutral": 2,
+     "positive": 41
+    }
+   },
+   "aspect:beauty:value": {
+    "n_labelled": 14,
+    "classes": {
+     "negative": 2,
+     "positive": 12
+    }
+   },
+   "aspect:food:taste": {
+    "n_labelled": 109,
+    "classes": {
+     "negative": 23,
+     "positive": 86
+    }
+   },
+   "aspect:food:value": {
+    "n_labelled": 39,
+    "classes": {
+     "negative": 11,
+     "neutral": 2,
+     "positive": 26
+    }
+   },
+   "aspect:food:ingredient_quality": {
+    "n_labelled": 17,
+    "classes": {
+     "negative": 4,
+     "neutral": 3,
+     "positive": 10
+    }
+   },
+   "aspect:food:efficacy_claims": {
+    "n_labelled": 13,
+    "classes": {
+     "negative": 5,
+     "positive": 8
+    }
+   },
+   "aspect:food:quantity": {
+    "n_labelled": 3,
+    "classes": {
+     "negative": 2,
+     "neutral": 1
+    }
+   }
+  }
+ }
+}

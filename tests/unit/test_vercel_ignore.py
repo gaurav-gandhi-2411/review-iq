@@ -14,7 +14,31 @@ from pathlib import Path
 import pytest
 
 SCRIPT = Path(__file__).resolve().parents[2] / "web" / "scripts" / "vercel-ignore.sh"
-BASH = shutil.which("bash")
+
+
+def _find_bash() -> str | None:
+    """A bash that can run a script given a native Windows path.
+
+    On Windows, PATH order decides what `bash` means: from PowerShell it is often the WSL
+    launcher in System32, which cannot run a `C:\\...` script path (exit 127) and made every
+    test here fail while Linux CI passed. Prefer Git for Windows' bash, located relative to git
+    itself, and never accept the System32 launcher.
+    """
+    if os.name == "nt":
+        git_exe = shutil.which("git")
+        if git_exe:
+            root = Path(git_exe).resolve().parent.parent  # <Git>/cmd/git.exe -> <Git>
+            for rel in ("bin/bash.exe", "usr/bin/bash.exe"):
+                if (root / rel).is_file():
+                    return str(root / rel)
+        found = shutil.which("bash")
+        if found and "system32" in found.lower():
+            return None
+        return found
+    return shutil.which("bash")
+
+
+BASH = _find_bash()
 pytestmark = pytest.mark.skipif(BASH is None, reason="bash not available")
 
 GIT_ENV = {

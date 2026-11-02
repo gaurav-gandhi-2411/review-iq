@@ -59,7 +59,7 @@ GRANT EXECUTE ON FUNCTION public.list_orgs_with_retained_mode TO review_iq_app;
 -- not merely the default for NEW orgs). VERIFIED SAFE before writing this migration: queried
 -- every row in public.organizations (18 rows) and public.api_keys (11 rows) directly -- every
 -- single one is a test/demo/dev artifact from prior sessions (SmokeTest, Alpha/Beta, Eval,
--- Public Demo, Batch Row Org A/B, Audit a/b, gaurav-dev, GG's own gg5678g@gmail.com dogfooding
+-- Public Demo, Batch Row Org A/B, Audit a/b, gaurav-dev, the owner's own dogfooding
 -- org) or an unrevoked key named "default"/"dev-test"/"demo-cassette-key" -- no real paying
 -- customer exists yet (matches D5's pre-launch framing). Defaulting everything to stateless
 -- breaks no one. This verification will NOT hold true forever -- re-check before ever re-running

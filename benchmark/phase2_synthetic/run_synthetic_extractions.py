@@ -62,7 +62,7 @@ async def _predict_full(text: str) -> dict[str, object]:
     user_prompt = build_prompt(wrapped, detected_lang)
     try:
         llm_output, model_name, latency_ms, tin, tout, degraded = await extract_with_llm(
-            user_prompt, allow_gemini_fallback=False
+            user_prompt
         )
         llm_output.language = detected_lang
         extraction = llm_output.model_dump()

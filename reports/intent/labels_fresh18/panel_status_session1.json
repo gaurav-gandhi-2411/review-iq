@@ -1,0 +1,25 @@
+{
+ "stage": "P",
+ "judges": {
+  "gpu1_error": "pull failed: 5h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[A\u001b[1Gpulling manifest \u001b[K\npulling a3de86cd1c13: 100% \u2595\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 \u258f 5.2 GB/5.2 GB  103 MB/s      0s\u001b[K\u001b[?25h\u001b[?2026l\u001b[?2026h\u001b[?25l\u001b[A\u001b[1Gpulling manifest \u001b[K\npulling a3de86cd1c13: 100% \u2595\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 \u258f 5.2 GB/5.2 GB  103 MB/s      0s\u001b[K\u001b[?25h\u001b[?2026l\nError: 503: \n",
+  "llama31_8b__gpu0": {
+   "done": 5000,
+   "of": 8100
+  },
+  "gemma2_9b__gpu0": {
+   "done": 5000,
+   "of": 8100
+  }
+ },
+ "budget_hit": true,
+ "commit": "43fcb6ec710814ea6aa91ccb54820e3d36ad9970",
+ "gpu": "Tesla T4, 15360 MiB\nTesla T4, 15360 MiB",
+ "prior_files": {},
+ "ollama_sha256": "c164ab8b1b28e2a247c29719b8e404c423c5b83ae64c3ab4e59d50c7ff7fc5e0",
+ "elapsed_s": 29646,
+ "ollama_version": "ollama version is 0.40.6",
+ "model_digests": {
+  "gemma2:9b": "ff02c3702f322b9e075e9568332d96c0a7028002f1a5a056e0a6784320a4db0b",
+  "llama3.1:8b": "46e0c10c039e019119339687c3c1757cc81b9da49709a3b3924863ba87ca666e"
+ }
+}

@@ -1,0 +1,90 @@
+{
+ "a": "openai_gpt-oss-20b__local_v2",
+ "b": "openai_gpt-oss-20b__local",
+ "tasks": {
+  "needs_action": {
+   "n_matched": 281,
+   "accuracy": {
+    "a": 0.9573,
+    "b": 0.9004,
+    "diff": 0.0569,
+    "diff_ci95": [
+     0.0214,
+     0.0925
+    ]
+   },
+   "coverage_at_precision_0.95": {
+    "a": 1.0,
+    "b": 0.8363,
+    "diff": 0.1637,
+    "diff_ci95": [
+     -0.1388,
+     0.2028
+    ]
+   }
+  },
+  "broad_intent": {
+   "n_matched": 273,
+   "accuracy": {
+    "a": 0.7473,
+    "b": 0.8168,
+    "diff": -0.0696,
+    "diff_ci95": [
+     -0.1062,
+     -0.0366
+    ]
+   },
+   "coverage_at_precision_0.95": {
+    "a": 0.4505,
+    "b": 0.3663,
+    "diff": 0.0842,
+    "diff_ci95": [
+     0.011,
+     0.4762
+    ]
+   }
+  },
+  "sentiment": {
+   "n_matched": 253,
+   "accuracy": {
+    "a": 0.9407,
+    "b": 0.9368,
+    "diff": 0.004,
+    "diff_ci95": [
+     -0.0237,
+     0.0356
+    ]
+   },
+   "coverage_at_precision_0.95": {
+    "a": 0.9723,
+    "b": 0.9842,
+    "diff": -0.0119,
+    "diff_ci95": [
+     -0.0791,
+     0.0553
+    ]
+   }
+  },
+  "urgency": {
+   "n_matched": 275,
+   "accuracy": {
+    "a": 0.8509,
+    "b": 0.8327,
+    "diff": 0.0182,
+    "diff_ci95": [
+     0.0036,
+     0.0327
+    ]
+   },
+   "coverage_at_precision_0.95": {
+    "a": 0.2327,
+    "b": 0.1273,
+    "diff": 0.1055,
+    "diff_ci95": [
+     -0.2982,
+     0.6291
+    ]
+   }
+  }
+ }
+}
