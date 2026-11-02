@@ -1,7 +1,9 @@
-"""Encoder-first routing (spec Amendment 14): router R1/R2, capacity arithmetic, fail-open, flag-off no-op."""
+"""Encoder-first routing (spec Amendments 14, 17, 18): routers R1/R2/R1+, capacity arithmetic, fail-open, flag-off no-op."""
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
@@ -9,11 +11,49 @@ import pytest
 from app.core.classify import encoder_first as ef
 
 
-def _t(na: str, urg: str, urg_cand: str | None = None) -> dict[str, dict[str, Any]]:
+def _t(
+    na: str, urg: str, urg_cand: str | None = None, p_yes: float = 0.0
+) -> dict[str, dict[str, Any]]:
     return {
-        "needs_action": {"label": na, "candidate_label": na},
+        "needs_action": {
+            "label": na,
+            "candidate_label": na,
+            "probabilities": {"yes": p_yes, "no": 1.0 - p_yes},
+        },
         "urgency": {"label": urg, "candidate_label": urg_cand or urg},
     }
+
+
+def test_served_tau_is_the_registered_tau() -> None:
+    registered = json.loads(Path("reports/intent/a17/tau.json").read_text(encoding="utf-8"))["tau"]
+    assert ef.r1_plus_tau() == registered == 0.07
+
+
+@pytest.mark.parametrize(
+    ("tasks", "route", "reasons"),
+    [
+        (_t("no", "low", p_yes=0.069999), False, ()),
+        (_t("no", "low", p_yes=0.07), True, ("needs_action_p_yes_ge_tau",)),  # >= at the boundary
+        (_t("no", "low", p_yes=0.5), True, ("needs_action_p_yes_ge_tau",)),
+        (_t("yes", "low", p_yes=0.9), True, ("needs_action_yes", "needs_action_p_yes_ge_tau")),
+        (_t("no", "high", p_yes=0.01), True, ("urgency_high_candidate",)),  # R1 alone still routes
+    ],
+)
+def test_r1_plus(tasks: dict, route: bool, reasons: tuple[str, ...]) -> None:
+    d = ef.route_r1_plus(tasks)
+    assert (d.route, d.reasons) == (route, reasons)
+    assert d.route >= ef.route_r1(tasks).route  # R1+ never skips what R1 routes
+
+
+def test_r1_plus_without_probabilities_fails_open_in_plan_routes() -> None:
+    import asyncio
+
+    no_probs = {
+        "needs_action": {"label": "no", "candidate_label": "no"},
+        "urgency": _t("no", "low")["urgency"],
+    }
+    out = asyncio.run(ef.plan_routes(_Fake([no_probs]), ["a"]))
+    assert (out[0].route, out[0].reasons) == (True, ("classifier_unavailable",))
 
 
 @pytest.mark.parametrize(
