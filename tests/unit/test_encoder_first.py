@@ -163,6 +163,30 @@ async def test_plan_ingest_returns_the_decisions_and_thresholds_hash_to_persist(
 
 
 @pytest.mark.asyncio
+async def test_plan_ingest_routes_by_r1_plus_the_evaluated_router(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # S35: the ingest path must use the router A17/A18 evaluated. needs_action "no" with p(yes) >= tau separates R1+ from R1.
+    s = SimpleNamespace(enable_encoder_first=True, classify_service_url="https://svc.example")
+    monkeypatch.setattr("app.core.config.get_settings", lambda: s)
+    fake = _Fake([_t("no", "low", p_yes=0.07)])
+    fake._url = "https://svc.example"  # type: ignore[attr-defined]
+    monkeypatch.setattr(ef, "_remote", fake)
+    assert ef.route_r1(fake.out[0]).route is False  # R1 alone would skip it
+    assert (await ef.plan_ingest("t")).route is True
+    fake.out = [_t("no", "low", p_yes=0.069999)]
+    assert (await ef.plan_ingest("t")).route is False
+    # an answer without probabilities cannot be routed by R1+: fail open, never skip
+    fake.out = [
+        {
+            "needs_action": {"label": "no", "candidate_label": "no"},
+            "urgency": _t("no", "low")["urgency"],
+        }
+    ]
+    assert (await ef.plan_ingest("t")) == ef.IngestPlan(True)
+
+
+@pytest.mark.asyncio
 async def test_plan_ingest_flag_off_is_the_plain_extract_path(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

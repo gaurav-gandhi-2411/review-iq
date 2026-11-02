@@ -172,7 +172,9 @@ async def plan_ingest(text: str) -> IngestPlan:
         per_item, sha = await _remote.classify_full([text])
         if len(per_item) != 1:
             raise ValueError("classifier returned a different number of results")
-        d = route_r1(per_item[0])
+        # the SERVED router is R1+, the router Amendments 17/18 evaluated (parity: tests/unit/test_router_r1_plus_parity.py);
+        # inside the try, so a missing probability fails open like any other classifier problem
+        d = route_r1_plus(per_item[0])
     except Exception as e:  # noqa: BLE001 (fail-open by design: an encoder problem must never drop a review)
         log.warning("encoder_first.fail_open", error=type(e).__name__, n=1)
         ENCODER_FIRST_TOTAL.labels(outcome="fail_open").inc()
