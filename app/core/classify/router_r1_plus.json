@@ -1,0 +1,8 @@
+{
+ "router": "R1+",
+ "rule": "R1 OR probabilities(needs_action = yes) >= tau, on the served run-2 decisions",
+ "tau": 0.07,
+ "source": "reports/intent/a17/tau.json (fixed before Amendment 17 scoring; used unchanged by Amendment 18)",
+ "thresholds_sha256": "4cf745db3af848464cbd7961c536919dee3be7a78691a5c4aca8a356ab724ec2",
+ "thresholds_sha256_note": "hash of thresholds_run2_onnx_static_int8_x64.json with CRLF line endings, as recorded in the A17/A18 results and reported by the live service (built from a Windows working tree); the git blob (LF) hashes to 56c99aa42b37220e6902e90dc5325956eaa46dbce7b30ea6942655d1cde016c5"
+}
