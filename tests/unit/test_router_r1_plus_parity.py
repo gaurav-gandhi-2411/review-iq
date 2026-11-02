@@ -48,11 +48,18 @@ def _served(
 
 def test_fixture_is_the_recorded_one() -> None:
     assert hashlib.sha256(NPZ.read_bytes()).hexdigest() == PROV["fixture_sha256"]
-    th = runtime.load_thresholds(THRESHOLDS)
-    assert th.sha256 == PROV["thresholds_sha256"]
-    # the served config and the evaluation used the same thresholds file and the same tau
+    # runtime hashes RAW bytes, which depend on the checkout's line endings (CRLF on a Windows working tree, LF in git / CI).
+    # Compare line-ending-independently: the LF bytes are the git blob; the same content with CRLF endings is the hash the
+    # A17/A18 results and the live service report.
+    lf = THRESHOLDS.read_bytes().replace(b"\r\n", b"\n")
+    assert hashlib.sha256(lf).hexdigest() == PROV["thresholds_sha256_lf"]
+    crlf = hashlib.sha256(lf.replace(b"\n", b"\r\n")).hexdigest()
+    assert crlf == PROV["thresholds_sha256_crlf_as_recorded"]
+    for result in ("reports/intent/fresh17/result.json", "reports/intent/fresh18/result.json"):
+        assert json.loads(Path(result).read_text(encoding="utf-8"))["thresholds_sha256"] == crlf
+    # the served config names the same thresholds file (by its recorded hash) and the same tau
     served_cfg = json.loads(ef.R1_PLUS_CONFIG.read_text(encoding="utf-8"))
-    assert served_cfg["thresholds_sha256"] == PROV["thresholds_sha256"]
+    assert served_cfg["thresholds_sha256"] == crlf
     assert ef.r1_plus_tau() == PROV["tau"]
 
 
