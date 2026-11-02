@@ -123,7 +123,10 @@ def test_missing_headers_is_401(secret_set, db) -> None:
     db.record.assert_not_called()
 
 
-@pytest.mark.parametrize("skew", [-301, 301])
+# 310, not 301: the test reads int(time.time()) and the handler reads the clock later, so across a
+# second boundary a +301 skew shrinks to 300 and is accepted (flaked in CI). The exact 301 boundary is
+# asserted deterministically below with an injected `now`.
+@pytest.mark.parametrize("skew", [-310, 310])
 def test_stale_or_future_timestamp_is_401(secret_set, db, skew: int) -> None:
     body = _event("email.bounced")
     resp = _post(body, _sign(body, ts=int(time.time()) + skew))

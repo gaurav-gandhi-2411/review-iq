@@ -143,6 +143,32 @@ def sanitize(text: str, max_length: int = 5000) -> tuple[str, bool]:
     return text, is_suspicious
 
 
+def pii_redacted_text(text: str, max_length: int = 5000) -> str:
+    """Return `text` after sanitize()'s first two steps only: truncate, then redact PII.
+
+    Exists for the model-based injection guard (app/core/injection_guard.py), which is a
+    third-party call and must not receive raw PII, but must still see the attack phrasing:
+    sanitize()'s injection neutralisation ([INJECTION_REMOVED]) would erase exactly the
+    signal the guard scores, so it is deliberately NOT applied here.
+
+    Must stay identical to the truncation + redact_pii steps of sanitize(); the equivalence
+    is pinned by tests/unit/test_sanitize.py::TestPiiRedactedText.
+
+    Args:
+        text: The caller's original review text (not the field-injection-controlled text).
+        max_length: Hard cap on characters (same default as sanitize()).
+
+    Returns:
+        The truncated, PII-redacted text (no injection markers).
+    """
+    if len(text) > max_length:
+        text = text[:max_length]
+        log.info("sanitize.truncated", max_length=max_length)
+
+    redacted, _ = redact_pii(text)
+    return redacted
+
+
 def wrap_for_llm(text: str) -> str:
     """Wrap sanitized review text in delimiters for safe LLM injection.
 
