@@ -33,6 +33,9 @@ STAGES: dict[str, tuple[dict[int, list[str]], bool]] = {
     "B": ({0: ["mistral_7b"], 1: ["mistral_7b"]}, True),
     # P = four-judge panel on every item (safety stratum, S23 6a): each GPU runs two judges over ALL items
     "P": ({0: ["llama31_8b", "gemma2_9b"], 1: ["qwen3_8b", "mistral_7b"]}, False),
+    # P2 = finish a P run whose GPU0 judges are done (S34, fresh18): GPU1's two judges split one per GPU, same output files,
+    # resumed from --prior; placement only, models and prompts unchanged
+    "P2": ({0: ["qwen3_8b"], 1: ["mistral_7b"]}, False),
 }
 # measured, reports/labelling/pilot3/kernel_status.json (seconds per item, one T4, 360 items)
 SEC_PER_ITEM = {"llama31_8b": 3.292, "gemma2_9b": 4.392, "qwen3_8b": 2.783, "mistral_7b": 3.939}
