@@ -2,14 +2,19 @@
 
 The encoder classifies every review with no LLM tokens. Router R1 (fixed in Amendment 14 before any result) sends a review to
 LLM extraction iff the encoder says `needs_action` is yes or abstained, OR the urgency decision is `high` (the per-class threshold
-decision, never argmax) or abstained. Every other review is classified-only and is extracted when the user opens it.
+decision, never argmax) or abstained. The SERVED router is R1+ (Amendments 17 and 18, the router that was evaluated): R1 OR the
+served p(needs_action = yes) >= tau, tau fixed in `router_r1_plus.json`. Every other review is classified-only and is extracted
+when the user opens it.
 Failure policy: ANY classifier problem routes the review to the LLM path (today's behaviour), never drops it.
 """
 
 from __future__ import annotations
 
+import json
 import time
 from dataclasses import dataclass
+from functools import lru_cache
+from pathlib import Path
 from typing import Any, Protocol
 
 import httpx
@@ -48,6 +53,28 @@ def route_r1(tasks: dict[str, dict[str, Any]]) -> RouteDecision:
     if urg["label"] == ABSTAINED:
         reasons.append("urgency_abstained")
     return RouteDecision(bool(reasons), tuple(reasons))
+
+
+R1_PLUS_CONFIG = Path(__file__).with_name("router_r1_plus.json")
+
+
+@lru_cache(maxsize=1)
+def r1_plus_tau() -> float:
+    """The registered tau (Amendment 17, reused by 18). A test pins it to reports/intent/a17/tau.json."""
+    return float(json.loads(R1_PLUS_CONFIG.read_text(encoding="utf-8"))["tau"])
+
+
+def route_r1_plus(tasks: dict[str, dict[str, Any]], tau: float | None = None) -> RouteDecision:
+    """Router R1+ = R1 OR p(needs_action = yes) >= tau, on the served probabilities (the 6-decimal grid the API returns).
+
+    The evaluated rule is `engine.intent.fresh17_eval.routes`; tests/unit/test_router_r1_plus_parity.py holds the two equal bit for
+    bit on the stored A17 and A18 run-2 logits. A missing probability raises (KeyError), which `plan_routes` turns into fail-open.
+    """
+    t = r1_plus_tau() if tau is None else tau
+    d = route_r1(tasks)
+    if float(tasks["needs_action"]["probabilities"]["yes"]) >= t:
+        return RouteDecision(True, (*d.reasons, "needs_action_p_yes_ge_tau"))
+    return d
 
 
 def route_r2(tasks: dict[str, dict[str, Any]]) -> RouteDecision:
@@ -97,7 +124,7 @@ class RemoteClassifier:
 
 
 async def plan_routes(
-    client: Classifier, texts: list[str], router: Any = route_r1
+    client: Classifier, texts: list[str], router: Any = route_r1_plus
 ) -> list[RouteDecision]:
     """One decision per text. Fail-open: any error, or a malformed answer, routes every text to the LLM path."""
     try:
