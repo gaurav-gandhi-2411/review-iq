@@ -107,8 +107,7 @@ data more broadly) on Controller's behalf:
 
 | Sub-processor | Role | What it processes |
 |---|---|---|
-| **Groq, Inc.** | LLM inference (primary provider — currently `openai/gpt-oss-20b`/`120b`) | Redacted review text, for the sole purpose of generating structured extraction and authenticity signal output. Not used for model training or fine-tuning, per Groq's own Services Agreement §4.2 — independently verified (see [`sub-processors.md`](./sub-processors.md)). |
-| **OpenRouter, Inc.** | LLM inference (secondary/failover provider, activates only on Groq failure) | Redacted review text, restricted by a per-request Zero-Data-Retention flag to OpenRouter's live ZDR-endpoint allowlist — live-verified twice (see [`sub-processors.md`](./sub-processors.md)). |
+| **Groq, Inc.** | LLM inference (primary provider — currently `openai/gpt-oss-20b`/`120b`; a second Groq account serves as failover) | Redacted review text, for the sole purpose of generating structured extraction and authenticity signal output. Not used for model training or fine-tuning, per Groq's own Services Agreement §4.2 — independently verified (see [`sub-processors.md`](./sub-processors.md)). |
 | **Supabase (Supabase, Inc. / Supabase Pte. Ltd.)** | Database (Postgres) and authentication hosting | All persisted Customer/end-customer data: extraction output (retained-mode organizations only — see §8), hashed authenticity audit records, account data, usage records — isolated per organization via Row-Level Security. |
 
 See [`sub-processors.md`](./sub-processors.md) for the complete, currently-maintained list
@@ -226,4 +225,5 @@ version-controlled; see git history for changes. Originally drafted 2026-07-31; 
 2026-09-12 for the two-mode retention model and OpenRouter sub-processor addition. **The
 two-mode model in §8 is implemented and tested but not yet deployed to production** (PR #167,
 pending a schema migration) — remove this note once that PR has merged and the migration is
-applied._
+applied. Updated 2026-10-19: OpenRouter sub-processor removed; the failover is a second Groq
+account._
