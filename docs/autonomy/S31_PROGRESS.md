@@ -5,25 +5,27 @@ All timestamps UTC. VERIFIED = observed this session with the command or artifac
 
 ## Current task
 
-P1: panel session 3 running since 2026-10-24 00:02 (kernel version 3, cloned from main with #609's fail-closed resume; still RUNNING after 8 min, so the prior files were found). Next: labels, size rule, then P5. **Kaggle quota reset VERIFIED at Saturday 00:00 UTC** (refused 23:00-ish retries, accepted 00:02).
+**STOPPED 2026-10-25 00:10 UTC** after S1 and the handoff (`docs/HANDOFF_2026-10-27_s31.md`): queue and backlog exhausted early, per the spec's playbook.
 
 ## Queue
 
 | ID | Status | Evidence | Updated (UTC) |
 |---|---|---|---|
 | P0 | done | snapshot below | 2026-10-22 21:03 |
-| P1 | running — session 3 (pushed 10-24 00:02) | Session 1: 4,600 (llama, gemma) / 4,800 (qwen, mistral) of 6,300, 36,599 s. Session 2 (36,892 s) **re-did session 1's items** instead of resuming (prior dataset mounted flat; see Incidents) — 18,000 overlapping verdicts identical (determinism VERIFIED). `panel_pin` on both status files: "recorded and correct" (same build, same 4 digests). Remaining: 1,700 / 1,700 / 1,500 / 1,500 items. Session 3 needs the #609 kernel and ~4 GPU-h | 2026-10-23 07:30 |
+| P1 | **done** | Panel complete 10-24 04:40: 6,300/6,300 x 4 judges; session 3 16,128 s (copied 4,600/4,600/4,800/4,800 prior lines, then finished the rest). `panel_pin` over sessions 1-3: recorded and correct. Size rule met without top-up: gold-yes A 268, S4 126, SL 135 (>= 200/120/120). Agreement alpha/AC1: needs_action 0.772/0.936, broad_intent 0.706/0.872, sentiment 0.660/0.868 (label gate FAIL, prevalence skew), urgency 0.727/0.929. Labels PR #615 | 2026-10-24 04:45 |
 | P2 | **done** | MERGED (squash): #584, #598, #585, #587, #591, #592, #593, #594, #595, #596, #597 — the whole stack, plus #604 (S30 equivalence tooling found unmerged). #578/#579 kept CLEAN and PARKED | 2026-10-23 05:40 |
 | P3 | **done** (target 0 not met → PARKED 1) | P3 section; report #603 merged | 2026-10-22 23:00 |
 | P4 | **done** | 128 pass (p95 355 ms), 256 FAIL (1,107 ms), 512 FAIL (2,137 ms) → arms **H128, HT128**; probe service deleted and verified; #603 merged | 2026-10-22 22:54 |
-| P5 | blocked (P1, GPU) | full dataset staged at `D:/ml-cache/s31/ds_run4_full` (needs `labels_train16.json`); kernel code now on main (#597) | |
-| P6–P8 | pending | | |
+| P5 | **done** | `review-intent-run4` v1 COMPLETE 05:35 (2,549 s on one T4, clone `96e330b`). H128: best val macro-F1 0.745 at epoch 10 (497 s); HT128: 0.718 at epoch 6 (346 s). Private outputs `D:/ml-cache/s31/run4_out`. Earlier: the dry-run build caught a 2-arm crash in the kernel template (ruff SIM905 autofix), fixed in #614 before the push | 2026-10-24 05:36 |
+| P6 | **done** (verifier PASS: 0 differences) | Registered rule (code, validation only): chosen **H128** (eligible: H128 only; HT128 had the higher R1 score 0.959 vs 0.932 but mean F1 0.678 is not within 0.01 of the best 0.728). Quantised: accepted, validation agreement with fp32 **0.9859** (>= 0.90), safe ffn_out layers [0, 1, 9, 10, 11]. Hashes: model_m1_auto.onnx `ede02592…8176d`, thresholds_run4.json `d9215a2c…ffef6`, selection.json `1353699a…f8f2` | 2026-10-24 05:40 |
+| P7 | **done — NEGATIVE: E2 and E5 fail** | fresh16 once: E1 253/268 = 0.944 [0.910, 0.966] met; **E2 114/126 = 0.905 [0.841, 0.945] NOT met** (needs LB >= 0.85); E3 123/135 = 0.911 [0.851, 0.948] met; E4 share 0.223 met; **E5 sentiment -0.021 [-0.081, +0.040] NOT met** (other tasks +0.001, +0.067, +0.085); E6 vs LLM 0.907: +0.037 [-0.004, +0.078] met; 0 empty LLM rows of 1,800. Run 2 (report only): A 0.959, S4 0.921 [0.860, 0.956], SL 0.941, share 0.264. Verifier recomputed everything: PASS. Report `docs/reports/amendment16-results.md`, #616 merged | 2026-10-24 06:45 |
+| P8 | **done — Amendment 17 NEGATIVE (F2 fails)** | fresh17 once (run 2 + R1+ tau 0.07): F1 250/260 = 0.962 [0.931, 0.979] met; **F2 119/133 = 0.895 [0.831, 0.936] NOT met**; F3 share 0.297 met; F4 vs LLM 0.904: +0.058 [+0.019, +0.100] met. R1 alone: A 0.950, S4 0.865, share 0.267. Labels: one session 35,749 s, pin + digests identical to A16, size rule A 260 / S4 133. Verifier PASS (0 differences). #618 registration, #619 evaluator, #620 labels + results, all merged. As registered: no further amendment | 2026-10-24 17:05 |
 | P7 (LLM part) | stored, unopened | `review-intent-fresh16-llm-run` v1: 1,800/1,800 rows, Ollama 0.40.6 sha256 matched, gpt-oss:20b digest `f38aa0c5…`; 2,834 s | 2026-10-23 00:05 |
 | P7 (run-2 scores) | stored, unopened | `review-intent-fresh16-run2-score` (CPU): 3,900 items, model sha `33158169…`, Xeon 2.2 GHz AVX2; npz key is `pinned` (evaluator expects `logits`: rename only) | 2026-10-23 00:05 |
-| S1 | scheduled ≥ 2026-10-25 00:00 | | |
-| S2 | done 10-22, 10-23, 10-24 | 10-23 03:31: `/health` 200 1.12 s; classify private; failover-probe 10-23 02:30 OK; 24 h rate_limited/failover/db_timeout/errors all 0 ; 10-24 00:11: `/health` 200 1.21 s, API `review-iq-00102-fdw`, classify private, 24 h counts all 0 | 2026-10-24 00:11 |
+| S1 | **done (Tier B)** | 10-25 00:01 simulation: 17 versions, policy would delete 0, none referenced; tagged keep-review-iq-current (d7ebb826), keep-review-iq-prev (065d5db1), keep-classify-current (69618259); policy switched to enforce 00:02 (dry-run false); health 200 after, services unchanged | 2026-10-25 00:03 |
+| S2 | done 10-22, 10-23, 10-24, 10-25 | 10-23 03:31: `/health` 200 1.12 s; classify private; failover-probe 10-23 02:30 OK; 24 h rate_limited/failover/db_timeout/errors all 0 ; 10-24 00:11: `/health` 200 1.21 s, API `review-iq-00102-fdw`, classify private, 24 h counts all 0 | 2026-10-24 00:11 |
 | S3 | day 1 done | #608 merged (from `docs/s31-progress-day1`) | 2026-10-23 04:53 |
-| B1 | done → #298 PARKED | #599/#600/#601 merged | 2026-10-23 06:35 |
+| B1 | done → #298 PARKED | #599/#600/#601 (first run) + #621 (pre-registered calibrated re-judge): gate qwen3:14b 20/20, phi4:14b 18/20, gemma3:12b 16/20 (not admitted) → INCONCLUSIVE; c1 (3/20 → 0/20) stands alone | 2026-10-24 18:20 |
 | B2 | done | #602 merged; ingest-timeout test in #585, panel-pin hardening in #592 (both merged). Not audited: migration rehearsal (#396 parked) | 2026-10-23 06:10 |
 | B3 | partly done | #598 merged (vite). Dependabot #523, #517 merged. **#568 deferred** to after P7 (bumps `tokenizers` 0.22.2 → 0.23.3 mid-evaluation and ruff to 0.17). #567 already closed. Majors (#516, #519, #520, #232, #233) and Tailwind 4 (#106): not started | 2026-10-23 07:00 |
 | B5 | done (#593) | fingerprint coverage 3,483 → 7,383 + check (e); scan 93 min → 2.6 min | 2026-10-23 04:18 |
@@ -151,3 +153,11 @@ Remaining: ingest-vs-user timeout split (after #585), leakage near-dup + panel-p
 - **Disk:** C: 231 GB free. One extra worktree `.claude/worktrees/review-iq-wt-s31`.
 - **Laptop:** load about half (other sessions); none of my processes are heavy.
 - **Kaggle GPU this week (new quota):** panel session 3 is running.
+
+
+### 2026-10-25 00:10 UTC (day 3, final)
+
+- **Since day 2:** P1-P8 finished (A16 and A17 both negative, verified); B1 re-judge inconclusive (#621); S1 enforced; parked PRs updated onto main and MERGEABLE. All S31 PRs merged except #610 (DRAFT, UI, for GG).
+- **Disk:** C: 236 GB free; D: 1.4 TB free; `D:/ml-cache/s31` 1.8 GB. One extra worktree (see Incidents).
+- **Kaggle:** nothing running. GPU week from 10-24: about 17.2 h.
+- **Stopped** here; the handoff is `docs/HANDOFF_2026-10-27_s31.md`.

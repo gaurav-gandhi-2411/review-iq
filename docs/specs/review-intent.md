@@ -758,3 +758,43 @@ Why: Amendment 16 failed (E2 S4 recall lower bound 0.841, E5 sentiment F1 -0.021
 **If all of F1-F4 hold:** an enable plan (deploy nothing; router flag stays OFF) is written and parked for the owner. **If any fails:** reported as a negative result; no further amendment in this session.
 
 **Not changed:** Amendments 5 to 16, the served model and its thresholds, R1 itself (R1+ is an addition evaluated here, not deployed), the earlier sealed sets, the production service.
+
+### Amendment 18 (2026-10-30, S33): router recall on complaints inside 4-5 star reviews (S4), non-inferior to the all-LLM path; confirmatory, on a fresh S4 set; registered before any item is drawn, labelled or scored
+
+Why: Amendment 17 FAILED only F2 (R1+ recall on S4 gold-yes, lower bound 0.831 against an absolute 0.85 bar). F1, F3 and F4 (overall recall, routed share, overall non-inferiority to the LLM) passed on fresh data with this same router. The S32 exploratory check (`docs/specs/s32-s4-llm-check.md`; results `docs/reports/s32-s4-llm-check-results.md`, run INCOMPLETE on 147 of 259 120b rows under a logged timing deviation) found R1+ and gpt-oss-120b tied on S4 positives (138/147 each; paired difference 0.000, 95 percent CI [-0.0476, +0.0476]; McNemar 7 vs 7), and R1+ above gpt-oss-20b (0.927 vs 0.815; +0.112, CI [0.058, 0.166]). That took branch D1 of the check's committed tree, **on a thin margin**: the lower bound is -7/147, and the next bootstrap grid point would have been D3. The 0.85 bar asked whether S4 is easy, not whether the router loses complaints the LLM would have caught; this amendment re-tests that one question as non-inferiority on fresh data. A17's recorded failure stands and is not changed. **Scope: the S4 stratum only** (GG's S33 brief). This narrows the S32 tree's D1 text, which also listed overall recall, routed share and overall non-inferiority; those already passed on fresh17 with this router, and S4 non-inferiority is the only open question.
+
+**Router (fixed, unchanged):** A17's R1+ on served run 2 (static int8, x64 thresholds `app/core/classify/thresholds_run2_onnx_static_int8_x64.json`, pinned ORT numerics), tau = 0.07 (`reports/intent/a17/tau.json`). No retuning.
+
+**Sealed set fresh18 (fixed now).** Drawn by `engine/labelling/fresh18_sample.py` (#630). Block S: 2,700 S4 items (stars >= 4) per category (apparel, beauty, food), 8,100 in all, seed 51. Freshness uses the Amendment 16/17 method: the leakage ledger and every earlier manifest by content hash, and exact Jaccard of 4-character shingles >= 0.9 against every earlier item, fresh16, train16 and fresh17 included. Expected S4 positives: about 308 (rate 3.8 percent, sd about 17).
+
+**Size rule:** if the panel finds fewer than 300 gold-yes in block S, one top-up block S2 is drawn and labelled: 400 per category, 1,200 in all, seed 52. If it is still short of 300, the result is reported with the honest n and nothing is changed.
+
+**Labels:** the Amendment 16 four-judge panel on Kaggle, Ollama 0.40.6 pinned (sha256 c164ab8b...c0e5e0). The pin and digest are recorded per session, and a session is rejected if either is missing or differs. Resumed sessions use the #609 fail-closed resume guard and are checked for a real resume within minutes. gold-yes = consensus needs_action = yes (>= 3 of 4); items without consensus are excluded and counted.
+
+**Comparators.**
+- **PRIMARY: gpt-oss-20b on Kaggle, on every fresh18 S4 item.** Ollama 0.40.6 pinned, digest recorded, `engine/kaggle/kernel_moat20b.py` items mode. Settings: zero-shot `engine.intent.llm_moat.PROMPT`, review truncated to 1,500 characters, temperature 0, seed 42, JSON mode, reasoning effort low, 1,500-token cap. An empty completion is retried once; any still empty is scored as LLM "no" and also excluded in a sensitivity analysis.
+- **Secondary (reported, not gating): gpt-oss-120b**, on the Groq FAILOVER org only, through the shared ledger as project `benchmark`, with the same request body. It runs on a random subsample of fresh18 S4 gold-yes: the first min(200, n) ids of a Random(42) shuffle of the sorted gold-yes ids. 200 items at about 413 tokens each is about 83K tokens, about 5 days at the current 20K-a-day cap (triage-iq D95).
+  - Deadline: 14 days after the labels are final. A partial run is analysed on its completed rows (a random subsample by construction), labelled INCOMPLETE with n.
+  - The primary org gets zero traffic.
+
+**PRIMARY criterion P1:** the paired difference recall(R1+) minus recall(20b) on fresh18 S4 gold-yes, with a percentile 95 percent CI from a paired bootstrap (10,000 resamples, seed 42, items resampled with replacement). **Pass iff the lower bound > -0.05.** McNemar exact two-sided p is reported.
+
+**Reported, not gating:**
+- R1+ recall on S4 gold-yes with Wilson 95, and its lower bound against A17's 0.85 for continuity.
+- R1+ routed share on fresh18 S4 items (all, and on gold-no); the 20b yes-rate on gold-no.
+- R1 alone.
+- The 120b secondary comparison (same paired statistics) and the overlap (missed by both, router only, LLM only).
+- Panel agreement.
+
+**Honest expectation (BELIEVED, written before the draw):** in the S32 data R1+ beat 20b on S4 by +0.112 (CI [0.058, 0.166]), so P1 is expected to pass with room to spare; 20b is the weaker comparator. The informative comparison is 120b, where the S32 data showed a tie with a CI reaching the margin on both sides. It is secondary here because the shared 120b pool cannot carry a gating arm: `benchmark` is capped at 20K a day during triage-iq's recording, and that recording's exclusive flag can block it entirely. **A pass on P1 says "no worse than the LLM path the product can run on its own hardware", not "no worse than the strongest LLM".**
+
+**Cost (BELIEVED, from S31/S32 kernel times):**
+- Panel: about 18 Kaggle GPU-hours for 8,100 items (S31 panel session 1: 10.17 h for about 4,500 items x 4 judges), plus about 2.7 h if the top-up is needed.
+- 20b: about 6.5 GPU-hours (S32: about 3.3 h per 4,100 items).
+- Together that is about 25 of the ~30 h weekly quota, which other projects' kernels share, so it may span two quota weeks.
+
+**Scoring.** Router decisions come from a pinned Kaggle CPU scoring of run 2 on fresh18 (`engine/kaggle/kernel_onnx_equiv.py`). 20b runs once. P1 and the reported metrics come from a scoring module written after this commit. An independent verifier recomputes every number from the prediction files before the results are merged. fresh18 is one-shot: never a selection or tuning set.
+
+**If P1 holds:** an enable plan (`docs/plans/router-enable-plan.md`) is written and parked; enabling stays GG's decision. **If it fails:** it is reported as a negative result; there is no Amendment 19, and the router follows the D2 path (options note, deferral).
+
+**Not changed:** Amendments 5 to 17 and their verdicts, the served model and its thresholds, R1 and R1+, the earlier sealed sets, the production service (router flag OFF).
