@@ -45,6 +45,16 @@ def sha256(p: Path) -> str:
     return hashlib.sha256(p.read_bytes()).hexdigest()
 
 
+def sha256_lf(p: Path) -> str:
+    return hashlib.sha256(p.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
+
+def sha256_lf_as_crlf(p: Path) -> str:
+    return hashlib.sha256(
+        p.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n")
+    ).hexdigest()
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--f17", type=Path, required=True)
@@ -58,9 +68,12 @@ def main() -> None:
     arrays: dict[str, np.ndarray] = {}
     prov: dict = {
         "thresholds": Path(THRESHOLDS).as_posix(),
-        "thresholds_sha256": th.sha256,
+        # text hashes are of LF bytes (the git blob), so they match on any checkout; the A17/A18 results and the live service
+        # report the CRLF bytes' hash (files read from a Windows working tree), recorded here as well
+        "thresholds_sha256_lf": sha256_lf(Path(THRESHOLDS)),
+        "thresholds_sha256_crlf_as_recorded": sha256_lf_as_crlf(Path(THRESHOLDS)),
         "tau": tau,
-        "tau_file_sha256": sha256(TAU_FILE),
+        "tau_file_sha256_lf": sha256_lf(TAU_FILE),
         "served_tasks": list(SERVED),
         "served_columns": n_cols,
         "evaluated_function": "engine.intent.fresh17_eval.routes",
@@ -94,7 +107,7 @@ def main() -> None:
             "source_key": SOURCES[name],
             "source_sha256": sha256(src),
             "manifest": MANIFESTS[name].as_posix(),
-            "manifest_sha256": sha256(MANIFESTS[name]),
+            "manifest_sha256_lf": sha256_lf(MANIFESTS[name]),
             "n_items": len(ids),
             "r1_routed": int(r1.sum()),
             "r1_plus_routed": int(rp.sum()),
