@@ -35,6 +35,8 @@ def _make_settings(**overrides: object) -> MagicMock:
     s.shopify_api_version = "2024-10"
     s.shopify_token_encryption_key = _ENC_KEY
     s.shopify_webhook_base_url = "https://api.test.reviewiq.app"
+    s.shopify_enabled = True
+    s.shopify_app_url = "https://app.test.reviewiq.app"
     s.supabase_database_url = "postgresql://test:test@localhost/test"
     for k, v in overrides.items():
         setattr(s, k, v)
@@ -110,7 +112,7 @@ class TestStateLifecycle:
         import hmac as _hmac
 
         ts = str(int(__import__("time").time()) - 1000)
-        msg = f"store.myshopify.com:{ts}"
+        msg = f"store.myshopify.com::{ts}"
         mac = _hmac.new(_CLIENT_SECRET.encode(), msg.encode(), hashlib.sha256).hexdigest()
         stale_state = f"{ts}:{mac}"
         assert not _verify_state(stale_state, "store.myshopify.com", _CLIENT_SECRET, max_age=600)
@@ -160,7 +162,7 @@ class TestOrgIdFromJwtNotShopParam:
         org_a_id = "org-a-00000000-0000-0000-0000-000000000001"
         user_a_id = "user-a-00000000-0000-0000-0000-000000000001"
 
-        state = _generate_state(shop, _CLIENT_SECRET)
+        state = _generate_state(shop, _CLIENT_SECRET, user_a_id)
         captured: dict[str, str] = {}
 
         def fake_upsert(org_id: str, shop_domain: str, access_token_enc: str) -> None:
@@ -278,7 +280,7 @@ class TestWrittenOrgIdMatchesResolved:
         shop = "correct-org-store.myshopify.com"
         specific_org_id = "specific-org-ffff-ffff-ffff-ffffffffffff"
         user_id = "user-specific-id"
-        state = _generate_state(shop, _CLIENT_SECRET)
+        state = _generate_state(shop, _CLIENT_SECRET, user_id)
         upsert_calls: list[tuple[str, str, str]] = []
 
         def capture_upsert(org_id: str, shop_domain: str, access_token_enc: str) -> None:
@@ -360,7 +362,7 @@ class TestCallbackBehaviour:
 
         shop = "expired-state-store.myshopify.com"
         old_ts = str(int(__import__("time").time()) - 1000)
-        msg = f"{shop}:{old_ts}"
+        msg = f"{shop}:user-abc:{old_ts}"
         mac = _hmac.new(_CLIENT_SECRET.encode(), msg.encode(), hashlib.sha256).hexdigest()
         stale_state = f"{old_ts}:{mac}"
 
@@ -387,7 +389,7 @@ class TestCallbackBehaviour:
 
     def test_webhook_registration_failure_does_not_fail_install(self) -> None:
         shop = "webhook-fail-store.myshopify.com"
-        state = _generate_state(shop, _CLIENT_SECRET)
+        state = _generate_state(shop, _CLIENT_SECRET, "user-abc")
 
         with (
             patch("app.api.shopify_auth.get_settings", return_value=_make_settings()),
@@ -431,7 +433,7 @@ class TestCallbackBehaviour:
 
     def test_no_org_for_user_returns_403(self) -> None:
         shop = "no-org-store.myshopify.com"
-        state = _generate_state(shop, _CLIENT_SECRET)
+        state = _generate_state(shop, _CLIENT_SECRET, "user-abc")
 
         with (
             patch("app.api.shopify_auth.get_settings", return_value=_make_settings()),
@@ -465,7 +467,7 @@ class TestHmacMandatory:
 
     def test_missing_hmac_returns_401(self) -> None:
         shop = "no-hmac-store.myshopify.com"
-        state = _generate_state(shop, _CLIENT_SECRET)
+        state = _generate_state(shop, _CLIENT_SECRET, "user-abc")
         upsert_mock = MagicMock()
 
         with (
@@ -492,7 +494,7 @@ class TestHmacMandatory:
 
     def test_wrong_hmac_returns_401(self) -> None:
         shop = "wrong-hmac-store.myshopify.com"
-        state = _generate_state(shop, _CLIENT_SECRET)
+        state = _generate_state(shop, _CLIENT_SECRET, "user-abc")
         upsert_mock = MagicMock()
 
         with (
@@ -547,7 +549,7 @@ class TestBeginEndpoint:
         assert "redirect_url" in data
         assert "mystore.myshopify.com/admin/oauth/authorize" in data["redirect_url"]
         # State returned by begin must be verifiable (proves begin and callback share the secret)
-        assert _verify_state(data["state"], "mystore.myshopify.com", _CLIENT_SECRET)
+        assert _verify_state(data["state"], "mystore.myshopify.com", _CLIENT_SECRET, "user-abc")
 
     def test_invalid_shop_returns_400(self) -> None:
         with (
