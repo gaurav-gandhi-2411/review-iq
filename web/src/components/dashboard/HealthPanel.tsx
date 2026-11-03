@@ -34,7 +34,7 @@ export default function HealthPanel({ health, trend, previousLabel }: Props) {
             </span>
           </p>
           {band && (
-            <p className={`mt-3 inline-flex items-center gap-1.5 rounded px-2 py-1 text-sm font-medium text-ink ${band.chip}`}>
+            <p className={`mt-3 inline-flex items-center gap-1.5 rounded-sm px-2 py-1 text-sm font-medium text-ink ${band.chip}`}>
               <band.Icon size={15} aria-hidden="true" />
               {band.label}
             </p>
