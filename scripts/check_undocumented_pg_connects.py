@@ -150,6 +150,17 @@ ALLOWLIST: dict[tuple[str, str], str] = {
         "hour (RLS policy window) -- review_iq_app cannot read or rewrite any other "
         "lead column or historical lead, see supabase/migrations/20260920000001_leads.sql."
     ),
+    ("app/core/storage_pg.py", "get_last_seen_pg"): (
+        "User-scoped, not org-scoped: reads one user's last_seen_at through public."
+        "get_last_seen(uuid), a narrow SECURITY DEFINER function (see supabase/migrations/"
+        "20261007000001_organization_members_last_seen.sql) -- organization_members is closed "
+        "to every app role (20260817000002) and the function returns only the timestamp, never "
+        "an org_id, so there is no org to _set_tenant() to."
+    ),
+    ("app/core/storage_pg.py", "touch_last_seen_pg"): (
+        "Same user-scoped SECURITY DEFINER pattern as get_last_seen_pg: writes one user's "
+        "last_seen_at through public.touch_last_seen(uuid) (20261007000001), debounced in SQL."
+    ),
     ("app/core/alerts/storage.py", "is_email_suppressed_pg"): (
         "Resend bounce/complaint feedback is keyed by email address, not by org, so there "
         "is no org to _set_tenant() to (sender-side hash lookup). public.email_suppressions is unreadable "
