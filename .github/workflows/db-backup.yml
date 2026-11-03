@@ -1,5 +1,7 @@
 name: DB Backup
 
+# Credential: SUPABASE_RO_URL = the ci_readonly role (SELECT-only + BYPASSRLS, needed for a
+# complete dump; see docs/ops/ci-readonly-role.md). No write-capable credential lives in CI.
 # Nightly dump of the Supabase Postgres 17 database via the session-mode pooler.
 # Connection MUST be the IPv4 session-mode pooler (port 5432) — the direct
 # db.<ref>.supabase.co host is IPv6-only and unreachable from GitHub's IPv4 runners.
@@ -38,23 +40,23 @@ jobs:
       - name: Validate secret is present
         # Fail immediately with a clear message rather than a confusing pg_dump error.
         run: |
-          if [ -z "$SUPABASE_DIRECT_URL" ]; then
-            echo "::error::SUPABASE_DIRECT_URL secret is not set."
+          if [ -z "$SUPABASE_RO_URL" ]; then
+            echo "::error::SUPABASE_RO_URL secret is not set."
             echo "Add it in Settings → Secrets → Actions."
             echo "Value must be the Supabase SESSION-mode pooler URL (IPv4, port 5432):"
-            echo "  postgresql://postgres.<ref>:<password>@aws-1-<region>.pooler.supabase.com:5432/postgres"
+            echo "  postgresql://ci_readonly.<ref>:<password>@aws-1-<region>.pooler.supabase.com:5432/postgres"
             echo "(The direct db.<ref>.supabase.co host is IPv6-only — unreachable from GitHub Actions.)"
             exit 1
           fi
           # Shape check, never printing the value. An unencoded '@', ':', '/', '?' or '#' in the
           # password makes the URL parse to the wrong host/user, and the failure then surfaces as
           # a misleading auth/DNS error (the 2026-09-21..10-05 outage was an unencoded '@').
-          if ! printf '%s' "$SUPABASE_DIRECT_URL" | grep -Eq '^postgres(ql)?://[^:/@]+:[^@/]+@[^@/:]+:[0-9]+/[^@]*$'; then
-            echo "::error::SUPABASE_DIRECT_URL is malformed (value not shown). Percent-encode special characters in the password (@ -> %40, : -> %3A, / -> %2F, ? -> %3F, # -> %23)."
+          if ! printf '%s' "$SUPABASE_RO_URL" | grep -Eq '^postgres(ql)?://[^:/@]+:[^@/]+@[^@/:]+:[0-9]+/[^@]*$'; then
+            echo "::error::SUPABASE_RO_URL is malformed (value not shown). Percent-encode special characters in the password (@ -> %40, : -> %3A, / -> %2F, ? -> %3F, # -> %23)."
             exit 1
           fi
         env:
-          SUPABASE_DIRECT_URL: ${{ secrets.SUPABASE_DIRECT_URL }}
+          SUPABASE_RO_URL: ${{ secrets.SUPABASE_RO_URL }}
 
       - name: Pull postgres:17 image (pg_dump 17)
         # Supabase server is Postgres 17 and pg_dump must be >= the server major.
@@ -66,7 +68,7 @@ jobs:
       - name: Dump database
         id: dump
         env:
-          SUPABASE_DIRECT_URL: ${{ secrets.SUPABASE_DIRECT_URL }}
+          SUPABASE_RO_URL: ${{ secrets.SUPABASE_RO_URL }}
         run: |
           FILENAME="review-iq-db-$(date -u +%Y%m%d-%H%M%S).sql.gz"
           echo "filename=${FILENAME}" >> "$GITHUB_OUTPUT"
@@ -84,7 +86,7 @@ jobs:
           # produced an empty gzip and the job reported the SYMPTOM ("Dump is missing expected
           # token 'CREATE TABLE'") while pg_dump's own stderr, the cause, was discarded.
           set -o pipefail
-          if ! docker run --rm -e DBURL="$SUPABASE_DIRECT_URL" postgres:17 \
+          if ! docker run --rm -e DBURL="$SUPABASE_RO_URL" postgres:17 \
             sh -c 'pg_dump --no-password --clean --if-exists --schema=public "$DBURL"' \
             2> pg_dump.err | gzip -9 > "${FILENAME}"; then
             echo "::error::pg_dump failed. Its stderr (credentials redacted) is:"
@@ -245,5 +247,5 @@ jobs:
           details: |
             `db-backup.yml` pg_dumps the production Supabase database, verifies the dump,
             gpg-encrypts it and uploads it as an artifact. A failure means there is no fresh
-            backup. Check the SUPABASE_DIRECT_URL and DB_BACKUP_ENCRYPTION_KEY secrets; the
+            backup. Check the SUPABASE_RO_URL and DB_BACKUP_ENCRYPTION_KEY secrets; the
             restore/troubleshooting procedure is ops/runbooks/db-restore.md.

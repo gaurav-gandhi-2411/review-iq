@@ -14,10 +14,10 @@ name: Migration Drift Check
 # security-relevant drift) or "no recognizable objects" (unverifiable either way). See
 # supabase/push.py's own --fail-on-pending help text.
 #
-# Credential: reuses the SUPABASE_DIRECT_URL repo secret already used by db-backup.yml and
-# schema-drift-check.yml -- read-only introspection only (SELECT against information_schema/
-# pg_proc/pg_roles), so this adds a third consumer of an already-accepted secret, not a new
-# credential exposure.
+# Credential: the SUPABASE_RO_URL repo secret (SELECT-only ci_readonly role, see
+# docs/ops/ci-readonly-role.md), shared with db-backup.yml and schema-drift-check.yml. push.py
+# reads the env var NAME SUPABASE_DIRECT_URL, so the step below maps the RO secret into it.
+# Read-only introspection only, so no write-capable credential is needed.
 
 on:
   schedule:
@@ -62,10 +62,11 @@ jobs:
 
       - name: Check for merged-but-unapplied migrations (read-only, production DB)
         env:
-          SUPABASE_DIRECT_URL: ${{ secrets.SUPABASE_DIRECT_URL }}
+          # push.py reads this env var NAME; the VALUE is the read-only ci_readonly URL.
+          SUPABASE_DIRECT_URL: ${{ secrets.SUPABASE_RO_URL }}
         run: |
           if [ -z "$SUPABASE_DIRECT_URL" ]; then
-            echo "::error::SUPABASE_DIRECT_URL secret is not set -- cannot check production. Failing closed rather than skipping the check."
+            echo "::error::SUPABASE_RO_URL secret is not set -- cannot check production. Failing closed rather than skipping the check."
             exit 1
           fi
           uv run python supabase/push.py --dry-run --fail-on-pending
@@ -82,5 +83,5 @@ jobs:
           details: |
             `migration-drift-check.yml` runs `supabase/push.py --dry-run --fail-on-pending`
             against production: a migration merged to main but not applied (or the
-            SUPABASE_DIRECT_URL secret is missing). See supabase/push.py (its --help and
+            SUPABASE_RO_URL secret is missing). See supabase/push.py (its --help and
             module docstring) for the apply procedure.
