@@ -123,6 +123,27 @@ ALLOWLIST: dict[tuple[str, str], str] = {
         "upsert_shopify_installation(), a narrow SECURITY DEFINER function (see "
         "supabase/migrations/20260801000002_tenant_resolvers_auth_signup.sql)."
     ),
+    ("app/core/ingestion/judgeme_store.py", "upsert_installation_pg"): (
+        "authenticated holds only a SELECT policy on judgeme_installations -- same shape as "
+        "shopify_auth._upsert_installation_pg. Goes through public.upsert_judgeme_installation(), "
+        "a narrow SECURITY DEFINER function (20261011000001) that also refuses to take over a "
+        "shop another org holds active. org_id is JWT-resolved by the caller."
+    ),
+    ("app/core/ingestion/judgeme_store.py", "record_sync_pg"): (
+        "Sync-metadata write on judgeme_installations, which authenticated cannot UPDATE. Goes "
+        "through public.record_judgeme_sync(), SECURITY DEFINER, WHERE id AND org_id both match "
+        "(20261011000001)."
+    ),
+    ("app/core/ingestion/judgeme_store.py", "revoke_installation_pg"): (
+        "Revoke/disconnect on judgeme_installations (token wipe) -- authenticated cannot UPDATE. "
+        "Goes through public.revoke_judgeme_installation(), SECURITY DEFINER, WHERE id AND org_id "
+        "both match (20261011000001)."
+    ),
+    ("app/core/ingestion/judgeme_store.py", "list_due_installations_pg"): (
+        "Cross-org scheduled sweep (no single org_id to scope to) -- goes through "
+        "public.list_due_judgeme_installations(), a narrow SECURITY DEFINER function "
+        "(20261011000001) that returns ONLY installation_id + org_id, never a token."
+    ),
     ("app/core/storage_pg.py", "check_and_increment_demo_request_pg"): (
         "POST /demo/extract is keyless -- there is no org to _set_tenant() to. Writes "
         "only public.demo_daily_usage, a single global (non-tenant) counter table with "
