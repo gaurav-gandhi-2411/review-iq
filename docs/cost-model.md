@@ -190,7 +190,7 @@ written and re-runs section 4's margin math at four customer counts. Date: 2026-
 | Same call on the primary (gpt-oss-120b) | $0.000307 | 1,612 x $0.15/M + 108 x $0.60/M (`app/core/pricing.py`) | VERIFIED (pricing table, as_of 2026-09-10) |
 | OpenRouter credit-purchase fee (applies only if the openrouter kind were used; production failover is a second Groq account) | 5.5%, $0.80 minimum per top-up -> effective ~$0.000207/call with fee; a $5 top-up costs $0.80 (16%) | aggregator summaries | BELIEVED |
 | Failover standing cost (OpenRouter kind only; not production, where the Groq failover has no top-up) | ~$0.07/month (one $0.80 top-up per year) while failover is rare | 0.80/12 | BELIEVED |
-| Secret Manager | $0.06 per active version per month ($0.000082192/hr x 730), first 6 versions free; $0.03 per 10,000 access ops, first 10,000 free; $0.05 per rotation notification after 3 free | 14 secrets (13 in `ops/runbooks/secret-rotation.md` + `secondary-provider-api-key`, the OpenRouter-era secret: unbound from Cloud Run but kept, 1 version, see docs/STATUS.md; the failover key Cloud Run actually mounts as `SECONDARY_PROVIDER_API_KEY` is `groq-api-key`, read 2026-10-20, already counted in the 13) -> (14 - 6) x $0.06 = **$0.48/month**. Access ops: each cold start reads ~12 secrets, so ~800 cold starts/month fit the free 10,000 | Rates BELIEVED (cloud.google.com/secret-manager/pricing returned truncated content; figures from costbench.com quoting the SKU). Secret count VERIFIED from the repo runbook, not from `gcloud` (no live call made) |
+| Secret Manager | $0.06 per active version per month ($0.000082192/hr x 730), first 6 versions free; $0.03 per 10,000 access ops, first 10,000 free; $0.05 per rotation notification after 3 free | 17 live secrets with 19 ENABLED versions (all secrets have 1 enabled version except `supabase-direct-url`, which has 3 enabled: 1, 2, 3), read from `gcloud secrets list` / `gcloud secrets versions list --filter="state=ENABLED"` (names and counts only) on 2026-10-20. Billing is per active version, so the billable count is 19 (not 17) -> (19 - 6) x $0.06 = **$0.78/month** (was 14 -> (14 - 6) x $0.06 = $0.48, a count taken from the repo runbook, not from the live project). Of the 17: 13 are bound to the `review-iq` Cloud Run service, 4 are not (`review-iq-admin-database-url`, `review-iq-migrator-database-url`, `supabase-direct-url`, and the OpenRouter-era `secondary-provider-api-key`, kept with 1 version, see docs/STATUS.md). The failover key Cloud Run mounts as `SECONDARY_PROVIDER_API_KEY` is `groq-api-key`; the primary `GROQ_API_KEY` is `groq-api-key-samidha` (read 2026-10-20). Access ops: each cold start reads ~12 secrets, so ~800 cold starts/month fit the free 10,000 | Rates BELIEVED (cloud.google.com/secret-manager/pricing returned truncated content; figures from costbench.com quoting the SKU). Secret and enabled-version counts VERIFIED live 2026-10-20 (project reviewiq-prod-260813). |
 
 Observations that matter more than the cents:
 
@@ -211,8 +211,8 @@ Observations that matter more than the cents:
 
 ### 7.2 Shared fixed cost, updated
 
-F = Supabase $25 + Cloud Run $47.34 + Vercel $20 + Resend $0 + Secret Manager $0.48 + failover
-$0.07 = **$92.89/month** (was $92.34). (The $0.07 is the OpenRouter-kind standing cost, which
+F = Supabase $25 + Cloud Run $47.34 + Vercel $20 + Resend $0 + Secret Manager $0.78 + failover
+$0.07 = **$93.19/month** (was $92.89 at Secret Manager $0.48; $92.34 before section 7). (The $0.07 is the OpenRouter-kind standing cost, which
 production does not currently incur while the failover is a second Groq account; the total was not
 re-derived.) Cloud Run is still the min-instances=1 projection, not
 today's scale-to-zero. Resend stays $0 only while sends stay under 3,000/month and 100/day.
@@ -225,33 +225,33 @@ wrong and is corrected here (S19 N6).
 
 Formulas (all customers assumed on the same tier, 100% quota use, which is the worst case):
 
-- fixed per customer = F / N, F = $92.89 (7.2)
+- fixed per customer = F / N, F = $93.19 (7.2)
 - variable = quota x $0.000534 (blended cost per extraction, section 1)
 - payment = 3.54% x price (3% + 18% GST on the fee)
 - margin = (price - variable - F/N - payment) / price
 
 | Tier | Price (USD) | Variable | 1 cust | 5 cust | 10 cust | 20 cust | 40 cust |
 |---|---|---|---|---|---|---|---|
-| Starter intl (5K) | $59 | $2.67 | -65.5% | 60.4% | 76.2% | 84.1% | 88.0% |
-| Growth intl (25K) | $99 | $13.35 | -10.9% | 64.2% | 73.6% | 78.3% | 80.6% |
-| Agency intl (200K) | $249 | $106.80 | 16.3% | 46.1% | 49.8% | 51.7% | 52.6% |
-| Starter IN (5K) | Rs 2,999 = $31.34 | $2.67 | -208.5% | 28.7% | 58.3% | 73.1% | 80.5% |
-| Growth IN (25K) | Rs 6,999 = $73.14 | $13.35 | -48.8% | 52.8% | 65.5% | 71.9% | 75.0% |
-| Agency IN (200K) | Rs 19,999 = $208.99 | $106.80 | 0.9% | 36.5% | 40.9% | 43.1% | 44.2% |
+| Starter intl (5K) | $59 | $2.67 | -66.0% | 60.3% | 76.1% | 84.0% | 88.0% |
+| Growth intl (25K) | $99 | $13.35 | -11.2% | 64.1% | 73.6% | 78.3% | 80.6% |
+| Agency intl (200K) | $249 | $106.80 | 16.1% | 46.1% | 49.8% | 51.7% | 52.6% |
+| Starter IN (5K) | Rs 2,999 = $31.34 | $2.67 | -209.4% | 28.5% | 58.2% | 73.1% | 80.5% |
+| Growth IN (25K) | Rs 6,999 = $73.14 | $13.35 | -49.2% | 52.7% | 65.5% | 71.8% | 75.0% |
+| Agency IN (200K) | Rs 19,999 = $208.99 | $106.80 | 0.8% | 36.4% | 40.9% | 43.1% | 44.2% |
 
-Worked check (Starter intl, 5): 2.67 + 92.89/5 + 0.0354 x 59 = 2.67 + 18.58 + 2.09 = 23.34;
-(59 - 23.34)/59 = 60.4%. Worked check (Growth intl, 40): 13.35 + 92.89/40 + 0.0354 x 99 =
-13.35 + 2.32 + 3.50 = 19.17; (99 - 19.17)/99 = 80.6%.
+Worked check (Starter intl, 5): 2.67 + 93.19/5 + 0.0354 x 59 = 2.67 + 18.64 + 2.09 = 23.40;
+(59 - 23.40)/59 = 60.3%. Worked check (Growth intl, 40): 13.35 + 93.19/40 + 0.0354 x 99 =
+13.35 + 2.33 + 3.50 = 19.18; (99 - 19.18)/99 = 80.6%.
 FX: Rs 95.6943/USD (`pricing.py`, 2026-07-31). Prices are treated as GST-exclusive, as before.
-Fixed per customer: $92.89 / $18.58 / $9.29 / $4.64 / $2.32.
+Fixed per customer: $93.19 / $18.64 / $9.32 / $4.66 / $2.33.
 
 Resend: the 40-customer column keeps Resend at $0 (3,000 emails/month, 100/day). Whether 40
 customers' alert and digest email fits under that cap is unmeasured; if Resend Pro ($20/month)
-is needed, F = $112.89 and the 40-customer column becomes: Starter intl 87.2%, Growth intl 80.1%,
+is needed, F = $113.19 and the 40-customer column becomes: Starter intl 87.1%, Growth intl 80.1%,
 Agency intl 52.4%, Starter IN 78.9%, Growth IN 74.3%, Agency IN 44.0%.
 
 Reading: Starter and Growth intl and Growth IN clear 45% at 5 customers; Agency intl clears it
-(46.1%) barely. Starter IN clears it at 10 customers (58.3%) but not at 5 (28.7%). Agency IN does
+(46.1%) barely. Starter IN clears it at 10 customers (58.2%) but not at 5 (28.5%). Agency IN does
 not clear it at any count up to 40 (44.2%). At 1 customer every tier except Agency intl is at or
 below break-even, so a single early customer is carried by running paid-tier infrastructure ahead
 of revenue.
@@ -268,10 +268,10 @@ site's prices before quoting a margin externally.
 Solve 45% for N: price x (1 - 0.0354 - 0.45) - variable = F/N, so N = F / (price x 0.5146 - variable).
 Quota is 5,000 (live pricing page). Rs 999 = $10.44 at Rs 95.6943/USD.
 
-| Case | Price | Quota | Room for fixed cost per customer | Customers needed (F = $92.89) | If Resend Pro is needed (F = $112.89) |
+| Case | Price | Quota | Room for fixed cost per customer | Customers needed (F = $93.19) | If Resend Pro is needed (F = $113.19) |
 |---|---|---|---|---|---|
-| Starter at $15 | $15.00 | 5,000 | 15 x 0.5146 - 2.67 = $5.049 | **19** (18.4) | 23 (22.4) |
-| Starter at Rs 999 | $10.44 | 5,000 | 10.44 x 0.5146 - 2.67 = $2.702 | **35** (34.4) | 42 (41.8) |
+| Starter at $15 | $15.00 | 5,000 | 15 x 0.5146 - 2.67 = $5.049 | **19** (18.5) | 23 (22.4) |
+| Starter at Rs 999 | $10.44 | 5,000 | 10.44 x 0.5146 - 2.67 = $2.702 | **35** (34.5) | 42 (41.9) |
 | $15, 10,000 quota (superseded) | $15.00 | 10,000 | $2.379 | 40 (39.05) | 48 (47.45) |
 | Rs 999, 10,000 quota (superseded) | $10.44 | 10,000 | $0.032 | ~2,900 (not feasible) | ~3,500 |
 
@@ -283,7 +283,7 @@ Conclusion: on the 5,000 quota both prices reach 45% margin: **$15 at 19 custome
 customers** (23 and 42 if Resend Pro is needed). The earlier 40-customer / not-feasible result came
 from modelling a 10,000 quota that the site does not offer. A cheaper per-extraction cost lowers
 the Rs 999 figure further: at 100% small-tier routing (c = $0.000363, variable $1.82) Rs 999 needs
-N = 92.89 / (5.372 - 1.82) = 26.
+N = 93.19 / (5.372 - 1.82) = 26.2, i.e. 27 customers (the 92.89 revision read "26", which was the unrounded 26.15 truncated rather than rounded up).
 Hard prerequisite: at 35 customers on Starter that is 175,000 extractions/month (19 customers:
 95,000) against the ~4,217/month free-tier ceiling (section 6), so the Groq Developer plan must be
 live, and its limits are still unverified.
@@ -316,33 +316,33 @@ customers, so the margin tables use Resend free and the break-even table also sh
 | Scale | 100,000 | $199 | Rs 12,999 |
 | Agency | 200,000+ | Talk to us | custom |
 
-Blended cost $0.000534/extraction; FX Rs 95.6943/USD; payment fee 3.54%; fixed cost F = $92.89/mo (Resend free) or $112.89/mo (Resend Pro); typical utilisation 40% (assumption).
+Blended cost $0.000534/extraction; FX Rs 95.6943/USD; payment fee 3.54%; fixed cost F = $93.19/mo (Resend free) or $113.19/mo (Resend Pro); typical utilisation 40% (assumption).
 <!-- PRICING:END -->
 
 ### 8.1 Margin at 1/5/10/20/40 customers, one tier
 
 <!-- PRICING:START:margins -->
-**Gross margin, Worst case (100% of quota used)**, all customers on one tier, F = $92.89
+**Gross margin, Worst case (100% of quota used)**, all customers on one tier, F = $93.19
 
 | Tier | 1 cust | 5 cust | 10 cust | 20 cust | 40 cust |
 |---|---|---|---|---|---|
-| Starter USD ($29) | -233.1% | 23.2% | 55.2% | 71.2% | 79.2% |
-| Growth USD ($79) | -38.0% | 56.0% | 67.8% | 73.7% | 76.6% |
-| Scale USD ($199) | 22.9% | 60.3% | 65.0% | 67.3% | 68.5% |
-| Starter INR (Rs 1,499) | -513.6% | -39.2% | 20.1% | 49.8% | 64.6% |
-| Growth INR (Rs 4,999) | -106.9% | 35.3% | 53.1% | 62.0% | 66.5% |
-| Scale INR (Rs 12,999) | -11.2% | 43.5% | 50.3% | 53.7% | 55.4% |
+| Starter USD ($29) | -234.1% | 23.0% | 55.1% | 71.2% | 79.2% |
+| Growth USD ($79) | -38.4% | 56.0% | 67.8% | 73.7% | 76.6% |
+| Scale USD ($199) | 22.8% | 60.3% | 64.9% | 67.3% | 68.5% |
+| Starter INR (Rs 1,499) | -515.5% | -39.6% | 19.9% | 49.7% | 64.5% |
+| Growth INR (Rs 4,999) | -107.5% | 35.2% | 53.1% | 62.0% | 66.4% |
+| Scale INR (Rs 12,999) | -11.5% | 43.4% | 50.3% | 53.7% | 55.4% |
 
-**Gross margin, Typical case (40% of quota used, ASSUMPTION)**, all customers on one tier, F = $92.89
+**Gross margin, Typical case (40% of quota used, ASSUMPTION)**, all customers on one tier, F = $93.19
 
 | Tier | 1 cust | 5 cust | 10 cust | 20 cust | 40 cust |
 |---|---|---|---|---|---|
-| Starter USD ($29) | -227.5% | 28.7% | 60.7% | 76.8% | 84.8% |
-| Growth USD ($79) | -27.9% | 66.2% | 77.9% | 83.8% | 86.8% |
-| Scale USD ($199) | 39.0% | 76.4% | 81.1% | 83.4% | 84.6% |
-| Starter INR (Rs 1,499) | -503.4% | -29.0% | 30.3% | 60.0% | 74.8% |
-| Growth INR (Rs 4,999) | -91.6% | 50.7% | 68.5% | 77.3% | 81.8% |
-| Scale INR (Rs 12,999) | 12.4% | 67.1% | 73.9% | 77.3% | 79.0% |
+| Starter USD ($29) | -228.6% | 28.5% | 60.6% | 76.7% | 84.7% |
+| Growth USD ($79) | -28.3% | 66.1% | 77.9% | 83.8% | 86.8% |
+| Scale USD ($199) | 38.9% | 76.4% | 81.0% | 83.4% | 84.6% |
+| Starter INR (Rs 1,499) | -505.3% | -29.3% | 30.2% | 59.9% | 74.8% |
+| Growth INR (Rs 4,999) | -92.2% | 50.6% | 68.4% | 77.3% | 81.8% |
+| Scale INR (Rs 12,999) | 12.1% | 67.0% | 73.9% | 77.3% | 79.0% |
 <!-- PRICING:END -->
 
 ### 8.2 Tier mixes (assumed splits, weights per average customer)
@@ -352,23 +352,23 @@ Blended cost $0.000534/extraction; FX Rs 95.6943/USD; payment fee 3.54%; fixed c
 
 | Mix | 1 cust | 5 cust | 10 cust | 20 cust | 40 cust |
 |---|---|---|---|---|---|
-| starter-heavy 60/30/10 USD | -73.8% | 48.1% | 63.3% | 70.9% | 74.7% |
-| starter-heavy 60/30/10 INR | -172.2% | 20.1% | 44.1% | 56.1% | 62.1% |
-| even 34/33/33 USD | -17.5% | 55.6% | 64.7% | 69.3% | 71.6% |
-| even 34/33/33 INR | -75.4% | 34.9% | 48.6% | 55.5% | 59.0% |
-| growth-heavy 20/50/30 USD | -14.1% | 56.6% | 65.5% | 69.9% | 72.1% |
-| growth-heavy 20/50/30 INR | -69.4% | 36.7% | 50.0% | 56.6% | 60.0% |
+| starter-heavy 60/30/10 USD | -74.3% | 48.0% | 63.2% | 70.9% | 74.7% |
+| starter-heavy 60/30/10 INR | -172.9% | 19.9% | 44.0% | 56.1% | 62.1% |
+| even 34/33/33 USD | -17.8% | 55.5% | 64.7% | 69.3% | 71.6% |
+| even 34/33/33 INR | -75.9% | 34.8% | 48.6% | 55.5% | 59.0% |
+| growth-heavy 20/50/30 USD | -14.4% | 56.6% | 65.5% | 69.9% | 72.1% |
+| growth-heavy 20/50/30 INR | -69.8% | 36.7% | 50.0% | 56.6% | 59.9% |
 
 **Gross margin for tier mixes (Starter/Growth/Scale), typical case (assumption)**
 
 | Mix | 1 cust | 5 cust | 10 cust | 20 cust | 40 cust |
 |---|---|---|---|---|---|
-| starter-heavy 60/30/10 USD | -63.0% | 58.8% | 74.1% | 81.7% | 85.5% |
-| starter-heavy 60/30/10 INR | -155.2% | 37.1% | 61.1% | 73.1% | 79.1% |
-| even 34/33/33 USD | -4.0% | 69.1% | 78.3% | 82.9% | 85.1% |
-| even 34/33/33 INR | -55.0% | 55.3% | 69.1% | 76.0% | 79.4% |
-| growth-heavy 20/50/30 USD | -0.9% | 69.9% | 78.8% | 83.2% | 85.4% |
-| growth-heavy 20/50/30 INR | -49.5% | 56.6% | 69.9% | 76.6% | 79.9% |
+| starter-heavy 60/30/10 USD | -63.5% | 58.7% | 74.0% | 81.6% | 85.5% |
+| starter-heavy 60/30/10 INR | -156.0% | 36.9% | 61.0% | 73.1% | 79.1% |
+| even 34/33/33 USD | -4.3% | 69.1% | 78.3% | 82.8% | 85.1% |
+| even 34/33/33 INR | -55.4% | 55.2% | 69.0% | 75.9% | 79.4% |
+| growth-heavy 20/50/30 USD | -1.1% | 69.9% | 78.7% | 83.2% | 85.4% |
+| growth-heavy 20/50/30 INR | -49.9% | 56.6% | 69.9% | 76.5% | 79.9% |
 <!-- PRICING:END -->
 
 ### 8.3 Customers needed to reach the 45% margin target
@@ -389,7 +389,7 @@ Starter price alternatives (5,000 quota)
 
 | Tier | worst, Resend free | worst, Resend Pro | typical, Resend free | typical, Resend Pro |
 |---|---|---|---|---|
-| Starter at $15 ($15.00) | 19 | 23 | 14 | 17 |
+| Starter at $15 ($15.00) | 19 | 23 | 15 | 18 |
 | Starter at Rs 999 ($10.44) | 35 | 42 | 22 | 27 |
 <!-- PRICING:END -->
 
