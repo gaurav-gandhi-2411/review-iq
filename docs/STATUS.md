@@ -20,6 +20,16 @@ Handoff: `docs/HANDOFF_S35.md`. Record: `docs/autonomy/S35_PROGRESS.md`.
 - 120b secondary for A18: 45 of 200 items, not scored (deadline 2026-11-15).
 - Cleanup: `D:/ml-cache` about 2.28 GB -> 633 MB (byte-identical duplicates only); 90 merged local branches deleted.
 - Daily checks clean (`/health`, classify invoker, failover probe, 24 h error counts all 0).
+- **Follow-up 2026-11-03 (GG's permissions):** claude-config #82 merged; #318, #275, #267 closed (branches kept). Dependabot:
+  #653 (app minor/patch; its `onnxruntime` bump in `requirements-classify.*` was reverted on the branch, so the classify
+  stack stays on the evaluated 1.31.0), #651 and #652 merged; #653 then #651 deployed `review-iq-00110-6zb` then `00111-kfc`, `/health`
+  200, smoke OK, rollback revision `00110-6zb` (tag `smoketest`) kept Ready. #654 (dateutil 3.0, major) parked with
+  `docs/plans/dateutil-3-upgrade-plan.md`. #396 fixed for main's `|| true` workflow test.
+- **Disk:** C: fell about 45 GB during S35, almost all from other projects (agentic-shopping-assistant scratch about 33 GB;
+  Docker disk image 67.5 GB with about 38 GB slack). Cleaned only pure caches (pip 0.97 GB, npm GC 0.47 GB). Details: handoff
+  section 8.
+- **Live hook conflict:** the live `~/.claude` checkout is behind and carries another session's uncommitted warn-only trailer
+  hook; #82 is not live until GG reconciles it.
 
 ## Sessions 33 and 34 (autonomous, 2026-10-30 to 2026-11-01): the S4 question, answered
 
@@ -108,7 +118,7 @@ Full record: `docs/autonomy/S31_PROGRESS.md`; handoff: `docs/HANDOFF_2026-10-27_
 
 | Item | State | Evidence |
 |---|---|---|
-| Serving revision | `review-iq` 100 percent on `review-iq-00109-rhj` (S35, 2026-11-02, VERIFIED; deployed by the #655 merge, router flag unset). Earlier: `review-iq-00080-4bx` at 2026-10-12 about 14:40 UTC (every merge to main deploys a new revision); `review-iq-admin` on `review-iq-admin-00063-tgq`. `DEMO_MAX_SHARE=0.1` on the service (set 2026-10-12) | VERIFIED `gcloud run services describe` (S23, per the orchestrator's session record; not re-run in this docs pass) |
+| Serving revision | `review-iq` 100 percent on `review-iq-00111-kfc` (S35 follow-up, 2026-11-03, VERIFIED; deployed by the #651 merge after #653 deployed `00110-6zb`; router flag unset; rollback `00110-6zb`, tag `smoketest`). Earlier: `review-iq-00080-4bx` at 2026-10-12 about 14:40 UTC (every merge to main deploys a new revision); `review-iq-admin` on `review-iq-admin-00063-tgq`. `DEMO_MAX_SHARE=0.1` on the service (set 2026-10-12) | VERIFIED `gcloud run services describe` (S23, per the orchestrator's session record; not re-run in this docs pass) |
 | Primary LLM | Groq, key secret `groq-api-key-samidha`. Groq limits are per account pool, and the benchmark key shares the Personal account with the production keys (GG, Groq console, #510), so eval and prod draw on the same pools | VERIFIED env; sharing per GG and #510. BELIEVED: the benchmark and failover keys share one org (identical org id in two 429 bodies) |
 | Failover | Secondary Groq key (`groq-api-key`), `openai/gpt-oss-120b`, `SECONDARY_PROVIDER_KIND=groq` (ADR 0038). The variable has NO default now: unset with a secondary configured fails loudly at startup (#509 merged). Nightly probe is a Cloud Run Job `failover-probe` plus Scheduler `failover-probe-nightly` (02:30 UTC) reading Secret Manager directly (#503, #504 merged); alert via a log-based metric to the existing email channel. Runs seen: one PASS, one real FAIL on quota (shared pool near 199K of 200K), one forced failure that opened the alert | VERIFIED executions. After the next CI deploy ships the Dockerfile COPY line, re-run `PROBE_SOURCE=image bash ops/probes/apply-failover-probe.sh` (open) |
 | 429 visibility | Every final Groq 429 logs `llm.rate_limited` (WARNING), each failover logs `llm.failover` (#491 merged and deployed); before it a 429 left no event | VERIFIED merged. Prod log search 2026-10-10..12 05:07 UTC found 0 x 429 and 0 failovers, but prod made only 3 Groq calls then, none clearly in the pool-full period: the clean log says little |
@@ -586,9 +596,10 @@ S35, in unblock order (details: `docs/HANDOFF_S35.md`, section 6):
 
 1. Router, only when a paying customer exists: #396 → #576 (apply the migration) → #578 → #579 → #634; re-run the live routing check
    (`scripts/classify_live_parity.py`) right before enabling. Served R1+ (step 2) is done (#655).
-2. claude-config #82 (trailer hook).
-3. Close or revive the stale PRs #318, #275, #267; Dependabot #651-#654 when a production deploy is acceptable.
-4. Older parked items, unchanged (list below). The 120b secondary needs nothing from you.
+2. Reconcile the live `~/.claude` checkout (another session's uncommitted warn-only trailer hook vs merged #82), then pull.
+3. Disk: decide on the other projects' items (handoff section 8).
+4. #654 (dateutil 3.0) when wanted, per its plan. Older parked items, unchanged (list below). The 120b secondary needs nothing
+   from you. (#82 merged and #318/#275/#267 closed on 2026-11-03.)
 
 S34, in unblock order (details: `docs/HANDOFF_S34.md`, section 8):
 
