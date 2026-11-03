@@ -588,6 +588,27 @@ UNDO_CASES: list[tuple[str, str, str]] = [
         "weekly_digest_resolver_hardened",
         "DROP FUNCTION public.list_orgs_with_weekly_digest()",
     ),
+    # classified_reviews (S29): each undo flips the matching condition from TRUE to FALSE.
+    (
+        "20261020000001_classified_reviews.sql",
+        "classified_reviews_columns_and_unique_org_hash",
+        "ALTER TABLE public.classified_reviews DROP CONSTRAINT classified_reviews_org_hash_key",
+    ),
+    (
+        "20261020000001_classified_reviews.sql",
+        "classified_reviews_text_only_while_unextracted_constraint",
+        "ALTER TABLE public.classified_reviews DROP CONSTRAINT classified_reviews_text_only_while_unextracted",
+    ),
+    (
+        "20261020000001_classified_reviews.sql",
+        "classified_reviews_rls_enabled_with_org_and_anon_policies",
+        "DROP POLICY classified_reviews_anon_deny ON public.classified_reviews",
+    ),
+    (
+        "20261020000001_classified_reviews.sql",
+        "classified_reviews_grants_select_insert_update_delete_to_authenticated_only",
+        "GRANT TRUNCATE ON public.classified_reviews TO authenticated",
+    ),
 ]
 
 
