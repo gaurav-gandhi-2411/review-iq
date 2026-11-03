@@ -1,0 +1,45 @@
+{
+ "routes": {
+  "n_items": 757,
+  "r1": {
+   "n_flips": 0,
+   "flip_rate": 0.0,
+   "n_offline_routed": 214,
+   "n_served_routed": 214,
+   "flips": []
+  },
+  "r1_plus": {
+   "n_flips": 0,
+   "flip_rate": 0.0,
+   "n_offline_routed": 238,
+   "n_served_routed": 238,
+   "flips": []
+  }
+ },
+ "url_host": "review-iq-classify-vd6nfefddq-el.a.run.app",
+ "n_items": 757,
+ "n_task_decisions": 3028,
+ "n_requests_ok": 757,
+ "n_errors": 0,
+ "errors": [],
+ "n_mismatches": 1,
+ "mismatches": [
+  {
+   "id": "scale-food-0660",
+   "task": "broad_intent",
+   "served": "product_issue",
+   "offline": "abstained"
+  }
+ ],
+ "thresholds_sha256_expected": "4cf745db3af848464cbd7961c536919dee3be7a78691a5c4aca8a356ab724ec2",
+ "thresholds_sha256_served": [
+  "4cf745db3af848464cbd7961c536919dee3be7a78691a5c4aca8a356ab724ec2"
+ ],
+ "thresholds_match": true,
+ "client_latency_ms": {
+  "n": 757,
+  "p50": 372.5,
+  "p95": 852.9,
+  "max": 15655.8
+ }
+}
