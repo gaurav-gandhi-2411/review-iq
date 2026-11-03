@@ -149,9 +149,13 @@ jobs:
       # review-iq-admin: same image, SERVICE_ROLE=admin already set on the service's own env
       # (omitted here on purpose -- omitting env/secret flags reuses the existing revision
       # template verbatim, per the runbook's own "never --set-env-vars on an incremental
-      # deploy" rule). Not IAM-reachable from outside GCP, so no smoke-test step here; going
-      # straight to 100% traffic is safe since it's a single-revision, low-traffic service.
-      - name: Deploy review-iq-admin (private) and promote
+      # deploy" rule). No smoke-test step here; going straight to 100% traffic is safe since
+      # it's a single-revision, low-traffic service. NOTE: `gcloud run deploy` on an EXISTING
+      # service never changes its IAM policy, and this command deliberately has no
+      # --allow-unauthenticated: review-iq-admin must keep an EMPTY invoker policy (verified
+      # 2026-10-12; it had `allUsers` 2026-08-13..2026-10-12, see ADR 0006 addendum). Never add
+      # --allow-unauthenticated here, and re-check the policy if the service is ever recreated.
+      - name: Deploy review-iq-admin (IAM-gated; no invoker binding) and promote
         run: |
           gcloud run deploy review-iq-admin \
             --image="${{ env.IMAGE_REPO }}:${{ steps.image.outputs.tag }}" \

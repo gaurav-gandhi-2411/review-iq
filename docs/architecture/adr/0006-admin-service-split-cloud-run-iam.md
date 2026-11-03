@@ -95,3 +95,34 @@ different env vars):
   the username and argon2id `verify()` for the password (timing-safe, no plaintext comparison),
   reasonable as a defense-in-depth layer but not sufficient alone as the only gate on a publicly
   reachable service.
+
+## Addendum 2026-10-12: the IAM gate was not in place until today (incident, factual)
+
+This ADR's Decision says `review-iq-admin` is deployed `--no-allow-unauthenticated`. That was
+**not true of the service in `reviewiq-prod-260813`** for its first ~60 days. Cloud Audit
+Admin Activity logs (`run.googleapis.com` `Services.SetIamPolicy`, read 2026-10-12) show:
+
+| Timestamp (UTC) | Event |
+|---|---|
+| 2026-08-13 16:43:54 | `review-iq-admin`: policy set to `roles/run.invoker` -> `allUsers` (same call on `review-iq` at 16:42:10, during the project migration) |
+| 2026-10-12 07:48:06 | `review-iq-admin`: policy set to empty (`allUsers` removed) |
+
+So `/admin/*` was reachable from the public internet, protected **only** by HTTP Basic
+(`require_admin`, argon2id), for ~60 days (2026-08-13 to 2026-10-12). The admin password was
+then exposed in a chat transcript and rotated the same day (`admin-password-hash` v3; v1 and v2
+destroyed). Request logs only reach back 30 days (earliest visible: 2026-09-12 14:52 UTC); in
+that window `review-iq-admin` served no `/admin/*` request before 2026-10-12 (only Google-range
+`GET /` and `/favicon.ico` 404s), and the public `review-iq` service answered every `/admin*`
+probe with 404. Request logs for 2026-08-13 to 2026-09-12 are not retained, so that part of the
+window cannot be checked from logs. Secret Manager data-access audit logging is not enabled, so
+secret reads are not logged either way.
+
+**Verified state as of 2026-10-12:** `review-iq-admin` has **no** IAM invoker binding
+(`get-iam-policy` returns only an etag). An unauthenticated request gets `403` from Cloud Run;
+a request with a Google identity token (for a principal granted `roles/run.invoker`) and no Basic
+credentials gets `401` from the app. HTTP Basic remains a second factor. Because `/admin/*` needs
+the Basic credentials in `Authorization`, callers send the identity token in
+`X-Serverless-Authorization: Bearer ...`.
+
+Correction: wherever ADR 0006/0009 or other docs describe the admin service as IAM-gated, read
+"IAM-gated since 2026-10-12 07:48 UTC; before that, invokable by `allUsers`".
