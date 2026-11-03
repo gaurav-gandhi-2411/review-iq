@@ -254,7 +254,7 @@ jobs:
         working-directory: web
         run: npm run lint
 
-      # S17 G3f: `npm test` = main's node --test (retry-after) then Vitest (dashboard logic,
+      # S17 G3f: `npm test` = node --test (retry-after, tests/*.test.ts) then Vitest (dashboard logic,
       # component states, tokens.test.ts drift check against design/tokens.json).
       - name: Unit tests (node --test + vitest)
         working-directory: web
