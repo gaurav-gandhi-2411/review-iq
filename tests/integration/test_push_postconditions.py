@@ -588,6 +588,28 @@ UNDO_CASES: list[tuple[str, str, str]] = [
         "weekly_digest_resolver_hardened",
         "DROP FUNCTION public.list_orgs_with_weekly_digest()",
     ),
+    # Judge.me connector storage (file only until GG applies it; these run in the ephemeral-PG
+    # job). Each undo makes exactly one conjunct of its postcondition false.
+    (
+        "20261011000001_judgeme_installations.sql",
+        "judgeme_tables_columns_and_constraints",
+        "ALTER TABLE public.judgeme_installations DROP CONSTRAINT judgeme_inst_active_has_token",
+    ),
+    (
+        "20261011000001_judgeme_installations.sql",
+        "judgeme_rls_and_policies",
+        "ALTER TABLE public.judgeme_review_state DISABLE ROW LEVEL SECURITY",
+    ),
+    (
+        "20261011000001_judgeme_installations.sql",
+        "judgeme_grants_narrowed",
+        "GRANT INSERT ON public.judgeme_installations TO authenticated",
+    ),
+    (
+        "20261011000001_judgeme_installations.sql",
+        "judgeme_functions_hardened",
+        "GRANT EXECUTE ON FUNCTION public.list_due_judgeme_installations(integer) TO authenticated",
+    ),
 ]
 
 
