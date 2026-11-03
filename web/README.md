@@ -71,3 +71,11 @@ export default defineConfig([
   },
 ])
 ```
+
+## Optional environment variables
+
+| Variable | Default | Effect |
+| --- | --- | --- |
+| `VITE_ENABLE_SKIPPED_REVIEWS` | unset (off) | Set to the string `true` at build time to add the "Not yet analysed" page (`/reviews/skipped`) and its nav link. It lists reviews the encoder-first router did not send to the LLM and lets the owner open one to analyse it. Needs the server flag `ENABLE_ENCODER_FIRST`; without it the page shows a "not enabled" message. Not part of the required-env check. |
+
+Dev only: `/__preview/skipped?state=normal|empty|error|off|loading` renders that page from fixtures (not in production builds).

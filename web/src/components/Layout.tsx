@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { Upload, BarChart2, LogOut, MessageSquare, Key, X, ArrowUpRight, CheckCircle2 } from 'lucide-react'
+import { Upload, BarChart2, LogOut, MessageSquare, Inbox, Key, X, ArrowUpRight, CheckCircle2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { getAccount, requestQuotaIncrease } from '../lib/api'
 import LogoMark from './LogoMark'
 import SiteLinks from './SiteLinks'
+import { skippedReviewsEnabled } from '../lib/skippedReviews'
 
 const QUOTA_WARN_THRESHOLD = 0.8
 
-interface Props { children: React.ReactNode; active?: 'upload' | 'dashboard' | 'reviews' | 'keys' }
+interface Props { children: React.ReactNode; active?: 'upload' | 'dashboard' | 'reviews' | 'skipped' | 'keys' }
 
 export default function Layout({ children, active }: Props) {
   const navigate = useNavigate()
@@ -85,7 +86,12 @@ export default function Layout({ children, active }: Props) {
             <NavLink href="/reviews" active={active === 'reviews'} icon={<MessageSquare size={16} aria-hidden="true" />}>
               Reviews
             </NavLink>
-            <NavLink href="/upload" active={active === 'upload'} icon={<Upload size={16} aria-hidden="true" />}>
+            {skippedReviewsEnabled() && (
+              <NavLink href="/reviews/skipped" active={active === 'skipped'} icon={<Inbox size={16} aria-hidden="true" />}>
+                Not yet analysed
+              </NavLink>
+            )}
+            <NavLink href="/upload"active={active === 'upload'} icon={<Upload size={16} aria-hidden="true" />}>
               Upload
             </NavLink>
             <NavLink href="/keys" active={active === 'keys'} icon={<Key size={16} aria-hidden="true" />}>
