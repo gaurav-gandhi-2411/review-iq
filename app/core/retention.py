@@ -15,7 +15,11 @@ from datetime import UTC, datetime, timedelta
 
 import structlog
 
-from app.core.storage_pg import list_orgs_with_retained_mode_pg, purge_org_extractions_pg
+from app.core.storage_pg import (
+    list_orgs_with_retained_mode_pg,
+    purge_org_classified_reviews_pg,
+    purge_org_extractions_pg,
+)
 
 log = structlog.get_logger(__name__)
 
@@ -38,6 +42,7 @@ async def purge_expired_extractions() -> dict[str, object]:
         cutoff = datetime.now(UTC) - timedelta(days=retention_days)
         try:
             deleted = await asyncio.to_thread(purge_org_extractions_pg, org_id, cutoff)
+            deleted += await asyncio.to_thread(purge_org_classified_reviews_pg, org_id, cutoff)
         except Exception as exc:  # noqa: BLE001 — one org's failure must not stop the sweep
             log.error("retention.purge_org_failed", org_id=org_id, error=str(exc))
             errors.append(org_id)

@@ -36,7 +36,7 @@ import json
 import structlog
 
 from app.auth.api_key import ApiKeyContext
-from app.core.classify.encoder_first import should_extract
+from app.core.classify.encoder_first import IngestPlan, plan_ingest
 from app.core.config import get_settings
 from app.core.db_pool import db_connect
 from app.core.ratelimit import set_bulk_call_class
@@ -47,6 +47,7 @@ from app.core.storage_pg import (
     get_batch_job_pg,
     get_org_retention_pg,
     list_job_row_hashes_pg,
+    save_classified_review_pg,
     update_batch_job_pg,
 )
 
@@ -56,6 +57,30 @@ _ERROR_TRUNCATE_LEN = 500
 # System context name for worker-triggered extractions — mirrors the existing
 # webhook convention (e.g. key_name="shopify_webhook" in app/api/webhooks/shopify.py).
 _SYSTEM_KEY_NAME = "ingest_tick_worker"
+_PERSISTED_TASKS = ("needs_action", "broad_intent", "sentiment", "urgency")
+
+
+async def _keep_classified_only(
+    org_id: str, req: ReviewRequest, input_hash: str, product: str | None, plan: IngestPlan
+) -> bool:
+    """Persist a review the encoder-first router skipped. False = it could NOT be stored (table missing, DB error): the caller then
+    extracts it now, so a skipped review is never dropped just because it could not be kept."""
+    try:
+        tasks = plan.tasks or {}
+        await asyncio.to_thread(
+            save_classified_review_pg,
+            org_id,
+            input_hash,
+            req.text,
+            req.review_date,
+            product,
+            {t: tasks[t] for t in _PERSISTED_TASKS if t in tasks},
+            plan.thresholds_sha256 or "",
+        )
+        return True
+    except Exception:  # noqa: BLE001 (fail-open: see docstring)
+        log.error("ingest_worker.classified_only_not_stored", org_id=org_id, exc_info=True)
+        return False
 
 
 async def _claim_one_row() -> tuple[str, str, bool] | None:
@@ -120,9 +145,15 @@ async def _claim_one_row() -> tuple[str, str, bool] | None:
         try:
             req = ReviewRequest(text=text, review_date=review_date)
             input_hash = req.input_hash()
-            # Encoder-first (Amendment 14, flag OFF): a classified-only review gets no LLM call here; it is extracted when the user
-            # opens it. The classification itself is not persisted yet (needs a migration: gate 4), so this is a DRAFT hook.
-            if await should_extract(text):
+            # Encoder-first (Amendment 14, flag OFF): a classified-only review gets no LLM call here; its text and the encoder's
+            # decisions are kept in public.classified_reviews and it is extracted when the user opens it (app/core/classified_reviews.py).
+            # Only retained-mode orgs can have anything kept; any failure to keep it falls back to extracting now.
+            plan = await plan_ingest(text)
+            if (
+                plan.route
+                or ctx.retention_mode != "retained"
+                or not await _keep_classified_only(org_id, req, input_hash, product, plan)
+            ):
                 await _run_extraction_v2(req, ctx, product_override=product)
         except Exception as exc:  # noqa: BLE001 — one row's failure must not kill the drain loop
             ok = False
