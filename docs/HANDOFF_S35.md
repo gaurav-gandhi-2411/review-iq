@@ -79,12 +79,19 @@ Schedulers: ingest-tick and failover-probe-nightly ENABLED; digest-daily and det
 
 ## 6. PARKED, and GG ACTIONS REQUIRED (minimum, in unblock order)
 
-1. **Router, only when a paying customer exists:** merge #396 → #576 and apply the migration → #578 → #579 → #634; re-run
+Updated 2026-11-03 after GG's follow-up (section 8): #82 merged, #318/#275/#267 closed, Dependabot handled.
+
+1. **Live hook conflict (claude-config):** the live `~/.claude` checkout is 4 commits behind `origin/main` and holds another
+   session's uncommitted edit that makes `hook_strip_trailer.py` warn-only (never amend), dated 2026-11-03 12:18 IST. #82 (merged)
+   amends only a same-call commit instead. Pick one; until the checkout is reconciled and pulled, neither #82 nor the other fixes
+   on main are live. Not touched by this session.
+2. **Disk:** other projects' items in section 8 (about 33 GB of agentic-shopping-assistant scratch; the 67.5 GB Docker disk image,
+   about 38 GB of it slack). Your call; nothing of theirs was touched.
+3. **Router, only when a paying customer exists:** merge #396 → #576 and apply the migration → #578 → #579 → #634; re-run
    `scripts/classify_live_parity.py` (routes section) right before turning on `ENABLE_ENCODER_FIRST`. Plan: #649.
-2. **claude-config #82** (trailer hook amends only a commit made in the same call).
-3. **Close or revive the stale PRs:** #318, #275, #267. Dependabot #651-#654 when you are ready for a production deploy.
-4. Older parked items, unchanged: #502 (email confirmation), #588, #590, #610, #485/#508/#512/#499/#472.
-5. **120b secondary: nothing to do.** Later sessions continue it once a day:
+4. **#654 (python-dateutil 3.0.0):** parked with a plan, `docs/plans/dateutil-3-upgrade-plan.md`.
+5. Older parked items, unchanged: #502 (email confirmation), #588, #590, #610, #485/#508/#512/#499/#472.
+6. **120b secondary: nothing to do.** Later sessions continue it once a day:
    `PYTHONPATH=. python <scratch>/s31/with_failover_key.py C:/Users/gaura/ml-projects/review-iq/.venv/Scripts/python.exe -m engine.intent.fresh18_groq120 --subsample reports/intent/fresh18/subsample_120b.json --texts D:/ml-cache/s33/fresh18/fresh18.jsonl --out D:/ml-cache/s34/groq120_f18`
    (the child path must be absolute). Score once when complete or on 2026-11-15.
 
@@ -94,4 +101,53 @@ Schedulers: ingest-tick and failover-probe-nightly ENABLED; digest-daily and det
 - Kaggle: 0.
 - GCP: one CI deploy (#655, inert); 757 private classify requests (scale to zero); read-only checks.
 - Disk: C: free 230.57 GB at start, 207.35 GB at close; this session's scratch is 13 MB, so the drop is BELIEVED to come from
-  concurrent work. `D:/ml-cache` 1.65 GB smaller.
+  concurrent work. `D:/ml-cache` 1.65 GB smaller. Explained in section 8.
+
+## 8. Follow-up, 2026-11-03: disk, Dependabot, GG's permissions
+
+### Disk (the warning, explained)
+
+C: free went from 230.57 GB (S35 start) to a low of 185.61 GB, then 195.09 GB after cleanup and other sessions' own deletions.
+No earlier per-directory snapshot exists in the progress files, so growth is attributed by file write times (files written in the
+36 h before 2026-11-03 07:45 UTC). Sizes VERIFIED; owners inferred from directory names (BELIEVED).
+
+| Item | Size | Written in window | Owner | Action |
+|---|---|---|---|---|
+| `%TEMP%\claude\asa\*` (venvs `w3c3`, `w3c2`, `v3c3`, `w6`, `w6v`, `w4`, `w10v`, `venv311`, `v4venv`, and more) | 30.33 GB | about 30 GB | agentic-shopping-assistant session (still writing at 07:52 UTC) | reported only |
+| `%TEMP%\claude\C--Users-gaura-ml-projects-agentic-shopping-assistant\df92a9fd...`, `asa_v311`, `asa_testdata`, `asa_gcs` | 4.96 GB | about 5 GB | same | reported only |
+| `%LOCALAPPDATA%\Docker\wsl\disk\docker_data.vhdx` | 67.46 GB | written continuously | Docker Desktop; running containers are `swasarthi` (Supabase stack) and `mbbs-mentor-db` | reported only. `docker system df`: 29.5 GB live (images 7.2, containers 4.5, volumes 0.8, build cache 17.0 reclaimable), so about 38 GB is disk-image slack that only a compaction returns |
+| `%LOCALAPPDATA%\uv\cache` | 43.38 GB | 0.18 GB | shared | not pruned: another session's `uv` process was running |
+| `%TEMP%\claude\C--Users-gaura-ml-projects-agentgauge\...` | 4.23 GB | 0 | agentgauge (idle since 11-02) | reported only |
+| `%TEMP%\claude\gg-portfolio\*` | 1.36 GB | small | gg-portfolio | reported only |
+| `%TEMP%\pytest-of-gaura` | 2.08 GB | 0.36 GB | shared pytest temp | left (may be in use) |
+| `%LOCALAPPDATA%\pip\Cache` | 0.97 GB | | pure cache | **deleted** (`http-v2`) |
+| `%LOCALAPPDATA%\npm-cache` | 3.42 GB | | pure cache | **`npm cache verify`**: 0.47 GB garbage-collected |
+| review-iq's own scratch | 14 MB (this session); 8 older review-iq session folders are empty | | review-iq | removed at session end |
+| `~/.claude/projects` transcripts | review-iq 0.48 GB; largest swasarthi 1.66 GB | | per project | left |
+
+Conclusion: review-iq did not cause the drop. The agentic-shopping-assistant scratch (about 35 GB written in the window) accounts
+for most of it; the Docker disk image is the largest single file, and its growth is unknown (no earlier size on record).
+
+### Dependabot
+
+- **#653** (9 minor/patch updates): before merging, the `onnxruntime` 1.31.0 to 1.31.1 bump in `requirements-classify.*` was
+  reverted on the branch (`d61a200`). Those files pin the stack the offline evaluation and the sealed-set parity check ran with; an
+  ORT bump needs a parity re-run before the classify image is rebuilt. `uv.lock` carries no onnxruntime, so the app is unaffected.
+  Merged `48a11a6`; deployed `review-iq-00110-6zb`.
+- **#651** (setup-uv 10.3.3) merged `d25379b`; it edits the deploy workflow, so CI deployed again: `review-iq-00111-kfc`.
+- **#652** (web, 6 minor/patch) merged `4a9b210`; no Cloud Run deploy.
+- After the deploys (VERIFIED): 100 percent on `review-iq-00111-kfc`; `ENABLE_ENCODER_FIRST` and `CLASSIFY_SERVICE_URL` unset;
+  `/health` 200 (0.56-0.98 s); `/openapi.json` 200; unauthenticated `/v2/reviews` 401; web app 200; 0 ERROR logs since 07:00 UTC.
+  Rollback: `gcloud run services update-traffic review-iq --to-revisions=review-iq-00110-6zb=100` (tag `smoketest`), or `00109-rhj`.
+- **#654** (python-dateutil 3.0.0, major): parked with `docs/plans/dateutil-3-upgrade-plan.md`. The app uses only
+  `dateutil.parser` (in `app/core/csv_ingest.py`); the ingest tests pass 44/44 on 3.0.0 in a throwaway environment.
+
+### GG's permissions, used
+
+- claude-config #82: marked ready, gate eligible, merged `34b525e`. Not live yet: see section 6 item 1.
+- #318, #275, #267: closed with a comment each; branches kept.
+
+### Also
+
+- #396: after its branch update, main's `test_no_failure_swallowing_shell_idioms` failed it on `|| true` in the restore step. The
+  step now records the exit code instead and still fails unless the psql ERROR count is 0. CLEAN.
