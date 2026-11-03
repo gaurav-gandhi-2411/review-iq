@@ -116,9 +116,16 @@ def worker(gpu: int, all_items: list) -> None:
     names = judges[gpu]
     try:
         for name in names:
-            pull = subprocess.run([str(OLLAMA_DIR / "bin" / "ollama"), "pull", SP.JUDGES[name]], env=env,
-                                  capture_output=True, text=True)  # fmt: skip
-            if pull.returncode != 0:
+            # S34: one transient registry 503 on the pull idled this GPU for a whole 8h session (fresh18 panel, session 1),
+            # so a failed pull is retried with backoff before the worker gives up.
+            for attempt in range(5):
+                pull = subprocess.run([str(OLLAMA_DIR / "bin" / "ollama"), "pull", SP.JUDGES[name]], env=env,
+                                      capture_output=True, text=True)  # fmt: skip
+                if pull.returncode == 0:
+                    break
+                status["judges"][f"gpu{gpu}_pull_retry_{name}"] = attempt + 1
+                time.sleep(30 * 2**attempt)
+            else:
                 raise RuntimeError("pull failed: " + (pull.stderr or pull.stdout)[-300:])
         progress = True
         while progress:

@@ -1,9 +1,62 @@
 # Samidha Reviews: status
 
-Updated at the end of every session. Last update: 2026-10-25 (S31, autonomous, 2026-10-23 to 25; S29 on 2026-10-20; S28 on 2026-10-19; S27 on 2026-10-18; S26 and S25 the same day, S24 on 2026-10-17; S23 text below is kept where still true and corrected where S24 changed it). Labels: VERIFIED = observed this
+Updated at the end of every session. Last update: 2026-11-02 (S35; S34 on 2026-11-01; S33 on 2026-10-30/31; S32 on 2026-10-29; earlier: S31, autonomous, 2026-10-23 to 25; S29 on 2026-10-20; S28 on 2026-10-19; S27 on 2026-10-18; S26 and S25 the same day, S24 on 2026-10-17; S23 text below is kept where still true and corrected where S24 changed it). Labels: VERIFIED = observed this
 session or by a committed artifact (command and output exist); BELIEVED = inferred or stated by someone else,
 not observed. Synthetic = produced on generated data, never a statement about real customers.
 
+
+## Session 35 (autonomous prep, 2026-11-02): served R1+
+
+Handoff: `docs/HANDOFF_S35.md`. Record: `docs/autonomy/S35_PROGRESS.md`.
+
+- **The served path now implements R1+**, the evaluated router (#655 merged; VERIFIED). This corrects the S34 line below ("the served
+  path implements R1 only"). CI parity test against the stored A17/A18 predictions: 0 divergences on 4,200 + 8,100 items, with a
+  control that fails. Live check on the private classify service (#656 merged): 757 of 757 OK, 0 R1 and 0 R1+ routing flips.
+- **Router stays OFF** (GG: until a paying customer exists). #655 deployed `review-iq-00109-rhj` with `ENABLE_ENCODER_FIRST` unset;
+  `/health` 200 (VERIFIED).
+- Enable chain parked for GG and now consistent with R1+: #578 called `route_r1` and was fixed to `route_r1_plus`; #649 step 2 points
+  at #655/#656.
+- claude-config #82 (draft): the trailer hook amends only a commit made in the same Bash call (selftest 568/568).
+- 120b secondary for A18: 45 of 200 items, not scored (deadline 2026-11-15).
+- Cleanup: `D:/ml-cache` about 2.28 GB -> 633 MB (byte-identical duplicates only); 90 merged local branches deleted.
+- Daily checks clean (`/health`, classify invoker, failover probe, 24 h error counts all 0).
+- **Follow-up 2026-11-03 (GG's permissions):** claude-config #82 merged; #318, #275, #267 closed (branches kept). Dependabot:
+  #653 (app minor/patch; its `onnxruntime` bump in `requirements-classify.*` was reverted on the branch, so the classify
+  stack stays on the evaluated 1.31.0), #651 and #652 merged; #653 then #651 deployed `review-iq-00110-6zb` then `00111-kfc`, `/health`
+  200, smoke OK, rollback revision `00110-6zb` (tag `smoketest`) kept Ready. #654 (dateutil 3.0, major) parked with
+  `docs/plans/dateutil-3-upgrade-plan.md`. #396 fixed for main's `|| true` workflow test.
+- **Disk:** C: fell about 45 GB during S35, almost all from other projects (agentic-shopping-assistant scratch about 33 GB;
+  Docker disk image 67.5 GB with about 38 GB slack). Cleaned only pure caches (pip 0.97 GB, npm GC 0.47 GB). Details: handoff
+  section 8.
+- **Live hook conflict:** the live `~/.claude` checkout is behind and carries another session's uncommitted warn-only trailer
+  hook; #82 is not live until GG reconciles it.
+
+## Sessions 33 and 34 (autonomous, 2026-10-30 to 2026-11-01): the S4 question, answered
+
+Handoff: `docs/HANDOFF_S34.md`. Records: `docs/autonomy/S33_PROGRESS.md`, `S34_PROGRESS.md`.
+
+- **The S32 S4 check ran once in S33 and took branch D1, on a thin margin** (#635; VERIFIED, verifier 85/85).
+  - It was INCOMPLETE: 147 of 259 120b rows, under a timing deviation logged before the run.
+  - Pooled R1+ minus 120b: 0.000 [-0.048, +0.048].
+  - R1+ minus 20b: +0.112 [0.058, 0.166].
+- **Amendment 18 PASSED (P1)** (#648; VERIFIED, verifier 31/31). Amendment 18 is in `docs/specs/review-intent.md` (#638).
+  - fresh18: 8,100 S4 items, 301 gold-yes.
+  - R1+ 0.944 vs gpt-oss-20b 0.861; paired delta **+0.083 [0.040, 0.126]** > -0.05; McNemar 35 vs 10.
+  - Results: `docs/reports/a18-fresh18-results.md`.
+  - It shows non-inferiority to the LLM path the product can run itself. It does **not** show parity with 120b: the registered 120b secondary is
+    blocked by triage-iq's recording on the shared pool (deadline 2026-11-15).
+  - **A17's F2 failure stands.**
+- **Router enable plan: PARKED for GG** (`docs/plans/router-enable-plan.md`, #649 draft). **The served path implements R1 only**; R1+ (the
+  evaluated router: R1 OR p(needs_action = yes) >= 0.07) needs a step-2 PR with a parity test before the flag can be turned on. Router stays OFF.
+- **Tooling:**
+  - Secrets hook uses an absolute path (#631).
+  - No-cd rule (#632).
+  - Per-project ledger caps are a first-sale runbook step (#639), not adopted.
+  - Kaggle panel pull retry (#645) and stage P2 (#647).
+  - Groq 120b runner for the secondary (#646).
+- **Finding for claude-config:** `hook_strip_trailer.py` amends whatever HEAD is after a Bash call that contains a commit statement. Twice it
+  rewrote main's GitHub squash commit locally (identical tree; realigned). See the handoff, section 4.
+- Production: 0 changes. Daily checks on 10-31 and 11-01 were clean.
 
 ## Session 32 (autonomous, 2026-10-29): decisions recorded
 
@@ -65,7 +118,7 @@ Full record: `docs/autonomy/S31_PROGRESS.md`; handoff: `docs/HANDOFF_2026-10-27_
 
 | Item | State | Evidence |
 |---|---|---|
-| Serving revision | `review-iq` 100 percent on `review-iq-00080-4bx` at 2026-10-12 about 14:40 UTC (every merge to main deploys a new revision); `review-iq-admin` on `review-iq-admin-00063-tgq`. `DEMO_MAX_SHARE=0.1` on the service (set 2026-10-12) | VERIFIED `gcloud run services describe` (S23, per the orchestrator's session record; not re-run in this docs pass) |
+| Serving revision | `review-iq` 100 percent on `review-iq-00111-kfc` (S35 follow-up, 2026-11-03, VERIFIED; deployed by the #651 merge after #653 deployed `00110-6zb`; router flag unset; rollback `00110-6zb`, tag `smoketest`). Earlier: `review-iq-00080-4bx` at 2026-10-12 about 14:40 UTC (every merge to main deploys a new revision); `review-iq-admin` on `review-iq-admin-00063-tgq`. `DEMO_MAX_SHARE=0.1` on the service (set 2026-10-12) | VERIFIED `gcloud run services describe` (S23, per the orchestrator's session record; not re-run in this docs pass) |
 | Primary LLM | Groq, key secret `groq-api-key-samidha`. Groq limits are per account pool, and the benchmark key shares the Personal account with the production keys (GG, Groq console, #510), so eval and prod draw on the same pools | VERIFIED env; sharing per GG and #510. BELIEVED: the benchmark and failover keys share one org (identical org id in two 429 bodies) |
 | Failover | Secondary Groq key (`groq-api-key`), `openai/gpt-oss-120b`, `SECONDARY_PROVIDER_KIND=groq` (ADR 0038). The variable has NO default now: unset with a secondary configured fails loudly at startup (#509 merged). Nightly probe is a Cloud Run Job `failover-probe` plus Scheduler `failover-probe-nightly` (02:30 UTC) reading Secret Manager directly (#503, #504 merged); alert via a log-based metric to the existing email channel. Runs seen: one PASS, one real FAIL on quota (shared pool near 199K of 200K), one forced failure that opened the alert | VERIFIED executions. After the next CI deploy ships the Dockerfile COPY line, re-run `PROBE_SOURCE=image bash ops/probes/apply-failover-probe.sh` (open) |
 | 429 visibility | Every final Groq 429 logs `llm.rate_limited` (WARNING), each failover logs `llm.failover` (#491 merged and deployed); before it a 429 left no event | VERIFIED merged. Prod log search 2026-10-10..12 05:07 UTC found 0 x 429 and 0 failovers, but prod made only 3 Groq calls then, none clearly in the pool-full period: the clean log says little |
@@ -539,7 +592,25 @@ branch for a few minutes (fixed in `c969e11`, nothing merged).
 
 ## GG must do
 
-S29, in unblock order:
+S35, in unblock order (details: `docs/HANDOFF_S35.md`, section 6):
+
+1. Router, only when a paying customer exists: #396 → #576 (apply the migration) → #578 → #579 → #634; re-run the live routing check
+   (`scripts/classify_live_parity.py`) right before enabling. Served R1+ (step 2) is done (#655).
+2. Reconcile the live `~/.claude` checkout (another session's uncommitted warn-only trailer hook vs merged #82), then pull.
+3. Disk: decide on the other projects' items (handoff section 8).
+4. #654 (dateutil 3.0) when wanted, per its plan. Older parked items, unchanged (list below). The 120b secondary needs nothing
+   from you. (#82 merged and #318/#275/#267 closed on 2026-11-03.)
+
+S34, in unblock order (details: `docs/HANDOFF_S34.md`, section 8):
+
+1. Router: read the enable plan (#649, draft). Enabling is your decision. My recommendation is to wait for a paying customer. If you go
+   ahead, step 2 (served R1+) gets written first, then the gate-4 chain #396 → #576 (apply the migration) → #578 → #579 → #634.
+2. The A18 120b secondary needs nothing from you. It runs once triage-iq's recorder releases the shared 120b pool; the commands are in the
+   handoff. Deadline 2026-11-15.
+3. claude-config #77, plus a fix to `hook_strip_trailer.py` so it only amends a commit made in the same call.
+4. Older items, unchanged: #502, #586, #588, #610, and the gate-4 PRs #485, #508, #512, #499 and #472.
+
+S29 (kept for reference), in unblock order:
 
 1. **Dropped food-delivery data is still reachable on GitHub.** Its ids and labels were in the closed PRs #486 and #487 since 2026-10-12 (GitHub keeps
    `refs/pull/N/head` for a closed PR even after the branch is deleted, so deleting the S29 archive branches did not remove them). Only GitHub Support can

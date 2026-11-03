@@ -91,3 +91,13 @@ def test_stage_plan_covers_the_amendment() -> None:
     assert (
         "gemma2_9b" not in SP.STAGES["A"][0][0] + SP.STAGES["B"][0][0]
     )  # gemma only on sealed items
+
+
+def test_p2_finishes_p_with_one_judge_per_gpu() -> None:
+    p, p_sharded = SP.STAGES["P"]
+    p2, p2_sharded = SP.STAGES["P2"]
+    assert (
+        not p_sharded and not p2_sharded
+    )  # same unsharded `<judge>.jsonl` files, so --prior resumes them
+    assert sorted(j for js in p2.values() for j in js) == sorted(p[1])
+    assert all(len(js) == 1 for js in p2.values())
