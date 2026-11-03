@@ -123,10 +123,10 @@ def test_missing_cost_alert_table_fails_closed(root: Path) -> None:
 
 
 def test_margin_hand_computed() -> None:
-    # Starter $29, 10 customers, worst case: 2.67 + 92.89/10 + 0.0354*29 = 12.9857; margin 55.2%
+    # Starter $29, 10 customers, worst case: 2.67 + 93.19/10 + 0.0354*29 = 13.0156; margin 55.1%
     p = cost_model.load()
     m = cost_model.margin(p, 29, 5000, 10, 1.0, cost_model.fixed_total(p))
-    assert round(m, 3) == 0.552
+    assert round(m, 3) == 0.551
 
 
 def test_customers_for_margin_and_never() -> None:
@@ -140,5 +140,5 @@ def test_customers_for_margin_and_never() -> None:
 
 def test_fixed_total() -> None:
     p = cost_model.load()
-    assert cost_model.fixed_total(p) == 92.89
-    assert cost_model.fixed_total(p, True) == 112.89
+    assert cost_model.fixed_total(p) == 93.19
+    assert cost_model.fixed_total(p, True) == 113.19
