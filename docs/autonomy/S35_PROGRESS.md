@@ -66,6 +66,18 @@ Done. Close-out PR merged with `docs/STATUS.md` and `docs/HANDOFF_S35.md`.
 | 4 | 120b secondary | **partial, 45/200**, not scored | `D:/ml-cache/s34/groq120_f18/gpt-oss-120b.jsonl` | 11-02 |
 | 5 | Daily checks | **done** 11-02 (twice), all clean | see handoff section 5 | 11-02 19:10 |
 
+## Follow-up, 2026-11-03 (GG's brief and permissions)
+
+| ID | Task | Status | Evidence |
+|---|---|---|---|
+| F1 | Explain the disk warning | **done**: other projects' scratch and Docker, not review-iq | handoff section 8 |
+| F2 | Clean own data and pure caches | pip cache 0.97 GB deleted; npm GC 0.47 GB; uv cache not pruned (another session's `uv` was running) | handoff section 8 |
+| F3 | Dependabot #651-#653 | all merged; #653 after keeping ORT 1.31.0 in `requirements-classify.*` (`d61a200`) | `review-iq-00110-6zb` then `00111-kfc`, `/health` 200, smoke OK |
+| F3' | #654 (major) | **parked** with `docs/plans/dateutil-3-upgrade-plan.md` | 44/44 ingest tests on 3.0.0 |
+| G1 | claude-config #82 | **merged** `34b525e` (GG permission) | gate eligible, hooks-selftest green |
+| G2 | Close #318, #275, #267 | **closed** with reasons, branches kept (GG permission) | PR comments |
+| X | #396 CI | fixed `\|\| true` flagged by main's workflow test | CLEAN |
+
 ## 3d detail
 
 - Deleted only byte-identical copies: 4 `model.onnx` and 4 `tokenizer.json` in `D:/ml-cache/s31/ds_run2_{f16,f17,val16}` and
@@ -104,5 +116,5 @@ Done. Close-out PR merged with `docs/STATUS.md` and `docs/HANDOFF_S35.md`.
 |---|---|---|
 | Groq | 18,369 tokens, failover org, via the ledger | primary org 0 |
 | Kaggle | 0 | |
-| GCP | one CI deploy (#655, inert); 757 requests to the private classify service; read-only checks | |
+| GCP | CI deploys: #655 (inert) and #653 (dependencies, `review-iq-00110-6zb`); 757 requests to the private classify service; read-only checks | |
 | Disk | C: free 230.57 GB at S35 start, 207.35 GB at close (session scratch 13 MB; the drop is not from this session, BELIEVED concurrent work) | `D:/ml-cache` -1.65 GB |
