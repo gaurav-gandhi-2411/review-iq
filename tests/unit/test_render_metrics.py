@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 from scripts.render_metrics import (
     BLOCK_RENDERERS,
+    _cache_eval_date,
     render_committed_accuracy_headline_html,
     render_committed_accuracy_headline_md,
     render_coverage_metrics_table_html,
@@ -17,6 +18,7 @@ from scripts.render_metrics import (
     render_gate_summary_md,
     render_headline_accuracy,
     render_held_out_table_md,
+    render_injection_guard_order_md,
     render_known_gaps_html,
     render_language_table_html,
     render_portfolio_metrics_json,
@@ -605,3 +607,40 @@ class TestHeldOutHeadlineExcludesLanguage:
         broken = {k: v for k, v in self.WITH_ECHO.items() if k != "overall_score_headline"}
         with pytest.raises(KeyError):
             render_held_out_table_md(broken)
+
+
+class TestRenderInjectionGuardOrderMd:
+    """The SECURITY.md detection headline is computed from the generated results.json."""
+
+    DATA = {
+        "strata": {
+            "INJ-A": {
+                "end_to_end": {"n": 200, "rate_current": 0.5, "wilson_current": [0.431, 0.569]},
+                "unique_catches_current": {"neither": 50},
+            }
+        }
+    }
+
+    def test_figures_ci_n_and_date_come_from_the_data(self):
+        md = render_injection_guard_order_md(self.DATA, "2026-01-02")
+        assert "**50.0% end-to-end recall**" in md
+        assert "95% Wilson CI 43.1%-56.9%, n=200, evaluated 2026-01-02" in md
+        assert "25.0% (50 of 200) of the attacks were caught by neither layer" in md
+        assert "not review-shaped" in md and "synthetic PII only" in md
+
+    def test_missing_stratum_fails_loudly(self):
+        with pytest.raises(KeyError):
+            render_injection_guard_order_md({"strata": {}}, "2026-01-02")
+
+    def test_cache_eval_date_is_the_latest_record_date(self, tmp_path: Path):
+        cache = tmp_path / "cache.jsonl"
+        cache.write_text(
+            '{"ts": "2026-10-18T23:59:59+00:00"}\n\n{"ts": "2026-10-19T00:00:01+00:00"}\n',
+            encoding="utf-8",
+        )
+        assert _cache_eval_date(cache) == "2026-10-19"
+
+    def test_block_is_registered_and_committed_security_md_matches_the_artifact(self):
+        assert "injection_guard_order" in BLOCK_RENDERERS
+        security = Path("SECURITY.md").read_text(encoding="utf-8")
+        assert BLOCK_RENDERERS["injection_guard_order"]() in security
