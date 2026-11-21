@@ -96,7 +96,7 @@ export default function LoginPage() {
                   placeholder="you@yourstore.com"
                   required
                   autoFocus
-                  className="w-full px-3.5 py-2.5 text-sm font-sans border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green/30 focus:border-green transition-shadow placeholder:text-charcoal-light/50"
+                  className="w-full px-3.5 py-2.5 text-sm font-sans border border-gray-200 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-green/30 focus:border-green transition-shadow placeholder:text-charcoal-light/50"
                 />
               </div>
 

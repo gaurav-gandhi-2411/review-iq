@@ -31,7 +31,7 @@ export default function ReviewRow({ review, now, tone }: Props) {
         <span className={`font-medium ${dark ? 'text-cream' : 'text-ink'}`}>{product}</span>
         <span className={dark ? 'text-cream-soft' : 'text-ink-soft'}>{sentiment}</span>
         <span
-          className={`rounded px-1.5 py-0.5 text-xs font-medium text-ink ${
+          className={`rounded-sm px-1.5 py-0.5 text-xs font-medium text-ink ${
             urgent ? (dark ? 'bg-saffron' : 'bg-ember-tint') : dark ? 'bg-cream-soft' : 'bg-cream-deep'
           }`}
         >

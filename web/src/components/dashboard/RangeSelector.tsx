@@ -22,7 +22,7 @@ export default function RangeSelector({ value, onChange }: Props) {
               onChange={() => onChange(r.key)}
               className="peer sr-only"
             />
-            <span className="block rounded px-3 py-2 text-sm font-medium text-ink-soft transition-colors peer-checked:bg-ink peer-checked:text-cream peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ink hover:text-ink peer-checked:hover:text-cream">
+            <span className="block rounded-sm px-3 py-2 text-sm font-medium text-ink-soft transition-colors peer-checked:bg-ink peer-checked:text-cream peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ink hover:text-ink peer-checked:hover:text-cream">
               {r.label}
             </span>
           </label>

@@ -1,8 +1,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+/* Tailwind 4: the brand theme stays in tailwind.config.js (src/lib/tokens.test.ts checks it against design/tokens.json). */
+@config "../tailwind.config.js";
+
+/* v3 defaults that Tailwind 4 changed, restored so the upgrade alone changes no pixels (upgrade guide's compatibility CSS):
+   a bare `border` was gray-200 (v4: currentColor), placeholders were gray-400, buttons had a pointer cursor. */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-gray-400);
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
 
 * { box-sizing: border-box; }
 
