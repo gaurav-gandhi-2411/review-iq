@@ -1,0 +1,160 @@
+{
+  "commit_base": "9245b85",
+  "script": "scripts/measure_db_latency.py",
+  "cloud_run_job_asia_south1": {
+    "host": "aws-1-ap-southeast-2.pooler.supabase.com",
+    "port": 6543,
+    "where": "cloud-run-job-asia-south1-prod-image",
+    "dns_ms": {
+      "n": 60,
+      "min": 0.63,
+      "p50": 0.84,
+      "p95": 2.73,
+      "p99": 43.13,
+      "max": 43.13,
+      "mean": 1.68
+    },
+    "tcp_connect_ms": {
+      "n": 60,
+      "min": 217.08,
+      "p50": 218.81,
+      "p95": 221.65,
+      "p99": 222.3,
+      "max": 222.3,
+      "mean": 219.0
+    },
+    "new_conn_connect_ms": {
+      "n": 60,
+      "min": 1316.0,
+      "p50": 1333.34,
+      "p95": 1349.76,
+      "p99": 1378.37,
+      "max": 1378.37,
+      "mean": 1333.65
+    },
+    "new_conn_select1_ms": {
+      "n": 60,
+      "min": 435.05,
+      "p50": 440.47,
+      "p95": 446.74,
+      "p99": 447.66,
+      "max": 447.66,
+      "mean": 440.67
+    },
+    "new_conn_close_ms": {
+      "n": 60,
+      "min": 0.15,
+      "p50": 0.19,
+      "p95": 0.58,
+      "p99": 0.8,
+      "max": 0.8,
+      "mean": 0.25
+    },
+    "new_conn_total_ms": {
+      "n": 60,
+      "min": 1751.67,
+      "p50": 1773.8,
+      "p95": 1791.37,
+      "p99": 1826.65,
+      "max": 1826.65,
+      "mean": 1774.62
+    },
+    "reused_conn_select1_ms": {
+      "n": 200,
+      "min": 220.62,
+      "p50": 221.12,
+      "p95": 222.06,
+      "p99": 228.35,
+      "max": 234.53,
+      "mean": 221.36
+    },
+    "pooled_getconn_select1_ms": {
+      "n": 200,
+      "min": 655.07,
+      "p50": 656.42,
+      "p95": 661.12,
+      "p99": 671.13,
+      "max": 673.68,
+      "mean": 657.1
+    },
+    "errors_by_class": {}
+  },
+  "local_dev_machine_NOT_production_path": {
+    "host": "aws-1-ap-southeast-2.pooler.supabase.com",
+    "port": 6543,
+    "where": "local-dev-machine-NOT-the-production-path",
+    "dns_ms": {
+      "n": 60,
+      "min": 0.47,
+      "p50": 0.62,
+      "p95": 0.91,
+      "p99": 76.66,
+      "max": 76.66,
+      "mean": 2.09
+    },
+    "tcp_connect_ms": {
+      "n": 60,
+      "min": 303.09,
+      "p50": 315.96,
+      "p95": 347.48,
+      "p99": 480.52,
+      "max": 480.52,
+      "mean": 320.72
+    },
+    "new_conn_connect_ms": {
+      "n": 60,
+      "min": 1846.94,
+      "p50": 1994.41,
+      "p95": 5862.71,
+      "p99": 25106.34,
+      "max": 25106.34,
+      "mean": 2814.41
+    },
+    "new_conn_select1_ms": {
+      "n": 60,
+      "min": 609.41,
+      "p50": 649.23,
+      "p95": 1760.92,
+      "p99": 3019.26,
+      "max": 3019.26,
+      "mean": 812.83
+    },
+    "new_conn_close_ms": {
+      "n": 60,
+      "min": 0.2,
+      "p50": 0.32,
+      "p95": 0.54,
+      "p99": 0.63,
+      "max": 0.63,
+      "mean": 0.34
+    },
+    "new_conn_total_ms": {
+      "n": 60,
+      "min": 2463.16,
+      "p50": 2661.99,
+      "p95": 6500.37,
+      "p99": 25774.67,
+      "max": 25774.67,
+      "mean": 3627.61
+    },
+    "reused_conn_select1_ms": {
+      "n": 200,
+      "min": 313.52,
+      "p50": 319.88,
+      "p95": 369.12,
+      "p99": 480.4,
+      "max": 515.32,
+      "mean": 327.38
+    },
+    "pooled_getconn_select1_ms": {
+      "n": 200,
+      "min": 904.68,
+      "p50": 928.85,
+      "p95": 1148.11,
+      "p99": 3910.49,
+      "max": 8598.57,
+      "mean": 1020.81
+    },
+    "errors_by_class": {}
+  }
+}
