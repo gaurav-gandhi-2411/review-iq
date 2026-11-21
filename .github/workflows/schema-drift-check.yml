@@ -8,12 +8,9 @@ name: Schema Drift Check
 # against a from-scratch migration-built database (scripts/check_schema_drift.py). This
 # workflow runs that same diff continuously so the next gap is caught here, not by hand.
 #
-# Reuses the SUPABASE_DIRECT_URL GitHub Actions secret already used by db-backup.yml --
-# despite the name, per that workflow's own comment, this is the session-mode pooler URL
-# (IPv4, port 5432), not the true direct db.<ref>.supabase.co host (that's a separate,
-# GCP-Secret-Manager-only secret named supabase-direct-url, currently broken -- see P2 of
-# the 2026-08-01 pipeline/secret report). Read-only schema introspection works identically
-# over either connection, so the working pooler secret is sufficient here.
+# Uses the SUPABASE_RO_URL secret (the SELECT-only ci_readonly role, session-mode pooler
+# URL, IPv4 port 5432; see docs/ops/ci-readonly-role.md). Introspection reads pg_catalog
+# only (scripts/extract_schema_snapshot.py), so no write-capable credential is needed.
 #
 # Ephemeral-side bootstrap mirrors pre-cutover-verification.yml exactly (same roles, same
 # migrations, same order) -- see that workflow for why a vanilla postgres:17 container is
@@ -89,13 +86,13 @@ jobs:
 
       - name: Extract production schema snapshot
         env:
-          SUPABASE_DIRECT_URL: ${{ secrets.SUPABASE_DIRECT_URL }}
+          SUPABASE_RO_URL: ${{ secrets.SUPABASE_RO_URL }}
         run: |
-          if [ -z "$SUPABASE_DIRECT_URL" ]; then
-            echo "::error::SUPABASE_DIRECT_URL secret is not set -- cannot compare against production. Failing closed rather than skipping the check."
+          if [ -z "$SUPABASE_RO_URL" ]; then
+            echo "::error::SUPABASE_RO_URL secret is not set -- cannot compare against production. Failing closed rather than skipping the check."
             exit 1
           fi
-          uv run python scripts/extract_schema_snapshot.py "$SUPABASE_DIRECT_URL" > prod.json
+          uv run python scripts/extract_schema_snapshot.py "$SUPABASE_RO_URL" > prod.json
 
       - name: Compare
         id: compare

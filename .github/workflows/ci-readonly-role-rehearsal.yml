@@ -1,0 +1,71 @@
+name: CI Read-only Role Rehearsal
+
+# Applies supabase/ops/ci_readonly_role.sql to a throwaway, migration-built postgres:17 (never
+# production) and proves ci_readonly can SELECT / pg_dump / run the drift extractor but cannot
+# INSERT/UPDATE/DELETE/TRUNCATE/DDL/CREATE ROLE. See docs/ops/ci-readonly-role.md.
+
+on:
+  pull_request:
+    paths:
+      - "supabase/ops/**"
+      - "scripts/extract_schema_snapshot.py"
+      - "supabase/push.py"
+      - ".github/workflows/ci-readonly-role-rehearsal.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-readonly-role-rehearsal-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rehearse:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: ci_postgres_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # Throwaway container credentials only (same convention as the other CI workflows).
+      ADMIN_DSN: postgresql://postgres:ci_postgres_password@localhost:5432/postgres
+      RO_DSN: postgresql://ci_readonly:rehearsal_only_password_0123@localhost:5432/postgres
+      CI_READONLY_PASSWORD: rehearsal_only_password_0123
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.11"
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: true
+      - run: uv sync --frozen
+      - name: Install postgresql-client-17 (pg_dump must be >= server major)
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsS -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt noble-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends postgresql-client-17
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+      - name: Build the schema exactly as production is built
+        run: uv run python supabase/ci/apply_migrations_ci.py
+      - name: Apply the role script twice (idempotency)
+        run: |
+          psql "$ADMIN_DSN" -v ON_ERROR_STOP=1 -f supabase/ops/ci_readonly_role.sql
+          psql "$ADMIN_DSN" -v ON_ERROR_STOP=1 -f supabase/ops/ci_readonly_role.sql
+      - name: Role script refuses a short password
+        run: |
+          if CI_READONLY_PASSWORD=short psql "$ADMIN_DSN" -v ON_ERROR_STOP=1 -f supabase/ops/ci_readonly_role.sql; then
+            echo "::error::script accepted a short password"; exit 1
+          fi
+      - name: Prove SELECT works and every write, DDL and role-creation path is denied
+        run: bash supabase/ops/rehearse_ci_readonly_role.sh
