@@ -14,6 +14,7 @@ from app.core.schemas import Sentiment, Urgency
 from app.core.storage_pg import (
     aggregate_extractions_pg,
     list_extractions_pg,
+    purge_org_classified_reviews_pg,
     purge_org_extractions_pg,
 )
 
@@ -182,4 +183,6 @@ async def purge_reviews(
     should implement their own confirmation before calling this.
     """
     deleted = await asyncio.to_thread(purge_org_extractions_pg, ctx.org_id, None)
+    # Raw text of reviews the encoder-first router skipped (flag OFF today) goes too; 0 when the table does not exist yet.
+    deleted += await asyncio.to_thread(purge_org_classified_reviews_pg, ctx.org_id, None)
     return {"org_id": ctx.org_id, "rows_deleted": deleted}
